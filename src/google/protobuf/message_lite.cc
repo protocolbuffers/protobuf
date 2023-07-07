@@ -75,6 +75,14 @@ std::string MessageLite::DebugString() const {
   return absl::StrCat("MessageLite at 0x", absl::Hex(this));
 }
 
+int MessageLite::GetCachedSize() const {
+  auto* cached_size = AccessCachedSize();
+  if (PROTOBUF_PREDICT_FALSE(cached_size == nullptr)) return ByteSize();
+  return cached_size->Get();
+}
+
+internal::CachedSize* MessageLite::AccessCachedSize() const { return nullptr; }
+
 namespace {
 
 // When serializing, we first compute the byte size, then serialize the message.

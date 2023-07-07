@@ -2331,9 +2331,6 @@ inline void FileDescriptorSet::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_.~RepeatedPtrField();
 }
-void FileDescriptorSet::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
-}
 
 PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FileDescriptorSet)
@@ -2456,6 +2453,9 @@ PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* FileDescriptorSet::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -2622,9 +2622,6 @@ inline void FileDescriptorProto::SharedDtor() {
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
   if (this != internal_default_instance()) delete _impl_.source_code_info_;
-}
-void FileDescriptorProto::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
@@ -3084,6 +3081,9 @@ PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* FileDescriptorProto::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -3184,9 +3184,6 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
 inline void DescriptorProto_ExtensionRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   if (this != internal_default_instance()) delete _impl_.options_;
-}
-void DescriptorProto_ExtensionRange::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
@@ -3376,6 +3373,9 @@ PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* DescriptorProto_ExtensionRange::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -3435,9 +3435,6 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
 }
 inline void DescriptorProto_ReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void DescriptorProto_ReservedRange::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
@@ -3595,6 +3592,9 @@ PROTOBUF_NOINLINE bool DescriptorProto_ReservedRange::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* DescriptorProto_ReservedRange::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -3706,9 +3706,6 @@ inline void DescriptorProto::SharedDtor() {
   _internal_mutable_reserved_name()->~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
-}
-void DescriptorProto::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void DescriptorProto::Clear() {
@@ -4087,6 +4084,9 @@ PROTOBUF_NOINLINE bool DescriptorProto::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* DescriptorProto::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void DescriptorProto::InternalSwap(DescriptorProto* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -4203,9 +4203,6 @@ inline void ExtensionRangeOptions_Declaration::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.full_name_.Destroy();
   _impl_.type_.Destroy();
-}
-void ExtensionRangeOptions_Declaration::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
@@ -4444,6 +4441,9 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions_Declaration::IsInitialized() const 
   return true;
 }
 
+::_pbi::CachedSize* ExtensionRangeOptions_Declaration::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Declaration* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -4537,9 +4537,6 @@ inline void ExtensionRangeOptions::SharedDtor() {
   _impl_.declaration_.~RepeatedPtrField();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
   if (this != internal_default_instance()) delete _impl_.features_;
-}
-void ExtensionRangeOptions::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
@@ -4770,6 +4767,9 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* ExtensionRangeOptions::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -4956,9 +4956,6 @@ inline void FieldDescriptorProto::SharedDtor() {
   _impl_.default_value_.Destroy();
   _impl_.json_name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
-}
-void FieldDescriptorProto::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
@@ -5366,6 +5363,9 @@ PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* FieldDescriptorProto::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -5465,9 +5465,6 @@ inline void OneofDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
-}
-void OneofDescriptorProto::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
@@ -5637,6 +5634,9 @@ PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* OneofDescriptorProto::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -5695,9 +5695,6 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
 }
 inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void EnumDescriptorProto_EnumReservedRange::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
@@ -5855,6 +5852,9 @@ PROTOBUF_NOINLINE bool EnumDescriptorProto_EnumReservedRange::IsInitialized() co
   return true;
 }
 
+::_pbi::CachedSize* EnumDescriptorProto_EnumReservedRange::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_EnumReservedRange* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -5951,9 +5951,6 @@ inline void EnumDescriptorProto::SharedDtor() {
   _internal_mutable_reserved_name()->~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
-}
-void EnumDescriptorProto::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
@@ -6199,6 +6196,9 @@ PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* EnumDescriptorProto::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -6294,9 +6294,6 @@ inline void EnumValueDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
-}
-void EnumValueDescriptorProto::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
@@ -6491,6 +6488,9 @@ PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* EnumValueDescriptorProto::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -6585,9 +6585,6 @@ inline void ServiceDescriptorProto::SharedDtor() {
   _impl_.method_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
-}
-void ServiceDescriptorProto::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
@@ -6784,6 +6781,9 @@ PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* ServiceDescriptorProto::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -6918,9 +6918,6 @@ inline void MethodDescriptorProto::SharedDtor() {
   _impl_.input_type_.Destroy();
   _impl_.output_type_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
-}
-void MethodDescriptorProto::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
@@ -7192,6 +7189,9 @@ PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* MethodDescriptorProto::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -7501,9 +7501,6 @@ inline void FileOptions::SharedDtor() {
   _impl_.php_metadata_namespace_.Destroy();
   _impl_.ruby_package_.Destroy();
   if (this != internal_default_instance()) delete _impl_.features_;
-}
-void FileOptions::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void FileOptions::Clear() {
@@ -8193,6 +8190,9 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* FileOptions::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void FileOptions::InternalSwap(FileOptions* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -8323,9 +8323,6 @@ inline void MessageOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
   if (this != internal_default_instance()) delete _impl_.features_;
-}
-void MessageOptions::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void MessageOptions::Clear() {
@@ -8610,6 +8607,9 @@ PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* MessageOptions::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void MessageOptions::InternalSwap(MessageOptions* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -8703,9 +8703,6 @@ inline void FieldOptions_EditionDefault::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.edition_.Destroy();
   _impl_.value_.Destroy();
-}
-void FieldOptions_EditionDefault::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
@@ -8871,6 +8868,9 @@ PROTOBUF_NOINLINE bool FieldOptions_EditionDefault::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* FieldOptions_EditionDefault::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -9003,9 +9003,6 @@ inline void FieldOptions::SharedDtor() {
   _impl_.edition_defaults_.~RepeatedPtrField();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
   if (this != internal_default_instance()) delete _impl_.features_;
-}
-void FieldOptions::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void FieldOptions::Clear() {
@@ -9443,6 +9440,9 @@ PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* FieldOptions::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void FieldOptions::InternalSwap(FieldOptions* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -9525,9 +9525,6 @@ inline void OneofOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
   if (this != internal_default_instance()) delete _impl_.features_;
-}
-void OneofOptions::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void OneofOptions::Clear() {
@@ -9701,6 +9698,9 @@ PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* OneofOptions::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void OneofOptions::InternalSwap(OneofOptions* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -9794,9 +9794,6 @@ inline void EnumOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
   if (this != internal_default_instance()) delete _impl_.features_;
-}
-void EnumOptions::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void EnumOptions::Clear() {
@@ -10041,6 +10038,9 @@ PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* EnumOptions::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void EnumOptions::InternalSwap(EnumOptions* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -10134,9 +10134,6 @@ inline void EnumValueOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
   if (this != internal_default_instance()) delete _impl_.features_;
-}
-void EnumValueOptions::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
@@ -10363,6 +10360,9 @@ PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* EnumValueOptions::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -10449,9 +10449,6 @@ inline void ServiceOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
   if (this != internal_default_instance()) delete _impl_.features_;
-}
-void ServiceOptions::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void ServiceOptions::Clear() {
@@ -10653,6 +10650,9 @@ PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* ServiceOptions::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void ServiceOptions::InternalSwap(ServiceOptions* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -10746,9 +10746,6 @@ inline void MethodOptions::SharedDtor() {
   _impl_._extensions_.~ExtensionSet();
   _impl_.uninterpreted_option_.~RepeatedPtrField();
   if (this != internal_default_instance()) delete _impl_.features_;
-}
-void MethodOptions::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void MethodOptions::Clear() {
@@ -10980,6 +10977,9 @@ PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* MethodOptions::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void MethodOptions::InternalSwap(MethodOptions* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -11065,9 +11065,6 @@ UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
 inline void UninterpretedOption_NamePart::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_part_.Destroy();
-}
-void UninterpretedOption_NamePart::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
@@ -11230,6 +11227,9 @@ PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* UninterpretedOption_NamePart::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -11358,9 +11358,6 @@ inline void UninterpretedOption::SharedDtor() {
   _impl_.identifier_value_.Destroy();
   _impl_.string_value_.Destroy();
   _impl_.aggregate_value_.Destroy();
-}
-void UninterpretedOption::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
@@ -11647,6 +11644,9 @@ PROTOBUF_NOINLINE bool UninterpretedOption::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* UninterpretedOption::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -11746,9 +11746,6 @@ FeatureSet::~FeatureSet() {
 inline void FeatureSet::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-}
-void FeatureSet::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void FeatureSet::Clear() {
@@ -11989,6 +11986,9 @@ PROTOBUF_NOINLINE bool FeatureSet::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* FeatureSet::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void FeatureSet::InternalSwap(FeatureSet* other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -12077,9 +12077,6 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.features_;
-}
-void FeatureSetDefaults_FeatureSetEditionDefault::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
@@ -12249,6 +12246,9 @@ PROTOBUF_NOINLINE bool FeatureSetDefaults_FeatureSetEditionDefault::IsInitialize
   return true;
 }
 
+::_pbi::CachedSize* FeatureSetDefaults_FeatureSetEditionDefault::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void FeatureSetDefaults_FeatureSetEditionDefault::InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -12342,9 +12342,6 @@ inline void FeatureSetDefaults::SharedDtor() {
   _impl_.defaults_.~RepeatedPtrField();
   _impl_.minimum_edition_.Destroy();
   _impl_.maximum_edition_.Destroy();
-}
-void FeatureSetDefaults::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
@@ -12536,6 +12533,9 @@ PROTOBUF_NOINLINE bool FeatureSetDefaults::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* FeatureSetDefaults::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void FeatureSetDefaults::InternalSwap(FeatureSetDefaults* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -12641,9 +12641,6 @@ inline void SourceCodeInfo_Location::SharedDtor() {
   _internal_mutable_leading_detached_comments()->~RepeatedPtrField();
   _impl_.leading_comments_.Destroy();
   _impl_.trailing_comments_.Destroy();
-}
-void SourceCodeInfo_Location::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
@@ -12895,6 +12892,9 @@ PROTOBUF_NOINLINE bool SourceCodeInfo_Location::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* SourceCodeInfo_Location::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -12953,9 +12953,6 @@ SourceCodeInfo::~SourceCodeInfo() {
 inline void SourceCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.location_.~RepeatedPtrField();
-}
-void SourceCodeInfo::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
@@ -13077,6 +13074,9 @@ PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* SourceCodeInfo::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -13168,9 +13168,6 @@ inline void GeneratedCodeInfo_Annotation::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.path_.~RepeatedField();
   _impl_.source_file_.Destroy();
-}
-void GeneratedCodeInfo_Annotation::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
@@ -13412,6 +13409,9 @@ PROTOBUF_NOINLINE bool GeneratedCodeInfo_Annotation::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* GeneratedCodeInfo_Annotation::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -13472,9 +13472,6 @@ GeneratedCodeInfo::~GeneratedCodeInfo() {
 inline void GeneratedCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.annotation_.~RepeatedPtrField();
-}
-void GeneratedCodeInfo::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
@@ -13596,6 +13593,9 @@ PROTOBUF_NOINLINE bool GeneratedCodeInfo::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* GeneratedCodeInfo::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

@@ -375,9 +375,6 @@ inline void Version::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.suffix_.Destroy();
 }
-void Version::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
-}
 
 PROTOBUF_NOINLINE void Version::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
@@ -586,6 +583,9 @@ PROTOBUF_NOINLINE bool Version::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Version::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Version::InternalSwap(Version* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -694,9 +694,6 @@ inline void CodeGeneratorRequest::SharedDtor() {
   _impl_.source_file_descriptors_.~RepeatedPtrField();
   _impl_.parameter_.Destroy();
   if (this != internal_default_instance()) delete _impl_.compiler_version_;
-}
-void CodeGeneratorRequest::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
@@ -940,6 +937,9 @@ PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* CodeGeneratorRequest::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -1068,9 +1068,6 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
   _impl_.insertion_point_.Destroy();
   _impl_.content_.Destroy();
   if (this != internal_default_instance()) delete _impl_.generated_code_info_;
-}
-void CodeGeneratorResponse_File::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
@@ -1292,6 +1289,9 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse_File::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* CodeGeneratorResponse_File::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -1378,9 +1378,6 @@ inline void CodeGeneratorResponse::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_.~RepeatedPtrField();
   _impl_.error_.Destroy();
-}
-void CodeGeneratorResponse::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
@@ -1566,6 +1563,9 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* CodeGeneratorResponse::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
