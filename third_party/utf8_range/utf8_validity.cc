@@ -23,6 +23,8 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/string_view.h"
 
+#include "utf8-simd.h"
+
 #ifdef __SSE4_1__
 #include <emmintrin.h>
 #include <smmintrin.h>
@@ -450,7 +452,32 @@ size_t ValidUTF8(const char* data, size_t len) {
 }  // namespace
 
 bool IsStructurallyValid(absl::string_view str) {
+
+#ifdef __x86_64__
+  uint8_t* p = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(str.data()));
+  int size = str.size();
+
+#ifdef __AVX512F__
+  // Use vectorization for large buffers much larger than the vector length
+  if (size > 64) {
+    return u_utf8_d512(p, size);
+  }
+#elif defined( __AVX2__)
+  // Use vectorization for large buffers much larger than the vector length
+  if (size > 32) {
+    return u_utf8_d256(p, size);
+  }
+#else
+  // Use stitched dfa for buffers much larger than the chunks sizes  
+  if (size > 25) {
+    return u_utf8_5dfa(p, size);
+  }
+#endif
+  // short length, use a fast function with very low overhead
+  return u_utf8_2dfa(p, size);
+#else
   return ValidUTF8</*ReturnPosition=*/false>(str.data(), str.size());
+#endif
 }
 
 size_t SpanStructurallyValid(absl::string_view str) {
