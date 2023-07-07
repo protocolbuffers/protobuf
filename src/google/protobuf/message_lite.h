@@ -188,6 +188,12 @@ class PROTOBUF_EXPORT MessageLite {
   // if arena is a nullptr.
   virtual MessageLite* New(Arena* arena) const = 0;
 
+  MessageLite* Copy(Arena* arena) const {
+    MessageLite* msg = New(arena);
+    msg->CheckTypeAndMergeFrom(*this);
+    return msg;
+  }
+
   Arena* GetArena() const { return _internal_metadata_.arena(); }
 
   // Clear all fields of the message and set them to their default values.
@@ -470,6 +476,17 @@ class PROTOBUF_EXPORT MessageLite {
   template <typename T>
   static T* CreateMaybeMessage(Arena* arena) {
     return Arena::CreateMaybeMessage<T>(arena);
+  }
+
+  template <typename T>
+  static T* CreateMaybeMessage(Arena* arena, const T& rhs) {
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    return Arena::CreateMaybeMessage<T>(arena, rhs);
+#else
+    T* msg = Arena::CreateMaybeMessage<T>(arena);
+    msg->CheckTypeAndMergeFrom(rhs);
+    return msg;
+#endif
   }
 
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}

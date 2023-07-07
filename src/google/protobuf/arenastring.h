@@ -193,12 +193,23 @@ class TaggedStringPtr {
   // Returns true if the contained pointer is null, indicating some error.
   // The Null value is only used during parsing for temporary values.
   // A persisted ArenaStringPtr value is never null.
-  inline bool IsNull() { return ptr_ == nullptr; }
+  inline bool IsNull() const { return ptr_ == nullptr; }
+
+  // Returns a copy of this instance. The returned value may be heap or
+  // arena allocated in debug builds to harden access into this field.
+  TaggedStringPtr Copy(Arena* arena) const;
+
+  // Identical to the above `Copy` function except that `default_value` is used
+  // to substitute an empty default to a hardened, allocated value.
+  TaggedStringPtr Copy(Arena* arena, const LazyString& default_value) const;
 
  private:
   static inline void assert_aligned(const void* p) {
     ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(p) & kMask, 0UL);
   }
+
+  // Creates a heap or arena allocated copy of this instance.
+  TaggedStringPtr ForceCopy(Arena* arena) const;
 
   inline std::string* TagAs(Type type, std::string* p) {
     ABSL_DCHECK(p != nullptr);
@@ -238,6 +249,26 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   constexpr ArenaStringPtr(ExplicitlyConstructedArenaString* default_value,
                            ConstantInitialized)
       : tagged_ptr_(default_value) {}
+
+  // Arena enabled constructor for strings with a default value.
+  // This constructor enables string hardening for fields with default values.
+  explicit ArenaStringPtr(Arena* arena);
+
+  // Arena enabled constructor for strings with a default value.
+  // This constructor enables string hardening for fields with default values.
+  ArenaStringPtr(Arena* arena, const LazyString& default_value);
+
+  // Arena enabled copy constructor for strings without a default value.
+  ArenaStringPtr(Arena* arena, const ArenaStringPtr& rhs)
+      : tagged_ptr_(rhs.tagged_ptr_.Copy(arena)) {}
+
+  // Arena enabled copy constructor for strings with a non empty default value.
+  // The `default_value` is required for string hardening where we create
+  // explicit values, and the input value may be a 'const default' value, i.e.:
+  // the string's default value must be applied when hardening.
+  ArenaStringPtr(Arena* arena, const ArenaStringPtr& rhs,
+                 const LazyString& default_value)
+      : tagged_ptr_(rhs.tagged_ptr_.Copy(arena, default_value)) {}
 
   // Called from generated code / reflection runtime only. Resets value to point
   // to a default string pointer, with the semantics that this ArenaStringPtr
@@ -391,6 +422,42 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
 
   friend class EpsCopyInputStream;
 };
+
+inline TaggedStringPtr TaggedStringPtr::Copy(Arena* arena) const {
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return ForceCopy(arena);
+#else
+  return IsDefault() ? *this : ForceCopy(arena);
+#endif
+}
+
+inline TaggedStringPtr TaggedStringPtr::Copy(
+    Arena* arena, const LazyString& default_value) const {
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  TaggedStringPtr hardened(*this);
+  if (IsDefault()) {
+    hardened.SetDefault(&default_value.get());
+  }
+  return hardened.ForceCopy(arena);
+#else
+  return IsDefault() ? *this : ForceCopy(arena);
+#endif
+}
+
+inline ArenaStringPtr::ArenaStringPtr(Arena* arena)
+    : tagged_ptr_(&fixed_address_empty_string) {
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  Set(absl::string_view(""), arena);
+#endif
+}
+
+inline ArenaStringPtr::ArenaStringPtr(Arena* arena,
+                                      const LazyString& default_value)
+    : tagged_ptr_(&fixed_address_empty_string) {
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  Set(absl::string_view(default_value.get()), arena);
+#endif
+}
 
 inline void ArenaStringPtr::InitDefault() {
   tagged_ptr_ = TaggedStringPtr(&fixed_address_empty_string);

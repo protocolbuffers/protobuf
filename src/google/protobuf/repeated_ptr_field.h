@@ -181,8 +181,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 #endif
   }
 
+ public:
   bool empty() const { return current_size_ == 0; }
   int size() const { return current_size_; }
+
+ protected:
   int Capacity() const { return total_size_; }
 
   template <typename TypeHandler>
@@ -937,6 +940,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   // TODO(b/290091828): make constructor private
   explicit RepeatedPtrField(Arena* arena);
+  explicit RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
 
   template <typename Iter,
             typename = typename std::enable_if<std::is_constructible<
@@ -1224,8 +1228,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   }
 
  private:
-  RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
-
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   class TypeHandler;
 

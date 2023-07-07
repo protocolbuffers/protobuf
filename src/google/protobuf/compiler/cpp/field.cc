@@ -117,6 +117,43 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   return vars;
 }
 
+void FieldGeneratorBase::GenerateMemberConstexprConstructor(
+    io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension());
+  if (descriptor_->is_repeated() || descriptor_->is_map()) {
+    p->Emit("$name$_{}");
+  } else {
+    p->Emit({{"default", DefaultValue(options_, descriptor_)}},
+            "$name$_{$default$}");
+  }
+}
+
+void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension());
+  if (descriptor_->is_repeated() || descriptor_->is_map()) {
+    p->Emit("$name$_{visibility, arena}");
+  } else {
+    p->Emit({{"default", DefaultValue(options_, descriptor_)}},
+            "$name$_{$default$}");
+  }
+}
+
+void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension());
+  if (descriptor_->is_repeated() || descriptor_->is_map()) {
+    p->Emit("$name$_{visibility, arena, rhs.$name$_}");
+  } else {
+    p->Emit("$name$_{rhs.$name$_}");
+  }
+}
+
+void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension());
+  ABSL_CHECK(!descriptor_->is_repeated());
+  ABSL_CHECK(!descriptor_->is_map());
+  p->Emit("$field$ = rhs.$field$;\n");
+}
+
 void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
   if (ShouldSplit(descriptor_, options_)) {
     p->Emit(R"cc(
@@ -238,6 +275,8 @@ void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
 
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
+  vars.emplace_back("inlined_string_index", index);
+  vars.emplace_back("inlined_string_mask", mask);
 
   absl::string_view array = IsMapEntryMessage(field->containing_type())
                                 ? "_inlined_string_donated_"

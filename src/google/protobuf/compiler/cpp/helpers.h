@@ -129,6 +129,21 @@ PROTOC_EXPORT std::string Namespace(const EnumDescriptor* d);
 
 class MessageSCCAnalyzer;
 
+// Returns true if the field has a non trivial constructor.
+//
+// For all trivial class members (trivial fields, message pointers, etc),
+// manually zeroing or copying their contents after construction is more
+// efficient than member-wise initialization or copy.
+//
+// The following type of fields require explicit initialization:
+// - Repeated fields
+// - Extensions
+// - Lazy message fields
+// - String fields (inlined, arenastring, stringpiece, cord)
+bool RequiresMemberInitialization(const FieldDescriptor* field,
+                                  const Options& options,
+                                  MessageSCCAnalyzer* scc_analyzer);
+
 // Returns true if it's safe to init "field" to zero.
 bool CanInitializeByZeroing(const FieldDescriptor* field,
                             const Options& options,
@@ -138,6 +153,9 @@ bool CanClearByZeroing(const FieldDescriptor* field);
 // Determines if swap can be implemented via memcpy.
 bool HasTrivialSwap(const FieldDescriptor* field, const Options& options,
                     MessageSCCAnalyzer* scc_analyzer);
+
+// Returns true if the field is trivial.
+bool IsTrivial(const FieldDescriptor* field, const Options& options);
 
 PROTOC_EXPORT std::string ClassName(const Descriptor* descriptor);
 PROTOC_EXPORT std::string ClassName(const EnumDescriptor* enum_descriptor);

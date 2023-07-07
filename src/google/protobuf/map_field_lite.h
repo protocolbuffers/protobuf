@@ -68,6 +68,18 @@ class MapFieldLite {
   static constexpr WireFormatLite::FieldType kValueFieldType = value_wire_type;
 
   constexpr MapFieldLite() : map_() {}
+  MapFieldLite(const MapFieldLite& rhs) = delete;
+
+  // Arena enabled constructors: for internal use only.
+  MapFieldLite(internal::InternalVisibility, Arena* arena) : map_(arena) {}
+  MapFieldLite(internal::InternalVisibility, Arena* arena,
+               const MapFieldLite& rhs)
+      : map_(arena) {
+    MergeFrom(rhs);
+  }
+
+  // TODO(b/290091828): make this constructor private and migrate
+  // `ArenaInitialized` uses to `InternalVisibility`
   explicit MapFieldLite(Arena* arena) : map_(arena) {}
   MapFieldLite(ArenaInitialized, Arena* arena) : MapFieldLite(arena) {}
 

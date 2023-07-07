@@ -41,6 +41,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/map_entry.h"
 #include "google/protobuf/map_field_lite.h"
 #include "google/protobuf/map_type_handler.h"
@@ -535,6 +536,12 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 
   explicit TypeDefinedMapFieldBase(Arena* arena)
       : MapFieldBase(arena), map_(arena) {}
+  explicit TypeDefinedMapFieldBase(Arena* arena,
+                                   const TypeDefinedMapFieldBase& rhs)
+      : MapFieldBase(arena), map_(arena) {
+    // TODO(mvels): can we short circuit an empty state?
+    MergeFrom(rhs);
+  }
   TypeDefinedMapFieldBase(ArenaInitialized, Arena* arena)
       : TypeDefinedMapFieldBase(arena) {}
 
@@ -611,10 +618,18 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   static constexpr WireFormatLite::FieldType kValueFieldType = kValueFieldType_;
 
   constexpr MapField() {}
-  MapField(const MapField&) = delete;
+  MapField(const MapField& rhs) = delete;
   MapField& operator=(const MapField&) = delete;
   ~MapField() {}
 
+  // Arena enabled constructors: for internal use only.
+  MapField(internal::InternalVisibility, Arena* arena)
+      : TypeDefinedMapFieldBase<Key, T>(arena) {}
+  MapField(internal::InternalVisibility, Arena* arena, const MapField& rhs)
+      : TypeDefinedMapFieldBase<Key, T>(arena, rhs) {}
+
+  // TODO(b/290091828): make this constructor private and migrate
+  // `ArenaInitialized` uses to `InternalVisibility`
   explicit MapField(Arena* arena) : TypeDefinedMapFieldBase<Key, T>(arena) {}
   MapField(ArenaInitialized, Arena* arena) : MapField(arena) {}
 

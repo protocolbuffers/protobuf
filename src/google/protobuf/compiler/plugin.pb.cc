@@ -4,6 +4,8 @@
 #include "google/protobuf/compiler/plugin.pb.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -23,8 +25,38 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
 namespace compiler {
+
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr Version::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        suffix_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        major_{0},
+        minor_{0},
+        patch_{0} {}
+
+inline PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        suffix_(arena) {}
+
+inline PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena, const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        suffix_(arena, rhs.suffix_) {}
+
+inline PROTOBUF_NDEBUG_INLINE Version::Impl_::~Impl_() = default;
+#endif // PROTOBUF_NEW_CONSTRUCTORS
         template <typename>
 PROTOBUF_CONSTEXPR Version::Version(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(::_pbi::ConstantInitialized{}){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -35,7 +67,9 @@ PROTOBUF_CONSTEXPR Version::Version(::_pbi::ConstantInitialized)
       /*decltype(_impl_.major_)*/ 0,
       /*decltype(_impl_.minor_)*/ 0,
       /*decltype(_impl_.patch_)*/ 0,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct VersionDefaultTypeInternal {
   PROTOBUF_CONSTEXPR VersionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~VersionDefaultTypeInternal() {}
@@ -46,8 +80,45 @@ struct VersionDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VersionDefaultTypeInternal _Version_default_instance_;
+
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr CodeGeneratorRequest::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        file_to_generate_{},
+        proto_file_{},
+        source_file_descriptors_{},
+        parameter_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        compiler_version_{nullptr} {}
+
+inline PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        file_to_generate_{visibility, arena},
+        proto_file_{visibility, arena},
+        source_file_descriptors_{visibility, arena},
+        parameter_(arena) {}
+
+inline PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena, const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        file_to_generate_{visibility, arena, rhs.file_to_generate_},
+        proto_file_{visibility, arena, rhs.proto_file_},
+        source_file_descriptors_{visibility, arena, rhs.source_file_descriptors_},
+        parameter_(arena, rhs.parameter_) {}
+
+inline PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::~Impl_() = default;
+#endif // PROTOBUF_NEW_CONSTRUCTORS
         template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(::_pbi::ConstantInitialized{}){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -59,7 +130,9 @@ PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantIn
           ::_pbi::ConstantInitialized{},
       },
       /*decltype(_impl_.compiler_version_)*/ nullptr,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct CodeGeneratorRequestDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorRequestDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorRequestDefaultTypeInternal() {}
@@ -70,8 +143,42 @@ struct CodeGeneratorRequestDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
+
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr CodeGeneratorResponse_File::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        name_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        insertion_point_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        content_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        generated_code_info_{nullptr} {}
+
+inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        name_(arena),
+        insertion_point_(arena),
+        content_(arena) {}
+
+inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena, const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        name_(arena, rhs.name_),
+        insertion_point_(arena, rhs.insertion_point_),
+        content_(arena, rhs.content_) {}
+
+inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::~Impl_() = default;
+#endif // PROTOBUF_NEW_CONSTRUCTORS
         template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(::_pbi::ConstantInitialized{}){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -88,7 +195,9 @@ PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi
           ::_pbi::ConstantInitialized{},
       },
       /*decltype(_impl_.generated_code_info_)*/ nullptr,
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct CodeGeneratorResponse_FileDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorResponse_FileDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponse_FileDefaultTypeInternal() {}
@@ -99,8 +208,39 @@ struct CodeGeneratorResponse_FileDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
+
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+inline constexpr CodeGeneratorResponse::Impl_::Impl_(
+    ::google::protobuf::internal::ConstantInitialized)
+      : _has_bits_{},
+        _cached_size_{},
+        file_{},
+        error_(&::google::protobuf::internal::fixed_address_empty_string, ::_pbi::ConstantInitialized{}),
+        supported_features_{::uint64_t{0u}} {}
+
+inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _has_bits_{},
+        _cached_size_{},
+        file_{visibility, arena},
+        error_(arena) {}
+
+inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena, const Impl_& rhs)
+      : _has_bits_{rhs._has_bits_},
+        _cached_size_{},
+        file_{visibility, arena, rhs.file_},
+        error_(arena, rhs.error_) {}
+
+inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::~Impl_() = default;
+#endif // PROTOBUF_NEW_CONSTRUCTORS
         template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::ConstantInitialized)
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+    : _impl_(::_pbi::ConstantInitialized{}){}
+#else
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
@@ -110,7 +250,9 @@ PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::Constant
           ::_pbi::ConstantInitialized{},
       },
       /*decltype(_impl_.supported_features_)*/ ::uint64_t{0u},
-    } {}
+    } {
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 struct CodeGeneratorResponseDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorResponseDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponseDefaultTypeInternal() {}
@@ -325,6 +467,7 @@ class Version::_Internal {
   }
 };
 
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 Version::Version(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -353,7 +496,6 @@ Version::Version(const Version& from) : ::google::protobuf::Message() {
   ::memcpy(&_impl_.major_, &from._impl_.major_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.patch_) -
     reinterpret_cast<char*>(&_impl_.major_)) + sizeof(_impl_.patch_));
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.Version)
 }
 inline void Version::SharedCtor(::_pb::Arena* arena) {
@@ -371,6 +513,7 @@ inline void Version::SharedCtor(::_pb::Arena* arena) {
         _impl_.suffix_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // !PROTOBUF_NEW_CONSTRUCTORS
 Version::~Version() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.Version)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -383,6 +526,35 @@ inline void Version::SharedDtor() {
 void Version::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
+
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+Version::Version(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(internal_visibility(), arena) {
+  ::memset(reinterpret_cast<char *>(&_impl_) +
+               offsetof(Impl_, major_),
+           0,
+           offsetof(Impl_, patch_) -
+               offsetof(Impl_, major_) +
+               sizeof(Impl_::patch_));
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.Version)
+}
+Version::Version(const Version& rhs)
+    : Version(nullptr, rhs) {}
+
+Version::Version(::google::protobuf::Arena* arena,
+                         const Version& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(internal_visibility(), arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+               offsetof(Impl_, major_),
+           reinterpret_cast<const char *>(&rhs._impl_) +
+               offsetof(Impl_, major_),
+           offsetof(Impl_, patch_) -
+               offsetof(Impl_, major_) +
+               sizeof(Impl_::patch_));
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.Version)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 
 PROTOBUF_NOINLINE void Version::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
@@ -636,6 +808,7 @@ void CodeGeneratorRequest::clear_proto_file() {
 void CodeGeneratorRequest::clear_source_file_descriptors() {
   _internal_mutable_source_file_descriptors()->Clear();
 }
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -665,7 +838,6 @@ CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from) : :
   if ((from._impl_._has_bits_[0] & 0x00000002u) != 0) {
     _this->_impl_.compiler_version_ = new ::google::protobuf::compiler::Version(*from._impl_.compiler_version_);
   }
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
 inline void CodeGeneratorRequest::SharedCtor(::_pb::Arena* arena) {
@@ -684,6 +856,7 @@ inline void CodeGeneratorRequest::SharedCtor(::_pb::Arena* arena) {
         _impl_.parameter_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // !PROTOBUF_NEW_CONSTRUCTORS
 CodeGeneratorRequest::~CodeGeneratorRequest() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorRequest)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -700,6 +873,29 @@ inline void CodeGeneratorRequest::SharedDtor() {
 void CodeGeneratorRequest::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
+
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(internal_visibility(), arena) {
+  _impl_.compiler_version_ = {};
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorRequest)
+}
+CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& rhs)
+    : CodeGeneratorRequest(nullptr, rhs) {}
+
+CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena,
+                         const CodeGeneratorRequest& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(internal_visibility(), arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.compiler_version_ =
+      (cached_has_bits & 0x00000002u)
+          ? ::google::protobuf::Arena::CreateMessage<::google::protobuf::compiler::Version>(
+                arena, *rhs._impl_.compiler_version_)
+          : nullptr;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 
 PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
@@ -987,6 +1183,7 @@ void CodeGeneratorResponse_File::clear_generated_code_info() {
   if (_impl_.generated_code_info_ != nullptr) _impl_.generated_code_info_->Clear();
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -1029,7 +1226,6 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorRespon
   if ((from._impl_._has_bits_[0] & 0x00000008u) != 0) {
     _this->_impl_.generated_code_info_ = new ::google::protobuf::GeneratedCodeInfo(*from._impl_.generated_code_info_);
   }
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
 inline void CodeGeneratorResponse_File::SharedCtor(::_pb::Arena* arena) {
@@ -1055,6 +1251,7 @@ inline void CodeGeneratorResponse_File::SharedCtor(::_pb::Arena* arena) {
         _impl_.content_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // !PROTOBUF_NEW_CONSTRUCTORS
 CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse.File)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -1070,6 +1267,29 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
 void CodeGeneratorResponse_File::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
+
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(internal_visibility(), arena) {
+  _impl_.generated_code_info_ = {};
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
+}
+CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorResponse_File& rhs)
+    : CodeGeneratorResponse_File(nullptr, rhs) {}
+
+CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena* arena,
+                         const CodeGeneratorResponse_File& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(internal_visibility(), arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.generated_code_info_ =
+      (cached_has_bits & 0x00000008u)
+          ? ::google::protobuf::Arena::CreateMessage<::google::protobuf::GeneratedCodeInfo>(
+                arena, *rhs._impl_.generated_code_info_)
+          : nullptr;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 
 PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
@@ -1324,6 +1544,7 @@ class CodeGeneratorResponse::_Internal {
   }
 };
 
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
 CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -1349,7 +1570,6 @@ CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& from) 
     _this->_impl_.error_.Set(from._internal_error(), _this->GetArenaForAllocation());
   }
   _this->_impl_.supported_features_ = from._impl_.supported_features_;
-
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
 inline void CodeGeneratorResponse::SharedCtor(::_pb::Arena* arena) {
@@ -1366,6 +1586,7 @@ inline void CodeGeneratorResponse::SharedCtor(::_pb::Arena* arena) {
         _impl_.error_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
+#endif  // !PROTOBUF_NEW_CONSTRUCTORS
 CodeGeneratorResponse::~CodeGeneratorResponse() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
@@ -1379,6 +1600,24 @@ inline void CodeGeneratorResponse::SharedDtor() {
 void CodeGeneratorResponse::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
+
+#ifdef PROTOBUF_NEW_CONSTRUCTORS
+CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* arena)
+    : ::google::protobuf::Message(arena) , _impl_(internal_visibility(), arena) {
+  _impl_.supported_features_ = {};
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse)
+}
+CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& rhs)
+    : CodeGeneratorResponse(nullptr, rhs) {}
+
+CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* arena,
+                         const CodeGeneratorResponse& rhs)
+    : ::google::protobuf::Message(arena) , _impl_(internal_visibility(), arena, rhs._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(rhs._internal_metadata_);
+  _impl_.supported_features_ = rhs._impl_.supported_features_;
+  // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse)
+}
+#endif  // PROTOBUF_NEW_CONSTRUCTORS
 
 PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
@@ -1588,17 +1827,33 @@ template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::Version*
 Arena::CreateMaybeMessage< ::google::protobuf::compiler::Version >(Arena* arena) {
   return Arena::CreateMessageInternal< ::google::protobuf::compiler::Version >(arena);
 }
+template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::Version*
+Arena::CreateMaybeMessage<::google::protobuf::compiler::Version>(Arena* arena, const ::google::protobuf::compiler::Version& rhs) {
+  return Arena::CreateMessageInternal< ::google::protobuf::compiler::Version >(arena, rhs);
+}
 template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorRequest*
 Arena::CreateMaybeMessage< ::google::protobuf::compiler::CodeGeneratorRequest >(Arena* arena) {
   return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorRequest >(arena);
+}
+template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorRequest*
+Arena::CreateMaybeMessage<::google::protobuf::compiler::CodeGeneratorRequest>(Arena* arena, const ::google::protobuf::compiler::CodeGeneratorRequest& rhs) {
+  return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorRequest >(arena, rhs);
 }
 template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorResponse_File*
 Arena::CreateMaybeMessage< ::google::protobuf::compiler::CodeGeneratorResponse_File >(Arena* arena) {
   return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorResponse_File >(arena);
 }
+template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorResponse_File*
+Arena::CreateMaybeMessage<::google::protobuf::compiler::CodeGeneratorResponse_File>(Arena* arena, const ::google::protobuf::compiler::CodeGeneratorResponse_File& rhs) {
+  return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorResponse_File >(arena, rhs);
+}
 template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorResponse*
 Arena::CreateMaybeMessage< ::google::protobuf::compiler::CodeGeneratorResponse >(Arena* arena) {
   return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorResponse >(arena);
+}
+template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorResponse*
+Arena::CreateMaybeMessage<::google::protobuf::compiler::CodeGeneratorResponse>(Arena* arena, const ::google::protobuf::compiler::CodeGeneratorResponse& rhs) {
+  return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorResponse >(arena, rhs);
 }
 }  // namespace protobuf
 }  // namespace google

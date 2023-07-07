@@ -107,6 +107,15 @@ class FieldGeneratorBase {
         << descriptor_->cpp_type_name();
   }
 
+  // Generates initialization code of the form `name_{<args>}`
+  virtual void GenerateMemberConstexprConstructor(io::Printer* p) const;
+  virtual void GenerateMemberConstructor(io::Printer* p) const;
+  virtual void GenerateMemberCopyConstructor(io::Printer* p) const;
+
+  // Generates 'placement new' copy construction, e.g.:
+  // new (&$field$) decltype(&$field$) (arena, rhs.$field)
+  virtual void GenerateOneofCopyConstruct(io::Printer* p) const;
+
   virtual void GenerateAggregateInitializer(io::Printer* p) const;
 
   virtual void GenerateConstexprAggregateInitializer(io::Printer* p) const;
@@ -176,6 +185,26 @@ class FieldGenerator {
   void GenerateStaticMembers(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateStaticMembers(p);
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberConstructor(p);
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberCopyConstructor(p);
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateOneofCopyConstruct(p);
+  }
+
+  void GenerateMemberConstexprConstructor(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberConstexprConstructor(p);
   }
 
   // Generates declarations for all of the accessor functions related to this

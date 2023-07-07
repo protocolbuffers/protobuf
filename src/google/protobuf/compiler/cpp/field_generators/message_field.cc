@@ -140,6 +140,28 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateAggregateInitializer(io::Printer* p) const override;
   void GenerateCopyAggregateInitializer(io::Printer* p) const override;
 
+  void GenerateMemberConstexprConstructor(io::Printer* p) const override {
+    p->Emit("$name$_{nullptr}");
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const override {
+    p->Emit("$name$_{nullptr}");
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const override {
+    p->Emit(
+        "$name$_{::$proto_ns$::Arena::CreateMessage<$Submsg$>("
+        "arena, *rhs.$name$_)}");
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const override {
+    p->Emit(R"cc(
+      $field$ = ::$proto_ns$::Arena::CreateMessage<$Submsg$>(
+          // ~
+          arena, *rhs.$field$);
+    )cc");
+  }
+
  private:
   friend class OneofMessage;
 

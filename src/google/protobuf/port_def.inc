@@ -224,6 +224,10 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
               "Protobuf only supports Abseil version 20230125.3 and newer.");
 
+#ifndef PROTOBUF_NEW_CONSTRUCTORS
+#define PROTOBUF_NEW_CONSTRUCTORS
+#endif
+
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.

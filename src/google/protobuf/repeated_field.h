@@ -358,8 +358,9 @@ class RepeatedField final
   // This is public due to it being called by generated code.
   inline void InternalSwap(RepeatedField* other);
 
- private:
   RepeatedField(Arena* arena, const RepeatedField& rhs);
+
+ private:
   template <typename T> friend class Arena::InternalHelper;
 
   // Gets the Arena on which this RepeatedField stores its elements.

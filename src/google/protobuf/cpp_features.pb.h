@@ -63,6 +63,9 @@ namespace google {
 namespace protobuf {
 template <>
 PROTOBUF_EXPORT ::pb::CppFeatures* Arena::CreateMaybeMessage<::pb::CppFeatures>(Arena*);
+template <>
+PROTOBUF_EXPORT ::pb::CppFeatures* Arena::CreateMaybeMessage<::pb::CppFeatures>(
+    Arena*, const ::pb::CppFeatures&);
 }  // namespace protobuf
 }  // namespace google
 
@@ -82,6 +85,9 @@ class PROTOBUF_EXPORT CppFeatures final :
   explicit PROTOBUF_CONSTEXPR CppFeatures(::google::protobuf::internal::ConstantInitialized);
 
   CppFeatures(const CppFeatures& from);
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+  CppFeatures(::google::protobuf::Arena*, const CppFeatures& rhs);
+  #endif
   CppFeatures(CppFeatures&& from) noexcept
     : CppFeatures() {
     *this = ::std::move(from);
@@ -227,6 +233,12 @@ class PROTOBUF_EXPORT CppFeatures final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+  #ifdef PROTOBUF_NEW_CONSTRUCTORS
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized);
+    inline Impl_(::google::protobuf::internal::InternalVisibility, ::google::protobuf::Arena*);
+    inline Impl_(::google::protobuf::internal::InternalVisibility, ::google::protobuf::Arena*, const Impl_&);
+    inline ~Impl_();
+  #endif  // PROTOBUF_NEW_CONSTRUCTORS
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     bool legacy_closed_enum_;

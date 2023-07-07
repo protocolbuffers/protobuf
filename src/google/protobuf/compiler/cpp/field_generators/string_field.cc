@@ -152,6 +152,44 @@ class SingularString : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMemberConstexprConstructor(io::Printer* p) const override {
+    if (inlined_) {
+      p->Emit("$name$_(nullptr, false)");
+    } else {
+      p->Emit(
+          "$name$_(&$pbi$::fixed_address_empty_string, "
+          "::_pbi::ConstantInitialized{})");
+    }
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const override {
+    if (inlined_) {
+      p->Emit("$name$_{}");
+    } else if (EmptyDefault()) {
+      p->Emit("$name$_(arena)");
+    } else {
+      p->Emit("$name$_(arena, $default_variable_field$)");
+    }
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const override {
+    if (inlined_ || EmptyDefault()) {
+      p->Emit("$name$_(arena, rhs.$name$_)");
+    } else {
+      p->Emit("$name$_(arena, rhs.$name$_, $default_variable_name$)");
+    }
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const override {
+    if (inlined_ || EmptyDefault()) {
+      p->Emit("new (&$field$) decltype($field$){arena, rhs.$field$};\n");
+    } else {
+      p->Emit(
+          "new (&$field$) decltype($field$){arena, rhs.$field$,"
+          " $default_variable_field$};\n");
+    }
+  }
+
   void GenerateStaticMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;

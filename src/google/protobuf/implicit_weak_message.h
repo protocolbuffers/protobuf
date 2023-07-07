@@ -34,6 +34,7 @@
 #include <string>
 
 #include "google/protobuf/arena.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
