@@ -44,7 +44,3 @@ google_protobuf_FileDescriptorProto* FileDescriptorProto_parse (const char* seri
           serialized_file_proto,
           length, arena);
 }
-
-void* upb_Arena_FastMalloc(upb_Arena* a, size_t size) {
-  return upb_Arena_Malloc(a, size);
-}

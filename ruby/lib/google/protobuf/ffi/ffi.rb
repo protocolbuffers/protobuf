@@ -256,7 +256,7 @@ module Google
       # Argument takes a :pointer rather than a typed Arena here due to
       # implementation details of FFI::AutoPointer.
       attach_function :free_arena,   :upb_Arena_Free,       [:pointer], :void
-      attach_function :arena_malloc, :upb_Arena_FastMalloc, [Arena, :size_t], :pointer
+      attach_function :arena_malloc, :upb_Arena_Malloc,     [Arena, :size_t], :pointer
 
       # Array
       attach_function :append_array, :upb_Array_Append,        [:Array, MessageValue.by_value, Arena], :bool
