@@ -43,29 +43,7 @@ module Google
         ffi_lib ::FFI::Compiler::Loader.find 'protobuf_c'
       end
 
-
       Arena = Google::Protobuf::Internal::Arena
-
-      # Partial definitions of the top of structs used for bootstrapping FFI.
-      class Upb_MessageDef < ::FFI::Struct
-        layout :opts, :pointer,
-               :mini_table, :pointer,
-               :file_def, :pointer
-      end
-      class Upb_EnumDef < ::FFI::Struct
-        layout :opts, :pointer,
-               :mini_table, :pointer,
-               :file_def, :pointer
-      end
-      class Upb_FieldDef < ::FFI::Struct
-        layout :opts, :pointer,
-               :file_def, :pointer
-      end
-      class Upb_OneofDef < ::FFI::Struct
-        layout :opts, :pointer,
-               :parent, :pointer
-      end
-
       MessageDef = Google::Protobuf::Descriptor
       EnumDef = Google::Protobuf::EnumDescriptor
       FieldDef = Google::Protobuf::FieldDescriptor
@@ -307,7 +285,7 @@ module Google
       attach_function :get_number,                 :upb_FieldDef_Number,             [FieldDescriptor], :uint32_t
       attach_function :real_containing_oneof,      :upb_FieldDef_RealContainingOneof,[FieldDescriptor], OneofDef
       attach_function :get_type,                   :upb_FieldDef_Type,               [FieldDescriptor], FieldType
-
+      attach_function :file_def_by_raw_field_def,  :upb_FieldDef_File,               [:pointer], :FileDef
       # Map
       attach_function :map_clear,  :upb_Map_Clear,                    [:Map], :void
       attach_function :map_delete, :upb_Map_Delete,                   [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
@@ -326,7 +304,7 @@ module Google
       attach_function :new_message_from_def, :upb_Message_New,                        [MessageDef, Arena], :Message
       attach_function :get_field_by_index,   :upb_MessageDef_Field,                   [MessageDef, :int], FieldDescriptor
       attach_function :field_count,          :upb_MessageDef_FieldCount,              [MessageDef], :int
-      attach_function :get_message_file_def, :upb_MessageDef_File,                    [MessageDef], :FileDef
+      attach_function :get_message_file_def, :upb_MessageDef_File,                    [:pointer], :FileDef
       attach_function :get_field_by_name,    :upb_MessageDef_FindFieldByNameWithSize, [MessageDef, :string, :size_t], FieldDescriptor
       attach_function :get_field_by_number,  :upb_MessageDef_FindFieldByNumber,       [MessageDef, :uint32_t], FieldDescriptor
       attach_function :get_oneof_by_name,    :upb_MessageDef_FindOneofByNameWithSize, [MessageDef, :string, :size_t], OneofDef
@@ -356,9 +334,10 @@ module Google
       attach_function :message_value_hash,      :shared_Msgval_GetHash,       [MessageValue.by_value, CType, MessageDef, :uint64_t], :uint64_t
 
       # OneofDescriptor
-      attach_function :get_oneof_name,           :upb_OneofDef_Name,       [OneofDef], :string
-      attach_function :get_oneof_field_count,    :upb_OneofDef_FieldCount, [OneofDef], :int
-      attach_function :get_oneof_field_by_index, :upb_OneofDef_Field,      [OneofDef, :int], FieldDescriptor
+      attach_function :get_oneof_name,           :upb_OneofDef_Name,          [OneofDef], :string
+      attach_function :get_oneof_field_count,    :upb_OneofDef_FieldCount,    [OneofDef], :int
+      attach_function :get_oneof_field_by_index, :upb_OneofDef_Field,         [OneofDef, :int], FieldDescriptor
+      attach_function :get_oneof_containing_type,:upb_OneofDef_ContainingType,[:pointer], MessageDef
 
       # RepeatableField
 

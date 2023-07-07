@@ -41,6 +41,7 @@ module Google
 
       class << self
         prepend Google::Protobuf::Internal::TypeSafety
+        include Google::Protobuf::Internal::PointerHelper
 
         # @param value [FieldDescriptor] FieldDescriptor to convert to an FFI native type
         # @param _ [Object] Unused
@@ -48,7 +49,6 @@ module Google
           field_def_ptr = value.instance_variable_get(:@field_def)
           warn "Underlying field_def was nil!" if field_def_ptr.nil?
           raise "Underlying field_def was null!" if !field_def_ptr.nil? and field_def_ptr.null?
-          # || ::FFI::Pointer::NULL
           field_def_ptr
         end
 
@@ -57,26 +57,8 @@ module Google
         # @param _ [Object] Unused
         def from_native(field_def, _ = nil)
           return nil if field_def.nil? or field_def.null?
-          # Calling upb_FieldDef_File(field_def) would create a cyclic
-          # dependency because either 1) we'd have to define the method to accept
-          # an untyped pointer or 2) FFI would complain about passing a
-          # FFI::Pointer instance instead of a FieldDescriptor. Instead, directly
-          # read the top of the FieldDef structure and extract the FileDef*.
-          field_def_struct = Google::Protobuf::FFI::Upb_FieldDef.new(field_def)
-          file_def = field_def_struct[:file_def]
-          raise RuntimeError.new "FileDef is nil" if file_def.nil?
-          raise RuntimeError.new "FileDef is null" if file_def.null?
-          pool_def = Google::Protobuf::FFI.file_def_pool file_def
-          raise RuntimeError.new "PoolDef is nil" if pool_def.nil?
-          raise RuntimeError.new "PoolDef is null" if pool_def.null?
-          pool = Google::Protobuf::ObjectCache.get(pool_def)
-          raise "Cannot find pool in ObjectCache!" if pool.nil?
-          descriptor = pool.descriptor_class_by_def[field_def.address]
-          if descriptor.nil?
-            pool.descriptor_class_by_def[field_def.address] = private_constructor(field_def, pool)
-          else
-            descriptor
-          end
+          file_def = Google::Protobuf::FFI.file_def_by_raw_field_def(field_def)
+          descriptor_from_file_def(file_def, field_def)
         end
       end
 

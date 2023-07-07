@@ -40,6 +40,7 @@ module Google
 
       class << self
         prepend Google::Protobuf::Internal::TypeSafety
+        include Google::Protobuf::Internal::PointerHelper
 
         # @param value [OneofDescriptor] FieldDescriptor to convert to an FFI native type
         # @param _ [Object] Unused
@@ -47,7 +48,6 @@ module Google
           oneof_def_ptr = value.instance_variable_get(:@oneof_def)
           warn "Underlying oneof_def was nil!" if oneof_def_ptr.nil?
           raise "Underlying oneof_def was null!" if !oneof_def_ptr.nil? and oneof_def_ptr.null?
-          # || ::FFI::Pointer::NULL
           oneof_def_ptr
         end
 
@@ -56,28 +56,10 @@ module Google
         # @param _ [Object] Unused
         def from_native(oneof_def, _ = nil)
           return nil if oneof_def.nil? or oneof_def.null?
-          # Calling upb_OneofDef_ContainingType(oneof_def) would create a cyclic
-          # dependency because either 1) we'd have to define the method to accept
-          # an untyped pointer or 2) FFI would complain about passing a
-          # FFI::Pointer instance instead of a OneofDescriptor. Instead, directly
-          # read the top of the OneDef structure and extract the MsgDef*.
-          oneof_def_struct = Google::Protobuf::FFI::Upb_OneofDef.new(oneof_def)
-          message_descriptor = Descriptor.from_native(oneof_def_struct[:parent])
+          message_descriptor = Google::Protobuf::FFI.get_oneof_containing_type oneof_def
           raise RuntimeError.new "Message Descriptor is nil" if message_descriptor.nil?
-          file_def = Google::Protobuf::FFI.get_message_file_def message_descriptor
-          raise RuntimeError.new "FileDef is nil" if file_def.nil?
-          raise RuntimeError.new "FileDef is null" if file_def.null?
-          pool_def = Google::Protobuf::FFI.file_def_pool file_def
-          raise RuntimeError.new "PoolDef is nil" if pool_def.nil?
-          raise RuntimeError.new "PoolDef is null" if pool_def.null?
-          pool = Google::Protobuf::ObjectCache.get(pool_def)
-          raise "Cannot find pool in ObjectCache!" if pool.nil?
-          descriptor = pool.descriptor_class_by_def[oneof_def.address]
-          if descriptor.nil?
-            pool.descriptor_class_by_def[oneof_def.address] = private_constructor(oneof_def, pool)
-          else
-            descriptor
-          end
+          file_def = Google::Protobuf::FFI.get_message_file_def message_descriptor.to_native
+          descriptor_from_file_def(file_def, oneof_def)
         end
       end
 

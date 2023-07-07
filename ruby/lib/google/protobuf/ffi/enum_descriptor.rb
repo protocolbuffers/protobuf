@@ -40,6 +40,7 @@ module Google
 
       class << self
         prepend Google::Protobuf::Internal::TypeSafety
+        include Google::Protobuf::Internal::PointerHelper
 
         # @param value [Arena] Arena to convert to an FFI native type
         # @param _ [Object] Unused
@@ -52,26 +53,8 @@ module Google
         # @param _ [Object] Unused
         def from_native(enum_def, _)
           return nil if enum_def.nil? or enum_def.null?
-          # Calling get_message_file_def(enum_def) would create a cyclic
-          # dependency because FFI would then complain about passing an
-          # FFI::Pointer instance instead of a Descriptor. Instead, directly
-          # read the top of the MsgDef structure an extract the FileDef*.
-          # file_def = Google::Protobuf::FFI.get_message_file_def enum_def
-          enum_def_struct = Google::Protobuf::FFI::Upb_EnumDef.new(enum_def)
-          file_def = enum_def_struct[:file_def]
-          raise RuntimeError.new "FileDef is nil" if file_def.nil?
-          raise RuntimeError.new "FileDef is null" if file_def.null?
-          pool_def = Google::Protobuf::FFI.file_def_pool file_def
-          raise RuntimeError.new "PoolDef is nil" if pool_def.nil?
-          raise RuntimeError.new "PoolDef is null" if pool_def.null?
-          pool = Google::Protobuf::ObjectCache.get(pool_def)
-          raise "Cannot find pool in ObjectCache!" if pool.nil?
-          descriptor = pool.descriptor_class_by_def[enum_def.address]
-          if descriptor.nil?
-            pool.descriptor_class_by_def[enum_def.address] = private_constructor(enum_def, pool)
-          else
-            descriptor
-          end
+          file_def = Google::Protobuf::FFI.get_message_file_def enum_def
+          descriptor_from_file_def(file_def, enum_def)
         end
       end
 
@@ -105,7 +88,7 @@ module Google
 
       def each &block
         n = Google::Protobuf::FFI.enum_value_count(self)
-        0.upto(n-1) do |i|
+        0.upto(n - 1) do |i|
           enum_value = Google::Protobuf::FFI.enum_value_by_index(self, i)
           yield(Google::Protobuf::FFI.enum_name(enum_value).to_sym, Google::Protobuf::FFI.enum_number(enum_value))
         end
@@ -151,14 +134,11 @@ module Google
         end
       end
 
-      def definition
-        @enum_def
-      end
-
       def build_enum_module
         descriptor = self
         dynamic_module = Module.new do
           @descriptor = descriptor
+
           class << self
             attr_accessor :descriptor
           end
@@ -166,24 +146,20 @@ module Google
           def self.lookup(number)
             descriptor.lookup_value number
           end
+
           def self.resolve(name)
             descriptor.lookup_name name
           end
-
-          private
-          def definition
-            self.class.send(:descriptor)
-          end
-
         end
+
         self.each do |name, value|
           if name[0] < 'A' || name[0] > 'Z'
             if name[0] >= 'a' and name[0] <= 'z'
               name = name[0].upcase + name[1..] # auto capitalize
             else
               warn(
-              "Enum value '#{name}' does not start with an uppercase letter " +
-                "as is required for Ruby constants.")
+                "Enum value '#{name}' does not start with an uppercase letter " +
+                  "as is required for Ruby constants.")
               next
             end
           end

@@ -30,9 +30,11 @@
 
 require 'ffi'
 require 'google/protobuf/ffi/internal/type_safety'
+require 'google/protobuf/ffi/internal/pointer_helper'
 require 'google/protobuf/ffi/internal/arena'
 require 'google/protobuf/ffi/internal/convert'
 require 'google/protobuf/ffi/descriptor'
+require 'google/protobuf/ffi/message'
 require 'google/protobuf/ffi/enum_descriptor'
 require 'google/protobuf/ffi/field_descriptor'
 require 'google/protobuf/ffi/oneof_descriptor'

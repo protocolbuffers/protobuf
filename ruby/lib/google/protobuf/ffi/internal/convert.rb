@@ -210,19 +210,6 @@ module Google
           end
         end
 
-        # @param message_descriptor [Descriptor] Message Descriptor
-        # @return [::FFI::Pointer] PoolDef pointer
-        def pool_def_from_message_definition(message_descriptor)
-          raise RuntimeError.new "Descriptor is nil" if message_descriptor.nil?
-          file_def = Google::Protobuf::FFI.get_message_file_def message_descriptor
-          raise RuntimeError.new "FileDef is nil" if file_def.nil?
-          raise RuntimeError.new "FileDef is null" if file_def.null?
-          pool_def = Google::Protobuf::FFI.file_def_pool file_def
-          raise RuntimeError.new "PoolDef is nil" if pool_def.nil?
-          raise RuntimeError.new "PoolDef is null" if pool_def.null?
-          pool_def
-        end
-
         def to_h_internal(msg, message_descriptor)
           return nil if msg.nil? or msg.null?
           hash = {}

@@ -1,5 +1,5 @@
 # Protocol Buffers - Google's data interchange format
-# Copyright 2022 Google Inc.  All rights reserved.
+# Copyright 2023 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,17 +28,27 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# A to_native DataConverter method that raises an error if the value is not of the same type.
-# Adapted from to https://www.varvet.com/blog/advanced-topics-in-ruby-ffi/
 module Google
   module Protobuf
     module Internal
-      module TypeSafety
-        def to_native(value, ctx = nil)
-          if value.kind_of?(self) or value.nil?
-            super
+      module PointerHelper
+        # Utility code to defensively find walk the object graph from a file_def
+        # to the pool, and either retrieve the wrapper object for the given
+        # pointer or create one. Assumes that the caller is the wrapper class
+        # for the given pointer and that it implements `private_constructor`.
+        def descriptor_from_file_def(file_def, pointer)
+          raise RuntimeError.new "FileDef is nil" if file_def.nil?
+          raise RuntimeError.new "FileDef is null" if file_def.null?
+          pool_def = Google::Protobuf::FFI.file_def_pool file_def
+          raise RuntimeError.new "PoolDef is nil" if pool_def.nil?
+          raise RuntimeError.new "PoolDef is null" if pool_def.null?
+          pool = Google::Protobuf::ObjectCache.get(pool_def)
+          raise "Cannot find pool in ObjectCache!" if pool.nil?
+          descriptor = pool.descriptor_class_by_def[pointer.address]
+          if descriptor.nil?
+            pool.descriptor_class_by_def[pointer.address] = private_constructor(pointer, pool)
           else
-            raise TypeError.new "Expected a kind of #{name}, was #{value.class}"
+            descriptor
           end
         end
       end

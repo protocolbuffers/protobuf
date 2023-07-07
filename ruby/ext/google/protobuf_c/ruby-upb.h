@@ -10397,7 +10397,7 @@ UPB_API_INLINE upb_CType upb_FieldDef_CType(const upb_FieldDef* f);
 UPB_API_INLINE upb_MessageValue upb_FieldDef_Default(const upb_FieldDef* f);
 UPB_API_INLINE const upb_EnumDef* upb_FieldDef_EnumSubDef(const upb_FieldDef* f);
 const upb_MessageDef* upb_FieldDef_ExtensionScope(const upb_FieldDef* f);
-const upb_FileDef* upb_FieldDef_File(const upb_FieldDef* f);
+UPB_API_INLINE const upb_FileDef* upb_FieldDef_File(const upb_FieldDef* f);
 const char* upb_FieldDef_FullName(const upb_FieldDef* f);
 bool upb_FieldDef_HasDefault(const upb_FieldDef* f);
 bool upb_FieldDef_HasJsonName(const upb_FieldDef* f);
@@ -10670,7 +10670,7 @@ const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 extern "C" {
 #endif
 
-const upb_MessageDef* upb_OneofDef_ContainingType(const upb_OneofDef* o);
+UPB_API_INLINE const upb_MessageDef* upb_OneofDef_ContainingType(const upb_OneofDef* o);
 UPB_API_INLINE const upb_FieldDef* upb_OneofDef_Field(const upb_OneofDef* o, int i);
 UPB_API_INLINE int upb_OneofDef_FieldCount(const upb_OneofDef* o);
 const char* upb_OneofDef_FullName(const upb_OneofDef* o);
