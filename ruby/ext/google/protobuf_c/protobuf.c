@@ -272,6 +272,8 @@ static void ObjectCache_Init(VALUE protobuf) {
 
   weak_obj_cache = rb_class_new_instance(0, NULL, cache_class);
   rb_const_set(protobuf, rb_intern("OBJECT_CACHE"), weak_obj_cache);
+  rb_const_set(protobuf, rb_intern("SIZEOF_LONG"), INT2NUM(SIZEOF_LONG));
+  rb_const_set(protobuf, rb_intern("SIZEOF_VALUE"), INT2NUM(SIZEOF_VALUE));
 }
 
 VALUE ObjectCache_TryAdd(const void *key, VALUE val) {
