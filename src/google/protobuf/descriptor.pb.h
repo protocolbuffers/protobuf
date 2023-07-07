@@ -2378,6 +2378,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
     kDeclarationFieldNumber = 2,
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 50,
+    kRawFeaturesFieldNumber = 51,
     kVerificationFieldNumber = 3,
   };
   // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
@@ -2429,6 +2430,21 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
   ::google::protobuf::FeatureSet* _internal_mutable_features();
+
+  public:
+  // optional .google.protobuf.FeatureSet raw_features = 51 [targets = TARGET_TYPE_UNKNOWN];
+  bool has_raw_features() const;
+  void clear_raw_features() ;
+  const ::google::protobuf::FeatureSet& raw_features() const;
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
+  ::google::protobuf::FeatureSet* mutable_raw_features();
+  void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_raw_features() const;
+  ::google::protobuf::FeatureSet* _internal_mutable_raw_features();
 
   public:
   // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED];
@@ -2598,7 +2614,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 4, 4, 0, 12> _table_;
+  static const ::google::protobuf::internal::TcParseTable<3, 5, 5, 0, 12> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -2610,6 +2626,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::ExtensionRangeOptions_Declaration > declaration_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
+    ::google::protobuf::FeatureSet* raw_features_;
     int verification_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
   };
@@ -4416,6 +4433,7 @@ class PROTOBUF_EXPORT FileOptions final :
     kPhpMetadataNamespaceFieldNumber = 44,
     kRubyPackageFieldNumber = 45,
     kFeaturesFieldNumber = 50,
+    kRawFeaturesFieldNumber = 51,
     kJavaMultipleFilesFieldNumber = 10,
     kJavaGenerateEqualsAndHashFieldNumber = 20,
     kJavaStringCheckUtf8FieldNumber = 27,
@@ -4628,6 +4646,21 @@ class PROTOBUF_EXPORT FileOptions final :
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
   ::google::protobuf::FeatureSet* _internal_mutable_features();
+
+  public:
+  // optional .google.protobuf.FeatureSet raw_features = 51 [targets = TARGET_TYPE_UNKNOWN];
+  bool has_raw_features() const;
+  void clear_raw_features() ;
+  const ::google::protobuf::FeatureSet& raw_features() const;
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
+  ::google::protobuf::FeatureSet* mutable_raw_features();
+  void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_raw_features() const;
+  ::google::protobuf::FeatureSet* _internal_mutable_raw_features();
 
   public:
   // optional bool java_multiple_files = 10 [default = false];
@@ -4896,7 +4929,7 @@ class PROTOBUF_EXPORT FileOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<5, 22, 3, 202, 12> _table_;
+  static const ::google::protobuf::internal::TcParseTable<5, 23, 4, 202, 12> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -4917,6 +4950,7 @@ class PROTOBUF_EXPORT FileOptions final :
     ::google::protobuf::internal::ArenaStringPtr php_metadata_namespace_;
     ::google::protobuf::internal::ArenaStringPtr ruby_package_;
     ::google::protobuf::FeatureSet* features_;
+    ::google::protobuf::FeatureSet* raw_features_;
     bool java_multiple_files_;
     bool java_generate_equals_and_hash_;
     bool java_string_check_utf8_;
@@ -5063,6 +5097,7 @@ class PROTOBUF_EXPORT MessageOptions final :
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 12,
+    kRawFeaturesFieldNumber = 13,
     kMessageSetWireFormatFieldNumber = 1,
     kNoStandardDescriptorAccessorFieldNumber = 2,
     kDeprecatedFieldNumber = 3,
@@ -5100,6 +5135,21 @@ class PROTOBUF_EXPORT MessageOptions final :
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
   ::google::protobuf::FeatureSet* _internal_mutable_features();
+
+  public:
+  // optional .google.protobuf.FeatureSet raw_features = 13 [targets = TARGET_TYPE_UNKNOWN];
+  bool has_raw_features() const;
+  void clear_raw_features() ;
+  const ::google::protobuf::FeatureSet& raw_features() const;
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
+  ::google::protobuf::FeatureSet* mutable_raw_features();
+  void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_raw_features() const;
+  ::google::protobuf::FeatureSet* _internal_mutable_raw_features();
 
   public:
   // optional bool message_set_wire_format = 1 [default = false];
@@ -5313,7 +5363,7 @@ class PROTOBUF_EXPORT MessageOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 7, 2, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<4, 8, 3, 0, 7> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -5324,6 +5374,7 @@ class PROTOBUF_EXPORT MessageOptions final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
+    ::google::protobuf::FeatureSet* raw_features_;
     bool message_set_wire_format_;
     bool no_standard_descriptor_accessor_;
     bool deprecated_;
@@ -5745,6 +5796,7 @@ class PROTOBUF_EXPORT FieldOptions final :
     kEditionDefaultsFieldNumber = 20,
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 21,
+    kRawFeaturesFieldNumber = 22,
     kCtypeFieldNumber = 1,
     kJstypeFieldNumber = 6,
     kPackedFieldNumber = 2,
@@ -5823,6 +5875,21 @@ class PROTOBUF_EXPORT FieldOptions final :
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
   ::google::protobuf::FeatureSet* _internal_mutable_features();
+
+  public:
+  // optional .google.protobuf.FeatureSet raw_features = 22 [targets = TARGET_TYPE_UNKNOWN];
+  bool has_raw_features() const;
+  void clear_raw_features() ;
+  const ::google::protobuf::FeatureSet& raw_features() const;
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
+  ::google::protobuf::FeatureSet* mutable_raw_features();
+  void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_raw_features() const;
+  ::google::protobuf::FeatureSet* _internal_mutable_raw_features();
 
   public:
   // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
@@ -6080,7 +6147,7 @@ class PROTOBUF_EXPORT FieldOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<4, 13, 7, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<4, 14, 8, 0, 7> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -6093,6 +6160,7 @@ class PROTOBUF_EXPORT FieldOptions final :
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldOptions_EditionDefault > edition_defaults_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
+    ::google::protobuf::FeatureSet* raw_features_;
     int ctype_;
     int jstype_;
     bool packed_;
@@ -6238,6 +6306,7 @@ class PROTOBUF_EXPORT OneofOptions final :
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 1,
+    kRawFeaturesFieldNumber = 2,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
@@ -6270,6 +6339,21 @@ class PROTOBUF_EXPORT OneofOptions final :
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
   ::google::protobuf::FeatureSet* _internal_mutable_features();
+
+  public:
+  // optional .google.protobuf.FeatureSet raw_features = 2 [targets = TARGET_TYPE_UNKNOWN];
+  bool has_raw_features() const;
+  void clear_raw_features() ;
+  const ::google::protobuf::FeatureSet& raw_features() const;
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
+  ::google::protobuf::FeatureSet* mutable_raw_features();
+  void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_raw_features() const;
+  ::google::protobuf::FeatureSet* _internal_mutable_raw_features();
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6428,7 +6512,7 @@ class PROTOBUF_EXPORT OneofOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 2, 2, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<2, 3, 3, 0, 7> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -6439,6 +6523,7 @@ class PROTOBUF_EXPORT OneofOptions final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
+    ::google::protobuf::FeatureSet* raw_features_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
@@ -6575,6 +6660,7 @@ class PROTOBUF_EXPORT EnumOptions final :
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 7,
+    kRawFeaturesFieldNumber = 8,
     kAllowAliasFieldNumber = 2,
     kDeprecatedFieldNumber = 3,
     kDeprecatedLegacyJsonFieldConflictsFieldNumber = 6,
@@ -6610,6 +6696,21 @@ class PROTOBUF_EXPORT EnumOptions final :
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
   ::google::protobuf::FeatureSet* _internal_mutable_features();
+
+  public:
+  // optional .google.protobuf.FeatureSet raw_features = 8 [targets = TARGET_TYPE_UNKNOWN];
+  bool has_raw_features() const;
+  void clear_raw_features() ;
+  const ::google::protobuf::FeatureSet& raw_features() const;
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
+  ::google::protobuf::FeatureSet* mutable_raw_features();
+  void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_raw_features() const;
+  ::google::protobuf::FeatureSet* _internal_mutable_raw_features();
 
   public:
   // optional bool allow_alias = 2;
@@ -6801,7 +6902,7 @@ class PROTOBUF_EXPORT EnumOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 5, 2, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<3, 6, 3, 0, 7> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -6812,6 +6913,7 @@ class PROTOBUF_EXPORT EnumOptions final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
+    ::google::protobuf::FeatureSet* raw_features_;
     bool allow_alias_;
     bool deprecated_;
     bool deprecated_legacy_json_field_conflicts_;
@@ -6951,6 +7053,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 2,
+    kRawFeaturesFieldNumber = 4,
     kDeprecatedFieldNumber = 1,
     kDebugRedactFieldNumber = 3,
   };
@@ -6985,6 +7088,21 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
   ::google::protobuf::FeatureSet* _internal_mutable_features();
+
+  public:
+  // optional .google.protobuf.FeatureSet raw_features = 4 [targets = TARGET_TYPE_UNKNOWN];
+  bool has_raw_features() const;
+  void clear_raw_features() ;
+  const ::google::protobuf::FeatureSet& raw_features() const;
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
+  ::google::protobuf::FeatureSet* mutable_raw_features();
+  void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_raw_features() const;
+  ::google::protobuf::FeatureSet* _internal_mutable_raw_features();
 
   public:
   // optional bool deprecated = 1 [default = false];
@@ -7165,7 +7283,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 4, 2, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<3, 5, 3, 0, 7> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -7176,6 +7294,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
+    ::google::protobuf::FeatureSet* raw_features_;
     bool deprecated_;
     bool debug_redact_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
@@ -7314,6 +7433,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 34,
+    kRawFeaturesFieldNumber = 35,
     kDeprecatedFieldNumber = 33,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -7347,6 +7467,21 @@ class PROTOBUF_EXPORT ServiceOptions final :
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
   ::google::protobuf::FeatureSet* _internal_mutable_features();
+
+  public:
+  // optional .google.protobuf.FeatureSet raw_features = 35 [targets = TARGET_TYPE_UNKNOWN];
+  bool has_raw_features() const;
+  void clear_raw_features() ;
+  const ::google::protobuf::FeatureSet& raw_features() const;
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
+  ::google::protobuf::FeatureSet* mutable_raw_features();
+  void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_raw_features() const;
+  ::google::protobuf::FeatureSet* _internal_mutable_raw_features();
 
   public:
   // optional bool deprecated = 33 [default = false];
@@ -7516,7 +7651,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 3, 2, 0, 12> _table_;
+  static const ::google::protobuf::internal::TcParseTable<3, 4, 3, 0, 12> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -7527,6 +7662,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
+    ::google::protobuf::FeatureSet* raw_features_;
     bool deprecated_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
   };
@@ -7685,6 +7821,7 @@ class PROTOBUF_EXPORT MethodOptions final :
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 35,
+    kRawFeaturesFieldNumber = 36,
     kDeprecatedFieldNumber = 33,
     kIdempotencyLevelFieldNumber = 34,
   };
@@ -7719,6 +7856,21 @@ class PROTOBUF_EXPORT MethodOptions final :
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
   ::google::protobuf::FeatureSet* _internal_mutable_features();
+
+  public:
+  // optional .google.protobuf.FeatureSet raw_features = 36 [targets = TARGET_TYPE_UNKNOWN];
+  bool has_raw_features() const;
+  void clear_raw_features() ;
+  const ::google::protobuf::FeatureSet& raw_features() const;
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
+  ::google::protobuf::FeatureSet* mutable_raw_features();
+  void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_raw_features() const;
+  ::google::protobuf::FeatureSet* _internal_mutable_raw_features();
 
   public:
   // optional bool deprecated = 33 [default = false];
@@ -7899,7 +8051,7 @@ class PROTOBUF_EXPORT MethodOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 4, 3, 0, 12> _table_;
+  static const ::google::protobuf::internal::TcParseTable<3, 5, 4, 0, 12> _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -7910,6 +8062,7 @@ class PROTOBUF_EXPORT MethodOptions final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
+    ::google::protobuf::FeatureSet* raw_features_;
     bool deprecated_;
     int idempotency_level_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
@@ -11820,14 +11973,110 @@ inline void ExtensionRangeOptions::set_allocated_features(::google::protobuf::Fe
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.features)
 }
 
+// optional .google.protobuf.FeatureSet raw_features = 51 [targets = TARGET_TYPE_UNKNOWN];
+inline bool ExtensionRangeOptions::has_raw_features() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.raw_features_ != nullptr);
+  return value;
+}
+inline void ExtensionRangeOptions::clear_raw_features() {
+  if (_impl_.raw_features_ != nullptr) _impl_.raw_features_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const ::google::protobuf::FeatureSet& ExtensionRangeOptions::_internal_raw_features() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FeatureSet* p = _impl_.raw_features_;
+  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
+}
+inline const ::google::protobuf::FeatureSet& ExtensionRangeOptions::raw_features() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.raw_features)
+  return _internal_raw_features();
+}
+inline void ExtensionRangeOptions::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
+  }
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.ExtensionRangeOptions.raw_features)
+}
+inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* released = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  if (GetArenaForAllocation() == nullptr) {
+    delete old;
+  }
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return released;
+}
+inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::unsafe_arena_release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.ExtensionRangeOptions.raw_features)
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* temp = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+  return temp;
+}
+inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::_internal_mutable_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  if (_impl_.raw_features_ == nullptr) {
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.raw_features_;
+}
+inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::mutable_raw_features() {
+  ::google::protobuf::FeatureSet* _msg = _internal_mutable_raw_features();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.raw_features)
+  return _msg;
+}
+inline void ExtensionRangeOptions::set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.raw_features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena =
+        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.raw_features)
+}
+
 // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED];
 inline bool ExtensionRangeOptions::has_verification() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
 inline void ExtensionRangeOptions::clear_verification() {
   _impl_.verification_ = 1;
-  _impl_._has_bits_[0] &= ~0x00000002u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline ::google::protobuf::ExtensionRangeOptions_VerificationState ExtensionRangeOptions::verification() const {
   // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.verification)
@@ -11844,7 +12093,7 @@ inline ::google::protobuf::ExtensionRangeOptions_VerificationState ExtensionRang
 inline void ExtensionRangeOptions::_internal_set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::ExtensionRangeOptions_VerificationState_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.verification_ = value;
 }
 
@@ -13930,12 +14179,12 @@ inline void FileOptions::set_allocated_java_outer_classname(std::string* value) 
 
 // optional bool java_multiple_files = 10 [default = false];
 inline bool FileOptions::has_java_multiple_files() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000800u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00001000u) != 0;
   return value;
 }
 inline void FileOptions::clear_java_multiple_files() {
   _impl_.java_multiple_files_ = false;
-  _impl_._has_bits_[0] &= ~0x00000800u;
+  _impl_._has_bits_[0] &= ~0x00001000u;
 }
 inline bool FileOptions::java_multiple_files() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.java_multiple_files)
@@ -13951,18 +14200,18 @@ inline bool FileOptions::_internal_java_multiple_files() const {
 }
 inline void FileOptions::_internal_set_java_multiple_files(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000800u;
+  _impl_._has_bits_[0] |= 0x00001000u;
   _impl_.java_multiple_files_ = value;
 }
 
 // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
 inline bool FileOptions::has_java_generate_equals_and_hash() const {
-  bool value = (_impl_._has_bits_[0] & 0x00001000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00002000u) != 0;
   return value;
 }
 inline void FileOptions::clear_java_generate_equals_and_hash() {
   _impl_.java_generate_equals_and_hash_ = false;
-  _impl_._has_bits_[0] &= ~0x00001000u;
+  _impl_._has_bits_[0] &= ~0x00002000u;
 }
 inline bool FileOptions::java_generate_equals_and_hash() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.java_generate_equals_and_hash)
@@ -13978,18 +14227,18 @@ inline bool FileOptions::_internal_java_generate_equals_and_hash() const {
 }
 inline void FileOptions::_internal_set_java_generate_equals_and_hash(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00001000u;
+  _impl_._has_bits_[0] |= 0x00002000u;
   _impl_.java_generate_equals_and_hash_ = value;
 }
 
 // optional bool java_string_check_utf8 = 27 [default = false];
 inline bool FileOptions::has_java_string_check_utf8() const {
-  bool value = (_impl_._has_bits_[0] & 0x00002000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00004000u) != 0;
   return value;
 }
 inline void FileOptions::clear_java_string_check_utf8() {
   _impl_.java_string_check_utf8_ = false;
-  _impl_._has_bits_[0] &= ~0x00002000u;
+  _impl_._has_bits_[0] &= ~0x00004000u;
 }
 inline bool FileOptions::java_string_check_utf8() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.java_string_check_utf8)
@@ -14005,18 +14254,18 @@ inline bool FileOptions::_internal_java_string_check_utf8() const {
 }
 inline void FileOptions::_internal_set_java_string_check_utf8(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00002000u;
+  _impl_._has_bits_[0] |= 0x00004000u;
   _impl_.java_string_check_utf8_ = value;
 }
 
 // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
 inline bool FileOptions::has_optimize_for() const {
-  bool value = (_impl_._has_bits_[0] & 0x00080000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00100000u) != 0;
   return value;
 }
 inline void FileOptions::clear_optimize_for() {
   _impl_.optimize_for_ = 1;
-  _impl_._has_bits_[0] &= ~0x00080000u;
+  _impl_._has_bits_[0] &= ~0x00100000u;
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::optimize_for() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.optimize_for)
@@ -14033,7 +14282,7 @@ inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::_internal_optim
 inline void FileOptions::_internal_set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FileOptions_OptimizeMode_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00080000u;
+  _impl_._has_bits_[0] |= 0x00100000u;
   _impl_.optimize_for_ = value;
 }
 
@@ -14108,12 +14357,12 @@ inline void FileOptions::set_allocated_go_package(std::string* value) {
 
 // optional bool cc_generic_services = 16 [default = false];
 inline bool FileOptions::has_cc_generic_services() const {
-  bool value = (_impl_._has_bits_[0] & 0x00004000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00008000u) != 0;
   return value;
 }
 inline void FileOptions::clear_cc_generic_services() {
   _impl_.cc_generic_services_ = false;
-  _impl_._has_bits_[0] &= ~0x00004000u;
+  _impl_._has_bits_[0] &= ~0x00008000u;
 }
 inline bool FileOptions::cc_generic_services() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.cc_generic_services)
@@ -14129,18 +14378,18 @@ inline bool FileOptions::_internal_cc_generic_services() const {
 }
 inline void FileOptions::_internal_set_cc_generic_services(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00004000u;
+  _impl_._has_bits_[0] |= 0x00008000u;
   _impl_.cc_generic_services_ = value;
 }
 
 // optional bool java_generic_services = 17 [default = false];
 inline bool FileOptions::has_java_generic_services() const {
-  bool value = (_impl_._has_bits_[0] & 0x00008000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00010000u) != 0;
   return value;
 }
 inline void FileOptions::clear_java_generic_services() {
   _impl_.java_generic_services_ = false;
-  _impl_._has_bits_[0] &= ~0x00008000u;
+  _impl_._has_bits_[0] &= ~0x00010000u;
 }
 inline bool FileOptions::java_generic_services() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.java_generic_services)
@@ -14156,18 +14405,18 @@ inline bool FileOptions::_internal_java_generic_services() const {
 }
 inline void FileOptions::_internal_set_java_generic_services(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00008000u;
+  _impl_._has_bits_[0] |= 0x00010000u;
   _impl_.java_generic_services_ = value;
 }
 
 // optional bool py_generic_services = 18 [default = false];
 inline bool FileOptions::has_py_generic_services() const {
-  bool value = (_impl_._has_bits_[0] & 0x00010000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00020000u) != 0;
   return value;
 }
 inline void FileOptions::clear_py_generic_services() {
   _impl_.py_generic_services_ = false;
-  _impl_._has_bits_[0] &= ~0x00010000u;
+  _impl_._has_bits_[0] &= ~0x00020000u;
 }
 inline bool FileOptions::py_generic_services() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.py_generic_services)
@@ -14183,18 +14432,18 @@ inline bool FileOptions::_internal_py_generic_services() const {
 }
 inline void FileOptions::_internal_set_py_generic_services(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00010000u;
+  _impl_._has_bits_[0] |= 0x00020000u;
   _impl_.py_generic_services_ = value;
 }
 
 // optional bool php_generic_services = 42 [default = false];
 inline bool FileOptions::has_php_generic_services() const {
-  bool value = (_impl_._has_bits_[0] & 0x00020000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00040000u) != 0;
   return value;
 }
 inline void FileOptions::clear_php_generic_services() {
   _impl_.php_generic_services_ = false;
-  _impl_._has_bits_[0] &= ~0x00020000u;
+  _impl_._has_bits_[0] &= ~0x00040000u;
 }
 inline bool FileOptions::php_generic_services() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.php_generic_services)
@@ -14210,18 +14459,18 @@ inline bool FileOptions::_internal_php_generic_services() const {
 }
 inline void FileOptions::_internal_set_php_generic_services(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00020000u;
+  _impl_._has_bits_[0] |= 0x00040000u;
   _impl_.php_generic_services_ = value;
 }
 
 // optional bool deprecated = 23 [default = false];
 inline bool FileOptions::has_deprecated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00040000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00080000u) != 0;
   return value;
 }
 inline void FileOptions::clear_deprecated() {
   _impl_.deprecated_ = false;
-  _impl_._has_bits_[0] &= ~0x00040000u;
+  _impl_._has_bits_[0] &= ~0x00080000u;
 }
 inline bool FileOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.deprecated)
@@ -14237,18 +14486,18 @@ inline bool FileOptions::_internal_deprecated() const {
 }
 inline void FileOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00040000u;
+  _impl_._has_bits_[0] |= 0x00080000u;
   _impl_.deprecated_ = value;
 }
 
 // optional bool cc_enable_arenas = 31 [default = true];
 inline bool FileOptions::has_cc_enable_arenas() const {
-  bool value = (_impl_._has_bits_[0] & 0x00100000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00200000u) != 0;
   return value;
 }
 inline void FileOptions::clear_cc_enable_arenas() {
   _impl_.cc_enable_arenas_ = true;
-  _impl_._has_bits_[0] &= ~0x00100000u;
+  _impl_._has_bits_[0] &= ~0x00200000u;
 }
 inline bool FileOptions::cc_enable_arenas() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.cc_enable_arenas)
@@ -14264,7 +14513,7 @@ inline bool FileOptions::_internal_cc_enable_arenas() const {
 }
 inline void FileOptions::_internal_set_cc_enable_arenas(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00100000u;
+  _impl_._has_bits_[0] |= 0x00200000u;
   _impl_.cc_enable_arenas_ = value;
 }
 
@@ -14847,6 +15096,102 @@ inline void FileOptions::set_allocated_features(::google::protobuf::FeatureSet* 
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.features)
 }
 
+// optional .google.protobuf.FeatureSet raw_features = 51 [targets = TARGET_TYPE_UNKNOWN];
+inline bool FileOptions::has_raw_features() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000800u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.raw_features_ != nullptr);
+  return value;
+}
+inline void FileOptions::clear_raw_features() {
+  if (_impl_.raw_features_ != nullptr) _impl_.raw_features_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000800u;
+}
+inline const ::google::protobuf::FeatureSet& FileOptions::_internal_raw_features() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FeatureSet* p = _impl_.raw_features_;
+  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
+}
+inline const ::google::protobuf::FeatureSet& FileOptions::raw_features() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.raw_features)
+  return _internal_raw_features();
+}
+inline void FileOptions::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
+  }
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000800u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000800u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileOptions.raw_features)
+}
+inline ::google::protobuf::FeatureSet* FileOptions::release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+
+  _impl_._has_bits_[0] &= ~0x00000800u;
+  ::google::protobuf::FeatureSet* released = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  if (GetArenaForAllocation() == nullptr) {
+    delete old;
+  }
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return released;
+}
+inline ::google::protobuf::FeatureSet* FileOptions::unsafe_arena_release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.raw_features)
+
+  _impl_._has_bits_[0] &= ~0x00000800u;
+  ::google::protobuf::FeatureSet* temp = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+  return temp;
+}
+inline ::google::protobuf::FeatureSet* FileOptions::_internal_mutable_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000800u;
+  if (_impl_.raw_features_ == nullptr) {
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.raw_features_;
+}
+inline ::google::protobuf::FeatureSet* FileOptions::mutable_raw_features() {
+  ::google::protobuf::FeatureSet* _msg = _internal_mutable_raw_features();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.raw_features)
+  return _msg;
+}
+inline void FileOptions::set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.raw_features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena =
+        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000800u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000800u;
+  }
+
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.raw_features)
+}
+
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int FileOptions::_internal_uninterpreted_option_size() const {
   return _internal_uninterpreted_option().size();
@@ -14899,12 +15244,12 @@ FileOptions::_internal_mutable_uninterpreted_option() {
 
 // optional bool message_set_wire_format = 1 [default = false];
 inline bool MessageOptions::has_message_set_wire_format() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
 inline void MessageOptions::clear_message_set_wire_format() {
   _impl_.message_set_wire_format_ = false;
-  _impl_._has_bits_[0] &= ~0x00000002u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline bool MessageOptions::message_set_wire_format() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.message_set_wire_format)
@@ -14920,18 +15265,18 @@ inline bool MessageOptions::_internal_message_set_wire_format() const {
 }
 inline void MessageOptions::_internal_set_message_set_wire_format(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.message_set_wire_format_ = value;
 }
 
 // optional bool no_standard_descriptor_accessor = 2 [default = false];
 inline bool MessageOptions::has_no_standard_descriptor_accessor() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline void MessageOptions::clear_no_standard_descriptor_accessor() {
   _impl_.no_standard_descriptor_accessor_ = false;
-  _impl_._has_bits_[0] &= ~0x00000004u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline bool MessageOptions::no_standard_descriptor_accessor() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.no_standard_descriptor_accessor)
@@ -14947,18 +15292,18 @@ inline bool MessageOptions::_internal_no_standard_descriptor_accessor() const {
 }
 inline void MessageOptions::_internal_set_no_standard_descriptor_accessor(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.no_standard_descriptor_accessor_ = value;
 }
 
 // optional bool deprecated = 3 [default = false];
 inline bool MessageOptions::has_deprecated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline void MessageOptions::clear_deprecated() {
   _impl_.deprecated_ = false;
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline bool MessageOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.deprecated)
@@ -14974,18 +15319,18 @@ inline bool MessageOptions::_internal_deprecated() const {
 }
 inline void MessageOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.deprecated_ = value;
 }
 
 // optional bool map_entry = 7;
 inline bool MessageOptions::has_map_entry() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
   return value;
 }
 inline void MessageOptions::clear_map_entry() {
   _impl_.map_entry_ = false;
-  _impl_._has_bits_[0] &= ~0x00000010u;
+  _impl_._has_bits_[0] &= ~0x00000020u;
 }
 inline bool MessageOptions::map_entry() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.map_entry)
@@ -15001,18 +15346,18 @@ inline bool MessageOptions::_internal_map_entry() const {
 }
 inline void MessageOptions::_internal_set_map_entry(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.map_entry_ = value;
 }
 
 // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
 inline bool MessageOptions::has_deprecated_legacy_json_field_conflicts() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
   return value;
 }
 inline void MessageOptions::clear_deprecated_legacy_json_field_conflicts() {
   _impl_.deprecated_legacy_json_field_conflicts_ = false;
-  _impl_._has_bits_[0] &= ~0x00000020u;
+  _impl_._has_bits_[0] &= ~0x00000040u;
 }
 inline bool MessageOptions::deprecated_legacy_json_field_conflicts() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.deprecated_legacy_json_field_conflicts)
@@ -15028,7 +15373,7 @@ inline bool MessageOptions::_internal_deprecated_legacy_json_field_conflicts() c
 }
 inline void MessageOptions::_internal_set_deprecated_legacy_json_field_conflicts(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
+  _impl_._has_bits_[0] |= 0x00000040u;
   _impl_.deprecated_legacy_json_field_conflicts_ = value;
 }
 
@@ -15126,6 +15471,102 @@ inline void MessageOptions::set_allocated_features(::google::protobuf::FeatureSe
 
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MessageOptions.features)
+}
+
+// optional .google.protobuf.FeatureSet raw_features = 13 [targets = TARGET_TYPE_UNKNOWN];
+inline bool MessageOptions::has_raw_features() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.raw_features_ != nullptr);
+  return value;
+}
+inline void MessageOptions::clear_raw_features() {
+  if (_impl_.raw_features_ != nullptr) _impl_.raw_features_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const ::google::protobuf::FeatureSet& MessageOptions::_internal_raw_features() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FeatureSet* p = _impl_.raw_features_;
+  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
+}
+inline const ::google::protobuf::FeatureSet& MessageOptions::raw_features() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.raw_features)
+  return _internal_raw_features();
+}
+inline void MessageOptions::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
+  }
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.MessageOptions.raw_features)
+}
+inline ::google::protobuf::FeatureSet* MessageOptions::release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* released = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  if (GetArenaForAllocation() == nullptr) {
+    delete old;
+  }
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return released;
+}
+inline ::google::protobuf::FeatureSet* MessageOptions::unsafe_arena_release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.MessageOptions.raw_features)
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* temp = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+  return temp;
+}
+inline ::google::protobuf::FeatureSet* MessageOptions::_internal_mutable_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  if (_impl_.raw_features_ == nullptr) {
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.raw_features_;
+}
+inline ::google::protobuf::FeatureSet* MessageOptions::mutable_raw_features() {
+  ::google::protobuf::FeatureSet* _msg = _internal_mutable_raw_features();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.MessageOptions.raw_features)
+  return _msg;
+}
+inline void MessageOptions::set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.raw_features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena =
+        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.MessageOptions.raw_features)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -15322,12 +15763,12 @@ inline void FieldOptions_EditionDefault::set_allocated_value(std::string* value)
 
 // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
 inline bool FieldOptions::has_ctype() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
 inline void FieldOptions::clear_ctype() {
   _impl_.ctype_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000002u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline ::google::protobuf::FieldOptions_CType FieldOptions::ctype() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.ctype)
@@ -15344,18 +15785,18 @@ inline ::google::protobuf::FieldOptions_CType FieldOptions::_internal_ctype() co
 inline void FieldOptions::_internal_set_ctype(::google::protobuf::FieldOptions_CType value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FieldOptions_CType_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.ctype_ = value;
 }
 
 // optional bool packed = 2;
 inline bool FieldOptions::has_packed() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline void FieldOptions::clear_packed() {
   _impl_.packed_ = false;
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline bool FieldOptions::packed() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.packed)
@@ -15371,18 +15812,18 @@ inline bool FieldOptions::_internal_packed() const {
 }
 inline void FieldOptions::_internal_set_packed(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.packed_ = value;
 }
 
 // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
 inline bool FieldOptions::has_jstype() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline void FieldOptions::clear_jstype() {
   _impl_.jstype_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000004u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::jstype() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.jstype)
@@ -15399,18 +15840,18 @@ inline ::google::protobuf::FieldOptions_JSType FieldOptions::_internal_jstype() 
 inline void FieldOptions::_internal_set_jstype(::google::protobuf::FieldOptions_JSType value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FieldOptions_JSType_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.jstype_ = value;
 }
 
 // optional bool lazy = 5 [default = false];
 inline bool FieldOptions::has_lazy() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
   return value;
 }
 inline void FieldOptions::clear_lazy() {
   _impl_.lazy_ = false;
-  _impl_._has_bits_[0] &= ~0x00000010u;
+  _impl_._has_bits_[0] &= ~0x00000020u;
 }
 inline bool FieldOptions::lazy() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.lazy)
@@ -15426,18 +15867,18 @@ inline bool FieldOptions::_internal_lazy() const {
 }
 inline void FieldOptions::_internal_set_lazy(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.lazy_ = value;
 }
 
 // optional bool unverified_lazy = 15 [default = false];
 inline bool FieldOptions::has_unverified_lazy() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
   return value;
 }
 inline void FieldOptions::clear_unverified_lazy() {
   _impl_.unverified_lazy_ = false;
-  _impl_._has_bits_[0] &= ~0x00000020u;
+  _impl_._has_bits_[0] &= ~0x00000040u;
 }
 inline bool FieldOptions::unverified_lazy() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.unverified_lazy)
@@ -15453,18 +15894,18 @@ inline bool FieldOptions::_internal_unverified_lazy() const {
 }
 inline void FieldOptions::_internal_set_unverified_lazy(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
+  _impl_._has_bits_[0] |= 0x00000040u;
   _impl_.unverified_lazy_ = value;
 }
 
 // optional bool deprecated = 3 [default = false];
 inline bool FieldOptions::has_deprecated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000080u) != 0;
   return value;
 }
 inline void FieldOptions::clear_deprecated() {
   _impl_.deprecated_ = false;
-  _impl_._has_bits_[0] &= ~0x00000040u;
+  _impl_._has_bits_[0] &= ~0x00000080u;
 }
 inline bool FieldOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.deprecated)
@@ -15480,18 +15921,18 @@ inline bool FieldOptions::_internal_deprecated() const {
 }
 inline void FieldOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000040u;
+  _impl_._has_bits_[0] |= 0x00000080u;
   _impl_.deprecated_ = value;
 }
 
 // optional bool weak = 10 [default = false];
 inline bool FieldOptions::has_weak() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000080u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000100u) != 0;
   return value;
 }
 inline void FieldOptions::clear_weak() {
   _impl_.weak_ = false;
-  _impl_._has_bits_[0] &= ~0x00000080u;
+  _impl_._has_bits_[0] &= ~0x00000100u;
 }
 inline bool FieldOptions::weak() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.weak)
@@ -15507,18 +15948,18 @@ inline bool FieldOptions::_internal_weak() const {
 }
 inline void FieldOptions::_internal_set_weak(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000080u;
+  _impl_._has_bits_[0] |= 0x00000100u;
   _impl_.weak_ = value;
 }
 
 // optional bool debug_redact = 16 [default = false];
 inline bool FieldOptions::has_debug_redact() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000100u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000200u) != 0;
   return value;
 }
 inline void FieldOptions::clear_debug_redact() {
   _impl_.debug_redact_ = false;
-  _impl_._has_bits_[0] &= ~0x00000100u;
+  _impl_._has_bits_[0] &= ~0x00000200u;
 }
 inline bool FieldOptions::debug_redact() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.debug_redact)
@@ -15534,18 +15975,18 @@ inline bool FieldOptions::_internal_debug_redact() const {
 }
 inline void FieldOptions::_internal_set_debug_redact(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000100u;
+  _impl_._has_bits_[0] |= 0x00000200u;
   _impl_.debug_redact_ = value;
 }
 
 // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
 inline bool FieldOptions::has_retention() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000200u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000400u) != 0;
   return value;
 }
 inline void FieldOptions::clear_retention() {
   _impl_.retention_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000200u;
+  _impl_._has_bits_[0] &= ~0x00000400u;
 }
 inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::retention() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.retention)
@@ -15562,7 +16003,7 @@ inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::_internal_
 inline void FieldOptions::_internal_set_retention(::google::protobuf::FieldOptions_OptionRetention value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FieldOptions_OptionRetention_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000200u;
+  _impl_._has_bits_[0] |= 0x00000400u;
   _impl_.retention_ = value;
 }
 
@@ -15751,6 +16192,102 @@ inline void FieldOptions::set_allocated_features(::google::protobuf::FeatureSet*
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.features)
 }
 
+// optional .google.protobuf.FeatureSet raw_features = 22 [targets = TARGET_TYPE_UNKNOWN];
+inline bool FieldOptions::has_raw_features() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.raw_features_ != nullptr);
+  return value;
+}
+inline void FieldOptions::clear_raw_features() {
+  if (_impl_.raw_features_ != nullptr) _impl_.raw_features_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const ::google::protobuf::FeatureSet& FieldOptions::_internal_raw_features() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FeatureSet* p = _impl_.raw_features_;
+  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
+}
+inline const ::google::protobuf::FeatureSet& FieldOptions::raw_features() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.raw_features)
+  return _internal_raw_features();
+}
+inline void FieldOptions::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
+  }
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FieldOptions.raw_features)
+}
+inline ::google::protobuf::FeatureSet* FieldOptions::release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* released = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  if (GetArenaForAllocation() == nullptr) {
+    delete old;
+  }
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return released;
+}
+inline ::google::protobuf::FeatureSet* FieldOptions::unsafe_arena_release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.raw_features)
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* temp = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+  return temp;
+}
+inline ::google::protobuf::FeatureSet* FieldOptions::_internal_mutable_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  if (_impl_.raw_features_ == nullptr) {
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.raw_features_;
+}
+inline ::google::protobuf::FeatureSet* FieldOptions::mutable_raw_features() {
+  ::google::protobuf::FeatureSet* _msg = _internal_mutable_raw_features();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FieldOptions.raw_features)
+  return _msg;
+}
+inline void FieldOptions::set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.raw_features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena =
+        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.raw_features)
+}
+
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int FieldOptions::_internal_uninterpreted_option_size() const {
   return _internal_uninterpreted_option().size();
@@ -15897,6 +16434,102 @@ inline void OneofOptions::set_allocated_features(::google::protobuf::FeatureSet*
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofOptions.features)
 }
 
+// optional .google.protobuf.FeatureSet raw_features = 2 [targets = TARGET_TYPE_UNKNOWN];
+inline bool OneofOptions::has_raw_features() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.raw_features_ != nullptr);
+  return value;
+}
+inline void OneofOptions::clear_raw_features() {
+  if (_impl_.raw_features_ != nullptr) _impl_.raw_features_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const ::google::protobuf::FeatureSet& OneofOptions::_internal_raw_features() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FeatureSet* p = _impl_.raw_features_;
+  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
+}
+inline const ::google::protobuf::FeatureSet& OneofOptions::raw_features() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.OneofOptions.raw_features)
+  return _internal_raw_features();
+}
+inline void OneofOptions::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
+  }
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.OneofOptions.raw_features)
+}
+inline ::google::protobuf::FeatureSet* OneofOptions::release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* released = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  if (GetArenaForAllocation() == nullptr) {
+    delete old;
+  }
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return released;
+}
+inline ::google::protobuf::FeatureSet* OneofOptions::unsafe_arena_release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.OneofOptions.raw_features)
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* temp = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+  return temp;
+}
+inline ::google::protobuf::FeatureSet* OneofOptions::_internal_mutable_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  if (_impl_.raw_features_ == nullptr) {
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.raw_features_;
+}
+inline ::google::protobuf::FeatureSet* OneofOptions::mutable_raw_features() {
+  ::google::protobuf::FeatureSet* _msg = _internal_mutable_raw_features();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.OneofOptions.raw_features)
+  return _msg;
+}
+inline void OneofOptions::set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.raw_features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena =
+        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofOptions.raw_features)
+}
+
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int OneofOptions::_internal_uninterpreted_option_size() const {
   return _internal_uninterpreted_option().size();
@@ -15949,12 +16582,12 @@ OneofOptions::_internal_mutable_uninterpreted_option() {
 
 // optional bool allow_alias = 2;
 inline bool EnumOptions::has_allow_alias() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
 inline void EnumOptions::clear_allow_alias() {
   _impl_.allow_alias_ = false;
-  _impl_._has_bits_[0] &= ~0x00000002u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline bool EnumOptions::allow_alias() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumOptions.allow_alias)
@@ -15970,18 +16603,18 @@ inline bool EnumOptions::_internal_allow_alias() const {
 }
 inline void EnumOptions::_internal_set_allow_alias(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.allow_alias_ = value;
 }
 
 // optional bool deprecated = 3 [default = false];
 inline bool EnumOptions::has_deprecated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline void EnumOptions::clear_deprecated() {
   _impl_.deprecated_ = false;
-  _impl_._has_bits_[0] &= ~0x00000004u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline bool EnumOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumOptions.deprecated)
@@ -15997,18 +16630,18 @@ inline bool EnumOptions::_internal_deprecated() const {
 }
 inline void EnumOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.deprecated_ = value;
 }
 
 // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
 inline bool EnumOptions::has_deprecated_legacy_json_field_conflicts() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline void EnumOptions::clear_deprecated_legacy_json_field_conflicts() {
   _impl_.deprecated_legacy_json_field_conflicts_ = false;
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline bool EnumOptions::deprecated_legacy_json_field_conflicts() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumOptions.deprecated_legacy_json_field_conflicts)
@@ -16024,7 +16657,7 @@ inline bool EnumOptions::_internal_deprecated_legacy_json_field_conflicts() cons
 }
 inline void EnumOptions::_internal_set_deprecated_legacy_json_field_conflicts(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.deprecated_legacy_json_field_conflicts_ = value;
 }
 
@@ -16124,6 +16757,102 @@ inline void EnumOptions::set_allocated_features(::google::protobuf::FeatureSet* 
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumOptions.features)
 }
 
+// optional .google.protobuf.FeatureSet raw_features = 8 [targets = TARGET_TYPE_UNKNOWN];
+inline bool EnumOptions::has_raw_features() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.raw_features_ != nullptr);
+  return value;
+}
+inline void EnumOptions::clear_raw_features() {
+  if (_impl_.raw_features_ != nullptr) _impl_.raw_features_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const ::google::protobuf::FeatureSet& EnumOptions::_internal_raw_features() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FeatureSet* p = _impl_.raw_features_;
+  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
+}
+inline const ::google::protobuf::FeatureSet& EnumOptions::raw_features() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.EnumOptions.raw_features)
+  return _internal_raw_features();
+}
+inline void EnumOptions::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
+  }
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumOptions.raw_features)
+}
+inline ::google::protobuf::FeatureSet* EnumOptions::release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* released = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  if (GetArenaForAllocation() == nullptr) {
+    delete old;
+  }
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return released;
+}
+inline ::google::protobuf::FeatureSet* EnumOptions::unsafe_arena_release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.EnumOptions.raw_features)
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* temp = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+  return temp;
+}
+inline ::google::protobuf::FeatureSet* EnumOptions::_internal_mutable_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  if (_impl_.raw_features_ == nullptr) {
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.raw_features_;
+}
+inline ::google::protobuf::FeatureSet* EnumOptions::mutable_raw_features() {
+  ::google::protobuf::FeatureSet* _msg = _internal_mutable_raw_features();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.EnumOptions.raw_features)
+  return _msg;
+}
+inline void EnumOptions::set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.raw_features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena =
+        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumOptions.raw_features)
+}
+
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int EnumOptions::_internal_uninterpreted_option_size() const {
   return _internal_uninterpreted_option().size();
@@ -16176,12 +16905,12 @@ EnumOptions::_internal_mutable_uninterpreted_option() {
 
 // optional bool deprecated = 1 [default = false];
 inline bool EnumValueOptions::has_deprecated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
 inline void EnumValueOptions::clear_deprecated() {
   _impl_.deprecated_ = false;
-  _impl_._has_bits_[0] &= ~0x00000002u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline bool EnumValueOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueOptions.deprecated)
@@ -16197,7 +16926,7 @@ inline bool EnumValueOptions::_internal_deprecated() const {
 }
 inline void EnumValueOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.deprecated_ = value;
 }
 
@@ -16297,14 +17026,110 @@ inline void EnumValueOptions::set_allocated_features(::google::protobuf::Feature
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueOptions.features)
 }
 
+// optional .google.protobuf.FeatureSet raw_features = 4 [targets = TARGET_TYPE_UNKNOWN];
+inline bool EnumValueOptions::has_raw_features() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.raw_features_ != nullptr);
+  return value;
+}
+inline void EnumValueOptions::clear_raw_features() {
+  if (_impl_.raw_features_ != nullptr) _impl_.raw_features_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const ::google::protobuf::FeatureSet& EnumValueOptions::_internal_raw_features() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FeatureSet* p = _impl_.raw_features_;
+  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
+}
+inline const ::google::protobuf::FeatureSet& EnumValueOptions::raw_features() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.EnumValueOptions.raw_features)
+  return _internal_raw_features();
+}
+inline void EnumValueOptions::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
+  }
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumValueOptions.raw_features)
+}
+inline ::google::protobuf::FeatureSet* EnumValueOptions::release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* released = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  if (GetArenaForAllocation() == nullptr) {
+    delete old;
+  }
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return released;
+}
+inline ::google::protobuf::FeatureSet* EnumValueOptions::unsafe_arena_release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.EnumValueOptions.raw_features)
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* temp = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+  return temp;
+}
+inline ::google::protobuf::FeatureSet* EnumValueOptions::_internal_mutable_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  if (_impl_.raw_features_ == nullptr) {
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.raw_features_;
+}
+inline ::google::protobuf::FeatureSet* EnumValueOptions::mutable_raw_features() {
+  ::google::protobuf::FeatureSet* _msg = _internal_mutable_raw_features();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValueOptions.raw_features)
+  return _msg;
+}
+inline void EnumValueOptions::set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.raw_features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena =
+        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueOptions.raw_features)
+}
+
 // optional bool debug_redact = 3 [default = false];
 inline bool EnumValueOptions::has_debug_redact() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline void EnumValueOptions::clear_debug_redact() {
   _impl_.debug_redact_ = false;
-  _impl_._has_bits_[0] &= ~0x00000004u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline bool EnumValueOptions::debug_redact() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueOptions.debug_redact)
@@ -16320,7 +17145,7 @@ inline bool EnumValueOptions::_internal_debug_redact() const {
 }
 inline void EnumValueOptions::_internal_set_debug_redact(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.debug_redact_ = value;
 }
 
@@ -16470,14 +17295,110 @@ inline void ServiceOptions::set_allocated_features(::google::protobuf::FeatureSe
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceOptions.features)
 }
 
+// optional .google.protobuf.FeatureSet raw_features = 35 [targets = TARGET_TYPE_UNKNOWN];
+inline bool ServiceOptions::has_raw_features() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.raw_features_ != nullptr);
+  return value;
+}
+inline void ServiceOptions::clear_raw_features() {
+  if (_impl_.raw_features_ != nullptr) _impl_.raw_features_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const ::google::protobuf::FeatureSet& ServiceOptions::_internal_raw_features() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FeatureSet* p = _impl_.raw_features_;
+  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
+}
+inline const ::google::protobuf::FeatureSet& ServiceOptions::raw_features() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ServiceOptions.raw_features)
+  return _internal_raw_features();
+}
+inline void ServiceOptions::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
+  }
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.ServiceOptions.raw_features)
+}
+inline ::google::protobuf::FeatureSet* ServiceOptions::release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* released = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  if (GetArenaForAllocation() == nullptr) {
+    delete old;
+  }
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return released;
+}
+inline ::google::protobuf::FeatureSet* ServiceOptions::unsafe_arena_release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.ServiceOptions.raw_features)
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* temp = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+  return temp;
+}
+inline ::google::protobuf::FeatureSet* ServiceOptions::_internal_mutable_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  if (_impl_.raw_features_ == nullptr) {
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.raw_features_;
+}
+inline ::google::protobuf::FeatureSet* ServiceOptions::mutable_raw_features() {
+  ::google::protobuf::FeatureSet* _msg = _internal_mutable_raw_features();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.ServiceOptions.raw_features)
+  return _msg;
+}
+inline void ServiceOptions::set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.raw_features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena =
+        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceOptions.raw_features)
+}
+
 // optional bool deprecated = 33 [default = false];
 inline bool ServiceOptions::has_deprecated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
 inline void ServiceOptions::clear_deprecated() {
   _impl_.deprecated_ = false;
-  _impl_._has_bits_[0] &= ~0x00000002u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline bool ServiceOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceOptions.deprecated)
@@ -16493,7 +17414,7 @@ inline bool ServiceOptions::_internal_deprecated() const {
 }
 inline void ServiceOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.deprecated_ = value;
 }
 
@@ -16549,12 +17470,12 @@ ServiceOptions::_internal_mutable_uninterpreted_option() {
 
 // optional bool deprecated = 33 [default = false];
 inline bool MethodOptions::has_deprecated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
 inline void MethodOptions::clear_deprecated() {
   _impl_.deprecated_ = false;
-  _impl_._has_bits_[0] &= ~0x00000002u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline bool MethodOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodOptions.deprecated)
@@ -16570,18 +17491,18 @@ inline bool MethodOptions::_internal_deprecated() const {
 }
 inline void MethodOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.deprecated_ = value;
 }
 
 // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
 inline bool MethodOptions::has_idempotency_level() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline void MethodOptions::clear_idempotency_level() {
   _impl_.idempotency_level_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000004u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::idempotency_level() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodOptions.idempotency_level)
@@ -16598,7 +17519,7 @@ inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::_intern
 inline void MethodOptions::_internal_set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::MethodOptions_IdempotencyLevel_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.idempotency_level_ = value;
 }
 
@@ -16696,6 +17617,102 @@ inline void MethodOptions::set_allocated_features(::google::protobuf::FeatureSet
 
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodOptions.features)
+}
+
+// optional .google.protobuf.FeatureSet raw_features = 36 [targets = TARGET_TYPE_UNKNOWN];
+inline bool MethodOptions::has_raw_features() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.raw_features_ != nullptr);
+  return value;
+}
+inline void MethodOptions::clear_raw_features() {
+  if (_impl_.raw_features_ != nullptr) _impl_.raw_features_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const ::google::protobuf::FeatureSet& MethodOptions::_internal_raw_features() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FeatureSet* p = _impl_.raw_features_;
+  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
+}
+inline const ::google::protobuf::FeatureSet& MethodOptions::raw_features() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.MethodOptions.raw_features)
+  return _internal_raw_features();
+}
+inline void MethodOptions::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
+  }
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.MethodOptions.raw_features)
+}
+inline ::google::protobuf::FeatureSet* MethodOptions::release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* released = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  if (GetArenaForAllocation() == nullptr) {
+    delete old;
+  }
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return released;
+}
+inline ::google::protobuf::FeatureSet* MethodOptions::unsafe_arena_release_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.MethodOptions.raw_features)
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* temp = _impl_.raw_features_;
+  _impl_.raw_features_ = nullptr;
+  return temp;
+}
+inline ::google::protobuf::FeatureSet* MethodOptions::_internal_mutable_raw_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  if (_impl_.raw_features_ == nullptr) {
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.raw_features_;
+}
+inline ::google::protobuf::FeatureSet* MethodOptions::mutable_raw_features() {
+  ::google::protobuf::FeatureSet* _msg = _internal_mutable_raw_features();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.MethodOptions.raw_features)
+  return _msg;
+}
+inline void MethodOptions::set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.raw_features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena =
+        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+
+  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodOptions.raw_features)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;

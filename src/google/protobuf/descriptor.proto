@@ -166,6 +166,12 @@ message ExtensionRangeOptions {
   // Any features defined in the specific edition.
   optional FeatureSet features = 50;
 
+  // This is used to send raw unresolved feature sets to code generators for
+  // feature validation and for runtimes to be able to reconstruct the original
+  // proto file.  These should not be used to make any runtime decisions, as
+  // they do not accurately capture the enabled features.
+  optional FeatureSet raw_features = 51 [targets = TARGET_TYPE_UNKNOWN];
+
   // The verification state of the extension range.
   enum VerificationState {
     // All the extensions of the range must be declared.
@@ -495,6 +501,12 @@ message FileOptions {
   // Any features defined in the specific edition.
   optional FeatureSet features = 50;
 
+  // This is used to send raw unresolved feature sets to code generators for
+  // feature validation and for runtimes to be able to reconstruct the original
+  // proto file.  These should not be used to make any runtime decisions, as
+  // they do not accurately capture the enabled features.
+  optional FeatureSet raw_features = 51 [targets = TARGET_TYPE_UNKNOWN];
+
   // The parser stores options it doesn't recognize here.
   // See the documentation for the "Options" section above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -580,6 +592,12 @@ message MessageOptions {
 
   // Any features defined in the specific edition.
   optional FeatureSet features = 12;
+
+  // This is used to send raw unresolved feature sets to code generators for
+  // feature validation and for runtimes to be able to reconstruct the original
+  // proto file.  These should not be used to make any runtime decisions, as
+  // they do not accurately capture the enabled features.
+  optional FeatureSet raw_features = 13 [targets = TARGET_TYPE_UNKNOWN];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -729,6 +747,12 @@ message FieldOptions {
   // Any features defined in the specific edition.
   optional FeatureSet features = 21;
 
+  // This is used to send raw unresolved feature sets to code generators for
+  // feature validation and for runtimes to be able to reconstruct the original
+  // proto file.  These should not be used to make any runtime decisions, as
+  // they do not accurately capture the enabled features.
+  optional FeatureSet raw_features = 22 [targets = TARGET_TYPE_UNKNOWN];
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -742,6 +766,12 @@ message FieldOptions {
 message OneofOptions {
   // Any features defined in the specific edition.
   optional FeatureSet features = 1;
+
+  // This is used to send raw unresolved feature sets to code generators for
+  // feature validation and for runtimes to be able to reconstruct the original
+  // proto file.  These should not be used to make any runtime decisions, as
+  // they do not accurately capture the enabled features.
+  optional FeatureSet raw_features = 2 [targets = TARGET_TYPE_UNKNOWN];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -775,6 +805,12 @@ message EnumOptions {
   // Any features defined in the specific edition.
   optional FeatureSet features = 7;
 
+  // This is used to send raw unresolved feature sets to code generators for
+  // feature validation and for runtimes to be able to reconstruct the original
+  // proto file.  These should not be used to make any runtime decisions, as
+  // they do not accurately capture the enabled features.
+  optional FeatureSet raw_features = 8 [targets = TARGET_TYPE_UNKNOWN];
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -792,6 +828,12 @@ message EnumValueOptions {
   // Any features defined in the specific edition.
   optional FeatureSet features = 2;
 
+  // This is used to send raw unresolved feature sets to code generators for
+  // feature validation and for runtimes to be able to reconstruct the original
+  // proto file.  These should not be used to make any runtime decisions, as
+  // they do not accurately capture the enabled features.
+  optional FeatureSet raw_features = 4 [targets = TARGET_TYPE_UNKNOWN];
+
   // Indicate that fields annotated with this enum value should not be printed
   // out when using debug formats, e.g. when the field contains sensitive
   // credentials.
@@ -808,6 +850,12 @@ message ServiceOptions {
 
   // Any features defined in the specific edition.
   optional FeatureSet features = 34;
+
+  // This is used to send raw unresolved feature sets to code generators for
+  // feature validation and for runtimes to be able to reconstruct the original
+  // proto file.  These should not be used to make any runtime decisions, as
+  // they do not accurately capture the enabled features.
+  optional FeatureSet raw_features = 35 [targets = TARGET_TYPE_UNKNOWN];
 
   // Note:  Field numbers 1 through 32 are reserved for Google's internal RPC
   //   framework.  We apologize for hoarding these numbers to ourselves, but
@@ -853,6 +901,12 @@ message MethodOptions {
 
   // Any features defined in the specific edition.
   optional FeatureSet features = 35;
+
+  // This is used to send raw unresolved feature sets to code generators for
+  // feature validation and for runtimes to be able to reconstruct the original
+  // proto file.  These should not be used to make any runtime decisions, as
+  // they do not accurately capture the enabled features.
+  optional FeatureSet raw_features = 36 [targets = TARGET_TYPE_UNKNOWN];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
