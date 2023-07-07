@@ -114,6 +114,7 @@ class ParseFunctionGenerator::GeneratedOptionProvider final
       return internal::field_layout::TransformValidation{};
     };
     return {
+        GetPresenceProbability(field, gen_->options_),
         verify_flag(),
         IsStringInlined(field, gen_->options_),
         IsImplicitWeakField(field, gen_->options_, gen_->scc_analyzer_),

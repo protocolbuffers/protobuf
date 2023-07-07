@@ -391,12 +391,18 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
 
     TailCallTableInfo::FastFieldInfo& info = result[fast_idx];
     if (!info.func_name.empty()) {
-      // This field entry is already filled.
-      continue;
+      // Null field means END_GROUP which is guaranteed to be present.
+      if (info.field == nullptr) continue;
+
+      // This field entry is already filled. Skip if previous entry is more
+      // likely present.
+      const auto prev_options = option_provider.GetForField(info.field);
+      if (prev_options.presence_probability >= options.presence_probability) {
+        continue;
+      }
     }
 
     // Fill in this field's entry:
-    ABSL_CHECK(info.func_name.empty()) << info.func_name;
     PopulateFastFieldEntry(entry, options, info);
     info.field = field;
     info.coded_tag = tag;
