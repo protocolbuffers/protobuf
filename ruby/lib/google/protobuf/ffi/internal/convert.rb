@@ -277,7 +277,6 @@ module Google
 
         def repeated_field_create_array(array, field_descriptor, type)
           return_value = []
-          # puts "JATL - about to call FFI method array_size(#{array}); stacktrace:\n#{caller.join("\n")}"
           n = (array.nil? || array.null?) ? 0 : Google::Protobuf::FFI.array_size(array)
           0.upto(n - 1) do |i|
             message_value = Google::Protobuf::FFI.get_msgval_at(array, i)
