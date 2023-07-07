@@ -34,9 +34,10 @@
 #define GOOGLE_PROTOBUF_REFLECTION_H__
 
 #include <memory>
+#include <type_traits>
 
-#include "google/protobuf/message.h"
 #include "google/protobuf/generated_enum_util.h"
+#include "google/protobuf/descriptor.h"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -52,17 +53,18 @@ template <typename T, typename Enable = void>
 struct RefTypeTraits;
 }  // namespace internal
 
-template <typename T>
-RepeatedFieldRef<T> Reflection::GetRepeatedFieldRef(
-    const Message& message, const FieldDescriptor* field) const {
-  return RepeatedFieldRef<T>(message, field);
-}
+class Message;
 
-template <typename T>
-MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
-    Message* message, const FieldDescriptor* field) const {
-  return MutableRepeatedFieldRef<T>(message, field);
-}
+template <typename Dep, typename T>
+using MakeDependent = std::conditional_t<true, T, Dep>;
+
+// Forward-declare RepeatedFieldRef templates. The second type parameter is
+// used for SFINAE tricks. Users should ignore it.
+template <typename T, typename Enable = void>
+class RepeatedFieldRef;
+
+template <typename T, typename Enable = void>
+class MutableRepeatedFieldRef;
 
 // RepeatedFieldRef definition for non-message types.
 template <typename T>
@@ -89,8 +91,9 @@ class RepeatedFieldRef<
 
  private:
   friend class Reflection;
-  RepeatedFieldRef(const Message& message, const FieldDescriptor* field) {
-    const Reflection* reflection = message.GetReflection();
+  RepeatedFieldRef(const MakeDependent<T, Message>& message,
+                   const FieldDescriptor* field) {
+    const auto* reflection = message.GetReflection();
     data_ = reflection->RepeatedFieldData(
         message, field, internal::RefTypeTraits<T>::cpp_type, nullptr);
     accessor_ = reflection->RepeatedFieldAccessor(field);
@@ -141,8 +144,9 @@ class MutableRepeatedFieldRef<
 
  private:
   friend class Reflection;
-  MutableRepeatedFieldRef(Message* message, const FieldDescriptor* field) {
-    const Reflection* reflection = message->GetReflection();
+  MutableRepeatedFieldRef(MakeDependent<T, Message>* message,
+                          const FieldDescriptor* field) {
+    const auto* reflection = message->GetReflection();
     data_ = reflection->RepeatedFieldData(
         message, field, internal::RefTypeTraits<T>::cpp_type, nullptr);
     accessor_ = reflection->RepeatedFieldAccessor(field);
@@ -176,7 +180,7 @@ class RepeatedFieldRef<
   }
   // Create a new message of the same type as the messages stored in this
   // repeated field. Caller takes ownership of the returned object.
-  T* NewMessage() const { return static_cast<T*>(default_instance_->New()); }
+  T* NewMessage() const { return default_instance_->New(); }
 
   typedef IteratorType iterator;
   typedef IteratorType const_iterator;
@@ -196,19 +200,20 @@ class RepeatedFieldRef<
 
  private:
   friend class Reflection;
-  RepeatedFieldRef(const Message& message, const FieldDescriptor* field) {
-    const Reflection* reflection = message.GetReflection();
+  RepeatedFieldRef(const MakeDependent<T, Message>& message,
+                   const FieldDescriptor* field) {
+    const auto* reflection = message.GetReflection();
     data_ = reflection->RepeatedFieldData(
         message, field, internal::RefTypeTraits<T>::cpp_type,
         internal::RefTypeTraits<T>::GetMessageFieldDescriptor());
     accessor_ = reflection->RepeatedFieldAccessor(field);
-    default_instance_ =
-        reflection->GetMessageFactory()->GetPrototype(field->message_type());
+    default_instance_ = static_cast<const T*>(
+        reflection->GetMessageFactory()->GetPrototype(field->message_type()));
   }
 
   const void* data_;
   const AccessorType* accessor_;
-  const Message* default_instance_;
+  const T* default_instance_;
 };
 
 // MutableRepeatedFieldRef definition for message types.
@@ -226,7 +231,7 @@ class MutableRepeatedFieldRef<
   }
   // Create a new message of the same type as the messages stored in this
   // repeated field. Caller takes ownership of the returned object.
-  T* NewMessage() const { return static_cast<T*>(default_instance_->New()); }
+  T* NewMessage() const { return default_instance_->New(); }
 
   void Set(int index, const T& value) const {
     accessor_->Set(data_, index, &value);
@@ -258,19 +263,20 @@ class MutableRepeatedFieldRef<
 
  private:
   friend class Reflection;
-  MutableRepeatedFieldRef(Message* message, const FieldDescriptor* field) {
-    const Reflection* reflection = message->GetReflection();
+  MutableRepeatedFieldRef(MakeDependent<T, Message>* message,
+                          const FieldDescriptor* field) {
+    const auto* reflection = message->GetReflection();
     data_ = reflection->RepeatedFieldData(
         message, field, internal::RefTypeTraits<T>::cpp_type,
         internal::RefTypeTraits<T>::GetMessageFieldDescriptor());
     accessor_ = reflection->RepeatedFieldAccessor(field);
-    default_instance_ =
-        reflection->GetMessageFactory()->GetPrototype(field->message_type());
+    default_instance_ = static_cast<const T*>(
+        reflection->GetMessageFactory()->GetPrototype(field->message_type()));
   }
 
   void* data_;
   const AccessorType* accessor_;
-  const Message* default_instance_;
+  const T* default_instance_;
 };
 
 namespace internal {
