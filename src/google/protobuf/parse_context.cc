@@ -465,27 +465,33 @@ const char* VarintParser(void* object, const char* ptr, ParseContext* ctx) {
 
 const char* PackedInt32Parser(void* object, const char* ptr,
                               ParseContext* ctx) {
-  return VarintParser<int32_t, false>(object, ptr, ctx);
+  return ctx->ReadPackedVarint<int32_t, false>(ptr, 
+                               static_cast<RepeatedField<int32_t>*>(object));
 }
 const char* PackedUInt32Parser(void* object, const char* ptr,
                                ParseContext* ctx) {
-  return VarintParser<uint32_t, false>(object, ptr, ctx);
+  return ctx->ReadPackedVarint<uint32_t, false>(ptr, 
+                               static_cast<RepeatedField<uint32_t>*>(object));
 }
 const char* PackedInt64Parser(void* object, const char* ptr,
                               ParseContext* ctx) {
-  return VarintParser<int64_t, false>(object, ptr, ctx);
+  return ctx->ReadPackedVarint<int64_t, false>(ptr, 
+                               static_cast<RepeatedField<int64_t>*>(object));
 }
 const char* PackedUInt64Parser(void* object, const char* ptr,
                                ParseContext* ctx) {
-  return VarintParser<uint64_t, false>(object, ptr, ctx);
+  return ctx->ReadPackedVarint<uint64_t, false>(ptr, 
+                               static_cast<RepeatedField<uint64_t>*>(object));
 }
 const char* PackedSInt32Parser(void* object, const char* ptr,
                                ParseContext* ctx) {
-  return VarintParser<int32_t, true>(object, ptr, ctx);
+  return ctx->ReadPackedVarint<int32_t, true>(ptr, 
+                               static_cast<RepeatedField<int32_t>*>(object));
 }
 const char* PackedSInt64Parser(void* object, const char* ptr,
                                ParseContext* ctx) {
-  return VarintParser<int64_t, true>(object, ptr, ctx);
+  return ctx->ReadPackedVarint<int64_t, true>(ptr, 
+                               static_cast<RepeatedField<int64_t>*>(object));
 }
 
 const char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx) {

@@ -37,6 +37,10 @@
 #include <type_traits>
 #include <utility>
 
+#if defined(__BMI2__)
+#include <x86intrin.h>
+#endif
+
 #include "absl/base/config.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -252,6 +256,10 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   template <typename Add, typename SizeCb>
   PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add,
                                                   SizeCb size_callback);
+
+  template <typename T, bool sign>
+  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, 
+                                                  RepeatedField<T>* out);
 
   uint32_t LastTag() const { return last_tag_minus_1_ + 1; }
   bool ConsumeEndGroup(uint32_t start_tag) {
@@ -1277,6 +1285,885 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add,
   }
   auto end = ptr + size;
   ptr = ReadPackedVarintArray(ptr, end, add);
+  return end == ptr ? ptr : nullptr;
+}
+
+// Count the varint boundaries (when the msb of a byte is 0
+// and suppress the if() statement)
+static inline uint32_t c_cmp(const uint8_t *p, uint32_t len) {
+    uint32_t count = 0;
+    while (len--) {
+        int64_t byte = *(int8_t *)p++;
+        count += (byte >= 0);
+    }
+    return count;
+}
+
+#ifdef __POPCNT__
+static inline uint32_t c_popc(const uint8_t *p, uint32_t len) {
+    uint32_t count = 0;
+    // process word per word
+    while (len >= 8) {
+        uint64_t word = *(uint64_t *)p;
+        p += 8;
+        len -= 8;
+#ifdef _MSC_VER
+        count += 8 - (uint32_t)__popcnt64(word & 0x8080808080808080ull);
+#else
+        count += 8 - (uint32_t)__builtin_popcountll(word & 0x8080808080808080ull);
+#endif
+    }
+
+    // finish the end of the buffer
+    while (len--) {
+        uint8_t byte = *p++;
+        if (!(byte & 0x80)) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+static inline uint32_t c_popcs (const uint8_t *p, uint32_t initialLen) {
+
+    uint32_t len = initialLen;
+    uint32_t count = 0;
+    // process word per word
+    while (len >= 8) {
+        uint64_t word = *(uint64_t *)p;
+        p += 8;
+        len -= 8;
+#ifdef _MSC_VER
+        count += 8 - (uint32_t)__popcnt64(word & 0x8080808080808080ull);
+#else
+        count += 8 - (uint32_t)__builtin_popcountll(word & 0x8080808080808080ull);
+#endif
+    }
+
+    // finish the end of the buffer
+    while (len--) {
+        uint8_t byte = *p++;
+        if (!(byte & 0x80)) {
+            count++;
+        }
+    }
+
+    // This check is necessary to count the right number of varints
+    // in segmented buffers with overlap between the end of a segment 
+    // and the start of the next segment
+    if (initialLen && (*(p-1) & 0x80)) { 
+      count++;
+    }
+
+    return count;
+}
+
+#endif
+
+
+#ifdef __AVX512VPOPCNTDQ__
+static inline uint32_t c_avx512_pcnt(const uint8_t *p, uint32_t initialLen) {
+
+    uint32_t len = initialLen;
+    __m512i mask = _mm512_set1_epi32(0x80808080);
+    __m512i b0, sum0 = _mm512_setzero_si512();
+    __m512i b1, sum1 = _mm512_setzero_si512();
+
+    while (len >= 128) {
+        b0 = _mm512_loadu_si512((__m512i *)p);
+        p += 64;
+        b1 = _mm512_loadu_si512((__m512i *)p);
+        p += 64;
+        len -= 128;
+        b0 = _mm512_andnot_si512(b0, mask);
+        b1 = _mm512_andnot_si512(b1, mask);
+        b0 = _mm512_popcnt_epi32(b0);
+        b1 = _mm512_popcnt_epi32(b1);
+        sum0 = _mm512_add_epi32(sum0, b0);
+        sum1 = _mm512_add_epi32(sum1, b1);
+    }
+    if (len >= 64) {
+        b0 = _mm512_loadu_si512((__m512i *)p);
+        p += 64;
+        len -= 64;
+        b0 = _mm512_andnot_si512(b0, mask);
+        b0 = _mm512_popcnt_epi32(b0);
+        sum0 = _mm512_add_epi32(sum0, b0);
+    }
+    __m512i sum = _mm512_add_epi32(sum0, sum1);
+    __m256i r = _mm256_add_epi32(_mm512_extracti64x4_epi64(sum, 0), _mm512_extracti64x4_epi64(sum, 1));
+    r = _mm256_hadd_epi32(r, r);
+    r = _mm256_hadd_epi32(r, r);
+    uint32_t count = (uint32_t)_mm256_extract_epi32(r, 0) + (uint32_t)_mm256_extract_epi32(r, 4);
+
+    // process efficiently the remaining of the buffer, if any
+#ifdef __POPCNT__
+    count += (len ? c_popc(p, len) : 0);
+#else
+    count += (len ? c_cmp(p, len) : 0);
+#endif
+
+    // This check is necessary to count the right number of varints
+    // in segmented buffers with overlap between the end of a segment 
+    // and the start of the next segment
+    if (initialLen != 0 && *(p+len-1) & 0x80) {
+      count++;
+    }
+    
+    return count;
+}
+#endif
+
+#ifdef __AVX512F__
+static inline uint32_t c_avx512(const uint8_t *p, uint32_t initialLen) {
+
+    uint32_t len = initialLen;
+    uint32_t count = 0;
+    __m512i mask = _mm512_set1_epi8(0x01);
+    __m512i zero = _mm512_setzero_si512();
+
+    while (len >= 128) {
+        __m512i sum0 = zero;
+        __m512i sum1 = zero;
+        uint32_t max_chunk = 255;
+
+        // process 2 vectors in parallel, and stop before the vectors of 8 bit counters would overflow
+        while (max_chunk-- && len >= 128) {
+            __m512i b0 = _mm512_loadu_si512((__m512i *)p);
+            p += 64;
+            __m512i b1 = _mm512_loadu_si512((__m512i *)p);
+            p += 64;
+            len -= 128;
+            // put the msb of each byte at the lsb position
+            b0 = _mm512_srli_epi64(b0, 7);
+            b1 = _mm512_srli_epi64(b1, 7);
+            // only keep toggled lsb, clear all other bits
+            b0 = _mm512_andnot_si512(b0, mask);
+            b1 = _mm512_andnot_si512(b1, mask);
+            // accumulate the varint count in 8 bit chunks (no more than 255 is each chunk)
+            sum0 = _mm512_add_epi8(sum0, b0);
+            sum1 = _mm512_add_epi8(sum1, b1);
+        }
+
+        // convert the 8 bit data (64 counters <= 255) in 4 vectors of 16 bit data == 64 counters) 
+        __m512i s0 = _mm512_unpacklo_epi8(sum0, zero);
+        __m512i s1 = _mm512_unpackhi_epi8(zero, sum0);
+        __m512i s2 = _mm512_unpacklo_epi8(sum1, zero);
+        __m512i s3 = _mm512_unpackhi_epi8(zero, sum1);
+        s1 = _mm512_srli_epi16(s1, 8);
+        s3 = _mm512_srli_epi16(s3, 8);
+        // add the 16 bit values   64x255 worst case cannot overflow any of the 16 bit counters
+        sum0 = _mm512_add_epi16(s0, s2);
+        sum1 = _mm512_add_epi16(s1, s3);
+        __m512i sum = _mm512_add_epi16(sum0, sum1);
+        // accumulate the 16 counters of 16 bits together
+        __m256i r = _mm256_add_epi16(_mm512_extracti64x4_epi64(sum, 0), _mm512_extracti64x4_epi64(sum, 1));
+        r = _mm256_hadd_epi16(r, r);
+        r = _mm256_hadd_epi16(r, r);
+        r = _mm256_hadd_epi16(r, r);
+        // extract the final result : the sum of the 2 extracts has a maximum value of 128 * 255 = 32640
+        // (no overflow can occur)
+        count += (uint32_t)_mm256_extract_epi16(r, 0) + (uint32_t)_mm256_extract_epi16(r, 8);
+    }
+
+    // process efficiently the remaining of the buffer, if any
+#ifdef __POPCNT__
+    count += (len ? c_popc(p, len) : 0);
+#else
+    count += (len ? c_cmp(p, len) : 0);
+#endif
+
+    // This check is necessary to count the right number of varints
+    // in segmented buffers with overlap between the end of a segment 
+    // and the start of the next segment
+    if (initialLen != 0 && *(p+len-1) & 0x80) {
+      count++;
+    }
+    
+    return count;
+}
+#endif
+
+
+#ifdef __AVX2__
+static inline uint32_t c_avx2_mvmsk(const uint8_t *p, uint32_t initialLen) {
+
+    uint32_t len = initialLen;
+    uint32_t mask0, mask1, count0 = 0, count1 = 0;;
+
+    while (len >= 64) {
+        __m256i b0 = _mm256_lddqu_si256((__m256i *)p);
+        p += 32;
+        __m256i b1 = _mm256_lddqu_si256((__m256i *)p);
+        p += 32;
+        len -= 64;
+        // put the msb of each byte at the lsb position
+        mask0 = _mm256_movemask_epi8(b0);
+        mask1 = _mm256_movemask_epi8(b1);
+#ifdef _MSC_VER
+        count0 += 32 - __popcnt(mask0);
+        count1 += 32 - __popcnt(mask1);
+#else
+        count0 += 32 - __builtin_popcount(mask0);
+        count1 += 32 - __builtin_popcount(mask1);
+#endif 
+    }
+    if (len >= 32)
+    {
+        __m256i b0 = _mm256_lddqu_si256((__m256i *)p);
+        p += 32;
+        len -= 32;
+        // put the msb of each byte at the lsb position
+        mask0 = _mm256_movemask_epi8(b0);
+#ifdef _MSC_VER
+        count0 += 32 - __popcnt(mask0);
+#else
+        count0 += 32 - __builtin_popcount(mask0);
+#endif 
+    }
+
+    // process efficiently the remaining of the buffer, if any
+#ifdef __POPCNT__
+    count0 += count1 + (len ? c_popc(p, len) : 0);
+#else
+    count0 += count1 + (len ? c_cmp(p, len) : 0);
+#endif
+
+    // This check is necessary to count the right number of varints
+    // in segmented buffers with overlap between the end of a segment 
+    // and the start of the next segment
+    if (initialLen != 0 && *(p+len-1) & 0x80) {
+      count0++;
+    }
+    
+    return count0;
+}
+#endif
+
+
+static inline uint32_t c_simple(const uint8_t *p, uint32_t initialLen) {
+    uint32_t count = 0;
+    uint32_t len = initialLen;
+    while (len--) {
+      uint8_t byte = *p++; 
+      if (!(byte & 0x80)) {
+        count++;
+      }
+    }
+
+    // This check is necessary to count the right number of varints
+    // in segmented buffers with overlap between the end of a segment 
+    // and the start of the next segment
+    if (initialLen && (*(p-1) & 0x80)) { 
+      count++;
+    }
+
+    return count;
+}
+
+
+static inline uint32_t CountVarints(const uint8_t *p, uint32_t len) {
+
+#ifdef __AVX512VPOPCNTDQ__
+  return c_avx512_pcnt(p, len);
+#elif defined(__AVX512F__)
+  return c_avx512(p, len);
+#elif defined(__POPCNT__)
+  return c_popcs(p, len);
+#elif defined( __AVX2__)
+  return c_avx2_mvmsk(p, len);
+#else
+  return c_simple(p, len);
+#endif
+}
+
+static inline const char* b_ggl_unsigned(uint8_t *p, uint32_t len, 
+                                         uint64_t *res) {
+    uint8_t *ptr = p;
+    uint64_t val;
+    uint32_t count = 0;
+    const char* r = 0;
+    while (ptr < p + len) {
+        r = reinterpret_cast<const char *>(ptr);
+        r = VarintParse(r, &val);
+        res[count++] = val;
+        ptr = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(r));
+    }
+    return r;
+}
+
+static inline const char* b_ggl_unsigned(uint8_t *p, uint32_t len, 
+                                         uint32_t *res) {
+    uint8_t *ptr = p;
+    uint32_t val;
+    uint32_t count = 0;
+    const char* r = 0;
+    while (ptr < p + len) {
+        r = reinterpret_cast<const char *>(ptr);
+        r = VarintParse(r, &val);
+        res[count++] = val;
+        ptr = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(r));
+    }
+    return r;
+}
+
+#ifdef __BMI2__
+static inline const char* b_pext(const uint8_t *p, uint32_t len, 
+                                 uint64_t *res) {
+    uint32_t count = 0;
+    uint32_t shift = 0;
+    uint64_t acc = 0;
+    uint64_t current = 0;
+    uint64_t mask, data, bits;
+    uint8_t i, bitc;
+
+    // process the buffer by chunks of 8 bytes
+    while (len >= 8) {
+        current = *(uint64_t *)p;
+        p += 8;
+        len -= 8;
+        data = _pext_u64(current, 0x7f7f7f7f7f7f7f7full);
+        bits = ~_pext_u64(current, 0x8080808080808080ull);
+#ifdef _MSC_VER
+        unsigned long index;
+        _BitScanForward64(&index, bits);
+        bitc = (uint8_t)index + 1;
+#else
+        bitc = 1 + (uint8_t)__builtin_ctzll(bits);
+#endif
+        i = bitc;
+        while (i < 9) {
+            bits >>= bitc;
+            bitc *= 7;
+            mask = (1ull << bitc) - 1;
+            acc |= ((data & mask) << shift);
+            res[count++] = acc;
+            shift = 0;
+            data >>= bitc;
+            acc = 0;
+#ifdef _MSC_VER
+            _BitScanForward64(&index, bits);
+            bitc = (uint8_t)index + 1;
+#else
+            bitc = 1 + (uint8_t)__builtin_ctzll(bits);
+#endif
+            i += bitc;
+        }
+        bitc -= 1;
+        bitc *= 7;
+        mask = (1ull << bitc) - 1;
+        acc |= (data & mask) << shift;
+        shift += bitc;
+    }
+
+    // process the remaining of the buffer
+    while (len--) {
+        current = *p++;
+        if (current & 0x80) {
+            acc |= (current & 0x7f) << shift;
+            shift += 7;
+        } else {
+            acc |= (current << shift);
+            res[count++] = acc;
+            acc = 0;
+            shift = 0;
+        }
+    }
+    // the following code processes the last varint spanning over 
+    // the buffer end
+    while (shift) {       
+        // get a byte of data
+        int64_t word = *(int8_t *)p++;
+        if (word < 0) {
+            // accumulate ms bits
+            acc |= (word & 0x7f) << shift;
+            shift += 7;
+        } else {
+            // accumulate last bits and add one more element in 
+            // the output array
+            res[count++] = acc | (word << shift);
+            acc = 0;
+            shift = 0;
+        }
+    }
+    return reinterpret_cast<const char*>(p);;
+}
+
+static inline const char* b_pext(const uint8_t *p, uint32_t len, 
+                                 uint32_t *res) {
+    uint32_t count = 0;
+    uint32_t shift = 0;
+    uint64_t acc = 0;
+    uint64_t current = 0;
+    uint64_t mask, data, bits;
+    uint8_t i, bitc;
+
+    // process the buffer by chunks of 8 bytes
+    while (len >= 8) {
+        current = *(uint64_t *)p;
+        p += 8;
+        len -= 8;
+        data = _pext_u64(current, 0x7f7f7f7f7f7f7f7full);
+        bits = ~_pext_u64(current, 0x8080808080808080ull);
+#ifdef _MSC_VER
+        unsigned long index;
+        _BitScanForward64(&index, bits);
+        bitc = (uint8_t)index + 1;
+#else
+        bitc = 1 + (uint8_t)__builtin_ctzll(bits);
+#endif
+        i = bitc;
+        while (i < 9) {
+            bits >>= bitc;
+            bitc *= 7;
+            mask = (1ull << bitc) - 1;
+            acc |= ((data & mask) << shift);           
+            res[count++] = (uint32_t) acc;
+            shift = 0;
+            data >>= bitc;
+            acc = 0;
+#ifdef _MSC_VER
+            _BitScanForward64(&index, bits);
+            bitc = (uint8_t)index + 1;
+#else
+            bitc = 1 + (uint8_t)__builtin_ctzll(bits);
+#endif
+            i += bitc;
+        }
+        bitc -= 1;
+        bitc *= 7;
+        mask = (1ull << bitc) - 1;
+        acc |= (data & mask) << shift;
+        shift += bitc;
+    }
+
+    // process the remaining of the buffer
+    while (len--) {
+        current = *p++;
+        if (current & 0x80) {
+            acc |= (current & 0x7f) << shift;
+            shift += 7;
+        } else {
+            acc |= (current << shift);
+            res[count++] = (uint32_t) acc;
+            acc = 0;
+            shift = 0;
+        }
+    }
+    // the following code processes the last varint spanning over 
+    // the buffer end
+    while (shift) {
+
+        // get a byte of data
+        int64_t word = *(int8_t *)p++;
+        if (word < 0) {
+            // accumulate ms bits
+            acc |= (word & 0x7f) << shift;
+            shift += 7;
+        } else {
+            // accumulate last bits and add one more element in 
+            // the output array
+            res[count++] = (uint32_t) (acc | (word << shift));
+            acc = 0;
+            shift = 0;
+        }
+    }
+
+    return reinterpret_cast<const char*>(p);;
+}
+#endif
+
+template<typename T>
+static inline const char* ProcessBuffer(uint8_t *p, uint32_t len, T *res) {
+  const char* ptr = 0;  
+
+  if (sizeof(T) == 8 ) {
+
+#ifdef __BMI2__
+    ptr = b_pext(p, len, (uint64_t*) res);
+#else
+    ptr = b_ggl_unsigned(p, len, (uint64_t*) res);
+#endif    
+
+  } else if (sizeof(T) == 4 ) { 
+
+#ifdef __BMI2__
+    ptr = b_pext(p, len, (uint32_t*)  res);
+#else
+    ptr = b_ggl_unsigned(p, len, (uint32_t*)  res);
+#endif    
+  } else {
+    assert(0);
+  }
+
+  return ptr;
+}
+
+static inline void z_dec_64(uint64_t *p, uint32_t count) {
+    uint64_t *endp = p + count;
+    while (p != endp) {
+        uint64_t n = *p;
+        n = (n >> 1) ^ ((int64_t)(n << 63) >> 63);
+        *p++ = n;
+    }
+}
+
+static inline void z_dec_32(uint32_t *p, uint32_t count) {
+    uint32_t *endp = p + count;
+    while (p != endp) {
+        uint32_t n = *p;
+        n = (n >> 1) ^ ((int32_t)(n << 31) >> 31);
+        *p++ = n;
+    }
+}
+
+#if defined(__AVX512F__)
+static inline void z_dec_512(uint64_t *buf, uint32_t count) {
+
+    __m512i *p = (__m512i *)buf;
+    while (count >= 16) {
+        __m512i r0 = _mm512_loadu_si512(p++);
+        __m512i r1 = _mm512_loadu_si512(p++);
+        count -= 16;
+        // shift 1 bit right
+        __m512i s0 = _mm512_srli_epi64(r0, 1);
+        __m512i s1 = _mm512_srli_epi64(r1, 1);
+        // shift 63 bits left
+        r0 = _mm512_slli_epi64(r0, 63);
+        r1 = _mm512_slli_epi64(r1, 63);
+        // shift 63 bits right (signed)
+        r0 = _mm512_srai_epi64(r0, 63);
+        r1 = _mm512_srai_epi64(r1, 63);
+        // merge the result
+        _mm512_storeu_si512(p - 2, _mm512_xor_si512(r0, s0));
+        _mm512_storeu_si512(p - 1, _mm512_xor_si512(r1, s1));
+    }
+   
+    if (count >= 8) {
+        __m512i r0 = _mm512_loadu_si512(p++);
+        count -= 8;
+        // shift 1 bit right
+        __m512i s0 = _mm512_srli_epi64(r0, 1);
+        // shift 63 bits left
+        r0 = _mm512_slli_epi64(r0, 63);
+        // shift 63 bits right (signed)
+        r0 = _mm512_srai_epi64(r0, 63);
+        // merge the result
+        _mm512_storeu_si512(p - 1, _mm512_xor_si512(r0, s0));
+    }
+
+    if (count) {
+        z_dec_64((uint64_t *)p, count);
+    }
+}
+
+static inline void z_dec_512(uint32_t *buf, uint32_t count) {
+
+    __m512i *p = (__m512i *)buf;
+    while (count >= 32) {
+        __m512i r0 = _mm512_loadu_si512(p++);
+        __m512i r1 = _mm512_loadu_si512(p++);
+        count -= 32;
+        // shift 1 bit right
+        __m512i s0 = _mm512_srli_epi32(r0, 1);
+        __m512i s1 = _mm512_srli_epi32(r1, 1);
+        // shift 31 bits left
+        r0 = _mm512_slli_epi32(r0, 31);
+        r1 = _mm512_slli_epi32(r1, 31);
+        // shift 31 bits right (signed)
+        r0 = _mm512_srai_epi32(r0, 31);
+        r1 = _mm512_srai_epi32(r1, 31);
+        // merge the result
+        _mm512_storeu_si512(p - 2, _mm512_xor_si512(r0, s0));
+        _mm512_storeu_si512(p - 1, _mm512_xor_si512(r1, s1));
+    }
+    
+    if (count >= 16) {
+        __m512i r0 = _mm512_loadu_si512(p++);
+        count -= 16;
+        // shift 1 bit right
+        __m512i s0 = _mm512_srli_epi32(r0, 1);
+        // shift 31 bits left
+        r0 = _mm512_slli_epi32(r0, 31);
+        // shift 31 bits right (signed)
+        r0 = _mm512_srai_epi32(r0, 31);
+        // merge the result
+        _mm512_storeu_si512(p - 1, _mm512_xor_si512(r0, s0));
+    }
+
+    if (count) {
+        z_dec_32((uint32_t *)p, count);
+    }
+}
+#endif
+
+
+#ifdef __AVX2__
+static inline void z_dec_256(uint64_t *buf, uint32_t count) {
+
+    __m256i *p = (__m256i *)buf;
+    __m256i mask01 = _mm256_set1_epi64x(1ull);
+
+    while (count >= 8) {
+        __m256i r0 = _mm256_lddqu_si256(p++);
+        __m256i r1 = _mm256_lddqu_si256(p++);
+        count -= 8;
+        // shift 1 bit right
+        __m256i s0 = _mm256_srli_epi64(r0, 1);
+        __m256i s1 = _mm256_srli_epi64(r1, 1);
+        // sign extend bit 0
+        r0 = _mm256_and_si256(r0, mask01);
+        r1 = _mm256_and_si256(r1, mask01);
+        r0 = _mm256_cmpeq_epi64(r0, mask01);
+        r1 = _mm256_cmpeq_epi64(r1, mask01);
+        // merge the result
+        _mm256_storeu_si256(p - 2, _mm256_xor_si256(r0, s0));
+        _mm256_storeu_si256(p - 1, _mm256_xor_si256(r1, s1));
+    }
+    
+    if (count >= 4) {
+        __m256i r0 = _mm256_lddqu_si256(p++);
+        count -= 4;
+
+        // shift 1 bit right
+        __m256i s0 = _mm256_srli_epi64(r0, 1);
+        // sign extend bit 0
+        r0 = _mm256_and_si256(r0, mask01);
+        r0 = _mm256_cmpeq_epi64(r0, mask01);
+        // merge the result
+        _mm256_storeu_si256(p - 1, _mm256_xor_si256(r0, s0));
+    }
+
+    if (count) {
+        z_dec_64((uint64_t *)p, count);
+    }
+}
+
+static inline void z_dec_256(uint32_t *buf, uint32_t count) {
+    __m256i *p = (__m256i *)buf;
+    __m256i mask01 = _mm256_set1_epi32(1);
+    while (count >= 16) {
+        __m256i r0 = _mm256_lddqu_si256(p++);
+        __m256i r1 = _mm256_lddqu_si256(p++);
+        count -= 16;
+        // shift 1 bit right
+        __m256i s0 = _mm256_srli_epi32(r0, 1);
+        __m256i s1 = _mm256_srli_epi32(r1, 1);
+        // sign extend bit 0
+        r0 = _mm256_and_si256(r0, mask01);
+        r1 = _mm256_and_si256(r1, mask01);
+        r0 = _mm256_cmpeq_epi32(r0, mask01);
+        r1 = _mm256_cmpeq_epi32(r1, mask01);
+        // merge the result
+        _mm256_storeu_si256(p - 2, _mm256_xor_si256(r0, s0));
+        _mm256_storeu_si256(p - 1, _mm256_xor_si256(r1, s1));
+    }
+    
+    if (count >= 8) {
+        __m256i r0 = _mm256_lddqu_si256(p++);
+        count -= 8;
+
+        // shift 1 bit right
+        __m256i s0 = _mm256_srli_epi32(r0, 1);
+        // sign extend bit 0
+        r0 = _mm256_and_si256(r0, mask01);
+        r0 = _mm256_cmpeq_epi32(r0, mask01);
+        // merge the result
+        _mm256_storeu_si256(p - 1, _mm256_xor_si256(r0, s0));
+    }
+
+    if (count) {
+        z_dec_32((uint32_t *)p, count);
+    }
+}
+#endif
+
+#ifdef __SSE4_2__
+static inline void z_dec_128(uint64_t *buf, uint32_t count) {
+    __m128i *p = (__m128i *)buf;
+    __m128i mask01 = _mm_set1_epi64x(1ull);
+
+    while (count >= 4) {
+        __m128i r0 = _mm_lddqu_si128(p++);
+        __m128i r1 = _mm_lddqu_si128(p++);
+        count -= 4;
+        // shift 1 bit right
+        __m128i s0 = _mm_srli_epi64(r0, 1);
+        __m128i s1 = _mm_srli_epi64(r1, 1);
+        // sign extend bit 0
+        r0 = _mm_and_si128(r0, mask01);
+        r1 = _mm_and_si128(r1, mask01);
+        r0 = _mm_cmpeq_epi64(r0, mask01);
+        r1 = _mm_cmpeq_epi64(r1, mask01);
+        // merge the result
+        _mm_storeu_si128(p - 2, _mm_xor_si128(r0, s0));
+        _mm_storeu_si128(p - 1, _mm_xor_si128(r1, s1));
+    }
+    
+    if (count >= 2) {
+        __m128i r0 = _mm_lddqu_si128(p++);
+        count -= 2;
+
+        // shift 1 bit right
+        __m128i s0 = _mm_srli_epi64(r0, 1);
+        // sign extend bit 0
+        r0 = _mm_and_si128(r0, mask01);
+        r0 = _mm_cmpeq_epi64(r0, mask01);
+        // merge the result
+        _mm_storeu_si128(p - 1, _mm_xor_si128(r0, s0));
+    }
+
+    if (count) {
+        z_dec_64((uint64_t *)p, count);
+    }
+}
+#endif
+
+static inline void z_decasm_64(uint64_t *p, uint32_t count) {
+    uint64_t *endp = p + count;
+    while (p != endp) {
+        uint64_t n = *p;
+        // use the carry out of shr, and conditionally clears 
+        // the register [ones]
+        uint64_t mask = 0;
+        asm(" \n"
+            " shrq $1, %[val] \n"
+            " sbbq $0, %[mask] \n"
+            " xorq %[mask], %[val] \n"
+            : [val] "=r" (n), [mask] "=r" (mask)
+            : "0" (n), "1" (mask)
+            : "flags");
+        *p++ = n;
+    }
+}
+
+static inline void z_decasm_32(uint32_t *p, uint32_t count) {
+    uint32_t *endp = p + count;
+    while (p != endp) {
+        uint32_t n = *p;
+        // use the carry out of shr, and conditionally clears 
+        // the register [ones]
+        uint32_t mask = 0;
+        asm(" \n"
+            " shrl $1, %[val] \n"
+            " sbbl $0, %[mask] \n"
+            " xorl %[mask], %[val] \n"
+            : [val] "=r" (n), [mask] "=r" (mask)
+            : "0" (n), "1" (mask)
+            : "flags");
+        *p++ = n;
+    }
+}
+
+template<typename T>
+static inline void ZigZagDecoder(T *p, uint32_t count) {
+
+  if (sizeof(T) == 8) {
+#ifdef __AVX512F__
+    z_dec_512((uint64_t *)p, count);
+#elif defined( __AVX2__)
+    z_dec_256((uint64_t *)p, count); 
+#elif defined(__SSE4_2__)
+    z_dec_128((uint64_t *)p, count);
+#elif defined(__x86_64__) && defined(__GNUC__)
+    z_decasm_64((uint64_t *)p, count);
+#else
+    z_dec_64((uint64_t *)p, count);
+#endif
+  } else if (sizeof(T) == 4) {
+#ifdef __AVX512F__
+    z_dec_512((uint32_t *)p, count);
+#elif defined( __AVX2__)
+    z_dec_256((uint32_t *)p, count);     
+#elif defined(__x86_64__) && defined(__GNUC__)
+    z_decasm_32((uint32_t *)p, count);    
+#else
+    z_dec_32((uint32_t *)p, count);
+#endif
+  }  else {
+    assert(0);
+  }
+}
+
+template <typename T, bool sign>
+const char* ReadPackedVarintArray(const char* ptr, int32_t len, 
+                                  RepeatedField<T>* out) {  
+  if (len <= 0) {
+    return ptr;
+  }
+
+  uint8_t* p = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(ptr));
+  uint32_t num = CountVarints(p, len);
+
+  // Reserve enough space to avoid resizing the varint accumulator 
+  int old_entries = out->size();
+  out->Reserve(old_entries + num);  
+  auto dst = out->AddNAlreadyReserved(num);
+
+  T* dst2 = reinterpret_cast<T*>(dst);
+
+  ptr = ProcessBuffer(p, (uint32_t)len, dst2);
+
+  if (sign) {
+    ZigZagDecoder(dst2, num);
+  }
+
+  return ptr;
+}
+
+template <typename T, bool sign>
+const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, 
+                                                 RepeatedField<T>* out) {
+  int size = ReadSize(&ptr);
+  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+  GOOGLE_DCHECK(buffer_end_ != 0);
+  GOOGLE_DCHECK_GE(size, 0);
+  int chunk_size = 1 + (buffer_end_ - ptr); // +1 because buffer_end_ points 
+                                            // to the last byte, and not past 
+                                            // the buffer end
+
+  while (size > chunk_size) {
+
+    int overrun = 0;
+    if (chunk_size > 0) {
+       ptr = ReadPackedVarintArray<T, sign>(ptr, chunk_size, out);
+       if (ptr == nullptr) return nullptr;
+       overrun = (ptr - buffer_end_) - 1;
+       GOOGLE_DCHECK(overrun >= 0 && overrun <= kSlopBytes && overrun < size);
+       size -= overrun + chunk_size;
+       GOOGLE_DCHECK_GE(size, 0);
+    } 
+    
+    if (size <= kSlopBytes) {
+      // The current buffer contains all the information needed, we don't need
+      // to flip buffers. However we must parse from a buffer with enough space
+      // so we are not prone to a buffer overflow.
+      // The first kSlopBytes to hold the max size of the end of the buffer 
+      // being copied, and the second kSlopBytes to allow the varint reader to 
+      // read ahead as would be done with all other buffers.
+      char buf[kSlopBytes + kSlopBytes] = {};
+      std::memcpy(buf, ptr, kSlopBytes);
+      auto res = ReadPackedVarintArray<T, sign>(buf, size, out);
+      if (res == nullptr || res != buf + size) return nullptr;
+      return ptr + size;
+    }
+
+    // We must flip buffers
+    if (limit_ <= kSlopBytes) return nullptr;
+
+    ptr = Next();
+    if (ptr == nullptr) return nullptr;
+
+    GOOGLE_DCHECK(buffer_end_ != 0);
+    ptr += overrun;
+    chunk_size = 1 + (buffer_end_ - ptr);
+  }
+
+  GOOGLE_DCHECK_GE(size, 0);
+
+  auto end = ptr + size;
+  ptr = ReadPackedVarintArray<T, sign>(ptr, size, out);
   return end == ptr ? ptr : nullptr;
 }
 
