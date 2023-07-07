@@ -77,6 +77,16 @@ ruby_test(
 )
 
 ruby_test(
+    name = "object_cache_test",
+    srcs = ["object_cache_test.rb"],
+    deps = [
+        "//ruby:protobuf",
+        "//ruby:test_ruby_protos",
+        "@protobuf_bundle//:test-unit",
+    ],
+)
+
+ruby_test(
     name = "repeated_field_test",
     srcs = ["repeated_field_test.rb"],
     deps = [
