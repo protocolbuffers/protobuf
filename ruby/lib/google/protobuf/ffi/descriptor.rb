@@ -216,13 +216,19 @@ module Google
             temporary_arena = Google::Protobuf::FFI.create_arena
             mini_table = Google::Protobuf::FFI.get_mini_table(self.class.descriptor)
             size_one = ::FFI::MemoryPointer.new(:size_t, 1)
-            encoding_one = Google::Protobuf::FFI.encode_message(@msg, mini_table, encoding_options, temporary_arena, size_one)
+            encoding_one = ::FFI::MemoryPointer.new(:pointer, 1)
+            encoding_status = Google::Protobuf::FFI.encode_message(@msg, mini_table, encoding_options, temporary_arena, encoding_one.to_ptr, size_one)
+            raise ParseError.new "Error comparing messages due to #{encoding_status} while encoding LHS of `eql?()`" unless encoding_status == :Ok
+
             size_two = ::FFI::MemoryPointer.new(:size_t, 1)
-            encoding_two = Google::Protobuf::FFI.encode_message(other.instance_variable_get(:@msg), mini_table, encoding_options, temporary_arena, size_two)
+            encoding_two = ::FFI::MemoryPointer.new(:pointer, 1)
+            encoding_status = Google::Protobuf::FFI.encode_message(other.instance_variable_get(:@msg), mini_table, encoding_options, temporary_arena, encoding_two.to_ptr, size_two)
+            raise ParseError.new "Error comparing messages due to #{encoding_status} while encoding RHS of `eql?()`" unless encoding_status == :Ok
+
             if encoding_one.null? or encoding_two.null?
               raise ParseError.new "Error comparing messages"
             end
-            size_one.read(:size_t) == size_two.read(:size_t) and Google::Protobuf::FFI.memcmp(encoding_one, encoding_two, size_one.read(:size_t)).zero?
+            size_one.read(:size_t) == size_two.read(:size_t) and Google::Protobuf::FFI.memcmp(encoding_one.read(:pointer), encoding_two.read(:pointer), size_one.read(:size_t)).zero?
           end
           alias == eql?
 
@@ -231,11 +237,12 @@ module Google
             temporary_arena = Google::Protobuf::FFI.create_arena
             mini_table_ptr = Google::Protobuf::FFI.get_mini_table(self.class.descriptor)
             size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
-            encoding = Google::Protobuf::FFI.encode_message(@msg, mini_table_ptr, encoding_options, temporary_arena, size_ptr)
-            if encoding.null?
+            encoding = ::FFI::MemoryPointer.new(:pointer, 1)
+            encoding_status = Google::Protobuf::FFI.encode_message(@msg, mini_table_ptr, encoding_options, temporary_arena, encoding.to_ptr, size_ptr)
+            if encoding_status != :Ok or encoding.null?
               raise ParseError.new "Error calculating hash"
             end
-            Google::Protobuf::FFI.hash(encoding, size_ptr.read(:size_t), 0)
+            Google::Protobuf::FFI.hash(encoding.read(:pointer), size_ptr.read(:size_t), 0)
           end
 
           def to_h
@@ -388,6 +395,9 @@ module Google
             if options[:emit_defaults]
               encoding_options |= Google::Protobuf::FFI::Upb_JsonEncode_EmitDefaults
             end
+            if options[:format_enums_as_integers]
+              encoding_options |= Google::Protobuf::FFI::Upb_JsonEncode_FormatEnumsAsIntegers
+            end
 
             buffer_size = 1024
             buffer = ::FFI::MemoryPointer.new(:char, buffer_size)
@@ -485,11 +495,8 @@ module Google
                 end
               end
               if field_descriptor.has_presence?
-                if field_descriptor.sub_message? or field_descriptor.send(:real_containing_oneof).nil? or
-                  Google::Protobuf::FFI.message_def_syntax(Google::Protobuf::FFI.get_containing_message_def(field_descriptor)) == :Proto2
-                  define_method("has_#{field_name}?") do
-                    Google::Protobuf::FFI.get_message_has(@msg, field_descriptor)
-                  end
+                define_method("has_#{field_name}?") do
+                  Google::Protobuf::FFI.get_message_has(@msg, field_descriptor)
                 end
               end
             end

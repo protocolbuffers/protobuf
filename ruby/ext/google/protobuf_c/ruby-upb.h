@@ -10846,7 +10846,7 @@ UPB_API_INLINE const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg
 void upb_Message_ClearByDef(upb_Message* msg, const upb_MessageDef* m);
 
 // Clears any field presence and sets the value back to its default.
-void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f);
+UPB_API_INLINE void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f);
 
 // May only be called for fields where upb_FieldDef_HasPresence(f) == true.
 UPB_API_INLINE bool upb_Message_HasFieldByDef(const upb_Message* msg, const upb_FieldDef* f);

@@ -178,12 +178,16 @@ module Google
         end
         self.each do |name, value|
           if name[0] < 'A' || name[0] > 'Z'
-            warn(
+            if name[0] >= 'a' and name[0] <= 'z'
+              name = name[0].upcase + name[1..] # auto capitalize
+            else
+              warn(
               "Enum value '#{name}' does not start with an uppercase letter " +
                 "as is required for Ruby constants.")
-          else
-            dynamic_module.const_set(name.to_sym, value)
+              next
+            end
           end
+          dynamic_module.const_set(name.to_sym, value)
         end
         dynamic_module
       end

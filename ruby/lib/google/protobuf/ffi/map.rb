@@ -145,11 +145,11 @@ module Google
         raise FrozenError.new "can't modify frozen #{self.class}" if frozen?
         value = Google::Protobuf::FFI::MessageValue.new
         key_message_value = convert_ruby_to_upb(key, arena, key_type, nil)
-        return_value = if Google::Protobuf::FFI.map_get(@map_ptr, key_message_value, value)
+        if Google::Protobuf::FFI.map_delete(@map_ptr, key_message_value, value)
           convert_upb_to_ruby(value, value_type, descriptor, arena)
+        else
+          nil
         end
-        Google::Protobuf::FFI.map_delete(@map_ptr, key_message_value)
-        return_value
       end
 
       def clear

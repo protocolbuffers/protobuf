@@ -234,6 +234,8 @@ module Google
       Upb_JsonEncode_EmitDefaults = 1
       # When set, use normal (snake_case) field names instead of JSON (camelCase) names.
       Upb_JsonEncode_UseProtoNames = 2
+      # When set, emits enums as their integer values instead of as their names.
+      Upb_JsonEncode_FormatEnumsAsIntegers = 4
 
       ## JSON Decoding options
       Upb_JsonDecode_IgnoreUnknown = 1
@@ -308,7 +310,7 @@ module Google
 
       # Map
       attach_function :map_clear,  :upb_Map_Clear,                    [:Map], :void
-      attach_function :map_delete, :upb_Map_Delete,                   [:Map, MessageValue.by_value], :bool
+      attach_function :map_delete, :upb_Map_Delete,                   [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
       attach_function :map_get,    :upb_Map_Get,                      [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
       attach_function :create_map, :upb_Map_New,                      [Arena, CType, CType], :Map
       attach_function :map_size,   :upb_Map_Size,                     [:Map], :size_t
@@ -337,7 +339,7 @@ module Google
       attach_function :find_msg_def_by_name, :upb_MessageDef_FindByNameWithSize,      [MessageDef, :string, :size_t, :FieldDefPointer, :OneofDefPointer], :bool
 
       # Message
-      attach_function :clear_message_field,     :upb_Message_ClearField,      [:Message, FieldDescriptor], :void
+      attach_function :clear_message_field,     :upb_Message_ClearFieldByDef, [:Message, FieldDescriptor], :void
       attach_function :get_message_value,       :upb_Message_GetFieldByDef,   [:Message, FieldDescriptor], MessageValue.by_value
       attach_function :get_message_has,         :upb_Message_HasFieldByDef,   [:Message, FieldDescriptor], :bool
       attach_function :set_message_field,       :upb_Message_SetFieldByDef,   [:Message, FieldDescriptor, MessageValue.by_value, Arena], :bool

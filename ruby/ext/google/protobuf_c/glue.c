@@ -32,6 +32,8 @@
 // Exposing inlined UPB functions. Strictly free of dependencies on
 // Ruby interpreter internals.
 
+#include "ruby-upb.h"
+
 upb_Arena* Arena_create() {
   return upb_Arena_Init(NULL, 0, &upb_alloc_global);
 }
