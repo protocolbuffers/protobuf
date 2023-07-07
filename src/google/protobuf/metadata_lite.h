@@ -182,11 +182,11 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   template <typename T>
   PROTOBUF_NOINLINE void DeleteOutOfLineHelper() {
-    ABSL_DCHECK(!arena());
-    delete PtrValue<Container<T>>();
-#ifndef NDEBUG
-    ptr_ = 0;
-#endif  // NDEBUG
+    // TODO(b/188560391): Determine if this branch is needed.
+    if (!arena()) {
+      delete PtrValue<Container<T>>();
+      ptr_ = 0;
+    }
   }
 
   template <typename T>
