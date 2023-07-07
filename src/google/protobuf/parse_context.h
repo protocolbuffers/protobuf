@@ -37,6 +37,10 @@
 #include <type_traits>
 #include <utility>
 
+#if defined(__BMI2__) 
+#include <x86intrin.h>
+#endif
+
 #include "absl/base/config.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -933,6 +937,119 @@ PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
   return VarintParseSlow(p, res, out);
 #endif  // __aarch64__
 }
+
+#if defined(__BMI2__)
+static inline const uint8_t *pext_bt_body32(const uint8_t *p, uint64_t word, uint32_t *value) {
+
+    uint64_t data, word1;
+
+    // bit test -> translates to a single instruction.
+    data = _pext_u64(word, 0x7f7f7f7f7f7f7f7full);
+    if (!(word & 0x8000)) goto pext2;
+    if (!(word & 0x800000)) goto pext3;
+    if (!(word & 0x80000000)) goto pext4;
+    if (!(word & 0x8000000000)) goto pext5;
+
+    // Non conformant Uint32 
+    if (!(word & 0x800000000000)) goto pext6;
+    if (!(word & 0x80000000000000)) goto pext7;
+    if (!(word & 0x8000000000000000)) goto pext8;
+
+    word1 = *(unsigned short *)(p + 8);
+
+    if (!(word1 & 0x80)) goto pext9;
+    if (!(word1 & 0x8000)) goto pext10;
+
+    // not conformant - overlong (too many encoding bytes),
+    *value = 0;
+    return 0;
+
+pext2:  *value = data & ((1ull << 14) - 1);  return p + 2;
+pext3:  *value = data & ((1ull << 21) - 1);  return p + 3;
+pext4:  *value = data & ((1ull << 28) - 1);  return p + 4;
+pext5:  *value = (uint32_t)data;  return p + 5;
+pext6:  *value = (uint32_t)data;  return p + 6;
+pext7:  *value = (uint32_t)data;  return p + 7;
+pext8:  *value = (uint32_t)data;  return p + 8;
+pext9:  *value = (uint32_t)data;  return p + 9;
+pext10:  *value = (uint32_t)data;  return p + 10;
+}
+
+static inline const uint8_t *pext_bt_body64(const uint8_t *p, uint64_t word, uint64_t *value) {
+   
+    uint64_t data, word1;
+    
+    // bit test -> translates to a single instruction.
+    data = _pext_u64(word, 0x7f7f7f7f7f7f7f7full);
+    if (!(word & 0x8000)) goto pext2;
+    if (!(word & 0x800000)) goto pext3;
+    if (!(word & 0x80000000)) goto pext4;
+    if (!(word & 0x8000000000)) goto pext5; 
+    if (!(word & 0x800000000000)) goto pext6;
+    if (!(word & 0x80000000000000)) goto pext7;
+    if (!(word & 0x8000000000000000)) goto pext8;
+    
+    word1 = *(unsigned short *)(p + 8);
+
+    if (!(word1 & 0x80)) {
+        word1 &= 0x7f;
+        *value = (word1 << 56) | data;
+        return p + 9;
+    }
+    
+    if (!(word1 & 0x8000)) {
+        word1 = (word1 & 0x7f) | ((word1 & 0x7f00) >> 1);
+        *value = (word1 << 56) | data;
+        return p + 10;
+    }    
+
+    // not conformant - overlong (too many encoding bytes),
+    *value = 0;
+    return 0;
+
+pext2:  *value = data & ((1ull << 14) - 1);  return p + 2;
+pext3:  *value = data & ((1ull << 21) - 1);  return p + 3;
+pext4:  *value = data & ((1ull << 28) - 1);  return p + 4;
+pext5:  *value = data & ((1ull << 35) - 1);  return p + 5;
+pext6:  *value = data & ((1ull << 42) - 1);  return p + 6;
+pext7:  *value = data & ((1ull << 49) - 1);  return p + 7;
+pext8:  *value = data;  return p + 8;
+}
+
+static inline const uint8_t *pext_bt(const uint8_t *p, uint32_t *value) {
+    uint64_t word = *(uint64_t *)p;
+
+    if (!(word & 0x80)) {
+        *value = word & 0xff;
+        return p + 1;
+    }
+
+    return pext_bt_body32(p, word, value);
+}
+
+static inline const uint8_t *pext_bt(const uint8_t *p, uint64_t *value) {
+    uint64_t word = *(uint64_t *)p;
+
+    if (!(word & 0x80)) {
+        *value = word & 0xff;
+        return p + 1;
+    }
+
+    return pext_bt_body64(p, word, value);
+}
+
+template <>
+PROTOBUF_NODISCARD inline const char* VarintParse(const char* p, unsigned long* out) {
+  const uint8_t* ptr = reinterpret_cast<const uint8_t*>(p);
+  return reinterpret_cast<const char *>(pext_bt(ptr, out));
+}
+
+template <>
+PROTOBUF_NODISCARD inline const char* VarintParse(const char* p, unsigned int* out) {
+  const uint8_t* ptr = reinterpret_cast<const uint8_t*>(p);
+  return reinterpret_cast<const char *>(pext_bt(ptr, out));
+}
+#endif
 
 // Used for tags, could read up to 5 bytes which must be available.
 // Caller must ensure it's safe to call.
