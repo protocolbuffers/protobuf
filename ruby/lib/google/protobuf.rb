@@ -39,6 +39,13 @@ module Google
     class ParseError < Error; end
     class TypeError < ::TypeError; end
 
+    begin
+      require 'ffi'
+      PREFER_FFI = true
+    rescue LoadError
+      PREFER_FFI = false
+    end
+
     def self.encode(msg, options = {})
       msg.to_proto(options)
     end
@@ -55,15 +62,20 @@ module Google
       klass.decode_json(json, options)
     end
 
-    IMPLEMENTATION = case ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']
-      when nil, 'native', ''
-        require 'google/protobuf_native'
-       :NATIVE
-      when 'ffi'
+    IMPLEMENTATION = if PREFER_FFI
+      begin
         require 'google/protobuf_ffi'
-       :FFI
-      else
-        raise RuntimeError.new("Unsupported value of PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION environment variable `#{ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']}`. Must be one of `native` or `ffi`. Defaults to `native`.")
+        :FFI
+      rescue LoadError
+        warn "Caught exception `#{$!.message}` while loading FFI implementation of google/protobuf."
+        raise $!
+        warn "Falling back to native implementation."
+        require 'google/protobuf_native'
+        :NATIVE
+      end
+    else
+      require 'google/protobuf_native'
+      :NATIVE
     end
   end
 end
