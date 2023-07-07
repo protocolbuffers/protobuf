@@ -2117,8 +2117,8 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr,
                                                  RepeatedField<T>* out) {
   int size = ReadSize(&ptr);
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-  GOOGLE_DCHECK(buffer_end_ != 0);
-  GOOGLE_DCHECK_GE(size, 0);
+  ABSL_DCHECK(buffer_end_ != 0);
+  ABSL_DCHECK_GE(size, 0);
   int chunk_size = 1 + (buffer_end_ - ptr); // +1 because buffer_end_ points 
                                             // to the last byte, and not past 
                                             // the buffer end
@@ -2130,9 +2130,9 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr,
        ptr = ReadPackedVarintArray<T, sign>(ptr, chunk_size, out);
        if (ptr == nullptr) return nullptr;
        overrun = (ptr - buffer_end_) - 1;
-       GOOGLE_DCHECK(overrun >= 0 && overrun <= kSlopBytes && overrun < size);
+       ABSL_DCHECK(overrun >= 0 && overrun <= kSlopBytes && overrun < size);
        size -= overrun + chunk_size;
-       GOOGLE_DCHECK_GE(size, 0);
+       ABSL_DCHECK_GE(size, 0);
     } 
     
     if (size <= kSlopBytes) {
@@ -2155,12 +2155,12 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr,
     ptr = Next();
     if (ptr == nullptr) return nullptr;
 
-    GOOGLE_DCHECK(buffer_end_ != 0);
+    ABSL_DCHECK(buffer_end_ != 0);
     ptr += overrun;
     chunk_size = 1 + (buffer_end_ - ptr);
   }
 
-  GOOGLE_DCHECK_GE(size, 0);
+  ABSL_DCHECK_GE(size, 0);
 
   auto end = ptr + size;
   ptr = ReadPackedVarintArray<T, sign>(ptr, size, out);
