@@ -48,6 +48,10 @@ module ObjectCacheTestModule
   end
 end
 
+if RUBY_PLATFORM == "java"
+  return
+end
+
 class ObjectCacheTest < Test::Unit::TestCase
   def create
     Google::Protobuf::ObjectCache.new
