@@ -36,7 +36,6 @@
 #include <string>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -396,33 +395,6 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
   if (IsMapEntryMessage(descriptor_)) {
     return;
   }
-  printer->Print(
-      // clang-format off
-      "#pragma mark - $classname$\n"
-      "\n",
-      // clang-format on
-      "classname", class_name_);
-
-  if (!deprecated_attribute_.empty()) {
-    // No warnings when compiling the impl of this deprecated class.
-    // clang-format off
-    printer->Print(
-        "#pragma clang diagnostic push\n"
-        "#pragma clang diagnostic ignored \"-Wdeprecated-implementations\"\n"
-        "\n");
-    // clang-format on
-  }
-
-  printer->Print("@implementation $classname$\n\n", "classname", class_name_);
-
-  for (const auto& generator : oneof_generators_) {
-    generator->GeneratePropertyImplementation(printer);
-  }
-
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    field_generators_.get(descriptor_->field(i))
-        .GeneratePropertyImplementation(printer);
-  }
 
   std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
       SortFieldsByNumber(descriptor_));
@@ -432,91 +404,23 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
   std::vector<SimpleExtensionRange> sorted_extensions(
       SimpleExtensionRange::Normalize(descriptor_));
 
-  printer->Print(
-      // clang-format off
-      "\n"
-      "typedef struct $classname$__storage_ {\n"
-      "  uint32_t _has_storage_[$sizeof_has_storage$];\n",
-      // clang-format on
-      "classname", class_name_, "sizeof_has_storage",
-      absl::StrCat(sizeof_has_storage_));
-  printer->Indent();
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    field_generators_.get(size_order_fields[i])
-        .GenerateFieldStorageDeclaration(printer);
-  }
-  printer->Outdent();
-
-  printer->Print("} $classname$__storage_;\n\n", "classname", class_name_);
-
-  // clang-format off
-  printer->Print(
-      "// This method is threadsafe because it is initially called\n"
-      "// in +initialize for each subclass.\n"
-      "+ (GPBDescriptor *)descriptor {\n"
-      "  static GPBDescriptor *descriptor = nil;\n"
-      "  if (!descriptor) {\n");
-  // clang-format on
-
-  // If the message scopes extensions, trigger the root class
-  // +initialize/+extensionRegistry as that is where the runtime support for
-  // extensions lives.
-  if (descriptor_->extension_count() > 0) {
-    // clang-format off
-    printer->Print(
-        "    // Start up the root class to support the scoped extensions.\n"
-        "    __unused Class rootStartup = [$root_class_name$ class];\n",
-        "root_class_name", FileClassName(descriptor_->file()));
-    // clang-format on
-  } else {
-    // The Root class has a debug runtime check, so if not starting that
-    // up, add the check.
-    printer->Print("    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n");
-  }
-
-  TextFormatDecodeData text_format_decode_data;
   bool has_fields = descriptor_->field_count() > 0;
   bool need_defaults = field_generators_.DoesAnyFieldHaveNonZeroDefault();
-  std::string field_description_type;
-  if (need_defaults) {
-    field_description_type = "GPBMessageFieldDescriptionWithDefault";
-  } else {
-    field_description_type = "GPBMessageFieldDescription";
-  }
-  if (has_fields) {
-    printer->Indent();
-    printer->Indent();
-    printer->Print("static $field_description_type$ fields[] = {\n",
-                   "field_description_type", field_description_type);
-    printer->Indent();
-    for (int i = 0; i < descriptor_->field_count(); ++i) {
-      const FieldGenerator& field_generator =
-          field_generators_.get(sorted_fields[i]);
-      field_generator.GenerateFieldDescription(printer, need_defaults);
-      if (field_generator.needs_textformat_name_support()) {
-        text_format_decode_data.AddString(sorted_fields[i]->number(),
-                                          field_generator.generated_objc_name(),
-                                          field_generator.raw_field_name());
-      }
+
+  TextFormatDecodeData text_format_decode_data;
+  for (int i = 0; i < descriptor_->field_count(); ++i) {
+    const FieldGenerator& field_generator =
+        field_generators_.get(sorted_fields[i]);
+    if (field_generator.needs_textformat_name_support()) {
+      text_format_decode_data.AddString(sorted_fields[i]->number(),
+                                        field_generator.generated_objc_name(),
+                                        field_generator.raw_field_name());
     }
-    printer->Outdent();
-    printer->Print("};\n");
-    printer->Outdent();
-    printer->Outdent();
   }
 
-  absl::flat_hash_map<absl::string_view, std::string> vars;
-  vars["classname"] = class_name_;
-  vars["message_name"] = descriptor_->name();
-  vars["class_reference"] = ObjCClass(class_name_);
-  vars["file_description_name"] = file_description_name_;
-  vars["fields"] = has_fields ? "fields" : "NULL";
-  if (has_fields) {
-    vars["fields_count"] = absl::StrCat("(uint32_t)(sizeof(fields) / sizeof(",
-                                        field_description_type, "))");
-  } else {
-    vars["fields_count"] = "0";
-  }
+  const absl::string_view field_description_type(
+      need_defaults ? "GPBMessageFieldDescriptionWithDefault"
+                    : "GPBMessageFieldDescription");
 
   std::vector<std::string> init_flags;
   init_flags.push_back("GPBDescriptorInitializationFlag_UsesClassRefs");
@@ -529,98 +433,215 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
   if (descriptor_->options().message_set_wire_format()) {
     init_flags.push_back("GPBDescriptorInitializationFlag_WireFormat");
   }
-  vars["init_flags"] =
-      BuildFlagsString(FLAGTYPE_DESCRIPTOR_INITIALIZATION, init_flags);
 
-  // clang-format off
-  printer->Print(
-      vars,
-      "    GPBDescriptor *localDescriptor =\n"
-      "        [GPBDescriptor allocDescriptorForClass:$class_reference$\n"
-      "                                   messageName:@\"$message_name$\"\n"
-      "                               fileDescription:&$file_description_name$\n"
-      "                                        fields:$fields$\n"
-      "                                    fieldCount:$fields_count$\n"
-      "                                   storageSize:sizeof($classname$__storage_)\n"
-      "                                         flags:$init_flags$];\n");
-  // clang-format on
-  if (!oneof_generators_.empty()) {
-    printer->Print("    static const char *oneofs[] = {\n");
-    for (const auto& generator : oneof_generators_) {
-      printer->Print("      \"$name$\",\n", "name",
-                     generator->DescriptorName());
-    }
-    printer->Print(
-        // clang-format off
-        "    };\n"
-        "    [localDescriptor setupOneofs:oneofs\n"
-        "                           count:(uint32_t)(sizeof(oneofs) / sizeof(char*))\n"
-        "                   firstHasIndex:$first_has_index$];\n",
-        // clang-format on
-        "first_has_index", oneof_generators_[0]->HasIndexAsString());
-  }
-  if (text_format_decode_data.num_entries() != 0) {
-    const std::string text_format_data_str(text_format_decode_data.Data());
-    // clang-format off
-    printer->Print(
-        "#if !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS\n"
-        "    static const char *extraTextFormatInfo =");
-    // clang-format on
-    static const int kBytesPerLine = 40;  // allow for escaping
-    for (int i = 0; i < text_format_data_str.size(); i += kBytesPerLine) {
-      printer->Print("\n        \"$data$\"", "data",
-                     EscapeTrigraphs(absl::CEscape(
-                         text_format_data_str.substr(i, kBytesPerLine))));
-    }
-    // clang-format off
-    printer->Print(
-        ";\n"
-        "    [localDescriptor setupExtraTextInfo:extraTextFormatInfo];\n"
-        "#endif  // !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS\n");
-    // clang-format on
-  }
-  if (!sorted_extensions.empty()) {
-    printer->Print("    static const GPBExtensionRange ranges[] = {\n");
-    for (const auto& extension_range : sorted_extensions) {
-      printer->Print("      { .start = $start$, .end = $end$ },\n", "start",
-                     absl::StrCat(extension_range.start), "end",
-                     absl::StrCat(extension_range.end));
-    }
-    // clang-format off
-    printer->Print(
-        "    };\n"
-        "    [localDescriptor setupExtensionRanges:ranges\n"
-        "                                    count:(uint32_t)(sizeof(ranges) / sizeof(GPBExtensionRange))];\n");
-    // clang-format on
-  }
-  if (descriptor_->containing_type() != nullptr) {
-    std::string containing_class = ClassName(descriptor_->containing_type());
-    std::string parent_class_ref = ObjCClass(containing_class);
-    printer->Print(
-        // clang-format off
-        "    [localDescriptor setupContainingMessageClass:$parent_class_ref$];\n",
-        // clang-format on
-        "parent_class_ref", parent_class_ref);
-  }
-  // clang-format off
-  printer->Print(
-      "#if defined(DEBUG) && DEBUG\n"
-      "      NSAssert(descriptor == nil, @\"Startup recursed!\");\n"
-      "#endif  // DEBUG\n"
-      "    descriptor = localDescriptor;\n"
-      "  }\n"
-      "  return descriptor;\n"
-      "}\n\n"
-      "@end\n\n");
-  // clang-format on
+  printer->Emit(
+      {{"classname", class_name_},
+       {"clang_diagnostic_push",
+        [&] {
+          if (deprecated_attribute_.empty()) return;
+          // No warnings when compiling the impl of this deprecated class.
+          printer->Emit(R"objc(
+            #pragma clang diagnostic push
+            #pragma clang diagnostic ignored "-Wdeprecated-implementations"
+          )objc");
+          printer->Emit("\n");
+        }},
+       {"clang_diagnostic_pop",
+        [&] {
+          if (deprecated_attribute_.empty()) return;
+          printer->Emit(R"objc(
+            #pragma clang diagnostic pop
+          )objc");
+          printer->Emit("\n");
+        }},
+       {"property_implementation",
+        [&] {
+          for (const auto& generator : oneof_generators_) {
+            generator->GeneratePropertyImplementation(printer);
+          }
+          for (int i = 0; i < descriptor_->field_count(); i++) {
+            field_generators_.get(descriptor_->field(i))
+                .GeneratePropertyImplementation(printer);
+          }
+        }},
+       {"sizeof_has_storage", sizeof_has_storage_},
+       {"storage_fields",
+        [&] {
+          for (int i = 0; i < descriptor_->field_count(); i++) {
+            field_generators_.get(size_order_fields[i])
+                .GenerateFieldStorageDeclaration(printer);
+          }
+        }},
+       {"descriptor_startup",
+        [&] {
+          // If the message scopes extensions, trigger the root class
+          // +initialize/+extensionRegistry as that is where the
+          // runtime support for extensions lives.
+          if (descriptor_->extension_count() > 0) {
+            printer->Emit(R"objc(
+              // Start up the root class to support the scoped extensions.
+              __unused Class rootStartup = [$root_class_name$ class];
+            )objc");
+          } else {
+            // The Root class has a debug runtime check, so if not
+            // starting that up, add the check.
+            printer->Emit("GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n");
+          }
+        }},
+       {"field_description_type", field_description_type},
+       {"declare_fields_static",
+        [&] {
+          if (!has_fields) return;
+          printer->Emit(R"objc(
+            static $field_description_type$ fields[] = {
+              $declare_fields_static_fields$,
+            };
+          )objc");
+        }},
+       {"declare_fields_static_fields",
+        [&] {
+          for (int i = 0; i < descriptor_->field_count(); ++i) {
+            const FieldGenerator& field_generator =
+                field_generators_.get(sorted_fields[i]);
+            field_generator.GenerateFieldDescription(printer, need_defaults);
+          }
+        }},
+       {"message_name", descriptor_->name()},
+       {"class_reference", ObjCClass(class_name_)},
+       {"file_description_name", file_description_name_},
+       {"fields", has_fields ? "fields" : "NULL"},
+       {"fields_count",
+        has_fields ? absl::StrCat("(uint32_t)(sizeof(fields) / sizeof(",
+                                  field_description_type, "))")
+                   : "0"},
+       {"init_flags",
+        BuildFlagsString(FLAGTYPE_DESCRIPTOR_INITIALIZATION, init_flags)},
+       {"oneof_support",
+        [&] {
+          if (oneof_generators_.empty()) return;
+          printer->Emit(
+              {{"first_has_index", oneof_generators_[0]->HasIndexAsString()}},
+              R"objc(
+                static const char *oneofs[] = {
+                  $declare_oneof_static_oneofs$,
+                };
+                [localDescriptor setupOneofs:oneofs
+                                       count:(uint32_t)(sizeof(oneofs) / sizeof(char*))
+                               firstHasIndex:$first_has_index$];
+              )objc");
+        }},
+       {"declare_oneof_static_oneofs",
+        [&] {
+          for (const auto& generator : oneof_generators_) {
+            printer->Emit({{"name", generator->DescriptorName()}}, R"objc(
+              "$name$",
+            )objc");
+          }
+        }},
+       {"text_format_decode_support",
+        [&] {
+          if (text_format_decode_data.num_entries() == 0) return;
 
-  if (!deprecated_attribute_.empty()) {
-    // clang-format off
-    printer->Print(
-        "#pragma clang diagnostic pop\n"
-        "\n");
-    // clang-format on
-  }
+          printer->Emit(R"objc(
+            #if !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
+              static const char *extraTextFormatInfo =
+                $text_format_decode_support_blob$
+              [localDescriptor setupExtraTextInfo:extraTextFormatInfo];
+            #endif  // !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
+          )objc");
+        }},
+       {"text_format_decode_support_blob",
+        [&] {
+          static const int kBytesPerLine = 40;  // allow for escaping
+          const std::string text_format_data_str(
+              text_format_decode_data.Data());
+          for (size_t i = 0; i < text_format_data_str.size();
+               i += kBytesPerLine) {
+            printer->Emit(
+                {{"data", EscapeTrigraphs(absl::CEscape(
+                              text_format_data_str.substr(i, kBytesPerLine)))},
+                 {"ending_semi",
+                  (i + kBytesPerLine) < text_format_data_str.size() ? ""
+                                                                    : ";"}},
+                R"objc(
+                  "$data$"$ending_semi$
+                )objc");
+          }
+        }},
+       {"extension_range_support",
+        [&] {
+          if (sorted_extensions.empty()) return;
+          printer->Emit(
+              {{"ranges",
+                [&] {
+                  for (const auto& extension_range : sorted_extensions) {
+                    printer->Emit({{"start", extension_range.start},
+                                   {"end", extension_range.end}},
+                                  "{ .start = $start$, .end = $end$ },\n");
+                  }
+                }}},
+              R"objc(
+                static const GPBExtensionRange ranges[] = {
+                  $ranges$,
+                };
+                [localDescriptor setupExtensionRanges:ranges
+                                                count:(uint32_t)(sizeof(ranges) / sizeof(GPBExtensionRange))];
+              )objc");
+        }},
+       {"containing_type_support",
+        [&] {
+          if (descriptor_->containing_type() == nullptr) return;
+          std::string containing_class =
+              ClassName(descriptor_->containing_type());
+          std::string parent_class_ref = ObjCClass(containing_class);
+          printer->Emit({{"parent_class_ref", parent_class_ref}}, R"objc(
+            [localDescriptor setupContainingMessageClass:$parent_class_ref$];
+          )objc");
+        }}},
+      R"objc(
+        #pragma mark - $classname$
+
+        $clang_diagnostic_push$;
+        @implementation $classname$
+
+        $property_implementation$
+
+        typedef struct $classname$__storage_ {
+          uint32_t _has_storage_[$sizeof_has_storage$];
+          $storage_fields$,
+        } $classname$__storage_;
+
+        // This method is threadsafe because it is initially called
+        // in +initialize for each subclass.
+        + (GPBDescriptor *)descriptor {
+          static GPBDescriptor *descriptor = nil;
+          if (!descriptor) {
+            $descriptor_startup$;
+            $declare_fields_static$;
+            GPBDescriptor *localDescriptor =
+                [GPBDescriptor allocDescriptorForClass:$class_reference$
+                                           messageName:@"$message_name$"
+                                       fileDescription:&$file_description_name$
+                                                fields:$fields$
+                                            fieldCount:$fields_count$
+                                           storageSize:sizeof($classname$__storage_)
+                                                 flags:$init_flags$];
+            $oneof_support$;
+            $text_format_decode_support$;
+            $extension_range_support$;
+            $containing_type_support$;
+            #if defined(DEBUG) && DEBUG
+              NSAssert(descriptor == nil, @"Startup recursed!");
+            #endif  // DEBUG
+            descriptor = localDescriptor;
+          }
+          return descriptor;
+        }
+
+        @end
+
+        $clang_diagnostic_pop$;
+      )objc");
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
     field_generators_.get(descriptor_->field(i))
