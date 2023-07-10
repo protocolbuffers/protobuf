@@ -283,10 +283,12 @@ def _upb_proto_rule_impl(ctx):
         cc_info,
     ]
 
-def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider, provide_cc_shared_library_hints = True):
-    name = ctx.rule.attr.name + "." + generator
-    owners = [ctx.label.relative(name)]
+def _generate_name(ctx, generator, thunks = False):
+    if thunks:
+        return ctx.rule.attr.name + "." + generator + ".thunks"
+    return ctx.rule.attr.name + "." + generator
 
+def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider, provide_cc_shared_library_hints = True):
     providers = []
     if not getattr(ctx.rule.attr, "srcs", []):
         # This target doesn't declare any sources, reexport all its deps instead.
@@ -340,7 +342,7 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider, p
 
         cc_info = _cc_library_func(
             ctx = ctx,
-            name = name,
+            name = _generate_name(ctx, generator),
             hdrs = files.hdrs,
             srcs = files.srcs,
             includes = files.includes,
@@ -349,11 +351,9 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider, p
         )
 
         if files.thunks:
-            name_thunks = ctx.rule.attr.name + "." + generator + ".thunks"
-            owners.append(ctx.label.relative(name_thunks))
             cc_info_with_thunks = _cc_library_func(
                 ctx = ctx,
-                name = name_thunks,
+                name = _generate_name(ctx, generator, files.thunks),
                 hdrs = [],
                 srcs = files.thunks,
                 includes = files.includes,
@@ -373,13 +373,23 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider, p
             file_provider(srcs = files),
         ]
 
+    if generator not in _GENERATORS:
+        fail("Please add new generator '{}' to _GENERATORS list".format(generator))
+
+    possible_owners = []
+    for generator in _GENERATORS:
+        possible_owners.append(ctx.label.relative(_generate_name(ctx, generator)))
+        possible_owners.append(ctx.label.relative(_generate_name(ctx, generator, thunks = True)))
+
     if provide_cc_shared_library_hints:
         if hasattr(cc_common, "CcSharedLibraryHintInfo"):
-            providers.append(cc_common.CcSharedLibraryHintInfo(owners = owners))
+            providers.append(cc_common.CcSharedLibraryHintInfo(owners = possible_owners))
         elif hasattr(cc_common, "CcSharedLibraryHintInfo_6_X_constructor_do_not_use"):
             # This branch can be deleted once 6.X is not supported by upb rules
-            providers.append(cc_common.CcSharedLibraryHintInfo_6_X_constructor_do_not_use(owners = owners))
+            providers.append(cc_common.CcSharedLibraryHintInfo_6_X_constructor_do_not_use(owners = possible_owners))
     return providers
+
+_GENERATORS = ["upb", "upbdefs"]
 
 def upb_proto_library_aspect_impl(target, ctx):
     return _upb_proto_aspect_impl(target, ctx, "upb", UpbWrappedCcInfo, _UpbWrappedGeneratedSrcsInfo)
