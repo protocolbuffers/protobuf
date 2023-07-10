@@ -57,6 +57,8 @@ enum TransformValidation : uint16_t;
 // Helper class for generating tailcall parsing functions.
 struct PROTOBUF_EXPORT TailCallTableInfo {
   struct PerFieldOptions {
+    // For presence awareness (e.g. PDProto).
+    float presence_probability;
     // kTvEager, kTvLazy, or 0
     field_layout::TransformValidation lazy_opt;
     bool is_string_inlined;

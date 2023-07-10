@@ -706,7 +706,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
-# elif !defined(__CYGWIN__) && \
+# elif !defined(__CYGWIN__) && !defined(__MINGW32__) && \
     __has_cpp_attribute(clang::require_constant_initialization) && \
         ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||             \
      (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
