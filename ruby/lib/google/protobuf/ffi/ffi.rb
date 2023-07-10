@@ -245,47 +245,47 @@ module Google
       attach_function :array_size,   :upb_Array_Size,          [:Array], :size_t
 
       # DefPool
-      attach_function :add_serialized_file,   :upb_DefPool_AddFile,           [:DefPool, :FileDescriptorProto, Status.by_ref], :FileDef
-      attach_function :free_DescriptorPool,   :upb_DefPool_Free,              [:DefPool], :void
-      attach_function :create_DescriptorPool, :upb_DefPool_New,               [], :DefPool
-      attach_function :lookup_enum,           :upb_DefPool_FindEnumByName,    [:DefPool, :string], EnumDef
-      attach_function :lookup_msg,            :upb_DefPool_FindMessageByName, [:DefPool, :string], MessageDef
+      attach_function :add_serialized_file,   :API_PENDING_upb_DefPool_AddFile,           [:DefPool, :FileDescriptorProto, Status.by_ref], :FileDef
+      attach_function :free_DescriptorPool,   :API_PENDING_upb_DefPool_Free,              [:DefPool], :void
+      attach_function :create_DescriptorPool, :API_PENDING_upb_DefPool_New,               [], :DefPool
+      attach_function :lookup_enum,           :API_PENDING_upb_DefPool_FindEnumByName,    [:DefPool, :string], EnumDef
+      attach_function :lookup_msg,            :API_PENDING_upb_DefPool_FindMessageByName, [:DefPool, :string], MessageDef
 
       # EnumDescriptor
-      attach_function :get_enum_file_descriptor,  :upb_EnumDef_File,                   [EnumDef], :FileDef
-      attach_function :enum_value_by_name,        :upb_EnumDef_FindValueByNameWithSize,[EnumDef, :string, :size_t], :EnumValueDef
-      attach_function :enum_value_by_number,      :upb_EnumDef_FindValueByNumber,      [EnumDef, :int], :EnumValueDef
-      attach_function :get_enum_fullname,         :upb_EnumDef_FullName,               [EnumDef], :string
-      attach_function :enum_value_by_index,       :upb_EnumDef_Value,                  [EnumDef, :int], :EnumValueDef
-      attach_function :enum_value_count,          :upb_EnumDef_ValueCount,             [EnumDef], :int
-      attach_function :enum_name,                 :upb_EnumValueDef_Name,              [:EnumValueDef], :string
-      attach_function :enum_number,               :upb_EnumValueDef_Number,            [:EnumValueDef], :int
+      attach_function :get_enum_file_descriptor,  :API_PENDING_upb_EnumDef_File,                   [EnumDef], :FileDef
+      attach_function :enum_value_by_name,        :API_PENDING_upb_EnumDef_FindValueByNameWithSize,[EnumDef, :string, :size_t], :EnumValueDef
+      attach_function :enum_value_by_number,      :API_PENDING_upb_EnumDef_FindValueByNumber,      [EnumDef, :int], :EnumValueDef
+      attach_function :get_enum_fullname,         :API_PENDING_upb_EnumDef_FullName,               [EnumDef], :string
+      attach_function :enum_value_by_index,       :API_PENDING_upb_EnumDef_Value,                  [EnumDef, :int], :EnumValueDef
+      attach_function :enum_value_count,          :API_PENDING_upb_EnumDef_ValueCount,             [EnumDef], :int
+      attach_function :enum_name,                 :API_PENDING_upb_EnumValueDef_Name,              [:EnumValueDef], :string
+      attach_function :enum_number,               :API_PENDING_upb_EnumValueDef_Number,            [:EnumValueDef], :int
 
       # FileDescriptor
-      attach_function :file_def_name,   :upb_FileDef_Name,   [:FileDef], :string
-      attach_function :file_def_syntax, :upb_FileDef_Syntax, [:FileDef], Syntax
-      attach_function :file_def_pool,   :upb_FileDef_Pool,   [:FileDef], :DefPool
+      attach_function :file_def_name,   :API_PENDING_upb_FileDef_Name,   [:FileDef], :string
+      attach_function :file_def_syntax, :API_PENDING_upb_FileDef_Syntax, [:FileDef], Syntax
+      attach_function :file_def_pool,   :API_PENDING_upb_FileDef_Pool,   [:FileDef], :DefPool
 
       # FileDescriptorProto
       attach_function :parse,                 :FileDescriptorProto_parse, [:binary_string, :size_t], :FileDescriptorProto
 
       # FieldDescriptor
-      attach_function :get_containing_message_def, :upb_FieldDef_ContainingType,     [FieldDescriptor], MessageDef
-      attach_function :get_c_type,                 :upb_FieldDef_CType,              [FieldDescriptor], CType
-      attach_function :get_default,                :upb_FieldDef_Default,            [FieldDescriptor], MessageValue.by_value
-      attach_function :get_subtype_as_enum,        :upb_FieldDef_EnumSubDef,         [FieldDescriptor], EnumDef
-      attach_function :get_has_presence,           :upb_FieldDef_HasPresence,        [FieldDescriptor], :bool
-      attach_function :is_map,                     :upb_FieldDef_IsMap,              [FieldDescriptor], :bool
-      attach_function :is_repeated,                :upb_FieldDef_IsRepeated,         [FieldDescriptor], :bool
-      attach_function :is_sub_message,             :upb_FieldDef_IsSubMessage,       [FieldDescriptor], :bool
-      attach_function :get_json_name,              :upb_FieldDef_JsonName,           [FieldDescriptor], :string
-      attach_function :get_label,                  :upb_FieldDef_Label,              [FieldDescriptor], Label
-      attach_function :get_subtype_as_message,     :upb_FieldDef_MessageSubDef,      [FieldDescriptor], MessageDef
-      attach_function :get_full_name,              :upb_FieldDef_Name,               [FieldDescriptor], :string
-      attach_function :get_number,                 :upb_FieldDef_Number,             [FieldDescriptor], :uint32_t
-      attach_function :real_containing_oneof,      :upb_FieldDef_RealContainingOneof,[FieldDescriptor], OneofDef
-      attach_function :get_type,                   :upb_FieldDef_Type,               [FieldDescriptor], FieldType
-      attach_function :file_def_by_raw_field_def,  :upb_FieldDef_File,               [:pointer], :FileDef
+      attach_function :get_containing_message_def, :API_PENDING_upb_FieldDef_ContainingType,     [FieldDescriptor], MessageDef
+      attach_function :get_c_type,                 :API_PENDING_upb_FieldDef_CType,              [FieldDescriptor], CType
+      attach_function :get_default,                :API_PENDING_upb_FieldDef_Default,            [FieldDescriptor], MessageValue.by_value
+      attach_function :get_subtype_as_enum,        :API_PENDING_upb_FieldDef_EnumSubDef,         [FieldDescriptor], EnumDef
+      attach_function :get_has_presence,           :API_PENDING_upb_FieldDef_HasPresence,        [FieldDescriptor], :bool
+      attach_function :is_map,                     :API_PENDING_upb_FieldDef_IsMap,              [FieldDescriptor], :bool
+      attach_function :is_repeated,                :API_PENDING_upb_FieldDef_IsRepeated,         [FieldDescriptor], :bool
+      attach_function :is_sub_message,             :API_PENDING_upb_FieldDef_IsSubMessage,       [FieldDescriptor], :bool
+      attach_function :get_json_name,              :API_PENDING_upb_FieldDef_JsonName,           [FieldDescriptor], :string
+      attach_function :get_label,                  :API_PENDING_upb_FieldDef_Label,              [FieldDescriptor], Label
+      attach_function :get_subtype_as_message,     :API_PENDING_upb_FieldDef_MessageSubDef,      [FieldDescriptor], MessageDef
+      attach_function :get_full_name,              :API_PENDING_upb_FieldDef_Name,               [FieldDescriptor], :string
+      attach_function :get_number,                 :API_PENDING_upb_FieldDef_Number,             [FieldDescriptor], :uint32_t
+      attach_function :real_containing_oneof,      :API_PENDING_upb_FieldDef_RealContainingOneof,[FieldDescriptor], OneofDef
+      attach_function :get_type,                   :API_PENDING_upb_FieldDef_Type,               [FieldDescriptor], FieldType
+      attach_function :file_def_by_raw_field_def,  :API_PENDING_upb_FieldDef_File,               [:pointer], :FileDef
       # Map
       attach_function :map_clear,  :upb_Map_Clear,                    [:Map], :void
       attach_function :map_delete, :upb_Map_Delete,                   [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
@@ -295,49 +295,49 @@ module Google
       attach_function :map_set,    :upb_Map_Set,                      [:Map, MessageValue.by_value, MessageValue.by_value, Arena], :bool
 
       # MapIterator
-      attach_function :map_next,   :upb_MapIterator_Next,             [:Map, :pointer], :bool
-      attach_function :map_done,   :upb_MapIterator_Done,             [:Map, :size_t], :bool
-      attach_function :map_key,    :upb_MapIterator_Key,              [:Map, :size_t], MessageValue.by_value
-      attach_function :map_value,  :upb_MapIterator_Value,            [:Map, :size_t], MessageValue.by_value
+      attach_function :map_next,   :API_PENDING_upb_MapIterator_Next,             [:Map, :pointer], :bool
+      attach_function :map_done,   :API_PENDING_upb_MapIterator_Done,             [:Map, :size_t], :bool
+      attach_function :map_key,    :API_PENDING_upb_MapIterator_Key,              [:Map, :size_t], MessageValue.by_value
+      attach_function :map_value,  :API_PENDING_upb_MapIterator_Value,            [:Map, :size_t], MessageValue.by_value
 
       # MessageDef
       attach_function :new_message_from_def, :upb_Message_New,                        [MessageDef, Arena], :Message
-      attach_function :get_field_by_index,   :upb_MessageDef_Field,                   [MessageDef, :int], FieldDescriptor
-      attach_function :field_count,          :upb_MessageDef_FieldCount,              [MessageDef], :int
-      attach_function :get_message_file_def, :upb_MessageDef_File,                    [:pointer], :FileDef
-      attach_function :get_field_by_name,    :upb_MessageDef_FindFieldByNameWithSize, [MessageDef, :string, :size_t], FieldDescriptor
-      attach_function :get_field_by_number,  :upb_MessageDef_FindFieldByNumber,       [MessageDef, :uint32_t], FieldDescriptor
-      attach_function :get_oneof_by_name,    :upb_MessageDef_FindOneofByNameWithSize, [MessageDef, :string, :size_t], OneofDef
-      attach_function :get_message_fullname, :upb_MessageDef_FullName,                [MessageDef], :string
-      attach_function :get_mini_table,       :upb_MessageDef_MiniTable,               [MessageDef], MiniTable.ptr
-      attach_function :get_oneof_by_index,   :upb_MessageDef_Oneof,                   [MessageDef, :int], OneofDef
-      attach_function :oneof_count,          :upb_MessageDef_OneofCount,              [MessageDef], :int
-      attach_function :get_well_known_type,  :upb_MessageDef_WellKnownType,           [MessageDef], WellKnown
-      attach_function :message_def_syntax,   :upb_MessageDef_Syntax,                  [MessageDef], Syntax
-      attach_function :find_msg_def_by_name, :upb_MessageDef_FindByNameWithSize,      [MessageDef, :string, :size_t, :FieldDefPointer, :OneofDefPointer], :bool
+      attach_function :get_field_by_index,   :API_PENDING_upb_MessageDef_Field,                   [MessageDef, :int], FieldDescriptor
+      attach_function :field_count,          :API_PENDING_upb_MessageDef_FieldCount,              [MessageDef], :int
+      attach_function :get_message_file_def, :API_PENDING_upb_MessageDef_File,                    [:pointer], :FileDef
+      attach_function :get_field_by_name,    :API_PENDING_upb_MessageDef_FindFieldByNameWithSize, [MessageDef, :string, :size_t], FieldDescriptor
+      attach_function :get_field_by_number,  :API_PENDING_upb_MessageDef_FindFieldByNumber,       [MessageDef, :uint32_t], FieldDescriptor
+      attach_function :get_oneof_by_name,    :API_PENDING_upb_MessageDef_FindOneofByNameWithSize, [MessageDef, :string, :size_t], OneofDef
+      attach_function :get_message_fullname, :API_PENDING_upb_MessageDef_FullName,                [MessageDef], :string
+      attach_function :get_mini_table,       :API_PENDING_upb_MessageDef_MiniTable,               [MessageDef], MiniTable.ptr
+      attach_function :get_oneof_by_index,   :API_PENDING_upb_MessageDef_Oneof,                   [MessageDef, :int], OneofDef
+      attach_function :oneof_count,          :API_PENDING_upb_MessageDef_OneofCount,              [MessageDef], :int
+      attach_function :get_well_known_type,  :API_PENDING_upb_MessageDef_WellKnownType,           [MessageDef], WellKnown
+      attach_function :message_def_syntax,   :API_PENDING_upb_MessageDef_Syntax,                  [MessageDef], Syntax
+      attach_function :find_msg_def_by_name, :API_PENDING_upb_MessageDef_FindByNameWithSize,      [MessageDef, :string, :size_t, :FieldDefPointer, :OneofDefPointer], :bool
 
       # Message
-      attach_function :clear_message_field,     :upb_Message_ClearFieldByDef, [:Message, FieldDescriptor], :void
-      attach_function :get_message_value,       :upb_Message_GetFieldByDef,   [:Message, FieldDescriptor], MessageValue.by_value
-      attach_function :get_message_has,         :upb_Message_HasFieldByDef,   [:Message, FieldDescriptor], :bool
-      attach_function :set_message_field,       :upb_Message_SetFieldByDef,   [:Message, FieldDescriptor, MessageValue.by_value, Arena], :bool
-      attach_function :encode_message,          :upb_Encode,                  [:Message, MiniTable.by_ref, :size_t, Arena, :pointer, :pointer], EncodeStatus
-      attach_function :json_decode_message,     :upb_JsonDecode,              [:binary_string, :size_t, :Message, MessageDef, :DefPool, :int, Arena, Status.by_ref], :bool
-      attach_function :json_encode_message,     :upb_JsonEncode,              [:Message, MessageDef, :DefPool, :int, :binary_string, :size_t, Status.by_ref], :size_t
+      attach_function :clear_message_field,     :API_PENDING_upb_Message_ClearFieldByDef, [:Message, FieldDescriptor], :void
+      attach_function :get_message_value,       :API_PENDING_upb_Message_GetFieldByDef,   [:Message, FieldDescriptor], MessageValue.by_value
+      attach_function :get_message_has,         :API_PENDING_upb_Message_HasFieldByDef,   [:Message, FieldDescriptor], :bool
+      attach_function :set_message_field,       :API_PENDING_upb_Message_SetFieldByDef,   [:Message, FieldDescriptor, MessageValue.by_value, Arena], :bool
+      attach_function :encode_message,          :API_PENDING_upb_Encode,                  [:Message, MiniTable.by_ref, :size_t, Arena, :pointer, :pointer], EncodeStatus
+      attach_function :json_decode_message,     :API_PENDING_upb_JsonDecode,              [:binary_string, :size_t, :Message, MessageDef, :DefPool, :int, Arena, Status.by_ref], :bool
+      attach_function :json_encode_message,     :API_PENDING_upb_JsonEncode,              [:Message, MessageDef, :DefPool, :int, :binary_string, :size_t, Status.by_ref], :size_t
       attach_function :decode_message,          :upb_Decode,                  [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Arena], DecodeStatus
-      attach_function :get_mutable_message,     :upb_Message_Mutable,         [:Message, FieldDescriptor, Arena], MutableMessageValue.by_value
-      attach_function :get_message_which_oneof, :upb_Message_WhichOneof,      [:Message, OneofDef], FieldDescriptor
-      attach_function :message_discard_unknown, :upb_Message_DiscardUnknown,  [:Message, MessageDef, :int], :bool
+      attach_function :get_mutable_message,     :API_PENDING_upb_Message_Mutable,         [:Message, FieldDescriptor, Arena], MutableMessageValue.by_value
+      attach_function :get_message_which_oneof, :API_PENDING_upb_Message_WhichOneof,      [:Message, OneofDef], FieldDescriptor
+      attach_function :message_discard_unknown, :API_PENDING_upb_Message_DiscardUnknown,  [:Message, MessageDef, :int], :bool
 
       # MessageValue
       attach_function :message_value_equal,     :shared_Msgval_IsEqual,       [MessageValue.by_value, MessageValue.by_value, CType, MessageDef], :bool
       attach_function :message_value_hash,      :shared_Msgval_GetHash,       [MessageValue.by_value, CType, MessageDef, :uint64_t], :uint64_t
 
       # OneofDescriptor
-      attach_function :get_oneof_name,           :upb_OneofDef_Name,          [OneofDef], :string
-      attach_function :get_oneof_field_count,    :upb_OneofDef_FieldCount,    [OneofDef], :int
-      attach_function :get_oneof_field_by_index, :upb_OneofDef_Field,         [OneofDef, :int], FieldDescriptor
-      attach_function :get_oneof_containing_type,:upb_OneofDef_ContainingType,[:pointer], MessageDef
+      attach_function :get_oneof_name,           :API_PENDING_upb_OneofDef_Name,          [OneofDef], :string
+      attach_function :get_oneof_field_count,    :API_PENDING_upb_OneofDef_FieldCount,    [OneofDef], :int
+      attach_function :get_oneof_field_by_index, :API_PENDING_upb_OneofDef_Field,         [OneofDef, :int], FieldDescriptor
+      attach_function :get_oneof_containing_type,:API_PENDING_upb_OneofDef_ContainingType,[:pointer], MessageDef
 
       # RepeatableField
 
@@ -348,9 +348,6 @@ module Google
       # Generic
       attach_function :memcmp, [:pointer, :pointer, :size_t], :int
       attach_function :memcpy, [:pointer, :pointer, :size_t], :int
-
-      # Misc
-      attach_function :hash, :_upb_Hash, [:pointer, :size_t, :uint64_t], :uint32_t
 
       # Alternatives to pre-processor macros
       def self.decode_max_depth(i)

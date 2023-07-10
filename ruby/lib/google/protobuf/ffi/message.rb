@@ -103,7 +103,7 @@ module Google
             if encoding_status != :Ok or encoding.null?
               raise ParseError.new "Error calculating hash"
             end
-            Google::Protobuf::FFI.hash(encoding.read(:pointer), size_ptr.read(:size_t), 0)
+            encoding.read(:pointer).read_string(size_ptr.read(:size_t)).hash
           end
 
           def to_h
