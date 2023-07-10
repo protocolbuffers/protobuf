@@ -27,8 +27,9 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 #include "google/protobuf/reflection_tester.h"
+
+#include <array>
 
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -1235,9 +1236,9 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    absl::flat_hash_map<bool, bool> map;
-    map[false] = false;
-    map[true] = true;
+    std::array<bool, 2> map;
+    map[0] = false;
+    map[1] = true;
     std::vector<bool> keys = {false, true};
     std::vector<bool> vals = {false, true};
     for (int i = 0; i < 2; i++) {
@@ -1252,7 +1253,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
                                                          map_bool_bool_key_);
         bool val = sub_message->GetReflection()->GetBool(*sub_message,
                                                          map_bool_bool_val_);
-        EXPECT_EQ(map[key], val);
+        EXPECT_EQ(map[key ? 1 : 0], val);
       } else {
         // Check with Map Reflection
         map_key.SetBoolValue(keys[i]);
@@ -1542,12 +1543,12 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    absl::flat_hash_map<bool, bool> map;
-    map[false] = false;
-    map[true] = true;
+    std::array<bool, 2> map;
+    map[0] = false;
+    map[1] = true;
     for (MapIterator iter = reflection->MapBegin(message, F("map_bool_bool"));
          iter != reflection->MapEnd(message, F("map_bool_bool")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetBoolValue()],
+      EXPECT_EQ(map[iter.GetKey().GetBoolValue() ? 1 : 0],
                 iter.GetValueRef().GetBoolValue());
     }
   }

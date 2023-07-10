@@ -93,7 +93,6 @@ VALUE Map_GetRubyWrapper(upb_Map* map, upb_CType key_type, TypeInfo value_type,
   if (val == Qnil) {
     val = Map_alloc(cMap);
     Map* self;
-    ObjectCache_Add(map, val);
     TypedData_Get_Struct(val, Map, &Map_type, self);
     self->map = map;
     self->arena = arena;
@@ -103,6 +102,7 @@ VALUE Map_GetRubyWrapper(upb_Map* map, upb_CType key_type, TypeInfo value_type,
       const upb_MessageDef* val_m = self->value_type_info.def.msgdef;
       self->value_type_class = Descriptor_DefToClass(val_m);
     }
+    return ObjectCache_TryAdd(map, val);
   }
 
   return val;
@@ -319,7 +319,9 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
 
   self->map = upb_Map_New(Arena_get(self->arena), self->key_type,
                           self->value_type_info.type);
-  ObjectCache_Add(self->map, _self);
+  VALUE stored = ObjectCache_TryAdd(self->map, _self);
+  (void)stored;
+  PBRUBY_ASSERT(stored == _self);
 
   if (init_arg != Qnil) {
     Map_merge_into_self(_self, init_arg);

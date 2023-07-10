@@ -444,7 +444,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 
   // A range of field numbers which are designated for third-party
   // extensions.
-  class ExtensionRange {
+  class PROTOBUF_EXPORT ExtensionRange {
    public:
     typedef DescriptorProto_ExtensionRange Proto;
 

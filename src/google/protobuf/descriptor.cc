@@ -8211,9 +8211,8 @@ void DescriptorBuilder::ValidateExtensionRangeOptions(
           range_options.verification() == ExtensionRangeOptions::UNVERIFIED) {
         AddError(message.full_name(), proto.extension_range(i),
                  DescriptorPool::ErrorCollector::EXTENDEE, [&] {
-                   return absl::Substitute(
-                       "Cannot mark the extension range as UNVERIFIED when it "
-                       "has extension(s) declared.");
+                   return "Cannot mark the extension range as UNVERIFIED when "
+                          "it has extension(s) declared.";
                  });
         return;
       }
