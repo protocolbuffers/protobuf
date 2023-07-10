@@ -219,8 +219,8 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
       descriptor_(descriptor),
       field_generators_(descriptor),
       class_name_(ClassName(descriptor_)),
-      deprecated_attribute_(GetOptionalDeprecatedAttribute(
-          descriptor, descriptor->file(), false, true)) {
+      deprecated_attribute_(
+          GetOptionalDeprecatedAttribute(descriptor, descriptor->file())) {
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     oneof_generators_.push_back(
         std::make_unique<OneofGenerator>(descriptor_->oneof_decl(i)));
@@ -304,7 +304,8 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
   auto vars = printer->WithVars({{"classname", class_name_}});
 
   printer->Emit(
-      {{"deprecated_attribute", deprecated_attribute_},
+      {io::Printer::Sub("deprecated_attribute", deprecated_attribute_)
+           .WithSuffix(";"),
        {"message_comments",
         [&] {
           EmitCommentsString(printer, descriptor_,
@@ -358,7 +359,8 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
         $message_fieldnum_enum$
         $oneof_enums$
         $message_comments$
-        $deprecated_attribute$GPB_FINAL @interface $classname$ : GPBMessage
+        $deprecated_attribute$;
+        GPB_FINAL @interface $classname$ : GPBMessage
 
         $message_properties$
         @end

@@ -136,10 +136,8 @@ void EmitCommentsString(io::Printer* printer, const TDescriptor* descriptor,
 }
 
 template <class TDescriptor>
-std::string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor,
-                                           const FileDescriptor* file = nullptr,
-                                           bool preSpace = true,
-                                           bool postNewline = false) {
+std::string GetOptionalDeprecatedAttribute(
+    const TDescriptor* descriptor, const FileDescriptor* file = nullptr) {
   bool isDeprecated = descriptor->options().deprecated();
   // The file is only passed when checking Messages & Enums, so those types
   // get tagged. At the moment, it doesn't seem to make sense to tag every
@@ -159,8 +157,7 @@ std::string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor,
                              sourceFile->name(), ").");
     }
 
-    return absl::StrCat(preSpace ? " " : "", "GPB_DEPRECATED_MSG(\"", message,
-                        "\")", postNewline ? "\n" : "");
+    return absl::StrCat("GPB_DEPRECATED_MSG(\"", message, "\")");
   } else {
     return "";
   }

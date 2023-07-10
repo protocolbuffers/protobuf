@@ -316,11 +316,11 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
       {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
       R"objc(
         $comments$
-        @property(nonatomic, readwrite) $property_type$ $name$$deprecated_attribute$;
+        @property(nonatomic, readwrite) $property_type$ $name$$ deprecated_attribute$;
       )objc");
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
-      @property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribute$;
+      @property(nonatomic, readwrite) BOOL has$capitalized_name$$ deprecated_attribute$;
     )objc");
   }
   printer->Emit("\n");
@@ -369,19 +369,19 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
       {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
       R"objc(
         $comments$
-        @property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$ *$name$$storage_attribute$$deprecated_attribute$;
+        @property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$ *$name$$storage_attribute$$ deprecated_attribute$;
       )objc");
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
         /** Test to see if @c $name$ has been set. */
-        @property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribute$;
+        @property(nonatomic, readwrite) BOOL has$capitalized_name$$ deprecated_attribute$;
     )objc");
   }
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Emit(R"objc(
-      - ($property_type$ *)$name$ GPB_METHOD_FAMILY_NONE$deprecated_attribute$;
+      - ($property_type$ *)$name$ GPB_METHOD_FAMILY_NONE$ deprecated_attribute$;
     )objc");
   }
   printer->Emit("\n");
@@ -425,15 +425,15 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
       R"objc(
         $comments$
         $array_comment$
-        @property(nonatomic, readwrite, strong, null_resettable) $array_property_type$ *$name$$storage_attribute$$deprecated_attribute$;
+        @property(nonatomic, readwrite, strong, null_resettable) $array_property_type$ *$name$$storage_attribute$$ deprecated_attribute$;
         /** The number of items in @c $name$ without causing the container to be created. */
-        @property(nonatomic, readonly) NSUInteger $name$_Count$deprecated_attribute$;
+        @property(nonatomic, readonly) NSUInteger $name$_Count$ deprecated_attribute$;
       )objc");
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Emit(R"objc(
-      - ($array_property_type$ *)$name$ GPB_METHOD_FAMILY_NONE$deprecated_attribute$;
+      - ($array_property_type$ *)$name$ GPB_METHOD_FAMILY_NONE$ deprecated_attribute$;
     )objc");
   }
   printer->Emit("\n");
