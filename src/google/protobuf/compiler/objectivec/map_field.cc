@@ -150,17 +150,18 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
       value_field_generator_->variable("dataTypeSpecific_value");
 }
 
-void MapFieldGenerator::FinishInitialization() {
-  RepeatedFieldGenerator::FinishInitialization();
+void MapFieldGenerator::EmitArrayComment(io::Printer* printer) const {
   // Use the array_comment support in RepeatedFieldGenerator to output what the
   // values in the map are.
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_ENUM) {
-    std::string name = variables_["name"];
-    variables_["array_comment"] =
-        absl::StrCat("// |", name, "| values are |",
-                     value_field_generator_->variable("storage_type"), "|\n");
+    printer->Emit(
+        {{"name", variable("name")},
+         {"storage_type", value_field_generator_->variable("storage_type")}},
+        R"objc(
+          // |$name$| values are |$storage_type$|
+        )objc");
   }
 }
 

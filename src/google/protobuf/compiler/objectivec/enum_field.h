@@ -62,7 +62,7 @@ class RepeatedEnumFieldGenerator : public RepeatedFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  public:
-  void FinishInitialization() override;
+  void EmitArrayComment(io::Printer* printer) const override;
 
  protected:
   explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor);

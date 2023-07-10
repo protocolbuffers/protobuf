@@ -46,7 +46,7 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  public:
-  void FinishInitialization() override;
+  void EmitArrayComment(io::Printer* printer) const override;
 
   MapFieldGenerator(const MapFieldGenerator&) = delete;
   MapFieldGenerator& operator=(const MapFieldGenerator&) = delete;

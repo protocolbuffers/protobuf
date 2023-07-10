@@ -142,12 +142,11 @@ RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
   variables_["array_storage_type"] = "GPBEnumArray";
 }
 
-void RepeatedEnumFieldGenerator::FinishInitialization() {
-  RepeatedFieldGenerator::FinishInitialization();
-  std::string name = variables_["name"];
-  std::string storage_type = variables_["storage_type"];
-  variables_["array_comment"] =
-      absl::StrCat("// |", name, "| contains |", storage_type, "|\n");
+void RepeatedEnumFieldGenerator::EmitArrayComment(io::Printer* printer) const {
+  auto vars = printer->WithVars(variables_);
+  printer->Emit(R"objc(
+    // |$name$| contains |$storage_type$|
+  )objc");
 }
 
 // NOTE: RepeatedEnumFieldGenerator::DetermineForwardDeclarations isn't needed
