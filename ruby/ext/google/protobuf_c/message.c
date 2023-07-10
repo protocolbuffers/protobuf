@@ -108,7 +108,9 @@ void Message_InitPtr(VALUE self_, upb_Message* msg, VALUE arena) {
   Message* self = ruby_to_Message(self_);
   self->msg = msg;
   RB_OBJ_WRITE(self_, &self->arena, arena);
-  ObjectCache_Add(msg, self_);
+  VALUE stored = ObjectCache_TryAdd(msg, self_);
+  (void)stored;
+  PBRUBY_ASSERT(stored == self_);
 }
 
 VALUE Message_GetArena(VALUE msg_rb) {

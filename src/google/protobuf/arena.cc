@@ -519,7 +519,7 @@ ThreadSafeArena::ThreadCache& ThreadSafeArena::thread_cache() {
       new internal::ThreadLocalStorage<ThreadCache>();
   return *thread_cache_->Get();
 }
-#elif defined(PROTOBUF_USE_DLLS) && defined(_MSC_VER)
+#elif defined(PROTOBUF_USE_DLLS) && defined(_WIN32)
 ThreadSafeArena::ThreadCache& ThreadSafeArena::thread_cache() {
   static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache;
   return thread_cache;

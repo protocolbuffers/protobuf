@@ -260,7 +260,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // iOS does not support __thread keyword so we use a custom thread local
   // storage class we implemented.
   static ThreadCache& thread_cache();
-#elif defined(PROTOBUF_USE_DLLS) && defined(_MSC_VER)
+#elif defined(PROTOBUF_USE_DLLS) && defined(_WIN32)
   // Thread local variables cannot be exposed through MSVC DLL interface but we
   // can wrap them in static functions.
   static ThreadCache& thread_cache();
