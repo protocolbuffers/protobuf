@@ -11,7 +11,6 @@ Gem::Specification.new do |s|
   s.metadata    = { "source_code_uri" => "https://github.com/protocolbuffers/protobuf/tree/#{git_tag}/ruby" }
   s.require_paths = ["lib"]
   s.files       = Dir.glob('lib/**/*.rb')
-  s.test_files  = %w[tests/basic.rb tests/stress.rb tests/generated_code_test.rb]
   if RUBY_PLATFORM == "java"
     s.platform  = "java"
     s.files     += ["lib/google/protobuf_java.jar"]

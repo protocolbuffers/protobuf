@@ -28,67 +28,26 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'weakref'
-
 module Google
   module Protobuf
-    module ObjectCache
-      @@lock = Mutex.new
-      @@cache = {}
-      def self.drop(key)
-        @@lock.synchronize do
-          @@cache.delete(key.address)
-        end
-      end
+    private
 
-      def self.get(key)
-        @@lock.synchronize do
-          value = @@cache[key.address]
-          begin
-            if value.nil?
-              return nil
-            else
-              if value.weakref_alive?
-                return value.__getobj__
-              else
-                @@cache.delete(key.address)
-                return nil
-              end
-            end
-          rescue WeakRef::RefError
-            @@cache.delete(key.address)
-            return nil
-          end
-        end
-        nil
-      end
+    SIZEOF_LONG = ::FFI::MemoryPointer.new(:long).size
+    SIZEOF_VALUE = ::FFI::Pointer::SIZE
 
-      def self.add(key, value)
-        raise ArgumentError.new "WeakRef values are not allowed" if value.is_a? WeakRef
-        @@lock.synchronize do
-          if @@cache.include? key.address
-            existing_value = @@cache[key.address]
-            begin
-              if existing_value.nil?
-                raise ArgumentError.new "Key already exists in ObjectCache but has nil value"
-              else
-                if existing_value.weakref_alive?
-                  original = existing_value.__getobj__
-                  raise ArgumentError.new "Key already exists in ObjectCache for different value" unless original.object_id == value.object_id
-                else
-                  @@cache.delete(key.address)
-                  nil
-                end
-              end
-            rescue WeakRef::RefError
-              @@cache.delete(key.address)
-              nil
-            end
-          end
-          @@cache[key.address] = WeakRef.new value
-          nil
-        end
+    def self.interpreter_supports_non_finalized_keys_in_weak_map?
+      Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.7.0')
+    end
+
+    def self.cache_implementation
+      if interpreter_supports_non_finalized_keys_in_weak_map? and SIZEOF_LONG >= SIZEOF_VALUE
+        Google::Protobuf::ObjectCache
+      else
+        Google::Protobuf::LegacyObjectCache
       end
     end
+
+    public
+    OBJECT_CACHE = cache_implementation.new
   end
 end

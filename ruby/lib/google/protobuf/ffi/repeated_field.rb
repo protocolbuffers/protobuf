@@ -478,7 +478,7 @@ module Google
 
         # Should always be the last expression of the initializer to avoid
         # leaking references to this object before construction is complete.
-        ObjectCache.add(@array, self)
+        OBJECT_CACHE.try_add(@array.address, self)
       end
 
       # @param field [FieldDescriptor] Descriptor of the field where the RepeatedField will be assigned

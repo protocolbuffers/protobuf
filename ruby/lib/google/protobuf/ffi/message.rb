@@ -566,7 +566,7 @@ module Google
 
             # Should always be the last expression of the initializer to avoid
             # leaking references to this object before construction is complete.
-            Google::Protobuf::ObjectCache.add @msg, self
+            Google::Protobuf::OBJECT_CACHE.try_add @msg.address, self
           end
 
           ##
@@ -615,7 +615,7 @@ module Google
           # @param field [Google::Protobuf::FieldDescriptor] Type of the repeated field
           def get_repeated_field(array, field)
             return nil if array.nil? or array.null?
-            repeated_field = ObjectCache.get(array)
+            repeated_field = OBJECT_CACHE.get(array.address)
             if repeated_field.nil?
               repeated_field = RepeatedField.send(:construct_for_field, field, @arena, array: array)
             end
@@ -627,7 +627,7 @@ module Google
           # @param field [Google::Protobuf::FieldDescriptor] Type of the map field
           def get_map_field(map, field)
             return nil if map.nil? or map.null?
-            map_field = ObjectCache.get(map)
+            map_field = OBJECT_CACHE.get(map.address)
             if map_field.nil?
               map_field = Google::Protobuf::Map.send(:construct_for_field, field, @arena, map: map)
             end

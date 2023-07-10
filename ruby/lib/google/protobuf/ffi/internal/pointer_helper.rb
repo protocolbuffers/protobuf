@@ -32,17 +32,17 @@ module Google
   module Protobuf
     module Internal
       module PointerHelper
-        # Utility code to defensively find walk the object graph from a file_def
-        # to the pool, and either retrieve the wrapper object for the given
-        # pointer or create one. Assumes that the caller is the wrapper class
-        # for the given pointer and that it implements `private_constructor`.
+        # Utility code to defensively walk the object graph from a file_def to
+        # the pool, and either retrieve the wrapper object for the given pointer
+        # or create one. Assumes that the caller is the wrapper class for the
+        # given pointer and that it implements `private_constructor`.
         def descriptor_from_file_def(file_def, pointer)
           raise RuntimeError.new "FileDef is nil" if file_def.nil?
           raise RuntimeError.new "FileDef is null" if file_def.null?
           pool_def = Google::Protobuf::FFI.file_def_pool file_def
           raise RuntimeError.new "PoolDef is nil" if pool_def.nil?
           raise RuntimeError.new "PoolDef is null" if pool_def.null?
-          pool = Google::Protobuf::ObjectCache.get(pool_def)
+          pool = Google::Protobuf::OBJECT_CACHE.get(pool_def.address)
           raise "Cannot find pool in ObjectCache!" if pool.nil?
           descriptor = pool.descriptor_class_by_def[pointer.address]
           if descriptor.nil?
