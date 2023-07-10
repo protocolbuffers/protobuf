@@ -531,7 +531,8 @@ static size_t upb_MiniTable_DivideRoundUp(size_t n, size_t d) {
   return (n + d - 1) / d;
 }
 
-static void upb_MtDecoder_AssignHasbits(upb_MiniTable* ret) {
+static void upb_MtDecoder_AssignHasbits(upb_MtDecoder* d) {
+  upb_MiniTable* ret = d->table;
   int n = ret->field_count;
   int last_hasbit = 0;  // 0 cannot be used.
 
@@ -545,6 +546,10 @@ static void upb_MtDecoder_AssignHasbits(upb_MiniTable* ret) {
     }
   }
   ret->required_count = last_hasbit;
+
+  if (ret->required_count > 63) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Too many required fields");
+  }
 
   // Next assign non-required hasbit fields.
   for (int i = 0; i < n; i++) {
@@ -653,7 +658,7 @@ static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
 static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
                                    size_t len) {
   upb_MtDecoder_ParseMessage(d, data, len);
-  upb_MtDecoder_AssignHasbits(d->table);
+  upb_MtDecoder_AssignHasbits(d);
 
   if (UPB_UNLIKELY(d->table->field_count != 2)) {
     upb_MdDecoder_ErrorJmp(&d->base, "%hu fields in map",
@@ -723,7 +728,7 @@ static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
 
     case kUpb_EncodedVersion_MessageV1:
       upb_MtDecoder_ParseMessage(decoder, data, len);
-      upb_MtDecoder_AssignHasbits(decoder->table);
+      upb_MtDecoder_AssignHasbits(decoder);
       upb_MtDecoder_SortLayoutItems(decoder);
       upb_MtDecoder_AssignOffsets(decoder);
       break;

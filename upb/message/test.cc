@@ -669,4 +669,14 @@ TEST(MessageTest, MapField) {
 //   DecodeEncodeArbitrarySchemaAndPayload({{"%  ^!"}, {}, "", {}}, "", 0, 0);
 // }
 //
+// TEST(FuzzTest, TooManyRequiredFields) {
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {{"$ N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N "
+//         "N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N"},
+//        {},
+//        "",
+//        {}},
+//       "", 0, 4);
+// }
+//
 // end:google_only
