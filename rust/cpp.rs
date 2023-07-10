@@ -98,10 +98,10 @@ impl Drop for Arena {
     }
 }
 
-/// Represents serialized Protobuf wire format data. It's typically produced by
+/// Serialized Protobuf wire format data. It's typically produced by
 /// `<Message>.serialize()`.
 ///
-/// This struct is ABI compatible with the equivalent struct on the C++ side. It
+/// This struct is ABI-compatible with the equivalent struct on the C++ side. It
 /// owns (and drops) its data.
 #[repr(C)]
 pub struct SerializedData {

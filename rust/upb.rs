@@ -130,7 +130,7 @@ impl Drop for Arena {
     }
 }
 
-/// Represents serialized Protobuf wire format data.
+/// Serialized Protobuf wire format data.
 ///
 /// It's typically produced by `<Message>::serialize()`.
 pub struct SerializedData {
