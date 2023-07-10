@@ -72,7 +72,6 @@ class MessageGenerator {
   bool IncludesOneOfDefinition() const { return !oneof_generators_.empty(); }
 
  private:
-  const std::string root_classname_;
   const std::string file_description_name_;
   const Descriptor* descriptor_;
   FieldGeneratorMap field_generators_;
