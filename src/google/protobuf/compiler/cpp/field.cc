@@ -62,17 +62,6 @@ using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   bool split = ShouldSplit(field, opts);
-  // TODO(b/280674214): get rid of phase logic after TSan validation rolls out.
-  std::string tsan_validation_phase;
-  if (field->is_repeated()) {
-    tsan_validation_phase = "REPEATED";
-  } else if (field->cpp_type() < FieldDescriptor::CPPTYPE_STRING) {
-    tsan_validation_phase = "PRIMITIVE";
-  } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-    tsan_validation_phase = "STRING";
-  } else {  // message fields
-    tsan_validation_phase = "MESSAGE";
-  }
   std::vector<Sub> vars = {
       // This will eventually be renamed to "field", once the existing "field"
       // variable is replaced with "field_" everywhere.
@@ -99,11 +88,9 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
 
       // For TSan validation.
       {"TsanDetectConcurrentMutation",
-       absl::StrCat("PROTOBUF_TSAN_WRITE_", tsan_validation_phase,
-                    "(&_impl_._tsan_detect_race)")},
+       "PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race)"},
       {"TsanDetectConcurrentRead",
-       absl::StrCat("PROTOBUF_TSAN_READ_", tsan_validation_phase,
-                    "(&_impl_._tsan_detect_race)")},
+       "PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race)"},
 
       // Old-style names.
       {"field", FieldMemberName(field, split)},

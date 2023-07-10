@@ -271,11 +271,11 @@ inline void CppFeatures::set_legacy_closed_enum(bool value) {
   // @@protoc_insertion_point(field_set:pb.CppFeatures.legacy_closed_enum)
 }
 inline bool CppFeatures::_internal_legacy_closed_enum() const {
-  PROTOBUF_TSAN_READ_PRIMITIVE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.legacy_closed_enum_;
 }
 inline void CppFeatures::_internal_set_legacy_closed_enum(bool value) {
-  PROTOBUF_TSAN_WRITE_PRIMITIVE(&_impl_._tsan_detect_race);
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.legacy_closed_enum_ = value;
 }
