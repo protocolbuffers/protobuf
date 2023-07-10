@@ -360,7 +360,14 @@ std::vector<std::string> ExtractAndEscapeLines(const SourceLocation& location) {
   lines.reserve(raw_lines.size());
   for (absl::string_view l : raw_lines) {
     lines.push_back(absl::StrReplaceAll(
-        absl::StripPrefix(l, " "),
+        // Strip any trailing whitespace to avoid any warnings on the generated
+        // code; but only stip one leading white space as that tends to be
+        // carried over from the .proto file, and we don't want extra spaces,
+        // the formatting below will ensure there is a space.
+        // NOTE: There could be >1 leading whitespace if the .proto file has
+        // formatted comments (see the WKTs), so we maintain any additional
+        // leading whitespace.
+        absl::StripTrailingAsciiWhitespace(absl::StripPrefix(l, " ")),
         {// HeaderDoc and appledoc use '\' and '@' for markers; escape them.
          {"\\", "\\\\"},
          {"@", "\\@"},
@@ -419,7 +426,7 @@ void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
           {"lines",
            [&] {
              for (absl::string_view line : lines) {
-               printer->Emit({{"text", absl::StripAsciiWhitespace(line)}}, R"(
+               printer->Emit({{"text", line}}, R"(
                 *$ text$
               )");
              }

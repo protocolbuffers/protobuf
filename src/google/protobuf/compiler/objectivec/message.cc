@@ -31,9 +31,8 @@
 #include "google/protobuf/compiler/objectivec/message.h"
 
 #include <algorithm>
-#include <iostream>
+#include <cstddef>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -298,70 +297,71 @@ void MessageGenerator::DetermineObjectiveCClassDefinitions(
 }
 
 void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
-  // This a a map entry message, just recurse and do nothing directly.
+  // This a a map entry message, do nothing.
   if (IsMapEntryMessage(descriptor_)) {
     return;
   }
 
-  printer->Print(
-      // clang-format off
-      "#pragma mark - $classname$\n"
-      "\n",
-      // clang-format on
-      "classname", class_name_);
+  auto vars = printer->WithVars({{"classname", class_name_}});
 
-  if (descriptor_->field_count()) {
-    std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
-        SortFieldsByNumber(descriptor_));
+  printer->Emit(
+      {{"deprecated_attribute", deprecated_attribute_},
+       {"message_comments",
+        [&] { EmitCommentsString(printer, descriptor_, false); }},
+       {"message_fieldnum_enum",
+        [&] {
+          if (descriptor_->field_count() == 0) return;
+          printer->Emit(R"objc(
+            typedef GPB_ENUM($classname$_FieldNumber) {
+              $message_fieldnum_enum_values$,
+            };
+          )objc");
+          printer->Emit("\n");
+        }},
+       {"message_fieldnum_enum_values",
+        [&] {
+          std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
+              SortFieldsByNumber(descriptor_));
+          for (size_t i = 0; i < (size_t)descriptor_->field_count(); i++) {
+            field_generators_.get(sorted_fields[i])
+                .GenerateFieldNumberConstant(printer);
+          }
+        }},
+       {"oneof_enums",
+        [&] {
+          for (const auto& generator : oneof_generators_) {
+            generator->GenerateCaseEnum(printer);
+          }
+        }},
+       {"message_properties",
+        [&] {
+          std::vector<char> seen_oneofs(oneof_generators_.size(), 0);
+          for (int i = 0; i < descriptor_->field_count(); i++) {
+            const FieldDescriptor* field = descriptor_->field(i);
+            const OneofDescriptor* oneof = field->real_containing_oneof();
+            if (oneof) {
+              const size_t oneof_index = (size_t)oneof->index();
+              if (!seen_oneofs[oneof_index]) {
+                seen_oneofs[oneof_index] = 1;
+                oneof_generators_[oneof_index]
+                    ->GeneratePublicCasePropertyDeclaration(printer);
+              }
+            }
+            field_generators_.get(field).GeneratePropertyDeclaration(printer);
+          }
+        }}},
+      R"objc(
+        #pragma mark - $classname$
 
-    printer->Print("typedef GPB_ENUM($classname$_FieldNumber) {\n", "classname",
-                   class_name_);
-    printer->Indent();
+        $message_fieldnum_enum$
+        $oneof_enums$
+        $message_comments$
+        $deprecated_attribute$GPB_FINAL @interface $classname$ : GPBMessage
 
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-      field_generators_.get(sorted_fields[i])
-          .GenerateFieldNumberConstant(printer);
-    }
-
-    printer->Outdent();
-    printer->Print("};\n\n");
-  }
-
-  for (const auto& generator : oneof_generators_) {
-    generator->GenerateCaseEnum(printer);
-  }
-
-  std::string message_comments;
-  SourceLocation location;
-  if (descriptor_->GetSourceLocation(&location)) {
-    message_comments = BuildCommentsString(location, false);
-  } else {
-    message_comments = "";
-  }
-
-  printer->Print(
-      // clang-format off
-      "$comments$$deprecated_attribute$GPB_FINAL @interface $classname$ : GPBMessage\n\n",
-      // clang-format on
-      "classname", class_name_, "deprecated_attribute", deprecated_attribute_,
-      "comments", message_comments);
-
-  std::vector<char> seen_oneofs(oneof_generators_.size(), 0);
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
-    const OneofDescriptor* oneof = field->real_containing_oneof();
-    if (oneof) {
-      const int oneof_index = oneof->index();
-      if (!seen_oneofs[oneof_index]) {
-        seen_oneofs[oneof_index] = 1;
-        oneof_generators_[oneof_index]->GeneratePublicCasePropertyDeclaration(
-            printer);
-      }
-    }
-    field_generators_.get(field).GeneratePropertyDeclaration(printer);
-  }
-
-  printer->Print("@end\n\n");
+        $message_properties$
+        @end
+      )objc");
+  printer->Emit("\n");
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
     field_generators_.get(descriptor_->field(i))
@@ -372,16 +372,23 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
     for (const auto& generator : oneof_generators_) {
       generator->GenerateClearFunctionDeclaration(printer);
     }
-    printer->Print("\n");
+    printer->Emit("\n");
   }
 
   if (descriptor_->extension_count() > 0) {
-    printer->Print("@interface $classname$ (DynamicMethods)\n\n", "classname",
-                   class_name_);
-    for (const auto generator : extension_generators_) {
-      generator->GenerateMembersHeader(printer);
-    }
-    printer->Print("@end\n\n");
+    printer->Emit({{"extension_info",
+                    [&] {
+                      for (const auto* generator : extension_generators_) {
+                        generator->GenerateMembersHeader(printer);
+                      }
+                    }}},
+                  R"objc(
+                    @interface $classname$ (DynamicMethods)
+
+                    $extension_info$
+                    @end
+                  )objc");
+    printer->Emit("\n");
   }
 }
 

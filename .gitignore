@@ -58,6 +58,7 @@ src/js_embed
 
 # vim generated
 *.swp
+*~
 
 # Generated test scaffolding
 src/no_warning_test.cc

@@ -3391,6 +3391,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
         return internal::field_layout::TransformValidation{};
       };
       return {
+          1.f,                    // All fields are assumed present.
           verify_flag(),          //
           ref_.IsInlined(field),  //
 

@@ -131,6 +131,7 @@
 #include "google/protobuf/map.h"  // TODO(b/211442718): cleanup
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/reflection.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -437,14 +438,6 @@ void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
 // These are protobuf internals that users shouldn't care about.
 class RepeatedFieldAccessor;
 }  // namespace internal
-
-// Forward-declare RepeatedFieldRef templates. The second type parameter is
-// used for SFINAE tricks. Users should ignore it.
-template <typename T, typename Enable = void>
-class RepeatedFieldRef;
-
-template <typename T, typename Enable = void>
-class MutableRepeatedFieldRef;
 
 // This interface contains methods that can be used to dynamically access
 // and modify the fields of a protocol message.  Their semantics are
@@ -1575,6 +1568,18 @@ const Type& Reflection::GetRaw(const Message& message,
   }
   return internal::GetConstRefAtOffset<Type>(message,
                                              schema_.GetFieldOffset(field));
+}
+
+template <typename T>
+RepeatedFieldRef<T> Reflection::GetRepeatedFieldRef(
+    const Message& message, const FieldDescriptor* field) const {
+  return RepeatedFieldRef<T>(message, field);
+}
+
+template <typename T>
+MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
+    Message* message, const FieldDescriptor* field) const {
+  return MutableRepeatedFieldRef<T>(message, field);
 }
 }  // namespace protobuf
 }  // namespace google

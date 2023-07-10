@@ -155,6 +155,8 @@ class RepeatedFieldGenerator : public ObjCObjFieldGenerator {
 
   bool RuntimeUsesHasBit() const override;
 
+  virtual void EmitArrayComment(io::Printer* printer) const;
+
  protected:
   explicit RepeatedFieldGenerator(const FieldDescriptor* descriptor);
   void FinishInitialization() override;

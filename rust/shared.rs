@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2023 Google Inc.  All rights reserved.
+// Copyright 2023 Google LLC.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -47,7 +47,7 @@ mod optional;
 mod proxied;
 
 pub use optional::{AbsentField, FieldEntry, Optional, PresentField};
-pub use proxied::{Mut, MutProxy, Proxied, SettableValue, View, ViewProxy};
+pub use proxied::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
 
 /// Everything in `__internal` is allowed to change without it being considered
 /// a breaking change for the protobuf library. Nothing in here should be
