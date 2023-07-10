@@ -55,6 +55,24 @@ rust_test(
 )
 
 rust_test(
+    name = "reserved_cpp_test",
+    srcs = ["reserved_test.rs"],
+    deps = [
+        "//rust/test:reserved_cc_rust_proto",
+        "//rust/test:unittest_cc_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "reserved_upb_test",
+    srcs = ["reserved_test.rs"],
+    deps = [
+        "//rust/test:reserved_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
+    ],
+)
+
+rust_test(
     name = "nested_messages_cpp_test",
     srcs = ["nested_messages_test.rs"],
     deps = ["//rust/test:unittest_cc_rust_proto"],
