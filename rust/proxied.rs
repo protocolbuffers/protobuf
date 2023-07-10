@@ -81,7 +81,7 @@ pub trait Proxied {
     /// The proxy type that provides shared access to a `T`, like a `&'a T`.
     ///
     /// Most code should use the type alias [`View`].
-    type View<'a>: ViewProxy<'a, Proxied = Self> + Copy + Send
+    type View<'a>: ViewProxy<'a, Proxied = Self> + Copy + Send + SettableValue<Self>
     where
         Self: 'a;
 
@@ -219,14 +219,67 @@ pub trait MutProxy<'a>: ViewProxy<'a> {
         'a: 'shorter;
 }
 
+/// `Proxied` types that can be optionally set or unset.
+///
+/// All scalar and message types implement `ProxiedWithPresence`, while repeated
+/// types don't.
+pub trait ProxiedWithPresence: Proxied {
+    /// The data necessary to store a present field mutator proxying `Self`.
+    /// This is the contents of `PresentField<'a, Self>`.
+    type PresentMutData<'a>: MutProxy<'a, Proxied = Self>;
+
+    /// The data necessary to store an absent field mutator proxying `Self`.
+    /// This is the contents of `AbsentField<'a, Self>`.
+    type AbsentMutData<'a>: ViewProxy<'a, Proxied = Self>;
+
+    /// Clears a present field.
+    fn clear_present_field<'a>(
+        present_mutator: Self::PresentMutData<'a>,
+    ) -> Self::AbsentMutData<'a>;
+
+    /// Sets an absent field to its default value.
+    ///
+    /// This can be more efficient than setting with a default value, e.g.
+    /// a default submessage could share resources with the parent message.
+    fn set_absent_to_default<'a>(
+        absent_mutator: Self::AbsentMutData<'a>,
+    ) -> Self::PresentMutData<'a>;
+}
+
 /// Values that can be used to set a field of `T`.
-pub trait SettableValue<T>
+pub trait SettableValue<T>: Sized
 where
     T: Proxied + ?Sized,
 {
     /// Consumes `self` to set the given mutator to its value.
     #[doc(hidden)]
-    fn set_on(self, _private: Private, mutator: Mut<T>);
+    fn set_on(self, _private: Private, mutator: Mut<'_, T>);
+
+    /// Consumes `self` and `absent_mutator` to set the given empty field to
+    /// a value.
+    #[doc(hidden)]
+    fn set_on_absent<'a>(
+        self,
+        _private: Private,
+        absent_mutator: T::AbsentMutData<'a>,
+    ) -> T::PresentMutData<'a>
+    where
+        T: ProxiedWithPresence,
+    {
+        let mut present = T::set_absent_to_default(absent_mutator);
+        self.set_on(Private, present.as_mut());
+        present
+    }
+
+    /// Consumes `self` and `present_mutator` to set the given present field
+    /// to a value.
+    #[doc(hidden)]
+    fn set_on_present(self, _private: Private, mut present_mutator: T::PresentMutData<'_>)
+    where
+        T: ProxiedWithPresence,
+    {
+        self.set_on(Private, present_mutator.as_mut())
+    }
 }
 
 #[cfg(test)]
@@ -309,6 +362,12 @@ mod tests {
             'a: 'shorter,
         {
             self
+        }
+    }
+
+    impl SettableValue<MyProxied> for MyProxiedView<'_> {
+        fn set_on(self, _private: Private, mutator: Mut<MyProxied>) {
+            mutator.my_proxied_ref.val = self.my_proxied_ref.val.clone();
         }
     }
 
