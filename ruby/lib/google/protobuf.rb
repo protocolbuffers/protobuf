@@ -68,9 +68,10 @@ module Google
         require 'google/protobuf_ffi'
         :FFI
       rescue LoadError
-        warn "Caught exception `#{$!.message}` while loading FFI implementation of google/protobuf."
-        raise $!
-        warn "Falling back to native implementation."
+        if $DEBUG
+          warn "Caught exception `#{$!.message}` while loading FFI implementation of google/protobuf."
+          warn "Falling back to native implementation."
+        end
         require 'google/protobuf_native'
         :NATIVE
       end
