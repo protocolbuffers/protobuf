@@ -65,6 +65,7 @@
 #include <future>
 #include <vector>
 
+#include "google/protobuf/endian.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
 #include "conformance/conformance.pb.h"
@@ -155,7 +156,8 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
   }
   current_test_name_ = test_name;
 
-  uint32_t len = request.size();
+  uint32_t len = internal::little_endian::FromHost(
+      static_cast<uint32_t>(request.size()));
   CheckedWrite(write_fd_, &len, sizeof(uint32_t));
   CheckedWrite(write_fd_, request.c_str(), request.size());
 
@@ -190,6 +192,7 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
     return;
   }
 
+  len = internal::little_endian::ToHost(len);
   response->resize(len);
   CheckedRead(read_fd_, (void *)response->c_str(), len);
 }
