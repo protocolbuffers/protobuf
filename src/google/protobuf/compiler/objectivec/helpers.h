@@ -112,16 +112,10 @@ std::string ObjCClass(absl::string_view class_name);
 // be referred to by ObjCClass.
 std::string ObjCClassDeclaration(absl::string_view class_name);
 
-// Builds HeaderDoc/appledoc style comments out of the comments in the .proto
-// file.
-std::string BuildCommentsString(const SourceLocation& location,
-                                bool prefer_single_line);
-
 // Emits HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
 void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
-                        bool prefer_single_line,
-                        bool add_leading_newilne = false);
+                        bool prefer_single_line, bool add_leading_newilne);
 
 // Emits HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
