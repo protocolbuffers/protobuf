@@ -41,4 +41,6 @@ use protobuf_cpp as kernel;
 #[cfg(upb_kernel)]
 use protobuf_upb as kernel;
 
-pub use kernel::{Mut, MutProxy, ParseError, Proxied, ProxiedWithPresence, View, ViewProxy};
+pub use kernel::{
+    BytesMut, Mut, MutProxy, ParseError, Proxied, ProxiedWithPresence, View, ViewProxy,
+};
