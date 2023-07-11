@@ -69,7 +69,7 @@ void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {
         GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file())}},
       R"objc(
         $comments$
-        + (GPBExtensionDescriptor *)$method_name$$ storage_attribute$$deprecated_attribute$;
+        + (GPBExtensionDescriptor *)$method_name$$ storage_attribute$$ deprecated_attribute$;
       )objc");
 }
 
