@@ -45,11 +45,12 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-ExtensionGenerator::ExtensionGenerator(absl::string_view root_class_name,
-                                       const FieldDescriptor* descriptor)
+ExtensionGenerator::ExtensionGenerator(
+    absl::string_view root_or_message_class_name,
+    const FieldDescriptor* descriptor)
     : method_name_(ExtensionMethodName(descriptor)),
-      root_class_and_method_name_(
-          absl::StrCat(root_class_name, "_", method_name_)),
+      full_method_name_(
+          absl::StrCat(root_or_message_class_name, "_", method_name_)),
       descriptor_(descriptor) {
   ABSL_CHECK(!descriptor->is_map())
       << "error: Extension is a map<>!"
@@ -98,14 +99,14 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
         absl::StrCat("GPBDataType", GetCapitalizedType(descriptor_))},
        {"number", descriptor_->number()},
        {"options", BuildFlagsString(FLAGTYPE_EXTENSION, options)},
-       {"root_class_and_method_name", root_class_and_method_name_},
+       {"full_method_name", full_method_name_},
        {"type", objc_type == OBJECTIVECTYPE_MESSAGE
                     ? ObjCClass(ClassName(descriptor_->message_type()))
                     : "Nil"}},
       R"objc(
         {
           .defaultValue.$default_name$ = $default$,
-          .singletonName = GPBStringifySymbol($root_class_and_method_name$),
+          .singletonName = GPBStringifySymbol($full_method_name$),
           .extendedClass.clazz = $extended_type$,
           .messageOrGroupClass.clazz = $type$,
           .enumDescriptorFunc = $enum_desc_func_name$,
@@ -129,9 +130,9 @@ void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
 
 void ExtensionGenerator::GenerateRegistrationSource(
     io::Printer* printer) const {
-  printer->Emit({{"root_class_and_method_name", root_class_and_method_name_}},
+  printer->Emit({{"full_method_name", full_method_name_}},
                 R"objc(
-                  [registry addExtension:$root_class_and_method_name$];
+                  [registry addExtension:$full_method_name$];
                 )objc");
 }
 
