@@ -69,6 +69,12 @@ absl::Status Error(Args... args) {
   return absl::FailedPreconditionError(absl::StrCat(args...));
 }
 
+bool IsNonFeatureField(const FieldDescriptor& field) {
+  return field.containing_type() &&
+         field.containing_type()->full_name() == "google.protobuf.FeatureSet" &&
+         field.name() == "raw_features";
+}
+
 bool EditionsLessThan(absl::string_view a, absl::string_view b) {
   std::vector<absl::string_view> as = absl::StrSplit(a, '.');
   std::vector<absl::string_view> bs = absl::StrSplit(b, '.');
@@ -93,6 +99,8 @@ absl::Status ValidateDescriptor(absl::string_view edition,
   }
   for (int i = 0; i < descriptor.field_count(); ++i) {
     const FieldDescriptor& field = *descriptor.field(i);
+    if (IsNonFeatureField(field)) continue;
+
     if (field.is_required()) {
       return Error("Feature field ", field.full_name(),
                    " is an unsupported required field.");
@@ -122,6 +130,8 @@ absl::Status FillDefaults(absl::string_view edition, Message& msg) {
 
   for (int i = 0; i < descriptor.field_count(); ++i) {
     const FieldDescriptor& field = *descriptor.field(i);
+    if (IsNonFeatureField(field)) continue;
+
     msg.GetReflection()->ClearField(&msg, &field);
     ABSL_CHECK(!field.is_repeated());
 
