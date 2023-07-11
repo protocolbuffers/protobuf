@@ -36,17 +36,14 @@ module Google
     # different wrapper objects for the same C object, which saves memory and
     # preserves object identity.
     #
-    # We use WeakMap for the cache. For Ruby <2.7 we also need a secondary Hash
-    # to store WeakMap keys because Ruby <2.7 WeakMap doesn't allow non-finalizable
-    # keys.
-    #
-    # We also need the secondary Hash if sizeof(long) < sizeof(VALUE), because this
-    # means it may not be possible to fit a pointer into a Fixnum. Keys are
-    # pointers, and if they fit into a Fixnum, Ruby doesn't collect them, but if
-    # they overflow and require allocating a Bignum, they could get collected
-    # prematurely, thus removing the cache entry. This happens on 64-bit Windows,
-    # on which pointers are 64 bits but longs are 32 bits. In this case, we enable
-    # the secondary Hash to hold the keys and prevent them from being collected.
+    # We use WeakMap for the cache. If sizeof(long) > sizeof(VALUE), we also
+    # need a secondary Hash to store WeakMap keys, because our pointer keys may
+    # need to be stored as Bignum instead of Fixnum.  Since WeakMap is weak for
+    # both keys and values, a Bignum key will cause the WeakMap entry to be
+    # collected immediately unless there is another reference to the Bignum.
+    # This happens on 64-bit Windows, on which pointers are 64 bits but longs
+    # are 32 bits. In this case, we enable the secondary Hash to hold the keys
+    # and prevent them from being collected.
     class ObjectCache
       def initialize
         @map = ObjectSpace::WeakMap.new
@@ -121,4 +118,3 @@ module Google
     end
   end
 end
-

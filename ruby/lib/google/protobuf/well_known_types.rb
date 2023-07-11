@@ -72,14 +72,8 @@ module Google
     end
 
     Timestamp.class_eval do
-      if RUBY_VERSION < "2.5"
-        def to_time
-          Time.at(self.to_f)
-        end
-      else
-        def to_time
-          Time.at(seconds, nanos, :nanosecond)
-        end
+      def to_time
+        Time.at(seconds, nanos, :nanosecond)
       end
 
       def self.from_time(time)
