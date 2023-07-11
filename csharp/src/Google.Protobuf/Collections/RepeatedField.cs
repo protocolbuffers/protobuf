@@ -466,12 +466,81 @@ namespace Google.Protobuf.Collections
         /// <returns>
         /// An enumerator that can be used to iterate through the collection.
         /// </returns>
-        public IEnumerator<T> GetEnumerator()
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             for (int i = 0; i < count; i++)
             {
                 yield return array[i];
             }
+        }
+
+        /// <summary>Enumerates the elements of a RepeatedField</summary>
+        /// <typeparam name="T" />
+        public struct Enumerator : IEnumerator<T>, IEnumerator
+        {
+            private readonly RepeatedField<T> _repeatedField;
+            private int _index;
+            private T _current;
+
+            internal Enumerator(RepeatedField<T> repeatedField)
+            {
+                _repeatedField = repeatedField;
+                _index = 0;
+                _current = default;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public bool MoveNext()
+            {
+                if ((uint) _index < (uint) _repeatedField.Count)
+                {
+                    _current = _repeatedField[_index];
+                    _index++;
+                    return true;
+                }
+
+                return MoveNextRare();
+            }
+
+            private bool MoveNextRare()
+            {
+                _index = _repeatedField.Count + 1;
+                _current = default;
+                return false;
+            }
+
+            public T Current => _current!;
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    if (_index == 0 || _index == _repeatedField.Count + 1)
+                    {
+                        throw new InvalidOperationException("InvalidOperation_EnumOpCantHappen");
+                    }
+
+                    return Current;
+                }
+            }
+
+            void IEnumerator.Reset()
+            {
+                _index = 0;
+                _current = default;
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns></returns>
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator(this);
         }
 
         /// <summary>
