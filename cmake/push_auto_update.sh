@@ -22,15 +22,15 @@ title=$(git log -1 --pretty='%s')
 pr_from_merge=$(echo "$title" | sed -n 's/^Merge pull request #\([0-9]\+\).*/\1/p')
 pr_from_squash=$(echo "$title" | sed -n 's/^.*(#\([0-9]\+\))$/\1/p')
 
-pr=""
+pr_number=""
 if [ ! -z "$pr_from_merge" ]; then
-  pr="$pr_from_merge"
+  pr_number="$pr_from_merge"
 elif [ ! -z "$pr_from_squash" ]; then
-  pr="$pr_from_squash"
+  pr_number="$pr_from_squash"
 fi
 
-if [ ! -z "$pr" ]; then
-  commit_message="Auto-generate CMake file lists after PR #$pr"
+if [ ! -z "$pr_number" ]; then
+  commit_message="Auto-generate CMake file lists after PR #$pr_number"
 else
   # If we are unable to determine the pull request number, we fall back on this
   # default commit message. Typically this should not occur, but could happen
