@@ -56,6 +56,7 @@ bool IsSupportedFieldType(Context<FieldDescriptor> field);
 absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field);
 
 std::string FieldInfoComment(Context<FieldDescriptor> field);
+std::string GetRsQualifiedName(Context<FieldDescriptor> field);
 
 std::string RustModule(Context<Descriptor> msg);
 

@@ -28,49 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/compiler/rust/accessors/accessors.h"
+use nested_proto::nest::Outer;
 
-#include <memory>
-
-#include "google/protobuf/compiler/rust/context.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
-
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace rust {
-std::unique_ptr<AccessorGenerator> AccessorGenerator::For(
-    Context<FieldDescriptor> field) {
-  // We do not support [ctype=FOO] (used to set the field type in C++ to
-  // cord or string_piece) in V0 API.
-  if (field.desc().options().has_ctype()) {
-    return nullptr;
-  }
-
-  switch (field.desc().type()) {
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_SINT32:
-    case FieldDescriptor::TYPE_SINT64:
-    case FieldDescriptor::TYPE_UINT32:
-    case FieldDescriptor::TYPE_UINT64:
-    case FieldDescriptor::TYPE_FLOAT:
-    case FieldDescriptor::TYPE_DOUBLE:
-    case FieldDescriptor::TYPE_BOOL:
-      if (field.desc().is_repeated()) return nullptr;
-      return ForSingularScalar(field);
-    case FieldDescriptor::TYPE_BYTES:
-      if (field.desc().is_repeated()) return nullptr;
-      return ForSingularBytes(field);
-    case FieldDescriptor::TYPE_MESSAGE:
-      // can return ForSingularMessage(field) after b/290919904
-      return nullptr;
-    default:
-      return nullptr;
-  }
+#[test]
+fn test_simple_nested_proto() {
+    let _outer = Outer::new();
 }
-}  // namespace rust
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google

@@ -207,3 +207,19 @@ rust_upb_proto_library(
     ],
     deps = [":reserved_proto"],
 )
+
+proto_library(
+    name = "nested_proto",
+    testonly = True,
+    srcs = ["nested.proto"],
+)
+
+rust_upb_proto_library(
+    name = "nested_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+        "//rust/test/upb:__subpackages__",
+    ],
+    deps = [":nested_proto"],
+)

@@ -31,6 +31,7 @@
 #include "google/protobuf/compiler/rust/naming.h"
 
 #include <string>
+#include <vector>
 
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
@@ -38,6 +39,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 
@@ -178,6 +180,35 @@ std::string FieldInfoComment(Context<FieldDescriptor> field) {
 
   return comment;
 }
+
+std::string GetRsQualifiedName(Context<FieldDescriptor> field) {
+  std::vector<std::string> tokens = absl::StrSplit(
+      cpp::QualifiedClassName(field.desc().message_type()), "::");
+
+  // Tokenized from  ::protobuf_unittest::TestAllTypes_NestedMessage. Therefore,
+  // [0] is '', [1] is protobuf_unittest, and [2] is the target name
+  auto target = tokens[2];
+  // When genned, we append `_` like so:
+  // pub mod TestAllTypes_ {
+  //   pub struct NestedMessage {...}
+  // }
+  // So we'll split based on that, tack on `_`, and add `::` for Rust, except
+  // for the final iteration, since we don't want a suffix of _::
+  std::vector<std::string> namespaced = absl::StrSplit(target, '_');
+
+  // TODO: b/290919904
+  bool is_local = field.desc().message_type()->file() == field.desc().file();
+  auto prefix = is_local ? "crate::" : "crate::";
+  std::string res = prefix + tokens[1] + "::";
+  for (size_t i = 0; i < namespaced.size(); ++i) {
+    absl::StrAppend(&res, namespaced[i]);
+    if (i < namespaced.size() - 1) {
+      absl::StrAppend(&res, "_::");
+    }
+  }
+  return res;
+}
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf

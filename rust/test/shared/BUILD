@@ -107,3 +107,9 @@ rust_test(
     srcs = ["serialization_test.rs"],
     deps = ["//rust/test:unittest_cc_rust_proto"],
 )
+
+rust_test(
+    name = "simple_nested_upb_test",
+    srcs = ["simple_nested_test.rs"],
+    deps = ["//rust/test:nested_upb_rust_proto"],
+)
