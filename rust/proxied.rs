@@ -170,6 +170,15 @@ pub trait ViewProxy<'a>: 'a + Sized + Sync + Unpin + Sized + Debug {
 /// This trait is intentionally made non-object-safe to prevent a potential
 /// future incompatible change.
 pub trait MutProxy<'a>: ViewProxy<'a> {
+    /// Gets an immutable view of this field. This is shorthand for `as_view`.
+    ///
+    /// This provides a shorter lifetime than `into_view` but can also be called
+    /// multiple times - if the result of `get` is not living long enough
+    /// for your use, use that instead.
+    fn get(&self) -> View<'_, Self::Proxied> {
+        self.as_view()
+    }
+
     /// Sets this field to the given `val`.
     ///
     /// Any borrowed data from `val` will be cloned.
