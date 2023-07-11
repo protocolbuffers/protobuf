@@ -341,9 +341,8 @@ std::string ObjCClassDeclaration(absl::string_view class_name) {
   return absl::StrCat("GPBObjCClassDeclaration(", class_name, ");");
 }
 
-namespace {
-
-std::vector<std::string> ExtractAndEscapeLines(const SourceLocation& location) {
+void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
+                        bool prefer_single_line, bool add_leading_newilne) {
   absl::string_view comments = location.leading_comments.empty()
                                    ? location.trailing_comments
                                    : location.leading_comments;
@@ -353,7 +352,7 @@ std::vector<std::string> ExtractAndEscapeLines(const SourceLocation& location) {
     raw_lines.pop_back();
   }
   if (raw_lines.empty()) {
-    return {};
+    return;
   }
 
   std::vector<std::string> lines;
@@ -374,40 +373,6 @@ std::vector<std::string> ExtractAndEscapeLines(const SourceLocation& location) {
          // Decouple / from * to not have inline comments inside comments.
          {"/*", "/\\*"},
          {"*/", "*\\/"}}));
-  }
-  return lines;
-}
-
-}  // namespace
-
-std::string BuildCommentsString(const SourceLocation& location,
-                                bool prefer_single_line) {
-  std::vector<std::string> lines(ExtractAndEscapeLines(location));
-  if (lines.empty()) {
-    return "";
-  }
-
-  if (prefer_single_line && lines.size() == 1) {
-    return absl::StrCat("/** ", lines[0], " */\n");
-  }
-
-  std::string collector("/**\n");
-  for (size_t i = 0; i < lines.size(); i++) {
-    auto& line = lines[i];
-    if (line.empty()) {
-      absl::StrAppend(&collector, " *\n");
-    } else {
-      absl::StrAppend(&collector, " * ", line, "\n");
-    }
-  }
-  return absl::StrCat(collector, " **/\n");
-}
-
-void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
-                        bool prefer_single_line, bool add_leading_newilne) {
-  std::vector<std::string> lines(ExtractAndEscapeLines(location));
-  if (lines.empty()) {
-    return;
   }
 
   if (add_leading_newilne) {
