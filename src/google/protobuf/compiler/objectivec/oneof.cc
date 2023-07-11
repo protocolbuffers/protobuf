@@ -85,7 +85,7 @@ void OneofGenerator::GeneratePublicCasePropertyDeclaration(
     io::Printer* printer) const {
   auto vars = printer->WithVars(variables_);
   printer->Emit(
-      {{"comments", [&] { EmitCommentsString(printer, descriptor_, true); }}},
+      {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
       R"objc(
         $comments$;
         @property(nonatomic, readonly) $enum_name$ $name$OneOfCase;

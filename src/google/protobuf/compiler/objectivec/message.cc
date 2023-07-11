@@ -306,7 +306,10 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
   printer->Emit(
       {{"deprecated_attribute", deprecated_attribute_},
        {"message_comments",
-        [&] { EmitCommentsString(printer, descriptor_, false); }},
+        [&] {
+          EmitCommentsString(printer, descriptor_,
+                             CommentStringFlags::kForceMultiline);
+        }},
        {"message_fieldnum_enum",
         [&] {
           if (descriptor_->field_count() == 0) return;

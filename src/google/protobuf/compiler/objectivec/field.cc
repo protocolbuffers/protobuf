@@ -313,7 +313,7 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
     io::Printer* printer) const {
   auto vars = printer->WithVars(variables_);
   printer->Emit(
-      {{"comments", [&] { EmitCommentsString(printer, descriptor_, true); }}},
+      {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
       R"objc(
         $comments$
         @property(nonatomic, readwrite) $property_type$ $name$$deprecated_attribute$;
@@ -366,7 +366,7 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
 
   auto vars = printer->WithVars(variables_);
   printer->Emit(
-      {{"comments", [&] { EmitCommentsString(printer, descriptor_, true); }}},
+      {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
       R"objc(
         $comments$
         @property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$ *$name$$storage_attribute$$deprecated_attribute$;
@@ -420,7 +420,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
 
   auto vars = printer->WithVars(variables_);
   printer->Emit(
-      {{"comments", [&] { EmitCommentsString(printer, descriptor_, true); }},
+      {{"comments", [&] { EmitCommentsString(printer, descriptor_); }},
        {"array_comment", [&] { EmitArrayComment(printer); }}},
       R"objc(
         $comments$
