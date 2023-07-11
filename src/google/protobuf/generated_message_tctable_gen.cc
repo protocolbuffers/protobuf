@@ -256,7 +256,7 @@ bool IsFieldEligibleForFastParsing(
   const auto* field = entry.field;
   const auto options = option_provider.GetForField(field);
   ABSL_CHECK(!field->options().weak());
-  // Map, oneof, weak, and lazy fields are not handled on the fast path.
+  // Map, oneof, weak, and split fields are not handled on the fast path.
   if (field->is_map() || field->real_containing_oneof() ||
       options.is_implicitly_weak || options.should_split) {
     return false;
@@ -884,7 +884,21 @@ TailCallTableInfo::TailCallTableInfo(
     ABSL_CHECK_EQ(split_fields.size(), try_size);
     int try_num_fast_fields = 0;
     for (const auto& info : split_fields) {
-      if (!info.is_empty()) ++try_num_fast_fields;
+      if (info.is_empty()) continue;
+
+      if (info.AsNonField() != nullptr) {
+        ++try_num_fast_fields;
+        continue;
+      }
+
+      auto* as_field = info.AsField();
+      const auto option = option_provider.GetForField(as_field->field);
+      // 0.05 was selected based on load tests where 0.1 and 0.01 were also
+      // evaluated and worse.
+      constexpr float kMinPresence = 0.05f;
+      if (option.presence_probability >= kMinPresence) {
+        ++try_num_fast_fields;
+      }
     }
     // Use this size if (and only if) it covers more fields.
     if (try_num_fast_fields > num_fast_fields) {
