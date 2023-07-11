@@ -264,7 +264,7 @@ static void ObjectCache_Init(VALUE protobuf) {
   item_try_add = rb_intern("try_add");
 
   rb_gc_register_address(&weak_obj_cache);
-#if RUBY_API_VERSION_CODE >= 20700 && SIZEOF_LONG >= SIZEOF_VALUE
+#if SIZEOF_LONG >= SIZEOF_VALUE
   VALUE cache_class = rb_const_get(protobuf, rb_intern("ObjectCache"));
 #else
   VALUE cache_class = rb_const_get(protobuf, rb_intern("LegacyObjectCache"));
