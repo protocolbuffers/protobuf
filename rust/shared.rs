@@ -45,9 +45,11 @@ pub mod __runtime;
 
 mod optional;
 mod proxied;
+mod string;
 
 pub use optional::{AbsentField, FieldEntry, Optional, PresentField};
 pub use proxied::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
+pub use string::BytesMut;
 
 /// Everything in `__internal` is allowed to change without it being considered
 /// a breaking change for the protobuf library. Nothing in here should be
