@@ -60,7 +60,7 @@ ExtensionGenerator::ExtensionGenerator(
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {
   printer->Emit(
       {{"method_name", method_name_},
-       {"comments", [&] { EmitCommentsString(printer, descriptor_, true); }},
+       {"comments", [&] { EmitCommentsString(printer, descriptor_); }},
        {"storage_attribute",
         IsRetainedName(method_name_) ? "NS_RETURNS_NOT_RETAINED" : ""},
        {"deprecated_attribute",

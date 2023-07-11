@@ -342,7 +342,7 @@ std::string ObjCClassDeclaration(absl::string_view class_name) {
 }
 
 void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
-                        bool prefer_single_line, bool add_leading_newilne) {
+                        CommentStringFlags flags) {
   absl::string_view comments = location.leading_comments.empty()
                                    ? location.trailing_comments
                                    : location.leading_comments;
@@ -375,11 +375,11 @@ void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
          {"*/", "*\\/"}}));
   }
 
-  if (add_leading_newilne) {
+  if (flags & CommentStringFlags::kAddLeadingNewline) {
     printer->Emit("\n");
   }
 
-  if (prefer_single_line && lines.size() == 1) {
+  if ((flags & CommentStringFlags::kForceMultiline) == 0 && lines.size() == 1) {
     printer->Emit({{"text", lines[0]}}, R"(
       /** $text$ */
     )");
