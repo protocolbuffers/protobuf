@@ -446,7 +446,7 @@ def _SetStructValue(struct_value, value):
   elif isinstance(value, (dict, Struct)):
     struct_value.struct_value.Clear()
     struct_value.struct_value.update(value)
-  elif isinstance(value, (list, ListValue)):
+  elif isinstance(value, (list, tuple, ListValue)):
     struct_value.list_value.Clear()
     struct_value.list_value.extend(value)
   else:
