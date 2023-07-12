@@ -110,10 +110,10 @@ static void Message_dtor(zend_object* obj) {
  *
  * Helper function to look up a field given a member name (as a string).
  */
-static const upb_FieldDef *get_field(Message *msg, PROTO_STR *member) {
+static const upb_FieldDef *get_field(Message *msg, zend_string *member) {
   const upb_MessageDef *m = msg->desc->msgdef;
-  const upb_FieldDef *f =
-      upb_MessageDef_FindFieldByNameWithSize(m, PROTO_STRVAL_P(member), PROTO_STRLEN_P(member));
+  const upb_FieldDef *f = upb_MessageDef_FindFieldByNameWithSize(
+      m, ZSTR_VAL(member), ZSTR_LEN(member));
 
   if (!f) {
     zend_throw_exception_ex(NULL, 0, "No such property %s.",
@@ -283,7 +283,7 @@ static int Message_compare_objects(zval *m1, zval *m2) {
  *       return isset($this->optional_int32);
  *   }
  */
-static int Message_has_property(PROTO_VAL *obj, PROTO_STR *member,
+static int Message_has_property(zend_object *obj, zend_string *member,
                                 int has_set_exists,
                                 void **cache_slot) {
   Message* intern = PROTO_VAL_P(obj);
@@ -318,7 +318,7 @@ static int Message_has_property(PROTO_VAL *obj, PROTO_STR *member,
  *       unset($this->optional_int32);
  *   }
  */
-static void Message_unset_property(PROTO_VAL *obj, PROTO_STR *member,
+static void Message_unset_property(zend_object *obj, zend_string *member,
                                    void **cache_slot) {
   Message* intern = PROTO_VAL_P(obj);
   const upb_FieldDef *f = get_field(intern, member);
@@ -355,7 +355,7 @@ static void Message_unset_property(PROTO_VAL *obj, PROTO_STR *member,
  * We lookup the field and return the scalar, RepeatedField, or MapField for
  * this field.
  */
-static zval *Message_read_property(PROTO_VAL *obj, PROTO_STR *member,
+static zval *Message_read_property(zend_object *obj, zend_string *member,
                                    int type, void **cache_slot, zval *rv) {
   Message* intern = PROTO_VAL_P(obj);
   const upb_FieldDef *f = get_field(intern, member);
@@ -386,9 +386,9 @@ static zval *Message_read_property(PROTO_VAL *obj, PROTO_STR *member,
  * The C extension version of checkInt32() doesn't actually check anything, so
  * we perform all checking and conversion in this function.
  */
-static PROTO_RETURN_VAL Message_write_property(
-    PROTO_VAL *obj, PROTO_STR *member, zval *val, void **cache_slot) {
-  Message* intern = PROTO_VAL_P(obj);
+static zval *Message_write_property(zend_object *obj, zend_string *member,
+                                    zval *val, void **cache_slot) {
+  Message *intern = PROTO_VAL_P(obj);
   const upb_FieldDef *f = get_field(intern, member);
 
   if (f && Message_set(intern, f, val)) {
@@ -413,7 +413,7 @@ static PROTO_RETURN_VAL Message_write_property(
  * reference to our internal properties. We don't support this, so we return
  * NULL.
  */
-static zval *Message_get_property_ptr_ptr(PROTO_VAL *object, PROTO_STR *member,
+static zval *Message_get_property_ptr_ptr(zend_object *object, zend_string *member,
                                           int type,
                                           void **cache_slot) {
   return NULL;  // We do not have a properties table.
@@ -426,7 +426,7 @@ static zval *Message_get_property_ptr_ptr(PROTO_VAL *object, PROTO_STR *member,
  *
  *   $msg2 = clone $msg;
  */
-static zend_object *Message_clone_obj(PROTO_VAL *object) {
+static zend_object *Message_clone_obj(zend_object *object) {
   Message* intern = PROTO_VAL_P(object);
   upb_MiniTable *t = upb_MessageDef_MiniTable(intern->desc->msgdef);
   upb_Message *clone = upb_Message_New(t, Arena_Get(&intern->arena));
@@ -445,7 +445,7 @@ static zend_object *Message_clone_obj(PROTO_VAL *object) {
  * Object handler for the get_properties event in PHP. This returns a HashTable
  * of our internal properties. We don't support this, so we return NULL.
  */
-static HashTable *Message_get_properties(PROTO_VAL *object) {
+static HashTable *Message_get_properties(zend_object *object) {
   return NULL;  // We don't offer direct references to our properties.
 }
 

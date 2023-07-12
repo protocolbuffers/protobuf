@@ -133,7 +133,7 @@ static int MapField_compare_objects(zval *map1, zval *map2) {
  *
  *   $map2 = clone $map1;
  */
-static zend_object *MapField_clone_obj(PROTO_VAL *object) {
+static zend_object *MapField_clone_obj(zend_object *object) {
   MapField* intern = PROTO_VAL_P(object);
   upb_Arena *arena = Arena_Get(&intern->arena);
   upb_Map *clone =
@@ -151,12 +151,12 @@ static zend_object *MapField_clone_obj(PROTO_VAL *object) {
   return Z_OBJ_P(&ret);
 }
 
-static zval *Map_GetPropertyPtrPtr(PROTO_VAL *object, PROTO_STR *member,
+static zval *Map_GetPropertyPtrPtr(zend_object *object, zend_string *member,
                                    int type, void **cache_slot) {
   return NULL;  // We don't offer direct references to our properties.
 }
 
-static HashTable *Map_GetProperties(PROTO_VAL *object) {
+static HashTable *Map_GetProperties(zend_object *object) {
   return NULL;  // We do not have a properties table.
 }
 
@@ -458,23 +458,23 @@ ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_offsetGet, 0, 0, IS_MI
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetSet, 0, 2, IS_VOID, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetSet, 0, 2, IS_VOID, 0)
   ZEND_ARG_INFO(0, index)
   ZEND_ARG_INFO(0, newval)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetUnset, 0, 0, IS_VOID, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetUnset, 0, 0, IS_VOID, 0)
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetExists, 0, 0, _IS_BOOL, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetExists, 0, 0, _IS_BOOL, 0)
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_getIterator, 0, 0, Traversable, 0)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_count, 0, 0, IS_LONG, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_count, 0, 0, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
 static zend_function_entry MapField_methods[] = {
@@ -624,7 +624,7 @@ PHP_METHOD(MapFieldIter, valid) {
   RETURN_BOOL(!done);
 }
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_rewind, 0, 0, IS_VOID, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_rewind, 0, 0, IS_VOID, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_current, 0, 0, IS_MIXED, 0)
@@ -633,10 +633,10 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_key, 0, 0, IS_MIXED, 0)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_next, 0, 0, IS_VOID, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_next, 0, 0, IS_VOID, 0)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_valid, 0, 0, _IS_BOOL, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_valid, 0, 0, _IS_BOOL, 0)
 ZEND_END_ARG_INFO()
 
 static zend_function_entry map_field_iter_methods[] = {
