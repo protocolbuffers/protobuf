@@ -286,7 +286,7 @@ static int Message_compare_objects(zval *m1, zval *m2) {
 static int Message_has_property(zend_object *obj, zend_string *member,
                                 int has_set_exists,
                                 void **cache_slot) {
-  Message* intern = PROTO_VAL_P(obj);
+  Message* intern = (Message*)obj;
   const upb_FieldDef *f = get_field(intern, member);
 
   if (!f) return 0;
@@ -320,7 +320,7 @@ static int Message_has_property(zend_object *obj, zend_string *member,
  */
 static void Message_unset_property(zend_object *obj, zend_string *member,
                                    void **cache_slot) {
-  Message* intern = PROTO_VAL_P(obj);
+  Message* intern = (Message*)obj;
   const upb_FieldDef *f = get_field(intern, member);
 
   if (!f) return;
@@ -357,7 +357,7 @@ static void Message_unset_property(zend_object *obj, zend_string *member,
  */
 static zval *Message_read_property(zend_object *obj, zend_string *member,
                                    int type, void **cache_slot, zval *rv) {
-  Message* intern = PROTO_VAL_P(obj);
+  Message* intern = (Message*)obj;
   const upb_FieldDef *f = get_field(intern, member);
 
   if (!f) return &EG(uninitialized_zval);
@@ -388,7 +388,7 @@ static zval *Message_read_property(zend_object *obj, zend_string *member,
  */
 static zval *Message_write_property(zend_object *obj, zend_string *member,
                                     zval *val, void **cache_slot) {
-  Message *intern = PROTO_VAL_P(obj);
+  Message* intern = (Message*)obj;
   const upb_FieldDef *f = get_field(intern, member);
 
   if (f && Message_set(intern, f, val)) {
@@ -427,7 +427,7 @@ static zval *Message_get_property_ptr_ptr(zend_object *object, zend_string *memb
  *   $msg2 = clone $msg;
  */
 static zend_object *Message_clone_obj(zend_object *object) {
-  Message* intern = PROTO_VAL_P(object);
+  Message* intern = (Message*)object;
   upb_MiniTable *t = upb_MessageDef_MiniTable(intern->desc->msgdef);
   upb_Message *clone = upb_Message_New(t, Arena_Get(&intern->arena));
 

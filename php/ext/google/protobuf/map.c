@@ -134,7 +134,7 @@ static int MapField_compare_objects(zval *map1, zval *map2) {
  *   $map2 = clone $map1;
  */
 static zend_object *MapField_clone_obj(zend_object *object) {
-  MapField* intern = PROTO_VAL_P(object);
+  MapField* intern = (MapField*)object;
   upb_Arena *arena = Arena_Get(&intern->arena);
   upb_Map *clone =
       upb_Map_New(arena, intern->type.key_type, intern->type.val_type.type);
