@@ -81,12 +81,13 @@ std::string StripExtension(absl::string_view fname);
 std::string ToCIdent(absl::string_view str);
 std::string ToPreproc(absl::string_view str);
 void EmitFileWarning(absl::string_view name, Output& output);
+std::string MessageInit(absl::string_view full_name);
+std::string MessageInitName(upb::MessageDefPtr descriptor);
 std::string MessageName(upb::MessageDefPtr descriptor);
 std::string FileLayoutName(upb::FileDefPtr file);
 std::string MiniTableHeaderFilename(upb::FileDefPtr file);
 std::string CApiHeaderFilename(upb::FileDefPtr file);
 
-std::string MessageInit(absl::string_view full_name);
 std::string EnumInit(upb::EnumDefPtr descriptor);
 
 std::string FieldInitializer(upb::FieldDefPtr field,

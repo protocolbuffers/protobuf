@@ -369,7 +369,7 @@ static PyObject* PyUpb_Descriptor_GetOneofs(PyObject* _self, void* closure) {
 static PyObject* PyUpb_Descriptor_GetOptions(PyObject* _self, PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(
-      self, upb_MessageDef_Options(self->def), &google_protobuf_MessageOptions_msg_init,
+      self, upb_MessageDef_Options(self->def), &google__protobuf__MessageOptions_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".MessageOptions");
 }
 
@@ -377,7 +377,7 @@ static PyObject* PyUpb_Descriptor_CopyToProto(PyObject* _self,
                                               PyObject* py_proto) {
   return PyUpb_DescriptorBase_CopyToProto(
       _self, (PyUpb_ToProto_Func*)&upb_MessageDef_ToProto,
-      &google_protobuf_DescriptorProto_msg_init,
+      &google__protobuf__DescriptorProto_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".DescriptorProto", py_proto);
 }
 
@@ -793,7 +793,7 @@ static PyObject* PyUpb_EnumDescriptor_GetOptions(PyObject* _self,
                                                  PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(
-      self, upb_EnumDef_Options(self->def), &google_protobuf_EnumOptions_msg_init,
+      self, upb_EnumDef_Options(self->def), &google__protobuf__EnumOptions_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".EnumOptions");
 }
 
@@ -801,7 +801,7 @@ static PyObject* PyUpb_EnumDescriptor_CopyToProto(PyObject* _self,
                                                   PyObject* py_proto) {
   return PyUpb_DescriptorBase_CopyToProto(
       _self, (PyUpb_ToProto_Func*)&upb_EnumDef_ToProto,
-      &google_protobuf_EnumDescriptorProto_msg_init,
+      &google__protobuf__EnumDescriptorProto_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".EnumDescriptorProto", py_proto);
 }
 
@@ -884,7 +884,7 @@ static PyObject* PyUpb_EnumValueDescriptor_GetOptions(PyObject* _self,
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(
       self, upb_EnumValueDef_Options(self->def),
-      &google_protobuf_EnumValueOptions_msg_init,
+      &google__protobuf__EnumValueOptions_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".EnumValueOptions");
 }
 
@@ -1084,7 +1084,7 @@ static PyObject* PyUpb_FieldDescriptor_GetOptions(PyObject* _self,
                                                   PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(
-      self, upb_FieldDef_Options(self->def), &google_protobuf_FieldOptions_msg_init,
+      self, upb_FieldDef_Options(self->def), &google__protobuf__FieldOptions_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".FieldOptions");
 }
 
@@ -1222,7 +1222,7 @@ static PyObject* PyUpb_FileDescriptor_GetSerializedPb(PyObject* self,
                                                       void* closure) {
   return PyUpb_DescriptorBase_GetSerializedProto(
       self, (PyUpb_ToProto_Func*)&upb_FileDef_ToProto,
-      &google_protobuf_FileDescriptorProto_msg_init);
+      &google__protobuf__FileDescriptorProto_msg_init);
 }
 
 static PyObject* PyUpb_FileDescriptor_GetMessageTypesByName(PyObject* _self,
@@ -1325,7 +1325,7 @@ static PyObject* PyUpb_FileDescriptor_GetOptions(PyObject* _self,
                                                  PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(
-      self, upb_FileDef_Options(self->def), &google_protobuf_FileOptions_msg_init,
+      self, upb_FileDef_Options(self->def), &google__protobuf__FileOptions_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".FileOptions");
 }
 
@@ -1333,7 +1333,7 @@ static PyObject* PyUpb_FileDescriptor_CopyToProto(PyObject* _self,
                                                   PyObject* py_proto) {
   return PyUpb_DescriptorBase_CopyToProto(
       _self, (PyUpb_ToProto_Func*)&upb_FileDef_ToProto,
-      &google_protobuf_FileDescriptorProto_msg_init,
+      &google__protobuf__FileDescriptorProto_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".FileDescriptorProto", py_proto);
 }
 
@@ -1445,7 +1445,7 @@ static PyObject* PyUpb_MethodDescriptor_GetOptions(PyObject* _self,
                                                    PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(
-      self, upb_MethodDef_Options(self->def), &google_protobuf_MethodOptions_msg_init,
+      self, upb_MethodDef_Options(self->def), &google__protobuf__MethodOptions_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".MethodOptions");
 }
 
@@ -1453,7 +1453,7 @@ static PyObject* PyUpb_MethodDescriptor_CopyToProto(PyObject* _self,
                                                     PyObject* py_proto) {
   return PyUpb_DescriptorBase_CopyToProto(
       _self, (PyUpb_ToProto_Func*)&upb_MethodDef_ToProto,
-      &google_protobuf_MethodDescriptorProto_msg_init,
+      &google__protobuf__MethodDescriptorProto_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".MethodDescriptorProto", py_proto);
 }
 
@@ -1549,7 +1549,7 @@ static PyObject* PyUpb_OneofDescriptor_GetOptions(PyObject* _self,
                                                   PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(
-      self, upb_OneofDef_Options(self->def), &google_protobuf_OneofOptions_msg_init,
+      self, upb_OneofDef_Options(self->def), &google__protobuf__OneofOptions_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".OneofOptions");
 }
 
@@ -1649,7 +1649,7 @@ static PyObject* PyUpb_ServiceDescriptor_GetOptions(PyObject* _self,
                                                     PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(
-      self, upb_ServiceDef_Options(self->def), &google_protobuf_ServiceOptions_msg_init,
+      self, upb_ServiceDef_Options(self->def), &google__protobuf__ServiceOptions_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".ServiceOptions");
 }
 
@@ -1657,7 +1657,7 @@ static PyObject* PyUpb_ServiceDescriptor_CopyToProto(PyObject* _self,
                                                      PyObject* py_proto) {
   return PyUpb_DescriptorBase_CopyToProto(
       _self, (PyUpb_ToProto_Func*)&upb_ServiceDef_ToProto,
-      &google_protobuf_ServiceDescriptorProto_msg_init,
+      &google__protobuf__ServiceDescriptorProto_msg_init,
       PYUPB_DESCRIPTOR_PROTO_PACKAGE ".ServiceDescriptorProto", py_proto);
 }
 

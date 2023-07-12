@@ -7,6 +7,10 @@
 
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
+    "//bazel:upb_minitable_proto_library.bzl",
+    "upb_minitable_proto_library",
+)
+load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_reflection_library",
@@ -154,11 +158,11 @@ cc_library(
         ":accessors_internal",
         ":internal",
         ":message",
+        ":tagged_ptr",
         ":types",
         "//upb:base",
         "//upb:eps_copy_input_stream",
         "//upb:mem",
-        "//upb:message_tagged_ptr",
         "//upb:mini_table",
         "//upb:mini_table_internal",
         "//upb:port",
@@ -225,6 +229,12 @@ proto_library(
     deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
+upb_minitable_proto_library(
+    name = "message_test_upb_minitable_proto",
+    testonly = 1,
+    deps = [":message_test_proto"],
+)
+
 upb_proto_library(
     name = "message_test_upb_proto",
     testonly = 1,
@@ -246,12 +256,15 @@ cc_test(
         "//:protobuf",
         "@com_google_googletest//:gtest_main",
         "//upb:base",
+        "//upb:mem",
         "//upb:mini_descriptor",
         "//upb:mini_descriptor_internal",
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire",
+        "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_messages_proto3_upb_minitable",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
@@ -283,8 +296,8 @@ cc_test(
         "//upb:mem",
         "//upb:mini_table",
         "//upb:wire",
+        "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto2_upb_proto",
-        "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
     ],
@@ -307,18 +320,22 @@ cc_test(
     deps = [
         ":accessors",
         ":copy",
+        ":internal",
         ":message",
         ":promote",
+        ":tagged_ptr",
         "//:protobuf",
         "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
+        "//upb:mini_descriptor",
         "//upb:mini_descriptor_internal",
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
+        "//upb/test:test_proto_upb_minitable",
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
     ],
@@ -330,12 +347,16 @@ cc_test(
     name = "test",
     srcs = ["test.cc"],
     deps = [
+        ":message_test_upb_minitable_proto",
         ":message_test_upb_proto",
         ":message_test_upb_proto_reflection",
+        ":value",
         "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:json",
         "//upb:mem",
+        "//upb:message",
+        "//upb:mini_table",
         "//upb:reflection",
         "//upb:wire",
         "//upb/test:fuzz_util",
@@ -350,6 +371,12 @@ proto_library(
     deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
+upb_minitable_proto_library(
+    name = "utf8_test_upb_minitable_proto",
+    testonly = 1,
+    deps = [":utf8_test_proto"],
+)
+
 upb_proto_library(
     name = "utf8_test_upb_proto",
     testonly = 1,
@@ -360,6 +387,7 @@ cc_test(
     name = "utf8_test",
     srcs = ["utf8_test.cc"],
     deps = [
+        ":utf8_test_upb_minitable_proto",
         ":utf8_test_upb_proto",
         "@com_google_googletest//:gtest_main",
         "//upb:base",

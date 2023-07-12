@@ -84,10 +84,6 @@ std::string SourceFilename(upb::FileDefPtr file) {
   return StripExtension(file.name()) + ".upb_minitable.c";
 }
 
-std::string MessageInitName(upb::MessageDefPtr descriptor) {
-  return absl::StrCat(MessageName(descriptor), "_msg_init");
-}
-
 std::string ExtensionIdentBase(upb::FieldDefPtr ext) {
   assert(ext.is_extension());
   std::string ext_scope;

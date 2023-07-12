@@ -48,6 +48,11 @@
 // Must be last
 #include "upb/port/def.inc"
 
+// Generate a mangled C name for a proto object.
+static std::string MangleName(absl::string_view name) {
+  return absl::StrReplaceAll(name, {{"_", "_0"}, {".", "__"}});
+}
+
 namespace upb {
 namespace generator {
 
@@ -78,6 +83,14 @@ void EmitFileWarning(absl::string_view name, Output& output) {
       name);
 }
 
+std::string MessageInit(absl::string_view full_name) {
+  return MangleName(full_name) + "_msg_init";
+}
+
+std::string MessageInitName(upb::MessageDefPtr descriptor) {
+  return MessageInit(descriptor.full_name());
+}
+
 std::string MessageName(upb::MessageDefPtr descriptor) {
   return ToCIdent(descriptor.full_name());
 }
@@ -92,10 +105,6 @@ std::string CApiHeaderFilename(upb::FileDefPtr file) {
 
 std::string MiniTableHeaderFilename(upb::FileDefPtr file) {
   return StripExtension(file.name()) + ".upb_minitable.h";
-}
-
-std::string MessageInit(absl::string_view full_name) {
-  return ToCIdent(full_name) + "_msg_init";
 }
 
 std::string EnumInit(upb::EnumDefPtr descriptor) {

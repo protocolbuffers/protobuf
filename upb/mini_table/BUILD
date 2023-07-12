@@ -83,8 +83,8 @@ cc_test(
     deps = [
         "@com_google_googletest//:gtest_main",
         "//upb:mini_table_compat",
-        "//upb/test:test_messages_proto2_upb_proto",
-        "//upb/test:test_messages_proto3_upb_proto",
+        "//upb/test:test_messages_proto2_upb_minitable",
+        "//upb/test:test_messages_proto3_upb_minitable",
         "//upb/test:test_upb_proto",
     ],
 )

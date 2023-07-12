@@ -6,11 +6,9 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <gtest/gtest.h>
-#include "google/protobuf/test_messages_proto2.upb.h"
-#include "google/protobuf/test_messages_proto3.upb.h"
+#include "google/protobuf/test_messages_proto2.upb_minitable.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
-#include "upb/test/test.upb.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -20,7 +18,7 @@ TEST(MiniTableOneofTest, OneOfIteratorProto2) {
   constexpr int oneof_test_field_number = 116;
 
   const upb_MiniTable* google_protobuf_table =
-      &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init;
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
   const upb_MiniTableField* field =
       upb_MiniTable_FindFieldByNumber(google_protobuf_table, oneof_test_field_number);
   ASSERT_TRUE(field != nullptr);
@@ -34,7 +32,7 @@ TEST(MiniTableOneofTest, OneOfIteratorProto2) {
 TEST(MiniTableOneofTest, InitialFieldNotOneOf) {
   constexpr int test_field_number = 1;  // optional int that is not a oneof
   const upb_MiniTable* google_protobuf_table =
-      &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init;
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
   const upb_MiniTableField* field =
       upb_MiniTable_FindFieldByNumber(google_protobuf_table, test_field_number);
   ASSERT_TRUE(field != nullptr);

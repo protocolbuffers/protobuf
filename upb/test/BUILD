@@ -10,6 +10,10 @@ load(
     "UPB_DEFAULT_CPPOPTS",
 )
 load(
+    "//bazel:upb_minitable_proto_library.bzl",
+    "upb_minitable_proto_library",
+)
+load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_reflection_library",
@@ -66,6 +70,13 @@ proto_library(
     srcs = ["test.proto"],
 )
 
+upb_minitable_proto_library(
+    name = "test_proto_upb_minitable",
+    testonly = 1,
+    visibility = ["//upb:__subpackages__"],
+    deps = [":test_proto"],
+)
+
 upb_proto_library(
     name = "test_upb_proto",
     testonly = 1,
@@ -87,6 +98,20 @@ upb_proto_library(
 upb_proto_reflection_library(
     name = "test_cpp_upb_proto_reflection",
     deps = ["test_cpp_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "test_messages_proto2_upb_minitable",
+    testonly = 1,
+    visibility = ["//upb:__subpackages__"],
+    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "test_messages_proto3_upb_minitable",
+    testonly = 1,
+    visibility = ["//upb:__subpackages__"],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 upb_proto_library(
@@ -182,12 +207,10 @@ cc_test(
     ],
     deps = [
         ":empty_upb_proto_reflection",
-        ":test_messages_proto2_upb_proto",
-        ":test_messages_proto3_upb_proto",
+        ":test_messages_proto2_upb_minitable",
         ":test_upb_proto",
         "@com_google_googletest//:gtest_main",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
     ],
 )
@@ -223,6 +246,12 @@ proto_library(
     deps = [":empty_srcs_3_proto"],
 )
 
+upb_minitable_proto_library(
+    name = "test_import_empty_srcs_upb_minitable_proto",
+    testonly = 1,
+    deps = [":test_import_empty_srcs_proto"],
+)
+
 upb_proto_library(
     name = "test_import_empty_srcs_upb_proto",
     testonly = 1,
@@ -233,7 +262,7 @@ cc_test(
     name = "test_import_empty_srcs",
     srcs = ["test_import_empty_srcs.cc"],
     deps = [
-        ":test_import_empty_srcs_upb_proto",
+        ":test_import_empty_srcs_upb_minitable_proto",
         "@com_google_googletest//:gtest_main",
     ],
 )
