@@ -180,14 +180,6 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
 // ===================================================================
 // Constructors and basic methods.
 
-ExtensionSet::ExtensionSet(Arena* arena)
-    : arena_(arena),
-      flat_capacity_(0),
-      flat_size_(0),
-      map_{flat_capacity_ == 0
-               ? nullptr
-               : Arena::CreateArray<KeyValue>(arena_, flat_capacity_)} {}
-
 ExtensionSet::~ExtensionSet() {
   // Deletes all allocated extensions.
   if (arena_ == nullptr) {

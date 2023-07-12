@@ -49,6 +49,7 @@
 #include "absl/base/call_once.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -194,10 +195,18 @@ class PROTOBUF_EXPORT GeneratedExtensionFinder {
 // off to the ExtensionSet for parsing.  Etc.
 class PROTOBUF_EXPORT ExtensionSet {
  public:
-  constexpr ExtensionSet();
-  explicit ExtensionSet(Arena* arena);
+  constexpr ExtensionSet() : ExtensionSet(nullptr) {}
+  ExtensionSet(const ExtensionSet& rhs) = delete;
+
+  // Arena enabled constructors: for internal use only.
+  ExtensionSet(internal::InternalVisibility, Arena* arena)
+      : ExtensionSet(arena) {}
+
+  // TODO(b/290091828): make constructor private, and migrate `ArenaInitialized`
+  // to `InternalVisibility` overloaded constructor(s).
+  explicit constexpr ExtensionSet(Arena* arena);
   ExtensionSet(ArenaInitialized, Arena* arena) : ExtensionSet(arena) {}
-  ExtensionSet(const ExtensionSet&) = delete;
+
   ExtensionSet& operator=(const ExtensionSet&) = delete;
   ~ExtensionSet();
 
@@ -932,8 +941,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   static void DeleteFlatMap(const KeyValue* flat, uint16_t flat_capacity);
 };
 
-constexpr ExtensionSet::ExtensionSet()
-    : arena_(nullptr), flat_capacity_(0), flat_size_(0), map_{nullptr} {}
+constexpr ExtensionSet::ExtensionSet(Arena* arena)
+    : arena_(arena), flat_capacity_(0), flat_size_(0), map_{nullptr} {}
 
 // These are just for convenience...
 inline void ExtensionSet::SetString(int number, FieldType type,
