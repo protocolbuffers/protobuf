@@ -674,11 +674,7 @@ void Map_ModuleInit() {
   h = &MapField_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = MapField_destructor;
-#if PHP_VERSION_ID < 80000
-  h->compare_objects = MapField_compare_objects;
-#else
   h->compare = MapField_compare_objects;
-#endif
   h->clone_obj = MapField_clone_obj;
   h->get_properties = Map_GetProperties;
   h->get_property_ptr_ptr = Map_GetPropertyPtrPtr;

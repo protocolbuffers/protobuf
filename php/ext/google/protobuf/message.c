@@ -392,17 +392,9 @@ static zval *Message_write_property(zend_object *obj, zend_string *member,
   const upb_FieldDef *f = get_field(intern, member);
 
   if (f && Message_set(intern, f, val)) {
-#if PHP_VERSION_ID < 70400
-    return;
-#else
     return val;
-#endif
   } else {
-#if PHP_VERSION_ID < 70400
-    return;
-#else
     return &EG(error_zval);
-#endif
   }
 }
 
@@ -1423,11 +1415,7 @@ void Message_ModuleInit() {
 
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = Message_dtor;
-#if PHP_VERSION_ID < 80000
-  h->compare_objects = Message_compare_objects;
-#else
   h->compare = Message_compare_objects;
-#endif
   h->read_property = Message_read_property;
   h->write_property = Message_write_property;
   h->has_property = Message_has_property;
