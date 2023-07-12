@@ -459,6 +459,9 @@ class RepeatedField final
       Element unused;
     };
     Element* elements() { return reinterpret_cast<Element*>(this + 1); }
+
+    // Avoid 'implicitly deleted dtor' warnings on certain compilers.
+    ~Rep() = delete;
   };
   static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize = sizeof(Rep);
 
