@@ -54,7 +54,6 @@ load(
     "//bazel:amalgamation.bzl",
     "upb_amalgamation",
 )
-load("@rules_pkg//:mappings.bzl", "pkg_files")
 # end:github_only
 
 # begin:google_only
@@ -1133,33 +1132,24 @@ exports_files(
 )
 
 filegroup(
-    name = "cmake_files",
-    srcs = glob([
-        "upb/**/*",
-        "third_party/**/*",
-    ]),
-    visibility = ["//cmake:__pkg__"],
-)
-
-
-pkg_files(
-   name = "upb_source_files",
-   srcs = glob(
-       [
-           "upb/**/*.c",
-           "upb/**/*.h",
-           "upb/**/*.hpp",
-           "upb/**/*.inc",
-      ],
-       exclude = [
-           "upb/**/conformance_upb.c",
-           "upb/reflection/stage0/**/*",
+    name = "source_files",
+    srcs = glob(
+        [
+            "upb/**/*.c",
+            "upb/**/*.h",
+            "upb/**/*.hpp",
+            "upb/**/*.inc",
        ],
-   ),
-   strip_prefix = "",
-   visibility = ["//python/dist:__pkg__"],
+        exclude = [
+            "upb/**/conformance_upb.c",
+            "upb/reflection/stage0/**/*",
+        ],
+    ),
+    visibility = [
+        "//cmake:__pkg__",
+        "//python/dist:__pkg__",
+    ]
 )
-
 # end:github_only
 
 # begin:google_only

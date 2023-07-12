@@ -4,10 +4,6 @@ load(
     "UPB_DEFAULT_CPPOPTS",
 )
 
-# begin:github_only
-load("@rules_pkg//:mappings.bzl", "pkg_files")
-# end:github_only
-
 cc_library(
     name = "internal",
     srcs = [
@@ -88,39 +84,16 @@ cc_test(
 
 # begin:github_only
 filegroup(
-    name = "cmake_files",
-    srcs = glob(
-        [
-            "**/*.c",
-            "**/*.h",
-        ],
-    ),
-    visibility = ["//cmake:__pkg__"],
-)
-
-pkg_files(
     name = "source_files",
     srcs = glob(
         [
             "**/*.c",
             "**/*.h",
         ],
-        exclude = ["internal/**"],
     ),
-    prefix = "upb/mini_descriptor",
-    visibility = ["//python/dist:__pkg__"],
-)
-
-pkg_files(
-    name = "internal_source_files",
-    srcs = glob(
-        [
-            "internal/*.c",
-            "internal/*.h",
-        ],
-        exclude = ["encode_test.cc"],
-    ),
-    prefix = "upb/mini_descriptor/internal",
-    visibility = ["//python/dist:__pkg__"],
+    visibility = [
+        "//cmake:__pkg__",
+        "//python/dist:__pkg__",
+    ]
 )
 # end:github_only

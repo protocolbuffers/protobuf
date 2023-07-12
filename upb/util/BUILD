@@ -4,10 +4,6 @@ load(
     "upb_proto_reflection_library",
 )
 
-# begin:github_only
-load("@rules_pkg//:mappings.bzl", "pkg_files")
-# end:github_only
-
 # begin:google_only
 # package(default_applicable_licenses = ["//:license"])
 # end:google_only
@@ -165,8 +161,8 @@ cc_test(
 )
 
 # begin:github_only
-pkg_files(
-    name = "util_source_files",
+filegroup(
+    name = "source_files",
     srcs = [
         "compare.c",
         "compare.h",
@@ -175,7 +171,6 @@ pkg_files(
         "required_fields.c",
         "required_fields.h",
     ],
-    prefix = "upb/util",
     visibility = ["//python/dist:__pkg__"],
 )
 # end:github_only

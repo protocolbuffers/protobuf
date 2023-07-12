@@ -187,11 +187,6 @@ _message_target_compatible_with = {
    "//conditions:default": [],
 }
 
-pkg_files(
-   name = "message_extension",
-   srcs = [":message_srcs"],
-   prefix = "python/",
-)
 # end:github_only
 # begin:google_only
 # _message_target_compatible_with = {

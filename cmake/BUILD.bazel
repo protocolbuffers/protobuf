@@ -99,9 +99,9 @@ sh_test(
     data = [
         ":copy_protos",
         ":gen_cmakelists",
-        "//:cmake_files",
-        "//upb/mini_descriptor:cmake_files",
-        "//upb/mini_table:cmake_files",
+        "//:source_files",
+        "//upb/mini_descriptor:source_files",
+        "//upb/mini_table:source_files",
         "@utf8_range//:utf8_range_srcs",
     ],
     target_compatible_with = select({

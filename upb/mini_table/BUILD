@@ -28,10 +28,6 @@ load(
     "UPB_DEFAULT_COPTS",
 )
 
-# begin:github_only
-load("@rules_pkg//:mappings.bzl", "pkg_files")
-# end:github_only
-
 cc_library(
     name = "mini_table",
     srcs = [
@@ -80,40 +76,17 @@ cc_library(
 
 # begin:github_only
 filegroup(
-    name = "cmake_files",
-    srcs = glob(
-        [
-            "**/*.c",
-            "**/*.h",
-        ],
-        exclude = ["encode_test.cc"],
-    ),
-    visibility = ["//cmake:__pkg__"],
-)
-
-pkg_files(
     name = "source_files",
     srcs = glob(
         [
             "**/*.c",
             "**/*.h",
         ],
-        exclude = ["internal/**", "encode_test.cc"],
-    ),
-    prefix = "upb/mini_table",
-    visibility = ["//python/dist:__pkg__"],
-)
-
-pkg_files(
-    name = "internal_source_files",
-    srcs = glob(
-        [
-            "internal/*.c",
-            "internal/*.h",
-        ],
         exclude = ["encode_test.cc"],
     ),
-    prefix = "upb/mini_table/internal",
-    visibility = ["//python/dist:__pkg__"],
+    visibility = [
+        "//cmake:__pkg__",
+        "//python/dist:__pkg__",
+    ]
 )
 # end:github_only
