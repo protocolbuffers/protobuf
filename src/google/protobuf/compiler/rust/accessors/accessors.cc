@@ -55,6 +55,8 @@ std::unique_ptr<AccessorGenerator> AccessorGenerator::For(
     case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_UINT32:
     case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_FLOAT:
+    case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_BOOL:
       if (field.desc().is_repeated()) return nullptr;
       return ForSingularScalar(field);
