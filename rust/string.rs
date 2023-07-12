@@ -46,15 +46,18 @@ pub type Todo<'msg> = (std::convert::Infallible, std::marker::PhantomData<&'msg 
 
 /// A mutator for `bytes` fields - this type is `protobuf::Mut<'msg, [u8]>`.
 ///
-/// This type implements `DerefMut<Target = [u8]>`, so many operations are
+/// This type implements `Deref<Target = [u8]>`, so many operations are
 /// provided through that, including indexing and slicing.
 ///
-/// Conceptually, this type is a `&'msg mut Vec<u8>`, though the actual
-/// implementation is dependent on runtime. Unlike `Vec<u8>`, this type has no
-/// in-place concatenation functions like `extend_from_slice`. `BytesMut` is not
-/// intended to be grown and reallocated like a `Vec`. It's recommended to
-/// instead build a `Vec<u8>` or `String` and pass that directly to `set`, which
-/// will reuse the allocation if supported by the runtime.
+/// Conceptually, this type is like a `&'msg mut &'msg str`, though the actual
+/// implementation is dependent on runtime and `'msg` is covariant.
+///
+/// Unlike `Vec<u8>`, this type has no in-place concatenation functions like
+/// `extend_from_slice`.
+///
+/// `BytesMut` is not intended to be grown and reallocated like a `Vec`. It's
+/// recommended to instead build a `Vec<u8>` or `String` and pass that directly
+/// to `set`, which will reuse the allocation if supported by the runtime.
 #[derive(Debug)]
 pub struct BytesMut<'msg>(Todo<'msg>);
 
@@ -68,7 +71,7 @@ impl<'msg> BytesMut<'msg> {
         val.set_on(Private, MutProxy::as_mut(self))
     }
 
-    /// Truncates the byte string without reallocating.
+    /// Truncates the byte string.
     ///
     /// Has no effect if `new_len` is larger than the current `len`.
     pub fn truncate(&mut self, new_len: usize) {
@@ -109,20 +112,8 @@ impl Deref for BytesMut<'_> {
     }
 }
 
-impl DerefMut for BytesMut<'_> {
-    fn deref_mut(&mut self) -> &mut [u8] {
-        AsMut::as_mut(self)
-    }
-}
-
 impl AsRef<[u8]> for BytesMut<'_> {
     fn as_ref(&self) -> &[u8] {
-        todo!("b/285309330")
-    }
-}
-
-impl AsMut<[u8]> for BytesMut<'_> {
-    fn as_mut(&mut self) -> &mut [u8] {
         todo!("b/285309330")
     }
 }
@@ -144,6 +135,7 @@ impl<'msg> ViewProxy<'msg> for Todo<'msg> {
         unreachable!()
     }
 }
+
 impl<'msg> MutProxy<'msg> for Todo<'msg> {
     fn as_mut(&mut self) -> BytesMut<'msg> {
         unreachable!()
