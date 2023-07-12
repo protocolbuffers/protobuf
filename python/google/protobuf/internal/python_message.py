@@ -959,7 +959,7 @@ def _AddEqualsMethod(message_descriptor, cls):
   def __eq__(self, other):
     if (not isinstance(other, message_mod.Message) or
         other.DESCRIPTOR != self.DESCRIPTOR):
-      return False
+      return NotImplemented
 
     if self is other:
       return True
