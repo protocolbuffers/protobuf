@@ -3,10 +3,7 @@ require 'test/unit'
 
 class PlatformTest < Test::Unit::TestCase
   def test_correct_implementation_for_platform
-    if RUBY_PLATFORM == "java"
-      return
-    end
-
+    omit('OBJECT_CACHE not defined') unless defined? Google::Protobuf::OBJECT_CACHE
     if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.7.0') and Google::Protobuf::SIZEOF_LONG >= Google::Protobuf::SIZEOF_VALUE
       assert_instance_of Google::Protobuf::ObjectCache, Google::Protobuf::OBJECT_CACHE
     else
@@ -19,8 +16,8 @@ module ObjectCacheTestModule
   def test_try_add_returns_existing_value
     cache = self.create
 
-    keys = ["k1", "k2"]
-    vals = ["v1", "v2"]
+    keys = %w[k1 k2]
+    vals = %w[v1 v2]
     2.times do |i|
       assert_same vals[i], cache.try_add(keys[i], vals[i])
       assert_same vals[i], cache.get(keys[i])
@@ -32,7 +29,7 @@ module ObjectCacheTestModule
   def test_multithreaded_access
     cache = self.create
 
-    keys = ["k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7"]
+    keys = %w[k0 k1 k2 k3 k4 k5 k6 k7]
 
     threads = []
     100.times do |i|
@@ -48,12 +45,9 @@ module ObjectCacheTestModule
   end
 end
 
-if RUBY_PLATFORM == "java"
-  return
-end
-
 class ObjectCacheTest < Test::Unit::TestCase
   def create
+    omit('OBJECT_CACHE not defined') unless defined? Google::Protobuf::OBJECT_CACHE
     Google::Protobuf::ObjectCache.new
   end
 
@@ -62,6 +56,7 @@ end
 
 class LegacyObjectCacheTest < Test::Unit::TestCase
   def create
+    omit('OBJECT_CACHE not defined') unless defined? Google::Protobuf::OBJECT_CACHE
     Google::Protobuf::LegacyObjectCache.new
   end
 
