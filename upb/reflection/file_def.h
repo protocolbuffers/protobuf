@@ -42,11 +42,11 @@ extern "C" {
 const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
 int upb_FileDef_DependencyCount(const upb_FileDef* f);
 bool upb_FileDef_HasOptions(const upb_FileDef* f);
-const char* upb_FileDef_Name(const upb_FileDef* f);
+UPB_API const char* upb_FileDef_Name(const upb_FileDef* f);
 const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f);
 const char* upb_FileDef_Package(const upb_FileDef* f);
 const char* upb_FileDef_Edition(const upb_FileDef* f);
-const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f);
+UPB_API const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f);
 
 const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i);
 int upb_FileDef_PublicDependencyCount(const upb_FileDef* f);
@@ -54,7 +54,7 @@ int upb_FileDef_PublicDependencyCount(const upb_FileDef* f);
 const upb_ServiceDef* upb_FileDef_Service(const upb_FileDef* f, int i);
 int upb_FileDef_ServiceCount(const upb_FileDef* f);
 
-upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f);
+UPB_API upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f);
 
 const upb_EnumDef* upb_FileDef_TopLevelEnum(const upb_FileDef* f, int i);
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f);

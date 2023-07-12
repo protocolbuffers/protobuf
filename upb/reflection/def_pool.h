@@ -42,18 +42,18 @@
 extern "C" {
 #endif
 
-void upb_DefPool_Free(upb_DefPool* s);
+UPB_API void upb_DefPool_Free(upb_DefPool* s);
 
-upb_DefPool* upb_DefPool_New(void);
+UPB_API upb_DefPool* upb_DefPool_New(void);
 
-const upb_MessageDef* upb_DefPool_FindMessageByName(const upb_DefPool* s,
-                                                    const char* sym);
+UPB_API const upb_MessageDef* upb_DefPool_FindMessageByName(
+    const upb_DefPool* s, const char* sym);
 
 const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
     const upb_DefPool* s, const char* sym, size_t len);
 
-const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
-                                              const char* sym);
+UPB_API const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
+                                                      const char* sym);
 
 const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
                                                       const char* sym);
@@ -87,10 +87,9 @@ const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
 const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
                                                         const char* name);
 
-const upb_FileDef* upb_DefPool_AddFile(upb_DefPool* s,
-                                       const UPB_DESC(FileDescriptorProto) *
-                                           file_proto,
-                                       upb_Status* status);
+UPB_API const upb_FileDef* upb_DefPool_AddFile(
+    upb_DefPool* s, const UPB_DESC(FileDescriptorProto) * file_proto,
+    upb_Status* status);
 
 const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
     const upb_DefPool* s);

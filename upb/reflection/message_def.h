@@ -89,10 +89,11 @@ const upb_ExtensionRange* upb_MessageDef_ExtensionRange(const upb_MessageDef* m,
                                                         int i);
 int upb_MessageDef_ExtensionRangeCount(const upb_MessageDef* m);
 
-const upb_FieldDef* upb_MessageDef_Field(const upb_MessageDef* m, int i);
-int upb_MessageDef_FieldCount(const upb_MessageDef* m);
+UPB_API const upb_FieldDef* upb_MessageDef_Field(const upb_MessageDef* m,
+                                                 int i);
+UPB_API int upb_MessageDef_FieldCount(const upb_MessageDef* m);
 
-const upb_FileDef* upb_MessageDef_File(const upb_MessageDef* m);
+UPB_API const upb_FileDef* upb_MessageDef_File(const upb_MessageDef* m);
 
 // Returns a field by either JSON name or regular proto name.
 const upb_FieldDef* upb_MessageDef_FindByJsonNameWithSize(
@@ -105,10 +106,10 @@ UPB_INLINE const upb_FieldDef* upb_MessageDef_FindByJsonName(
 // Lookup of either field or oneof by name. Returns whether either was found.
 // If the return is true, then the found def will be set, and the non-found
 // one set to NULL.
-bool upb_MessageDef_FindByNameWithSize(const upb_MessageDef* m,
-                                       const char* name, size_t size,
-                                       const upb_FieldDef** f,
-                                       const upb_OneofDef** o);
+UPB_API bool upb_MessageDef_FindByNameWithSize(const upb_MessageDef* m,
+                                               const char* name, size_t size,
+                                               const upb_FieldDef** f,
+                                               const upb_OneofDef** o);
 UPB_INLINE bool upb_MessageDef_FindByName(const upb_MessageDef* m,
                                           const char* name,
                                           const upb_FieldDef** f,
@@ -118,15 +119,15 @@ UPB_INLINE bool upb_MessageDef_FindByName(const upb_MessageDef* m,
 
 const upb_FieldDef* upb_MessageDef_FindFieldByName(const upb_MessageDef* m,
                                                    const char* name);
-const upb_FieldDef* upb_MessageDef_FindFieldByNameWithSize(
+UPB_API const upb_FieldDef* upb_MessageDef_FindFieldByNameWithSize(
     const upb_MessageDef* m, const char* name, size_t size);
-const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
-                                                     uint32_t i);
+UPB_API const upb_FieldDef* upb_MessageDef_FindFieldByNumber(
+    const upb_MessageDef* m, uint32_t i);
 const upb_OneofDef* upb_MessageDef_FindOneofByName(const upb_MessageDef* m,
                                                    const char* name);
-const upb_OneofDef* upb_MessageDef_FindOneofByNameWithSize(
+UPB_API const upb_OneofDef* upb_MessageDef_FindOneofByNameWithSize(
     const upb_MessageDef* m, const char* name, size_t size);
-const char* upb_MessageDef_FullName(const upb_MessageDef* m);
+UPB_API const char* upb_MessageDef_FullName(const upb_MessageDef* m);
 bool upb_MessageDef_HasOptions(const upb_MessageDef* m);
 bool upb_MessageDef_IsMapEntry(const upb_MessageDef* m);
 bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m);
@@ -135,7 +136,7 @@ bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m);
 bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
                                          upb_StringView* out);
 
-const upb_MiniTable* upb_MessageDef_MiniTable(const upb_MessageDef* m);
+UPB_API const upb_MiniTable* upb_MessageDef_MiniTable(const upb_MessageDef* m);
 const char* upb_MessageDef_Name(const upb_MessageDef* m);
 
 const upb_EnumDef* upb_MessageDef_NestedEnum(const upb_MessageDef* m, int i);
@@ -148,8 +149,9 @@ int upb_MessageDef_NestedEnumCount(const upb_MessageDef* m);
 int upb_MessageDef_NestedExtensionCount(const upb_MessageDef* m);
 int upb_MessageDef_NestedMessageCount(const upb_MessageDef* m);
 
-const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m, int i);
-int upb_MessageDef_OneofCount(const upb_MessageDef* m);
+UPB_API const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m,
+                                                 int i);
+UPB_API int upb_MessageDef_OneofCount(const upb_MessageDef* m);
 int upb_MessageDef_RealOneofCount(const upb_MessageDef* m);
 
 const UPB_DESC(MessageOptions) *
@@ -162,8 +164,8 @@ const upb_MessageReservedRange* upb_MessageDef_ReservedRange(
     const upb_MessageDef* m, int i);
 int upb_MessageDef_ReservedRangeCount(const upb_MessageDef* m);
 
-upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
-upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
+UPB_API upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
+UPB_API upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */

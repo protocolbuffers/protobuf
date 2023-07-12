@@ -39,9 +39,10 @@
 extern "C" {
 #endif
 
-const upb_MessageDef* upb_OneofDef_ContainingType(const upb_OneofDef* o);
-const upb_FieldDef* upb_OneofDef_Field(const upb_OneofDef* o, int i);
-int upb_OneofDef_FieldCount(const upb_OneofDef* o);
+UPB_API const upb_MessageDef* upb_OneofDef_ContainingType(
+    const upb_OneofDef* o);
+UPB_API const upb_FieldDef* upb_OneofDef_Field(const upb_OneofDef* o, int i);
+UPB_API int upb_OneofDef_FieldCount(const upb_OneofDef* o);
 const char* upb_OneofDef_FullName(const upb_OneofDef* o);
 bool upb_OneofDef_HasOptions(const upb_OneofDef* o);
 uint32_t upb_OneofDef_Index(const upb_OneofDef* o);
@@ -53,7 +54,7 @@ const upb_FieldDef* upb_OneofDef_LookupNameWithSize(const upb_OneofDef* o,
                                                     size_t size);
 const upb_FieldDef* upb_OneofDef_LookupNumber(const upb_OneofDef* o,
                                               uint32_t num);
-const char* upb_OneofDef_Name(const upb_OneofDef* o);
+UPB_API const char* upb_OneofDef_Name(const upb_OneofDef* o);
 int upb_OneofDef_numfields(const upb_OneofDef* o);
 const UPB_DESC(OneofOptions) * upb_OneofDef_Options(const upb_OneofDef* o);
 

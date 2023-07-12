@@ -43,14 +43,14 @@ extern "C" {
 bool upb_EnumDef_CheckNumber(const upb_EnumDef* e, int32_t num);
 const upb_MessageDef* upb_EnumDef_ContainingType(const upb_EnumDef* e);
 int32_t upb_EnumDef_Default(const upb_EnumDef* e);
-const upb_FileDef* upb_EnumDef_File(const upb_EnumDef* e);
+UPB_API const upb_FileDef* upb_EnumDef_File(const upb_EnumDef* e);
 const upb_EnumValueDef* upb_EnumDef_FindValueByName(const upb_EnumDef* e,
                                                     const char* name);
-const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
+UPB_API const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
     const upb_EnumDef* e, const char* name, size_t size);
-const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(const upb_EnumDef* e,
-                                                      int32_t num);
-const char* upb_EnumDef_FullName(const upb_EnumDef* e);
+UPB_API const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(
+    const upb_EnumDef* e, int32_t num);
+UPB_API const char* upb_EnumDef_FullName(const upb_EnumDef* e);
 bool upb_EnumDef_HasOptions(const upb_EnumDef* e);
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e);
 
@@ -68,8 +68,8 @@ const upb_EnumReservedRange* upb_EnumDef_ReservedRange(const upb_EnumDef* e,
                                                        int i);
 int upb_EnumDef_ReservedRangeCount(const upb_EnumDef* e);
 
-const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
-int upb_EnumDef_ValueCount(const upb_EnumDef* e);
+UPB_API const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
+UPB_API int upb_EnumDef_ValueCount(const upb_EnumDef* e);
 
 #ifdef __cplusplus
 } /* extern "C" */

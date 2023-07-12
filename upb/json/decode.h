@@ -39,9 +39,9 @@ extern "C" {
 
 enum { upb_JsonDecode_IgnoreUnknown = 1 };
 
-bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
-                    const upb_MessageDef* m, const upb_DefPool* symtab,
-                    int options, upb_Arena* arena, upb_Status* status);
+UPB_API bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
+                            const upb_MessageDef* m, const upb_DefPool* symtab,
+                            int options, upb_Arena* arena, upb_Status* status);
 
 #ifdef __cplusplus
 } /* extern "C" */
