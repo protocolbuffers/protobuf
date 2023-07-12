@@ -33,8 +33,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-// LINT.IfChange(mini_table_field_layout)
-
 struct upb_MiniTableField {
   uint32_t number;
   uint16_t offset;
@@ -86,8 +84,6 @@ typedef enum {
 } upb_FieldRep;
 
 #define kUpb_FieldRep_Shift 6
-
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/mini_table_field.ts:mini_table_field_layout)
 
 UPB_INLINE upb_FieldRep
 _upb_MiniTableField_GetRep(const struct upb_MiniTableField* field) {

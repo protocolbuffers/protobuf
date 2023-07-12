@@ -56,8 +56,6 @@ typedef enum {
   kUpb_ExtMode_IsMapEntry = 4,
 } upb_ExtMode;
 
-// LINT.IfChange(mini_table_layout)
-
 union upb_MiniTableSub;
 
 // upb_MiniTable represents the memory layout of a given upb_MessageDef.
@@ -82,8 +80,6 @@ struct upb_MiniTable {
   // of flexible array members is a GNU extension, not in C99 unfortunately.
   _upb_FastTable_Entry fasttable[];
 };
-
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/mini_table.ts:presence_logic)
 
 #ifdef __cplusplus
 extern "C" {
