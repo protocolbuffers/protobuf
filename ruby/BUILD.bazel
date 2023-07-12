@@ -27,23 +27,23 @@ string_flag(
 config_setting(
     name = "ffi_enabled",
     flag_values = {
-        "ffi": "enabled"
+        ":ffi": "enabled",
     },
 )
 
 config_setting(
     name = "ffi_disabled",
     flag_values = {
-        "ffi": "disabled"
+        ":ffi": "disabled",
     },
 )
 
 ruby_library(
     name = "protobuf",
-    deps = ["//ruby/lib/google:protobuf_lib"],
     visibility = [
         "//visibility:public",
     ],
+    deps = ["//ruby/lib/google:protobuf_lib"],
 )
 
 # Note: these can be greatly simplified using inline_sh_binary in Bazel 6,
@@ -52,12 +52,12 @@ ruby_library(
 genrule(
     name = "jruby_release",
     srcs = [
-      "//ruby/lib/google:copy_jar",
-      "//ruby/lib/google:dist_files",
-      "//:well_known_ruby_protos",
-      "google-protobuf.gemspec",
+        "//ruby/lib/google:copy_jar",
+        "//ruby/lib/google:dist_files",
+        "//:well_known_ruby_protos",
+        "google-protobuf.gemspec",
     ],
-    outs = ["google-protobuf-"+PROTOBUF_RUBY_VERSION+"-java.gem"],
+    outs = ["google-protobuf-" + PROTOBUF_RUBY_VERSION + "-java.gem"],
     cmd = """
         set -eux
         mkdir tmp
@@ -84,14 +84,14 @@ genrule(
 genrule(
     name = "ruby_release",
     srcs = [
-      "@utf8_range//:utf8_range_srcs",
-      "@utf8_range//:LICENSE",
-      "//:well_known_ruby_protos",
-      "//ruby/ext/google/protobuf_c:dist_files",
-      "//ruby/lib/google:dist_files",
-      "google-protobuf.gemspec",
+        "@utf8_range//:utf8_range_srcs",
+        "@utf8_range//:LICENSE",
+        "//:well_known_ruby_protos",
+        "//ruby/ext/google/protobuf_c:dist_files",
+        "//ruby/lib/google:dist_files",
+        "google-protobuf.gemspec",
     ],
-    outs = ["google-protobuf-"+PROTOBUF_RUBY_VERSION+".gem"],
+    outs = ["google-protobuf-" + PROTOBUF_RUBY_VERSION + ".gem"],
     cmd = """
         set -eux
         mkdir tmp
@@ -127,7 +127,6 @@ filegroup(
     tags = ["manual"],
 )
 
-
 ################################################################################
 # Tests
 ################################################################################
@@ -136,34 +135,37 @@ filegroup(
 internal_ruby_proto_library(
     name = "test_ruby_protos",
     srcs = ["//ruby/tests:test_protos"],
-    deps = ["//:well_known_ruby_protos"],
-    includes = [".", "src", "ruby/tests"],
+    includes = [
+        ".",
+        "ruby/tests",
+        "src",
+    ],
     visibility = [
         "//ruby:__subpackages__",
     ],
+    deps = ["//:well_known_ruby_protos"],
 )
-
 
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_ruby.txt",
-    testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
     target_compatible_with = select({
         "@rules_ruby//ruby/runtime:config_ruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
+    testee = "//conformance:conformance_ruby",
+    text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
 )
 
 conformance_test(
     name = "conformance_test_jruby",
     failure_list = "//conformance:failure_list_jruby.txt",
-    testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
     target_compatible_with = select({
         "@rules_ruby//ruby/runtime:config_jruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
+    testee = "//conformance:conformance_ruby",
+    text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
 )
 
 ################################################################################
@@ -173,15 +175,15 @@ conformance_test(
 pkg_files(
     name = "dist_files",
     srcs = [
+        ".gitignore",
+        "BUILD.bazel",
+        "Gemfile",
+        "README.md",
+        "Rakefile",
         "//ruby/ext/google/protobuf_c:dist_files",
         "//ruby/lib/google:dist_files",
         "//ruby/src/main/java:dist_files",
         "//ruby/tests:dist_files",
-        ".gitignore",
-        "BUILD.bazel",
-        "Gemfile",
-        "Rakefile",
-        "README.md",
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],

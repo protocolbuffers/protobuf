@@ -28,9 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'ffi'
-require 'ffi-compiler/loader'
-
 module Google
   module Protobuf
     class FFI
@@ -38,10 +35,29 @@ module Google
       # Workaround for Bazel's use of symlinks + JRuby's __FILE__ and `caller`
       # that resolves them.
       if ENV['BAZEL'] == 'true'
-        ffi_lib ::FFI::Compiler::Loader.find 'protobuf_c', ENV['PWD']
+        ffi_lib ::FFI::Compiler::Loader.find 'protobuf_c_ffi', ENV['PWD']
       else
-        ffi_lib ::FFI::Compiler::Loader.find 'protobuf_c'
+        ffi_lib ::FFI::Compiler::Loader.find 'protobuf_c_ffi'
       end
+
+      ## Map
+      Upb_Map_Begin = -1
+
+      ## Encoding Status
+      Upb_Status_MaxMessage = 127
+      Upb_Encode_Deterministic = 1
+      Upb_Encode_SkipUnknown = 2
+
+      ## JSON Encoding options
+      # When set, emits 0/default values.  TODO(haberman): proto3 only?
+      Upb_JsonEncode_EmitDefaults = 1
+      # When set, use normal (snake_case) field names instead of JSON (camelCase) names.
+      Upb_JsonEncode_UseProtoNames = 2
+      # When set, emits enums as their integer values instead of as their names.
+      Upb_JsonEncode_FormatEnumsAsIntegers = 4
+
+      ## JSON Decoding options
+      Upb_JsonDecode_IgnoreUnknown = 1
 
       Arena = Google::Protobuf::Internal::Arena
       MessageDef = Google::Protobuf::Descriptor
@@ -108,31 +124,6 @@ module Google
         :repeated
       )
 
-      class StringView < ::FFI::Struct
-        layout :data, :pointer,
-               :size, :size_t
-      end
-
-      class MessageValue < ::FFI::Union
-        layout :bool_val, :bool,
-               :float_val, :float,
-               :double_val, :double,
-               :int32_val, :int32_t,
-               :int64_val, :int64_t,
-               :uint32_val, :uint32_t,
-               :uint64_val,:uint64_t,
-               :map_val, :pointer,
-               :msg_val, :pointer,
-               :array_val,:pointer,
-               :str_val, StringView
-      end
-
-      class MutableMessageValue < ::FFI::Union
-        layout :map, :Map,
-               :msg, :Message,
-               :array, :Array
-      end
-
       Syntax = enum(
         :Proto2, 2,
         :Proto3
@@ -184,6 +175,11 @@ module Google
         :MissingRequired,
       )
 
+      class StringView < ::FFI::Struct
+        layout :data, :pointer,
+               :size, :size_t
+      end
+
       class MiniTable < ::FFI::Struct
         layout :subs, :pointer,
                :fields, :pointer,
@@ -199,25 +195,6 @@ module Google
         #       _upb_FastTable_Entry fasttable[];
       end
 
-      ## Map
-      Upb_Map_Begin = -1
-
-      ## Encoding Status
-      Upb_Status_MaxMessage = 127
-      Upb_Encode_Deterministic = 1
-      Upb_Encode_SkipUnknown = 2
-
-      ## JSON Encoding options
-      # When set, emits 0/default values.  TODO(haberman): proto3 only?
-      Upb_JsonEncode_EmitDefaults = 1
-      # When set, use normal (snake_case) field names instead of JSON (camelCase) names.
-      Upb_JsonEncode_UseProtoNames = 2
-      # When set, emits enums as their integer values instead of as their names.
-      Upb_JsonEncode_FormatEnumsAsIntegers = 4
-
-      ## JSON Decoding options
-      Upb_JsonDecode_IgnoreUnknown = 1
-
       class Status < ::FFI::Struct
         layout :ok, :bool,
                :msg, [:char, Upb_Status_MaxMessage]
@@ -226,6 +203,26 @@ module Google
           super
           FFI.clear self
         end
+      end
+
+      class MessageValue < ::FFI::Union
+        layout :bool_val, :bool,
+               :float_val, :float,
+               :double_val, :double,
+               :int32_val, :int32_t,
+               :int64_val, :int64_t,
+               :uint32_val, :uint32_t,
+               :uint64_val,:uint64_t,
+               :map_val, :pointer,
+               :msg_val, :pointer,
+               :array_val,:pointer,
+               :str_val, StringView
+      end
+
+      class MutableMessageValue < ::FFI::Union
+        layout :map, :Map,
+               :msg, :Message,
+               :array, :Array
       end
 
       # Arena
@@ -246,8 +243,8 @@ module Google
 
       # DefPool
       attach_function :add_serialized_file,   :API_PENDING_upb_DefPool_AddFile,           [:DefPool, :FileDescriptorProto, Status.by_ref], :FileDef
-      attach_function :free_DescriptorPool,   :API_PENDING_upb_DefPool_Free,              [:DefPool], :void
-      attach_function :create_DescriptorPool, :API_PENDING_upb_DefPool_New,               [], :DefPool
+      attach_function :free_descriptor_pool,  :API_PENDING_upb_DefPool_Free,              [:DefPool], :void
+      attach_function :create_descriptor_pool,:API_PENDING_upb_DefPool_New,               [], :DefPool
       attach_function :lookup_enum,           :API_PENDING_upb_DefPool_FindEnumByName,    [:DefPool, :string], EnumDef
       attach_function :lookup_msg,            :API_PENDING_upb_DefPool_FindMessageByName, [:DefPool, :string], MessageDef
 

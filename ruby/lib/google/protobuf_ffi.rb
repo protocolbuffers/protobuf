@@ -28,7 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'ffi'
+require 'ffi-compiler/loader'
 require 'google/protobuf/ffi/internal/type_safety'
 require 'google/protobuf/ffi/internal/pointer_helper'
 require 'google/protobuf/ffi/internal/arena'

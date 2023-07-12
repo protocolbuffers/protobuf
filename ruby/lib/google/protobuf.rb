@@ -40,12 +40,25 @@ module Google
     class ParseError < Error; end
     class TypeError < ::TypeError; end
 
-    begin
-      require 'ffi'
-      PREFER_FFI = true
-    rescue LoadError
-      PREFER_FFI = false
-    end
+    PREFER_FFI = case ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']
+                 when nil, ""
+                   # When unspecified, PREFER_FFI is autodetected based on
+                   # available gems.
+                   begin
+                     require 'ffi'
+                     require 'ffi-compiler/loader'
+                     true
+                   rescue LoadError
+                     false
+                   end
+                 when /^ffi$/i
+                   true
+                 when /^native$/i
+                   false
+                 else
+                   warn "Unexpected value `#{ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']}` for environment variable `PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION`. Should be either \"FFI\", \"NATIVE\". Omit for autodetection."
+                   false
+                 end
 
     def self.encode(msg, options = {})
       msg.to_proto(options)

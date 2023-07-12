@@ -81,6 +81,8 @@ if USE_FFI
   # in order to create subtasks for each source file, so the files from third_party
   # must be copied into place before the task is defined.
   ffi_compiler_config_block = Proc.new do |c|
+    c.ext_dir = File.dirname('ext/google/protobuf_c')
+    c.source_dirs = [c.ext_dir]
     c.cflags << common_c_flags
     common_excluded_source.each { | file | c.exclude << "/#{file}.c" }
     # Ruby UPB was already compiled with different flags.
@@ -88,14 +90,6 @@ if USE_FFI
     c.exclude << "/range2-sse.c"
     c.exclude << "/naive.c"
     c.exclude << "/ruby-upb.c"
-    # ffi-upb:default's only dependency is the platform-specific path of the
-    # shared library. Ignore the shared library (or figure out how to pass the
-    # right flags to build one shared lib from another?) but explicitly add the
-    # object files that make it up as ldflags so that their symbols are
-    # available.
-    # Rake::Task[Rake::Task[:"ffi-upb:default"].prereqs.first].prereqs.each do |prereq|
-    #   c.ldflags << prereq
-    # end
     if RbConfig::CONFIG['target_os'] =~ /darwin|linux/
       c.cflags << "-Wall -Wsign-compare -Wno-declaration-after-statement"
     end
@@ -104,7 +98,7 @@ if USE_FFI
   if File.exist? 'ext/google/protobuf_c/utf8_range.h'
     desc "compiler tasks"
     namespace "ffi-compiler" do
-      FFI::Compiler::CompileTask.new('ext/google/protobuf_c', &ffi_compiler_config_block)
+      FFI::Compiler::CompileTask.new('ext/google/protobuf_c_ffi', &ffi_compiler_config_block)
       protobuf_c_task = Rake::Task[:"ffi-compiler:default"]
       protobuf_c_shared_lib_task = Rake::Task[protobuf_c_task.prereqs.first]
       Rake::Task[Rake::Task[:"ffi-upb:default"].prereqs.first].prereqs.each do |dependency|
@@ -118,7 +112,7 @@ if USE_FFI
       Rake::Task[:copy_third_party].invoke
       desc "compiler tasks"
       namespace "ffi-compiler" do
-        FFI::Compiler::CompileTask.new('ext/google/protobuf_c', &ffi_compiler_config_block)
+        FFI::Compiler::CompileTask.new('ext/google/protobuf_c_ffi', &ffi_compiler_config_block)
         protobuf_c_task = Rake::Task[:"ffi-compiler:default"]
         Rake::Task[:"ffi-upb:default"].prereqs.each do |dependency|
           protobuf_c_task.prereqs.prepend dependency
@@ -202,7 +196,7 @@ else
       'x86_64-linux', 'x86-linux',
       'x86_64-darwin', 'arm64-darwin',
     ]
-  end unless USE_FFI
+  end
 
   task 'gem:java' do
     sh "rm Gemfile.lock"

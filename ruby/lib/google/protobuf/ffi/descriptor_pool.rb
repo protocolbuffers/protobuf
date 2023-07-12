@@ -35,7 +35,7 @@ module Google
       attr_accessor :descriptor_class_by_def
 
       def initialize
-        @descriptor_pool = ::FFI::AutoPointer.new(Google::Protobuf::FFI.create_DescriptorPool, Google::Protobuf::FFI.method(:free_DescriptorPool))
+        @descriptor_pool = ::FFI::AutoPointer.new(Google::Protobuf::FFI.create_descriptor_pool, Google::Protobuf::FFI.method(:free_descriptor_pool))
         @descriptor_class_by_def = {}
 
         # Should always be the last expression of the initializer to avoid
