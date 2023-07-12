@@ -47,22 +47,6 @@ upb_DefPool *get_global_symtab();
         ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
 #endif
 
-#ifndef IS_VOID
-#define IS_VOID 99
-#endif
-
-#ifndef IS_MIXED
-#define IS_MIXED 99
-#endif
-
-#ifndef _IS_BOOL
-#define _IS_BOOL 99
-#endif
-
-#ifndef IS_LONG
-#define IS_LONG 99
-#endif
-
 ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
 ZEND_END_ARG_INFO()
 
