@@ -132,7 +132,7 @@ TEST(MESSAGE_TEST_NAME, SerializeToBrokenOstream) {
 
 TEST(MESSAGE_TEST_NAME, ParseFromFileDescriptor) {
   std::string filename =
-      TestUtil::GetTestDataPath("third_party/protobuf/testdata/golden_message");
+      TestUtil::GetTestDataPath("google/protobuf/testdata/golden_message");
   int file = open(filename.c_str(), O_RDONLY | O_BINARY);
   ASSERT_GE(file, 0);
 
@@ -145,7 +145,7 @@ TEST(MESSAGE_TEST_NAME, ParseFromFileDescriptor) {
 
 TEST(MESSAGE_TEST_NAME, ParsePackedFromFileDescriptor) {
   std::string filename = TestUtil::GetTestDataPath(
-      "third_party/protobuf/testdata/golden_packed_fields_message");
+      "google/protobuf/testdata/golden_packed_fields_message");
   int file = open(filename.c_str(), O_RDONLY | O_BINARY);
   ASSERT_GE(file, 0);
 
