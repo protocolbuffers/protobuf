@@ -31,6 +31,8 @@
 #ifndef GOOGLE_PROTOBUF_HAS_BITS_H__
 #define GOOGLE_PROTOBUF_HAS_BITS_H__
 
+#include <initializer_list>
+
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/port.h"
 
@@ -49,6 +51,10 @@ template <int doublewords>
 class HasBits {
  public:
   PROTOBUF_NDEBUG_INLINE constexpr HasBits() : has_bits_{} {}
+
+  constexpr HasBits(std::initializer_list<uint32_t> has_bits) : has_bits_{} {
+    Copy(has_bits_, &*has_bits.begin(), has_bits.size());
+  }
 
   PROTOBUF_NDEBUG_INLINE void Clear() {
     memset(has_bits_, 0, sizeof(has_bits_));
@@ -77,6 +83,21 @@ class HasBits {
   bool empty() const;
 
  private:
+  // Unfortunately, older GCC compilers (and perhaps others) fail on initializer
+  // arguments for an std::array<> or any type of array constructor. Below is a
+  // handrolled constexpr 'Copy' function that we use to make a constexpr
+  // constructor that accepts a `std::initializer` list.
+  static inline constexpr void Copy(uint32_t* dst, const uint32_t* src,
+                                    size_t n) {
+    assert(n <= doublewords);
+    for (size_t ix = 0; ix < n; ++ix) {
+      dst[ix] = src[ix];
+    }
+    for (size_t ix = n; ix < doublewords; ++ix) {
+      dst[ix] = 0;
+    }
+  }
+
   uint32_t has_bits_[doublewords];
 };
 
@@ -102,8 +123,8 @@ inline bool HasBits<4>::empty() const {
 
 template <int doublewords>
 inline bool HasBits<doublewords>::empty() const {
-  for (int i = 0; i < doublewords; ++i) {
-    if (has_bits_[i]) return false;
+  for (uint32_t bits : has_bits_) {
+    if (bits) return false;
   }
   return true;
 }

@@ -112,35 +112,32 @@ std::string ObjCClass(absl::string_view class_name);
 // be referred to by ObjCClass.
 std::string ObjCClassDeclaration(absl::string_view class_name);
 
-// Builds HeaderDoc/appledoc style comments out of the comments in the .proto
-// file.
-std::string BuildCommentsString(const SourceLocation& location,
-                                bool prefer_single_line);
+// Flag to control the behavior of `EmitCommentsString`.
+enum CommentStringFlags : unsigned int {
+  kNone = 0,
+  kAddLeadingNewline = 1 << 1,  // Add a newline before the comment.
+  kForceMultiline = 1 << 2,  // Force a multiline comment even if only 1 line.
+};
 
 // Emits HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
 void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
-                        bool prefer_single_line,
-                        bool add_leading_newilne = false);
+                        CommentStringFlags flags = kNone);
 
 // Emits HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
 template <class TDescriptor>
 void EmitCommentsString(io::Printer* printer, const TDescriptor* descriptor,
-                        bool prefer_single_line,
-                        bool add_leading_newilne = false) {
+                        CommentStringFlags flags = kNone) {
   SourceLocation location;
   if (descriptor->GetSourceLocation(&location)) {
-    EmitCommentsString(printer, location, prefer_single_line,
-                       add_leading_newilne);
+    EmitCommentsString(printer, location, flags);
   }
 }
 
 template <class TDescriptor>
-std::string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor,
-                                           const FileDescriptor* file = nullptr,
-                                           bool preSpace = true,
-                                           bool postNewline = false) {
+std::string GetOptionalDeprecatedAttribute(
+    const TDescriptor* descriptor, const FileDescriptor* file = nullptr) {
   bool isDeprecated = descriptor->options().deprecated();
   // The file is only passed when checking Messages & Enums, so those types
   // get tagged. At the moment, it doesn't seem to make sense to tag every
@@ -160,8 +157,7 @@ std::string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor,
                              sourceFile->name(), ").");
     }
 
-    return absl::StrCat(preSpace ? " " : "", "GPB_DEPRECATED_MSG(\"", message,
-                        "\")", postNewline ? "\n" : "");
+    return absl::StrCat("GPB_DEPRECATED_MSG(\"", message, "\")");
   } else {
     return "";
   }

@@ -1795,12 +1795,30 @@ TEST(RepeatedPtrField, Erase) {
 }
 
 TEST(RepeatedPtrField, CopyConstruct) {
+  auto token = internal::InternalVisibilityForTesting{};
   RepeatedPtrField<std::string> source;
   source.Add()->assign("1");
   source.Add()->assign("2");
 
-  RepeatedPtrField<std::string> destination(source);
+  RepeatedPtrField<std::string> destination1(source);
+  ASSERT_EQ(2, destination1.size());
+  EXPECT_EQ("1", destination1.Get(0));
+  EXPECT_EQ("2", destination1.Get(1));
 
+  RepeatedPtrField<std::string> destination2(token, nullptr, source);
+  ASSERT_EQ(2, destination2.size());
+  EXPECT_EQ("1", destination2.Get(0));
+  EXPECT_EQ("2", destination2.Get(1));
+}
+
+TEST(RepeatedPtrField, CopyConstructWithArena) {
+  auto token = internal::InternalVisibilityForTesting{};
+  RepeatedPtrField<std::string> source;
+  source.Add()->assign("1");
+  source.Add()->assign("2");
+
+  Arena arena;
+  RepeatedPtrField<std::string> destination(token, &arena, source);
   ASSERT_EQ(2, destination.size());
   EXPECT_EQ("1", destination.Get(0));
   EXPECT_EQ("2", destination.Get(1));

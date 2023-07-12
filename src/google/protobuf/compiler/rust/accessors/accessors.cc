@@ -51,6 +51,8 @@ std::unique_ptr<AccessorGenerator> AccessorGenerator::For(
   switch (field.desc().type()) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_UINT32:
     case FieldDescriptor::TYPE_UINT64:
     case FieldDescriptor::TYPE_BOOL:

@@ -122,9 +122,34 @@ impl<'msg, T: ProxiedWithPresence + ?Sized + 'msg> FieldEntry<'msg, T> {
         }
     }
 
+    /// Gets a mutator for this field. Sets to the given `val` if not set.
+    ///
+    /// If the field is already set, `val` is ignored.
+    pub fn or_set(self, val: impl SettableValue<T>) -> Mut<'msg, T> {
+        self.or_set_with(move || val)
+    }
+
+    /// Gets a mutator for this field. Sets using the given `val` function if
+    /// not set.
+    ///
+    /// If the field is already set, `val` is not invoked.
+    pub fn or_set_with<S>(self, val: impl FnOnce() -> S) -> Mut<'msg, T>
+    where
+        S: SettableValue<T>,
+    {
+        match self {
+            Optional::Set(x) => x.into_mut(),
+            Optional::Unset(x) => x.set(val()).into_mut(),
+        }
+    }
+
     /// Sets the value of this field to `val`.
     ///
     /// Equivalent to `self.or_default().set(val)`, but does not consume `self`.
+    ///
+    /// `set` has the same parameters as in [`MutProxy`], so making a field
+    /// `optional` will switch to using this method. This makes transitioning
+    /// from implicit to explicit presence easier.
     pub fn set(&mut self, val: impl SettableValue<T>) {
         transform_mut(self, |mut self_| match self_ {
             Optional::Set(ref mut present) => {
@@ -141,6 +166,41 @@ impl<'msg, T: ProxiedWithPresence + ?Sized + 'msg> FieldEntry<'msg, T> {
             Optional::Set(present) => Optional::Unset(present.clear()),
             absent => absent,
         })
+    }
+
+    /// Gets an immutable view of this field, using its default value if not
+    /// set. This is shorthand for `as_view`.
+    ///
+    /// This provides a shorter lifetime than `into_view` but can also be called
+    /// multiple times - if the result of `get` is not living long enough
+    /// for your use, use that instead.
+    ///
+    /// `get` has the same parameters as in [`MutProxy`], so making a field
+    /// `optional` will switch to using this method. This makes transitioning
+    /// from implicit to explicit presence easier.
+    pub fn get(&self) -> View<'_, T> {
+        self.as_view()
+    }
+
+    /// Converts to an immutable view of this optional field, preserving the
+    /// field's presence.
+    pub fn into_optional_view(self) -> Optional<View<'msg, T>> {
+        let is_set = self.is_set();
+        Optional::new(self.into_view(), is_set)
+    }
+
+    /// Returns a field mutator if the field is set.
+    ///
+    /// Returns `None` if the field is not set. This does not affect `is_set()`.
+    ///
+    /// This returns `Option` and _not_ `Optional` since returning a defaulted
+    /// `Mut` would require mutating the presence of the field - for that
+    /// behavior, use `or_default()`.
+    pub fn try_into_mut(self) -> Option<Mut<'msg, T>> {
+        match self {
+            Optional::Set(x) => Some(x.into_mut()),
+            Optional::Unset(_) => None,
+        }
     }
 }
 
@@ -187,6 +247,16 @@ impl<'msg, T: ProxiedWithPresence + ?Sized + 'msg> PresentField<'msg, T> {
     #[doc(hidden)]
     pub fn from_inner(_private: Private, inner: T::PresentMutData<'msg>) -> Self {
         Self { inner }
+    }
+
+    /// Gets an immutable view of this present field. This is shorthand for
+    /// `as_view`.
+    ///
+    /// This provides a shorter lifetime than `into_view` but can also be called
+    /// multiple times - if the result of `get` is not living long enough
+    /// for your use, use that instead.
+    pub fn get(&self) -> View<'_, T> {
+        self.as_view()
     }
 
     pub fn set(&mut self, val: impl SettableValue<T>) {
@@ -259,9 +329,10 @@ impl<'msg, T: ProxiedWithPresence + ?Sized> AbsentField<'msg, T> {
 
     /// Gets the default value for this unset field.
     ///
-    /// This is the same value that the primitive accessor would provide.
-    pub fn default_value(self) -> View<'msg, T> {
-        self.into_view()
+    /// This is the same value that the primitive accessor would provide, though
+    /// with the shorter lifetime of `as_view`.
+    pub fn default_value(&self) -> View<'_, T> {
+        self.as_view()
     }
 
     /// See [`FieldEntry::set`]. Note that this consumes and returns a
@@ -607,6 +678,41 @@ mod tests {
         assert_eq!(m1.b().val(), 5);
         assert_eq!(m2.a().val(), 0);
         assert_eq!(m2.b().val(), 10);
+    }
+
+    #[test]
+    fn test_or_set() {
+        let mut m1 = MyMessage::default();
+        let mut m2 = MyMessage::default();
+
+        assert_eq!(m1.a_mut().or_set(10).get().val(), 10);
+        assert_eq!(m1.a_opt(), Optional::Set(VtableProxiedView { val: 10 }));
+        assert_eq!(m1.a_mut().or_set(20).get().val(), 10);
+        assert_eq!(m1.a_opt(), Optional::Set(VtableProxiedView { val: 10 }));
+
+        assert_eq!(m2.a_mut().or_set_with(|| m1.a().val() + m1.b().val()).get().val(), 15);
+        assert_eq!(m2.a_opt(), Optional::Set(VtableProxiedView { val: 15 }));
+        assert_eq!(m2.a_mut().or_set_with(|| None::<i32>.unwrap()).get().val(), 15);
+        assert_eq!(m2.a_opt(), Optional::Set(VtableProxiedView { val: 15 }));
+    }
+
+    #[test]
+    fn test_into_optional_view() {
+        let mut m1 = MyMessage::default();
+        assert_eq!(m1.a_mut().into_optional_view(), Optional::Unset(VtableProxiedView { val: 0 }));
+        m1.a_mut().set(10);
+        assert_eq!(m1.a_mut().into_optional_view(), Optional::Set(VtableProxiedView { val: 10 }));
+        assert_eq!(m1.b_mut().into_optional_view(), Optional::Unset(VtableProxiedView { val: 5 }));
+    }
+
+    #[test]
+    fn test_try_into_mut() {
+        let mut m1 = MyMessage::default();
+        assert!(m1.a_mut().try_into_mut().is_none());
+        m1.a_mut().set(10);
+        let mut a_mut = m1.a_mut().try_into_mut().expect("field to be set");
+        a_mut.set(20);
+        assert_eq!(m1.a().val(), 20);
     }
 
     #[test]

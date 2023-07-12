@@ -105,8 +105,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
   printer->Emit(
       {
           {"enum_name", name_},
-          {"enum_comments",
-           [&] { EmitCommentsString(printer, descriptor_, true); }},
+          {"enum_comments", [&] { EmitCommentsString(printer, descriptor_); }},
           {"enum_deprecated_attribute",
            GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file())},
           {"maybe_unknown_value",
@@ -125,17 +124,14 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
            }},
           {"enum_values",
            [&] {
-             bool add_leading_newilne = false;
+             CommentStringFlags comment_flags = CommentStringFlags::kNone;
              for (const auto* v : all_values_) {
                if (alias_values_to_skip_.contains(v)) continue;
                printer->Emit(
                    {
                        {"name", EnumValueName(v)},
                        {"comments",
-                        [&] {
-                          EmitCommentsString(printer, v, true,
-                                             add_leading_newilne);
-                        }},
+                        [&] { EmitCommentsString(printer, v, comment_flags); }},
                        {"deprecated_attribute",
                         GetOptionalDeprecatedAttribute(v)},
                        {"value", SafelyPrintIntToCode(v->number())},
@@ -143,9 +139,9 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
                    },
                    R"objc(
                      $comments$
-                     $name$$deprecated_attribute$ = $value$,
+                     $name$$ deprecated_attribute$ = $value$,
                    )objc");
-               add_leading_newilne = true;
+               comment_flags = CommentStringFlags::kAddLeadingNewline;
              }
            }},
       },
@@ -153,7 +149,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
         #pragma mark - Enum $enum_name$
 
         $enum_comments$
-        typedef$enum_deprecated_attribute$ GPB_ENUM($enum_name$) {
+        typedef$ enum_deprecated_attribute$ GPB_ENUM($enum_name$) {
           $maybe_unknown_value$
           $enum_values$
         };

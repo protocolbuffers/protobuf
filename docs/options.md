@@ -476,3 +476,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/clly/proto-telemetry
     *   Extensions: 1182
+
+1.  Digital Twins Definition Language (DTDL)
+
+    *   Website: https://github.com/Azure/opendigitaltwins-dtdl
+    *   Extensions: 1183
