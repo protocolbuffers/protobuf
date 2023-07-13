@@ -188,6 +188,8 @@ class PROTOBUF_EXPORT MessageLite {
   // if arena is a nullptr.
   virtual MessageLite* New(Arena* arena) const = 0;
 
+  virtual MessageLite* Copy(Arena* arena) const;
+
   Arena* GetArena() const { return _internal_metadata_.arena(); }
 
   // Clear all fields of the message and set them to their default values.
@@ -587,6 +589,12 @@ bool MessageLite::ParseFrom(const T& input) {
   if (flags & kParse) Clear();
   constexpr bool alias = (flags & kMergeWithAliasing) != 0;
   return internal::MergeFromImpl<alias>(input, this, flags);
+}
+
+inline MessageLite* MessageLite::Copy(Arena* arena) const {
+  MessageLite* msg = New(arena);
+  msg->CheckTypeAndMergeFrom(*this);
+  return msg;
 }
 
 // ===================================================================
