@@ -56,7 +56,7 @@ class CppGeneratorTest : public CommandLineInterfaceTester {
         "google/protobuf/descriptor.proto",
         google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
 #ifdef PROTOBUF_FUTURE_EDITIONS
-    CreateTempFile("third_party/protobuf/cpp_features.proto",
+    CreateTempFile("google/protobuf/cpp_features.proto",
                    pb::CppFeatures::descriptor()->file()->DebugString());
 #endif  // PROTOBUF_FUTURE_EDITIONS
   }
@@ -97,7 +97,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumOnNonEnumField) {
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
-    import "third_party/protobuf/cpp_features.proto";
+    import "google/protobuf/cpp_features.proto";
     
     message Foo {
       int32 bar = 1 [features.(pb.cpp).legacy_closed_enum = true];
@@ -116,7 +116,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnum) {
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
-    import "third_party/protobuf/cpp_features.proto";
+    import "google/protobuf/cpp_features.proto";
 
     enum TestEnum {
       TEST_ENUM_UNKNOWN = 0;
@@ -136,7 +136,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
-    import "third_party/protobuf/cpp_features.proto";
+    import "google/protobuf/cpp_features.proto";
     option features.(pb.cpp).legacy_closed_enum = true;
     
     enum TestEnum {
@@ -158,7 +158,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
-    import "third_party/protobuf/cpp_features.proto";
+    import "google/protobuf/cpp_features.proto";
     option features.(pb.cpp).legacy_closed_enum = true;
     
     enum TestEnum {

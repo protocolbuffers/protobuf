@@ -582,7 +582,7 @@ TEST_F(IoTest, CompressionOptions) {
   // Some ad-hoc testing of compression options.
 
   std::string golden_filename =
-      TestUtil::GetTestDataPath("third_party/protobuf/testdata/golden_message");
+      TestUtil::GetTestDataPath("google/protobuf/testdata/golden_message");
   std::string golden;
   ABSL_CHECK_OK(File::GetContents(golden_filename, &golden, true));
 

@@ -1165,7 +1165,7 @@ TEST_P(JsonTest, TestDuration) {
   EXPECT_THAT(ToJson(m5->value()), IsOkAndHolds("\"0.500s\""));
 }
 
-// These tests are not exhaustive; tests in //third_party/protobuf/conformance
+// These tests are not exhaustive; tests in //google/protobuf/conformance
 // are more comprehensive.
 TEST_P(JsonTest, TestTimestamp) {
   auto m = ToProto<proto3::TestTimestamp>(R"json(

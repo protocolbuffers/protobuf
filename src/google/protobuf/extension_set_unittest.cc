@@ -65,7 +65,7 @@ namespace {
 using ::google::protobuf::internal::DownCast;
 using TestUtil::EqualsToSerialized;
 
-// This test closely mirrors third_party/protobuf/compiler/cpp/unittest.cc
+// This test closely mirrors google/protobuf/compiler/cpp/unittest.cc
 // except that it uses extensions rather than regular fields.
 
 TEST(ExtensionSetTest, Defaults) {
@@ -1368,7 +1368,7 @@ TEST(ExtensionSetTest, Proto3PackedDynamicExtensions) {
   google::protobuf::FileDescriptorProto file_descriptor_proto;
   file_descriptor_proto.set_syntax("proto3");
   file_descriptor_proto.set_name(
-      "third_party/protobuf/unittest_proto3_packed_extension.proto");
+      "google/protobuf/unittest_proto3_packed_extension.proto");
   file_descriptor_proto.set_package("proto3_unittest");
   file_descriptor_proto.add_dependency(
       DescriptorProto::descriptor()->file()->name());

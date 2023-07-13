@@ -302,27 +302,13 @@ std::string PluginName(absl::string_view plugin_prefix,
 }
 
 
-// Get all transitive dependencies of the given file (including the file
-// itself), adding them to the given list of FileDescriptorProtos.  The
-// protos will be ordered such that every file is listed before any file that
-// depends on it, so that you can call DescriptorPool::BuildFile() on them
-// in order.  Any files in *already_seen will not be added, and each file
-// added will be inserted into *already_seen.  If include_source_code_info is
-// true then include the source code information in the FileDescriptorProtos.
-// If include_json_name is true, populate the json_name field of
-// FieldDescriptorProto for all fields.
-struct TransitiveDependencyOptions {
-  bool include_json_name = false;
-  bool include_source_code_info = false;
-  bool retain_options = false;
-};
+}  // namespace
 
-void GetTransitiveDependencies(
+void CommandLineInterface::GetTransitiveDependencies(
     const FileDescriptor* file,
     absl::flat_hash_set<const FileDescriptor*>* already_seen,
     RepeatedPtrField<FileDescriptorProto>* output,
-    const TransitiveDependencyOptions& options =
-        TransitiveDependencyOptions()) {
+    const TransitiveDependencyOptions& options) {
   if (!already_seen->insert(file).second) {
     // Already saw this file.  Skip.
     return;
@@ -336,21 +322,18 @@ void GetTransitiveDependencies(
 
   // Add this file.
   FileDescriptorProto* new_descriptor = output->Add();
-  if (options.retain_options) {
-    file->CopyTo(new_descriptor);
-    if (options.include_source_code_info) {
-      file->CopySourceCodeInfoTo(new_descriptor);
-    }
-  } else {
-    *new_descriptor =
-        StripSourceRetentionOptions(*file, options.include_source_code_info);
+  *new_descriptor =
+      google::protobuf::internal::InternalFeatureHelper::GetGeneratorProto(*file);
+  if (options.include_source_code_info) {
+    file->CopySourceCodeInfoTo(new_descriptor);
+  }
+  if (!options.retain_options) {
+    StripSourceRetentionOptions(*file->pool(), *new_descriptor);
   }
   if (options.include_json_name) {
     file->CopyJsonNameTo(new_descriptor);
   }
 }
-
-}  // namespace
 
 // A MultiFileErrorCollector that prints errors to stderr.
 class CommandLineInterface::ErrorPrinter
@@ -2629,9 +2612,11 @@ bool CommandLineInterface::GeneratePluginOutput(
     if (files_to_generate.contains(file_proto.name())) {
       const FileDescriptor* file = pool->FindFileByName(file_proto.name());
       *request.add_source_file_descriptors() = std::move(file_proto);
-      file_proto = StripSourceRetentionOptions(*file);
+      file_proto =
+          google::protobuf::internal::InternalFeatureHelper::GetGeneratorProto(*file);
       file->CopySourceCodeInfoTo(&file_proto);
       file->CopyJsonNameTo(&file_proto);
+      StripSourceRetentionOptions(*file->pool(), file_proto);
     }
   }
 

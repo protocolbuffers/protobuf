@@ -271,6 +271,7 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
 
  private:
   friend class ::google::protobuf::compiler::CodeGenerator;
+  friend class ::google::protobuf::compiler::CommandLineInterface;
 
   // Provides a restricted view exclusively to code generators.  Raw features
   // haven't been resolved, and are virtually meaningless to everyone else. Code

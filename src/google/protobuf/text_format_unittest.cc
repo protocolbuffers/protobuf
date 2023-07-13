@@ -97,7 +97,7 @@ class TextFormatTest : public testing::Test {
   static void SetUpTestSuite() {
     ABSL_CHECK_OK(File::GetContents(
         TestUtil::GetTestDataPath(
-            "third_party/protobuf/"
+            "google/protobuf/"
             "testdata/text_format_unittest_data_oneof_implemented.txt"),
         &static_proto_text_format_, true));
   }
@@ -118,7 +118,7 @@ class TextFormatExtensionsTest : public testing::Test {
  public:
   static void SetUpTestSuite() {
     ABSL_CHECK_OK(File::GetContents(
-        TestUtil::GetTestDataPath("third_party/protobuf/testdata/"
+        TestUtil::GetTestDataPath("google/protobuf/testdata/"
                                   "text_format_unittest_extensions_data.txt"),
         &static_proto_text_format_, true));
   }
