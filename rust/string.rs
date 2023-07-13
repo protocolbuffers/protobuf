@@ -31,13 +31,16 @@
 //! Items specific to `bytes` and `string` fields.
 #![allow(dead_code)]
 #![allow(unused)]
+#![deny(unsafe_op_in_unsafe_fn)]
 
 use crate::__internal::Private;
 use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::convert::{AsMut, AsRef};
+use std::fmt;
 use std::hash::{Hash, Hasher};
+use std::iter;
 use std::ops::{Deref, DerefMut};
 
 /// This type will be replaced by something else in a future revision.
@@ -46,15 +49,18 @@ pub type Todo<'msg> = (std::convert::Infallible, std::marker::PhantomData<&'msg 
 
 /// A mutator for `bytes` fields - this type is `protobuf::Mut<'msg, [u8]>`.
 ///
-/// This type implements `DerefMut<Target = [u8]>`, so many operations are
+/// This type implements `Deref<Target = [u8]>`, so many operations are
 /// provided through that, including indexing and slicing.
 ///
-/// Conceptually, this type is a `&'msg mut Vec<u8>`, though the actual
-/// implementation is dependent on runtime. Unlike `Vec<u8>`, this type has no
-/// in-place concatenation functions like `extend_from_slice`. `BytesMut` is not
-/// intended to be grown and reallocated like a `Vec`. It's recommended to
-/// instead build a `Vec<u8>` or `String` and pass that directly to `set`, which
-/// will reuse the allocation if supported by the runtime.
+/// Conceptually, this type is like a `&'msg mut &'msg str`, though the actual
+/// implementation is dependent on runtime and `'msg` is covariant.
+///
+/// Unlike `Vec<u8>`, this type has no in-place concatenation functions like
+/// `extend_from_slice`.
+///
+/// `BytesMut` is not intended to be grown and reallocated like a `Vec`. It's
+/// recommended to instead build a `Vec<u8>` or `String` and pass that directly
+/// to `set`, which will reuse the allocation if supported by the runtime.
 #[derive(Debug)]
 pub struct BytesMut<'msg>(Todo<'msg>);
 
@@ -68,7 +74,7 @@ impl<'msg> BytesMut<'msg> {
         val.set_on(Private, MutProxy::as_mut(self))
     }
 
-    /// Truncates the byte string without reallocating.
+    /// Truncates the byte string.
     ///
     /// Has no effect if `new_len` is larger than the current `len`.
     pub fn truncate(&mut self, new_len: usize) {
@@ -109,20 +115,8 @@ impl Deref for BytesMut<'_> {
     }
 }
 
-impl DerefMut for BytesMut<'_> {
-    fn deref_mut(&mut self) -> &mut [u8] {
-        AsMut::as_mut(self)
-    }
-}
-
 impl AsRef<[u8]> for BytesMut<'_> {
     fn as_ref(&self) -> &[u8] {
-        todo!("b/285309330")
-    }
-}
-
-impl AsMut<[u8]> for BytesMut<'_> {
-    fn as_mut(&mut self) -> &mut [u8] {
         todo!("b/285309330")
     }
 }
@@ -144,6 +138,7 @@ impl<'msg> ViewProxy<'msg> for Todo<'msg> {
         unreachable!()
     }
 }
+
 impl<'msg> MutProxy<'msg> for Todo<'msg> {
     fn as_mut(&mut self) -> BytesMut<'msg> {
         unreachable!()
@@ -249,8 +244,187 @@ impl Hash for BytesMut<'_> {
     }
 }
 
+impl Eq for BytesMut<'_> {}
+impl<'msg> Ord for BytesMut<'msg> {
+    fn cmp(&self, other: &BytesMut<'msg>) -> Ordering {
+        self.deref().cmp(other.deref())
+    }
+}
+
+/// The bytes were not valid UTF-8.
+#[derive(Debug)]
+pub struct Utf8Error(pub(crate) ());
+
+impl From<std::str::Utf8Error> for Utf8Error {
+    fn from(_: std::str::Utf8Error) -> Utf8Error {
+        Utf8Error(())
+    }
+}
+
+/// A shared immutable view of a protobuf `string` field's contents.
+///
+/// Like a `str`, it can be cheaply accessed as bytes and
+/// is dynamically sized, requiring it be accessed through a pointer.
+///
+/// # UTF-8 and `&str` access
+///
+/// Protobuf [docs] state that a `string` field contains UTF-8 encoded text.
+/// However, not every runtime enforces this, and the Rust runtime is designed
+/// to integrate with other runtimes with FFI, like C++.
+///
+/// Because of this, in order to access the contents as a `&str`, users must
+/// call [`ProtoStr::to_str`] to perform a (possibly runtime-elided) UTF-8
+/// validation check. However, the Rust API only allows `set()`ting a `string`
+/// field with data should be valid UTF-8 like a `&str` or a
+/// `&ProtoStr`. This means that this check should rarely fail, but is necessary
+/// to prevent UB when interacting with C++, which has looser restrictions.
+///
+/// Most of the time, users should not perform direct `&str` access to the
+/// contents - this type implements `Display` and comparison with `str`,
+/// so it's best to avoid a UTF-8 check by working directly with `&ProtoStr`
+/// or converting to `&[u8]`.
+///
+/// # `Display` and `ToString`
+/// `ProtoStr` is ordinarily UTF-8 and so implements `Display`. If there are
+/// any invalid UTF-8 sequences, they are replaced with [`U+FFFD REPLACEMENT
+/// CHARACTER`]. Because anything implementing `Display` also implements
+/// `ToString`, `proto_str.to_string()` is equivalent to
+/// `String::from_utf8_lossy(proto_str.as_bytes()).into_owned()`.
+///
+/// [docs]: https://protobuf.dev/programming-guides/proto2/#scalar
+/// [dst]: https://doc.rust-lang.org/reference/dynamically-sized-types.html
+/// [`U+FFFD REPLACEMENT CHARACTER`]: std::char::REPLACEMENT_CHARACTER
+#[repr(transparent)]
+pub struct ProtoStr([u8]);
+
+impl ProtoStr {
+    /// Converts `self` to a byte slice.
+    ///
+    /// Note: this type does not implement `Deref`; you must call `as_bytes()`
+    /// or `AsRef<[u8]>` to get access to bytes.
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+
+    /// Yields a `&str` slice if `self` contains valid UTF-8.
+    ///
+    /// This may perform a runtime check, dependent on runtime.
+    ///
+    /// `String::from_utf8_lossy(proto_str.as_bytes())` can be used to
+    /// infallibly construct a string, replacing invalid UTF-8 with
+    /// [`U+FFFD REPLACEMENT CHARACTER`].
+    ///
+    /// [`U+FFFD REPLACEMENT CHARACTER`]: std::char::REPLACEMENT_CHARACTER
+    // This is not `try_to_str` since `to_str` is shorter, with `CStr` as precedent.
+    pub fn to_str(&self) -> Result<&str, Utf8Error> {
+        Ok(std::str::from_utf8(&self.0)?)
+    }
+
+    /// Converts `self` to a string, including invalid characters.
+    ///
+    /// Invalid UTF-8 sequences are replaced with
+    /// [`U+FFFD REPLACEMENT CHARACTER`].
+    ///
+    /// Users should be prefer this to `.to_string()` provided by `Display`.
+    /// `.to_cow_lossy()` is the same operation, but it may avoid an
+    /// allocation if the string is already UTF-8.
+    ///
+    /// [`U+FFFD REPLACEMENT CHARACTER`]: std::char::REPLACEMENT_CHARACTER
+    //
+    // This method is named `to_string_lossy` in `CStr`, but since `to_string`
+    // also exists on this type, this name was chosen to avoid confusion.
+    pub fn to_cow_lossy(&self) -> Cow<'_, str> {
+        String::from_utf8_lossy(&self.0)
+    }
+
+    /// Returns `true` if `self` has a length of zero bytes.
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    /// Returns the length of `self`.
+    ///
+    /// Like `&str`, this is a length in bytes, not `char`s or graphemes.
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    /// Iterates over the `char`s in this protobuf `string`.
+    ///
+    /// Invalid UTF-8 sequences are replaced with
+    /// [`U+FFFD REPLACEMENT CHARACTER`].
+    ///
+    /// [`U+FFFD REPLACEMENT CHARACTER`]: std::char::REPLACEMENT_CHARACTER
+    pub fn chars(&self) -> impl Iterator<Item = char> + '_ {
+        todo!("b/285309330: requires UTF-8 chunk splitting");
+        ['a'].into_iter() // necessary for `impl Trait` to compile
+    }
+
+    /// Returns an iterator over chunks of UTF-8 data in the string.
+    ///
+    /// An `Ok(&str)` is yielded for every valid UTF-8 chunk, and an
+    /// `Err(&[u8])` for non-UTF-8 chunks.
+    pub fn utf8_chunks(&self) -> Todo<'_> {
+        todo!("b/285309330: requires UTF-8 chunk splitting");
+    }
+
+    /// Converts known-UTF-8 bytes to a `ProtoStr` without a check.
+    ///
+    /// # Safety
+    /// `bytes` must be valid UTF-8 if the current runtime requires it.
+    pub unsafe fn from_utf8_unchecked(bytes: &[u8]) -> &Self {
+        // SAFETY:
+        // - `ProtoStr` is `#[repr(transparent)]` over `[u8]`, so it has the same
+        //   layout.
+        // - `ProtoStr` has the same pointer metadata and element size as `[u8]`.
+        unsafe { &*(bytes as *const [u8] as *const Self) }
+    }
+
+    /// Interprets a string slice as a `&ProtoStr`.
+    pub fn from_str(string: &str) -> &Self {
+        // SAFETY: `string.as_bytes()` is valid UTF-8.
+        unsafe { Self::from_utf8_unchecked(string.as_bytes()) }
+    }
+}
+
+impl AsRef<[u8]> for ProtoStr {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl<'msg> From<&'msg ProtoStr> for &'msg [u8] {
+    fn from(val: &'msg ProtoStr) -> &'msg [u8] {
+        val.as_bytes()
+    }
+}
+
+impl<'msg> TryFrom<&'msg ProtoStr> for &'msg str {
+    type Error = Utf8Error;
+
+    fn try_from(val: &'msg ProtoStr) -> Result<&'msg str, Utf8Error> {
+        val.to_str()
+    }
+}
+
+impl fmt::Debug for ProtoStr {
+    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        todo!("b/285309330: requires UTF-8 chunk splitting")
+    }
+}
+
+impl fmt::Display for ProtoStr {
+    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        todo!("b/285309330: requires UTF-8 chunk splitting")
+    }
+}
+
+// TODO(b/285309330): Add `ProtoStrMut`
+
 /// Implements `PartialCmp` and `PartialEq` for the `lhs` against the `rhs`
 /// using `AsRef<[u8]>`.
+// TODO(kupiakos): consider improving to not require a `<()>` if no generics are
+// needed
 macro_rules! impl_bytes_partial_cmp {
     ($(<($($generics:tt)*)> $lhs:ty => $rhs:ty),+ $(,)?) => {
         $(
@@ -269,18 +443,29 @@ macro_rules! impl_bytes_partial_cmp {
 }
 
 impl_bytes_partial_cmp!(
+    // Should `BytesMut` compare with `str` and `ProtoStr[Mut]` with `[u8]`?
+    // `[u8]` and `str` do not compare with each other in the stdlib.
+
+    // `BytesMut` against protobuf types
     <('a, 'b)> BytesMut<'a> => BytesMut<'b>,
+
+    // `BytesMut` against foreign types
     <('a)> BytesMut<'a> => [u8],
-    <('a, const N: usize)> BytesMut<'a> => [u8; N],
-    <('a)> BytesMut<'a> => str,
     <('a)> [u8] => BytesMut<'a>,
+    <('a, const N: usize)> BytesMut<'a> => [u8; N],
     <('a, const N: usize)> [u8; N] => BytesMut<'a>,
-    <('a)> str => BytesMut<'a>,
+
+    // `ProtoStr` against protobuf types
+    <()> ProtoStr => ProtoStr,
+
+    // `ProtoStr` against foreign types
+    <()> ProtoStr => str,
+    <()> str => ProtoStr,
+
+    // TODO(b/285309330): `ProtoStrMut` impls
 );
 
-impl Eq for BytesMut<'_> {}
-impl<'msg> Ord for BytesMut<'msg> {
-    fn cmp(&self, other: &BytesMut<'msg>) -> Ordering {
-        self.deref().cmp(other.deref())
-    }
+#[cfg(test)]
+mod tests {
+    // TODO(b/285309330): Add unit tests
 }

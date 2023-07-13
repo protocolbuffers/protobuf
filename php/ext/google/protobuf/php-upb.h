@@ -1456,16 +1456,16 @@ UPB_API void upb_Map_SetEntryValue(upb_Map* map, size_t iter,
  */
 
 // Advances to the next entry. Returns false if no more entries are present.
-bool upb_MapIterator_Next(const upb_Map* map, size_t* iter);
+UPB_API bool upb_MapIterator_Next(const upb_Map* map, size_t* iter);
 
 // Returns true if the iterator still points to a valid entry, or false if the
 // iterator is past the last element. It is an error to call this function with
 // kUpb_Map_Begin (you must call next() at least once first).
-bool upb_MapIterator_Done(const upb_Map* map, size_t iter);
+UPB_API bool upb_MapIterator_Done(const upb_Map* map, size_t iter);
 
 // Returns the key and value for this entry of the map.
-upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter);
-upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter);
+UPB_API upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter);
+UPB_API upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -3715,9 +3715,9 @@ UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
   return upb_EncodeOptions_MaxDepth(max_depth) | (encode_options & 0xffff);
 }
 
-upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
-                            int options, upb_Arena* arena, char** buf,
-                            size_t* size);
+UPB_API upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
+                                    int options, upb_Arena* arena, char** buf,
+                                    size_t* size);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -9164,119 +9164,146 @@ UPB_INLINE char* google_protobuf_FeatureSet_serialize_ex(const google_protobuf_F
   return ptr;
 }
 UPB_INLINE void google_protobuf_FeatureSet_clear_field_presence(google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {1, 4, 1, 0, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {1, 4, 1, 1, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_ClearNonExtensionField(msg, &field);
 }
 UPB_INLINE int32_t google_protobuf_FeatureSet_field_presence(const google_protobuf_FeatureSet* msg) {
   int32_t default_val = 0;
   int32_t ret;
-  const upb_MiniTableField field = {1, 4, 1, 0, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {1, 4, 1, 1, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
   return ret;
 }
 UPB_INLINE bool google_protobuf_FeatureSet_has_field_presence(const google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {1, 4, 1, 0, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {1, 4, 1, 1, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   return _upb_Message_HasNonExtensionField(msg, &field);
 }
 UPB_INLINE void google_protobuf_FeatureSet_clear_enum_type(google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {2, 8, 2, 1, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {2, 8, 2, 2, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_ClearNonExtensionField(msg, &field);
 }
 UPB_INLINE int32_t google_protobuf_FeatureSet_enum_type(const google_protobuf_FeatureSet* msg) {
   int32_t default_val = 0;
   int32_t ret;
-  const upb_MiniTableField field = {2, 8, 2, 1, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {2, 8, 2, 2, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
   return ret;
 }
 UPB_INLINE bool google_protobuf_FeatureSet_has_enum_type(const google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {2, 8, 2, 1, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {2, 8, 2, 2, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   return _upb_Message_HasNonExtensionField(msg, &field);
 }
 UPB_INLINE void google_protobuf_FeatureSet_clear_repeated_field_encoding(google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {3, 12, 3, 2, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {3, 12, 3, 3, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_ClearNonExtensionField(msg, &field);
 }
 UPB_INLINE int32_t google_protobuf_FeatureSet_repeated_field_encoding(const google_protobuf_FeatureSet* msg) {
   int32_t default_val = 0;
   int32_t ret;
-  const upb_MiniTableField field = {3, 12, 3, 2, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {3, 12, 3, 3, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
   return ret;
 }
 UPB_INLINE bool google_protobuf_FeatureSet_has_repeated_field_encoding(const google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {3, 12, 3, 2, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {3, 12, 3, 3, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   return _upb_Message_HasNonExtensionField(msg, &field);
 }
 UPB_INLINE void google_protobuf_FeatureSet_clear_string_field_validation(google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {4, 16, 4, 3, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {4, 16, 4, 4, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_ClearNonExtensionField(msg, &field);
 }
 UPB_INLINE int32_t google_protobuf_FeatureSet_string_field_validation(const google_protobuf_FeatureSet* msg) {
   int32_t default_val = 0;
   int32_t ret;
-  const upb_MiniTableField field = {4, 16, 4, 3, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {4, 16, 4, 4, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
   return ret;
 }
 UPB_INLINE bool google_protobuf_FeatureSet_has_string_field_validation(const google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {4, 16, 4, 3, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {4, 16, 4, 4, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   return _upb_Message_HasNonExtensionField(msg, &field);
 }
 UPB_INLINE void google_protobuf_FeatureSet_clear_message_encoding(google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {5, 20, 5, 4, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {5, 20, 5, 5, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_ClearNonExtensionField(msg, &field);
 }
 UPB_INLINE int32_t google_protobuf_FeatureSet_message_encoding(const google_protobuf_FeatureSet* msg) {
   int32_t default_val = 0;
   int32_t ret;
-  const upb_MiniTableField field = {5, 20, 5, 4, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {5, 20, 5, 5, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
   return ret;
 }
 UPB_INLINE bool google_protobuf_FeatureSet_has_message_encoding(const google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {5, 20, 5, 4, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {5, 20, 5, 5, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   return _upb_Message_HasNonExtensionField(msg, &field);
 }
 UPB_INLINE void google_protobuf_FeatureSet_clear_json_format(google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {6, 24, 6, 5, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {6, 24, 6, 6, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_ClearNonExtensionField(msg, &field);
 }
 UPB_INLINE int32_t google_protobuf_FeatureSet_json_format(const google_protobuf_FeatureSet* msg) {
   int32_t default_val = 0;
   int32_t ret;
-  const upb_MiniTableField field = {6, 24, 6, 5, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {6, 24, 6, 6, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
   return ret;
 }
 UPB_INLINE bool google_protobuf_FeatureSet_has_json_format(const google_protobuf_FeatureSet* msg) {
-  const upb_MiniTableField field = {6, 24, 6, 5, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {6, 24, 6, 6, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  return _upb_Message_HasNonExtensionField(msg, &field);
+}
+UPB_INLINE void google_protobuf_FeatureSet_clear_raw_features(google_protobuf_FeatureSet* msg) {
+  const upb_MiniTableField field = {999, UPB_SIZE(28, 32), 7, 0, 11, (int)kUpb_FieldMode_Scalar | ((int)UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  _upb_Message_ClearNonExtensionField(msg, &field);
+}
+UPB_INLINE const google_protobuf_FeatureSet* google_protobuf_FeatureSet_raw_features(const google_protobuf_FeatureSet* msg) {
+  const google_protobuf_FeatureSet* default_val = NULL;
+  const google_protobuf_FeatureSet* ret;
+  const upb_MiniTableField field = {999, UPB_SIZE(28, 32), 7, 0, 11, (int)kUpb_FieldMode_Scalar | ((int)UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
+  return ret;
+}
+UPB_INLINE bool google_protobuf_FeatureSet_has_raw_features(const google_protobuf_FeatureSet* msg) {
+  const upb_MiniTableField field = {999, UPB_SIZE(28, 32), 7, 0, 11, (int)kUpb_FieldMode_Scalar | ((int)UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
   return _upb_Message_HasNonExtensionField(msg, &field);
 }
 
 UPB_INLINE void google_protobuf_FeatureSet_set_field_presence(google_protobuf_FeatureSet *msg, int32_t value) {
-  const upb_MiniTableField field = {1, 4, 1, 0, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {1, 4, 1, 1, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_SetNonExtensionField(msg, &field, &value);
 }
 UPB_INLINE void google_protobuf_FeatureSet_set_enum_type(google_protobuf_FeatureSet *msg, int32_t value) {
-  const upb_MiniTableField field = {2, 8, 2, 1, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {2, 8, 2, 2, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_SetNonExtensionField(msg, &field, &value);
 }
 UPB_INLINE void google_protobuf_FeatureSet_set_repeated_field_encoding(google_protobuf_FeatureSet *msg, int32_t value) {
-  const upb_MiniTableField field = {3, 12, 3, 2, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {3, 12, 3, 3, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_SetNonExtensionField(msg, &field, &value);
 }
 UPB_INLINE void google_protobuf_FeatureSet_set_string_field_validation(google_protobuf_FeatureSet *msg, int32_t value) {
-  const upb_MiniTableField field = {4, 16, 4, 3, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {4, 16, 4, 4, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_SetNonExtensionField(msg, &field, &value);
 }
 UPB_INLINE void google_protobuf_FeatureSet_set_message_encoding(google_protobuf_FeatureSet *msg, int32_t value) {
-  const upb_MiniTableField field = {5, 20, 5, 4, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {5, 20, 5, 5, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_SetNonExtensionField(msg, &field, &value);
 }
 UPB_INLINE void google_protobuf_FeatureSet_set_json_format(google_protobuf_FeatureSet *msg, int32_t value) {
-  const upb_MiniTableField field = {6, 24, 6, 5, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
+  const upb_MiniTableField field = {6, 24, 6, 6, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_SetNonExtensionField(msg, &field, &value);
+}
+UPB_INLINE void google_protobuf_FeatureSet_set_raw_features(google_protobuf_FeatureSet *msg, google_protobuf_FeatureSet* value) {
+  const upb_MiniTableField field = {999, UPB_SIZE(28, 32), 7, 0, 11, (int)kUpb_FieldMode_Scalar | ((int)UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)};
+  _upb_Message_SetNonExtensionField(msg, &field, &value);
+}
+UPB_INLINE struct google_protobuf_FeatureSet* google_protobuf_FeatureSet_mutable_raw_features(google_protobuf_FeatureSet* msg, upb_Arena* arena) {
+  struct google_protobuf_FeatureSet* sub = (struct google_protobuf_FeatureSet*)google_protobuf_FeatureSet_raw_features(msg);
+  if (sub == NULL) {
+    sub = (struct google_protobuf_FeatureSet*)_upb_Message_New(&google_protobuf_FeatureSet_msg_init, arena);
+    if (sub) google_protobuf_FeatureSet_set_raw_features(msg, sub);
+  }
+  return sub;
 }
 
 /* google.protobuf.SourceCodeInfo */
@@ -10005,18 +10032,18 @@ const void* _upb_DefType_Unpack(upb_value v, upb_deftype_t type);
 extern "C" {
 #endif
 
-void upb_DefPool_Free(upb_DefPool* s);
+UPB_API void upb_DefPool_Free(upb_DefPool* s);
 
-upb_DefPool* upb_DefPool_New(void);
+UPB_API upb_DefPool* upb_DefPool_New(void);
 
-const upb_MessageDef* upb_DefPool_FindMessageByName(const upb_DefPool* s,
-                                                    const char* sym);
+UPB_API const upb_MessageDef* upb_DefPool_FindMessageByName(
+    const upb_DefPool* s, const char* sym);
 
 const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
     const upb_DefPool* s, const char* sym, size_t len);
 
-const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
-                                              const char* sym);
+UPB_API const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
+                                                      const char* sym);
 
 const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
                                                       const char* sym);
@@ -10050,10 +10077,9 @@ const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
 const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
                                                         const char* name);
 
-const upb_FileDef* upb_DefPool_AddFile(upb_DefPool* s,
-                                       const UPB_DESC(FileDescriptorProto) *
-                                           file_proto,
-                                       upb_Status* status);
+UPB_API const upb_FileDef* upb_DefPool_AddFile(
+    upb_DefPool* s, const UPB_DESC(FileDescriptorProto) * file_proto,
+    upb_Status* status);
 
 const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
     const upb_DefPool* s);
@@ -10084,14 +10110,14 @@ extern "C" {
 bool upb_EnumDef_CheckNumber(const upb_EnumDef* e, int32_t num);
 const upb_MessageDef* upb_EnumDef_ContainingType(const upb_EnumDef* e);
 int32_t upb_EnumDef_Default(const upb_EnumDef* e);
-const upb_FileDef* upb_EnumDef_File(const upb_EnumDef* e);
+UPB_API const upb_FileDef* upb_EnumDef_File(const upb_EnumDef* e);
 const upb_EnumValueDef* upb_EnumDef_FindValueByName(const upb_EnumDef* e,
                                                     const char* name);
-const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
+UPB_API const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
     const upb_EnumDef* e, const char* name, size_t size);
-const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(const upb_EnumDef* e,
-                                                      int32_t num);
-const char* upb_EnumDef_FullName(const upb_EnumDef* e);
+UPB_API const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(
+    const upb_EnumDef* e, int32_t num);
+UPB_API const char* upb_EnumDef_FullName(const upb_EnumDef* e);
 bool upb_EnumDef_HasOptions(const upb_EnumDef* e);
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e);
 
@@ -10109,8 +10135,8 @@ const upb_EnumReservedRange* upb_EnumDef_ReservedRange(const upb_EnumDef* e,
                                                        int i);
 int upb_EnumDef_ReservedRangeCount(const upb_EnumDef* e);
 
-const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
-int upb_EnumDef_ValueCount(const upb_EnumDef* e);
+UPB_API const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
+UPB_API int upb_EnumDef_ValueCount(const upb_EnumDef* e);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -10135,8 +10161,8 @@ const upb_EnumDef* upb_EnumValueDef_Enum(const upb_EnumValueDef* v);
 const char* upb_EnumValueDef_FullName(const upb_EnumValueDef* v);
 bool upb_EnumValueDef_HasOptions(const upb_EnumValueDef* v);
 uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* v);
-const char* upb_EnumValueDef_Name(const upb_EnumValueDef* v);
-int32_t upb_EnumValueDef_Number(const upb_EnumValueDef* v);
+UPB_API const char* upb_EnumValueDef_Name(const upb_EnumValueDef* v);
+UPB_API int32_t upb_EnumValueDef_Number(const upb_EnumValueDef* v);
 const UPB_DESC(EnumValueOptions) *
     upb_EnumValueDef_Options(const upb_EnumValueDef* v);
 
@@ -10190,42 +10216,44 @@ extern "C" {
 #endif
 
 const upb_OneofDef* upb_FieldDef_ContainingOneof(const upb_FieldDef* f);
-const upb_MessageDef* upb_FieldDef_ContainingType(const upb_FieldDef* f);
-upb_CType upb_FieldDef_CType(const upb_FieldDef* f);
-upb_MessageValue upb_FieldDef_Default(const upb_FieldDef* f);
-const upb_EnumDef* upb_FieldDef_EnumSubDef(const upb_FieldDef* f);
+UPB_API const upb_MessageDef* upb_FieldDef_ContainingType(
+    const upb_FieldDef* f);
+UPB_API upb_CType upb_FieldDef_CType(const upb_FieldDef* f);
+UPB_API upb_MessageValue upb_FieldDef_Default(const upb_FieldDef* f);
+UPB_API const upb_EnumDef* upb_FieldDef_EnumSubDef(const upb_FieldDef* f);
 const upb_MessageDef* upb_FieldDef_ExtensionScope(const upb_FieldDef* f);
-const upb_FileDef* upb_FieldDef_File(const upb_FieldDef* f);
+UPB_API const upb_FileDef* upb_FieldDef_File(const upb_FieldDef* f);
 const char* upb_FieldDef_FullName(const upb_FieldDef* f);
 bool upb_FieldDef_HasDefault(const upb_FieldDef* f);
 bool upb_FieldDef_HasJsonName(const upb_FieldDef* f);
 bool upb_FieldDef_HasOptions(const upb_FieldDef* f);
-bool upb_FieldDef_HasPresence(const upb_FieldDef* f);
+UPB_API bool upb_FieldDef_HasPresence(const upb_FieldDef* f);
 bool upb_FieldDef_HasSubDef(const upb_FieldDef* f);
 uint32_t upb_FieldDef_Index(const upb_FieldDef* f);
 bool upb_FieldDef_IsExtension(const upb_FieldDef* f);
-bool upb_FieldDef_IsMap(const upb_FieldDef* f);
+UPB_API bool upb_FieldDef_IsMap(const upb_FieldDef* f);
 bool upb_FieldDef_IsOptional(const upb_FieldDef* f);
 bool upb_FieldDef_IsPacked(const upb_FieldDef* f);
 bool upb_FieldDef_IsPrimitive(const upb_FieldDef* f);
-bool upb_FieldDef_IsRepeated(const upb_FieldDef* f);
+UPB_API bool upb_FieldDef_IsRepeated(const upb_FieldDef* f);
 bool upb_FieldDef_IsRequired(const upb_FieldDef* f);
 bool upb_FieldDef_IsString(const upb_FieldDef* f);
-bool upb_FieldDef_IsSubMessage(const upb_FieldDef* f);
-const char* upb_FieldDef_JsonName(const upb_FieldDef* f);
-upb_Label upb_FieldDef_Label(const upb_FieldDef* f);
-const upb_MessageDef* upb_FieldDef_MessageSubDef(const upb_FieldDef* f);
+UPB_API bool upb_FieldDef_IsSubMessage(const upb_FieldDef* f);
+UPB_API const char* upb_FieldDef_JsonName(const upb_FieldDef* f);
+UPB_API upb_Label upb_FieldDef_Label(const upb_FieldDef* f);
+UPB_API const upb_MessageDef* upb_FieldDef_MessageSubDef(const upb_FieldDef* f);
 
 // Creates a mini descriptor string for a field, returns true on success.
 bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f, upb_Arena* a,
                                        upb_StringView* out);
 
 const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f);
-const char* upb_FieldDef_Name(const upb_FieldDef* f);
-uint32_t upb_FieldDef_Number(const upb_FieldDef* f);
+UPB_API const char* upb_FieldDef_Name(const upb_FieldDef* f);
+UPB_API uint32_t upb_FieldDef_Number(const upb_FieldDef* f);
 const UPB_DESC(FieldOptions) * upb_FieldDef_Options(const upb_FieldDef* f);
-const upb_OneofDef* upb_FieldDef_RealContainingOneof(const upb_FieldDef* f);
-upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f);
+UPB_API const upb_OneofDef* upb_FieldDef_RealContainingOneof(
+    const upb_FieldDef* f);
+UPB_API upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -10249,11 +10277,11 @@ extern "C" {
 const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
 int upb_FileDef_DependencyCount(const upb_FileDef* f);
 bool upb_FileDef_HasOptions(const upb_FileDef* f);
-const char* upb_FileDef_Name(const upb_FileDef* f);
+UPB_API const char* upb_FileDef_Name(const upb_FileDef* f);
 const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f);
 const char* upb_FileDef_Package(const upb_FileDef* f);
 const char* upb_FileDef_Edition(const upb_FileDef* f);
-const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f);
+UPB_API const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f);
 
 const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i);
 int upb_FileDef_PublicDependencyCount(const upb_FileDef* f);
@@ -10261,7 +10289,7 @@ int upb_FileDef_PublicDependencyCount(const upb_FileDef* f);
 const upb_ServiceDef* upb_FileDef_Service(const upb_FileDef* f, int i);
 int upb_FileDef_ServiceCount(const upb_FileDef* f);
 
-upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f);
+UPB_API upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f);
 
 const upb_EnumDef* upb_FileDef_TopLevelEnum(const upb_FileDef* f, int i);
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f);
@@ -10343,10 +10371,11 @@ const upb_ExtensionRange* upb_MessageDef_ExtensionRange(const upb_MessageDef* m,
                                                         int i);
 int upb_MessageDef_ExtensionRangeCount(const upb_MessageDef* m);
 
-const upb_FieldDef* upb_MessageDef_Field(const upb_MessageDef* m, int i);
-int upb_MessageDef_FieldCount(const upb_MessageDef* m);
+UPB_API const upb_FieldDef* upb_MessageDef_Field(const upb_MessageDef* m,
+                                                 int i);
+UPB_API int upb_MessageDef_FieldCount(const upb_MessageDef* m);
 
-const upb_FileDef* upb_MessageDef_File(const upb_MessageDef* m);
+UPB_API const upb_FileDef* upb_MessageDef_File(const upb_MessageDef* m);
 
 // Returns a field by either JSON name or regular proto name.
 const upb_FieldDef* upb_MessageDef_FindByJsonNameWithSize(
@@ -10359,10 +10388,10 @@ UPB_INLINE const upb_FieldDef* upb_MessageDef_FindByJsonName(
 // Lookup of either field or oneof by name. Returns whether either was found.
 // If the return is true, then the found def will be set, and the non-found
 // one set to NULL.
-bool upb_MessageDef_FindByNameWithSize(const upb_MessageDef* m,
-                                       const char* name, size_t size,
-                                       const upb_FieldDef** f,
-                                       const upb_OneofDef** o);
+UPB_API bool upb_MessageDef_FindByNameWithSize(const upb_MessageDef* m,
+                                               const char* name, size_t size,
+                                               const upb_FieldDef** f,
+                                               const upb_OneofDef** o);
 UPB_INLINE bool upb_MessageDef_FindByName(const upb_MessageDef* m,
                                           const char* name,
                                           const upb_FieldDef** f,
@@ -10372,15 +10401,15 @@ UPB_INLINE bool upb_MessageDef_FindByName(const upb_MessageDef* m,
 
 const upb_FieldDef* upb_MessageDef_FindFieldByName(const upb_MessageDef* m,
                                                    const char* name);
-const upb_FieldDef* upb_MessageDef_FindFieldByNameWithSize(
+UPB_API const upb_FieldDef* upb_MessageDef_FindFieldByNameWithSize(
     const upb_MessageDef* m, const char* name, size_t size);
-const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
-                                                     uint32_t i);
+UPB_API const upb_FieldDef* upb_MessageDef_FindFieldByNumber(
+    const upb_MessageDef* m, uint32_t i);
 const upb_OneofDef* upb_MessageDef_FindOneofByName(const upb_MessageDef* m,
                                                    const char* name);
-const upb_OneofDef* upb_MessageDef_FindOneofByNameWithSize(
+UPB_API const upb_OneofDef* upb_MessageDef_FindOneofByNameWithSize(
     const upb_MessageDef* m, const char* name, size_t size);
-const char* upb_MessageDef_FullName(const upb_MessageDef* m);
+UPB_API const char* upb_MessageDef_FullName(const upb_MessageDef* m);
 bool upb_MessageDef_HasOptions(const upb_MessageDef* m);
 bool upb_MessageDef_IsMapEntry(const upb_MessageDef* m);
 bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m);
@@ -10389,7 +10418,7 @@ bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m);
 bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
                                          upb_StringView* out);
 
-const upb_MiniTable* upb_MessageDef_MiniTable(const upb_MessageDef* m);
+UPB_API const upb_MiniTable* upb_MessageDef_MiniTable(const upb_MessageDef* m);
 const char* upb_MessageDef_Name(const upb_MessageDef* m);
 
 const upb_EnumDef* upb_MessageDef_NestedEnum(const upb_MessageDef* m, int i);
@@ -10402,8 +10431,9 @@ int upb_MessageDef_NestedEnumCount(const upb_MessageDef* m);
 int upb_MessageDef_NestedExtensionCount(const upb_MessageDef* m);
 int upb_MessageDef_NestedMessageCount(const upb_MessageDef* m);
 
-const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m, int i);
-int upb_MessageDef_OneofCount(const upb_MessageDef* m);
+UPB_API const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m,
+                                                 int i);
+UPB_API int upb_MessageDef_OneofCount(const upb_MessageDef* m);
 int upb_MessageDef_RealOneofCount(const upb_MessageDef* m);
 
 const UPB_DESC(MessageOptions) *
@@ -10416,8 +10446,8 @@ const upb_MessageReservedRange* upb_MessageDef_ReservedRange(
     const upb_MessageDef* m, int i);
 int upb_MessageDef_ReservedRangeCount(const upb_MessageDef* m);
 
-upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
-upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
+UPB_API upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
+UPB_API upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -10468,9 +10498,10 @@ const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 extern "C" {
 #endif
 
-const upb_MessageDef* upb_OneofDef_ContainingType(const upb_OneofDef* o);
-const upb_FieldDef* upb_OneofDef_Field(const upb_OneofDef* o, int i);
-int upb_OneofDef_FieldCount(const upb_OneofDef* o);
+UPB_API const upb_MessageDef* upb_OneofDef_ContainingType(
+    const upb_OneofDef* o);
+UPB_API const upb_FieldDef* upb_OneofDef_Field(const upb_OneofDef* o, int i);
+UPB_API int upb_OneofDef_FieldCount(const upb_OneofDef* o);
 const char* upb_OneofDef_FullName(const upb_OneofDef* o);
 bool upb_OneofDef_HasOptions(const upb_OneofDef* o);
 uint32_t upb_OneofDef_Index(const upb_OneofDef* o);
@@ -10482,7 +10513,7 @@ const upb_FieldDef* upb_OneofDef_LookupNameWithSize(const upb_OneofDef* o,
                                                     size_t size);
 const upb_FieldDef* upb_OneofDef_LookupNumber(const upb_OneofDef* o,
                                               uint32_t num);
-const char* upb_OneofDef_Name(const upb_OneofDef* o);
+UPB_API const char* upb_OneofDef_Name(const upb_OneofDef* o);
 int upb_OneofDef_numfields(const upb_OneofDef* o);
 const UPB_DESC(OneofOptions) * upb_OneofDef_Options(const upb_OneofDef* o);
 
@@ -11229,9 +11260,9 @@ extern "C" {
 
 enum { upb_JsonDecode_IgnoreUnknown = 1 };
 
-bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
-                    const upb_MessageDef* m, const upb_DefPool* symtab,
-                    int options, upb_Arena* arena, upb_Status* status);
+UPB_API bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
+                            const upb_MessageDef* m, const upb_DefPool* symtab,
+                            int options, upb_Arena* arena, upb_Status* status);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -11327,34 +11358,36 @@ extern "C" {
 // Returns a mutable pointer to a map, array, or submessage value. If the given
 // arena is non-NULL this will construct a new object if it was not previously
 // present. May not be called for primitive fields.
-upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
-                                            const upb_FieldDef* f,
-                                            upb_Arena* a);
+UPB_API upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
+                                                    const upb_FieldDef* f,
+                                                    upb_Arena* a);
 
 // Returns the field that is set in the oneof, or NULL if none are set.
-const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
-                                           const upb_OneofDef* o);
+UPB_API const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
+                                                   const upb_OneofDef* o);
 
 // Clear all data and unknown fields.
 void upb_Message_ClearByDef(upb_Message* msg, const upb_MessageDef* m);
 
 // Clears any field presence and sets the value back to its default.
-void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f);
+UPB_API void upb_Message_ClearFieldByDef(upb_Message* msg,
+                                         const upb_FieldDef* f);
 
 // May only be called for fields where upb_FieldDef_HasPresence(f) == true.
-bool upb_Message_HasFieldByDef(const upb_Message* msg, const upb_FieldDef* f);
+UPB_API bool upb_Message_HasFieldByDef(const upb_Message* msg,
+                                       const upb_FieldDef* f);
 
 // Returns the value in the message associated with this field def.
-upb_MessageValue upb_Message_GetFieldByDef(const upb_Message* msg,
-                                           const upb_FieldDef* f);
+UPB_API upb_MessageValue upb_Message_GetFieldByDef(const upb_Message* msg,
+                                                   const upb_FieldDef* f);
 
 // Sets the given field to the given value. For a msg/array/map/string, the
 // caller must ensure that the target data outlives |msg| (by living either in
 // the same arena or a different arena that outlives it).
 //
 // Returns false if allocation fails.
-bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
-                               upb_MessageValue val, upb_Arena* a);
+UPB_API bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
+                                       upb_MessageValue val, upb_Arena* a);
 
 // Iterate over present fields.
 //
@@ -11376,8 +11409,8 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
                       upb_MessageValue* val, size_t* iter);
 
 // Clears all unknown field data from this message and all submessages.
-bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
-                                int maxdepth);
+UPB_API bool upb_Message_DiscardUnknown(upb_Message* msg,
+                                        const upb_MessageDef* m, int maxdepth);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -11416,9 +11449,9 @@ enum {
  * size (excluding NULL) is returned.  This means that a return value >= |size|
  * implies that the output was truncated.  (These are the same semantics as
  * snprintf()). */
-size_t upb_JsonEncode(const upb_Message* msg, const upb_MessageDef* m,
-                      const upb_DefPool* ext_pool, int options, char* buf,
-                      size_t size, upb_Status* status);
+UPB_API size_t upb_JsonEncode(const upb_Message* msg, const upb_MessageDef* m,
+                              const upb_DefPool* ext_pool, int options,
+                              char* buf, size_t size, upb_Status* status);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -115,16 +115,7 @@ class RetentionStripTest : public testing::Test {
     DynamicMessageFactory factory;
     std::unique_ptr<Message> dynamic_message(
         factory.GetPrototype(file_options_descriptor)->New());
-    ABSL_CHECK(TextFormat::ParseFromString(
-        R"([google.protobuf.internal.options] {
-           i2: 456
-           c {}
-           rc {}
-         }
-         [google.protobuf.internal.repeated_options] {
-           i2: 222
-         })",
-        dynamic_message.get()));
+    ABSL_CHECK(TextFormat::ParseFromString(data, dynamic_message.get()));
     ProtoType ret;
     ABSL_CHECK(ret.ParseFromString(dynamic_message->SerializeAsString()));
     return ret;
@@ -177,6 +168,60 @@ TEST_F(RetentionStripTest, StripSourceRetentionFileOptions) {
               EqualsProto(expected_options));
   EXPECT_THAT(StripLocalSourceRetentionOptions(*file),
               EqualsProto(expected_options));
+}
+
+TEST_F(RetentionStripTest, StripSourceRetentionProtoFileOptions) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+      option (source_retention_option) = 123;
+      option (options) = {
+        i1: 123
+        i2: 456
+        c { s: "abc" }
+        rc { s: "abc" }
+      };
+      option (repeated_options) = {
+        i1: 111 i2: 222
+      };
+
+      message Options {
+        optional int32 i1 = 1 [retention = RETENTION_SOURCE];
+        optional int32 i2 = 2;
+        message ChildMessage {
+          optional string s = 1 [retention = RETENTION_SOURCE];
+        }
+        optional ChildMessage c = 3;
+        repeated ChildMessage rc = 4;
+      }
+
+      extend google.protobuf.FileOptions {
+        optional int32 source_retention_option = 50000 [retention = RETENTION_SOURCE];
+        optional Options options = 50001;
+        repeated Options repeated_options = 50002;
+      }
+  )schema");
+
+  FileDescriptorProto proto;
+  file->CopyTo(&proto);
+
+  ASSERT_THAT(proto.options(), EqualsProto(BuildDynamicProto<FileOptions>(R"pb(
+                [google.protobuf.internal.source_retention_option]: 123
+                [google.protobuf.internal.options] {
+                  i1: 123
+                  i2: 456
+                  c { s: "abc" }
+                  rc { s: "abc" }
+                }
+                [google.protobuf.internal.repeated_options] { i1: 111 i2: 222 })pb")));
+
+  StripSourceRetentionOptions(*file->pool(), proto);
+
+  EXPECT_THAT(proto.options(), EqualsProto(BuildDynamicProto<FileOptions>(R"pb(
+                [google.protobuf.internal.options] {
+                  i2: 456
+                  c {}
+                  rc {}
+                }
+                [google.protobuf.internal.repeated_options] { i2: 222 })pb")));
 }
 
 TEST_F(RetentionStripTest, StripSourceRetentionMessageOptions) {

@@ -855,7 +855,7 @@ TailCallTableInfo::TailCallTableInfo(
     ABSL_CHECK_EQ(split_fields.size(), try_size);
     int try_num_fast_fields = 0;
     for (const auto& info : split_fields) {
-      if (info.field != nullptr) ++try_num_fast_fields;
+      if (!info.func_name.empty()) ++try_num_fast_fields;
     }
     // Use this size if (and only if) it covers more fields.
     if (try_num_fast_fields > num_fast_fields) {

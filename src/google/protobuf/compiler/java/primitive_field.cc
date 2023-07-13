@@ -971,10 +971,12 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(
 void RepeatedImmutablePrimitiveFieldGenerator::
     GenerateBuilderParsingCodeFromPacked(io::Printer* printer) const {
   if (FixedSize(GetType(descriptor_)) != -1) {
+    // 4K limit on pre-allocations to prevent OOM from malformed input.
     printer->Print(variables_,
                    "int length = input.readRawVarint32();\n"
                    "int limit = input.pushLimit(length);\n"
-                   "ensure$capitalized_name$IsMutable(length / $fixed_size$);\n"
+                   "int alloc = length > 4096 ? 4096 : length;\n"
+                   "ensure$capitalized_name$IsMutable(alloc / $fixed_size$);\n"
                    "while (input.getBytesUntilLimit() > 0) {\n"
                    "  $repeated_add$(input.read$capitalized_type$());\n"
                    "}\n"

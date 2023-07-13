@@ -9538,6 +9538,47 @@ TEST_F(FeaturesTest, UninterpretedOptionsMergeExtension) {
             9);
 }
 
+TEST_F(FeaturesTest, RawFeatures) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: "2023"
+    options { features { raw_features { field_presence: IMPLICIT } } }
+  )pb");
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_THAT(GetFeatures(file), EqualsProto(R"pb(
+                field_presence: IMPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                string_field_validation: MANDATORY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW)pb"));
+}
+
+TEST_F(FeaturesTest, RawFeaturesConflict) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: "2023"
+    options {
+      features {
+        enum_type: CLOSED
+        raw_features { field_presence: IMPLICIT }
+      }
+    }
+  )pb");
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_THAT(GetFeatures(file), EqualsProto(R"pb(
+                field_presence: IMPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                string_field_validation: MANDATORY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW)pb"));
+}
+
 TEST_F(FeaturesTest, InvalidJsonUniquenessDefaultWarning) {
   BuildFileWithWarnings(
       R"pb(

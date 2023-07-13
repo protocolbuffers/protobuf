@@ -47,6 +47,8 @@ namespace compiler {
 // corresponding to source-retention options.
 PROTOC_EXPORT FileDescriptorProto StripSourceRetentionOptions(
     const FileDescriptor& file, bool include_source_code_info = false);
+PROTOC_EXPORT void StripSourceRetentionOptions(const DescriptorPool& pool,
+                                               FileDescriptorProto& file_proto);
 PROTOC_EXPORT DescriptorProto
 StripSourceRetentionOptions(const Descriptor& message);
 PROTOC_EXPORT DescriptorProto::ExtensionRange StripSourceRetentionOptions(

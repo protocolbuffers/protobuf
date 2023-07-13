@@ -26,6 +26,7 @@ sh_test(
     ] + glob([
         "pom.xml",
         "*/pom.xml",
+        "test/linkage-monitor-check-bom/pom.xml",
     ]),
 )
 

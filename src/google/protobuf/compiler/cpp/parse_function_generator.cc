@@ -257,20 +257,40 @@ static int FieldNameDataSize(const std::vector<uint8_t>& data) {
   return data.empty() ? 0 : data.size() + 1;
 }
 
-void ParseFunctionGenerator::GenerateDataDecls(io::Printer* printer) {
+void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
   if (!should_generate_tctable()) {
     return;
   }
-  Formatter format(printer, variables_);
+  auto v = p->WithVars(variables_);
   auto field_num_to_entry_table = MakeNumToEntryTable(ordered_fields_);
-  format(
-      "friend class ::$proto_ns$::internal::TcParser;\n"
-      "static const ::$proto_ns$::internal::"
-      "TcParseTable<$1$, $2$, $3$, $4$, $5$> _table_;\n",
-      tc_table_info_->table_size_log2, ordered_fields_.size(),
-      tc_table_info_->aux_entries.size(),
-      FieldNameDataSize(tc_table_info_->field_name_data),
-      field_num_to_entry_table.size16());
+  p->Emit(
+      {
+          {"SECTION",
+           [&] {
+             if (!IsProfileDriven(options_)) return;
+             // Since most (>80%) messages are never present, messages that are
+             // present are considered hot enough to be clustered together.
+             if (IsPresentMessage(descriptor_, options_)) {
+               p->Emit("PROTOBUF_SECTION_VARIABLE(proto_parse_table_hot)");
+             } else {
+               p->Emit("PROTOBUF_SECTION_VARIABLE(proto_parse_table_lukewarm)");
+             }
+           }},
+          {"table_size_log2", tc_table_info_->table_size_log2},
+          {"num_field_entries", ordered_fields_.size()},
+          {"num_field_aux", tc_table_info_->aux_entries.size()},
+          {"name_table_size",
+           FieldNameDataSize(tc_table_info_->field_name_data)},
+          {"field_lookup_size", field_num_to_entry_table.size16()},
+      },
+      R"cc(
+        friend class ::$proto_ns$::internal::TcParser;
+        $SECTION$
+        static const ::$proto_ns$::internal::TcParseTable<
+            $table_size_log2$, $num_field_entries$, $num_field_aux$,
+            $name_table_size$, $field_lookup_size$>
+            _table_;
+      )cc");
 }
 
 void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* printer) {
@@ -602,12 +622,12 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
         format("}}, {{\n");
       }
     }  // ordered_fields_.empty()
-      {
-        // field_names[]
-        auto field_name_scope = format.ScopedIndent();
-        GenerateFieldNames(format);
-      }
-      format("}},\n");
+    {
+      // field_names[]
+      auto field_name_scope = format.ScopedIndent();
+      GenerateFieldNames(format);
+    }
+    format("}},\n");
   }
   format("};\n\n");  // _table_
 }
@@ -615,7 +635,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
 void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
   for (const auto& info : tc_table_info_->fast_path_fields) {
     if (info.field != nullptr) {
-        PrintFieldComment(format, info.field, options_);
+      PrintFieldComment(format, info.field, options_);
     }
     if (info.func_name.empty()) {
       format("{::_pbi::TcParser::MiniParse, {}},\n");

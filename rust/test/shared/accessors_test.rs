@@ -40,6 +40,8 @@ fn test_default_accessors() {
     assert_eq!(msg.default_sint64(), 46);
     assert_eq!(msg.default_uint32(), 43);
     assert_eq!(msg.default_uint64(), 44);
+    assert_eq!(msg.default_float(), 51.5);
+    assert_eq!(msg.default_double(), 52000.0);
     assert_eq!(msg.default_bool(), true);
 }
 
@@ -132,6 +134,36 @@ fn test_optional_uint64_accessors() {
     msg.optional_uint64_set(None);
     assert_eq!(msg.optional_uint64_opt(), None);
     assert_eq!(msg.optional_uint64(), 0);
+}
+
+#[test]
+fn test_optional_float_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert_eq!(msg.optional_float_opt(), None);
+    assert_eq!(msg.optional_float(), 0.0);
+
+    msg.optional_float_set(Some(3.14));
+    assert_eq!(msg.optional_float_opt(), Some(3.14));
+    assert_eq!(msg.optional_float(), 3.14);
+
+    msg.optional_float_set(None);
+    assert_eq!(msg.optional_float_opt(), None);
+    assert_eq!(msg.optional_float(), 0.0);
+}
+
+#[test]
+fn test_optional_double_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert_eq!(msg.optional_double_opt(), None);
+    assert_eq!(msg.optional_double(), 0.0);
+
+    msg.optional_double_set(Some(-10.99));
+    assert_eq!(msg.optional_double_opt(), Some(-10.99));
+    assert_eq!(msg.optional_double(), -10.99);
+
+    msg.optional_double_set(None);
+    assert_eq!(msg.optional_double_opt(), None);
+    assert_eq!(msg.optional_double(), 0.0);
 }
 
 #[test]
