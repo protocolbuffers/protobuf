@@ -1,5 +1,14 @@
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
+cc_binary(
+    name = "protoc-gen-kotlin",
+    srcs = ["main.cc"],
+    deps = [
+        ":kotlin",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
 cc_library(
     name = "generator_headers",
     hdrs = ["generator.h"],
