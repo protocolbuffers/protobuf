@@ -1643,6 +1643,41 @@ TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
   }
 }
 
+TEST_F(CommandLineInterfaceTest, GeneratorNoEditionsSupport) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  CreateGeneratorWithMissingFeatures("--no_editions_out",
+                                     "Doesn't support editions",
+                                     CodeGenerator::FEATURE_SUPPORTS_EDITIONS);
+
+  Run("protocol_compiler --experimental_editions "
+      "--proto_path=$tmpdir foo.proto --no_editions_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "code generator --no_editions_out hasn't been updated to support "
+      "editions");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginNoEditionsSupport) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  Run("protocol_compiler --experimental_editions "
+      "--proto_path=$tmpdir foo.proto --plug_out=no_editions:$tmpdir");
+
+  ExpectErrorSubstring(
+      "code generator prefix-gen-plug hasn't been updated to support editions");
+}
+
 #endif  // PROTOBUF_FUTURE_EDITIONS
 
 
