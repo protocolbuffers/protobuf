@@ -825,7 +825,8 @@ void ImmutableMessageGenerator::GenerateDescriptorMethods(
     printer->Print(
         "@SuppressWarnings({\"rawtypes\"})\n"
         "@java.lang.Override\n"
-        "protected com.google.protobuf.MapField internalGetMapField(\n"
+        "protected com.google.protobuf.MapFieldReflectionAccessor "
+        "internalGetMapFieldReflection(\n"
         "    int number) {\n"
         "  switch (number) {\n");
     printer->Indent();

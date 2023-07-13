@@ -332,7 +332,7 @@ public class MapTest {
     assertThat(builder.build().getInt32ToInt32Field()).isEqualTo(newMap(1, 2));
     try {
       intMap.put(2, 3);
-      assertWithMessage("expected exception").fail();
+      assertWithMessage("expected exception intMap").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
@@ -346,7 +346,7 @@ public class MapTest {
         .isEqualTo(newMap(1, TestMap.EnumValue.BAR));
     try {
       enumMap.put(2, TestMap.EnumValue.FOO);
-      assertWithMessage("expected exception").fail();
+      assertWithMessage("expected exception enumMap").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
@@ -360,7 +360,7 @@ public class MapTest {
     assertThat(builder.build().getInt32ToStringField()).isEqualTo(newMap(1, "1"));
     try {
       stringMap.put(2, "2");
-      assertWithMessage("expected exception").fail();
+      assertWithMessage("expected exception stringMap").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
@@ -368,18 +368,15 @@ public class MapTest {
     builder.putInt32ToStringField(2, "2");
     assertThat(builder.getInt32ToStringField()).isEqualTo(newMap(1, "1", 2, "2"));
 
+    // Message maps are handled differently, and don't freeze old mutable collections.
     Map<Integer, TestMap.MessageValue> messageMap = builder.getMutableInt32ToMessageField();
     messageMap.put(1, TestMap.MessageValue.getDefaultInstance());
-    assertThat( builder.build().getInt32ToMessageField())
+    assertThat(builder.build().getInt32ToMessageField())
         .isEqualTo(newMap(1, TestMap.MessageValue.getDefaultInstance()));
-    try {
-      messageMap.put(2, TestMap.MessageValue.getDefaultInstance());
-      assertWithMessage("expected exception").fail();
-    } catch (UnsupportedOperationException e) {
-      // expected
-    }
-    assertThat(builder.getInt32ToMessageField())
-        .isEqualTo(newMap(1, TestMap.MessageValue.getDefaultInstance()));
+    // Mutations on old mutable maps don't affect the builder state.
+    messageMap.put(2, TestMap.MessageValue.getDefaultInstance());
+    assertThat(builder.getInt32ToMessageField()).isEqualTo(
+        newMap(1, TestMap.MessageValue.getDefaultInstance()));
     builder.putInt32ToMessageField(2, TestMap.MessageValue.getDefaultInstance());
     assertThat(builder.getInt32ToMessageField()).isEqualTo(
         newMap(1, TestMap.MessageValue.getDefaultInstance(),

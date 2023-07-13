@@ -247,7 +247,8 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
   if (!map_fields.empty()) {
     printer->Print(
         "@SuppressWarnings({\"rawtypes\"})\n"
-        "protected com.google.protobuf.MapField internalGetMapField(\n"
+        "protected com.google.protobuf.MapFieldReflectionAccessor "
+        "internalGetMapFieldReflection(\n"
         "    int number) {\n"
         "  switch (number) {\n");
     printer->Indent();
@@ -272,7 +273,8 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
         "}\n");
     printer->Print(
         "@SuppressWarnings({\"rawtypes\"})\n"
-        "protected com.google.protobuf.MapField internalGetMutableMapField(\n"
+        "protected com.google.protobuf.MapFieldReflectionAccessor "
+        "internalGetMutableMapFieldReflection(\n"
         "    int number) {\n"
         "  switch (number) {\n");
     printer->Indent();

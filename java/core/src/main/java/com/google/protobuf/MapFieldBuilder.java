@@ -58,8 +58,10 @@ public class MapFieldBuilder<
   /** nullable */
   Map<KeyT, MessageT> messageMap = null;
 
-  // messageList elements are always MapEntry<KeyT, MessageT>, but we need a List<Message> for
-  // reflection.
+  // We need a List<Message> for reflection.
+  //
+  // messageList elements are always MapEntry<KeyT, SomeT extends Message>, where SomeT and MessageT
+  // have the same descriptor (i.e. SomeT can be DynamicMessage)
   /** nullable */
   List<Message> messageList = null;
 
@@ -80,8 +82,15 @@ public class MapFieldBuilder<
   @SuppressWarnings("unchecked")
   private List<MapEntry<KeyT, MessageT>> getMapEntryList() {
     ArrayList<MapEntry<KeyT, MessageT>> list = new ArrayList<>(messageList.size());
+    Class<?> valueClass = converter.defaultEntry().getValue().getClass();
     for (Message entry : messageList) {
-      list.add((MapEntry<KeyT, MessageT>) entry);
+      MapEntry<KeyT, ?> typedEntry = (MapEntry<KeyT, ?>) entry;
+      if (valueClass.isInstance(typedEntry.getValue())) {
+        list.add((MapEntry<KeyT, MessageT>) typedEntry);
+      } else {
+        // This needs to use mergeFrom to allow MapEntry<KeyT, DynamicMessage> to be used.
+        list.add(converter.defaultEntry().toBuilder().mergeFrom(entry).build());
+      }
     }
     return list;
   }
