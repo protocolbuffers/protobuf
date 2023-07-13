@@ -221,18 +221,19 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2epro
     "FileDescriptorProto\022E\n\027source_file_descr"
     "iptors\030\021 \003(\0132$.google.protobuf.FileDescr"
     "iptorProto\022;\n\020compiler_version\030\003 \001(\0132!.g"
-    "oogle.protobuf.compiler.Version\"\301\002\n\025Code"
+    "oogle.protobuf.compiler.Version\"\340\002\n\025Code"
     "GeneratorResponse\022\r\n\005error\030\001 \001(\t\022\032\n\022supp"
     "orted_features\030\002 \001(\004\022B\n\004file\030\017 \003(\01324.goo"
     "gle.protobuf.compiler.CodeGeneratorRespo"
     "nse.File\032\177\n\004File\022\014\n\004name\030\001 \001(\t\022\027\n\017insert"
     "ion_point\030\002 \001(\t\022\017\n\007content\030\017 \001(\t\022\?\n\023gene"
     "rated_code_info\030\020 \001(\0132\".google.protobuf."
-    "GeneratedCodeInfo\"8\n\007Feature\022\020\n\014FEATURE_"
-    "NONE\020\000\022\033\n\027FEATURE_PROTO3_OPTIONAL\020\001Br\n\034c"
-    "om.google.protobuf.compilerB\014PluginProto"
-    "sZ)google.golang.org/protobuf/types/plug"
-    "inpb\252\002\030Google.Protobuf.Compiler"
+    "GeneratedCodeInfo\"W\n\007Feature\022\020\n\014FEATURE_"
+    "NONE\020\000\022\033\n\027FEATURE_PROTO3_OPTIONAL\020\001\022\035\n\031F"
+    "EATURE_SUPPORTS_EDITIONS\020\002Br\n\034com.google"
+    ".protobuf.compilerB\014PluginProtosZ)google"
+    ".golang.org/protobuf/types/pluginpb\252\002\030Go"
+    "ogle.Protobuf.Compiler"
 };
 static const ::_pbi::DescriptorTable* const descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_deps[1] =
     {
@@ -242,7 +243,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
     false,
     false,
-    871,
+    902,
     descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
     "google/protobuf/compiler/plugin.proto",
     &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
@@ -285,6 +286,7 @@ bool CodeGeneratorResponse_Feature_IsValid(int value) {
   switch (value) {
     case 0:
     case 1:
+    case 2:
       return true;
     default:
       return false;
@@ -295,6 +297,7 @@ bool CodeGeneratorResponse_Feature_IsValid(int value) {
 
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_NONE;
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_PROTO3_OPTIONAL;
+constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_SUPPORTS_EDITIONS;
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::Feature_MIN;
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::Feature_MAX;
 constexpr int CodeGeneratorResponse::Feature_ARRAYSIZE;

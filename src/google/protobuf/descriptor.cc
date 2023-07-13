@@ -2773,9 +2773,6 @@ FileDescriptorProto InternalFeatureHelper::GetGeneratorProto(
         if (&features != &FeatureSet::default_instance() &&
             !IsLegacyFeatureSet(features)) {
           *proto.mutable_options()->mutable_features() = features;
-        }
-        const auto& raw_features = GetRawFeatures(desc);
-        if (&raw_features != &FeatureSet::default_instance()) {
           *proto.mutable_options()->mutable_features()->mutable_raw_features() =
               GetRawFeatures(desc);
         }

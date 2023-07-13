@@ -302,6 +302,26 @@ std::string PluginName(absl::string_view plugin_prefix,
 }
 
 
+bool EnforceEditionsSupport(
+    const std::string& codegen_name, uint64_t supported_features,
+    const std::vector<const FileDescriptor*>& parsed_files) {
+  if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
+    for (const auto fd : parsed_files) {
+      if (FileDescriptorLegacy(fd).syntax() ==
+          FileDescriptorLegacy::SYNTAX_EDITIONS) {
+        std::cerr << fd->name() << ": is an editions file, but code generator "
+                  << codegen_name
+                  << " hasn't been updated to support editions yet. Please ask "
+                     "the owner of this code generator to add support or "
+                     "switch back to proto2/proto3."
+                  << std::endl;
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 void CommandLineInterface::GetTransitiveDependencies(
@@ -2490,6 +2510,12 @@ bool CommandLineInterface::GenerateOutput(
       return false;
     }
 
+    if (!EnforceEditionsSupport(
+            output_directive.name,
+            output_directive.generator->GetSupportedFeatures(), parsed_files)) {
+      return false;
+    }
+
     if (!output_directive.generator->GenerateAll(parsed_files, parameters,
                                                  generator_context, &error)) {
       // Generator returned an error.
@@ -2685,6 +2711,9 @@ bool CommandLineInterface::GeneratePluginOutput(
     return false;
   } else if (!EnforceProto3OptionalSupport(
                  plugin_name, response.supported_features(), parsed_files)) {
+    return false;
+  } else if (!EnforceEditionsSupport(plugin_name, response.supported_features(),
+                                     parsed_files)) {
     return false;
   }
 
