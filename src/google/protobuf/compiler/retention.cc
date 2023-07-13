@@ -248,14 +248,20 @@ FileDescriptorProto StripSourceRetentionOptions(const FileDescriptor& file,
                                                 bool include_source_code_info) {
   FileDescriptorProto file_proto;
   file.CopyTo(&file_proto);
-  std::vector<std::vector<int>> stripped_paths;
-  ConvertToDynamicMessageAndStripOptions(file_proto, *file.pool(),
-                                         &stripped_paths);
   if (include_source_code_info) {
     file.CopySourceCodeInfoTo(&file_proto);
+  }
+  StripSourceRetentionOptions(*file.pool(), file_proto);
+  return file_proto;
+}
+
+void StripSourceRetentionOptions(const DescriptorPool& pool,
+                                 FileDescriptorProto& file_proto) {
+  std::vector<std::vector<int>> stripped_paths;
+  ConvertToDynamicMessageAndStripOptions(file_proto, pool, &stripped_paths);
+  if (file_proto.has_source_code_info()) {
     StripSourceCodeInfo(stripped_paths, *file_proto.mutable_source_code_info());
   }
-  return file_proto;
 }
 
 DescriptorProto StripSourceRetentionOptions(const Descriptor& message) {
