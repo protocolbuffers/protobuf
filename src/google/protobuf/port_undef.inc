@@ -184,6 +184,13 @@
 #pragma pop_macro("TYPE_BOOL")
 #endif  // __APPLE__
 
+#ifdef __FreeBSD__
+#pragma pop_macro("TRUE")
+#pragma pop_macro("FALSE")
+#pragma pop_macro("UID_MAX")
+#pragma pop_macro("GID_MAX")
+#endif  // __FreeBSD__
+
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 #pragma pop_macro("DEBUG")
 #endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
