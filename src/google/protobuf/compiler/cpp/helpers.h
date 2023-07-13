@@ -429,6 +429,9 @@ bool ShouldSplit(const FieldDescriptor* field, const Options& options);
 bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
                                          const Options& options);
 
+// Returns true if the message is present based on PDProto profile.
+bool IsPresentMessage(const Descriptor* descriptor, const Options& options);
+
 // Does the file contain any definitions that need extension_set.h?
 bool HasExtensionsOrExtendableMessage(const FileDescriptor* file);
 

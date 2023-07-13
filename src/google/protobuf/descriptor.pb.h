@@ -862,7 +862,10 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1, 1, 0, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      0, 1, 1,
+      0, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -1256,7 +1259,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<4, 13, 6, 86, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      4, 13, 6,
+      86, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -1456,7 +1462,10 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 3, 1, 0, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      2, 3, 1,
+      0, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -1630,7 +1639,10 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<1, 2, 0, 0, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 0,
+      0, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -1978,7 +1990,10 @@ class PROTOBUF_EXPORT DescriptorProto final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<4, 10, 8, 65, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      4, 10, 8,
+      65, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -2207,7 +2222,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 5, 0, 71, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 5, 0,
+      71, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -2598,7 +2616,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 4, 4, 0, 12> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 4, 4,
+      0, 12>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -2974,7 +2995,10 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<4, 11, 3, 96, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      4, 11, 3,
+      96, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -3166,7 +3190,10 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<1, 2, 1, 49, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 1,
+      49, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -3339,7 +3366,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<1, 2, 0, 0, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 0,
+      0, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -3591,7 +3621,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 5, 3, 61, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 5, 3,
+      61, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -3789,7 +3822,10 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 3, 1, 53, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      2, 3, 1,
+      53, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -3992,7 +4028,10 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 3, 2, 51, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      2, 3, 2,
+      51, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -4236,7 +4275,10 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 6, 1, 71, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 6, 1,
+      71, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -4896,7 +4938,10 @@ class PROTOBUF_EXPORT FileOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<5, 22, 3, 202, 12> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      5, 22, 3,
+      202, 12>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -5313,7 +5358,10 @@ class PROTOBUF_EXPORT MessageOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 7, 2, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 7, 2,
+      0, 7>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -5505,7 +5553,10 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<1, 2, 0, 64, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 0,
+      64, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -6080,7 +6131,10 @@ class PROTOBUF_EXPORT FieldOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<4, 13, 7, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      4, 13, 7,
+      0, 7>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -6428,7 +6482,10 @@ class PROTOBUF_EXPORT OneofOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 2, 2, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      2, 2, 2,
+      0, 7>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -6801,7 +6858,10 @@ class PROTOBUF_EXPORT EnumOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 5, 2, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 5, 2,
+      0, 7>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -7165,7 +7225,10 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 4, 2, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 4, 2,
+      0, 7>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -7516,7 +7579,10 @@ class PROTOBUF_EXPORT ServiceOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 3, 2, 0, 12> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      2, 3, 2,
+      0, 12>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -7899,7 +7965,10 @@ class PROTOBUF_EXPORT MethodOptions final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 4, 3, 0, 12> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 4, 3,
+      0, 12>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -8082,7 +8151,10 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<1, 2, 0, 62, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 0,
+      62, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -8342,7 +8414,10 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 7, 1, 75, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 7, 1,
+      75, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -8863,7 +8938,10 @@ class PROTOBUF_EXPORT FeatureSet final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 7, 7, 0, 7> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 7, 7,
+      0, 7>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -9122,7 +9200,10 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 5, 0, 106, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 5, 0,
+      106, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -9297,7 +9378,10 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1, 1, 0, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      0, 1, 1,
+      0, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -9538,7 +9622,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 5, 1, 64, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 5, 1,
+      64, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -9712,7 +9799,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<0, 1, 1, 0, 2> _table_;
+  static const ::google::protobuf::internal::TcParseTable<
+      0, 1, 1,
+      0, 2>
+      _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;

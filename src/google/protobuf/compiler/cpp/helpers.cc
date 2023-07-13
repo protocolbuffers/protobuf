@@ -889,7 +889,8 @@ std::string SafeFunctionName(const Descriptor* descriptor,
 }
 
 bool IsProfileDriven(const Options& options) {
-  return options.access_info_map != nullptr;
+  return !options.bootstrap && !options.opensource_runtime &&
+         options.access_info_map != nullptr;
 }
 
 bool IsRarelyPresent(const FieldDescriptor* field, const Options& options) {
@@ -978,6 +979,13 @@ bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
   (void)desc;
   (void)options;
   return false;
+}
+
+bool IsPresentMessage(const Descriptor* descriptor, const Options& options) {
+  (void)descriptor;
+  (void)options;
+  // Assume that the message is present if there is no profile.
+  return true;
 }
 
 static bool HasRepeatedFields(const Descriptor* descriptor) {
