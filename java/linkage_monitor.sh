@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -e -o pipefail
 
 echo "Running Linkage Monitor check"
 
@@ -17,22 +17,27 @@ fi
 
 cd java
 
+# Install the test BOM for Linkage Monitor
+pushd test/linkage-monitor-check-bom
+mvn -e -B install
+popd
+
 # Linkage Monitor requires the artifacts to be available in local Maven
 # repository.
-mvn --projects "bom,core,util" -e -B -Dhttps.protocols=TLSv1.2 clean generate-sources install \
+mvn -e -B clean generate-sources install  \
+    -Dhttps.protocols=TLSv1.2 \
     -Dmaven.test.skip=true \
     -Dprotobuf.basedir="../.." \
     -Dprotoc="${protoc_location}"
 
 echo "Installed the artifacts to local Maven repository"
 
-curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/linkage-monitor-latest-all-deps.jar"
+curl -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/linkage-monitor-latest-all-deps.jar"
 
 echo "Running linkage-monitor-latest-all-deps.jar."
 
-# The generated libraries in google-cloud-shared-dependencies would detect
-# incompatible changes via Linkage Monitor
-# https://github.com/googleapis/sdk-platform-java/tree/main/java-shared-dependencies
-java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:google-cloud-shared-dependencies
+# The libraries in the BOM would detect incompatible changes via Linkage Monitor
+java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar \
+    com.google.protobuf.test:linkage-monitor-check-bom
 
 echo "Finished running Linkage Monitor check"
