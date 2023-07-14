@@ -737,6 +737,7 @@ set(fake_plugin_files
 # @//src/google/protobuf/compiler:test_srcs
 set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/allowlist_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/bootstrap_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator_unittest.cc
