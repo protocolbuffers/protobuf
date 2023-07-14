@@ -30,8 +30,14 @@
 
 #include "google/protobuf/inlined_string_field.h"
 
+#include <cstddef>
+#include <cstring>
+#include <string>
+
 #include "google/protobuf/arena.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/internal/resize_uninitialized.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/message_lite.h"
