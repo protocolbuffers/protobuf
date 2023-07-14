@@ -16,9 +16,9 @@ class PreviouslyGeneratedClassTest extends TestBase
 
         // For older versions of PHP, verify that we can reference the
         // original class name.
-        eval("
+        eval('
           $m = new \Previous\readonly();
           $this->assertTrue(true);
-        ");
+        ');
     }
 }
