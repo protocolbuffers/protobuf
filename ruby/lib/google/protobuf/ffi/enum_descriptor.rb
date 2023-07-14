@@ -155,7 +155,7 @@ module Google
         self.each do |name, value|
           if name[0] < 'A' || name[0] > 'Z'
             if name[0] >= 'a' and name[0] <= 'z'
-              name = name[0].upcase + name[1..] # auto capitalize
+              name = name[0].upcase + name[1..-1] # auto capitalize
             else
               warn(
                 "Enum value '#{name}' does not start with an uppercase letter " +
