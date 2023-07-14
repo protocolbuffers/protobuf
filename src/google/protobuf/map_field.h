@@ -324,7 +324,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
  protected:
   // "protected" stops users from deleting a `MapFieldBase *`
-  ~MapFieldBase();
+  virtual ~MapFieldBase();
 
  public:
   // Returns reference to internal repeated field. Data written using
