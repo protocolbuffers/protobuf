@@ -547,14 +547,24 @@ std::string BinaryToPhpString(const std::string& src) {
     'C', 'D', 'E', 'F',
   };
 
-  dest.resize(src.size() * 4);
-  char* append_ptr = &dest[0];
+  dest.reserve(src.size() * 1.2);
 
   for (i = 0; i < src.size(); i++) {
-    *append_ptr++ = '\\';
-    *append_ptr++ = 'x';
-    *append_ptr++ = symbol[(src[i] & 0xf0) >> 4];
-    *append_ptr++ = symbol[src[i] & 0x0f];
+    // To escape:
+    // - escape sequences
+    // - variable expansion: "hello $username";
+    // - string termination
+    if (src[i] == '\\' || src[i] == '$' || src[i] == '"') {
+      dest += '\\';
+      dest += src[i];
+    } else if (std::isprint(src[i])) {
+      dest += src[i];
+    } else {
+      dest += '\\';
+      dest += 'x';
+      dest += symbol[(src[i] & 0xf0) >> 4];
+      dest += symbol[src[i] & 0x0f];
+    }
   }
 
   return dest;
