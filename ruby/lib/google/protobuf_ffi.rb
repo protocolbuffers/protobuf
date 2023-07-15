@@ -29,21 +29,21 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 require 'ffi-compiler/loader'
+require 'google/protobuf/ffi/ffi'
 require 'google/protobuf/ffi/internal/type_safety'
 require 'google/protobuf/ffi/internal/pointer_helper'
 require 'google/protobuf/ffi/internal/arena'
 require 'google/protobuf/ffi/internal/convert'
 require 'google/protobuf/ffi/descriptor'
-require 'google/protobuf/ffi/message'
 require 'google/protobuf/ffi/enum_descriptor'
 require 'google/protobuf/ffi/field_descriptor'
 require 'google/protobuf/ffi/oneof_descriptor'
-require 'google/protobuf/ffi/ffi'
 require 'google/protobuf/ffi/descriptor_pool'
 require 'google/protobuf/ffi/file_descriptor'
 require 'google/protobuf/ffi/map'
 require 'google/protobuf/ffi/object_cache'
 require 'google/protobuf/ffi/repeated_field'
+require 'google/protobuf/ffi/message'
 require 'google/protobuf/descriptor_dsl'
 
 module Google

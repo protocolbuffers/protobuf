@@ -92,5 +92,20 @@ module Google
         instance
       end
     end
+
+    class FFI
+      # MessageDef
+      attach_function :get_oneof_by_name,    :API_PENDING_upb_MessageDef_FindOneofByNameWithSize, [Descriptor, :string, :size_t], OneofDescriptor
+      attach_function :get_oneof_by_index,   :API_PENDING_upb_MessageDef_Oneof,                   [Descriptor, :int], OneofDescriptor
+
+      # OneofDescriptor
+      attach_function :get_oneof_name,           :API_PENDING_upb_OneofDef_Name,          [OneofDescriptor], :string
+      attach_function :get_oneof_field_count,    :API_PENDING_upb_OneofDef_FieldCount,    [OneofDescriptor], :int
+      attach_function :get_oneof_field_by_index, :API_PENDING_upb_OneofDef_Field,         [OneofDescriptor, :int], FieldDescriptor
+      attach_function :get_oneof_containing_type,:API_PENDING_upb_OneofDef_ContainingType,[:pointer], Descriptor
+
+      # FieldDescriptor
+      attach_function :real_containing_oneof,      :API_PENDING_upb_FieldDef_RealContainingOneof,[FieldDescriptor], OneofDescriptor
+    end
   end
 end

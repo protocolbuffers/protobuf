@@ -30,6 +30,21 @@
 
 module Google
   module Protobuf
+    class FFI
+      # Map
+      attach_function :map_clear,  :upb_Map_Clear,                    [:Map], :void
+      attach_function :map_delete, :upb_Map_Delete,                   [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
+      attach_function :map_get,    :upb_Map_Get,                      [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
+      attach_function :create_map, :upb_Map_New,                      [Internal::Arena, CType, CType], :Map
+      attach_function :map_size,   :upb_Map_Size,                     [:Map], :size_t
+      attach_function :map_set,    :upb_Map_Set,                      [:Map, MessageValue.by_value, MessageValue.by_value, Internal::Arena], :bool
+
+      # MapIterator
+      attach_function :map_next,   :API_PENDING_upb_MapIterator_Next,             [:Map, :pointer], :bool
+      attach_function :map_done,   :API_PENDING_upb_MapIterator_Done,             [:Map, :size_t], :bool
+      attach_function :map_key,    :API_PENDING_upb_MapIterator_Key,              [:Map, :size_t], MessageValue.by_value
+      attach_function :map_value,  :API_PENDING_upb_MapIterator_Value,            [:Map, :size_t], MessageValue.by_value
+    end
     class Map
       include Enumerable
       ##

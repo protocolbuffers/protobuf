@@ -304,5 +304,29 @@ module Google
         @c_type ||= Google::Protobuf::FFI.get_c_type(self)
       end
     end
+
+    class FFI
+      # MessageDef
+      attach_function :get_field_by_index,   :API_PENDING_upb_MessageDef_Field,                  [Descriptor, :int], FieldDescriptor
+      attach_function :get_field_by_name,    :API_PENDING_upb_MessageDef_FindFieldByNameWithSize,[Descriptor, :string, :size_t], FieldDescriptor
+      attach_function :get_field_by_number,  :API_PENDING_upb_MessageDef_FindFieldByNumber,      [Descriptor, :uint32_t], FieldDescriptor
+
+      # FieldDescriptor
+      attach_function :get_containing_message_def, :API_PENDING_upb_FieldDef_ContainingType,     [FieldDescriptor], Descriptor
+      attach_function :get_c_type,                 :API_PENDING_upb_FieldDef_CType,              [FieldDescriptor], CType
+      attach_function :get_default,                :API_PENDING_upb_FieldDef_Default,            [FieldDescriptor], MessageValue.by_value
+      attach_function :get_subtype_as_enum,        :API_PENDING_upb_FieldDef_EnumSubDef,         [FieldDescriptor], EnumDescriptor
+      attach_function :get_has_presence,           :API_PENDING_upb_FieldDef_HasPresence,        [FieldDescriptor], :bool
+      attach_function :is_map,                     :API_PENDING_upb_FieldDef_IsMap,              [FieldDescriptor], :bool
+      attach_function :is_repeated,                :API_PENDING_upb_FieldDef_IsRepeated,         [FieldDescriptor], :bool
+      attach_function :is_sub_message,             :API_PENDING_upb_FieldDef_IsSubMessage,       [FieldDescriptor], :bool
+      attach_function :get_json_name,              :API_PENDING_upb_FieldDef_JsonName,           [FieldDescriptor], :string
+      attach_function :get_label,                  :API_PENDING_upb_FieldDef_Label,              [FieldDescriptor], Label
+      attach_function :get_subtype_as_message,     :API_PENDING_upb_FieldDef_MessageSubDef,      [FieldDescriptor], Descriptor
+      attach_function :get_full_name,              :API_PENDING_upb_FieldDef_Name,               [FieldDescriptor], :string
+      attach_function :get_number,                 :API_PENDING_upb_FieldDef_Number,             [FieldDescriptor], :uint32_t
+      attach_function :get_type,                   :API_PENDING_upb_FieldDef_Type,               [FieldDescriptor], FieldType
+      attach_function :file_def_by_raw_field_def,  :API_PENDING_upb_FieldDef_File,               [:pointer], :FileDef
+    end
   end
 end
