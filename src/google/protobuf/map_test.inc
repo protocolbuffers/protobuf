@@ -3968,7 +3968,7 @@ TEST(MapSerializationTest, DeterministicSubmessage) {
   std::string golden;
   ABSL_CHECK_OK(
       File::GetContents(TestUtil::GetTestDataPath(absl::StrCat(
-                            "third_party/protobuf/testdata/", filename)),
+                            "google/protobuf/testdata/", filename)),
                         &golden, true));
   t.ParseFromString(golden);
   *(p.mutable_m()) = t;
@@ -4010,7 +4010,7 @@ TEST(TextFormatMapTest, DynamicMessage) {
 
   std::string expected_text;
   ABSL_CHECK_OK(
-      File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
+      File::GetContents(TestUtil::GetTestDataPath("google/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
 
@@ -4026,7 +4026,7 @@ TEST(TextFormatMapTest, Sorted) {
 
   std::string expected_text;
   ABSL_CHECK_OK(
-      File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
+      File::GetContents(TestUtil::GetTestDataPath("google/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
 
@@ -4047,7 +4047,7 @@ TEST(TextFormatMapTest, ParseCorruptedString) {
   std::string serialized_message;
   ABSL_CHECK_OK(File::GetContents(
       TestUtil::GetTestDataPath(
-          "third_party/protobuf/testdata/golden_message_maps"),
+          "google/protobuf/testdata/golden_message_maps"),
       &serialized_message, true));
   UNITTEST::TestMaps message;
   ABSL_CHECK(message.ParseFromString(serialized_message));

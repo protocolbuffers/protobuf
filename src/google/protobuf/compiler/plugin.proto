@@ -122,6 +122,7 @@ message CodeGeneratorResponse {
   enum Feature {
     FEATURE_NONE = 0;
     FEATURE_PROTO3_OPTIONAL = 1;
+    FEATURE_SUPPORTS_EDITIONS = 2;
   }
 
   // Represents a single generated file.

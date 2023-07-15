@@ -78,6 +78,24 @@ TEST(VisitDescriptorsTest, SingleTypeWithProto) {
                             "protobuf_unittest.TestAllTypes.NestedMessage"}));
 }
 
+TEST(VisitDescriptorsTest, SingleTypeMutableProto) {
+  const FileDescriptor& file =
+      *protobuf_unittest::TestAllTypes::GetDescriptor()->file();
+  FileDescriptorProto proto;
+  file.CopyTo(&proto);
+  std::vector<std::string> descriptors;
+  VisitDescriptors(file, proto,
+                   [&](const Descriptor& descriptor, DescriptorProto& proto) {
+                     descriptors.push_back(descriptor.full_name());
+                     EXPECT_EQ(descriptor.name(), proto.name());
+                     proto.set_name("<redacted>");
+                   });
+  EXPECT_THAT(descriptors,
+              IsSupersetOf({"protobuf_unittest.TestAllTypes",
+                            "protobuf_unittest.TestAllTypes.NestedMessage"}));
+  EXPECT_EQ(proto.message_type(0).name(), "<redacted>");
+}
+
 TEST(VisitDescriptorsTest, AllTypesDeduce) {
   const FileDescriptor& file =
       *protobuf_unittest::TestAllTypes::GetDescriptor()->file();

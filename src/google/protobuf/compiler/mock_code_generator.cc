@@ -39,6 +39,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/testing/file.h"
@@ -96,7 +97,8 @@ MockCodeGenerator::MockCodeGenerator(absl::string_view name) : name_(name) {}
 MockCodeGenerator::~MockCodeGenerator() = default;
 
 uint64_t MockCodeGenerator::GetSupportedFeatures() const {
-  uint64_t all_features = CodeGenerator::FEATURE_PROTO3_OPTIONAL;
+  uint64_t all_features = CodeGenerator::FEATURE_PROTO3_OPTIONAL |
+                          CodeGenerator::FEATURE_SUPPORTS_EDITIONS;
   return all_features & ~suppressed_features_;
 }
 
@@ -212,6 +214,16 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
                                  const std::string& parameter,
                                  GeneratorContext* context,
                                  std::string* error) const {
+  std::vector<std::pair<std::string, std::string>> options;
+  ParseGeneratorParameter(parameter, &options);
+  for (const auto& option : options) {
+    const auto& key = option.first;
+
+    if (key == "no_editions") {
+      suppressed_features_ |= CodeGenerator::FEATURE_SUPPORTS_EDITIONS;
+    }
+  }
+
   bool annotate = false;
   for (int i = 0; i < file->message_type_count(); i++) {
     if (absl::StartsWith(file->message_type(i)->name(), "MockCodeGenerator_")) {

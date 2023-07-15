@@ -118,7 +118,10 @@ class MockCodeGenerator : public CodeGenerator {
 
  private:
   std::string name_;
-  uint64_t suppressed_features_ = 0;
+
+  // Mark this mutable so that our test plugin can modify it during the Generate
+  // call via generator flags.
+  mutable uint64_t suppressed_features_ = 0;
 
   static std::string GetOutputFileContent(absl::string_view generator_name,
                                           absl::string_view parameter,

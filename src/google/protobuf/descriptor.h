@@ -262,7 +262,7 @@ class PROTOBUF_EXPORT SymbolBaseN : public SymbolBase {};
 // This class is for internal use only and provides access to the FeatureSets
 // defined on descriptors.  These features are not designed to be stable, and
 // depending directly on them (vs the public descriptor APIs) is not safe.
-class InternalFeatureHelper {
+class PROTOBUF_EXPORT InternalFeatureHelper {
  public:
   template <typename DescriptorT>
   static const FeatureSet& GetFeatures(const DescriptorT& desc) {
@@ -271,10 +271,22 @@ class InternalFeatureHelper {
 
  private:
   friend class ::google::protobuf::compiler::CodeGenerator;
+  friend class ::google::protobuf::compiler::CommandLineInterface;
+
+  // Provides a restricted view exclusively to code generators.  Raw features
+  // haven't been resolved, and are virtually meaningless to everyone else. Code
+  // generators will need them to validate their own features, and runtimes may
+  // need them internally to be able to properly represent the original proto
+  // files from generated code.
   template <typename DescriptorT>
   static const FeatureSet& GetRawFeatures(const DescriptorT& desc) {
     return *desc.proto_features_;
   }
+
+  // Provides the full descriptor tree including both resolved features (in the
+  // `features` fields) and unresolved features (in the `raw_features` fields)
+  // for every descriptor.
+  static FileDescriptorProto GetGeneratorProto(const FileDescriptor& file);
 };
 #endif  // PROTOBUF_FUTURE_EDITIONS
 

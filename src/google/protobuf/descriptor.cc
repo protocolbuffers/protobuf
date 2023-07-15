@@ -2759,6 +2759,29 @@ FileDescriptor::FileDescriptor() {}
 
 // CopyTo methods ====================================================
 
+#ifdef PROTOBUF_FUTURE_EDITIONS
+namespace internal {
+FileDescriptorProto InternalFeatureHelper::GetGeneratorProto(
+    const FileDescriptor& file) {
+  FileDescriptorProto file_proto;
+  file.CopyTo(&file_proto);
+
+  // Insert all the raw features back into the proto.
+  internal::VisitDescriptors(
+      file, file_proto, [](const auto& desc, auto& proto) {
+        const auto& features = GetFeatures(desc);
+        if (&features != &FeatureSet::default_instance() &&
+            !IsLegacyFeatureSet(features)) {
+          *proto.mutable_options()->mutable_features() = features;
+          *proto.mutable_options()->mutable_features()->mutable_raw_features() =
+              GetRawFeatures(desc);
+        }
+      });
+  return file_proto;
+}
+}  // namespace internal
+#endif  // PROTOBUF_FUTURE_EDITIONS
+
 void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
   CopyHeadingTo(proto);
 
@@ -5407,7 +5430,14 @@ void DescriptorBuilder::ResolveFeaturesImpl(
     // internal details.
     FeatureSet* mutable_features = alloc.AllocateArray<FeatureSet>(1);
     descriptor->proto_features_ = mutable_features;
-    options->mutable_features()->Swap(mutable_features);
+    if (options->features().has_raw_features()) {
+      // If the raw features are specified, use those and recalculate the
+      // resolved features.
+      options->mutable_features()->mutable_raw_features()->Swap(
+          mutable_features);
+    } else {
+      options->mutable_features()->Swap(mutable_features);
+    }
     options->clear_features();
   } else if (!force_merge) {
     // Nothing to merge, and we aren't forcing it.
