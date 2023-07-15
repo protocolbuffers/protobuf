@@ -38,6 +38,38 @@ config_setting(
     },
 )
 
+selects.config_setting_group(
+    name = "jruby_ffi",
+    match_all = [
+        ":ffi_enabled",
+        "@rules_ruby//ruby/runtime:config_jruby",
+    ],
+)
+
+selects.config_setting_group(
+    name = "jruby_native",
+    match_all = [
+        ":ffi_disabled",
+        "@rules_ruby//ruby/runtime:config_jruby",
+    ],
+)
+
+selects.config_setting_group(
+    name = "ruby_ffi",
+    match_all = [
+        ":ffi_enabled",
+        "@rules_ruby//ruby/runtime:config_ruby",
+    ],
+)
+
+selects.config_setting_group(
+    name = "ruby_native",
+    match_all = [
+        ":ffi_disabled",
+        "@rules_ruby//ruby/runtime:config_ruby",
+    ],
+)
+
 ruby_library(
     name = "protobuf",
     visibility = [
@@ -150,7 +182,18 @@ conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_ruby.txt",
     target_compatible_with = select({
-        "@rules_ruby//ruby/runtime:config_ruby": [],
+        ":ruby_native": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    testee = "//conformance:conformance_ruby",
+    text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
+)
+
+conformance_test(
+    name = "conformance_test_ffi",
+    failure_list = "//conformance:failure_list_ruby.txt",
+    target_compatible_with = select({
+        ":ruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
@@ -161,7 +204,18 @@ conformance_test(
     name = "conformance_test_jruby",
     failure_list = "//conformance:failure_list_jruby.txt",
     target_compatible_with = select({
-        "@rules_ruby//ruby/runtime:config_jruby": [],
+        ":jruby_native": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    testee = "//conformance:conformance_ruby",
+    text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
+)
+
+conformance_test(
+    name = "conformance_test_jruby_ffi",
+    failure_list = "//conformance:failure_list_jruby_ffi.txt",
+    target_compatible_with = select({
+        ":jruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
