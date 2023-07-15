@@ -38,9 +38,9 @@ package protobuf_unittest3;
 
 message TestNrtMessage {
   message TestNrtNestedMessage {
-    int32 int32_field = 1;
-    string string_field = 2;
   }
 
-  TestNrtNestedMessage reference_field = 1;
+  TestNrtNestedMessage message_field = 1;
+  string string_field = 2;
+  int32 int32_field = 3;
 }

@@ -866,17 +866,26 @@ namespace Google.Protobuf
         {
             NullabilityInfoContext context = new();
 
-            PropertyInfo referenceProperty = typeof(TestNrtMessage).GetProperty("ReferenceField", BindingFlags.Instance | BindingFlags.Public)!;
+            // Message fiels are nullable
+            PropertyInfo referenceProperty = typeof(TestNrtMessage).GetProperty("MessageField", BindingFlags.Instance | BindingFlags.Public)!;
             Assert.NotNull(referenceProperty);
             NullabilityInfo referenceNullabilityInfo = context.Create(referenceProperty);
-            Assert.AreEqual(NullabilityState.NotNull, referenceNullabilityInfo.ReadState);
-            Assert.AreEqual(NullabilityState.NotNull, referenceNullabilityInfo.WriteState);
+            Assert.AreEqual(NullabilityState.Nullable, referenceNullabilityInfo.ReadState);
+            Assert.AreEqual(NullabilityState.Nullable, referenceNullabilityInfo.WriteState);
 
-            PropertyInfo stringProperty = typeof(TestNrtMessage.Types.TestNrtNestedMessage).GetProperty("StringField", BindingFlags.Instance | BindingFlags.Public)!;
-            Assert.NotNull(referenceProperty);
+            // String fields are non-nullable
+            PropertyInfo stringProperty = typeof(TestNrtMessage).GetProperty("StringField", BindingFlags.Instance | BindingFlags.Public)!;
+            Assert.NotNull(stringProperty);
             NullabilityInfo stringNullabilityInfo = context.Create(stringProperty);
             Assert.AreEqual(NullabilityState.NotNull, stringNullabilityInfo.ReadState);
             Assert.AreEqual(NullabilityState.NotNull, stringNullabilityInfo.WriteState);
+
+            // Int32 and other value types are non-nullable
+            PropertyInfo intProperty = typeof(TestNrtMessage).GetProperty("Int32Field", BindingFlags.Instance | BindingFlags.Public)!;
+            Assert.NotNull(intProperty);
+            NullabilityInfo intNullabilityInfo = context.Create(intProperty);
+            Assert.AreEqual(NullabilityState.NotNull, intNullabilityInfo.ReadState);
+            Assert.AreEqual(NullabilityState.NotNull, intNullabilityInfo.WriteState);
         }
 #endif
     }
