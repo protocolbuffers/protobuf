@@ -94,12 +94,13 @@ namespace compiler {
 enum CodeGeneratorResponse_Feature : int {
   CodeGeneratorResponse_Feature_FEATURE_NONE = 0,
   CodeGeneratorResponse_Feature_FEATURE_PROTO3_OPTIONAL = 1,
+  CodeGeneratorResponse_Feature_FEATURE_SUPPORTS_EDITIONS = 2,
 };
 
 PROTOC_EXPORT bool CodeGeneratorResponse_Feature_IsValid(int value);
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MIN = static_cast<CodeGeneratorResponse_Feature>(0);
-constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MAX = static_cast<CodeGeneratorResponse_Feature>(1);
-constexpr int CodeGeneratorResponse_Feature_Feature_ARRAYSIZE = 1 + 1;
+constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MAX = static_cast<CodeGeneratorResponse_Feature>(2);
+constexpr int CodeGeneratorResponse_Feature_Feature_ARRAYSIZE = 2 + 1;
 PROTOC_EXPORT const ::google::protobuf::EnumDescriptor*
 CodeGeneratorResponse_Feature_descriptor();
 template <typename T>
@@ -112,7 +113,7 @@ const std::string& CodeGeneratorResponse_Feature_Name(T value) {
 template <>
 inline const std::string& CodeGeneratorResponse_Feature_Name(CodeGeneratorResponse_Feature value) {
   return ::google::protobuf::internal::NameOfDenseEnum<CodeGeneratorResponse_Feature_descriptor,
-                                                 0, 1>(
+                                                 0, 2>(
       static_cast<int>(value));
 }
 inline bool CodeGeneratorResponse_Feature_Parse(absl::string_view name, CodeGeneratorResponse_Feature* value) {
@@ -943,6 +944,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   using Feature = CodeGeneratorResponse_Feature;
   static constexpr Feature FEATURE_NONE = CodeGeneratorResponse_Feature_FEATURE_NONE;
   static constexpr Feature FEATURE_PROTO3_OPTIONAL = CodeGeneratorResponse_Feature_FEATURE_PROTO3_OPTIONAL;
+  static constexpr Feature FEATURE_SUPPORTS_EDITIONS = CodeGeneratorResponse_Feature_FEATURE_SUPPORTS_EDITIONS;
   static inline bool Feature_IsValid(int value) {
     return CodeGeneratorResponse_Feature_IsValid(value);
   }

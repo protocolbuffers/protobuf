@@ -113,8 +113,10 @@ class PROTOC_EXPORT CodeGenerator {
 
   // This must be kept in sync with plugin.proto. See that file for
   // documentation on each value.
+  // TODO(b/291092901) Use CodeGeneratorResponse.Feature here.
   enum Feature {
     FEATURE_PROTO3_OPTIONAL = 1,
+    FEATURE_SUPPORTS_EDITIONS = 2,
   };
 
   // Implement this to indicate what features this code generator supports.
@@ -127,8 +129,6 @@ class PROTOC_EXPORT CodeGenerator {
   // version of the library. When protobufs does a api breaking change, the
   // method can be removed.
   virtual bool HasGenerateAll() const { return true; }
-
-#ifdef PROTOBUF_FUTURE_EDITIONS
 
  protected:
   // Retrieves the resolved source features for a given descriptor.  These
@@ -155,7 +155,6 @@ class PROTOC_EXPORT CodeGenerator {
     StripSourceRetentionOptions(*file.pool(), proto);
     return proto;
   }
-#endif  // PROTOBUF_FUTURE_EDITIONS
 };
 
 // CodeGenerators generate one or more files in a given directory.  This

@@ -35,9 +35,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface_tester.h"
-#ifdef PROTOBUF_FUTURE_EDITIONS
 #include "google/protobuf/cpp_features.pb.h"
-#endif  // PROTOBUF_FUTURE_EDITIONS
 
 namespace google {
 namespace protobuf {
@@ -55,10 +53,8 @@ class CppGeneratorTest : public CommandLineInterfaceTester {
     CreateTempFile(
         "google/protobuf/descriptor.proto",
         google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
-#ifdef PROTOBUF_FUTURE_EDITIONS
-    CreateTempFile("third_party/protobuf/cpp_features.proto",
+    CreateTempFile("google/protobuf/cpp_features.proto",
                    pb::CppFeatures::descriptor()->file()->DebugString());
-#endif  // PROTOBUF_FUTURE_EDITIONS
   }
 };
 
@@ -91,13 +87,12 @@ TEST_F(CppGeneratorTest, BasicError) {
       "foo.proto:4:7: Expected \"required\", \"optional\", or \"repeated\"");
 }
 
-#ifdef PROTOBUF_FUTURE_EDITIONS
 
 TEST_F(CppGeneratorTest, LegacyClosedEnumOnNonEnumField) {
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
-    import "third_party/protobuf/cpp_features.proto";
+    import "google/protobuf/cpp_features.proto";
     
     message Foo {
       int32 bar = 1 [features.(pb.cpp).legacy_closed_enum = true];
@@ -116,7 +111,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnum) {
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
-    import "third_party/protobuf/cpp_features.proto";
+    import "google/protobuf/cpp_features.proto";
 
     enum TestEnum {
       TEST_ENUM_UNKNOWN = 0;
@@ -136,7 +131,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
-    import "third_party/protobuf/cpp_features.proto";
+    import "google/protobuf/cpp_features.proto";
     option features.(pb.cpp).legacy_closed_enum = true;
     
     enum TestEnum {
@@ -158,7 +153,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
-    import "third_party/protobuf/cpp_features.proto";
+    import "google/protobuf/cpp_features.proto";
     option features.(pb.cpp).legacy_closed_enum = true;
     
     enum TestEnum {
@@ -176,7 +171,6 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
   ExpectErrorSubstring(
       "Field Foo.bar has a closed enum type with implicit presence.");
 }
-#endif  // PROTOBUF_FUTURE_EDITIONS
 
 }  // namespace
 }  // namespace cpp

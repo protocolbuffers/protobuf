@@ -224,6 +224,20 @@ TEST_F(CodeGeneratorTest, GetSourceFeaturesInherited) {
   EXPECT_EQ(ext.string_source_feature(), "field");
 }
 
+TEST_F(CodeGeneratorTest, GetRuntimeProtoTrivial) {
+  auto file = BuildFile(R"schema(
+    edition = "2023";
+    package protobuf_unittest;
+  )schema");
+  ASSERT_THAT(file, NotNull());
+
+  FileDescriptorProto proto = TestGenerator::GetRuntimeProto(*file);
+  const FeatureSet& features = proto.options().features();
+
+  EXPECT_TRUE(features.has_raw_features());
+  EXPECT_THAT(features.raw_features(), EqualsProto(R"pb()pb"));
+}
+
 TEST_F(CodeGeneratorTest, GetRuntimeProtoRoot) {
   auto file = BuildFile(R"schema(
     edition = "2023";

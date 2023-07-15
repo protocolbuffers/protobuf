@@ -43,6 +43,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
+#include "google/protobuf/unittest_features.pb.h"
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -67,6 +68,7 @@
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
@@ -439,7 +441,7 @@ TEST_F(CommandLineInterfaceTest, Plugin_OptionRetention) {
   std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
 #else
   std::string plugin_path = absl::StrCat(
-      TestUtil::TestSourceDir(), "/third_party/protobuf/compiler/fake_plugin");
+      TestUtil::TestSourceDir(), "/google/protobuf/compiler/fake_plugin");
 #endif
 
   // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
@@ -510,7 +512,7 @@ TEST_F(CommandLineInterfaceTest, Plugin_SourceFileDescriptors) {
   std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
 #else
   std::string plugin_path = absl::StrCat(
-      TestUtil::TestSourceDir(), "/third_party/protobuf/compiler/fake_plugin");
+      TestUtil::TestSourceDir(), "/google/protobuf/compiler/fake_plugin");
 #endif
 
   // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
@@ -1344,8 +1346,6 @@ TEST_F(CommandLineInterfaceTest, AllowServicesHasService) {
   ExpectGenerated("test_generator", "", "foo.proto", "Foo");
 }
 
-#ifdef PROTOBUF_FUTURE_EDITIONS
-
 TEST_F(CommandLineInterfaceTest, EditionsAreNotAllowed) {
   CreateTempFile("foo.proto",
                  "edition = \"very-cool\";\n"
@@ -1384,13 +1384,13 @@ TEST_F(CommandLineInterfaceTest, FeaturesEditionZero) {
 }
 
 TEST_F(CommandLineInterfaceTest, FeatureExtensions) {
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("features.proto",
                  R"schema(
     syntax = "proto2";
     package pb;
-    import "net/proto2/proto/descriptor.proto";
+    import "google/protobuf/descriptor.proto";
     extend google.protobuf.FeatureSet {
       optional TestFeatures test = 9999;
     }
@@ -1449,13 +1449,13 @@ TEST_F(CommandLineInterfaceTest, FeatureTargetError) {
 }
 
 TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("features.proto",
                  R"schema(
     syntax = "proto2";
     package pb;
-    import "net/proto2/proto/descriptor.proto";
+    import "google/protobuf/descriptor.proto";
     extend google.protobuf.FeatureSet {
       optional TestFeatures test = 9999;
     }
@@ -1482,7 +1482,199 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
       "repeated field");
 }
 
-#endif  // PROTOBUF_FUTURE_EDITIONS
+TEST_F(CommandLineInterfaceTest, Plugin_LegacyFeatures) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+                      syntax = "proto2";
+                      package foo;
+                      message Foo {
+                        optional int32 b = 1;
+                      })schema");
+
+#ifdef GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH
+  std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
+#else
+  std::string plugin_path = absl::StrCat(
+      TestUtil::TestSourceDir(), "/google/protobuf/compiler/fake_plugin");
+#endif
+
+  // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
+  // sent by protoc.
+  Run(absl::StrCat(
+      "protocol_compiler --fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+      "foo.proto --plugin=prefix-gen-fake_plugin=",
+      plugin_path));
+  ExpectNoErrors();
+  std::string base64_output = ReadFile("foo.proto.request");
+  std::string binary_request;
+  ASSERT_TRUE(absl::Base64Unescape(base64_output, &binary_request));
+  CodeGeneratorRequest request;
+  ASSERT_TRUE(request.ParseFromString(binary_request));
+
+  EXPECT_FALSE(
+      request.proto_file(0).message_type(0).field(0).options().has_features());
+  EXPECT_FALSE(request.source_file_descriptors(0)
+                   .message_type(0)
+                   .field(0)
+                   .options()
+                   .has_features());
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_RuntimeFeatures) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+                      edition = "2023";
+                      package foo;
+                      message Foo {
+                        int32 b = 1 [features.field_presence = IMPLICIT];
+                      })schema");
+
+#ifdef GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH
+  std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
+#else
+  std::string plugin_path = absl::StrCat(
+      TestUtil::TestSourceDir(), "/google/protobuf/compiler/fake_plugin");
+#endif
+
+  // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
+  // sent by protoc.
+  Run(
+      absl::StrCat("protocol_compiler --experimental_editions "
+                   "--fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+                   "foo.proto --plugin=prefix-gen-fake_plugin=",
+                   plugin_path));
+  ExpectNoErrors();
+  std::string base64_output = ReadFile("foo.proto.request");
+  std::string binary_request;
+  ASSERT_TRUE(absl::Base64Unescape(base64_output, &binary_request));
+  CodeGeneratorRequest request;
+  ASSERT_TRUE(request.ParseFromString(binary_request));
+
+  EXPECT_THAT(
+      request.proto_file(0).message_type(0).field(0).options().features(),
+      EqualsProto(R"pb(field_presence: IMPLICIT
+                       enum_type: OPEN
+                       repeated_field_encoding: PACKED
+                       string_field_validation: MANDATORY
+                       message_encoding: LENGTH_PREFIXED
+                       json_format: ALLOW
+                       raw_features { field_presence: IMPLICIT }
+      )pb"));
+  EXPECT_THAT(request.source_file_descriptors(0)
+                  .message_type(0)
+                  .field(0)
+                  .options()
+                  .features(),
+              EqualsProto(R"pb(field_presence: IMPLICIT
+                               enum_type: OPEN
+                               repeated_field_encoding: PACKED
+                               string_field_validation: MANDATORY
+                               message_encoding: LENGTH_PREFIXED
+                               json_format: ALLOW
+                               raw_features { field_presence: IMPLICIT }
+              )pb"));
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "google/protobuf/unittest_features.proto";
+    package foo;
+    message Foo {
+      int32 b = 1 [
+        features.(pb.test).int_field_feature = 99,
+        features.(pb.test).int_source_feature = 87
+      ];
+    }
+  )schema");
+
+#ifdef GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH
+  std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
+#else
+  std::string plugin_path = absl::StrCat(
+      TestUtil::TestSourceDir(), "/google/protobuf/compiler/fake_plugin");
+#endif
+
+  // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
+  // sent by protoc.
+  Run(
+      absl::StrCat("protocol_compiler --experimental_editions "
+                   "--fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+                   "foo.proto --plugin=prefix-gen-fake_plugin=",
+                   plugin_path));
+  ExpectNoErrors();
+  std::string base64_output = ReadFile("foo.proto.request");
+  std::string binary_request;
+  ASSERT_TRUE(absl::Base64Unescape(base64_output, &binary_request));
+  CodeGeneratorRequest request;
+  ASSERT_TRUE(request.ParseFromString(binary_request));
+
+  {
+    ASSERT_EQ(request.proto_file(2).name(), "foo.proto");
+    const FeatureSet& features =
+        request.proto_file(2).message_type(0).field(0).options().features();
+    EXPECT_THAT(features.raw_features(),
+                EqualsProto(R"pb([pb.test] { int_field_feature: 99 })pb"));
+    EXPECT_FALSE(features.GetExtension(pb::test).has_int_source_feature());
+    EXPECT_EQ(features.GetExtension(pb::test).int_field_feature(), 99);
+  }
+
+  {
+    ASSERT_EQ(request.source_file_descriptors(0).name(), "foo.proto");
+    const FeatureSet& features = request.source_file_descriptors(0)
+                                     .message_type(0)
+                                     .field(0)
+                                     .options()
+                                     .features();
+    EXPECT_THAT(features.raw_features(),
+                EqualsProto(R"pb([pb.test] {
+                                   int_field_feature: 99
+                                   int_source_feature: 87
+                                 })pb"));
+    EXPECT_EQ(features.GetExtension(pb::test).int_field_feature(), 99);
+    EXPECT_EQ(features.GetExtension(pb::test).int_source_feature(), 87);
+  }
+}
+
+TEST_F(CommandLineInterfaceTest, GeneratorNoEditionsSupport) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  CreateGeneratorWithMissingFeatures("--no_editions_out",
+                                     "Doesn't support editions",
+                                     CodeGenerator::FEATURE_SUPPORTS_EDITIONS);
+
+  Run("protocol_compiler --experimental_editions "
+      "--proto_path=$tmpdir foo.proto --no_editions_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "code generator --no_editions_out hasn't been updated to support "
+      "editions");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginNoEditionsSupport) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  Run("protocol_compiler --experimental_editions "
+      "--proto_path=$tmpdir foo.proto --plug_out=no_editions:$tmpdir");
+
+  ExpectErrorSubstring(
+      "code generator prefix-gen-plug hasn't been updated to support editions");
+}
 
 
 TEST_F(CommandLineInterfaceTest, DirectDependencies_Missing_EmptyList) {
@@ -2766,13 +2958,13 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcement) {
   // The target option on a field indicates what kind of entity it may apply to
   // when it is used as an option. This test verifies that the enforcement
   // works correctly on all entity types.
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
       package protobuf_unittest;
-      import "net/proto2/proto/descriptor.proto";
+      import "google/protobuf/descriptor.proto";
       message MyOptions {
         optional string file_option = 1 [targets = TARGET_TYPE_FILE];
         optional string extension_range_option = 2 [targets =
@@ -2866,13 +3058,13 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcement) {
 }
 
 TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsValid) {
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
       package protobuf_unittest;
-      import "net/proto2/proto/descriptor.proto";
+      import "google/protobuf/descriptor.proto";
       message MyOptions {
         optional string message_or_file_option = 1 [
             targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE];
@@ -2894,13 +3086,13 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsValid) {
 }
 
 TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsInvalid) {
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
       package protobuf_unittest;
-      import "net/proto2/proto/descriptor.proto";
+      import "google/protobuf/descriptor.proto";
       message MyOptions {
         optional string message_or_file_option = 1 [
             targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE];
@@ -2922,13 +3114,13 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsInvalid) {
 
 TEST_F(CommandLineInterfaceTest,
        TargetTypeEnforcementMultipleEdgesWithConstraintsValid) {
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
       package protobuf_unittest;
-      import "net/proto2/proto/descriptor.proto";
+      import "google/protobuf/descriptor.proto";
       message A {
         optional B b = 1 [targets = TARGET_TYPE_FILE,
                           targets = TARGET_TYPE_ENUM];
@@ -2949,13 +3141,13 @@ TEST_F(CommandLineInterfaceTest,
 
 TEST_F(CommandLineInterfaceTest,
        TargetTypeEnforcementMultipleEdgesWithConstraintsInvalid) {
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
       package protobuf_unittest;
-      import "net/proto2/proto/descriptor.proto";
+      import "google/protobuf/descriptor.proto";
       message A {
         optional B b = 1 [targets = TARGET_TYPE_ENUM];
       }
@@ -3129,28 +3321,27 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
 
 TEST_P(EncodeDecodeTest, Encode) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/"
+      "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
   std::string args;
   if (GetParam() != DESCRIPTOR_SET_IN) {
-    args.append(
-        TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
+    args.append("google/protobuf/unittest.proto");
   }
   EXPECT_TRUE(
       Run(absl::StrCat(args, " --encode=protobuf_unittest.TestAllTypes")));
   ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
+      "google/protobuf/testdata/golden_message_oneof_implemented"));
   ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, Decode) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
+      "google/protobuf/testdata/golden_message_oneof_implemented"));
   EXPECT_TRUE(
-      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
+      Run("google/protobuf/unittest.proto"
           " --decode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesTextFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/"
+      "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
   ExpectStderrMatchesText("");
 }
@@ -3158,7 +3349,7 @@ TEST_P(EncodeDecodeTest, Decode) {
 TEST_P(EncodeDecodeTest, Partial) {
   RedirectStdinFromText("");
   EXPECT_TRUE(
-      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
+      Run("google/protobuf/unittest.proto"
           " --encode=protobuf_unittest.TestRequired"));
   ExpectStdoutMatchesText("");
   ExpectStderrMatchesText(
@@ -3182,7 +3373,7 @@ TEST_P(EncodeDecodeTest, DecodeRaw) {
 
 TEST_P(EncodeDecodeTest, UnknownType) {
   EXPECT_FALSE(
-      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
+      Run("google/protobuf/unittest.proto"
           " --encode=NoSuchType"));
   ExpectStdoutMatchesText("");
   ExpectStderrMatchesText("Type not defined: NoSuchType\n");
@@ -3199,25 +3390,24 @@ TEST_P(EncodeDecodeTest, ProtoParseError) {
 
 TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/"
+      "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
   std::string args;
   if (GetParam() != DESCRIPTOR_SET_IN) {
-    args.append(
-        TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
+    args.append("google/protobuf/unittest.proto");
   }
   EXPECT_TRUE(Run(absl::StrCat(
       args, " --encode=protobuf_unittest.TestAllTypes --deterministic_output")));
   ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
+      "google/protobuf/testdata/golden_message_oneof_implemented"));
   ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
+      "google/protobuf/testdata/golden_message_oneof_implemented"));
   EXPECT_FALSE(
-      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
+      Run("google/protobuf/unittest.proto"
           " --decode=protobuf_unittest.TestAllTypes --deterministic_output"));
   ExpectStderrMatchesText(
       "Can only use --deterministic_output with --encode.\n");

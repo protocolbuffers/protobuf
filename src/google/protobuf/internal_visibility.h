@@ -33,6 +33,7 @@
 namespace google {
 namespace protobuf {
 
+class Arena;
 class Message;
 class MessageLite;
 
@@ -48,6 +49,7 @@ class InternalVisibility {
   // ctor outside of the class to force a private ctor instance.
   explicit constexpr InternalVisibility();
 
+  friend class ::google::protobuf::Arena;
   friend class ::google::protobuf::Message;
   friend class ::google::protobuf::MessageLite;
 

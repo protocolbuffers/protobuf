@@ -33,17 +33,18 @@ namespace Google.Protobuf.Compiler {
             "LnByb3RvYnVmLkZpbGVEZXNjcmlwdG9yUHJvdG8SRQoXc291cmNlX2ZpbGVf",
             "ZGVzY3JpcHRvcnMYESADKAsyJC5nb29nbGUucHJvdG9idWYuRmlsZURlc2Ny",
             "aXB0b3JQcm90bxI7ChBjb21waWxlcl92ZXJzaW9uGAMgASgLMiEuZ29vZ2xl",
-            "LnByb3RvYnVmLmNvbXBpbGVyLlZlcnNpb24iwQIKFUNvZGVHZW5lcmF0b3JS",
+            "LnByb3RvYnVmLmNvbXBpbGVyLlZlcnNpb24i4AIKFUNvZGVHZW5lcmF0b3JS",
             "ZXNwb25zZRINCgVlcnJvchgBIAEoCRIaChJzdXBwb3J0ZWRfZmVhdHVyZXMY",
             "AiABKAQSQgoEZmlsZRgPIAMoCzI0Lmdvb2dsZS5wcm90b2J1Zi5jb21waWxl",
             "ci5Db2RlR2VuZXJhdG9yUmVzcG9uc2UuRmlsZRp/CgRGaWxlEgwKBG5hbWUY",
             "ASABKAkSFwoPaW5zZXJ0aW9uX3BvaW50GAIgASgJEg8KB2NvbnRlbnQYDyAB",
             "KAkSPwoTZ2VuZXJhdGVkX2NvZGVfaW5mbxgQIAEoCzIiLmdvb2dsZS5wcm90",
-            "b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mbyI4CgdGZWF0dXJlEhAKDEZFQVRVUkVf",
-            "Tk9ORRAAEhsKF0ZFQVRVUkVfUFJPVE8zX09QVElPTkFMEAFCcgocY29tLmdv",
-            "b2dsZS5wcm90b2J1Zi5jb21waWxlckIMUGx1Z2luUHJvdG9zWilnb29nbGUu",
-            "Z29sYW5nLm9yZy9wcm90b2J1Zi90eXBlcy9wbHVnaW5wYqoCGEdvb2dsZS5Q",
-            "cm90b2J1Zi5Db21waWxlcg=="));
+            "b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mbyJXCgdGZWF0dXJlEhAKDEZFQVRVUkVf",
+            "Tk9ORRAAEhsKF0ZFQVRVUkVfUFJPVE8zX09QVElPTkFMEAESHQoZRkVBVFVS",
+            "RV9TVVBQT1JUU19FRElUSU9OUxACQnIKHGNvbS5nb29nbGUucHJvdG9idWYu",
+            "Y29tcGlsZXJCDFBsdWdpblByb3Rvc1opZ29vZ2xlLmdvbGFuZy5vcmcvcHJv",
+            "dG9idWYvdHlwZXMvcGx1Z2lucGKqAhhHb29nbGUuUHJvdG9idWYuQ29tcGls",
+            "ZXI="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -1100,6 +1101,7 @@ namespace Google.Protobuf.Compiler {
       public enum Feature {
         [pbr::OriginalName("FEATURE_NONE")] None = 0,
         [pbr::OriginalName("FEATURE_PROTO3_OPTIONAL")] Proto3Optional = 1,
+        [pbr::OriginalName("FEATURE_SUPPORTS_EDITIONS")] SupportsEditions = 2,
       }
 
       /// <summary>

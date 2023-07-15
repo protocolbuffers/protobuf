@@ -297,11 +297,6 @@ def _make_proto_library_aspect(is_upb):
             "_cpp_thunks_deps": attr.label(
                 default = Label("//rust/cpp_kernel:cpp_api"),
             ),
-            "_grep_includes": attr.label(
-                allow_single_file = True,
-                default = Label("@bazel_tools//tools/cpp:grep-includes"),
-                cfg = "exec",
-            ),
             "_error_format": attr.label(
                 default = Label("@rules_rust//:error_format"),
             ),

@@ -2318,7 +2318,7 @@ TEST_F(ParserValidationErrorTest, ResovledUndefinedOptionError) {
 
   // base2.proto:
   //   package baz
-  //   import net/proto2/proto/descriptor.proto
+  //   import google/protobuf/descriptor.proto
   //   message Bar { optional int32 foo = 1; }
   //   extend FileOptions { optional Bar bar = 7672757; }
   FileDescriptorProto other_file;
@@ -2461,8 +2461,7 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   // We now have a FileDescriptorProto, but to compare with the expected we
   // need to link to a FileDecriptor, then output back to a proto. We'll
   // also need to give it the same name as the original.
-  parsed.set_name(
-      TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
+  parsed.set_name("google/protobuf/unittest.proto");
   // We need the imported dependency before we can build our parsed proto
   const FileDescriptor* public_import =
       protobuf_unittest_import::PublicImportMessage::descriptor()->file();
@@ -3915,7 +3914,6 @@ TEST_F(SourceInfoTest, DocCommentsOneof) {
 
 // ===================================================================
 
-#ifdef PROTOBUF_FUTURE_EDITIONS
 typedef ParserTest ParseEditionsTest;
 
 TEST_F(ParseEditionsTest, Editions) {
@@ -4144,7 +4142,6 @@ TEST_F(ParseEditionsTest, FeaturesWithoutEditions) {
       "4:17: Features are only valid under editions.\n");
 }
 
-#endif  // PROTOBUF_FUTURE_EDITIONS
 
 
 }  // anonymous namespace
