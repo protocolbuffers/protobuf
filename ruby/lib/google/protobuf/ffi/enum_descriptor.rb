@@ -171,14 +171,14 @@ module Google
 
     class FFI
       # EnumDescriptor
-      attach_function :get_enum_file_descriptor,  :API_PENDING_upb_EnumDef_File,                   [EnumDescriptor], :FileDef
-      attach_function :enum_value_by_name,        :API_PENDING_upb_EnumDef_FindValueByNameWithSize,[EnumDescriptor, :string, :size_t], :EnumValueDef
-      attach_function :enum_value_by_number,      :API_PENDING_upb_EnumDef_FindValueByNumber,      [EnumDescriptor, :int], :EnumValueDef
-      attach_function :get_enum_fullname,         :API_PENDING_upb_EnumDef_FullName,               [EnumDescriptor], :string
-      attach_function :enum_value_by_index,       :API_PENDING_upb_EnumDef_Value,                  [EnumDescriptor, :int], :EnumValueDef
-      attach_function :enum_value_count,          :API_PENDING_upb_EnumDef_ValueCount,             [EnumDescriptor], :int
-      attach_function :enum_name,                 :API_PENDING_upb_EnumValueDef_Name,              [:EnumValueDef], :string
-      attach_function :enum_number,               :API_PENDING_upb_EnumValueDef_Number,            [:EnumValueDef], :int
+      attach_function :get_enum_file_descriptor,  :upb_EnumDef_File,                   [EnumDescriptor], :FileDef
+      attach_function :enum_value_by_name,        :upb_EnumDef_FindValueByNameWithSize,[EnumDescriptor, :string, :size_t], :EnumValueDef
+      attach_function :enum_value_by_number,      :upb_EnumDef_FindValueByNumber,      [EnumDescriptor, :int], :EnumValueDef
+      attach_function :get_enum_fullname,         :upb_EnumDef_FullName,               [EnumDescriptor], :string
+      attach_function :enum_value_by_index,       :upb_EnumDef_Value,                  [EnumDescriptor, :int], :EnumValueDef
+      attach_function :enum_value_count,          :upb_EnumDef_ValueCount,             [EnumDescriptor], :int
+      attach_function :enum_name,                 :upb_EnumValueDef_Name,              [:EnumValueDef], :string
+      attach_function :enum_number,               :upb_EnumValueDef_Number,            [:EnumValueDef], :int
     end
   end
 end

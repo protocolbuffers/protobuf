@@ -32,9 +32,9 @@ module Google
   module Protobuf
     class FFI
       # FileDescriptor
-      attach_function :file_def_name,   :API_PENDING_upb_FileDef_Name,   [:FileDef], :string
-      attach_function :file_def_syntax, :API_PENDING_upb_FileDef_Syntax, [:FileDef], Syntax
-      attach_function :file_def_pool,   :API_PENDING_upb_FileDef_Pool,   [:FileDef], :DefPool
+      attach_function :file_def_name,   :upb_FileDef_Name,   [:FileDef], :string
+      attach_function :file_def_syntax, :upb_FileDef_Syntax, [:FileDef], Syntax
+      attach_function :file_def_pool,   :upb_FileDef_Pool,   [:FileDef], :DefPool
     end
     class FileDescriptor
       attr :descriptor_pool, :file_def

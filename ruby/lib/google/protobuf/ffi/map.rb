@@ -40,10 +40,10 @@ module Google
       attach_function :map_set,    :upb_Map_Set,                      [:Map, MessageValue.by_value, MessageValue.by_value, Internal::Arena], :bool
 
       # MapIterator
-      attach_function :map_next,   :API_PENDING_upb_MapIterator_Next,             [:Map, :pointer], :bool
-      attach_function :map_done,   :API_PENDING_upb_MapIterator_Done,             [:Map, :size_t], :bool
-      attach_function :map_key,    :API_PENDING_upb_MapIterator_Key,              [:Map, :size_t], MessageValue.by_value
-      attach_function :map_value,  :API_PENDING_upb_MapIterator_Value,            [:Map, :size_t], MessageValue.by_value
+      attach_function :map_next,   :upb_MapIterator_Next,             [:Map, :pointer], :bool
+      attach_function :map_done,   :upb_MapIterator_Done,             [:Map, :size_t], :bool
+      attach_function :map_key,    :upb_MapIterator_Key,              [:Map, :size_t], MessageValue.by_value
+      attach_function :map_value,  :upb_MapIterator_Value,            [:Map, :size_t], MessageValue.by_value
     end
     class Map
       include Enumerable

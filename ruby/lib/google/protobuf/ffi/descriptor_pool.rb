@@ -32,11 +32,11 @@ module Google
   module Protobuf
     class FFI
       # DefPool
-      attach_function :add_serialized_file,   :API_PENDING_upb_DefPool_AddFile,           [:DefPool, :FileDescriptorProto, Status.by_ref], :FileDef
-      attach_function :free_descriptor_pool,  :API_PENDING_upb_DefPool_Free,              [:DefPool], :void
-      attach_function :create_descriptor_pool,:API_PENDING_upb_DefPool_New,               [], :DefPool
-      attach_function :lookup_enum,           :API_PENDING_upb_DefPool_FindEnumByName,    [:DefPool, :string], EnumDescriptor
-      attach_function :lookup_msg,            :API_PENDING_upb_DefPool_FindMessageByName, [:DefPool, :string], Descriptor
+      attach_function :add_serialized_file,   :upb_DefPool_AddFile,           [:DefPool, :FileDescriptorProto, Status.by_ref], :FileDef
+      attach_function :free_descriptor_pool,  :upb_DefPool_Free,              [:DefPool], :void
+      attach_function :create_descriptor_pool,:upb_DefPool_New,               [], :DefPool
+      attach_function :lookup_enum,           :upb_DefPool_FindEnumByName,    [:DefPool, :string], EnumDescriptor
+      attach_function :lookup_msg,            :upb_DefPool_FindMessageByName, [:DefPool, :string], Descriptor
       # FileDescriptorProto
       attach_function :parse,                 :FileDescriptorProto_parse, [:binary_string, :size_t], :FileDescriptorProto
     end
