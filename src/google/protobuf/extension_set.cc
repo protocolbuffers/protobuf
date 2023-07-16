@@ -1466,8 +1466,8 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
 #undef HANDLE_TYPE
       case WireFormatLite::TYPE_MESSAGE: {
         if (is_lazy) {
-          size_t size = lazymessage_value->ByteSizeLong();
-          result += io::CodedOutputStream::VarintSize32(size) + size;
+          // LazyField::ByteSizeLong includes sizeof(length).
+          result += lazymessage_value->ByteSizeLong();
         } else {
           result += WireFormatLite::MessageSize(*message_value);
         }
@@ -1931,15 +1931,11 @@ size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
   our_size += io::CodedOutputStream::VarintSize32(number);
 
   // message
-  size_t message_size = 0;
   if (is_lazy) {
-    message_size = lazymessage_value->ByteSizeLong();
+    our_size += lazymessage_value->ByteSizeLong();
   } else {
-    message_size = message_value->ByteSizeLong();
+    our_size += WireFormatLite::MessageSize(*message_value);
   }
-
-  our_size += io::CodedOutputStream::VarintSize32(message_size);
-  our_size += message_size;
 
   return our_size;
 }
