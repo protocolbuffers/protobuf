@@ -244,17 +244,8 @@ def _upb_cc_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider
 def _upb_cc_proto_library_aspect_impl(target, ctx):
     return _upb_cc_proto_aspect_impl(target, ctx, "upbprotos", _UpbCcWrappedCcInfo, _WrappedCcGeneratedSrcsInfo)
 
-def _maybe_add(d):
-    if _is_google3:
-        d["_grep_includes"] = attr.label(
-            allow_single_file = True,
-            cfg = "exec",
-            default = "@bazel_tools//tools/cpp:grep-includes",
-        )
-    return d
-
 _upb_cc_proto_library_aspect = aspect(
-    attrs = _maybe_add({
+    attrs = {
         "_ccopts": attr.label(
             default = "//protos:upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
         ),
@@ -282,7 +273,7 @@ _upb_cc_proto_library_aspect = aspect(
                 "//protos:repeated_field",
             ],
         ),
-    }),
+    },
     implementation = _upb_cc_proto_library_aspect_impl,
     provides = [
         _UpbCcWrappedCcInfo,
