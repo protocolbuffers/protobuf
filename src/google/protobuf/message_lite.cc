@@ -576,7 +576,8 @@ bool MessageLite::AppendPartialToCord(absl::Cord* output) const {
         target, static_cast<int>(available.size()),
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
     auto res = _InternalSerialize(target, &out);
-    ABSL_DCHECK_EQ(res, target + size);
+    ABSL_DCHECK_EQ(static_cast<const void*>(res),
+                   static_cast<const void*>(target + size));
     buffer.IncreaseLengthBy(size);
     output->Append(std::move(buffer));
     ABSL_DCHECK_EQ(output->size(), total_size);
