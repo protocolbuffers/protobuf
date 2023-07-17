@@ -36,9 +36,9 @@
 #include "upb/port/def.inc"
 
 struct upb_MiniTableFile {
-  const upb_MiniTable** msgs;
-  const upb_MiniTableEnum** enums;
-  const upb_MiniTableExtension** exts;
+  const struct upb_MiniTable** msgs;
+  const struct upb_MiniTableEnum** enums;
+  const struct upb_MiniTableExtension** exts;
   int msg_count;
   int enum_count;
   int ext_count;
