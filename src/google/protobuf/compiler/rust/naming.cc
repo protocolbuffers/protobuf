@@ -36,6 +36,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -164,7 +165,16 @@ std::string RustModule(Context<Descriptor> msg) {
   return absl::StrCat("", absl::StrReplaceAll(package, {{".", "::"}}));
 }
 
+std::string RustInternalModuleName(Context<FileDescriptor> file) {
+  // TODO(b/291853557): Introduce a more robust mangling here to avoid conflicts
+  // between `foo/bar/baz.proto` and `foo_bar/baz.proto`.
+  return absl::StrReplaceAll(StripProto(file.desc().name()), {{"/", "_"}});
+}
+
 std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg) {
+  if (msg.desc().file()->package().empty()) {
+    return msg.desc().name();
+  }
   return absl::StrCat(RustModule(msg), "::", msg.desc().name());
 }
 
