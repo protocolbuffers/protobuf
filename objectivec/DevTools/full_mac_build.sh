@@ -192,20 +192,8 @@ fi
 # Ensure the WKT sources checked in are current.
 objectivec/generate_well_known_types.sh --check-only
 
-header "Checking on the ObjC Runtime Code"
-# Some of the kokoro machines don't have python3 yet, so fall back to python if need be.
-if hash python3 >/dev/null 2>&1 ; then
-  LOCAL_PYTHON=python3
-else
-  LOCAL_PYTHON=python
-fi
-"${LOCAL_PYTHON}" objectivec/DevTools/pddm_tests.py
-if ! "${LOCAL_PYTHON}" objectivec/DevTools/pddm.py --dry-run objectivec/*.[hm] objectivec/Tests/*.[hm] ; then
-  echo ""
-  echo "Update by running:"
-  echo "   objectivec/DevTools/pddm.py objectivec/*.[hm] objectivec/Tests/*.[hm]"
-  exit 1
-fi
+header "Checking on the ObjC Runtime pddm expansions"
+${BazelBin} test //objectivec:sources_pddm_expansion_test $BazelFlags
 
 readonly XCODE_VERSION_LINE="$(xcodebuild -version | grep Xcode\  )"
 readonly XCODE_VERSION="${XCODE_VERSION_LINE/Xcode /}"  # drop the prefix.
