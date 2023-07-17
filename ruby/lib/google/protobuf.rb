@@ -42,13 +42,17 @@ module Google
 
     PREFER_FFI = case ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']
                  when nil, ""
-                   # When unspecified, PREFER_FFI is autodetected based on
-                   # available gems.
-                   begin
-                     require 'ffi'
-                     require 'ffi-compiler/loader'
-                     true
-                   rescue LoadError
+                   if RUBY_PLATFORM == "java"
+                     # When unspecified, PREFER_FFI is autodetected based on
+                     # available gems for JRuby. For CRuby, users must opt-in.
+                     begin
+                       require 'ffi'
+                       require 'ffi-compiler/loader'
+                       true
+                     rescue LoadError
+                       false
+                     end
+                   else
                      false
                    end
                  when /^ffi$/i
