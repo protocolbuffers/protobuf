@@ -8,7 +8,7 @@ class RepeatedFieldTest < Test::Unit::TestCase
   def test_acts_like_enumerator
     m = TestMessage.new
     (Enumerable.instance_methods - TestMessage.new.repeated_string.methods).each do |method_name|
-      assert_equal "does not respond to #{method_name}", m.repeated_string.respond_to?(method_name), true
+      assert_respond_to m.repeated_string, method_name
     end
   end
 
@@ -20,8 +20,10 @@ class RepeatedFieldTest < Test::Unit::TestCase
       :iter_for_each_with_index, :dimensions, :copy_data, :copy_data_simple,
       :nitems, :iter_for_reverse_each, :indexes, :append, :prepend]
     arr_methods -= [:union, :difference, :filter!]
-    arr_methods -= [:intersection, :deconstruct] # ruby 2.7 methods we can ignore
-    arr_methods -= [:intersect?] # ruby 3.1 methods we can ignore
+    # ruby 2.7 methods we can ignore
+    arr_methods -= [:intersection, :deconstruct, :resolve_feature_path]
+    # ruby 3.1 methods we can ignore
+    arr_methods -= [:intersect?]
     arr_methods.each do |method_name|
       assert_respond_to m.repeated_string, method_name
     end

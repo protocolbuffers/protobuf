@@ -74,6 +74,9 @@ public class RubyRepeatedField extends RubyObject {
   @JRubyMethod(required = 1, optional = 2)
   public IRubyObject initialize(ThreadContext context, IRubyObject[] args) {
     Ruby runtime = context.runtime;
+    // Workaround for https://github.com/jruby/jruby/issues/7851. Can be removed when JRuby 9.4.3.0
+    // is no longer supported.
+    if (args.length < 1) throw runtime.newArgumentError("Expected at least 1 argument");
     this.storage = runtime.newArray();
     IRubyObject ary = null;
     if (!(args[0] instanceof RubySymbol)) {
@@ -141,14 +144,20 @@ public class RubyRepeatedField extends RubyObject {
       } else if (arg instanceof RubyRange) {
         RubyRange range = ((RubyRange) arg);
 
-        int first = normalizeArrayIndex(range.first(context));
-        int last = normalizeArrayIndex(range.last(context));
+        boolean beginless = range.begin(context).isNil();
+        int first =
+            normalizeArrayIndex(
+                beginless ? RubyNumeric.int2fix(context.runtime, 0) : range.begin(context));
+        boolean endless = range.end(context).isNil();
+        int last =
+            normalizeArrayIndex(
+                endless ? RubyNumeric.int2fix(context.runtime, -1) : range.end(context));
 
         if (last - first < 0) {
           return context.runtime.newEmptyArray();
         }
-
-        return this.storage.subseq(first, last - first + (range.isExcludeEnd() ? 0 : 1));
+        boolean excludeEnd = range.isExcludeEnd() && !endless;
+        return this.storage.subseq(first, last - first + (excludeEnd ? 0 : 1));
       }
     }
     /* assume 2 arguments */
