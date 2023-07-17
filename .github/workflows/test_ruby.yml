@@ -21,8 +21,6 @@ jobs:
           - { name: Ruby 3.0, ruby: ruby-3.0.2, bazel: 5.1.1}
           - { name: Ruby 3.1, ruby: ruby-3.1.0, bazel: 5.1.1}
           - { name: Ruby 3.2, ruby: ruby-3.2.0, bazel: 5.1.1}
-          - { name: JRuby 9.2, ruby: jruby-9.2.20.1, bazel: 5.1.1}
-          - { name: JRuby 9.3, ruby: jruby-9.3.10.0, bazel: 5.1.1}
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, bazel: 5.1.1}
           - { name: Ruby 2.7 (Bazel6), ruby: ruby-2.7.0, bazel: 6.0.0}
           - { name: JRuby 9.4 (Bazel6), ruby: jruby-9.4.3.0, bazel: 6.0.0}
@@ -113,8 +111,6 @@ jobs:
           - { name: Ruby 3.0, ruby: ruby-3.0.2, bazel: 5.1.1}
           - { name: Ruby 3.1, ruby: ruby-3.1.0, bazel: 5.1.1}
           - { name: Ruby 3.2, ruby: ruby-3.2.0, bazel: 5.1.1}
-          - { name: JRuby 9.2, ruby: jruby-9.2.20.1, bazel: 5.1.1}
-          - { name: JRuby 9.3, ruby: jruby-9.3.10.0, bazel: 5.1.1}
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, bazel: 5.1.1}
           - { name: Ruby 2.7 (Bazel6), ruby: ruby-2.7.0, bazel: 6.0.0}
           - { name: JRuby 9.4 (Bazel6), ruby: jruby-9.4.3.0, bazel: 6.0.0}
