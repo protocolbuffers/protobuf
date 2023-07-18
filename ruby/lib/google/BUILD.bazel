@@ -66,11 +66,14 @@ ruby_library(
         "**/*.rb",
     ]),
     data = select({
+        # Platform native implementations
         "@rules_ruby//ruby/runtime:config_jruby": ["protobuf_java.jar"],
         "@platforms//os:osx": ["protobuf_c.bundle"],
         "//conditions:default": ["protobuf_c.so"],
     }) + select({
-        "//ruby:ffi_enabled": ["//ruby/lib/google:libprotobuf_c_ffi.bundle"],
+        # FFI Implementations
+        "//ruby:macos_ffi_enabled": ["//ruby/lib/google:libprotobuf_c_ffi.bundle"],
+        "//ruby:linux_ffi_enabled": ["protobuf_c_ffi.so"],
         "//conditions:default": [],
     }),
     includes = ["ruby/lib"],

@@ -70,6 +70,22 @@ selects.config_setting_group(
     ],
 )
 
+selects.config_setting_group(
+    name = "macos_ffi_enabled",
+    match_all = [
+        ":ffi_enabled",
+        "@platforms//os:osx",
+    ],
+)
+
+selects.config_setting_group(
+    name = "linux_ffi_enabled",
+    match_all = [
+        ":ffi_enabled",
+        "@platforms//os:linux",
+    ],
+)
+
 ruby_library(
     name = "protobuf",
     visibility = [
