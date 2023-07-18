@@ -43,7 +43,7 @@ jobs:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-{1}-508417e5215994ade7585d28ba3aad681a25fa5d', matrix.ruby, matrix.bazel) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
-          bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
+          bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
 
   linux-aarch64:
     name: Linux aarch64
@@ -83,7 +83,7 @@ jobs:
       matrix:
         include:
         # Test both FFI and Native implementations on the highest and lowest
-        # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
+        # Ruby versions for CRuby, but only on Bazel 5.x.
         - { version: 2.7, ffi: NATIVE }
         - { version: 2.7, ffi: FFI }
         - { version: 3.0 }
@@ -112,7 +112,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_macos/${{ matrix.version }}
-          bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }} ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
+          bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }} --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
 
   test_ruby_gems:
     strategy:
@@ -151,4 +151,5 @@ jobs:
             gem install bazel-bin/ruby/google-protobuf-*;
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto;
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto;
-            ${{ matrix.ffi == 'FFI' && 'PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ruby ruby/tests/basic.rb
+            ${{ matrix.ffi == 'FFI' && 'PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ruby ruby/tests/basic.rb ruby/tests/implementation.rb
+            ${{ matrix.ffi == 'FFI' && 'PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ruby ruby/tests/implementation.rb
