@@ -39,6 +39,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/types/variant.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -56,6 +57,10 @@ enum TransformValidation : uint16_t;
 
 // Helper class for generating tailcall parsing functions.
 struct PROTOBUF_EXPORT TailCallTableInfo {
+  struct MessageOptions {
+    bool is_lite;
+    bool uses_codegen;
+  };
   struct PerFieldOptions {
     // For presence awareness (e.g. PDProto).
     float presence_probability;
@@ -64,9 +69,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     bool is_string_inlined;
     bool is_implicitly_weak;
     bool use_direct_tcparser_table;
-    bool is_lite;
     bool should_split;
-    bool uses_codegen;
   };
   class OptionProvider {
    public:
@@ -78,18 +81,31 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
 
   TailCallTableInfo(const Descriptor* descriptor,
                     const std::vector<const FieldDescriptor*>& ordered_fields,
+                    const MessageOptions& message_options,
                     const OptionProvider& option_provider,
                     const std::vector<int>& has_bit_indices,
                     const std::vector<int>& inlined_string_indices);
 
   // Fields parsed by the table fast-path.
   struct FastFieldInfo {
-    std::string func_name;
-    const FieldDescriptor* field;
-    uint16_t coded_tag;
-    uint8_t hasbit_idx;
-    uint8_t aux_idx;
-    uint16_t nonfield_info;
+    struct Empty {};
+    struct Field {
+      std::string func_name;
+      uint16_t coded_tag;
+      const FieldDescriptor* field;
+      uint8_t hasbit_idx;
+      uint8_t aux_idx;
+    };
+    struct NonField {
+      std::string func_name;
+      uint16_t coded_tag;
+      uint16_t nonfield_info;
+    };
+    absl::variant<Empty, Field, NonField> data;
+
+    bool is_empty() const { return absl::holds_alternative<Empty>(data); }
+    const Field* AsField() const { return absl::get_if<Field>(&data); }
+    const NonField* AsNonField() const { return absl::get_if<NonField>(&data); }
   };
   std::vector<FastFieldInfo> fast_path_fields;
 
