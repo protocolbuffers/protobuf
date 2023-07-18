@@ -31,7 +31,6 @@
 //! Items specific to `bytes` and `string` fields.
 #![allow(dead_code)]
 #![allow(unused)]
-#![deny(unsafe_op_in_unsafe_fn)]
 
 use crate::__internal::Private;
 use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
