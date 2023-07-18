@@ -664,9 +664,7 @@ class PROTOBUF_EXPORT WireFormatLite {
                                        int cached_size, uint8_t* target,
                                        io::EpsCopyOutputStream* stream);
 
-  // Like above, but de-virtualize the call to SerializeWithCachedSizes().  The
-  // pointer must point at an instance of MessageType, *not* a subclass (or
-  // the subclass must not override SerializeWithCachedSizes()).
+  // Like above, but de-virtualize the call to SerializeWithCachedSizes().
   template <typename MessageType>
   PROTOBUF_NDEBUG_INLINE static uint8_t* InternalWriteGroupNoVirtualToArray(
       int field_number, const MessageType& value, uint8_t* target);
