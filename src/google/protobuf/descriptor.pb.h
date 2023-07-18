@@ -146,66 +146,6 @@ PROTOBUF_EXPORT extern UninterpretedOptionDefaultTypeInternal _UninterpretedOpti
 class UninterpretedOption_NamePart;
 struct UninterpretedOption_NamePartDefaultTypeInternal;
 PROTOBUF_EXPORT extern UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
-template <>
-PROTOBUF_EXPORT ::google::protobuf::DescriptorProto* Arena::CreateMaybeMessage<::google::protobuf::DescriptorProto>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::DescriptorProto_ExtensionRange* Arena::CreateMaybeMessage<::google::protobuf::DescriptorProto_ExtensionRange>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::DescriptorProto_ReservedRange* Arena::CreateMaybeMessage<::google::protobuf::DescriptorProto_ReservedRange>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::EnumDescriptorProto* Arena::CreateMaybeMessage<::google::protobuf::EnumDescriptorProto>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::EnumDescriptorProto_EnumReservedRange* Arena::CreateMaybeMessage<::google::protobuf::EnumDescriptorProto_EnumReservedRange>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::EnumOptions* Arena::CreateMaybeMessage<::google::protobuf::EnumOptions>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::EnumValueDescriptorProto* Arena::CreateMaybeMessage<::google::protobuf::EnumValueDescriptorProto>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::EnumValueOptions* Arena::CreateMaybeMessage<::google::protobuf::EnumValueOptions>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::ExtensionRangeOptions* Arena::CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::ExtensionRangeOptions_Declaration* Arena::CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions_Declaration>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::FeatureSet* Arena::CreateMaybeMessage<::google::protobuf::FeatureSet>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::FieldDescriptorProto* Arena::CreateMaybeMessage<::google::protobuf::FieldDescriptorProto>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::FieldOptions* Arena::CreateMaybeMessage<::google::protobuf::FieldOptions>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::FieldOptions_EditionDefault* Arena::CreateMaybeMessage<::google::protobuf::FieldOptions_EditionDefault>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::FileDescriptorProto* Arena::CreateMaybeMessage<::google::protobuf::FileDescriptorProto>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::FileDescriptorSet* Arena::CreateMaybeMessage<::google::protobuf::FileDescriptorSet>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::FileOptions* Arena::CreateMaybeMessage<::google::protobuf::FileOptions>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::GeneratedCodeInfo* Arena::CreateMaybeMessage<::google::protobuf::GeneratedCodeInfo>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::GeneratedCodeInfo_Annotation* Arena::CreateMaybeMessage<::google::protobuf::GeneratedCodeInfo_Annotation>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::MessageOptions* Arena::CreateMaybeMessage<::google::protobuf::MessageOptions>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::MethodDescriptorProto* Arena::CreateMaybeMessage<::google::protobuf::MethodDescriptorProto>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::MethodOptions* Arena::CreateMaybeMessage<::google::protobuf::MethodOptions>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::OneofDescriptorProto* Arena::CreateMaybeMessage<::google::protobuf::OneofDescriptorProto>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::OneofOptions* Arena::CreateMaybeMessage<::google::protobuf::OneofOptions>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::ServiceDescriptorProto* Arena::CreateMaybeMessage<::google::protobuf::ServiceDescriptorProto>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::ServiceOptions* Arena::CreateMaybeMessage<::google::protobuf::ServiceOptions>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::SourceCodeInfo* Arena::CreateMaybeMessage<::google::protobuf::SourceCodeInfo>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::SourceCodeInfo_Location* Arena::CreateMaybeMessage<::google::protobuf::SourceCodeInfo_Location>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::UninterpretedOption* Arena::CreateMaybeMessage<::google::protobuf::UninterpretedOption>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::UninterpretedOption_NamePart* Arena::CreateMaybeMessage<::google::protobuf::UninterpretedOption_NamePart>(Arena*);
 namespace internal {
 #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
 PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();

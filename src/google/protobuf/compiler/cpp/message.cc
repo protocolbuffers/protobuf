@@ -2953,12 +2953,14 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
-  format(
-      "template<> "
-      "PROTOBUF_NOINLINE $classtype$*\n"
-      "Arena::CreateMaybeMessage< $classtype$ >(Arena* arena) {\n"
-      "  return Arena::CreateMessageInternal< $classtype$ >(arena);\n"
-      "}\n");
+  if (ShouldGenerateExternSpecializations(options_)) {
+    format(
+        "template<> "
+        "PROTOBUF_NOINLINE $classtype$*\n"
+        "Arena::CreateMaybeMessage< $classtype$ >(Arena* arena) {\n"
+        "  return Arena::CreateMessageInternal< $classtype$ >(arena);\n"
+        "}\n");
+  }
 }
 
 void MessageGenerator::GenerateClear(io::Printer* p) {

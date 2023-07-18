@@ -61,8 +61,6 @@ PROTOBUF_EXPORT extern CppFeaturesDefaultTypeInternal _CppFeatures_default_insta
 }  // namespace pb
 namespace google {
 namespace protobuf {
-template <>
-PROTOBUF_EXPORT ::pb::CppFeatures* Arena::CreateMaybeMessage<::pb::CppFeatures>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 
