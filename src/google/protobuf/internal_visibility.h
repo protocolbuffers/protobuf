@@ -39,6 +39,7 @@ class MessageLite;
 
 namespace internal {
 
+class BorrowerHelper;
 class InternalVisibilityForTesting;
 
 // Empty class to use as a mandatory 'internal token' for functions that have to
@@ -52,6 +53,7 @@ class InternalVisibility {
   friend class ::google::protobuf::Arena;
   friend class ::google::protobuf::Message;
   friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::internal::BorrowerHelper;
 
   friend class InternalVisibilityForTesting;
 };

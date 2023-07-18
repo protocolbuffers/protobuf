@@ -92,6 +92,10 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
                                    "reinterpret_cast<const $0&>($1));\n",
                                    type, default_ref))
           .WithSuffix(";"),
+      Sub("GOOGLE_INTERNAL_DEPRECATED",
+          !opts.opensource_runtime || field->options().deprecated()
+              ? "[[deprecated]]"
+              : ""),
   };
 }
 
@@ -164,8 +168,13 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ PROTOBUF_NODISCARD $Submsg$* $release_name$();
     $DEPRECATED$ $Submsg$* $mutable_name$();
     $DEPRECATED$ void $set_allocated_name$($Submsg$* value);
-    $DEPRECATED$ void $unsafe_arena_set_allocated_name$($Submsg$* value);
-    $DEPRECATED$ $Submsg$* $unsafe_arena_release_name$();
+    $GOOGLE_INTERNAL_DEPRECATED $void
+    $unsafe_arena_set_allocated_name$($Submsg$* value);
+    $GOOGLE_INTERNAL_DEPRECATED $$Submsg$* $unsafe_arena_release_name$();
+    $DEPRECATED $void internal_$unsafe_arena_set_allocated_name$(
+        ::google::protobuf::internal::InternalVisibility, $Submsg$* value);
+    $DEPRECATED $$Submsg$* internal_$unsafe_arena_release_name$(
+        ::google::protobuf::internal::InternalVisibility);
 
     private:
     const $Submsg$& _internal_$name$() const;
@@ -206,6 +215,10 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           return _internal_$name$();
         }
         inline void $Msg$::unsafe_arena_set_allocated_$name$($Submsg$* value) {
+          internal_unsafe_arena_set_allocated_$name$(internal_visibility(), value);
+        }
+        inline void $Msg$::internal_unsafe_arena_set_allocated_$name$(
+            ::google::protobuf::internal::InternalVisibility, $Submsg$* value) {
           $TsanDetectConcurrentMutation$;
           $PrepareSplitMessageForWrite$;
           //~ If we're not on an arena, free whatever we were holding before.
@@ -241,6 +254,10 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           return released;
         }
         inline $Submsg$* $Msg$::unsafe_arena_release_$name$() {
+          return internal_unsafe_arena_release_$name$(internal_visibility());
+        }
+        inline $Submsg$* $Msg$::internal_unsafe_arena_release_$name$(
+            ::google::protobuf::internal::InternalVisibility) {
           $TsanDetectConcurrentMutation$;
           $annotate_release$;
           // @@protoc_insertion_point(field_release:$pkg.Msg.field$)

@@ -548,8 +548,13 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   PROTOBUF_NODISCARD ::google::protobuf::compiler::Version* release_compiler_version();
   ::google::protobuf::compiler::Version* mutable_compiler_version();
   void set_allocated_compiler_version(::google::protobuf::compiler::Version* value);
-  void unsafe_arena_set_allocated_compiler_version(::google::protobuf::compiler::Version* value);
+  void
+  unsafe_arena_set_allocated_compiler_version(::google::protobuf::compiler::Version* value);
   ::google::protobuf::compiler::Version* unsafe_arena_release_compiler_version();
+  void internal_unsafe_arena_set_allocated_compiler_version(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::compiler::Version* value);
+  ::google::protobuf::compiler::Version* internal_unsafe_arena_release_compiler_version(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::compiler::Version& _internal_compiler_version() const;
@@ -773,8 +778,13 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   PROTOBUF_NODISCARD ::google::protobuf::GeneratedCodeInfo* release_generated_code_info();
   ::google::protobuf::GeneratedCodeInfo* mutable_generated_code_info();
   void set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* value);
-  void unsafe_arena_set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* value);
+  void
+  unsafe_arena_set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* value);
   ::google::protobuf::GeneratedCodeInfo* unsafe_arena_release_generated_code_info();
+  void internal_unsafe_arena_set_allocated_generated_code_info(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::GeneratedCodeInfo* value);
+  ::google::protobuf::GeneratedCodeInfo* internal_unsafe_arena_release_generated_code_info(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::GeneratedCodeInfo& _internal_generated_code_info() const;
@@ -1472,6 +1482,10 @@ inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compil
   return _internal_compiler_version();
 }
 inline void CodeGeneratorRequest::unsafe_arena_set_allocated_compiler_version(::google::protobuf::compiler::Version* value) {
+  internal_unsafe_arena_set_allocated_compiler_version(internal_visibility(), value);
+}
+inline void CodeGeneratorRequest::internal_unsafe_arena_set_allocated_compiler_version(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::compiler::Version* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.compiler_version_);
@@ -1504,6 +1518,10 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::release_comp
   return released;
 }
 inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::unsafe_arena_release_compiler_version() {
+  return internal_unsafe_arena_release_compiler_version(internal_visibility());
+}
+inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::internal_unsafe_arena_release_compiler_version(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
 
@@ -1775,6 +1793,10 @@ inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::
   return _internal_generated_code_info();
 }
 inline void CodeGeneratorResponse_File::unsafe_arena_set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* value) {
+  internal_unsafe_arena_set_allocated_generated_code_info(internal_visibility(), value);
+}
+inline void CodeGeneratorResponse_File::internal_unsafe_arena_set_allocated_generated_code_info(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::GeneratedCodeInfo* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.generated_code_info_);
@@ -1807,6 +1829,10 @@ inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::releas
   return released;
 }
 inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::unsafe_arena_release_generated_code_info() {
+  return internal_unsafe_arena_release_generated_code_info(internal_visibility());
+}
+inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::internal_unsafe_arena_release_generated_code_info(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
 

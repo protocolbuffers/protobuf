@@ -1171,8 +1171,13 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   PROTOBUF_NODISCARD ::google::protobuf::FileOptions* release_options();
   ::google::protobuf::FileOptions* mutable_options();
   void set_allocated_options(::google::protobuf::FileOptions* value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::FileOptions* value);
+  void
+  unsafe_arena_set_allocated_options(::google::protobuf::FileOptions* value);
   ::google::protobuf::FileOptions* unsafe_arena_release_options();
+  void internal_unsafe_arena_set_allocated_options(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FileOptions* value);
+  ::google::protobuf::FileOptions* internal_unsafe_arena_release_options(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FileOptions& _internal_options() const;
@@ -1186,8 +1191,13 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   PROTOBUF_NODISCARD ::google::protobuf::SourceCodeInfo* release_source_code_info();
   ::google::protobuf::SourceCodeInfo* mutable_source_code_info();
   void set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value);
-  void unsafe_arena_set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value);
+  void
+  unsafe_arena_set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value);
   ::google::protobuf::SourceCodeInfo* unsafe_arena_release_source_code_info();
+  void internal_unsafe_arena_set_allocated_source_code_info(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::SourceCodeInfo* value);
+  ::google::protobuf::SourceCodeInfo* internal_unsafe_arena_release_source_code_info(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::SourceCodeInfo& _internal_source_code_info() const;
@@ -1367,8 +1377,13 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   PROTOBUF_NODISCARD ::google::protobuf::ExtensionRangeOptions* release_options();
   ::google::protobuf::ExtensionRangeOptions* mutable_options();
   void set_allocated_options(::google::protobuf::ExtensionRangeOptions* value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::ExtensionRangeOptions* value);
+  void
+  unsafe_arena_set_allocated_options(::google::protobuf::ExtensionRangeOptions* value);
   ::google::protobuf::ExtensionRangeOptions* unsafe_arena_release_options();
+  void internal_unsafe_arena_set_allocated_options(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::ExtensionRangeOptions* value);
+  ::google::protobuf::ExtensionRangeOptions* internal_unsafe_arena_release_options(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::ExtensionRangeOptions& _internal_options() const;
@@ -1917,8 +1932,13 @@ class PROTOBUF_EXPORT DescriptorProto final :
   PROTOBUF_NODISCARD ::google::protobuf::MessageOptions* release_options();
   ::google::protobuf::MessageOptions* mutable_options();
   void set_allocated_options(::google::protobuf::MessageOptions* value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::MessageOptions* value);
+  void
+  unsafe_arena_set_allocated_options(::google::protobuf::MessageOptions* value);
   ::google::protobuf::MessageOptions* unsafe_arena_release_options();
+  void internal_unsafe_arena_set_allocated_options(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::MessageOptions* value);
+  ::google::protobuf::MessageOptions* internal_unsafe_arena_release_options(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::MessageOptions& _internal_options() const;
@@ -2381,8 +2401,13 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
+  void
+  unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
   ::google::protobuf::FeatureSet* unsafe_arena_release_features();
+  void internal_unsafe_arena_set_allocated_features(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* internal_unsafe_arena_release_features(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
@@ -2867,8 +2892,13 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   PROTOBUF_NODISCARD ::google::protobuf::FieldOptions* release_options();
   ::google::protobuf::FieldOptions* mutable_options();
   void set_allocated_options(::google::protobuf::FieldOptions* value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::FieldOptions* value);
+  void
+  unsafe_arena_set_allocated_options(::google::protobuf::FieldOptions* value);
   ::google::protobuf::FieldOptions* unsafe_arena_release_options();
+  void internal_unsafe_arena_set_allocated_options(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FieldOptions* value);
+  ::google::protobuf::FieldOptions* internal_unsafe_arena_release_options(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FieldOptions& _internal_options() const;
@@ -3117,8 +3147,13 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   PROTOBUF_NODISCARD ::google::protobuf::OneofOptions* release_options();
   ::google::protobuf::OneofOptions* mutable_options();
   void set_allocated_options(::google::protobuf::OneofOptions* value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::OneofOptions* value);
+  void
+  unsafe_arena_set_allocated_options(::google::protobuf::OneofOptions* value);
   ::google::protobuf::OneofOptions* unsafe_arena_release_options();
+  void internal_unsafe_arena_set_allocated_options(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::OneofOptions* value);
+  ::google::protobuf::OneofOptions* internal_unsafe_arena_release_options(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::OneofOptions& _internal_options() const;
@@ -3548,8 +3583,13 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   PROTOBUF_NODISCARD ::google::protobuf::EnumOptions* release_options();
   ::google::protobuf::EnumOptions* mutable_options();
   void set_allocated_options(::google::protobuf::EnumOptions* value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::EnumOptions* value);
+  void
+  unsafe_arena_set_allocated_options(::google::protobuf::EnumOptions* value);
   ::google::protobuf::EnumOptions* unsafe_arena_release_options();
+  void internal_unsafe_arena_set_allocated_options(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::EnumOptions* value);
+  ::google::protobuf::EnumOptions* internal_unsafe_arena_release_options(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::EnumOptions& _internal_options() const;
@@ -3738,8 +3778,13 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   PROTOBUF_NODISCARD ::google::protobuf::EnumValueOptions* release_options();
   ::google::protobuf::EnumValueOptions* mutable_options();
   void set_allocated_options(::google::protobuf::EnumValueOptions* value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::EnumValueOptions* value);
+  void
+  unsafe_arena_set_allocated_options(::google::protobuf::EnumValueOptions* value);
   ::google::protobuf::EnumValueOptions* unsafe_arena_release_options();
+  void internal_unsafe_arena_set_allocated_options(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::EnumValueOptions* value);
+  ::google::protobuf::EnumValueOptions* internal_unsafe_arena_release_options(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::EnumValueOptions& _internal_options() const;
@@ -3955,8 +4000,13 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   PROTOBUF_NODISCARD ::google::protobuf::ServiceOptions* release_options();
   ::google::protobuf::ServiceOptions* mutable_options();
   void set_allocated_options(::google::protobuf::ServiceOptions* value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::ServiceOptions* value);
+  void
+  unsafe_arena_set_allocated_options(::google::protobuf::ServiceOptions* value);
   ::google::protobuf::ServiceOptions* unsafe_arena_release_options();
+  void internal_unsafe_arena_set_allocated_options(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::ServiceOptions* value);
+  ::google::protobuf::ServiceOptions* internal_unsafe_arena_release_options(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::ServiceOptions& _internal_options() const;
@@ -4180,8 +4230,13 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   PROTOBUF_NODISCARD ::google::protobuf::MethodOptions* release_options();
   ::google::protobuf::MethodOptions* mutable_options();
   void set_allocated_options(::google::protobuf::MethodOptions* value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::MethodOptions* value);
+  void
+  unsafe_arena_set_allocated_options(::google::protobuf::MethodOptions* value);
   ::google::protobuf::MethodOptions* unsafe_arena_release_options();
+  void internal_unsafe_arena_set_allocated_options(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::MethodOptions* value);
+  ::google::protobuf::MethodOptions* internal_unsafe_arena_release_options(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::MethodOptions& _internal_options() const;
@@ -4604,8 +4659,13 @@ class PROTOBUF_EXPORT FileOptions final :
   PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
+  void
+  unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
   ::google::protobuf::FeatureSet* unsafe_arena_release_features();
+  void internal_unsafe_arena_set_allocated_features(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* internal_unsafe_arena_release_features(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
@@ -5079,8 +5139,13 @@ class PROTOBUF_EXPORT MessageOptions final :
   PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
+  void
+  unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
   ::google::protobuf::FeatureSet* unsafe_arena_release_features();
+  void internal_unsafe_arena_set_allocated_features(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* internal_unsafe_arena_release_features(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
@@ -5808,8 +5873,13 @@ class PROTOBUF_EXPORT FieldOptions final :
   PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
+  void
+  unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
   ::google::protobuf::FeatureSet* unsafe_arena_release_features();
+  void internal_unsafe_arena_set_allocated_features(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* internal_unsafe_arena_release_features(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
@@ -6258,8 +6328,13 @@ class PROTOBUF_EXPORT OneofOptions final :
   PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
+  void
+  unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
   ::google::protobuf::FeatureSet* unsafe_arena_release_features();
+  void internal_unsafe_arena_set_allocated_features(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* internal_unsafe_arena_release_features(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
@@ -6601,8 +6676,13 @@ class PROTOBUF_EXPORT EnumOptions final :
   PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
+  void
+  unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
   ::google::protobuf::FeatureSet* unsafe_arena_release_features();
+  void internal_unsafe_arena_set_allocated_features(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* internal_unsafe_arena_release_features(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
@@ -6979,8 +7059,13 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
+  void
+  unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
   ::google::protobuf::FeatureSet* unsafe_arena_release_features();
+  void internal_unsafe_arena_set_allocated_features(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* internal_unsafe_arena_release_features(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
@@ -7344,8 +7429,13 @@ class PROTOBUF_EXPORT ServiceOptions final :
   PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
+  void
+  unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
   ::google::protobuf::FeatureSet* unsafe_arena_release_features();
+  void internal_unsafe_arena_set_allocated_features(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* internal_unsafe_arena_release_features(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
@@ -7719,8 +7809,13 @@ class PROTOBUF_EXPORT MethodOptions final :
   PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
+  void
+  unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
   ::google::protobuf::FeatureSet* unsafe_arena_release_features();
+  void internal_unsafe_arena_set_allocated_features(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* internal_unsafe_arena_release_features(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FeatureSet& _internal_features() const;
@@ -8648,8 +8743,13 @@ class PROTOBUF_EXPORT FeatureSet final :
   PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
   ::google::protobuf::FeatureSet* mutable_raw_features();
   void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
+  void
+  unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
   ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
+  void internal_unsafe_arena_set_allocated_raw_features(
+      ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* internal_unsafe_arena_release_raw_features(
+      ::google::protobuf::internal::InternalVisibility);
 
   private:
   const ::google::protobuf::FeatureSet& _internal_raw_features() const;
@@ -10343,6 +10443,10 @@ inline const ::google::protobuf::FileOptions& FileDescriptorProto::options() con
   return _internal_options();
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::FileOptions* value) {
+  internal_unsafe_arena_set_allocated_options(internal_visibility(), value);
+}
+inline void FileDescriptorProto::internal_unsafe_arena_set_allocated_options(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FileOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
@@ -10375,6 +10479,10 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::release_options() {
   return released;
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::unsafe_arena_release_options() {
+  return internal_unsafe_arena_release_options(internal_visibility());
+}
+inline ::google::protobuf::FileOptions* FileDescriptorProto::internal_unsafe_arena_release_options(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.options)
 
@@ -10439,6 +10547,10 @@ inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::source_cod
   return _internal_source_code_info();
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value) {
+  internal_unsafe_arena_set_allocated_source_code_info(internal_visibility(), value);
+}
+inline void FileDescriptorProto::internal_unsafe_arena_set_allocated_source_code_info(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::SourceCodeInfo* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_code_info_);
@@ -10471,6 +10583,10 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::release_source_c
   return released;
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::unsafe_arena_release_source_code_info() {
+  return internal_unsafe_arena_release_source_code_info(internal_visibility());
+}
+inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::internal_unsafe_arena_release_source_code_info(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.source_code_info)
 
@@ -10731,6 +10847,10 @@ inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_Extensio
   return _internal_options();
 }
 inline void DescriptorProto_ExtensionRange::unsafe_arena_set_allocated_options(::google::protobuf::ExtensionRangeOptions* value) {
+  internal_unsafe_arena_set_allocated_options(internal_visibility(), value);
+}
+inline void DescriptorProto_ExtensionRange::internal_unsafe_arena_set_allocated_options(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::ExtensionRangeOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
@@ -10763,6 +10883,10 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
   return released;
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::unsafe_arena_release_options() {
+  return internal_unsafe_arena_release_options(internal_visibility());
+}
+inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::internal_unsafe_arena_release_options(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.ExtensionRange.options)
 
@@ -11234,6 +11358,10 @@ inline const ::google::protobuf::MessageOptions& DescriptorProto::options() cons
   return _internal_options();
 }
 inline void DescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::MessageOptions* value) {
+  internal_unsafe_arena_set_allocated_options(internal_visibility(), value);
+}
+inline void DescriptorProto::internal_unsafe_arena_set_allocated_options(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::MessageOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
@@ -11266,6 +11394,10 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::release_options() {
   return released;
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::unsafe_arena_release_options() {
+  return internal_unsafe_arena_release_options(internal_visibility());
+}
+inline ::google::protobuf::MessageOptions* DescriptorProto::internal_unsafe_arena_release_options(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.options)
 
@@ -11791,6 +11923,10 @@ inline const ::google::protobuf::FeatureSet& ExtensionRangeOptions::features() c
   return _internal_features();
 }
 inline void ExtensionRangeOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
+  internal_unsafe_arena_set_allocated_features(internal_visibility(), value);
+}
+inline void ExtensionRangeOptions::internal_unsafe_arena_set_allocated_features(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
@@ -11823,6 +11959,10 @@ inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::release_features()
   return released;
 }
 inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::unsafe_arena_release_features() {
+  return internal_unsafe_arena_release_features(internal_visibility());
+}
+inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::internal_unsafe_arena_release_features(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.ExtensionRangeOptions.features)
 
@@ -12374,6 +12514,10 @@ inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::options() c
   return _internal_options();
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::FieldOptions* value) {
+  internal_unsafe_arena_set_allocated_options(internal_visibility(), value);
+}
+inline void FieldDescriptorProto::internal_unsafe_arena_set_allocated_options(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FieldOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
@@ -12406,6 +12550,10 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::release_options()
   return released;
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::unsafe_arena_release_options() {
+  return internal_unsafe_arena_release_options(internal_visibility());
+}
+inline ::google::protobuf::FieldOptions* FieldDescriptorProto::internal_unsafe_arena_release_options(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.options)
 
@@ -12570,6 +12718,10 @@ inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::options() c
   return _internal_options();
 }
 inline void OneofDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::OneofOptions* value) {
+  internal_unsafe_arena_set_allocated_options(internal_visibility(), value);
+}
+inline void OneofDescriptorProto::internal_unsafe_arena_set_allocated_options(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::OneofOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
@@ -12602,6 +12754,10 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::release_options()
   return released;
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::unsafe_arena_release_options() {
+  return internal_unsafe_arena_release_options(internal_visibility());
+}
+inline ::google::protobuf::OneofOptions* OneofDescriptorProto::internal_unsafe_arena_release_options(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.options)
 
@@ -12843,6 +12999,10 @@ inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::options() con
   return _internal_options();
 }
 inline void EnumDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::EnumOptions* value) {
+  internal_unsafe_arena_set_allocated_options(internal_visibility(), value);
+}
+inline void EnumDescriptorProto::internal_unsafe_arena_set_allocated_options(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::EnumOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
@@ -12875,6 +13035,10 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::release_options() {
   return released;
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::unsafe_arena_release_options() {
+  return internal_unsafe_arena_release_options(internal_visibility());
+}
+inline ::google::protobuf::EnumOptions* EnumDescriptorProto::internal_unsafe_arena_release_options(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumDescriptorProto.options)
 
@@ -13181,6 +13345,10 @@ inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::opt
   return _internal_options();
 }
 inline void EnumValueDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::EnumValueOptions* value) {
+  internal_unsafe_arena_set_allocated_options(internal_visibility(), value);
+}
+inline void EnumValueDescriptorProto::internal_unsafe_arena_set_allocated_options(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::EnumValueOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
@@ -13213,6 +13381,10 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::release_o
   return released;
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::unsafe_arena_release_options() {
+  return internal_unsafe_arena_release_options(internal_visibility());
+}
+inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::internal_unsafe_arena_release_options(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValueDescriptorProto.options)
 
@@ -13396,6 +13568,10 @@ inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::options
   return _internal_options();
 }
 inline void ServiceDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::ServiceOptions* value) {
+  internal_unsafe_arena_set_allocated_options(internal_visibility(), value);
+}
+inline void ServiceDescriptorProto::internal_unsafe_arena_set_allocated_options(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::ServiceOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
@@ -13428,6 +13604,10 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::release_optio
   return released;
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::unsafe_arena_release_options() {
+  return internal_unsafe_arena_release_options(internal_visibility());
+}
+inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::internal_unsafe_arena_release_options(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.ServiceDescriptorProto.options)
 
@@ -13703,6 +13883,10 @@ inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::options()
   return _internal_options();
 }
 inline void MethodDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::MethodOptions* value) {
+  internal_unsafe_arena_set_allocated_options(internal_visibility(), value);
+}
+inline void MethodDescriptorProto::internal_unsafe_arena_set_allocated_options(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::MethodOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
@@ -13735,6 +13919,10 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::release_options
   return released;
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::unsafe_arena_release_options() {
+  return internal_unsafe_arena_release_options(internal_visibility());
+}
+inline ::google::protobuf::MethodOptions* MethodDescriptorProto::internal_unsafe_arena_release_options(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.options)
 
@@ -14818,6 +15006,10 @@ inline const ::google::protobuf::FeatureSet& FileOptions::features() const {
   return _internal_features();
 }
 inline void FileOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
+  internal_unsafe_arena_set_allocated_features(internal_visibility(), value);
+}
+inline void FileOptions::internal_unsafe_arena_set_allocated_features(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
@@ -14850,6 +15042,10 @@ inline ::google::protobuf::FeatureSet* FileOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* FileOptions::unsafe_arena_release_features() {
+  return internal_unsafe_arena_release_features(internal_visibility());
+}
+inline ::google::protobuf::FeatureSet* FileOptions::internal_unsafe_arena_release_features(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.features)
 
@@ -15099,6 +15295,10 @@ inline const ::google::protobuf::FeatureSet& MessageOptions::features() const {
   return _internal_features();
 }
 inline void MessageOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
+  internal_unsafe_arena_set_allocated_features(internal_visibility(), value);
+}
+inline void MessageOptions::internal_unsafe_arena_set_allocated_features(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
@@ -15131,6 +15331,10 @@ inline ::google::protobuf::FeatureSet* MessageOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* MessageOptions::unsafe_arena_release_features() {
+  return internal_unsafe_arena_release_features(internal_visibility());
+}
+inline ::google::protobuf::FeatureSet* MessageOptions::internal_unsafe_arena_release_features(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.MessageOptions.features)
 
@@ -15722,6 +15926,10 @@ inline const ::google::protobuf::FeatureSet& FieldOptions::features() const {
   return _internal_features();
 }
 inline void FieldOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
+  internal_unsafe_arena_set_allocated_features(internal_visibility(), value);
+}
+inline void FieldOptions::internal_unsafe_arena_set_allocated_features(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
@@ -15754,6 +15962,10 @@ inline ::google::protobuf::FeatureSet* FieldOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* FieldOptions::unsafe_arena_release_features() {
+  return internal_unsafe_arena_release_features(internal_visibility());
+}
+inline ::google::protobuf::FeatureSet* FieldOptions::internal_unsafe_arena_release_features(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.features)
 
@@ -15868,6 +16080,10 @@ inline const ::google::protobuf::FeatureSet& OneofOptions::features() const {
   return _internal_features();
 }
 inline void OneofOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
+  internal_unsafe_arena_set_allocated_features(internal_visibility(), value);
+}
+inline void OneofOptions::internal_unsafe_arena_set_allocated_features(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
@@ -15900,6 +16116,10 @@ inline ::google::protobuf::FeatureSet* OneofOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* OneofOptions::unsafe_arena_release_features() {
+  return internal_unsafe_arena_release_features(internal_visibility());
+}
+inline ::google::protobuf::FeatureSet* OneofOptions::internal_unsafe_arena_release_features(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.OneofOptions.features)
 
@@ -16095,6 +16315,10 @@ inline const ::google::protobuf::FeatureSet& EnumOptions::features() const {
   return _internal_features();
 }
 inline void EnumOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
+  internal_unsafe_arena_set_allocated_features(internal_visibility(), value);
+}
+inline void EnumOptions::internal_unsafe_arena_set_allocated_features(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
@@ -16127,6 +16351,10 @@ inline ::google::protobuf::FeatureSet* EnumOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* EnumOptions::unsafe_arena_release_features() {
+  return internal_unsafe_arena_release_features(internal_visibility());
+}
+inline ::google::protobuf::FeatureSet* EnumOptions::internal_unsafe_arena_release_features(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumOptions.features)
 
@@ -16268,6 +16496,10 @@ inline const ::google::protobuf::FeatureSet& EnumValueOptions::features() const 
   return _internal_features();
 }
 inline void EnumValueOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
+  internal_unsafe_arena_set_allocated_features(internal_visibility(), value);
+}
+inline void EnumValueOptions::internal_unsafe_arena_set_allocated_features(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
@@ -16300,6 +16532,10 @@ inline ::google::protobuf::FeatureSet* EnumValueOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* EnumValueOptions::unsafe_arena_release_features() {
+  return internal_unsafe_arena_release_features(internal_visibility());
+}
+inline ::google::protobuf::FeatureSet* EnumValueOptions::internal_unsafe_arena_release_features(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValueOptions.features)
 
@@ -16441,6 +16677,10 @@ inline const ::google::protobuf::FeatureSet& ServiceOptions::features() const {
   return _internal_features();
 }
 inline void ServiceOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
+  internal_unsafe_arena_set_allocated_features(internal_visibility(), value);
+}
+inline void ServiceOptions::internal_unsafe_arena_set_allocated_features(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
@@ -16473,6 +16713,10 @@ inline ::google::protobuf::FeatureSet* ServiceOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* ServiceOptions::unsafe_arena_release_features() {
+  return internal_unsafe_arena_release_features(internal_visibility());
+}
+inline ::google::protobuf::FeatureSet* ServiceOptions::internal_unsafe_arena_release_features(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.ServiceOptions.features)
 
@@ -16669,6 +16913,10 @@ inline const ::google::protobuf::FeatureSet& MethodOptions::features() const {
   return _internal_features();
 }
 inline void MethodOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
+  internal_unsafe_arena_set_allocated_features(internal_visibility(), value);
+}
+inline void MethodOptions::internal_unsafe_arena_set_allocated_features(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
@@ -16701,6 +16949,10 @@ inline ::google::protobuf::FeatureSet* MethodOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* MethodOptions::unsafe_arena_release_features() {
+  return internal_unsafe_arena_release_features(internal_visibility());
+}
+inline ::google::protobuf::FeatureSet* MethodOptions::internal_unsafe_arena_release_features(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.MethodOptions.features)
 
@@ -17421,6 +17673,10 @@ inline const ::google::protobuf::FeatureSet& FeatureSet::raw_features() const {
   return _internal_raw_features();
 }
 inline void FeatureSet::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
+  internal_unsafe_arena_set_allocated_raw_features(internal_visibility(), value);
+}
+inline void FeatureSet::internal_unsafe_arena_set_allocated_raw_features(
+    ::google::protobuf::internal::InternalVisibility, ::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
@@ -17453,6 +17709,10 @@ inline ::google::protobuf::FeatureSet* FeatureSet::release_raw_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* FeatureSet::unsafe_arena_release_raw_features() {
+  return internal_unsafe_arena_release_raw_features(internal_visibility());
+}
+inline ::google::protobuf::FeatureSet* FeatureSet::internal_unsafe_arena_release_raw_features(
+    ::google::protobuf::internal::InternalVisibility) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   // @@protoc_insertion_point(field_release:google.protobuf.FeatureSet.raw_features)
 
