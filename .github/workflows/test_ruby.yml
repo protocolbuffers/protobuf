@@ -151,5 +151,5 @@ jobs:
             gem install bazel-bin/ruby/google-protobuf-*;
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto;
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto;
-            ${{ matrix.ffi == 'FFI' && 'PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ruby ruby/tests/basic.rb ruby/tests/implementation.rb
+            ${{ matrix.ffi == 'FFI' && 'PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ruby ruby/tests/basic.rb;
             ${{ matrix.ffi == 'FFI' && 'PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ruby ruby/tests/implementation.rb
