@@ -9,6 +9,7 @@ local_repository(
 
 # Load common dependencies first to ensure we use the correct version
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
+
 protobuf_deps()
 
 # Bazel platform rules.
@@ -63,23 +64,41 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
 
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+
 rules_pkg_dependencies()
 
 load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
+
 apple_rules_dependencies()
 
 # For `kt_jvm_library`
 load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
+
 kotlin_repositories()
 
 load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
+
 kt_register_toolchains()
 
 load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
+
 ruby_runtime("system_ruby")
+
 register_toolchains("@system_ruby//:toolchain")
 
+# Uncomment pairs of ruby_runtime() + register_toolchain() calls below to enable
+# local JRuby testing. Do not submit the changes (due to impact on test duration
+# for non JRuby builds due to downloading JRuby SDKs).
+#ruby_runtime("jruby-9.2")
+#
+#register_toolchains("@jruby-9.2//:toolchain")
+#
+#ruby_runtime("jruby-9.3")
+#
+#register_toolchains("@jruby-9.3//:toolchain")
+
 load("@system_ruby//:bundle.bzl", "ruby_bundle")
+
 ruby_bundle(
     name = "protobuf_bundle",
     srcs = ["//ruby:google-protobuf.gemspec"],
@@ -87,17 +106,20 @@ ruby_bundle(
 )
 
 load("@upb//bazel:workspace_deps.bzl", "upb_deps")
+
 upb_deps()
 
 load("@upb//bazel:system_python.bzl", "system_python")
+
 system_python(
     name = "system_python",
     minimum_python_version = "3.7",
 )
 
 load("@system_python//:pip.bzl", "pip_parse")
+
 pip_parse(
-    name="pip_deps",
+    name = "pip_deps",
     requirements = "@upb//python:requirements.txt",
     requirements_overrides = {
         "3.11": "@upb//python:requirements_311.txt",
@@ -105,9 +127,11 @@ pip_parse(
 )
 
 load("@pip_deps//:requirements.bzl", "install_deps")
+
 install_deps()
 
 load("@utf8_range//:workspace_deps.bzl", "utf8_range_deps")
+
 utf8_range_deps()
 
 http_archive(
@@ -118,6 +142,7 @@ http_archive(
 )
 
 load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
+
 rules_fuzzing_dependencies()
 
 bind(
@@ -127,10 +152,12 @@ bind(
 
 http_archive(
     name = "rules_rust",
-    sha256 = "d125fb75432dc3b20e9b5a19347b45ec607fabe75f98c6c4ba9badaab9c193ce",
-    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.17.0/rules_rust-v0.17.0.tar.gz"],
+    sha256 = "4a9cb4fda6ccd5b5ec393b2e944822a62e050c7c06f1ea41607f14c4fdec57a2",
+    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.25.1/rules_rust-v0.25.1.tar.gz"],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
+
 rules_rust_dependencies()
+
 rust_register_toolchains(edition = "2021")

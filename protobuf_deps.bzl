@@ -110,8 +110,8 @@ def protobuf_deps():
         _github_archive(
             name = "rules_ruby",
             repo = "https://github.com/protocolbuffers/rules_ruby",
-            commit = "5cf6ff74161d7f985b9bf86bb3c5fb16cef6337b",
-            sha256 = "c88dd69eb50fcfd7fbc5d7db79adc6631ef0e1d80b3c94efe33ac5ee3ccc37f7",
+            commit = "8fca842a3006c3d637114aba4f6bf9695bb3a432",
+            sha256 = "2619f9a23cee6f6a198d9ef284b6f6cbc901545ee9a9aac9ffa6b83dbf17cf0c",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -150,7 +150,7 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "f7e25ebfd1cd91afe202692e50d41026e48df9a9",
-            sha256 = "ded67aacfcc7c7f1463659e22494b1da132d4888d1c6d0388180e05b0c818077",
+            commit = "01fed1cc1ba255bf22b49393ba054b8d270e6ba3",
+            sha256 = "387bef0d61094773a4ce7dd1c3d92bb99444155531e00945161ec9cd36e5bfce",
             patches = ["@com_google_protobuf//build_defs:upb.patch"],
         )

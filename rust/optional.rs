@@ -505,26 +505,12 @@ mod tests {
         msg.presence & (1 << B_BIT) != 0
     }
 
+    #[derive(Debug)]
     struct ProxyVtable {
         get: fn(&MyMessage) -> i32,
         set: fn(&mut MyMessage, val: i32),
         clear: fn(&mut MyMessage),
         has: fn(&MyMessage) -> bool,
-    }
-
-    impl Debug for ProxyVtable {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            // Manual `Debug` impl to work around `fmt::Debug` not being implemented for
-            // functions pointers with higher-ranked lifetimes, which was fixed
-            // in Rust 1.70.
-            // TODO(hlopko): replace with `#[derive(Debug)]` when rustc is updated.
-            f.debug_struct("ProxyVtable")
-                .field("get", &(self.get as *const ()))
-                .field("set", &(self.set as *const ()))
-                .field("clear", &(self.clear as *const ()))
-                .field("has", &(self.has as *const ()))
-                .finish()
-        }
     }
 
     /// A proxy for a `i32` that is accessed through methods on a vtable.

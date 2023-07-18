@@ -889,7 +889,8 @@ std::string SafeFunctionName(const Descriptor* descriptor,
 }
 
 bool IsProfileDriven(const Options& options) {
-  return options.access_info_map != nullptr;
+  return !options.bootstrap && !options.opensource_runtime &&
+         options.access_info_map != nullptr;
 }
 
 bool IsRarelyPresent(const FieldDescriptor* field, const Options& options) {
@@ -978,6 +979,13 @@ bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
   (void)desc;
   (void)options;
   return false;
+}
+
+bool IsPresentMessage(const Descriptor* descriptor, const Options& options) {
+  (void)descriptor;
+  (void)options;
+  // Assume that the message is present if there is no profile.
+  return true;
 }
 
 static bool HasRepeatedFields(const Descriptor* descriptor) {
@@ -1410,10 +1418,8 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
       new absl::flat_hash_map<absl::string_view, std::string>{
           {"net/proto2/proto/descriptor",
            "third_party/protobuf/descriptor"},
-#ifdef PROTOBUF_FUTURE_EDITIONS
           {"third_party/protobuf/cpp_features",
            "third_party/protobuf/cpp_features"},
-#endif  // PROTOBUF_FUTURE_EDITIONS
           {"third_party/protobuf/compiler/plugin",
            "third_party/protobuf/compiler/plugin"},
           {"net/proto2/compiler/proto/profile",

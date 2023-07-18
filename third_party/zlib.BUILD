@@ -58,7 +58,7 @@ cc_library(
     ] + _ZLIB_HEADERS,
     hdrs = _ZLIB_PREFIXED_HEADERS,
     copts = select({
-        "@bazel_tools//src/conditions:windows": [],
+        "@platforms//os:windows": [],
         "//conditions:default": [
             "-Wno-deprecated-non-prototype",
             "-Wno-unused-variable",

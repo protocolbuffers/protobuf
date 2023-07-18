@@ -974,6 +974,8 @@ message FeatureSet {
     edition_defaults = { edition: "2023", value: "ALLOW" }
   ];
 
+  optional FeatureSet raw_features = 999 [targets = TARGET_TYPE_UNKNOWN];
+
   extensions 1000;  // for Protobuf C++
   extensions 1001;  // for Protobuf Java
 

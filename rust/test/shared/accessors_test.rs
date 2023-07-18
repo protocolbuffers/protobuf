@@ -34,6 +34,8 @@ use unittest_proto::proto2_unittest::TestAllTypes;
 #[test]
 fn test_default_accessors() {
     let msg = TestAllTypes::new();
+    assert_eq!(msg.default_fixed32(), 47);
+    assert_eq!(msg.default_fixed64(), 48);
     assert_eq!(msg.default_int32(), 41);
     assert_eq!(msg.default_int64(), 42);
     assert_eq!(msg.default_sint32(), -45);
@@ -43,6 +45,37 @@ fn test_default_accessors() {
     assert_eq!(msg.default_float(), 51.5);
     assert_eq!(msg.default_double(), 52000.0);
     assert_eq!(msg.default_bool(), true);
+}
+
+#[test]
+fn test_optional_fixed32_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert_eq!(msg.optional_fixed32_opt(), None);
+    assert_eq!(msg.optional_fixed32(), 0);
+
+    msg.optional_fixed32_set(Some(99));
+    assert_eq!(msg.optional_fixed32_opt(), Some(99));
+    assert_eq!(msg.optional_fixed32(), 99);
+
+    msg.optional_fixed32_set(None);
+    assert_eq!(msg.optional_fixed32_opt(), None);
+
+    assert_eq!(msg.optional_fixed32(), 0);
+}
+
+#[test]
+fn test_optional_fixed64_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert_eq!(msg.optional_fixed64_opt(), None);
+    assert_eq!(msg.optional_fixed64(), 0);
+
+    msg.optional_fixed64_set(Some(2000));
+    assert_eq!(msg.optional_fixed64_opt(), Some(2000));
+    assert_eq!(msg.optional_fixed64(), 2000);
+
+    msg.optional_fixed64_set(None);
+    assert_eq!(msg.optional_fixed64_opt(), None);
+    assert_eq!(msg.optional_fixed64(), 0);
 }
 
 #[test]

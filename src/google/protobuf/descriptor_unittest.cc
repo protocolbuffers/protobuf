@@ -42,26 +42,11 @@
 #include <tuple>
 #include <vector>
 
+#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_set.h"
-#include "absl/log/die_if_null.h"
-#include "absl/log/scoped_mock_log.h"
-#include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
-#include "google/protobuf/descriptor_legacy.h"
-#include "google/protobuf/test_textproto.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_custom_options.pb.h"
-#ifdef PROTOBUF_FUTURE_EDITIONS
-#include "google/protobuf/cpp_features.pb.h"
-#include "google/protobuf/unittest_features.pb.h"
-#include "google/protobuf/unittest_invalid_features.pb.h"
-#endif  // PROTOBUF_FUTURE_EDITIONS
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
@@ -69,13 +54,26 @@
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/log/die_if_null.h"
+#include "absl/log/scoped_mock_log.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
+#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/test_textproto.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_custom_options.pb.h"
+#include "google/protobuf/unittest_features.pb.h"
+#include "google/protobuf/unittest_invalid_features.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_custom_option.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_enum.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
-#include "absl/strings/substitute.h"
 
 
 // Must be included last.
@@ -497,7 +495,6 @@ TEST_F(FileDescriptorTest, Syntax) {
     file->CopyTo(&other);
     EXPECT_EQ("proto3", other.syntax());
   }
-#ifdef PROTOBUF_FUTURE_EDITIONS
   {
     proto.set_syntax("editions");
     proto.set_edition("very-cool");
@@ -512,7 +509,6 @@ TEST_F(FileDescriptorTest, Syntax) {
     EXPECT_EQ("editions", other.syntax());
     EXPECT_EQ("very-cool", other.edition());
   }
-#endif  // PROTOBUF_FUTURE_EDITIONS
 }
 
 TEST_F(FileDescriptorTest, CopyHeadingTo) {
@@ -536,7 +532,6 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
   EXPECT_EQ(other.syntax(), "proto3");
   EXPECT_EQ(other.options().java_package(), "foo.bar.baz");
   EXPECT_TRUE(other.message_type().empty());
-#ifdef PROTOBUF_FUTURE_EDITIONS
   EXPECT_EQ(&other.options().features(), &FeatureSet::default_instance());
   {
     proto.set_syntax("editions");
@@ -556,7 +551,6 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
     EXPECT_TRUE(other.message_type().empty());
     EXPECT_EQ(&other.options().features(), &FeatureSet::default_instance());
   }
-#endif  // PROTOBUF_FUTURE_EDITIONS
 }
 
 void ExtractDebugString(
@@ -7178,7 +7172,6 @@ TEST_F(ValidationErrorTest, UnusedImportWithOtherError) {
       "foo.proto: Foo.foo: EXTENDEE: \"Baz\" is not defined.\n");
 }
 
-#ifdef PROTOBUF_FUTURE_EDITIONS
 using FeaturesTest = ValidationErrorTest;
 
 template <typename T>
@@ -9538,6 +9531,47 @@ TEST_F(FeaturesTest, UninterpretedOptionsMergeExtension) {
             9);
 }
 
+TEST_F(FeaturesTest, RawFeatures) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: "2023"
+    options { features { raw_features { field_presence: IMPLICIT } } }
+  )pb");
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_THAT(GetFeatures(file), EqualsProto(R"pb(
+                field_presence: IMPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                string_field_validation: MANDATORY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW)pb"));
+}
+
+TEST_F(FeaturesTest, RawFeaturesConflict) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: "2023"
+    options {
+      features {
+        enum_type: CLOSED
+        raw_features { field_presence: IMPLICIT }
+      }
+    }
+  )pb");
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_THAT(GetFeatures(file), EqualsProto(R"pb(
+                field_presence: IMPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                string_field_validation: MANDATORY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW)pb"));
+}
+
 TEST_F(FeaturesTest, InvalidJsonUniquenessDefaultWarning) {
   BuildFileWithWarnings(
       R"pb(
@@ -9873,8 +9907,6 @@ INSTANTIATE_TEST_SUITE_P(
                  })pb")),
     [](const ::testing::TestParamInfo<FeaturesDebugStringTest::ParamType>&
            info) { return std::string(std::get<0>(info.param)); });
-
-#endif  // PROTOBUF_FUTURE_EDITIONS
 
 
 

@@ -73,6 +73,12 @@ class CodeGenerator;     // code_generator.h
 class GeneratorContext;  // code_generator.h
 class DiskSourceTree;    // importer.h
 
+struct TransitiveDependencyOptions {
+  bool include_json_name = false;
+  bool include_source_code_info = false;
+  bool retain_options = false;
+};
+
 // This class implements the command-line interface to the protocol compiler.
 // It is designed to make it very easy to create a custom protocol compiler
 // supporting the languages of your choice.  For example, if you wanted to
@@ -325,6 +331,22 @@ class PROTOC_EXPORT CommandLineInterface {
   // listed as free numbers in the output.
   void PrintFreeFieldNumbers(const Descriptor* descriptor);
 
+  // Get all transitive dependencies of the given file (including the file
+  // itself), adding them to the given list of FileDescriptorProtos.  The
+  // protos will be ordered such that every file is listed before any file that
+  // depends on it, so that you can call DescriptorPool::BuildFile() on them
+  // in order.  Any files in *already_seen will not be added, and each file
+  // added will be inserted into *already_seen.  If include_source_code_info
+  // (from TransitiveDependencyOptions) is true then include the source code
+  // information in the FileDescriptorProtos. If include_json_name is true,
+  // populate the json_name field of FieldDescriptorProto for all fields.
+  void GetTransitiveDependencies(
+      const FileDescriptor* file,
+      absl::flat_hash_set<const FileDescriptor*>* already_seen,
+      RepeatedPtrField<FileDescriptorProto>* output,
+      const TransitiveDependencyOptions& options =
+          TransitiveDependencyOptions());
+
   // -----------------------------------------------------------------
 
   // The name of the executable as invoked (i.e. argv[0]).
@@ -428,9 +450,7 @@ class PROTOC_EXPORT CommandLineInterface {
   // dependency file will be written. Otherwise, empty.
   std::string dependency_out_name_;
 
-#ifdef PROTOBUF_FUTURE_EDITIONS
   bool experimental_editions_ = false;
-#endif  // PROTOBUF_FUTURE_EDITIONS
 
   // True if --include_imports was given, meaning that we should
   // write all transitive dependencies to the DescriptorSet.  Otherwise, only
