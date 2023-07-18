@@ -31,7 +31,7 @@
 /// Tests covering nested messages.
 
 #[test]
-fn test_nested_messages_accesible() {
+fn test_nested_messages_accessible() {
     let _parent: unittest_proto::proto2_unittest::TestAllTypes;
     let _child: unittest_proto::proto2_unittest::TestAllTypes_::NestedMessage;
     unittest_proto::proto2_unittest::TestChildExtensionData_::
