@@ -2,12 +2,16 @@ require "rubygems"
 require "rubygems/package_task"
 require "rake/extensiontask" unless RUBY_PLATFORM == "java"
 require "rake/testtask"
+
+# FFI and FFI-Compiler are developer dependencies everywhere but only
+# dependencies for JRuby right now.
 begin
   require 'ffi'
   require "ffi-compiler/compile_task"
-  USE_FFI = true
+  FFI_AVAILABLE = true
 rescue LoadError
-  USE_FFI = false
+  warn "LoadError in Rakefile while loading FFI: #{$!}. FFI-related tasks unavailable. To enable, install `ffi` and `ffi-compiler` gems."
+  FFI_AVAILABLE = false
 end
 
 spec = Gem::Specification.load("google-protobuf.gemspec")
@@ -54,7 +58,7 @@ end
 
 genproto_output = []
 
-if USE_FFI
+if FFI_AVAILABLE
   common_excluded_source = [
       :convert, :defs, :map, :message, :protobuf, :repeated_field, :wrap_memcpy
   ]
@@ -233,7 +237,7 @@ else
   end
 end
 
-task :compile => ["ffi-compiler:default"] if USE_FFI
+task :compile => ["ffi-compiler:default"] if FFI_AVAILABLE
 
 task :genproto => genproto_output
 

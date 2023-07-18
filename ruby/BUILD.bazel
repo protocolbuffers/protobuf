@@ -191,6 +191,9 @@ conformance_test(
 
 conformance_test(
     name = "conformance_test_ffi",
+    env = {
+        "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
+    },
     failure_list = "//conformance:failure_list_ruby.txt",
     target_compatible_with = select({
         ":ruby_ffi": [],
@@ -213,6 +216,9 @@ conformance_test(
 
 conformance_test(
     name = "conformance_test_jruby_ffi",
+    env = {
+        "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
+    },
     failure_list = "//conformance:failure_list_jruby_ffi.txt",
     target_compatible_with = select({
         ":jruby_ffi": [],

@@ -41,26 +41,12 @@ module Google
     class TypeError < ::TypeError; end
 
     PREFER_FFI = case ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']
-                 when nil, ""
-                   if RUBY_PLATFORM == "java"
-                     # When unspecified, PREFER_FFI is autodetected based on
-                     # available gems for JRuby. For CRuby, users must opt-in.
-                     begin
-                       require 'ffi'
-                       require 'ffi-compiler/loader'
-                       true
-                     rescue LoadError
-                       false
-                     end
-                   else
-                     false
-                   end
+                 when nil, "", /^native$/i
+                   false
                  when /^ffi$/i
                    true
-                 when /^native$/i
-                   false
                  else
-                   warn "Unexpected value `#{ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']}` for environment variable `PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION`. Should be either \"FFI\", \"NATIVE\". Omit for autodetection."
+                   warn "Unexpected value `#{ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']}` for environment variable `PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION`. Should be either \"FFI\", \"NATIVE\"."
                    false
                  end
 
@@ -85,10 +71,8 @@ module Google
         require 'google/protobuf_ffi'
         :FFI
       rescue LoadError
-        if $DEBUG
-          warn "Caught exception `#{$!.message}` while loading FFI implementation of google/protobuf."
-          warn "Falling back to native implementation."
-        end
+        warn "Caught exception `#{$!.message}` while loading FFI implementation of google/protobuf."
+        warn "Falling back to native implementation."
         require 'google/protobuf_native'
         :NATIVE
       end
