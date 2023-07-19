@@ -88,3 +88,4 @@ TEST_F(LiteArenaTest, UnknownFieldMemLeak) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+

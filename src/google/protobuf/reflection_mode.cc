@@ -55,3 +55,5 @@ PROTOBUF_CONSTINIT PROTOBUF_THREAD_LOCAL ReflectionMode
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

@@ -207,3 +207,8 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+
+#if defined(__clang__)
+#pragma clang attribute pop
+#pragma clang diagnostic pop
+#endif

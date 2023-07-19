@@ -129,6 +129,7 @@ class FileGenerator {
   void GenerateSourceIncludes(io::Printer* p);
   void GenerateSourcePrelude(io::Printer* p);
   void GenerateSourceDefaultInstance(int idx, io::Printer* p);
+  void GenerateSourceUnincludes(io::Printer* p);
 
   void GenerateInitForSCC(const SCC* scc, const CrossFileReferences& refs,
                           io::Printer* p);

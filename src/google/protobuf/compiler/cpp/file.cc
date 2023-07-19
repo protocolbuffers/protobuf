@@ -526,6 +526,10 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
   IncludeFile("third_party/protobuf/port_def.inc", p);
 }
 
+void FileGenerator::GenerateSourceUnincludes(io::Printer* p) {
+  IncludeFile("third_party/protobuf/port_undef.inc", p);
+}
+
 void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
   // For MSVC builds, we use #pragma init_seg to move the initialization of our
   // libraries to happen before the user code.
@@ -795,6 +799,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
   if (IsAnyMessage(file_, options_)) {
     UnmuteWuninitialized(p);
   }
+  GenerateSourceUnincludes(p);
 
   p->Emit(R"cc(
     // @@protoc_insertion_point(global_scope)
@@ -806,8 +811,11 @@ void FileGenerator::GenerateSourceForExtension(int idx, io::Printer* p) {
   GenerateSourceIncludes(p);
   GenerateSourcePrelude(p);
 
-  NamespaceOpener ns(Namespace(file_, options_), p);
-  extension_generators_[idx]->GenerateDefinition(p);
+  {
+    NamespaceOpener ns(Namespace(file_, options_), p);
+    extension_generators_[idx]->GenerateDefinition(p);
+  }
+  GenerateSourceUnincludes(p);
 }
 
 void FileGenerator::GenerateGlobalSource(io::Printer* p) {
@@ -823,10 +831,13 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) {
     }
   }
 
-  NamespaceOpener ns(Namespace(file_, options_), p);
-  for (int i = 0; i < enum_generators_.size(); ++i) {
-    enum_generators_[i]->GenerateMethods(i, p);
+  {
+    NamespaceOpener ns(Namespace(file_, options_), p);
+    for (int i = 0; i < enum_generators_.size(); ++i) {
+      enum_generators_[i]->GenerateMethods(i, p);
+    }
   }
+  GenerateSourceUnincludes(p);
 }
 
 void FileGenerator::GenerateSource(io::Printer* p) {
@@ -910,7 +921,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     UnmuteWuninitialized(p);
   }
 
-  IncludeFile("third_party/protobuf/port_undef.inc", p);
+  GenerateSourceUnincludes(p);
 }
 
 void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
@@ -1596,3 +1607,5 @@ void FileGenerator::GenerateProto2NamespaceEnumSpecializations(io::Printer* p) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

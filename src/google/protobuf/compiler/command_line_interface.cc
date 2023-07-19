@@ -2963,3 +2963,5 @@ void CommandLineInterface::PrintFreeFieldNumbers(const Descriptor* descriptor) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

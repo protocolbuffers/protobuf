@@ -1687,3 +1687,7 @@ bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+// clang-format off
+#include "google/protobuf/port_undef.inc"
+// clang-format on

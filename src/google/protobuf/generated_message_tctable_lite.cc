@@ -2781,3 +2781,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+// clang-format off
+#include "google/protobuf/port_undef.inc"
+// clang-format on

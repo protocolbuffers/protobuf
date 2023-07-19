@@ -142,3 +142,5 @@ bool ZeroCopyOutputStream::WriteAliasedRaw(const void* /* data */,
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
