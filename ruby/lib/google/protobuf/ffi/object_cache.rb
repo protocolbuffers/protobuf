@@ -36,7 +36,7 @@ module Google
     SIZEOF_VALUE = ::FFI::Pointer::SIZE
 
     def self.interpreter_supports_non_finalized_keys_in_weak_map?
-      Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.7.0')
+      ! defined? JRUBY_VERSION
     end
 
     def self.cache_implementation
