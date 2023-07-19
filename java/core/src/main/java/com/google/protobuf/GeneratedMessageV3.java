@@ -959,13 +959,27 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
      * map field directly and thus enables us to access the map field as a list.
      */
     @SuppressWarnings({"unused", "rawtypes"})
+    protected MapFieldReflectionAccessor internalGetMapFieldReflection(int fieldNumber) {
+      return internalGetMapField(fieldNumber);
+    }
+
+    /** TODO(b/258340024): Remove, exists for compatibility with generated code. */
+    @Deprecated
+    @SuppressWarnings({"unused", "rawtypes"})
     protected MapField internalGetMapField(int fieldNumber) {
       // Note that we can't use descriptor names here because this method will
       // be called when descriptor is being initialized.
       throw new IllegalArgumentException("No map fields found in " + getClass().getName());
     }
 
-    /** Like {@link #internalGetMapField} but return a mutable version. */
+    /** Like {@link #internalGetMapFieldReflection} but return a mutable version. */
+    @SuppressWarnings({"unused", "rawtypes"})
+    protected MapFieldReflectionAccessor internalGetMutableMapFieldReflection(int fieldNumber) {
+      return internalGetMutableMapField(fieldNumber);
+    }
+
+    /** TODO(b/258340024): Remove, exists for compatibility with generated code. */
+    @Deprecated
     @SuppressWarnings({"unused", "rawtypes"})
     protected MapField internalGetMutableMapField(int fieldNumber) {
       // Note that we can't use descriptor names here because this method will
@@ -2047,6 +2061,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    * generated API only allows us to access it as a map. This method returns the underlying map
    * field directly and thus enables us to access the map field as a list.
    */
+  @SuppressWarnings("unused")
+  protected MapFieldReflectionAccessor internalGetMapFieldReflection(int fieldNumber) {
+    return internalGetMapField(fieldNumber);
+  }
+
+  /** TODO(b/258340024): Remove, exists for compatibility with generated code. */
+  @Deprecated
   @SuppressWarnings({"rawtypes", "unused"})
   protected MapField internalGetMapField(int fieldNumber) {
     // Note that we can't use descriptor names here because this method will
@@ -2802,7 +2823,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final FieldDescriptor descriptor, final Class<? extends GeneratedMessageV3> messageClass) {
         field = descriptor;
         Method getDefaultInstanceMethod = getMethodOrDie(messageClass, "getDefaultInstance");
-        MapField<?, ?> defaultMapField =
+        MapFieldReflectionAccessor defaultMapField =
             getMapField((GeneratedMessageV3) invokeOrDie(getDefaultInstanceMethod, null));
         mapEntryMessageDefaultInstance = defaultMapField.getMapEntryMessageDefaultInstance();
       }
@@ -2810,16 +2831,16 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       private final FieldDescriptor field;
       private final Message mapEntryMessageDefaultInstance;
 
-      private MapField<?, ?> getMapField(GeneratedMessageV3 message) {
-        return (MapField<?, ?>) message.internalGetMapField(field.getNumber());
+      private MapFieldReflectionAccessor getMapField(GeneratedMessageV3 message) {
+        return message.internalGetMapFieldReflection(field.getNumber());
       }
 
-      private MapField<?, ?> getMapField(GeneratedMessageV3.Builder<?> builder) {
-        return (MapField<?, ?>) builder.internalGetMapField(field.getNumber());
+      private MapFieldReflectionAccessor getMapField(GeneratedMessageV3.Builder<?> builder) {
+        return builder.internalGetMapFieldReflection(field.getNumber());
       }
 
-      private MapField<?, ?> getMutableMapField(GeneratedMessageV3.Builder<?> builder) {
-        return (MapField<?, ?>) builder.internalGetMutableMapField(field.getNumber());
+      private MapFieldReflectionAccessor getMutableMapField(GeneratedMessageV3.Builder<?> builder) {
+        return builder.internalGetMutableMapFieldReflection(field.getNumber());
       }
 
       private Message coerceType(Message value) {
