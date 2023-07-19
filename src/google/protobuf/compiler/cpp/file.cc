@@ -12,9 +12,9 @@
 #include "google/protobuf/compiler/cpp/file.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
 #include <memory>
-#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
@@ -27,6 +27,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -35,9 +36,9 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/message.h"
 #include "google/protobuf/compiler/cpp/names.h"
+#include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/service.h"
 #include "google/protobuf/compiler/retention.h"
-#include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -828,6 +829,8 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
   p->Emit(R"cc(
     // @@protoc_insertion_point(global_scope)
   )cc");
+
+  IncludeFile("third_party/protobuf/port_undef.inc", p);
 }
 
 void FileGenerator::GenerateStaticInitializer(io::Printer* p) {
@@ -858,6 +861,7 @@ void FileGenerator::GenerateSourceForExtension(int idx, io::Printer* p) {
     extension_generators_[idx]->GenerateRegistration(p);
   });
   GenerateStaticInitializer(p);
+  IncludeFile("third_party/protobuf/port_undef.inc", p);
 }
 
 void FileGenerator::GenerateGlobalSource(io::Printer* p) {
@@ -873,10 +877,13 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) {
     }
   }
 
-  NamespaceOpener ns(Namespace(file_, options_), p);
-  for (int i = 0; i < enum_generators_.size(); ++i) {
-    enum_generators_[i]->GenerateMethods(i, p);
+  {
+    NamespaceOpener ns(Namespace(file_, options_), p);
+    for (int i = 0; i < enum_generators_.size(); ++i) {
+      enum_generators_[i]->GenerateMethods(i, p);
+    }
   }
+  IncludeFile("third_party/protobuf/port_undef.inc", p);
 }
 
 void FileGenerator::GenerateSource(io::Printer* p) {
@@ -1728,3 +1735,5 @@ std::vector<const Descriptor*> FileGenerator::MessagesInTopologicalOrder()
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

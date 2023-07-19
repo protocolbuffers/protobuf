@@ -974,6 +974,15 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #pragma warning(disable: 4125)
 #endif
 
+// Protobuf uses unsigned modulo arithmetic extensively.
+// Disable unsigned integer overflow sanitization in Protobuf to support clients
+// that want to enable this sanitizer for their Protobuf-using code.
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpragma-clang-attribute"
+#pragma clang attribute push(__attribute__((no_sanitize("unsigned-integer-overflow"))), apply_to=function)
+#endif
+
 #if PROTOBUF_ENABLE_DEBUG_LOGGING_MAY_LEAK_PII
 #define PROTOBUF_DEBUG true
 #else

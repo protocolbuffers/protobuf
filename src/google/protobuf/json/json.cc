@@ -112,3 +112,5 @@ absl::Status JsonStringToMessage(absl::string_view input, Message* message,
 }  // namespace json
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

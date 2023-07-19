@@ -221,3 +221,5 @@ void SetThreadSafeArenazGlobalNextSample(int64_t next_sample) {}
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

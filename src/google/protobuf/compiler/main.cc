@@ -137,3 +137,5 @@ int main(int argc, char* argv[]) {
   return google::protobuf::compiler::ProtobufMain(argc, argv);
 }
 #endif
+
+#include "google/protobuf/port_undef.inc"

@@ -116,3 +116,7 @@ void InlinedStringField::ClearToDefault(const LazyString& default_value,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+// clang-format off
+#include "google/protobuf/port_undef.inc"
+// clang-format on

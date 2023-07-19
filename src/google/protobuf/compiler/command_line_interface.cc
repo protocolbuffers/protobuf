@@ -1785,8 +1785,8 @@ bool CommandLineInterface::MakeInputsBeProtoPathRelative(
 
 bool CommandLineInterface::ExpandArgumentFile(
     const char* file, std::vector<std::string>* arguments) {
-// On windows to force ifstream to handle proper utr-8, we need to convert to
-// proper supported utf8 wstring. If we dont then the file can't be opened.
+// On Windows, to force ifstream to handle proper UTF-8, we need to convert to
+// proper supported UTF-8 wstring. If we don't, then the file can't be opened.
 #ifdef _MSC_VER
   // Convert the file name to wide chars.
   int size = MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), nullptr, 0);
@@ -3216,3 +3216,5 @@ void CommandLineInterface::PrintFreeFieldNumbers(const Descriptor* descriptor) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

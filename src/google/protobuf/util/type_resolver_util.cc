@@ -382,3 +382,5 @@ Enum ConvertDescriptorToType(const EnumDescriptor& descriptor) {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

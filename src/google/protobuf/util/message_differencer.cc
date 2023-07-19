@@ -2359,3 +2359,7 @@ MessageDifferencer::CreateMultipleFieldsMapKeyComparator(
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+// clang-format off
+#include "google/protobuf/port_undef.inc"
+// clang-format on

@@ -263,3 +263,5 @@ int main() {
   ABSL_LOG(INFO) << "conformance-cpp: received EOF from test runner after "
                  << total_runs << " tests";
 }
+
+#include "google/protobuf/port_undef.inc"
