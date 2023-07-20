@@ -642,6 +642,7 @@ bool MessageDifferencer::Compare(const Message& message1,
         unpack_any_field_.UnpackAny(message2, &data2)) {
       // Avoid DFATAL for different descriptors in google.protobuf.Any payloads.
       if (data1->GetDescriptor() != data2->GetDescriptor()) {
+        ABSL_LOG(INFO) << "(thomaseo) not matching descriptors";
         return false;
       }
       return Compare(*data1, *data2, unpacked_any + 1, parent_fields);
