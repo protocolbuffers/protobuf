@@ -599,6 +599,40 @@ int EstimateAlignmentSize(const FieldDescriptor* field) {
   return -1;  // Make compiler happy.
 }
 
+int EstimateSize(const FieldDescriptor* field) {
+  if (field == nullptr) return 0;
+  if (field->is_repeated()) {
+    if (field->is_map()) {
+      return sizeof(google::protobuf::Map<int32_t, int32_t>);
+    }
+    return field->cpp_type() < FieldDescriptor::CPPTYPE_STRING || IsCord(field)
+               ? sizeof(RepeatedField<int32_t>)
+               : sizeof(internal::RepeatedPtrFieldBase);
+  }
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return 1;
+
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return 4;
+
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return 8;
+
+    case FieldDescriptor::CPPTYPE_STRING:
+      if (IsCord(field)) return sizeof(absl::Cord);
+      return sizeof(internal::ArenaStringPtr);
+  }
+  ABSL_LOG(FATAL) << "Can't get here.";
+  return -1;  // Make compiler happy.
+}
+
 std::string FieldConstantName(const FieldDescriptor* field) {
   std::string field_name = UnderscoresToCamelCase(field->name(), true);
   std::string result = absl::StrCat("k", field_name, "FieldNumber");

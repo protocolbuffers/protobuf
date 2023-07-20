@@ -229,6 +229,12 @@ std::string FieldMemberName(const FieldDescriptor* field, bool split);
 // 64-bit pointers.
 int EstimateAlignmentSize(const FieldDescriptor* field);
 
+// Returns an estimate of the size of the field.  This
+// can't guarantee to be correct because the generated code could be compiled on
+// different systems with different alignment rules.  The estimates below assume
+// 64-bit pointers.
+int EstimateSize(const FieldDescriptor* field);
+
 // Get the unqualified name that should be used for a field's field
 // number constant.
 std::string FieldConstantName(const FieldDescriptor* field);
@@ -345,7 +351,7 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
-inline bool IsCord(const FieldDescriptor* field, const Options& options) {
+inline bool IsCord(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
          internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD;
 }
@@ -355,8 +361,7 @@ inline bool IsString(const FieldDescriptor* field, const Options& options) {
          internal::cpp::EffectiveStringCType(field) == FieldOptions::STRING;
 }
 
-inline bool IsStringPiece(const FieldDescriptor* field,
-                          const Options& options) {
+inline bool IsStringPiece(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
          internal::cpp::EffectiveStringCType(field) ==
              FieldOptions::STRING_PIECE;

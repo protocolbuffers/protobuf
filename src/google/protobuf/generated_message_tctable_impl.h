@@ -41,8 +41,12 @@
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/map.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/raw_ptr.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
 // Must come last:
@@ -607,6 +611,30 @@ class PROTOBUF_EXPORT TcParser final {
     return *target;
   }
 
+  template <typename T, bool is_split>
+  static inline T& MaybeCreateRepeatedRefAt(void* x, size_t offset,
+                                            MessageLite* msg) {
+    if (!is_split) return RefAt<T>(x, offset);
+    void*& ptr = RefAt<void*>(x, offset);
+    if (ptr == DefaultRawPtr()) {
+      ptr = Arena::CreateMessage<T>(msg->GetArenaForAllocation());
+    }
+    return *static_cast<T*>(ptr);
+  }
+
+  template <typename T, bool is_split>
+  static inline RepeatedField<T>& MaybeCreateRepeatedFieldRefAt(
+      void* x, size_t offset, MessageLite* msg) {
+    return MaybeCreateRepeatedRefAt<RepeatedField<T>, is_split>(x, offset, msg);
+  }
+
+  template <typename T, bool is_split>
+  static inline RepeatedPtrField<T>& MaybeCreateRepeatedPtrFieldRefAt(
+      void* x, size_t offset, MessageLite* msg) {
+    return MaybeCreateRepeatedRefAt<RepeatedPtrField<T>, is_split>(x, offset,
+                                                                   msg);
+  }
+
   template <typename T>
   static inline T ReadAt(const void* x, size_t offset) {
     T out;
@@ -661,7 +689,7 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* FastVarintS1(PROTOBUF_TC_PARAM_DECL);
 
   friend class GeneratedTcTableLiteTest;
-  static void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
+  static void* MaybeGetSplitBase(MessageLite* msg, bool is_split,
                                  const TcParseTableBase* table);
 
   // Test only access to verify that the right function is being called via
@@ -864,21 +892,27 @@ class PROTOBUF_EXPORT TcParser final {
   // Mini parsing:
   template <bool is_split>
   static const char* MpVarint(PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split>
   static const char* MpRepeatedVarint(PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split>
   static const char* MpPackedVarint(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
   static const char* MpFixed(PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split>
   static const char* MpRepeatedFixed(PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split>
   static const char* MpPackedFixed(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
   static const char* MpString(PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split>
   static const char* MpRepeatedString(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
   static const char* MpMessage(PROTOBUF_TC_PARAM_DECL);
-  template <bool is_group>
+  template <bool is_split, bool is_group>
   static const char* MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL);
   static const char* MpLazyMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpFallback(PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split>
   static const char* MpMap(PROTOBUF_TC_PARAM_DECL);
 };
 

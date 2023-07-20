@@ -142,13 +142,16 @@ void memswap(char* a, char* b) {
 template <typename Element>
 class RepeatedIterator;
 
+// Sentinel base class.
+struct RepeatedFieldBase {};
+
 // We can't skip the destructor for, e.g., arena allocated RepeatedField<Cord>.
 template <typename Element,
           bool Trivial = Arena::is_destructor_skippable<Element>::value>
-struct RepeatedFieldDestructorSkippableBase {};
+struct RepeatedFieldDestructorSkippableBase : RepeatedFieldBase {};
 
 template <typename Element>
-struct RepeatedFieldDestructorSkippableBase<Element, true> {
+struct RepeatedFieldDestructorSkippableBase<Element, true> : RepeatedFieldBase {
   using DestructorSkippable_ = void;
 };
 

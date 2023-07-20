@@ -82,6 +82,20 @@ TEST(RawPtr, Constexpr) {
   EXPECT_FALSE(raw2.IsDefault());
 }
 
+TEST(RawPtr, DeleteIfNotDefault) {
+  RawPtr<Obj> raw;
+  EXPECT_TRUE(raw.IsDefault());
+
+  // Shouldn't trigger an allocator problem by deallocating default ptr.
+  raw.DeleteIfNotDefault();
+
+  raw.Set(new Obj());
+  EXPECT_FALSE(raw.IsDefault());
+
+  // Shouldn't leak.
+  raw.DeleteIfNotDefault();
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf
