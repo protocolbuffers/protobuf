@@ -17,7 +17,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: [ "3.7", "3.8", "3.9", "3.10" ]
+        version: [ "3.7", "3.8", "3.9", "3.10", "3.11" ]
         include:
           - type: Pure
             targets: //python/... @upb//python/... //python:python_version
@@ -54,7 +54,7 @@ jobs:
       matrix:
         type: [ Pure, C++]
         # TODO(b/267550843) Consider expanding this set of versions.
-        version: [ "3.10" ]
+        version: [ "3.10" "3.11" ]
         include:
           - type: Pure
             targets: //python/... @upb//python/... //python:python_version
