@@ -5748,6 +5748,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   }
   if (proto.has_edition()) {
     file_->edition_ = alloc.AllocateStrings(proto.edition());
+  } else {
+    file_->edition_ = nullptr;
   }
 
   result->name_ = alloc.AllocateStrings(proto.name());
