@@ -1011,6 +1011,14 @@ void GenerateUtf8CheckCodeForCord(io::Printer* p, const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
                                   absl::string_view parameters);
 
+inline bool ShouldGenerateExternSpecializations(const Options& options) {
+  // For OSS we omit the specializations to reduce codegen size.
+  // Some compilers can't handle that much input in a single translation unit.
+  // These specializations are just a link size optimization and do not affect
+  // correctness or performance, so it is ok to omit them.
+  return !options.opensource_runtime;
+}
+
 struct OneOfRangeImpl {
   struct Iterator {
     using iterator_category = std::forward_iterator_tag;
