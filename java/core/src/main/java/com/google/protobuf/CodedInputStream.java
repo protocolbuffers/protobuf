@@ -513,6 +513,14 @@ public abstract class CodedInputStream {
   public abstract byte[] readRawBytes(final int size) throws IOException;
 
   /**
+   * Read up to {@code length} bytes into {@code bytes} starting at {@code offset}.
+   *
+   * @throws InvalidProtocolBufferException The end of the stream or the current limit was reached.
+   * @return the number of bytes read into {@code bytes}, or -1 if the end of data has been reached.
+   */
+  public abstract int readRawBytesInto(byte[] bytes, int offset, int length) throws IOException;
+
+  /**
    * Reads and discards {@code size} bytes.
    *
    * @throws InvalidProtocolBufferException The end of the stream or the current limit was reached.
@@ -1260,6 +1268,20 @@ public abstract class CodedInputStream {
     }
 
     @Override
+    public int readRawBytesInto(byte[] bytes, int offset, int length) throws IOException {
+      if (length == 0) {
+        return 0;
+      }
+      int bytesToCopy = Math.min(length, limit - pos);
+      if (bytesToCopy == 0) {
+        return -1;
+      }
+      System.arraycopy(buffer, pos, bytes, offset, bytesToCopy);
+      pos += bytesToCopy;
+      return bytesToCopy;
+    }
+
+    @Override
     public void skipRawBytes(final int length) throws IOException {
       if (length >= 0 && length <= (limit - pos)) {
         // We have all the bytes we need already.
@@ -1965,6 +1987,20 @@ public abstract class CodedInputStream {
       }
 
       throw InvalidProtocolBufferException.truncatedMessage();
+    }
+
+    @Override
+    public int readRawBytesInto(byte[] bytes, int offset, int length) throws IOException {
+      if (length == 0) {
+        return 0;
+      }
+      int bytesToCopy = (int) Math.min(length, limit - pos);
+      if (bytesToCopy == 0) {
+        return -1;
+      }
+      slice(pos, pos + bytesToCopy).get(bytes, offset, bytesToCopy);
+      pos += bytesToCopy;
+      return bytesToCopy;
     }
 
     @Override
@@ -2860,6 +2896,26 @@ public abstract class CodedInputStream {
         return readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ false);
       }
     }
+
+    @Override
+    public int readRawBytesInto(byte[] bytes, int offset, int length) throws IOException {
+      if (length == 0) {
+        return 0;
+      }
+      // Return immediately whatever is available in the buffer,
+      if (bufferSize - pos > 0) {
+        int bytesToCopy = Math.min(length, bufferSize - pos);
+        System.arraycopy(buffer, pos, bytes, offset, bytesToCopy);
+        pos += bytesToCopy;
+        return bytesToCopy;
+      }
+
+      int bytesToRead = Math.min(length, currentLimit - totalBytesRetired - pos);
+      int bytesRead = input.read(bytes, offset, bytesToRead);
+      totalBytesRetired += bytesRead;
+      return bytesRead;
+    }
+
 
     /**
      * Exactly like readRawBytes, but caller must have already checked the fast path: (size <=
@@ -3889,6 +3945,28 @@ public abstract class CodedInputStream {
         }
       }
       throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    
+    @Override
+    public int readRawBytesInto(byte[] bytes, int offset, final int length) throws IOException {
+      if (length > 0 && length <= remaining()) {
+        int l = length;
+        while (l > 0) {
+          if (currentRemaining() == 0) {
+            getNextByteBuffer();
+          }
+          int bytesToCopy = Math.min(l, (int) currentRemaining());
+          UnsafeUtil.copyMemory(currentByteBufferPos, bytes, length - l + offset, bytesToCopy);
+          l -= bytesToCopy;
+          currentByteBufferPos += bytesToCopy;
+        }
+        return length - l;
+      }
+
+      if (length == 0) {
+        return 0;
+      }
+      return -1;
     }
 
     @Override
