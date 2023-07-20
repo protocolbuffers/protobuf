@@ -71,14 +71,6 @@ PROTOBUF_EXPORT extern Struct_FieldsEntry_DoNotUseDefaultTypeInternal _Struct_Fi
 class Value;
 struct ValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern ValueDefaultTypeInternal _Value_default_instance_;
-template <>
-PROTOBUF_EXPORT ::google::protobuf::ListValue* Arena::CreateMaybeMessage<::google::protobuf::ListValue>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Struct* Arena::CreateMaybeMessage<::google::protobuf::Struct>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Struct_FieldsEntry_DoNotUse* Arena::CreateMaybeMessage<::google::protobuf::Struct_FieldsEntry_DoNotUse>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Value* Arena::CreateMaybeMessage<::google::protobuf::Value>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 

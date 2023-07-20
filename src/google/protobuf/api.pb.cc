@@ -1265,18 +1265,6 @@ void Mixin::InternalSwap(Mixin* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::Api*
-Arena::CreateMaybeMessage< ::google::protobuf::Api >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Api >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Method*
-Arena::CreateMaybeMessage< ::google::protobuf::Method >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Method >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Mixin*
-Arena::CreateMaybeMessage< ::google::protobuf::Mixin >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Mixin >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

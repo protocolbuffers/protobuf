@@ -82,24 +82,6 @@ PROTOBUF_EXPORT extern UInt32ValueDefaultTypeInternal _UInt32Value_default_insta
 class UInt64Value;
 struct UInt64ValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
-template <>
-PROTOBUF_EXPORT ::google::protobuf::BoolValue* Arena::CreateMaybeMessage<::google::protobuf::BoolValue>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::BytesValue* Arena::CreateMaybeMessage<::google::protobuf::BytesValue>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::DoubleValue* Arena::CreateMaybeMessage<::google::protobuf::DoubleValue>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::FloatValue* Arena::CreateMaybeMessage<::google::protobuf::FloatValue>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Int32Value* Arena::CreateMaybeMessage<::google::protobuf::Int32Value>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Int64Value* Arena::CreateMaybeMessage<::google::protobuf::Int64Value>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::StringValue* Arena::CreateMaybeMessage<::google::protobuf::StringValue>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::UInt32Value* Arena::CreateMaybeMessage<::google::protobuf::UInt32Value>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::UInt64Value* Arena::CreateMaybeMessage<::google::protobuf::UInt64Value>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 

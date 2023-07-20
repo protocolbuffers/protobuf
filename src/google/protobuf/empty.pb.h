@@ -59,8 +59,6 @@ namespace protobuf {
 class Empty;
 struct EmptyDefaultTypeInternal;
 PROTOBUF_EXPORT extern EmptyDefaultTypeInternal _Empty_default_instance_;
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Empty* Arena::CreateMaybeMessage<::google::protobuf::Empty>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 
