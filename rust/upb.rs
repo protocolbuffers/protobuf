@@ -61,6 +61,7 @@ pub struct RawArenaData {
 /// dropped.
 ///
 /// Note that this type is neither `Sync` nor `Send`.
+#[derive(Debug)]
 pub struct Arena {
     // Safety invariant: this must always be a valid arena
     raw: RawArena,

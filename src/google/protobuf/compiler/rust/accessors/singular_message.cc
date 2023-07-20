@@ -28,50 +28,53 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/rust/accessors/accessors.h"
-
-#include <memory>
-
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-std::unique_ptr<AccessorGenerator> AccessorGenerator::For(
+namespace {
+class SingularMessage final : public AccessorGenerator {
+ public:
+  ~SingularMessage() override = default;
+
+  void InMsgImpl(Context<FieldDescriptor> field) const override {
+    field.Emit(
+        {
+            {"field", field.desc().name()},
+        },
+        R"rs(
+          // inMsgImpl
+          pub fn $field$(&self) -> std::convert::Infallible {
+            todo!("b/285309454")
+          }
+        )rs");
+  }
+
+  void InExternC(Context<FieldDescriptor> field) const override {
+    field.Emit({},
+               R"rs(
+                 // inExternC
+               )rs");
+  }
+
+  void InThunkCc(Context<FieldDescriptor> field) const override {
+    field.Emit({},
+               R"cc(
+                 // inThunkCC
+               )cc");
+  }
+};
+}  // namespace
+
+std::unique_ptr<AccessorGenerator> AccessorGenerator::ForSingularMessage(
     Context<FieldDescriptor> field) {
-  // We do not support [ctype=FOO] (used to set the field type in C++ to
-  // cord or string_piece) in V0 API.
-  if (field.desc().options().has_ctype()) {
-    return nullptr;
-  }
-
-  switch (field.desc().type()) {
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_SINT32:
-    case FieldDescriptor::TYPE_SINT64:
-    case FieldDescriptor::TYPE_UINT32:
-    case FieldDescriptor::TYPE_UINT64:
-    case FieldDescriptor::TYPE_FLOAT:
-    case FieldDescriptor::TYPE_DOUBLE:
-    case FieldDescriptor::TYPE_BOOL:
-      if (field.desc().is_repeated()) return nullptr;
-      return ForSingularScalar(field);
-    case FieldDescriptor::TYPE_BYTES:
-      if (field.desc().is_repeated()) return nullptr;
-      return ForSingularBytes(field);
-    case FieldDescriptor::TYPE_MESSAGE:
-      if (field.desc().is_repeated()) return nullptr;
-      return ForSingularMessage(field);
-
-    default:
-      return nullptr;
-  }
+  return std::make_unique<SingularMessage>();
 }
 }  // namespace rust
 }  // namespace compiler

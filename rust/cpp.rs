@@ -47,6 +47,7 @@ use std::ptr::{self, NonNull};
 /// dropped.
 ///
 /// Note that this type is neither `Sync` nor `Send`.
+#[derive(Debug)]
 pub struct Arena {
     #[allow(dead_code)]
     ptr: NonNull<u8>,

@@ -90,6 +90,8 @@ class AccessorGenerator {
       Context<FieldDescriptor> field);
   static std::unique_ptr<AccessorGenerator> ForSingularBytes(
       Context<FieldDescriptor> field);
+  static std::unique_ptr<AccessorGenerator> ForSingularMessage(
+      Context<FieldDescriptor> field);
 };
 
 }  // namespace rust

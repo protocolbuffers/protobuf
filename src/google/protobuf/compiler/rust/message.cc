@@ -288,8 +288,59 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
       },
       R"rs(
         #[allow(non_camel_case_types)]
+        #[derive(Debug)]
         pub struct $Msg$ {
           $Msg.fields$
+        }
+
+        unsafe impl Sync for $Msg$ {}
+        unsafe impl Sync for $Msg$View<'_> {}
+        unsafe impl Send for $Msg$View<'_> {}
+
+        impl $pb$::Proxied for $Msg$ {
+          type View<'a> = $Msg$View<'a>;
+          type Mut<'a> = $Msg$Mut<'a>;
+        }
+
+        #[derive(Debug, Copy, Clone)]
+        pub struct $Msg$View<'a> {
+          msg: $NonNull$<u8>,
+          _phantom: std::marker::PhantomData<&'a ()>,
+        }
+
+        impl<'a> $pb$::ViewProxy<'a> for $Msg$View<'a> {
+          type Proxied = $Msg$;
+
+          fn as_view(&self) -> $pb$::View<'a, $Msg$> {
+            todo!("b/285309454")
+          }
+          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter { todo!("b/285309454") }
+        }
+
+        impl<'a> $pb$::SettableValue<$Msg$> for $Msg$View<'a> {
+          fn set_on(self, _private: $pb$::__internal::Private, _mutator: $pb$::Mut<$Msg$>) {
+            todo!("b/285309454")
+          }
+        }
+
+        #[derive(Debug)]
+        pub struct $Msg$Mut<'a> {
+          _phantom: std::marker::PhantomData<&'a mut ()>,
+        }
+
+        impl<'a> $pb$::MutProxy<'a> for $Msg$Mut<'a> {
+          fn as_mut(&mut self) -> $pb$::Mut<'_, $Msg$> {
+            todo!("b/285309454")
+          }
+          fn into_mut<'shorter>(self) -> $pb$::Mut<'shorter, $Msg$> where 'a : 'shorter { todo!("b/285309454") }
+        }
+
+        impl<'a> $pb$::ViewProxy<'a> for $Msg$Mut<'a> {
+          type Proxied = $Msg$;
+          fn as_view(&self) -> $pb$::View<'_, $Msg$> {
+            todo!("b/285309454")
+          }
+          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter { todo!("b/285309454") }
         }
 
         impl $Msg$ {
