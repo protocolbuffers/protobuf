@@ -2,17 +2,7 @@ require "rubygems"
 require "rubygems/package_task"
 require "rake/extensiontask" unless RUBY_PLATFORM == "java"
 require "rake/testtask"
-
-# FFI and FFI-Compiler are developer dependencies everywhere but only
-# dependencies for JRuby right now.
-begin
-  require 'ffi'
-  require "ffi-compiler/compile_task"
-  FFI_AVAILABLE = true
-rescue LoadError
-  warn "LoadError in Rakefile while loading FFI: #{$!}. FFI-related tasks unavailable. To enable, install `ffi` and `ffi-compiler` gems."
-  FFI_AVAILABLE = false
-end
+import 'lib/tasks/ffi.rake'
 
 spec = Gem::Specification.load("google-protobuf.gemspec")
 
@@ -58,79 +48,6 @@ end
 
 genproto_output = []
 
-if FFI_AVAILABLE
-  common_excluded_source = [
-      :convert, :defs, :map, :message, :protobuf, :repeated_field, :wrap_memcpy
-  ]
-  common_c_flags = "-std=gnu99 -O3 -DNDEBUG"
-  # Compile Ruby UPB separately in order to limit use of -DUPB_BUILD_API to one
-  # compilation unit.
-  desc "compiler tasks"
-  namespace "ffi-upb" do
-    FFI::Compiler::CompileTask.new('ruby-upb') do |c|
-      c.cflags << common_c_flags
-      c.cflags << "-DUPB_BUILD_API"
-      common_excluded_source.each { |file| c.exclude << "/#{file}.c" }
-      c.exclude << "/glue.c"
-      c.exclude << "/shared_message.c"
-      c.exclude << "/shared_convert.c"
-      c.ext_dir = File.dirname('ext/google/protobuf_c')
-      c.source_dirs = [c.ext_dir]
-      if RbConfig::CONFIG['target_os'] =~ /darwin|linux/
-        c.cflags << "-fvisibility=hidden -Wall -Wsign-compare -Wno-declaration-after-statement"
-      end
-    end
-  end
-  # FFI::CompilerTask's constructor walks the filesystem at initialization time
-  # in order to create subtasks for each source file, so the files from third_party
-  # must be copied into place before the task is defined.
-  ffi_compiler_config_block = Proc.new do |c|
-    c.ext_dir = File.dirname('ext/google/protobuf_c')
-    c.source_dirs = [c.ext_dir]
-    c.cflags << common_c_flags
-    common_excluded_source.each { | file | c.exclude << "/#{file}.c" }
-    # Ruby UPB was already compiled with different flags.
-    c.exclude << "/range2-neon.c"
-    c.exclude << "/range2-sse.c"
-    c.exclude << "/naive.c"
-    c.exclude << "/ruby-upb.c"
-    if RbConfig::CONFIG['target_os'] =~ /darwin|linux/
-      c.cflags << "-Wall -Wsign-compare -Wno-declaration-after-statement"
-    end
-  end
-
-  if File.exist? 'ext/google/protobuf_c/utf8_range.h'
-    desc "compiler tasks"
-    namespace "ffi-compiler" do
-      FFI::Compiler::CompileTask.new('ext/google/protobuf_c_ffi', &ffi_compiler_config_block)
-      protobuf_c_task = Rake::Task[:"ffi-compiler:default"]
-      protobuf_c_shared_lib_task = Rake::Task[protobuf_c_task.prereqs.first]
-      Rake::Task[Rake::Task[:"ffi-upb:default"].prereqs.first].prereqs.each do |dependency|
-        protobuf_c_shared_lib_task.prereqs.prepend dependency
-      end
-    end
-  else
-    # Define a placeholder task that triggers copying third_party source before
-    # redefining the task.
-    task "ffi-compiler:default" do
-      Rake::Task[:copy_third_party].invoke
-      desc "compiler tasks"
-      namespace "ffi-compiler" do
-        FFI::Compiler::CompileTask.new('ext/google/protobuf_c_ffi', &ffi_compiler_config_block)
-        protobuf_c_task = Rake::Task[:"ffi-compiler:default"]
-        Rake::Task[:"ffi-upb:default"].prereqs.each do |dependency|
-          protobuf_c_task.prereqs.prepend dependency
-        end
-        protobuf_c_task.prereqs.each do |dependency|
-          Rake::Task[dependency].invoke
-        end
-      end
-    end
-  end
-
-  task :compile => ["ffi-compiler:default"]
-end
-
 # We won't have access to .. from within docker, but the proto files
 # will be there, thanks to the :genproto rule dependency for gem:native.
 unless ENV['IN_DOCKER'] == 'true' or ENV['BAZEL'] == 'true'
@@ -153,17 +70,18 @@ unless ENV['IN_DOCKER'] == 'true' or ENV['BAZEL'] == 'true'
 end
 
 task :copy_third_party do
-  unless File.exist? 'ext/google/protobuf_c/utf8_range.h'
+  unless File.exist? 'ext/google/protobuf_c/third_party/utf8_range.h'
+    FileUtils.mkdir_p 'ext/google/protobuf_c/third_party'
     # We need utf8_range in-tree.
     if  ENV['BAZEL'] == 'true'
       utf8_root = '../external/utf8_range'
     else
       utf8_root = '../third_party/utf8_range'
     end
-    FileUtils.cp(utf8_root+"/utf8_range.h", "ext/google/protobuf_c")
-    FileUtils.cp(utf8_root+"/naive.c", "ext/google/protobuf_c")
-    FileUtils.cp(utf8_root+"/range2-neon.c", "ext/google/protobuf_c")
-    FileUtils.cp(utf8_root+"/range2-sse.c", "ext/google/protobuf_c")
+    FileUtils.cp(utf8_root+"/utf8_range.h", "ext/google/protobuf_c/third_party")
+    FileUtils.cp(utf8_root+"/naive.c", "ext/google/protobuf_c/third_party")
+    FileUtils.cp(utf8_root+"/range2-neon.c", "ext/google/protobuf_c/third_party")
+    FileUtils.cp(utf8_root+"/range2-sse.c", "ext/google/protobuf_c/third_party")
   end
 end
 
@@ -181,10 +99,6 @@ if RUBY_PLATFORM == "java"
   end
 
 else
-  unless ENV['IN_DOCKER'] == 'true'
-    task :build => [:copy_third_party]
-  end
-
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
     unless RUBY_PLATFORM =~ /darwin/
       # TODO: also set "no_native to true" for mac if possible. As is,
@@ -222,7 +136,7 @@ else
     ['x86-mingw32', 'x64-mingw32', 'x64-mingw-ucrt', 'x86_64-linux', 'x86-linux'].each do |plat|
       RakeCompilerDock.sh <<-"EOT", platform: plat
         bundle && \
-        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0:2.6.0
+        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0
       EOT
     end
   end
@@ -230,23 +144,20 @@ else
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0:2.6.0"
+      system "rake cross native gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0"
     end
   else
     task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']
   end
 end
 
-task :compile => ["ffi-compiler:default"] if FFI_AVAILABLE
-
 task :genproto => genproto_output
 
 task :clean do
   sh "rm -f #{genproto_output.join(' ')}"
-  sh "rm -rf ext/google/x86_64-darwin"
+  sh "rm -rf x86_64-darwin"
   sh "rm -rf pkg"
   sh "rm -rf tmp"
-  sh "rm -f lib/google/protobuf_c.bundle"
 end
 
 Gem::PackageTask.new(spec) do |pkg|
@@ -264,7 +175,7 @@ Rake::TestTask.new(:gc_test => ENV['BAZEL'] == 'true' ? [] : :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 
-task :build => [:clean, :genproto, :compile]
+task :build => [:clean, :genproto, :copy_third_party, :compile, :"ffi-protobuf:default"]
 task :default => [:build]
 
 # vim:sw=2:et
