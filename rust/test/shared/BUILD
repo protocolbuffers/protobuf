@@ -40,7 +40,7 @@ rust_test(
     deps = [
         "//rust/test:dots_in_package_cc_rust_proto",
         "//rust/test:no_package_cc_rust_proto",
-        "//rust/test:unittest_cc_rust_proto",
+        "//rust/test:package_cc_rust_proto",
     ],
 )
 
@@ -50,7 +50,7 @@ rust_test(
     deps = [
         "//rust/test:dots_in_package_upb_rust_proto",
         "//rust/test:no_package_upb_rust_proto",
-        "//rust/test:unittest_upb_rust_proto",
+        "//rust/test:package_upb_rust_proto",
     ],
 )
 

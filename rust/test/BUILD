@@ -145,9 +145,20 @@ rust_upb_proto_library(
 )
 
 proto_library(
+    name = "no_package_import_proto",
+    testonly = True,
+    srcs = ["no_package_import.proto"],
+)
+
+proto_library(
     name = "no_package_proto",
     testonly = True,
-    srcs = ["no_package.proto"],
+    srcs = [
+        "no_package.proto",
+        "no_package_other.proto",
+    ],
+    exports = [":no_package_import_proto"],
+    deps = [":no_package_import_proto"],
 )
 
 cc_proto_library(
@@ -174,6 +185,50 @@ rust_upb_proto_library(
         "//rust/test/upb:__subpackages__",
     ],
     deps = [":no_package_proto"],
+)
+
+proto_library(
+    name = "package_import_proto",
+    testonly = True,
+    srcs = ["package_import.proto"],
+)
+
+proto_library(
+    name = "package_proto",
+    testonly = True,
+    srcs = [
+        "package.proto",
+        "package_other.proto",
+        "package_other_different.proto",
+    ],
+    exports = [":package_import_proto"],
+    deps = [":package_import_proto"],
+)
+
+cc_proto_library(
+    name = "package_cc_proto",
+    testonly = True,
+    deps = [":package_proto"],
+)
+
+rust_cc_proto_library(
+    name = "package_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/cpp:__subpackages__",
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":package_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "package_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+        "//rust/test/upb:__subpackages__",
+    ],
+    deps = [":package_proto"],
 )
 
 proto_library(

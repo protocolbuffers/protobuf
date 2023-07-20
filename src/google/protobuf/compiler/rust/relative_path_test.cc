@@ -28,42 +28,40 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
+#include "google/protobuf/compiler/rust/relative_path.h"
 
-#include <string>
-
-#include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/rust/context.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-std::string GetCrateName(Context<FileDescriptor> dep);
+namespace {
 
-std::string GetRsFile(Context<FileDescriptor> file);
-std::string GetThunkCcFile(Context<FileDescriptor> file);
-std::string GetHeaderFile(Context<FileDescriptor> file);
+using testing::Eq;
 
-std::string Thunk(Context<FieldDescriptor> field, absl::string_view op);
-std::string Thunk(Context<Descriptor> msg, absl::string_view op);
+TEST(RelativePathTest, GetRelativePath) {
+  auto relative = [](absl::string_view from_path, absl::string_view to_path) {
+    return RelativePath(from_path).Relative(RelativePath(to_path));
+  };
+  EXPECT_EQ(relative("foo/bar/baz.txt", "foo/bar/file.txt"), "file.txt");
+  EXPECT_EQ(relative("foo/bar/", "foo/bar/file.txt"), "file.txt");
 
-bool IsSupportedFieldType(Context<FieldDescriptor> field);
+  EXPECT_EQ(relative("foo/bar/baz.txt", "foo/file.txt"), "../file.txt");
+  EXPECT_EQ(relative("foo/bar/", "foo/file.txt"), "../file.txt");
 
-absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field);
+  EXPECT_EQ(relative("foo/baz.txt", "foo/bar/baz/file.txt"),
+            "bar/baz/file.txt");
+  EXPECT_EQ(relative("foo/", "foo/bar/baz/file.txt"), "bar/baz/file.txt");
 
-std::string FieldInfoComment(Context<FieldDescriptor> field);
+  EXPECT_EQ(relative("baz.txt", "foo/bar/file.txt"), "foo/bar/file.txt");
+  EXPECT_EQ(relative("", "foo/bar/file.txt"), "foo/bar/file.txt");
+}
 
-std::string RustModule(Context<Descriptor> msg);
-std::string RustInternalModuleName(Context<FileDescriptor> file);
+}  // namespace
 
-std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg);
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
