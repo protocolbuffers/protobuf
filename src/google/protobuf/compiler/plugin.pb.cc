@@ -1584,22 +1584,6 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::Version*
-Arena::CreateMaybeMessage< ::google::protobuf::compiler::Version >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::compiler::Version >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorRequest*
-Arena::CreateMaybeMessage< ::google::protobuf::compiler::CodeGeneratorRequest >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorRequest >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorResponse_File*
-Arena::CreateMaybeMessage< ::google::protobuf::compiler::CodeGeneratorResponse_File >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorResponse_File >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorResponse*
-Arena::CreateMaybeMessage< ::google::protobuf::compiler::CodeGeneratorResponse >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorResponse >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
