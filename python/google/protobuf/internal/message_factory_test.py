@@ -42,7 +42,7 @@ from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
-
+from google.protobuf import descriptor
 
 @testing_refleaks.TestCase
 class MessageFactoryTest(unittest.TestCase):
@@ -296,6 +296,25 @@ class MessageFactoryTest(unittest.TestCase):
     self.assertEqual(234, m.Extensions[ext1].setting)
     self.assertEqual(345, m.Extensions[ext2].setting)
 
+  def testDescriptorKeepConcreteClass(self):
+    def loadFile():
+      f= descriptor_pb2.FileDescriptorProto(
+        name='google/protobuf/internal/meta_class.proto',
+        package='google.protobuf.python.internal')
+      msg_proto = f.message_type.add(name='Empty')
+      msg_proto.nested_type.add(name='Nested')
+      msg_proto.field.add(name='nested_field',
+                          number=1,
+                          label=descriptor.FieldDescriptor.LABEL_REPEATED,
+                          type=descriptor.FieldDescriptor.TYPE_MESSAGE,
+                          type_name='Nested')
+      return message_factory.GetMessages([f])
+
+    messages = loadFile()
+    for des, meta_class in messages.items():
+      message = meta_class()
+      nested_des = message.DESCRIPTOR.nested_types_by_name['Nested']
+      nested_msg = nested_des._concrete_class()
 
 if __name__ == '__main__':
   unittest.main()

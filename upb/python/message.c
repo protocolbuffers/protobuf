@@ -63,6 +63,8 @@ typedef struct {
   getattrofunc type_getattro;  // PyTypeObject.tp_getattro
   setattrofunc type_setattro;  // PyTypeObject.tp_setattro
   size_t type_basicsize;       // sizeof(PyHeapTypeObject)
+  traverseproc type_traverse;  // PyTypeObject.tp_traverse
+  inquiry type_clear;          // PyTypeObject.tp_clear
 
   // While we can refer to PY_VERSION_HEX in the limited API, this will give us
   // the version of Python we were compiled against, which may be different
@@ -135,6 +137,8 @@ static bool PyUpb_CPythonBits_Init(PyUpb_CPythonBits* bits) {
   bits->type_dealloc = upb_Pre310_PyType_GetDeallocSlot(type);
   bits->type_getattro = PyType_GetSlot(type, Py_tp_getattro);
   bits->type_setattro = PyType_GetSlot(type, Py_tp_setattro);
+  bits->type_traverse = PyType_GetSlot(type, Py_tp_traverse);
+  bits->type_clear = PyType_GetSlot(type, Py_tp_clear);
 
   size = PyObject_GetAttrString((PyObject*)&PyType_Type, "__basicsize__");
   if (!size) goto err;
@@ -145,6 +149,8 @@ static bool PyUpb_CPythonBits_Init(PyUpb_CPythonBits* bits) {
   assert(bits->type_dealloc);
   assert(bits->type_getattro);
   assert(bits->type_setattro);
+  assert(bits->type_traverse);
+  assert(bits->type_clear);
 
 #ifndef Py_LIMITED_API
   assert(bits->type_new == PyType_Type.tp_new);
@@ -152,6 +158,8 @@ static bool PyUpb_CPythonBits_Init(PyUpb_CPythonBits* bits) {
   assert(bits->type_getattro == PyType_Type.tp_getattro);
   assert(bits->type_setattro == PyType_Type.tp_setattro);
   assert(bits->type_basicsize == sizeof(PyHeapTypeObject));
+  assert(bits->type_traverse == PyType_Type.tp_traverse);
+  assert(bits->type_clear == PyType_Type.tp_clear);
 #endif
 
   sys = PyImport_ImportModule("sys");
@@ -1809,6 +1817,7 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
   meta->py_message_descriptor = py_descriptor;
   meta->layout = upb_MessageDef_MiniTable(msgdef);
   Py_INCREF(meta->py_message_descriptor);
+  PyUpb_Descriptor_SetClass(py_descriptor, ret);
 
   PyUpb_ObjCache_Add(meta->layout, ret);
 
@@ -1945,10 +1954,23 @@ static PyObject* PyUpb_MessageMeta_GetAttr(PyObject* self, PyObject* name) {
   return NULL;
 }
 
+static int PyUpb_MessageMeta_Traverse(PyObject* self, visitproc visit,
+                                      void* arg) {
+  PyUpb_MessageMeta* meta = PyUpb_GetMessageMeta(self);
+  Py_VISIT(meta->py_message_descriptor);
+  return cpython_bits.type_traverse(self, visit, arg);
+}
+
+static int PyUpb_MessageMeta_Clear(PyObject* self, visitproc visit, void* arg) {
+  return cpython_bits.type_clear(self);
+}
+
 static PyType_Slot PyUpb_MessageMeta_Slots[] = {
     {Py_tp_new, PyUpb_MessageMeta_New},
     {Py_tp_dealloc, PyUpb_MessageMeta_Dealloc},
     {Py_tp_getattro, PyUpb_MessageMeta_GetAttr},
+    {Py_tp_traverse, PyUpb_MessageMeta_Traverse},
+    {Py_tp_clear, PyUpb_MessageMeta_Clear},
     {0, NULL}};
 
 static PyType_Spec PyUpb_MessageMeta_Spec = {
@@ -1957,7 +1979,7 @@ static PyType_Spec PyUpb_MessageMeta_Spec = {
     0,  // tp_itemsize
     // TODO(haberman): remove BASETYPE, Python should just use MessageMeta
     // directly instead of subclassing it.
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,  // tp_flags
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,  // tp_flags
     PyUpb_MessageMeta_Slots,
 };
 

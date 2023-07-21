@@ -52,6 +52,9 @@ typedef enum {
 // the msgdef |m|, which must be from the same pool.
 PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m);
 
+// Set the message descriptor's meta class.
+void PyUpb_Descriptor_SetClass(PyObject* py_descriptor, PyObject* meta);
+
 // Returns a Python wrapper object for the given def. This will return an
 // existing object if one already exists, otherwise a new object will be
 // created.  The caller always owns a ref on the returned object.
