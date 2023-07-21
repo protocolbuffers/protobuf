@@ -35,6 +35,7 @@
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
@@ -505,6 +506,9 @@ constexpr absl::string_view kMessageFieldTestFile = R"(
     message Message {
       optional SMessage mfield = 1;
       repeated SMessage rmfield = 2;
+      oneof ofield {
+        int32 oint = 3;
+      }
     }
 )";
 
@@ -554,6 +558,23 @@ TEST_F(CppMetadataTest, AnnotatesMessageSemantics) {
     } else if (*substring == "mutable_rmfield") {
       EXPECT_EQ(GeneratedCodeInfo_Annotation_Semantic_ALIAS,
                 annotation->semantic());
+    }
+  }
+  field_path.clear();
+  field_path.push_back(FileDescriptorProto::kMessageTypeFieldNumber);
+  field_path.push_back(1);
+  field_path.push_back(DescriptorProto::kOneofDeclFieldNumber);
+  field_path.push_back(0);
+  annotations.clear();
+  atu::FindAnnotationsOnPath(info, "test.proto", field_path, &annotations);
+  EXPECT_TRUE(!annotations.empty());
+  for (const auto* annotation : annotations) {
+    auto substring = atu::GetAnnotationSubstring(pb_h, *annotation);
+    ASSERT_TRUE(substring.has_value());
+    if (*substring == "ofield_case") {
+      EXPECT_EQ(GeneratedCodeInfo::Annotation::NONE, annotation->semantic());
+    } else if (*substring == "clear_ofield") {
+      EXPECT_EQ(GeneratedCodeInfo::Annotation::SET, annotation->semantic());
     }
   }
 }
