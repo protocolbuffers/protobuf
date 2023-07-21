@@ -175,8 +175,7 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
         "const char* $classname$::_InternalParse(const char* ptr,\n"
         "                  ::_pbi::ParseContext* ctx) {\n"
         "$annotate_deserialize$");
-    if (!options_.unverified_lazy_message_sets &&
-        ShouldVerify(descriptor_, options_, scc_analyzer_)) {
+    if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
       format(
           "  ctx->set_lazy_eager_verify_func(&$classname$::InternalVerify);\n");
     }
