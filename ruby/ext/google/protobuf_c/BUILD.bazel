@@ -127,6 +127,7 @@ pkg_files(
         "*.h",
         "*.c",
         "*.rb",
+        "Rakefile",
     ]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//ruby:__pkg__"],

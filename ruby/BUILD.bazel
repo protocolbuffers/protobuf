@@ -102,6 +102,7 @@ genrule(
     srcs = [
         "//ruby/lib/google:copy_jar",
         "//ruby/lib/google:dist_files",
+        "//ruby/ext/google/protobuf_c:dist_files",
         "//:well_known_ruby_protos",
         "google-protobuf.gemspec",
     ],
