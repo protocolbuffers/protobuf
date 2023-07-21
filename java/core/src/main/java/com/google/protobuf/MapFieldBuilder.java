@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 /**
  * Internal representation of map fields in generated builders.
@@ -79,12 +78,12 @@ public class MapFieldBuilder<
   }
 
   @SuppressWarnings("unchecked")
-  private void forEachListEntry(BiConsumer<KeyT, MessageT> f) {
-    messageList.forEach(
-        entry -> {
-          MapEntry<KeyT, MessageT> typedEntry = (MapEntry<KeyT, MessageT>) entry;
-          f.accept(typedEntry.getKey(), typedEntry.getValue());
-        });
+  private List<MapEntry<KeyT, MessageT>> getMapEntryList() {
+    ArrayList<MapEntry<KeyT, MessageT>> list = new ArrayList<>(messageList.size());
+    for (Message entry : messageList) {
+      list.add((MapEntry<KeyT, MessageT>) entry);
+    }
+    return list;
   }
 
   public Map<KeyT, MessageOrBuilderT> ensureBuilderMap() {
@@ -93,12 +92,16 @@ public class MapFieldBuilder<
     }
     if (messageMap != null) {
       builderMap = new LinkedHashMap<>(messageMap.size());
-      messageMap.forEach((key, value) -> builderMap.put(key, value));
+      for (Map.Entry<KeyT, MessageT> entry : messageMap.entrySet()) {
+        builderMap.put(entry.getKey(), entry.getValue());
+      }
       messageMap = null;
       return builderMap;
     }
     builderMap = new LinkedHashMap<>(messageList.size());
-    forEachListEntry((key, value) -> builderMap.put(key, value));
+    for (MapEntry<KeyT, MessageT> entry : getMapEntryList()) {
+      builderMap.put(entry.getKey(), entry.getValue());
+    }
     messageList = null;
     return builderMap;
   }
@@ -109,21 +112,24 @@ public class MapFieldBuilder<
     }
     if (builderMap != null) {
       messageList = new ArrayList<>(builderMap.size());
-      builderMap.forEach(
-          (key, value) ->
-              messageList.add(
-                  converter.defaultEntry().toBuilder()
-                      .setKey(key)
-                      .setValue(converter.build(value))
-                      .build()));
+      for (Map.Entry<KeyT, MessageOrBuilderT> entry : builderMap.entrySet()) {
+        messageList.add(
+            converter.defaultEntry().toBuilder()
+                .setKey(entry.getKey())
+                .setValue(converter.build(entry.getValue()))
+                .build());
+      }
       builderMap = null;
       return messageList;
     }
     messageList = new ArrayList<>(messageMap.size());
-    messageMap.forEach(
-        (key, value) ->
-            messageList.add(
-                converter.defaultEntry().toBuilder().setKey(key).setValue(value).build()));
+    for (Map.Entry<KeyT, MessageT> entry : messageMap.entrySet()) {
+      messageList.add(
+          converter.defaultEntry().toBuilder()
+              .setKey(entry.getKey())
+              .setValue(entry.getValue())
+              .build());
+    }
     messageMap = null;
     return messageList;
   }
@@ -145,11 +151,15 @@ public class MapFieldBuilder<
     }
     if (builderMap != null) {
       Map<KeyT, MessageT> toReturn = new LinkedHashMap<>(builderMap.size());
-      builderMap.forEach((key, value) -> toReturn.put(key, converter.build(value)));
+      for (Map.Entry<KeyT, MessageOrBuilderT> entry : builderMap.entrySet()) {
+        toReturn.put(entry.getKey(), converter.build(entry.getValue()));
+      }
       return toReturn;
     }
     Map<KeyT, MessageT> toReturn = new LinkedHashMap<>(messageList.size());
-    forEachListEntry((key, value) -> toReturn.put(key, value));
+    for (MapEntry<KeyT, MessageT> entry : getMapEntryList()) {
+      toReturn.put(entry.getKey(), entry.getValue());
+    }
     return toReturn;
   }
 
@@ -194,7 +204,9 @@ public class MapFieldBuilder<
   public MapField<KeyT, MessageT> build(MapEntry<KeyT, MessageT> defaultEntry) {
     MapField<KeyT, MessageT> mapField = MapField.newMapField(defaultEntry);
     Map<KeyT, MessageT> map = mapField.getMutableMap();
-    ensureBuilderMap().forEach((key, value) -> map.put(key, converter.build(value)));
+    for (Map.Entry<KeyT, MessageOrBuilderT> entry : ensureBuilderMap().entrySet()) {
+      map.put(entry.getKey(), converter.build(entry.getValue()));
+    }
     mapField.makeImmutable();
     return mapField;
   }
