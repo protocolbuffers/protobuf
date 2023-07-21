@@ -4,6 +4,10 @@ require "rake/extensiontask" unless RUBY_PLATFORM == "java"
 require "rake/testtask"
 import 'lib/tasks/ffi.rake'
 
+def path_prefix
+  warn "PWD from Rakefile: #{FileUtils.pwd}"
+end
+
 spec = Gem::Specification.load("google-protobuf.gemspec")
 
 well_known_protos = %w[

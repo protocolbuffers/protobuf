@@ -21,11 +21,13 @@ end
 # copied into place before the task is defined for it to work correctly.
 # TODO(jatl) Is there a sane way to check for generated protos under lib too?
 def with_generated_files
+  path_prefix # defined by Rakefile that includes this file.
   if File.exist?('ext/google/protobuf_c/third_party') or File.exist?('third_party')
     yield
   else
     task :default do
-      raise "Missing directory #{File.absolute_path('third_party')}." +
+      raise "Missing directory #{File.absolute_path('third_party')} and " +
+              "#{File.absolute_path('ext/google/protobuf_c/third_party')}." +
               " Did you forget to run `rake copy_third_party` before building" +
               " native extensions?"
     end
