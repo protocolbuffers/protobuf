@@ -23,7 +23,9 @@ alias(
 rust_proto_library(
     name = "unittest_rust_proto",
     testonly = True,
-    visibility = ["//rust/test/shared:__subpackages__"],
+    visibility = [
+        "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
+    ],
     deps = [UNITTEST_PROTO_TARGET],
 )
 
@@ -63,20 +65,14 @@ proto_library(
 rust_upb_proto_library(
     name = "parent_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":parent_proto"],
 )
 
 rust_upb_proto_library(
     name = "child_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":child_proto"],
 )
 
@@ -95,20 +91,14 @@ cc_proto_library(
 rust_cc_proto_library(
     name = "parent_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":parent_cc_proto"],
 )
 
 rust_cc_proto_library(
     name = "child_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":child_cc_proto"],
 )
 
@@ -127,20 +117,14 @@ cc_proto_library(
 rust_cc_proto_library(
     name = "dots_in_package_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":dots_in_package_cc_proto"],
 )
 
 rust_upb_proto_library(
     name = "dots_in_package_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":dots_in_package_proto"],
 )
 
@@ -170,20 +154,14 @@ cc_proto_library(
 rust_cc_proto_library(
     name = "no_package_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":no_package_cc_proto"],
 )
 
 rust_upb_proto_library(
     name = "no_package_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":no_package_proto"],
 )
 
