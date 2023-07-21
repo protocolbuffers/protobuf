@@ -2204,26 +2204,6 @@ void Option::InternalSwap(Option* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::Type*
-Arena::CreateMaybeMessage< ::google::protobuf::Type >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Type >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Field*
-Arena::CreateMaybeMessage< ::google::protobuf::Field >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Field >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Enum*
-Arena::CreateMaybeMessage< ::google::protobuf::Enum >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Enum >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumValue*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumValue >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumValue >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Option*
-Arena::CreateMaybeMessage< ::google::protobuf::Option >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Option >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

@@ -296,10 +296,6 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
 }  // namespace pb
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::pb::CppFeatures*
-Arena::CreateMaybeMessage< ::pb::CppFeatures >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::pb::CppFeatures >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

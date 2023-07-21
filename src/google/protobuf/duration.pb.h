@@ -58,8 +58,6 @@ namespace protobuf {
 class Duration;
 struct DurationDefaultTypeInternal;
 PROTOBUF_EXPORT extern DurationDefaultTypeInternal _Duration_default_instance_;
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Duration* Arena::CreateMaybeMessage<::google::protobuf::Duration>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 
