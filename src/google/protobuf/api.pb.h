@@ -66,12 +66,6 @@ PROTOBUF_EXPORT extern MethodDefaultTypeInternal _Method_default_instance_;
 class Mixin;
 struct MixinDefaultTypeInternal;
 PROTOBUF_EXPORT extern MixinDefaultTypeInternal _Mixin_default_instance_;
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Api* Arena::CreateMaybeMessage<::google::protobuf::Api>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Method* Arena::CreateMaybeMessage<::google::protobuf::Method>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Mixin* Arena::CreateMaybeMessage<::google::protobuf::Mixin>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 

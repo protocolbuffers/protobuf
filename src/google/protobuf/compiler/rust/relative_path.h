@@ -28,42 +28,50 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_RELATIVE_PATH_H__
+#define GOOGLE_PROTOBUF_COMPILER_RUST_RELATIVE_PATH_H__
 
 #include <string>
+#include <vector>
 
+#include "absl/algorithm/container.h"
+#include "absl/log/absl_check.h"
+#include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/rust/context.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-std::string GetCrateName(Context<FileDescriptor> dep);
 
-std::string GetRsFile(Context<FileDescriptor> file);
-std::string GetThunkCcFile(Context<FileDescriptor> file);
-std::string GetHeaderFile(Context<FileDescriptor> file);
+// Relative path using '/' as a separator.
+class RelativePath final {
+ public:
+  explicit RelativePath(absl::string_view path) : path_(path) {
+    ABSL_CHECK(!absl::StartsWith(path, "/"))
+        << "only relative paths are supported";
+    // `..` and `.` not supported, since there's no use case for that right now.
+    for (absl::string_view segment : Segments()) {
+      ABSL_CHECK(segment != "..") << "`..` segments are not supported";
+      ABSL_CHECK(segment != ".") << "`.` segments are not supported";
+    }
+  }
 
-std::string Thunk(Context<FieldDescriptor> field, absl::string_view op);
-std::string Thunk(Context<Descriptor> msg, absl::string_view op);
+  // Returns a path getting us from the current relative path to the `dest`
+  // path.
+  //
+  // Supports both files and directories.
+  std::string Relative(const RelativePath& dest) const;
+  std::vector<absl::string_view> Segments() const;
+  bool IsDirectory() const;
 
-bool IsSupportedFieldType(Context<FieldDescriptor> field);
+ private:
+  absl::string_view path_;
+};
 
-absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field);
-
-std::string FieldInfoComment(Context<FieldDescriptor> field);
-
-std::string RustModule(Context<Descriptor> msg);
-std::string RustInternalModuleName(Context<FileDescriptor> file);
-
-std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg);
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_RELATIVE_PATH_H__

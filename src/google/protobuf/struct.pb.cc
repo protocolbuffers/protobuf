@@ -974,7 +974,8 @@ void ListValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::p
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_values()->MergeFrom(from._internal_values());
+  _this->_internal_mutable_values()->MergeFrom(
+      from._internal_values());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -1005,22 +1006,6 @@ void ListValue::InternalSwap(ListValue* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::Struct_FieldsEntry_DoNotUse*
-Arena::CreateMaybeMessage< ::google::protobuf::Struct_FieldsEntry_DoNotUse >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Struct_FieldsEntry_DoNotUse >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Struct*
-Arena::CreateMaybeMessage< ::google::protobuf::Struct >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Struct >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Value*
-Arena::CreateMaybeMessage< ::google::protobuf::Value >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Value >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::ListValue*
-Arena::CreateMaybeMessage< ::google::protobuf::ListValue >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::ListValue >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

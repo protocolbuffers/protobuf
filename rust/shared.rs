@@ -32,6 +32,19 @@
 //!
 //! For kernel-specific logic this crate delegates to the respective `__runtime`
 //! crate.
+#![deny(unsafe_op_in_unsafe_fn)]
+
+use std::fmt;
+
+pub use optional::{AbsentField, FieldEntry, Optional, PresentField};
+pub use proxied::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
+pub use string::{BytesMut, ProtoStr};
+
+/// Everything in `__internal` is allowed to change without it being considered
+/// a breaking change for the protobuf library. Nothing in here should be
+/// exported in `protobuf.rs`.
+#[path = "internal.rs"]
+pub mod __internal;
 
 /// Everything in `__runtime` is allowed to change without it being considered
 /// a breaking change for the protobuf library. Nothing in here should be
@@ -46,18 +59,6 @@ pub mod __runtime;
 mod optional;
 mod proxied;
 mod string;
-
-pub use optional::{AbsentField, FieldEntry, Optional, PresentField};
-pub use proxied::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
-pub use string::{BytesMut, ProtoStr};
-
-/// Everything in `__internal` is allowed to change without it being considered
-/// a breaking change for the protobuf library. Nothing in here should be
-/// exported in `protobuf.rs`.
-#[path = "internal.rs"]
-pub mod __internal;
-
-use std::fmt;
 
 /// An error that happened during deserialization.
 #[derive(Debug, Clone)]

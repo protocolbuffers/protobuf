@@ -1242,11 +1242,18 @@ class FileGenerator::ForwardDeclarations {
   }
 
   void PrintTopLevelDecl(io::Printer* p, const Options& options) const {
-    for (const auto& c : classes_) {
-      p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
-        template <>
-        $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(Arena*);
-      )cc");
+    if (ShouldGenerateExternSpecializations(options)) {
+      for (const auto& c : classes_) {
+        // To reduce total linker input size in large binaries we make these
+        // functions extern and define then in the pb.cc file. This avoids bloat
+        // in callers by having duplicate definitions of the template.
+        // However, it increases the size of the pb.cc translation units so it
+        // is a tradeoff.
+        p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
+          template <>
+          $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(Arena*);
+        )cc");
+      }
     }
   }
 

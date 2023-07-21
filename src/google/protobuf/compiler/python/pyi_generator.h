@@ -77,9 +77,9 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
                 std::string* error) const override;
 
  private:
-  void PrintImportForDescriptor(
-      const FileDescriptor& desc,
-      absl::flat_hash_set<std::string>* seen_aliases) const;
+  void PrintImportForDescriptor(const FileDescriptor& desc,
+                                absl::flat_hash_set<std::string>* seen_aliases,
+                                bool* has_importlib) const;
   template <typename DescriptorT>
   void Annotate(const std::string& label, const DescriptorT* descriptor) const;
   void PrintImports() const;

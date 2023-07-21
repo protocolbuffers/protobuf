@@ -58,8 +58,6 @@ namespace protobuf {
 class FieldMask;
 struct FieldMaskDefaultTypeInternal;
 PROTOBUF_EXPORT extern FieldMaskDefaultTypeInternal _FieldMask_default_instance_;
-template <>
-PROTOBUF_EXPORT ::google::protobuf::FieldMask* Arena::CreateMaybeMessage<::google::protobuf::FieldMask>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 

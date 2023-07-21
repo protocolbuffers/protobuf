@@ -388,6 +388,11 @@ const std::string& NameOfDenseEnum(int v) {
   return NameOfDenseEnumSlow(v, &deci);
 }
 
+// Returns whether this type of field is stored in the split struct as a raw
+// pointer.
+PROTOBUF_EXPORT bool SplitFieldHasExtraIndirection(
+    const FieldDescriptor* field);
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

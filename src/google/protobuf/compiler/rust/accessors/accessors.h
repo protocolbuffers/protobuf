@@ -45,13 +45,12 @@ namespace rust {
 class AccessorGenerator {
  public:
   AccessorGenerator() = default;
+  virtual ~AccessorGenerator() = default;
 
   AccessorGenerator(const AccessorGenerator &) = delete;
   AccessorGenerator(AccessorGenerator &&) = delete;
   AccessorGenerator &operator=(const AccessorGenerator &) = delete;
   AccessorGenerator &operator=(AccessorGenerator &&) = delete;
-
-  virtual ~AccessorGenerator();
 
   // Constructs a generator for the given field.
   //
@@ -92,8 +91,6 @@ class AccessorGenerator {
   static std::unique_ptr<AccessorGenerator> ForSingularBytes(
       Context<FieldDescriptor> field);
 };
-
-inline AccessorGenerator::~AccessorGenerator() = default;
 
 }  // namespace rust
 }  // namespace compiler

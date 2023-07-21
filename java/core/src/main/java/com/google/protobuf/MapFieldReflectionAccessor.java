@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2023 Google LLC.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google LLC. nor the names of its
+//     * Neither the name of Google Inc. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -28,42 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
+package com.google.protobuf;
 
-#include <string>
+import java.util.List;
 
-#include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/rust/context.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+/**
+ * A base class for package private shared methods between MapField and MapFieldBuilder to allow
+ * reflection to access both.
+ */
+public abstract class MapFieldReflectionAccessor {
+  /** Gets the content of this MapField as a read-only List. */
+  abstract List<Message> getList();
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace rust {
-std::string GetCrateName(Context<FileDescriptor> dep);
+  /** Gets a mutable List view of this MapField. */
+  abstract List<Message> getMutableList();
 
-std::string GetRsFile(Context<FileDescriptor> file);
-std::string GetThunkCcFile(Context<FileDescriptor> file);
-std::string GetHeaderFile(Context<FileDescriptor> file);
-
-std::string Thunk(Context<FieldDescriptor> field, absl::string_view op);
-std::string Thunk(Context<Descriptor> msg, absl::string_view op);
-
-bool IsSupportedFieldType(Context<FieldDescriptor> field);
-
-absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field);
-
-std::string FieldInfoComment(Context<FieldDescriptor> field);
-
-std::string RustModule(Context<Descriptor> msg);
-std::string RustInternalModuleName(Context<FileDescriptor> file);
-
-std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg);
-}  // namespace rust
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
+  /** Gets the default instance of the message stored in the list view of this map field. */
+  abstract Message getMapEntryMessageDefaultInstance();
+}

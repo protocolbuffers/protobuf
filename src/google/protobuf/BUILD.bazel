@@ -973,6 +973,7 @@ cc_test(
     name = "arenastring_unittest",
     srcs = ["arenastring_unittest.cc"],
     deps = [
+        ":port_def",
         ":protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",

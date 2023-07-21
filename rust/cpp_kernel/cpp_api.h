@@ -50,7 +50,7 @@ namespace rust_internal {
 // * The data were allocated using the Rust allocator.
 //
 extern "C" struct SerializedData {
-  /// Owns the memory.
+  // Owns the memory.
   const char* data;
   size_t len;
 

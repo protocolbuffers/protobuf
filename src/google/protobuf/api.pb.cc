@@ -587,9 +587,12 @@ void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobu
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_methods()->MergeFrom(from._internal_methods());
-  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
-  _this->_internal_mutable_mixins()->MergeFrom(from._internal_mixins());
+  _this->_internal_mutable_methods()->MergeFrom(
+      from._internal_methods());
+  _this->_internal_mutable_options()->MergeFrom(
+      from._internal_options());
+  _this->_internal_mutable_mixins()->MergeFrom(
+      from._internal_mixins());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -970,7 +973,8 @@ void Method::MergeImpl(::google::protobuf::Message& to_msg, const ::google::prot
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
+  _this->_internal_mutable_options()->MergeFrom(
+      from._internal_options());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -1265,18 +1269,6 @@ void Mixin::InternalSwap(Mixin* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::Api*
-Arena::CreateMaybeMessage< ::google::protobuf::Api >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Api >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Method*
-Arena::CreateMaybeMessage< ::google::protobuf::Method >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Method >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Mixin*
-Arena::CreateMaybeMessage< ::google::protobuf::Mixin >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Mixin >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

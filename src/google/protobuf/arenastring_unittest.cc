@@ -42,8 +42,11 @@
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/explicitly_constructed.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 
 
 // Must be included last.
@@ -144,6 +147,123 @@ TEST_P(DualArena, Swap) {
   }
   EXPECT_EQ("lhs value that has some heft", rhs.Get());
   rhs.Destroy();
+}
+
+TEST(ArenaStringPtrTest, ConstInit) {
+  // Verify that we can constinit construct an ArenaStringPtr from an arbitrary
+  // ExplicitlyConstructed<std::string>*.
+  static internal::ExplicitlyConstructedArenaString str;
+  PROTOBUF_CONSTINIT static ArenaStringPtr ptr(&str,
+                                               internal::ConstantInitialized{});
+  EXPECT_EQ(&ptr.Get(), str.get_mutable());
+
+  PROTOBUF_CONSTINIT static const ArenaStringPtr ptr2(
+      &internal::fixed_address_empty_string, internal::ConstantInitialized{});
+  EXPECT_EQ(&ptr2.Get(), &internal::GetEmptyStringAlreadyInited());
+}
+
+TEST_P(SingleArena, ConstructEmpty) {
+  auto arena = GetArena();
+  ArenaStringPtr field(arena.get());
+
+  EXPECT_EQ(field.Get(), "");
+  if (internal::DebugHardenStringValues()) {
+    EXPECT_FALSE(field.IsDefault());
+  } else {
+    EXPECT_TRUE(field.IsDefault());
+  }
+  if (arena == nullptr) field.Destroy();
+}
+
+TEST_P(SingleArena, ConstructEmptyWithDefault) {
+  auto arena = GetArena();
+  internal::LazyString default_value{{{"Hello default", 13}}, {nullptr}};
+  ArenaStringPtr field(arena.get(), default_value);
+
+  if (internal::DebugHardenStringValues()) {
+    EXPECT_EQ(field.Get(), "Hello default");
+    EXPECT_FALSE(field.IsDefault());
+  } else {
+    EXPECT_EQ(field.Get(), "");
+    EXPECT_TRUE(field.IsDefault());
+  }
+  if (arena == nullptr) field.Destroy();
+}
+
+TEST_P(SingleArena, CopyConstructEmpty) {
+  std::string empty;
+  auto arena = GetArena();
+  ArenaStringPtr field;
+  field.InitExternal(&empty);
+
+  ArenaStringPtr dst(arena.get(), field);
+  EXPECT_EQ(dst.Get(), "");
+  if (internal::DebugHardenStringValues()) {
+    EXPECT_FALSE(dst.IsDefault());
+  } else {
+    EXPECT_TRUE(dst.IsDefault());
+  }
+  if (arena == nullptr) dst.Destroy();
+  field.Destroy();
+}
+
+TEST_P(SingleArena, CopyConstructEmptyWithDefault) {
+  std::string empty;
+  auto arena = GetArena();
+  ArenaStringPtr field;
+  field.InitExternal(&empty);
+
+  internal::LazyString default_value{{{"Hello default", 13}}, {nullptr}};
+  ArenaStringPtr dst(arena.get(), field, default_value);
+  if (internal::DebugHardenStringValues()) {
+    EXPECT_EQ(dst.Get(), "Hello default");
+    EXPECT_FALSE(dst.IsDefault());
+  } else {
+    EXPECT_EQ(dst.Get(), "");
+    EXPECT_TRUE(dst.IsDefault());
+  }
+  if (arena == nullptr) dst.Destroy();
+  field.Destroy();
+}
+
+TEST_P(SingleArena, CopyConstructValueWithDefault) {
+  std::string empty;
+  auto arena = GetArena();
+  ArenaStringPtr field;
+  field.InitExternal(&empty);
+  field.Set("Hello world", nullptr);
+
+  internal::LazyString default_value{{{"Hello default", 13}}, {nullptr}};
+  ArenaStringPtr dst(arena.get(), field, default_value);
+  EXPECT_EQ(dst.Get(), "Hello world");
+  if (arena == nullptr) dst.Destroy();
+  field.Destroy();
+}
+
+TEST_P(SingleArena, CopyConstructSSO) {
+  std::string empty;
+  auto arena = GetArena();
+  ArenaStringPtr field;
+  field.InitExternal(&empty);
+  field.Set("Hello world", nullptr);
+
+  ArenaStringPtr dst(arena.get(), field);
+  EXPECT_EQ(dst.Get(), "Hello world");
+  if (arena == nullptr) dst.Destroy();
+  field.Destroy();
+}
+
+TEST_P(SingleArena, CopyConstructLong) {
+  std::string empty;
+  auto arena = GetArena();
+  ArenaStringPtr field;
+  field.InitExternal(&empty);
+  field.Set("A string long enough to not be inlined", nullptr);
+
+  ArenaStringPtr dst(arena.get(), field);
+  EXPECT_EQ(dst.Get(), "A string long enough to not be inlined");
+  if (arena == nullptr) dst.Destroy();
+  field.Destroy();
 }
 
 
