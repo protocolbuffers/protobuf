@@ -36,7 +36,8 @@ JavaGenerator::JavaGenerator() {}
 JavaGenerator::~JavaGenerator() {}
 
 uint64_t JavaGenerator::GetSupportedFeatures() const {
-  return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL;
+  return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL |
+         CodeGenerator::Feature::FEATURE_SUPPORTS_EDITIONS;
 }
 
 bool JavaGenerator::Generate(const FileDescriptor* file,

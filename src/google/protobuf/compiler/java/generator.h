@@ -17,6 +17,7 @@
 #include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -42,6 +43,10 @@ class PROTOC_EXPORT JavaGenerator : public CodeGenerator {
                 GeneratorContext* context, std::string* error) const override;
 
   uint64_t GetSupportedFeatures() const override;
+
+  std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
+    return {GetExtensionReflection(pb::java)};
+  }
 
   void set_opensource_runtime(bool opensource) {
     opensource_runtime_ = opensource;

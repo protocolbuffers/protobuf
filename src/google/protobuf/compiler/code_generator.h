@@ -48,6 +48,10 @@ class Version;
 class CodeGenerator;
 class GeneratorContext;
 
+// namespace java {
+// class FileGenerator;
+// }  // namespace java
+
 // The abstract interface to a class which generates code implementing a
 // particular proto file in a particular language.  A number of these may
 // be registered with CommandLineInterface to support various languages.
@@ -133,7 +137,6 @@ class PROTOC_EXPORT CodeGenerator {
   // embed the defaults into the generated code.
   absl::StatusOr<FeatureSetDefaults> BuildFeatureSetDefaults() const;
 
- protected:
   // Retrieves the resolved source features for a given descriptor.  All the
   // features that are imported (from the proto file) and linked in (from the
   // callers binary) will be fully resolved. These should be used to make any
@@ -143,6 +146,7 @@ class PROTOC_EXPORT CodeGenerator {
     return ::google::protobuf::internal::InternalFeatureHelper::GetFeatures(desc);
   }
 
+ protected:
   // Retrieves the unresolved source features for a given descriptor.  These
   // should be used to validate the original .proto file.  These represent the
   // original proto files from generated code, but should be stripped of

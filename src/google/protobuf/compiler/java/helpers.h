@@ -16,6 +16,8 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/java/generator.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
@@ -349,8 +351,9 @@ inline bool ExposePublicParser(const FileDescriptor* descriptor) {
 // but in the message and can be queried using additional getters that return
 // ints.
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
-  // TODO: Check Java legacy_enum_field_treated_as_closed feature.
-  return !field->legacy_enum_field_treated_as_closed();
+  return JavaGenerator::GetResolvedSourceFeatures(*field)
+      .GetExtension(pb::java)
+      .legacy_closed_enum();
 }
 
 // Check whether a message has repeated fields.

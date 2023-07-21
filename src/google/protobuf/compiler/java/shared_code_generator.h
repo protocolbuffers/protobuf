@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/port.h"
 
 namespace google {
@@ -57,6 +58,7 @@ class SharedCodeGenerator {
  private:
   std::unique_ptr<ClassNameResolver> name_resolver_;
   const FileDescriptor* file_;
+  const FileDescriptorProto file_proto_;
   const Options options_;
 };
 

@@ -1112,7 +1112,10 @@ FeatureSet* CreateProto2DefaultFeatures() {
   features->set_json_format(FeatureSet::LEGACY_BEST_EFFORT);
   features->set_utf8_validation(FeatureSet::UNVERIFIED);
   features->MutableExtension(pb::cpp)->set_legacy_closed_enum(true);
-
+  // TODO: Exclude language features for descriptor.proto?
+  // features->MutableExtension(pb::java)->set_legacy_closed_enum(true);
+  // features->MutableExtension(pb::java)->set_utf8_validation(
+  //     pb::JavaFeatures::VERIFY_NONE);
   return features;
 }
 
@@ -1140,6 +1143,11 @@ const FeatureSet& GetProto3Features() {
     features->set_message_encoding(FeatureSet::LENGTH_PREFIXED);
     features->set_json_format(FeatureSet::ALLOW);
     features->MutableExtension(pb::cpp)->set_legacy_closed_enum(false);
+    // TODO: Exclude language features for descriptor.proto?
+
+    // features->MutableExtension(pb::java)->set_legacy_closed_enum(false);
+    // features->MutableExtension(pb::java)->set_utf8_validation(
+    //   pb::JavaFeatures::VERIFY_PARSE);
     return features;
   }();
   return *kProto3Features;
@@ -3055,6 +3063,7 @@ void CopyFeaturesToOptions(const FeatureSet* features, OptionsT* options) {
 bool RetrieveOptionsAssumingRightPool(
     int depth, const Message& options,
     std::vector<std::string>* option_entries) {
+  // DescriptorPool::generated_pool();
   option_entries->clear();
   const Reflection* reflection = options.GetReflection();
   std::vector<const FieldDescriptor*> fields;
@@ -5293,7 +5302,10 @@ void DescriptorBuilder::ResolveFeaturesImpl(
   descriptor->merged_features_ =
       GetLegacyFeatureOverride(&parent_features, descriptor);
   descriptor->proto_features_ = &FeatureSet::default_instance();
+  // TODO: Decide if legacy feature sets should be stripped.
   if (!feature_resolver_.has_value()) {
+    // Under proto2 and proto3 we do no feature resolution.
+    // options->clear_features();
     if (options != nullptr && options->has_features()) {
       AddError(descriptor->name(), proto, error_location,
                "Features are only valid under editions.");
