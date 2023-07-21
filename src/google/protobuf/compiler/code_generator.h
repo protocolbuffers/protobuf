@@ -69,6 +69,10 @@ class Version;
 class CodeGenerator;
 class GeneratorContext;
 
+namespace java {
+class FileGenerator;
+}  // namespace java
+
 // The abstract interface to a class which generates code implementing a
 // particular proto file in a particular language.  A number of these may
 // be registered with CommandLineInterface to support various languages.
@@ -131,6 +135,8 @@ class PROTOC_EXPORT CodeGenerator {
   virtual bool HasGenerateAll() const { return true; }
 
  protected:
+  friend class ::google::protobuf::compiler::java::FileGenerator;
+
   // Retrieves the resolved source features for a given descriptor.  These
   // should be used to make any feature-based decisions during code generation.
   template <typename DescriptorT>

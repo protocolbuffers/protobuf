@@ -413,8 +413,10 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   printer->Indent();
 
   if (options_.opensource_runtime) {
-    SharedCodeGenerator shared_code_generator(file_, options_);
+    FileDescriptorProto file_proto = CodeGenerator::GetRuntimeProto(*file_);
+    SharedCodeGenerator shared_code_generator(file_, file_proto, options_);
     shared_code_generator.GenerateDescriptors(printer);
+    // Pass FileDescriptorProto from GetRuntimeProto
   } else {
   }
 

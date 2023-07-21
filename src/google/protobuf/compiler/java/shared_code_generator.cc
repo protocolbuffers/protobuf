@@ -51,9 +51,11 @@ namespace compiler {
 namespace java {
 
 SharedCodeGenerator::SharedCodeGenerator(const FileDescriptor* file,
+                                         FileDescriptorProto file_proto,
                                          const Options& options)
     : name_resolver_(new ClassNameResolver(options)),
       file_(file),
+      file_proto_(file_proto),
       options_(options) {}
 
 SharedCodeGenerator::~SharedCodeGenerator() {}
@@ -135,10 +137,8 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   // This makes huge bytecode files and can easily hit the compiler's internal
   // code size limits (error "code to large").  String literals are apparently
   // embedded raw, which is what we want.
-  FileDescriptorProto file_proto = StripSourceRetentionOptions(*file_);
-
   std::string file_data;
-  file_proto.SerializeToString(&file_data);
+  file_proto_.SerializeToString(&file_data);
 
   printer->Print("java.lang.String[] descriptorData = {\n");
   printer->Indent();

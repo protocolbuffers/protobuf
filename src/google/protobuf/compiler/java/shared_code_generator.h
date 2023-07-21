@@ -40,6 +40,7 @@
 #include <vector>
 
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/port.h"
 
 namespace google {
@@ -66,7 +67,8 @@ namespace java {
 // and mutable API. Currently only descriptors are shared.
 class SharedCodeGenerator {
  public:
-  SharedCodeGenerator(const FileDescriptor* file, const Options& options);
+  SharedCodeGenerator(const FileDescriptor* file,
+                      FileDescriptorProto file_proto, const Options& options);
   SharedCodeGenerator(const SharedCodeGenerator&) = delete;
   SharedCodeGenerator& operator=(const SharedCodeGenerator&) = delete;
   ~SharedCodeGenerator();
@@ -80,6 +82,7 @@ class SharedCodeGenerator {
  private:
   std::unique_ptr<ClassNameResolver> name_resolver_;
   const FileDescriptor* file_;
+  const FileDescriptorProto file_proto_;
   const Options options_;
 };
 
