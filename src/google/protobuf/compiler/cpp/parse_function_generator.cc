@@ -1043,12 +1043,15 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
           bool eager_verify =
               IsEagerlyVerifiedLazy(field, options_, scc_analyzer_);
           if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
-            format(
-                "ctx->set_lazy_eager_verify_func($1$);\n",
-                eager_verify
-                    ? absl::StrCat("&", ClassName(field->message_type(), true),
-                                   "::InternalVerify")
-                    : "nullptr");
+            if (eager_verify) {
+              format("ctx->set_lazy_eager_verify_func(&$1$::InternalVerify);\n",
+                     ClassName(field->message_type(), true));
+            } else {
+              format(
+                  "ctx->set_lazy_eager_verify_func(nullptr);\n"
+                  "auto old_mode = "
+                  "ctx->set_lazy_parse_mode(::_pbi::ParseContext::kLazy);\n");
+            }
           }
           if (field->real_containing_oneof()) {
             format(
@@ -1074,14 +1077,15 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
               "  ::$proto_ns$::internal::LazyField> parse_helper(\n"
               "    $1$::default_instance(),\n"
               "    $msg$GetArenaForAllocation(),\n"
-              "    ::google::protobuf::internal::LazyVerifyOption::$2$,\n"
               "    lazy_field);\n"
               "ptr = ctx->ParseMessage(&parse_helper, ptr);\n",
-              FieldMessageTypeName(field, options_),
-              eager_verify ? "kEager" : "kLazy");
-          if (ShouldVerify(descriptor_, options_, scc_analyzer_) &&
-              eager_verify) {
-            format("ctx->set_lazy_eager_verify_func(nullptr);\n");
+              FieldMessageTypeName(field, options_));
+          if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
+            if (eager_verify) {
+              format("ctx->set_lazy_eager_verify_func(nullptr);\n");
+            } else {
+              format("(void)ctx->set_lazy_parse_mode(old_mode);\n");
+            }
           }
         } else if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
           if (!field->is_repeated()) {
