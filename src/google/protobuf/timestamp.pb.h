@@ -58,8 +58,6 @@ namespace protobuf {
 class Timestamp;
 struct TimestampDefaultTypeInternal;
 PROTOBUF_EXPORT extern TimestampDefaultTypeInternal _Timestamp_default_instance_;
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Timestamp* Arena::CreateMaybeMessage<::google::protobuf::Timestamp>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 

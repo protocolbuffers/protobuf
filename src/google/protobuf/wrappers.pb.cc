@@ -1911,42 +1911,6 @@ void BytesValue::InternalSwap(BytesValue* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::DoubleValue*
-Arena::CreateMaybeMessage< ::google::protobuf::DoubleValue >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::DoubleValue >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FloatValue*
-Arena::CreateMaybeMessage< ::google::protobuf::FloatValue >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FloatValue >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Int64Value*
-Arena::CreateMaybeMessage< ::google::protobuf::Int64Value >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Int64Value >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::UInt64Value*
-Arena::CreateMaybeMessage< ::google::protobuf::UInt64Value >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::UInt64Value >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Int32Value*
-Arena::CreateMaybeMessage< ::google::protobuf::Int32Value >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Int32Value >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::UInt32Value*
-Arena::CreateMaybeMessage< ::google::protobuf::UInt32Value >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::UInt32Value >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::BoolValue*
-Arena::CreateMaybeMessage< ::google::protobuf::BoolValue >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::BoolValue >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::StringValue*
-Arena::CreateMaybeMessage< ::google::protobuf::StringValue >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::StringValue >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::BytesValue*
-Arena::CreateMaybeMessage< ::google::protobuf::BytesValue >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::BytesValue >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

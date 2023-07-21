@@ -58,8 +58,6 @@ namespace protobuf {
 class Any;
 struct AnyDefaultTypeInternal;
 PROTOBUF_EXPORT extern AnyDefaultTypeInternal _Any_default_instance_;
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Any* Arena::CreateMaybeMessage<::google::protobuf::Any>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 

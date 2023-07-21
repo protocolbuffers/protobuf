@@ -73,16 +73,6 @@ PROTOBUF_EXPORT extern OptionDefaultTypeInternal _Option_default_instance_;
 class Type;
 struct TypeDefaultTypeInternal;
 PROTOBUF_EXPORT extern TypeDefaultTypeInternal _Type_default_instance_;
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Enum* Arena::CreateMaybeMessage<::google::protobuf::Enum>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::EnumValue* Arena::CreateMaybeMessage<::google::protobuf::EnumValue>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Field* Arena::CreateMaybeMessage<::google::protobuf::Field>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Option* Arena::CreateMaybeMessage<::google::protobuf::Option>(Arena*);
-template <>
-PROTOBUF_EXPORT ::google::protobuf::Type* Arena::CreateMaybeMessage<::google::protobuf::Type>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 

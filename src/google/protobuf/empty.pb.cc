@@ -150,10 +150,6 @@ const ::google::protobuf::Message::ClassData*Empty::GetClassData() const { retur
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::Empty*
-Arena::CreateMaybeMessage< ::google::protobuf::Empty >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Empty >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

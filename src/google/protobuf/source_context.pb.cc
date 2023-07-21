@@ -311,10 +311,6 @@ void SourceContext::InternalSwap(SourceContext* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::SourceContext*
-Arena::CreateMaybeMessage< ::google::protobuf::SourceContext >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::SourceContext >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
