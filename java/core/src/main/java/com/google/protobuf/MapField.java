@@ -53,7 +53,7 @@ import java.util.Set;
  * <p>THREAD-SAFETY NOTE: Read-only access is thread-safe. Users can call getMap() and getList()
  * concurrently in multiple threads. If write-access is needed, all access must be synchronized.
  */
-public class MapField<K, V> extends MapFieldReflectionAccessor implements MutabilityOracle {
+public class MapField<K, V> implements MutabilityOracle {
 
   /**
    * Indicates where the data of this map field is currently stored.
@@ -225,7 +225,6 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
   }
 
   /** Gets the content of this MapField as a read-only List. */
-  @Override
   List<Message> getList() {
     if (mode == StorageMode.MAP) {
       synchronized (this) {
@@ -239,7 +238,6 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
   }
 
   /** Gets a mutable List view of this MapField. */
-  @Override
   List<Message> getMutableList() {
     if (mode != StorageMode.LIST) {
       if (mode == StorageMode.MAP) {
@@ -252,7 +250,6 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
   }
 
   /** Gets the default instance of the message stored in the list view of this map field. */
-  @Override
   Message getMapEntryMessageDefaultInstance() {
     return converter.getMessageDefaultInstance();
   }
@@ -281,7 +278,7 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
   }
 
   /** An internal map that checks for mutability before delegating. */
-  static class MutabilityAwareMap<K, V> implements Map<K, V> {
+  private static class MutabilityAwareMap<K, V> implements Map<K, V> {
     private final MutabilityOracle mutabilityOracle;
     private final Map<K, V> delegate;
 
