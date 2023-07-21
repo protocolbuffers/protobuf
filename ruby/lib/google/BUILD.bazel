@@ -89,7 +89,10 @@ ruby_library(
 
 pkg_files(
     name = "dist_files",
-    srcs = glob(["**/*.rb"]),
+    srcs = glob([
+        "**/*.rb",
+        "**/*.rake",
+    ]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//ruby:__pkg__"],
 )
