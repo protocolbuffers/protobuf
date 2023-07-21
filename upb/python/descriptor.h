@@ -48,6 +48,20 @@ typedef enum {
   kPyUpb_Descriptor_Count = 8,
 } PyUpb_DescriptorType;
 
+// -----------------------------------------------------------------------------
+// DescriptorBase
+// -----------------------------------------------------------------------------
+
+// This representation is used by all concrete descriptors.
+
+typedef struct {
+  PyObject_HEAD;
+  PyObject* pool;          // We own a ref.
+  const void* def;         // Type depends on the class. Kept alive by "pool".
+  PyObject* options;       // NULL if not present or not cached.
+  PyObject* message_meta;  // We own a ref.
+} PyUpb_DescriptorBase;
+
 // Given a descriptor object |desc|, returns a Python message class object for
 // the msgdef |m|, which must be from the same pool.
 PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m);

@@ -1805,7 +1805,9 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
   PyUpb_MessageMeta* meta = PyUpb_GetMessageMeta(ret);
   meta->py_message_descriptor = py_descriptor;
   meta->layout = upb_MessageDef_MiniTable(msgdef);
-  Py_INCREF(meta->py_message_descriptor);
+
+  ((PyUpb_DescriptorBase*)py_descriptor)->message_meta = ret;
+  Py_INCREF(ret);
 
   PyUpb_ObjCache_Add(meta->layout, ret);
 
@@ -1852,7 +1854,6 @@ static PyObject* PyUpb_MessageMeta_New(PyTypeObject* type, PyObject* args,
 static void PyUpb_MessageMeta_Dealloc(PyObject* self) {
   PyUpb_MessageMeta* meta = PyUpb_GetMessageMeta(self);
   PyUpb_ObjCache_Delete(meta->layout);
-  Py_DECREF(meta->py_message_descriptor);
   PyTypeObject* tp = Py_TYPE(self);
   cpython_bits.type_dealloc(self);
   Py_DECREF(tp);

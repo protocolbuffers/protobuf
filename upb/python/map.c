@@ -274,7 +274,14 @@ static PyObject* PyUpb_MapContainer_GetEntryClass(PyObject* _self,
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
-  return PyUpb_Descriptor_GetClass(entry_m);
+  if (!entry_m) {
+    return PyErr_Format(PyExc_RuntimeError, "Can not find entry_m");
+  }
+  PyObject* ret = PyUpb_Descriptor_GetClass(entry_m);
+  if (!ret) {
+    return PyErr_Format(PyExc_RuntimeError, "Can not find Class");
+  }
+  return ret;
 }
 
 Py_ssize_t PyUpb_MapContainer_Length(PyObject* _self) {
