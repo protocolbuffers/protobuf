@@ -99,6 +99,7 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
 }
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
+  PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
   upb_DefPool_Free(self->symtab);
   PyUpb_ObjCache_Delete(self->symtab);
