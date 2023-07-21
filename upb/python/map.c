@@ -74,6 +74,10 @@ static const upb_FieldDef* PyUpb_MapContainer_GetField(
 
 static void PyUpb_MapContainer_Dealloc(void* _self) {
   PyUpb_MapContainer* self = _self;
+  // The MapContainer types aren't explicitly using GC, but inherit it from
+  // the base type (MutableMapping), and so they must untrack before
+  // clearing data. Otherwise, GC may see invalid/freed data.
+  PyObject_GC_UnTrack(self);
   Py_DECREF(self->arena);
   if (PyUpb_MapContainer_IsStub(self)) {
     PyUpb_Message_CacheDelete(self->ptr.parent,
