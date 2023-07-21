@@ -100,6 +100,8 @@ ruby_library(
 genrule(
     name = "jruby_release",
     srcs = [
+        "@utf8_range//:utf8_range_srcs",
+        "@utf8_range//:LICENSE",
         "//ruby/lib/google:copy_jar",
         "//ruby/lib/google:dist_files",
         "//ruby/ext/google/protobuf_c:dist_files",
@@ -112,6 +114,10 @@ genrule(
         mkdir tmp
         for src in $(SRCS); do
             cp --parents -L "$$src" tmp
+        done
+        mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
+        for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
+            mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
         done
         for wkt in $(execpaths //:well_known_ruby_protos); do
             mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"

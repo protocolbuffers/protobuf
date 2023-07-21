@@ -1,7 +1,3 @@
 import '../../../lib/tasks/ffi.rake'
 
-def path_prefix
-  warn "PWD from ext/google/protobuf_c/Rakefile: #{FileUtils.pwd}"
-end
-
 task default: ['ffi-protobuf:default']

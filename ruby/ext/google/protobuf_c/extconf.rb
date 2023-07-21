@@ -17,8 +17,8 @@ if RUBY_PLATFORM =~ /linux/
   $LDFLAGS += " -Wl,-wrap,memcpy"
 end
 
-$VPATH << "$(srcdir)/third_party"
-$INCFLAGS += " -I$(srcdir)/third_party"
+$VPATH << "$(srcdir)/third_party/utf8_range"
+$INCFLAGS += " -I$(srcdir)/third_party/utf8_range"
 
 $srcs = ["protobuf.c", "convert.c", "defs.c", "message.c",
          "repeated_field.c", "map.c", "ruby-upb.c", "wrap_memcpy.c",
