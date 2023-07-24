@@ -231,7 +231,7 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size(Tag tag) {
     case Tag::kCord:
       return sizeof(TaggedNode);
     default:
-      ABSL_LOG(FATAL) << "Corrupted cleanup tag: " << static_cast<int>(tag);
+      ABSL_DCHECK(false);  // corrupted cleanup tag
       return sizeof(DynamicNode);
   }
 }
