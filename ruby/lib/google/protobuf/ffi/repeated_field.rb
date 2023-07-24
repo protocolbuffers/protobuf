@@ -49,10 +49,10 @@ module Google
   module Protobuf
     class FFI
       # Array
-      attach_function :append_array, :upb_Array_Append,        [:Array, MessageValue.by_value, Internal::Arena], :bool
+      attach_function :append_array, :upb_Array_Append,        [:Array, MessageValue.by_value, Internal::Arena.by_ref], :bool
       attach_function :get_msgval_at,:upb_Array_Get,           [:Array, :size_t], MessageValue.by_value
-      attach_function :create_array, :upb_Array_New,           [Internal::Arena, CType], :Array
-      attach_function :array_resize, :upb_Array_Resize,        [:Array, :size_t, Internal::Arena], :bool
+      attach_function :create_array, :upb_Array_New,           [Internal::Arena.by_ref, CType], :Array
+      attach_function :array_resize, :upb_Array_Resize,        [:Array, :size_t, Internal::Arena.by_ref], :bool
       attach_function :array_set,    :upb_Array_Set,           [:Array, :size_t, MessageValue.by_value], :void
       attach_function :array_size,   :upb_Array_Size,          [:Array], :size_t
     end

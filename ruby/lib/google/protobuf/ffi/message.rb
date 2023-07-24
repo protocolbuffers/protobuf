@@ -38,12 +38,12 @@ module Google
       attach_function :clear_message_field,     :upb_Message_ClearFieldByDef, [:Message, FieldDescriptor], :void
       attach_function :get_message_value,       :upb_Message_GetFieldByDef,   [:Message, FieldDescriptor], MessageValue.by_value
       attach_function :get_message_has,         :upb_Message_HasFieldByDef,   [:Message, FieldDescriptor], :bool
-      attach_function :set_message_field,       :upb_Message_SetFieldByDef,   [:Message, FieldDescriptor, MessageValue.by_value, Internal::Arena], :bool
-      attach_function :encode_message,          :upb_Encode,                  [:Message, MiniTable.by_ref, :size_t, Internal::Arena, :pointer, :pointer], EncodeStatus
-      attach_function :json_decode_message,     :upb_JsonDecode,              [:binary_string, :size_t, :Message, Descriptor, :DefPool, :int, Internal::Arena, Status.by_ref], :bool
+      attach_function :set_message_field,       :upb_Message_SetFieldByDef,   [:Message, FieldDescriptor, MessageValue.by_value, Internal::Arena.by_ref], :bool
+      attach_function :encode_message,          :upb_Encode,                  [:Message, :MiniTable, :size_t, Internal::Arena.by_ref, :pointer, :pointer], EncodeStatus
+      attach_function :json_decode_message,     :upb_JsonDecode,              [:binary_string, :size_t, :Message, Descriptor, :DefPool, :int, Internal::Arena.by_ref, Status.by_ref], :bool
       attach_function :json_encode_message,     :upb_JsonEncode,              [:Message, Descriptor, :DefPool, :int, :binary_string, :size_t, Status.by_ref], :size_t
-      attach_function :decode_message,          :upb_Decode,                              [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Internal::Arena], DecodeStatus
-      attach_function :get_mutable_message,     :upb_Message_Mutable,         [:Message, FieldDescriptor, Internal::Arena], MutableMessageValue.by_value
+      attach_function :decode_message,          :upb_Decode,                  [:binary_string, :size_t, :Message, :MiniTable, :ExtensionRegistry, :int, Internal::Arena.by_ref], DecodeStatus
+      attach_function :get_mutable_message,     :upb_Message_Mutable,         [:Message, FieldDescriptor, Internal::Arena.by_ref], MutableMessageValue.by_value
       attach_function :get_message_which_oneof, :upb_Message_WhichOneof,      [:Message, OneofDescriptor], FieldDescriptor
       attach_function :message_discard_unknown, :upb_Message_DiscardUnknown,  [:Message, Descriptor, :int], :bool
       # MessageValue
