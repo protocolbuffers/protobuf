@@ -480,6 +480,30 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     *start = InitFrom(std::forward<T>(args)...);
   }
 
+  struct Spawn {};
+  static constexpr Spawn kSpawn = {};
+
+  // Creates a new context from a given "ctx" to inherit a few attributes to
+  // emulate continued parsing. For example, recursion depth or descriptor pools
+  // must be passed down to a new "spawned" context to maintain the same parse
+  // context. Note that the spawned context always disables aliasing (different
+  // input).
+  template <typename... T>
+  ParseContext(Spawn, const ParseContext& ctx, const char** start, T&&... args)
+      : EpsCopyInputStream(false),
+        depth_(ctx.depth_),
+        data_(ctx.data_)
+  {
+    *start = InitFrom(std::forward<T>(args)...);
+  }
+
+  // Move constructor and assignment operator are not supported because "ptr"
+  // for parsing may have pointed to an inlined buffer (patch_buffer_) which can
+  // be invalid afterwards.
+  ParseContext(ParseContext&&) = delete;
+  ParseContext& operator=(ParseContext&&) = delete;
+  ParseContext& operator=(const ParseContext&) = delete;
+
   void TrackCorrectEnding() { group_depth_ = 0; }
 
   // Done should only be called when the parsing pointer is pointing to the
@@ -492,18 +516,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   const Data& data() const { return data_; }
 
   const char* ParseMessage(MessageLite* msg, const char* ptr);
-
-  // Spawns a child parsing context that inherits key properties. New context
-  // inherits the following:
-  // --depth_, data_, check_required_fields_, lazy_parse_mode_
-  // The spawned context always disables aliasing (different input).
-  template <typename... T>
-  ParseContext Spawn(const char** start, T&&... args) {
-    ParseContext spawned(depth_, false, start, std::forward<T>(args)...);
-    // Transfer key context states.
-    spawned.data_ = data_;
-    return spawned;
-  }
 
   // This overload supports those few cases where ParseMessage is called
   // on a class that is not actually a proto message.
