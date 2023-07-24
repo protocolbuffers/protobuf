@@ -61,6 +61,7 @@
 #include "google/protobuf/unittest_arena.pb.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "util/functional/to_callback.h"
 
 #include "absl/synchronization/mutex.h"
 
