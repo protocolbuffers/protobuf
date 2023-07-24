@@ -73,11 +73,11 @@ module Google
     class FFI
       # Arena
       attach_function :create_arena, :Arena_create,         [], Internal::Arena
-      attach_function :fuse_arena,   :upb_Arena_Fuse,       [Internal::Arena.by_ref, Internal::Arena.by_ref], :bool
+      attach_function :fuse_arena,   :upb_Arena_Fuse,       [Internal::Arena, Internal::Arena], :bool
       # Argument takes a :pointer rather than a typed Arena here due to
       # implementation details of FFI::AutoPointer.
       attach_function :free_arena,   :upb_Arena_Free,       [:pointer], :void
-      attach_function :arena_malloc, :upb_Arena_Malloc,     [Internal::Arena.by_ref, :size_t], :pointer
+      attach_function :arena_malloc, :upb_Arena_Malloc,     [Internal::Arena, :size_t], :pointer
     end
   end
 end

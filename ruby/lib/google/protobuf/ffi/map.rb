@@ -35,9 +35,9 @@ module Google
       attach_function :map_clear,  :upb_Map_Clear,                    [:Map], :void
       attach_function :map_delete, :upb_Map_Delete,                   [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
       attach_function :map_get,    :upb_Map_Get,                      [:Map, MessageValue.by_value, MessageValue.by_ref], :bool
-      attach_function :create_map, :upb_Map_New,                      [Internal::Arena.by_ref, CType, CType], :Map
+      attach_function :create_map, :upb_Map_New,                      [Internal::Arena, CType, CType], :Map
       attach_function :map_size,   :upb_Map_Size,                     [:Map], :size_t
-      attach_function :map_set,    :upb_Map_Set,                      [:Map, MessageValue.by_value, MessageValue.by_value, Internal::Arena.by_ref], :bool
+      attach_function :map_set,    :upb_Map_Set,                      [:Map, MessageValue.by_value, MessageValue.by_value, Internal::Arena], :bool
 
       # MapIterator
       attach_function :map_next,   :upb_MapIterator_Next,             [:Map, :pointer], :bool
