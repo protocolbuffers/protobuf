@@ -41,7 +41,7 @@ UPB_INLINE int upb_Log2Ceiling(int x) {
   return 32 - __builtin_clz(x - 1);
 #else
   int lg2 = 0;
-  while (1 << lg2 < x) lg2++;
+  while ((1 << lg2) < x) lg2++;
   return lg2;
 #endif
 }
