@@ -342,6 +342,16 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
   EXPECT_NE(parsed.lazy_child().child().payload().optional_int32(), -1);
 }
 
+TEST(MESSAGE_TEST_NAME, UnparsedEmpty) {
+  // lazy_child, LEN=100 with no payload.
+  const char encoded[] = {'\042', 100};
+  UNITTEST::NestedTestAllTypes message;
+
+  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+  EXPECT_TRUE(message.has_lazy_child());
+  EXPECT_EQ(message.lazy_child().ByteSizeLong(), 0);
+}
+
 TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroTag) {
   const char encoded[] = {"\n\x3\x80\0\0"};
   UNITTEST::NestedTestAllTypes parsed;
