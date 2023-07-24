@@ -68,7 +68,6 @@ module Google
       typedef :pointer, :FileDescriptorProto
       typedef :pointer, :Map
       typedef :pointer, :Message    # Instances of a message
-      typedef :pointer, :MiniTable
       typedef :pointer, :OneofDefPointer
       typedef :pointer, :binary_string
       if ::FFI::Platform::ARCH == "aarch64"
@@ -173,6 +172,21 @@ module Google
       class StringView < ::FFI::Struct
         layout :data, :pointer,
                :size, :size_t
+      end
+
+      class MiniTable < ::FFI::Struct
+        layout :subs, :pointer,
+               :fields, :pointer,
+               :size, :uint16_t,
+               :field_count, :uint16_t,
+               :ext, :uint8_t,  # upb_ExtMode, declared as uint8_t so sizeof(ext) == 1
+               :dense_below, :uint8_t,
+               :table_mask, :uint8_t,
+               :required_count, :uint8_t  # Required fields have the lowest hasbits.
+        # To statically initialize the tables of variable length, we need a flexible
+        # array member, and we need to compile in gnu99 mode (constant initialization
+        # of flexible array members is a GNU extension, not in C99 unfortunately. */
+        #       _upb_FastTable_Entry fasttable[];
       end
 
       class Status < ::FFI::Struct

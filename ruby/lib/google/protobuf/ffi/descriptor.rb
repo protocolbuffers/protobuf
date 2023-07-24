@@ -167,7 +167,7 @@ module Google
       attach_function :field_count,          :upb_MessageDef_FieldCount,              [Descriptor], :int
       attach_function :get_message_file_def, :upb_MessageDef_File,                    [:pointer], :FileDef
       attach_function :get_message_fullname, :upb_MessageDef_FullName,                [Descriptor], :string
-      attach_function :get_mini_table,       :upb_MessageDef_MiniTable,               [Descriptor], :MiniTable
+      attach_function :get_mini_table,       :upb_MessageDef_MiniTable,               [Descriptor], MiniTable.ptr
       attach_function :oneof_count,          :upb_MessageDef_OneofCount,              [Descriptor], :int
       attach_function :get_well_known_type,  :upb_MessageDef_WellKnownType,           [Descriptor], WellKnown
       attach_function :message_def_syntax,   :upb_MessageDef_Syntax,                  [Descriptor], Syntax
