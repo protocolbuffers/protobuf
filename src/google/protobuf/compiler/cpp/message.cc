@@ -2169,15 +2169,33 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
     // the field is eagerly verified lazy or inlined string to the LSB of the
     // offset.
 
-    if (ShouldSplit(field, options_)) {
-      format(" | ::_pbi::kSplitFieldOffsetMask /*split*/");
-    }
-    if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
-      format(" | 0x1u /*eagerly verified lazy*/");
-    } else if (IsStringInlined(field, options_)) {
-      format(" | 0x1u /*inlined*/");
-    }
-    format(",\n");
+    p->Emit({{"split_mask",
+              [&] {
+                if (ShouldSplit(field, options_)) {
+                  return " | ::_pbi::kSplitFieldOffsetMask /*split*/";
+                } else {
+                  return "";
+                }
+              }},
+             {"lazy_mask",
+              [&] {
+                if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
+                  return " | 0x1u /*eagerly verified lazy*/";
+                } else {
+                  return "";
+                }
+              }},
+             {"inlined_mask",
+              [&] {
+                if (IsStringInlined(field, options_)) {
+                  return " | 0x1u /*inlined*/";
+                } else {
+                  return "";
+                }
+              }}},
+            R"cc(
+              $split_mask$ $lazy_mask$ $inlined_mask$,
+            )cc");
   }
 
   int count = 0;
