@@ -189,8 +189,6 @@ bool CppGenerator::Generate(const FileDescriptor* file,
               .emplace(value.substr(pos, next_pos - pos));
         pos = next_pos + 1;
       } while (pos < value.size());
-    } else if (key == "unverified_lazy_message_sets") {
-      file_options.unverified_lazy_message_sets = true;
     } else if (key == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
     } else if (key == "experimental_tail_call_table_mode") {
