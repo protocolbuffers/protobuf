@@ -65,7 +65,7 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
                    "::", MakeDefaultFieldName(field));
 
   bool empty_default = field->default_value_string().empty();
-  bool is_bytes = field->type() == FieldDescriptor::TYPE_BYTES;
+  bool bytes = field->type() == FieldDescriptor::TYPE_BYTES;
 
   return {
       {"kDefault", DefaultValue(opts, field)},
@@ -82,35 +82,33 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
       Sub{"lazy_args", !empty_default ? absl::StrCat(lazy_var, ",") : ""}
           .WithSuffix(","),
 
-      {"byte", is_bytes ? "void" : "char"},
-      {"Set", is_bytes ? "SetBytes" : "Set"},
+      {"byte", bytes ? "void" : "char"},
+      {"Set", bytes ? "SetBytes" : "Set"},
   };
 }
 
 class SingularString : public FieldGeneratorBase {
  public:
-  SingularString(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
-        field_(field),
-        opts_(&opts),
-        is_oneof_(field->real_containing_oneof() != nullptr),
-        inlined_(IsStringInlined(field, opts)) {}
+  SingularString(const FieldDescriptor* field, const Options& opts,
+                 MessageSCCAnalyzer* scc)
+      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
   ~SingularString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
 
-  bool IsInlined() const override { return inlined_; }
+  bool IsInlined() const override { return is_inlined(); }
 
   ArenaDtorNeeds NeedsArenaDestructor() const override {
-    return inlined_ ? ArenaDtorNeeds::kOnDemand : ArenaDtorNeeds::kNone;
+    return is_inlined() ? ArenaDtorNeeds::kOnDemand : ArenaDtorNeeds::kNone;
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
     // Skips the automatic destruction if inlined; rather calls it explicitly if
     // allocating arena is null.
-    p->Emit({{"Str", inlined_ ? "InlinedStringField" : "ArenaStringPtr"}}, R"cc(
-      $pbi$::$Str$ $name$_;
-    )cc");
+    p->Emit({{"Str", is_inlined() ? "InlinedStringField" : "ArenaStringPtr"}},
+            R"cc(
+              $pbi$::$Str$ $name$_;
+            )cc");
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
@@ -120,7 +118,7 @@ class SingularString : public FieldGeneratorBase {
   }
 
   void GenerateArenaDestructorCode(io::Printer* p) const override {
-    if (!inlined_) return;
+    if (!is_inlined()) return;
 
     p->Emit(R"cc(
       if (!_this->_internal_$name$_donated()) {
@@ -172,8 +170,6 @@ class SingularString : public FieldGeneratorBase {
 
   const FieldDescriptor* field_;
   const Options* opts_;
-  bool is_oneof_;
-  bool inlined_;
 };
 
 void SingularString::GenerateStaticMembers(io::Printer* p) const {
@@ -182,7 +178,7 @@ void SingularString::GenerateStaticMembers(io::Printer* p) const {
       static const $pbi$::LazyString $default_variable_name$;
     )cc");
   }
-  if (inlined_) {
+  if (is_inlined()) {
     // `_init_inline_xxx` is used for initializing default instances.
     p->Emit(R"cc(
       static std::true_type _init_inline_$name$_;
@@ -231,7 +227,7 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
   p->Emit(
       {{"donated",
         [&] {
-          if (!inlined_) return;
+          if (!is_inlined()) return;
           p->Emit(R"cc(
             inline PROTOBUF_ALWAYS_INLINE bool _internal_$name$_donated() const;
           )cc");
@@ -288,7 +284,7 @@ void ArgsForSetter(io::Printer* p, bool inlined) {
 }
 
 void SingularString::ReleaseImpl(io::Printer* p) const {
-  if (is_oneof_) {
+  if (is_oneof()) {
     p->Emit(R"cc(
       if ($not_has_field$) {
         return nullptr;
@@ -306,7 +302,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
     return;
   }
 
-  if (inlined_) {
+  if (is_inlined()) {
     p->Emit(R"cc(
       if (($has_hasbit$) == 0) {
         return nullptr;
@@ -342,7 +338,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
 }
 
 void SingularString::SetAllocatedImpl(io::Printer* p) const {
-  if (is_oneof_) {
+  if (is_oneof()) {
     p->Emit(R"cc(
       if (has_$oneof_name$()) {
         clear_$oneof_name$();
@@ -365,7 +361,7 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
     )cc");
   }
 
-  if (inlined_) {
+  if (is_inlined()) {
     // Currently, string fields with default value can't be inlined.
     p->Emit(R"cc(
       $field_$.SetAllocated(nullptr, value, $set_args$);
@@ -393,18 +389,18 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       {
           {"if_IsDefault",
            [&] {
-             if (EmptyDefault() || is_oneof_) return;
+             if (EmptyDefault() || is_oneof()) return;
              p->Emit(R"cc(
                if ($field_$.IsDefault()) {
                  return $default_variable_field$.get();
                }
              )cc");
            }},
-          {"update_hasbit", [&] { UpdateHasbitSet(p, is_oneof_); }},
-          {"set_args", [&] { ArgsForSetter(p, inlined_); }},
+          {"update_hasbit", [&] { UpdateHasbitSet(p, is_oneof()); }},
+          {"set_args", [&] { ArgsForSetter(p, is_inlined()); }},
           {"check_hasbit",
            [&] {
-             if (!is_oneof_) return;
+             if (!is_oneof()) return;
              p->Emit(R"cc(
                if ($not_has_field$) {
                  return $kDefaultStr$;
@@ -473,7 +469,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         }
       )cc");
 
-  if (inlined_) {
+  if (is_inlined()) {
     p->Emit(R"cc(
       inline bool $Msg$::_internal_$name$_donated() const {
         return $inlined_string_donated$;
@@ -483,7 +479,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 }
 
 void SingularString::GenerateClearingCode(io::Printer* p) const {
-  if (is_oneof_) {
+  if (is_oneof()) {
     p->Emit(R"cc(
       $field_$.Destroy();
     )cc");
@@ -497,14 +493,14 @@ void SingularString::GenerateClearingCode(io::Printer* p) const {
     return;
   }
 
-  ABSL_DCHECK(!inlined_);
+  ABSL_DCHECK(!is_inlined());
   p->Emit(R"cc(
     $field_$.ClearToDefault($lazy_var$, GetArenaForAllocation());
   )cc");
 }
 
 void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
-  if (is_oneof_) {
+  if (is_oneof()) {
     p->Emit(R"cc(
       $field_$.Destroy();
     )cc");
@@ -520,7 +516,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   // will have checked that this field is set.  If so, we can avoid redundant
   // checks against the default variable.
 
-  if (inlined_ && HasHasbit(field_)) {
+  if (is_inlined() && HasHasbit(field_)) {
     // Calling mutable_$name$() gives us a string reference and sets the has bit
     // for $name$ (in proto2).  We may get here when the string field is inlined
     // but the string's contents have not been changed by the user, so we cannot
@@ -551,12 +547,12 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
 }
 
 void SingularString::GenerateSwappingCode(io::Printer* p) const {
-  if (is_oneof_) {
+  if (is_oneof()) {
     // Don't print any swapping code. Swapping the union will swap this field.
     return;
   }
 
-  if (!inlined_) {
+  if (!is_inlined()) {
     p->Emit(R"cc(
       ::_pbi::ArenaStringPtr::InternalSwap(&$field_$, lhs_arena,
                                            &other->$field_$, rhs_arena);
@@ -577,8 +573,8 @@ void SingularString::GenerateSwappingCode(io::Printer* p) const {
 }
 
 void SingularString::GenerateConstructorCode(io::Printer* p) const {
-  if ((inlined_ && EmptyDefault()) || is_oneof_) return;
-  ABSL_DCHECK(!inlined_);
+  if ((is_inlined() && EmptyDefault()) || is_oneof()) return;
+  ABSL_DCHECK(!is_inlined());
 
   p->Emit(R"cc(
     $field_$.InitDefault();
@@ -596,7 +592,7 @@ void SingularString::GenerateConstructorCode(io::Printer* p) const {
 void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
   GenerateConstructorCode(p);
 
-  if (inlined_) {
+  if (is_inlined()) {
     p->Emit(R"cc(
       new (&_this->$field_$)::_pbi::InlinedStringField;
     )cc");
@@ -613,7 +609,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
         }},
        {"set_args",
         [&] {
-          if (!inlined_) {
+          if (!is_inlined()) {
             p->Emit("_this->GetArenaForAllocation()");
           } else {
             p->Emit(
@@ -630,17 +626,17 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
 }
 
 void SingularString::GenerateDestructorCode(io::Printer* p) const {
-  if (inlined_) {
+  if (is_inlined()) {
     // Explicitly calls ~InlinedStringField as its automatic call is disabled.
     // Destructor has been implicitly skipped as a union.
-    ABSL_DCHECK(!ShouldSplit(field_, *opts_));
+    ABSL_DCHECK(!should_split());
     p->Emit(R"cc(
       $field_$.~InlinedStringField();
     )cc");
     return;
   }
 
-  if (ShouldSplit(field_, *opts_)) {
+  if (should_split()) {
     p->Emit(R"cc(
       $cached_split_ptr$->$name$_.Destroy();
     )cc");
@@ -669,7 +665,7 @@ void SingularString::GenerateSerializeWithCachedSizesToArray(
 
 void SingularString::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
-  if (inlined_) {
+  if (is_inlined()) {
     p->Emit(R"cc(
       /*decltype($field_$)*/ {nullptr, false},
     )cc");
@@ -684,12 +680,12 @@ void SingularString::GenerateConstexprAggregateInitializer(
 }
 
 void SingularString::GenerateAggregateInitializer(io::Printer* p) const {
-  if (ShouldSplit(field_, options_)) {
-    ABSL_CHECK(!inlined_);
+  if (should_split()) {
+    ABSL_CHECK(!is_inlined());
     p->Emit(R"cc(
       decltype(Impl_::Split::$name$_){},
     )cc");
-  } else if (!inlined_) {
+  } else if (!is_inlined()) {
     p->Emit(R"cc(
       decltype($field_$){},
     )cc");
@@ -702,8 +698,9 @@ void SingularString::GenerateAggregateInitializer(io::Printer* p) const {
 
 class RepeatedString : public FieldGeneratorBase {
  public:
-  RepeatedString(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts), field_(field), opts_(&opts) {}
+  RepeatedString(const FieldDescriptor* field, const Options& opts,
+                 MessageSCCAnalyzer* scc)
+      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
   ~RepeatedString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -991,13 +988,13 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
 std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularString>(desc, options);
+  return absl::make_unique<SingularString>(desc, options, scc);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedString>(desc, options);
+  return absl::make_unique<RepeatedString>(desc, options, scc);
 }
 
 }  // namespace cpp

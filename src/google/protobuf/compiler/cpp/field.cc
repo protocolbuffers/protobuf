@@ -117,6 +117,43 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   return vars;
 }
 
+FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
+                                       const Options& options,
+                                       MessageSCCAnalyzer* scc)
+    : descriptor_(descriptor), options_(options) {
+  should_split_ = ShouldSplit(descriptor, options);
+  is_oneof_ = descriptor->real_containing_oneof() != nullptr;
+  switch (descriptor->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_BOOL:
+      is_trivial_ = !(descriptor->is_repeated() || descriptor->is_map());
+      has_trivial_value_ = is_trivial_;
+      break;
+    case FieldDescriptor::CPPTYPE_STRING:
+      is_string_ = true;
+      string_type_ = descriptor->options().ctype();
+      is_inlined_ = IsStringInlined(descriptor, options);
+      is_bytes_ = descriptor->type() == FieldDescriptor::TYPE_BYTES;
+      break;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      is_message_ = true;
+      is_group_ = descriptor->type() == FieldDescriptor::TYPE_GROUP;
+      is_foreign_ = IsCrossFileMessage(descriptor);
+      is_lazy_ = IsLazy(descriptor, options, scc);
+      is_weak_ = IsImplicitWeakField(descriptor, options, scc);
+      if (!(descriptor->is_repeated() || descriptor->is_map())) {
+        has_trivial_value_ = !is_lazy_;
+      }
+      break;
+  }
+}
+
 void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
   if (ShouldSplit(descriptor_, options_)) {
     p->Emit(R"cc(
@@ -144,7 +181,7 @@ void FieldGeneratorBase::GenerateCopyAggregateInitializer(
 }
 
 void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
-  if (ShouldSplit(descriptor_, options_)) {
+  if (should_split()) {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
     Formatter format(p, variables_);
