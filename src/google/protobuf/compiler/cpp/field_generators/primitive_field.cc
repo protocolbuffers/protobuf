@@ -110,11 +110,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& options) {
 
 class SingularPrimitive final : public FieldGeneratorBase {
  public:
-  SingularPrimitive(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
-        field_(field),
-        opts_(&opts),
-        is_oneof_(field_->real_containing_oneof() != nullptr) {}
+  SingularPrimitive(const FieldDescriptor* field, const Options& opts,
+                    MessageSCCAnalyzer* scc)
+      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
   ~SingularPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -138,7 +136,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
-    if (is_oneof_) {
+    if (is_oneof()) {
       // Don't print any swapping code. Swapping the union will swap this field.
       return;
     }
@@ -150,7 +148,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateConstructorCode(io::Printer* p) const override {
-    if (!is_oneof_) {
+    if (!is_oneof()) {
       return;
     }
 
@@ -191,7 +189,6 @@ class SingularPrimitive final : public FieldGeneratorBase {
  private:
   const FieldDescriptor* field_;
   const Options* opts_;
-  bool is_oneof_;
 };
 
 void SingularPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
@@ -226,7 +223,7 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
     }
   )cc");
 
-  if (is_oneof_) {
+  if (is_oneof()) {
     p->Emit(R"cc(
       inline $Type$ $Msg$::_internal_$name$() const {
         if ($has_field$) {
@@ -309,8 +306,9 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
 
 class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
-  RepeatedPrimitive(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts), field_(field), opts_(&opts) {}
+  RepeatedPrimitive(const FieldDescriptor* field, const Options& opts,
+                    MessageSCCAnalyzer* scc)
+      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
   ~RepeatedPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -329,7 +327,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
         _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
       )cc");
     };
-    if (!ShouldSplit(descriptor_, options_)) {
+    if (!should_split()) {
       body();
     } else {
       p->Emit({{"body", body}}, R"cc(
@@ -341,14 +339,14 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
-    ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+    ABSL_CHECK(!should_split());
     p->Emit(R"cc(
       $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
-    if (ShouldSplit(descriptor_, options_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         $field_$.DeleteIfNotDefault();
       )cc");
@@ -362,7 +360,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateConstructorCode(io::Printer* p) const override {}
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (ShouldSplit(descriptor_, options_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         if (!from._internal_$name$().empty()) {
           _internal_mutable_$name$()->MergeFrom(from._internal_$name$());
@@ -379,7 +377,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
-    ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+    ABSL_CHECK(!should_split());
     p->Emit(R"cc(
       decltype($field_$){arena},
     )cc");
@@ -387,7 +385,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+    ABSL_CHECK(!should_split());
     p->Emit(R"cc(
       decltype($field_$){from.$field_$},
     )cc");
@@ -405,7 +403,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     bool is_packed_varint =
         field_->is_packed() && !FixedSize(field_->type()).has_value();
     return is_packed_varint && HasGeneratedMethods(field_->file(), *opts_) &&
-           !ShouldSplit(descriptor_, options_);
+           !should_split();
   }
 
   void GenerateCacheSizeInitializer(io::Printer* p) const {
@@ -422,7 +420,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 };
 
 void RepeatedPrimitive::GeneratePrivateMembers(io::Printer* p) const {
-  if (ShouldSplit(descriptor_, options_)) {
+  if (should_split()) {
     p->Emit(R"cc(
       $pbi$::RawPtr<$pb$::RepeatedField<$Type$>> $name$_;
     )cc");
@@ -494,7 +492,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
     }
 
   )cc");
-  if (ShouldSplit(descriptor_, options_)) {
+  if (should_split()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedField<$Type$>& $Msg$::_internal_$name$()
           const {
@@ -632,13 +630,13 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
 std::unique_ptr<FieldGeneratorBase> MakeSinguarPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularPrimitive>(desc, options);
+  return absl::make_unique<SingularPrimitive>(desc, options, scc);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedPrimitive>(desc, options);
+  return absl::make_unique<RepeatedPrimitive>(desc, options, scc);
 }
 
 }  // namespace cpp

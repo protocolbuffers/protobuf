@@ -99,19 +99,16 @@ class SingularMessage : public FieldGeneratorBase {
  public:
   SingularMessage(const FieldDescriptor* field, const Options& opts,
                   MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts),
+      : FieldGeneratorBase(field, opts, scc),
         field_(field),
         opts_(&opts),
-        weak_(IsImplicitWeakField(field, opts, scc)),
         has_required_(scc->HasRequiredFields(field->message_type())),
-        has_hasbit_(HasHasbit(field)),
-        is_oneof_(field_->real_containing_oneof() != nullptr),
-        is_foreign_(IsCrossFileMessage(field)) {}
+        has_hasbit_(HasHasbit(field)) {}
 
   ~SingularMessage() override = default;
 
   std::vector<Sub> MakeVars() const override {
-    return Vars(field_, *opts_, weak_);
+    return Vars(field_, *opts_, is_weak());
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
@@ -145,11 +142,8 @@ class SingularMessage : public FieldGeneratorBase {
 
   const FieldDescriptor* field_;
   const Options* opts_;
-  bool weak_;
   bool has_required_;
   bool has_hasbit_;
-  bool is_oneof_;
-  bool is_foreign_;
 };
 
 void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
@@ -310,7 +304,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 void SingularMessage::GenerateInternalAccessorDeclarations(
     io::Printer* p) const {
-  if (!weak_) {
+  if (!is_weak()) {
     p->Emit(R"cc(
       static const $Submsg$& $name$(const $Msg$* msg);
     )cc");
@@ -329,7 +323,7 @@ void SingularMessage::GenerateInternalAccessorDefinitions(
   // practice, the linker is then not able to throw them out making implicit
   // weak dependencies not work at all.
 
-  if (!weak_) {
+  if (!is_weak()) {
     // This inline accessor directly returns member field and is used in
     // Serialize such that AFDO profile correctly captures access information to
     // message fields under serialize.
@@ -355,7 +349,7 @@ void SingularMessage::GenerateInternalAccessorDefinitions(
            }},
           {"is_already_set",
            [&] {
-             if (!is_oneof_) {
+             if (!is_oneof()) {
                p->Emit("msg->$field_$ == nullptr");
              } else {
                p->Emit("msg->$not_has_field$");
@@ -363,7 +357,7 @@ void SingularMessage::GenerateInternalAccessorDefinitions(
            }},
           {"clear_oneof",
            [&] {
-             if (!is_oneof_) return;
+             if (!is_oneof()) return;
              p->Emit(R"cc(
                msg->clear_$oneof_name$();
                msg->set_has_$name$();
@@ -420,7 +414,7 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateMergingCode(io::Printer* p) const {
-  if (weak_) {
+  if (is_weak()) {
     p->Emit(
         "_Internal::mutable_$name$(_this)->CheckTypeAndMergeFrom(\n"
         "    _Internal::$name$(&from));\n");
@@ -444,7 +438,7 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
     // care when handling them.
     p->Emit("if (this != internal_default_instance()) ");
   }
-  if (ShouldSplit(field_, *opts_)) {
+  if (should_split()) {
     p->Emit("delete $cached_split_ptr$->$name$_;\n");
     return;
   }
@@ -469,7 +463,7 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 
 void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
-  if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
+  if (!is_group()) {
     p->Emit(
         "target = $pbi$::WireFormatLite::\n"
         "  InternalWrite$declared_type$($number$, _Internal::$name$(this),\n"
@@ -520,7 +514,7 @@ void SingularMessage::GenerateCopyAggregateInitializer(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateAggregateInitializer(io::Printer* p) const {
-  if (ShouldSplit(field_, *opts_)) {
+  if (should_split()) {
     p->Emit(R"cc(
       decltype(Impl_::Split::$name$_){nullptr},
     )cc");
@@ -638,7 +632,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "  clear_$oneof_name$();\n"
       "  if ($name$) {\n"
       "    set_has_$name$();\n");
-  if (weak_) {
+  if (is_weak()) {
     p->Emit(
         "    $field_$ = "
         "reinterpret_cast<$pb$::MessageLite*>($name$);\n");
@@ -656,7 +650,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n");
-  if (weak_) {
+  if (is_weak()) {
     p->Emit(
         "    $field_$ = "
         "reinterpret_cast<$pb$::MessageLite*>(CreateMaybeMessage< "
@@ -716,17 +710,15 @@ class RepeatedMessage : public FieldGeneratorBase {
  public:
   RepeatedMessage(const FieldDescriptor* field, const Options& opts,
                   MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts),
+      : FieldGeneratorBase(field, opts, scc),
         field_(field),
         opts_(&opts),
-        weak_(IsImplicitWeakField(field, opts, scc)),
-        split_(ShouldSplit(field, opts)),
         has_required_(scc->HasRequiredFields(field->message_type())) {}
 
   ~RepeatedMessage() override = default;
 
   std::vector<Sub> MakeVars() const override {
-    return Vars(field_, *opts_, weak_);
+    return Vars(field_, *opts_, is_weak());
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;
@@ -745,13 +737,11 @@ class RepeatedMessage : public FieldGeneratorBase {
  private:
   const FieldDescriptor* field_;
   const Options* opts_;
-  bool weak_;
-  bool split_;
   bool has_required_;
 };
 
 void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
-  if (split_) {
+  if (should_split()) {
     p->Emit(R"cc(
       $pbi$::RawPtr<$pb$::$Weak$RepeatedPtrField<$Submsg$>> $name$_;
     )cc");
@@ -772,7 +762,7 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
       "private:\n"
       "const $pb$::RepeatedPtrField<$Submsg$>& _internal_$name$() const;\n"
       "$pb$::RepeatedPtrField<$Submsg$>* _internal_mutable_$name$();\n");
-  if (weak_) {
+  if (is_weak()) {
     format(
         "const $pb$::WeakRepeatedPtrField<$Submsg$>& _internal_weak_$name$() "
         "const;\n"
@@ -839,7 +829,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       "  return _internal_$name$();\n"
       "}\n");
 
-  if (split_) {
+  if (should_split()) {
     p->Emit(R"cc(
       inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
       $Msg$::_internal$_weak$_$name$() const {
@@ -872,7 +862,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       }
     )cc");
   }
-  if (weak_) {
+  if (is_weak()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedPtrField<$Submsg$>& $Msg$::_internal_$name$()
           const {
@@ -898,7 +888,7 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
           from._internal$_weak$_$name$());
     )cc");
   };
-  if (!split_) {
+  if (!should_split()) {
     body();
   } else {
     p->Emit({{"body", body}}, R"cc(
@@ -910,7 +900,7 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
-  ABSL_CHECK(!split_);
+  ABSL_CHECK(!should_split());
   p->Emit(R"cc(
     $field_$.InternalSwap(&other->$field_$);
   )cc");
@@ -923,7 +913,7 @@ void RepeatedMessage::GenerateConstructorCode(io::Printer* p) const {
 void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   // TODO(b/291633281): For split repeated fields we might want to use type
   // erasure to reduce binary size costs.
-  if (split_) {
+  if (should_split()) {
     p->Emit(R"cc(
       if (!from._internal$_weak$_$name$().empty()) {
         _internal_mutable$_weak$_$name$()->MergeFrom(from._internal$_weak$_$name$());
@@ -933,7 +923,7 @@ void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
-  if (split_) {
+  if (should_split()) {
     p->Emit(R"cc(
       $field_$.DeleteIfNotDefault();
     )cc");
@@ -944,7 +934,7 @@ void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
 
 void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
-  if (weak_) {
+  if (is_weak()) {
     p->Emit(
         "for (auto it = this->$field_$.pointer_begin(),\n"
         "          end = this->$field_$.pointer_end(); it < end; ++it) {\n");
@@ -996,7 +986,7 @@ void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!has_required_) return;
 
-  if (weak_) {
+  if (is_weak()) {
     p->Emit(
         "if (!$pbi$::AllAreInitializedWeak($field_$.weak))\n"
         "  return false;\n");

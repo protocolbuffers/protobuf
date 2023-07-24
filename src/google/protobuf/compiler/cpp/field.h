@@ -62,13 +62,56 @@ namespace cpp {
 // matter of clean composability.
 class FieldGeneratorBase {
  public:
-  FieldGeneratorBase(const FieldDescriptor* descriptor, const Options& options)
-      : descriptor_(descriptor), options_(options) {}
+  FieldGeneratorBase(const FieldDescriptor* descriptor, const Options& options,
+                     MessageSCCAnalyzer* scc_analyzer);
 
   FieldGeneratorBase(const FieldGeneratorBase&) = delete;
   FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;
 
   virtual ~FieldGeneratorBase() = 0;
+
+  // Returns true if this field should be placed in the cold 'Split' section.
+  bool should_split() const { return should_split_; }
+
+  // Returns true if this field is trivial. (int, float, double, enum, bool)
+  bool is_trivial() const { return is_trivial_; }
+
+  // Returns true if the field value itself is trivial, i.e., the field is
+  // trivial, or a (raw) pointer value to a singular, non lazy message.
+  bool has_trivial_value() const { return has_trivial_value_; }
+
+  // Returns true if the field is a singular or repeated message.
+  // This includes group message types. To explicitly check if a message
+  // type is a group type, use the `is_group()` function,
+  bool is_message() const { return is_message_; }
+
+  // Returns true if the field is a group message field (TYPE_GROUP).
+  bool is_group() const { return is_group_; }
+
+  // Returns true if the field is a weak message
+  bool is_weak() const { return is_weak_; }
+
+  // Returns true if the field is a lazy message.
+  bool is_lazy() const { return is_lazy_; }
+
+  // Returns true if the field is a foreign message field.
+  bool is_foreign() const { return is_foreign_; }
+
+  // Returns true if the field is a string field.
+  bool is_string() const { return is_string_; }
+
+  // Returns true if the field API uses bytes (void) instead of chars.
+  bool is_bytes() const { return is_bytes_; }
+
+  // Returns the public API string type for string fields.
+  FieldOptions::CType string_type() const { return string_type_; }
+
+  // Returns true if this field is part of a oneof field.
+  bool is_oneof() const { return is_oneof_; }
+
+  // Returns true if the field should be inlined instead of dynamically
+  // allocated. Applies to string and message value.
+  bool is_inlined() const { return is_inlined_; }
 
   virtual std::vector<io::Printer::Sub> MakeVars() const { return {}; }
 
@@ -131,6 +174,21 @@ class FieldGeneratorBase {
   const FieldDescriptor* descriptor_;
   const Options& options_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
+
+ private:
+  bool should_split_ = false;
+  bool is_trivial_ = false;
+  bool has_trivial_value_ = false;
+  bool is_message_ = false;
+  bool is_group_ = false;
+  bool is_string_ = false;
+  bool is_bytes_ = false;
+  bool is_inlined_ = false;
+  bool is_foreign_ = false;
+  bool is_lazy_ = false;
+  bool is_weak_ = false;
+  bool is_oneof_ = false;
+  FieldOptions::CType string_type_ = FieldOptions::STRING;
 };
 
 inline FieldGeneratorBase::~FieldGeneratorBase() = default;

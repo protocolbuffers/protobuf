@@ -75,11 +75,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 
 class SingularEnum : public FieldGeneratorBase {
  public:
-  SingularEnum(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
-        field_(field),
-        opts_(&opts),
-        is_oneof_(field->real_containing_oneof() != nullptr) {}
+  SingularEnum(const FieldDescriptor* field, const Options& opts,
+               MessageSCCAnalyzer* scc)
+      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
   ~SingularEnum() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -103,7 +101,7 @@ class SingularEnum : public FieldGeneratorBase {
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
-    if (is_oneof_) return;
+    if (is_oneof()) return;
 
     p->Emit(R"cc(
       swap($field_$, other->$field_$);
@@ -111,7 +109,7 @@ class SingularEnum : public FieldGeneratorBase {
   }
 
   void GenerateConstructorCode(io::Printer* p) const override {
-    if (!is_oneof_) return;
+    if (!is_oneof()) return;
     p->Emit(R"cc(
       $ns$::_$Msg$_default_instance_.$field_$ = $kDefault$;
     )cc");
@@ -145,7 +143,7 @@ class SingularEnum : public FieldGeneratorBase {
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
-    if (ShouldSplit(descriptor_, options_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         decltype(Impl_::Split::$name$_){$kDefault$},
       )cc");
@@ -168,7 +166,6 @@ class SingularEnum : public FieldGeneratorBase {
  private:
   const FieldDescriptor* field_;
   const Options* opts_;
-  bool is_oneof_;
 };
 
 void SingularEnum::GenerateAccessorDeclarations(io::Printer* p) const {
@@ -202,7 +199,7 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
 
-  if (is_oneof_) {
+  if (is_oneof()) {
     p->Emit(R"cc(
       inline $Enum$ $Msg$::_internal_$name$() const {
         if ($has_field$) {
@@ -237,19 +234,20 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 class RepeatedEnum : public FieldGeneratorBase {
  public:
-  RepeatedEnum(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  RepeatedEnum(const FieldDescriptor* field, const Options& opts,
+               MessageSCCAnalyzer* scc)
+      : FieldGeneratorBase(field, opts, scc),
         field_(field),
         opts_(&opts),
         has_cached_size_(field_->is_packed() &&
                          HasGeneratedMethods(field_->file(), opts) &&
-                         !ShouldSplit(descriptor_, options_)) {}
+                         !should_split()) {}
   ~RepeatedEnum() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
-    if (ShouldSplit(descriptor_, options_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         $pbi$::RawPtr<$pb$::RepeatedField<int>> $name$_;
       )cc");
@@ -280,7 +278,7 @@ class RepeatedEnum : public FieldGeneratorBase {
         _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
       )cc");
     };
-    if (!ShouldSplit(descriptor_, options_)) {
+    if (!should_split()) {
       body();
     } else {
       p->Emit({{"body", body}}, R"cc(
@@ -292,14 +290,14 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
-    ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+    ABSL_CHECK(!should_split());
     p->Emit(R"cc(
       $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
-    if (ShouldSplit(descriptor_, options_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         $field_$.DeleteIfNotDefault();
       )cc");
@@ -347,7 +345,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (ShouldSplit(descriptor_, options_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         if (!from._internal_$name$().empty()) {
           _internal_mutable_$name$()->MergeFrom(from._internal_$name$());
@@ -425,7 +423,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_mutable_$name$();
     }
   )cc");
-  if (ShouldSplit(descriptor_, options_)) {
+  if (should_split()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name$() const {
         $TsanDetectConcurrentRead$;
@@ -544,13 +542,13 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
 std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularEnum>(desc, options);
+  return absl::make_unique<SingularEnum>(desc, options, scc);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedEnum>(desc, options);
+  return absl::make_unique<RepeatedEnum>(desc, options, scc);
 }
 
 }  // namespace cpp
