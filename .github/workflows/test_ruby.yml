@@ -44,6 +44,13 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: logs-and-cores
+          path: |
+            logs/
+            **/*.core
+            **/core.*
 
   linux-aarch64:
     name: Linux aarch64
@@ -114,6 +121,13 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_macos/${{ matrix.version }}
           bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }} --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: logs-and-cores
+          path: |
+            logs/
+            **/*.core
+            **/core.*
 
   test_ruby_gems:
     strategy:
@@ -154,3 +168,10 @@ jobs:
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto;
             ${{ matrix.ffi == 'FFI' && 'PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ruby ruby/tests/basic.rb;
             ${{ matrix.ffi == 'FFI' && 'PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ruby ruby/tests/implementation.rb
+      - uses: actions/upload-artifact@v3
+        with:
+          name: logs-and-cores
+          path: |
+            logs/
+            **/*.core
+            **/core.*
