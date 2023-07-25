@@ -314,9 +314,11 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
 
   void GenerateClearingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      _internal_mutable_$name$()->Clear();
-    )cc");
+    if (should_split()) {
+      p->Emit("$field_$.ClearIfNotDefault();\n");
+    } else {
+      p->Emit("$field_$.Clear();\n");
+    }
   }
 
   void GenerateMergingCode(io::Printer* p) const override {

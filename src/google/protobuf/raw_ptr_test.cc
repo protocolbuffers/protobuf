@@ -96,6 +96,28 @@ TEST(RawPtr, DeleteIfNotDefault) {
   raw.DeleteIfNotDefault();
 }
 
+TEST(RawPtr, ClearIfNotDefault) {
+  struct ObjectWithClear {
+    int called = 0;
+    void Clear() { ++called; }
+  };
+  RawPtr<ObjectWithClear> raw;
+  EXPECT_TRUE(raw.IsDefault());
+
+  // Shouldn't trigger / crash
+  raw.ClearIfNotDefault();
+  EXPECT_EQ(raw.Get()->called, 0);
+
+  raw.Set(new ObjectWithClear());
+  EXPECT_FALSE(raw.IsDefault());
+
+  // Should invoke Clear
+  raw.ClearIfNotDefault();
+  EXPECT_EQ(raw.Get()->called, 1);
+
+  raw.DeleteIfNotDefault();
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

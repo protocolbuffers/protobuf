@@ -1053,6 +1053,7 @@ inline bool Version::has_major() const {
   return value;
 }
 inline void Version::clear_major() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.major_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -1080,6 +1081,7 @@ inline bool Version::has_minor() const {
   return value;
 }
 inline void Version::clear_minor() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.minor_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -1107,6 +1109,7 @@ inline bool Version::has_patch() const {
   return value;
 }
 inline void Version::clear_patch() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.patch_ = 0;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
@@ -1134,6 +1137,7 @@ inline bool Version::has_suffix() const {
   return value;
 }
 inline void Version::clear_suffix() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.suffix_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -1209,7 +1213,8 @@ inline int CodeGeneratorRequest::file_to_generate_size() const {
   return _internal_file_to_generate_size();
 }
 inline void CodeGeneratorRequest::clear_file_to_generate() {
-  _internal_mutable_file_to_generate()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.file_to_generate_.Clear();
 }
 inline std::string* CodeGeneratorRequest::add_file_to_generate() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -1303,6 +1308,7 @@ inline bool CodeGeneratorRequest::has_parameter() const {
   return value;
 }
 inline void CodeGeneratorRequest::clear_parameter() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.parameter_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -1459,6 +1465,7 @@ inline bool CodeGeneratorRequest::has_compiler_version() const {
   return value;
 }
 inline void CodeGeneratorRequest::clear_compiler_version() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.compiler_version_ != nullptr) _impl_.compiler_version_->Clear();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -1558,6 +1565,7 @@ inline bool CodeGeneratorResponse_File::has_name() const {
   return value;
 }
 inline void CodeGeneratorResponse_File::clear_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -1627,6 +1635,7 @@ inline bool CodeGeneratorResponse_File::has_insertion_point() const {
   return value;
 }
 inline void CodeGeneratorResponse_File::clear_insertion_point() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.insertion_point_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -1696,6 +1705,7 @@ inline bool CodeGeneratorResponse_File::has_content() const {
   return value;
 }
 inline void CodeGeneratorResponse_File::clear_content() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.content_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -1861,6 +1871,7 @@ inline bool CodeGeneratorResponse::has_error() const {
   return value;
 }
 inline void CodeGeneratorResponse::clear_error() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.error_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -1930,6 +1941,7 @@ inline bool CodeGeneratorResponse::has_supported_features() const {
   return value;
 }
 inline void CodeGeneratorResponse::clear_supported_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.supported_features_ = ::uint64_t{0u};
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -1959,7 +1971,8 @@ inline int CodeGeneratorResponse::file_size() const {
   return _internal_file_size();
 }
 inline void CodeGeneratorResponse::clear_file() {
-  _internal_mutable_file()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.file_.Clear();
 }
 inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::mutable_file(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.file)

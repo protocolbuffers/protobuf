@@ -875,7 +875,11 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
-  p->Emit("_internal_mutable$_weak$_$name$()->Clear();\n");
+  if (should_split()) {
+    p->Emit("$field_$.ClearIfNotDefault();\n");
+  } else {
+    p->Emit("$field_$.Clear();\n");
+  }
 }
 
 void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
