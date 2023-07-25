@@ -27,6 +27,8 @@
 
 #include <string.h>
 
+#include <vector>
+
 #include "google/ads/googleads/v13/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_set.h"
@@ -68,7 +70,7 @@ BENCHMARK(BM_ArenaOneAlloc);
 
 static void BM_ArenaInitialBlockOneAlloc(benchmark::State& state) {
   for (auto _ : state) {
-    upb_Arena* arena = upb_Arena_Init(buf, sizeof(buf), NULL);
+    upb_Arena* arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
     upb_Arena_Malloc(arena, 1);
     upb_Arena_Free(arena);
   }
@@ -151,7 +153,7 @@ bool LoadDefInit_BuildLayout(upb_DefPool* s, const _upb_DefPool_Init* init,
   }
 
   file = google_protobuf_FileDescriptorProto_parse_ex(
-      init->descriptor.data, init->descriptor.size, NULL,
+      init->descriptor.data, init->descriptor.size, nullptr,
       kUpb_DecodeOption_AliasString, arena);
   *bytes += init->descriptor.size;
 
@@ -262,13 +264,13 @@ static void BM_Parse_Upb_FileDesc(benchmark::State& state) {
   for (auto _ : state) {
     upb_Arena* arena;
     if (AMode == InitBlock) {
-      arena = upb_Arena_Init(buf, sizeof(buf), NULL);
+      arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
     } else {
       arena = upb_Arena_New();
     }
     upb_benchmark_FileDescriptorProto* set =
         upb_benchmark_FileDescriptorProto_parse_ex(
-            descriptor.data, descriptor.size, NULL,
+            descriptor.data, descriptor.size, nullptr,
             Copy == Alias ? kUpb_DecodeOption_AliasString : 0, arena);
     if (!set) {
       printf("Failed to parse.\n");
@@ -289,26 +291,26 @@ struct Proto2Factory;
 template <class P>
 struct Proto2Factory<NoArena, P> {
  public:
-  P* GetProto() { return &proto_; }
+  P* GetProto() { return &proto; }
 
  private:
-  P proto_;
+  P proto;
 };
 
 template <class P>
 struct Proto2Factory<UseArena, P> {
  public:
-  P* GetProto() { return protobuf::Arena::CreateMessage<P>(&arena_); }
+  P* GetProto() { return protobuf::Arena::CreateMessage<P>(&arena); }
 
  private:
-  protobuf::Arena arena_;
+  protobuf::Arena arena;
 };
 
 template <class P>
 struct Proto2Factory<InitBlock, P> {
  public:
-  Proto2Factory() : arena_(GetOptions()) {}
-  P* GetProto() { return protobuf::Arena::CreateMessage<P>(&arena_); }
+  Proto2Factory() : arena(GetOptions()) {}
+  P* GetProto() { return protobuf::Arena::CreateMessage<P>(&arena); }
 
  private:
   protobuf::ArenaOptions GetOptions() {
@@ -318,7 +320,7 @@ struct Proto2Factory<InitBlock, P> {
     return opts;
   }
 
-  protobuf::Arena arena_;
+  protobuf::Arena arena;
 };
 
 using FileDesc = ::upb_benchmark::FileDescriptorProto;
@@ -368,7 +370,7 @@ static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
     exit(1);
   }
   for (auto _ : state) {
-    upb_Arena* enc_arena = upb_Arena_Init(buf, sizeof(buf), NULL);
+    upb_Arena* enc_arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
     size_t size;
     char* data =
         upb_benchmark_FileDescriptorProto_serialize(set, enc_arena, &size);
