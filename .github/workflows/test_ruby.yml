@@ -15,7 +15,7 @@ jobs:
   linux:
     strategy:
       fail-fast: false
-      version: Ruby X
+      name: 'Ruby X'
       bazel: 5.1.1
       ffi: FFI
       ruby: ["ruby-2.7.0","ruby-3.0.2","ruby-3.1.0","jruby-9.4.3.0"]
