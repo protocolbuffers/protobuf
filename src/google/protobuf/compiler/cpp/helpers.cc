@@ -322,6 +322,11 @@ const char kThinSeparator[] =
 bool CanInitializeByZeroing(const FieldDescriptor* field,
                             const Options& options,
                             MessageSCCAnalyzer* scc_analyzer) {
+  static_assert(
+      std::numeric_limits<float>::is_iec559 &&
+          std::numeric_limits<double>::is_iec559,
+      "proto / abseil requires iec559, which has zero initialized floats.");
+
   if (field->is_repeated() || field->is_extension()) return false;
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:

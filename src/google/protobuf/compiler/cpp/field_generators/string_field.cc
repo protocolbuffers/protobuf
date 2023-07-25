@@ -150,6 +150,45 @@ class SingularString : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMemberConstexprConstructor(io::Printer* p) const override {
+    if (is_inlined()) {
+      p->Emit("$name$_(nullptr, false)");
+    } else {
+      p->Emit(
+          "$name$_(\n"
+          "    &$pbi$::fixed_address_empty_string,\n"
+          "    ::_pbi::ConstantInitialized())");
+    }
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const override {
+    if (is_inlined()) {
+      p->Emit("$name$_{}");
+    } else if (EmptyDefault()) {
+      p->Emit("$name$_(arena)");
+    } else {
+      p->Emit("$name$_(arena, $default_variable_field$)");
+    }
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const override {
+    if (is_inlined() || EmptyDefault()) {
+      p->Emit("$name$_(arena, from.$name$_)");
+    } else {
+      p->Emit("$name$_(arena, from.$name$_, $default_variable_name$)");
+    }
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const override {
+    if (is_inlined() || EmptyDefault()) {
+      p->Emit("new (&$field$) decltype($field$){arena, from.$field$};\n");
+    } else {
+      p->Emit(
+          "new (&$field$) decltype($field$){arena, from.$field$,"
+          " $default_variable_field$};\n");
+    }
+  }
+
   void GenerateStaticMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
@@ -627,12 +666,14 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
 
 void SingularString::GenerateDestructorCode(io::Printer* p) const {
   if (is_inlined()) {
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
     // Explicitly calls ~InlinedStringField as its automatic call is disabled.
     // Destructor has been implicitly skipped as a union.
     ABSL_DCHECK(!should_split());
     p->Emit(R"cc(
       $field_$.~InlinedStringField();
     )cc");
+#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
     return;
   }
 
@@ -757,9 +798,11 @@ class RepeatedString : public FieldGeneratorBase {
         $field_$.DeleteIfNotDefault();
       )cc");
     } else {
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
       p->Emit(R"cc(
         _internal_mutable_$name$()->~RepeatedPtrField();
       )cc");
+#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
     }
   }
 
