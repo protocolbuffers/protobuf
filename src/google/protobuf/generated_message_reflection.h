@@ -30,7 +30,7 @@
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
+//  Sanjay Ghemawat, Jeff Dean, and others.G
 //
 // This header is logically internal, but is made public because it is used
 // from protocol-compiler-generated code, which may reside in other components.
