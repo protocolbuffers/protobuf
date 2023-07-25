@@ -173,5 +173,5 @@ jobs:
           name: logs-and-cores
           path: |
             logs/
-            **/*.core
-            **/core.*
+            *.core
+            core.*
