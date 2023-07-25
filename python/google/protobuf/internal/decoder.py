@@ -182,6 +182,10 @@ def ReadTag(buffer, pos):
 # --------------------------------------------------------------------
 
 
+def _ClearIfDefault(key):
+  return not key.has_presence
+
+
 def _SimpleDecoder(wire_type, decode_value):
   """Return a constructor for a decoder for fields of a particular type.
 
@@ -191,8 +195,7 @@ def _SimpleDecoder(wire_type, decode_value):
         _DecodeVarint()
   """
 
-  def SpecificDecoder(field_number, is_repeated, is_packed, key, new_default,
-                      clear_if_default=False):
+  def SpecificDecoder(field_number, is_repeated, is_packed, key, new_default):
     if is_packed:
       local_DecodeVarint = _DecodeVarint
       def DecodePackedField(buffer, pos, end, message, field_dict):
@@ -235,7 +238,7 @@ def _SimpleDecoder(wire_type, decode_value):
         (new_value, pos) = decode_value(buffer, pos)
         if pos > end:
           raise _DecodeError('Truncated message.')
-        if clear_if_default and not new_value:
+        if not new_value and _ClearIfDefault(key):
           field_dict.pop(key, None)
         else:
           field_dict[key] = new_value
@@ -369,8 +372,7 @@ def _DoubleDecoder():
   return _SimpleDecoder(wire_format.WIRETYPE_FIXED64, InnerDecode)
 
 
-def EnumDecoder(field_number, is_repeated, is_packed, key, new_default,
-                clear_if_default=False):
+def EnumDecoder(field_number, is_repeated, is_packed, key, new_default):
   """Returns a decoder for enum field."""
   enum_type = key.enum_type
   if is_packed:
@@ -486,7 +488,7 @@ def EnumDecoder(field_number, is_repeated, is_packed, key, new_default,
       (enum_value, pos) = _DecodeSignedVarint32(buffer, pos)
       if pos > end:
         raise _DecodeError('Truncated message.')
-      if clear_if_default and not enum_value:
+      if _ClearIfDefault(key) and not enum_value:
         field_dict.pop(key, None)
         return pos
       # pylint: disable=protected-access
@@ -540,8 +542,7 @@ BoolDecoder = _ModifiedDecoder(
     wire_format.WIRETYPE_VARINT, _DecodeVarint, bool)
 
 
-def StringDecoder(field_number, is_repeated, is_packed, key, new_default,
-                  clear_if_default=False):
+def StringDecoder(field_number, is_repeated, is_packed, key, new_default):
   """Returns a decoder for a string field."""
 
   local_DecodeVarint = _DecodeVarint
@@ -585,7 +586,7 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default,
       new_pos = pos + size
       if new_pos > end:
         raise _DecodeError('Truncated string.')
-      if clear_if_default and not size:
+      if _ClearIfDefault(key) and not size:
         field_dict.pop(key, None)
       else:
         field_dict[key] = _ConvertToUnicode(buffer[pos:new_pos])
@@ -593,8 +594,7 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default,
     return DecodeField
 
 
-def BytesDecoder(field_number, is_repeated, is_packed, key, new_default,
-                 clear_if_default=False):
+def BytesDecoder(field_number, is_repeated, is_packed, key, new_default):
   """Returns a decoder for a bytes field."""
 
   local_DecodeVarint = _DecodeVarint
@@ -626,7 +626,7 @@ def BytesDecoder(field_number, is_repeated, is_packed, key, new_default,
       new_pos = pos + size
       if new_pos > end:
         raise _DecodeError('Truncated string.')
-      if clear_if_default and not size:
+      if _ClearIfDefault(key) and not size:
         field_dict.pop(key, None)
       else:
         field_dict[key] = buffer[pos:new_pos].tobytes()

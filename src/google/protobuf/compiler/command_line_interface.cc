@@ -1185,6 +1185,16 @@ FieldOptions::OptionTargetType GetTargetType(const ServiceDescriptor*) {
 FieldOptions::OptionTargetType GetTargetType(const MethodDescriptor*) {
   return FieldOptions::TARGET_TYPE_METHOD;
 }
+
+template <typename DescriptorT>
+std::string GetDescriptorFullName(const DescriptorT& descriptor) {
+  return descriptor.full_name();
+}
+template <>
+std::string GetDescriptorFullName(const FileDescriptor& descriptor) {
+  return descriptor.name();
+}
+
 }  // namespace
 
 int CommandLineInterface::Run(int argc, const char* const argv[]) {
@@ -1302,23 +1312,37 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
                               DescriptorPool::ErrorCollector::NUMBER, error);
           }
         });
-  }
 
-  // We visit one file at a time because we need to provide the file name for
-  // error messages. Usually we can get the file name from any descriptor with
-  // something like descriptor->file()->name(), but ExtensionRange does not
-  // support this.
-  for (const google::protobuf::FileDescriptor* file : parsed_files) {
-    FileDescriptorProto proto;
-    file->CopyTo(&proto);
-    google::protobuf::internal::VisitDescriptors(
-        *file, proto, [&](const auto& descriptor, const auto& proto) {
-          if (!ValidateTargetConstraints(proto.options(), *descriptor_pool,
-                                         *error_collector, file->name(),
-                                         GetTargetType(&descriptor))) {
+    if (!proto_path_.empty()) {
+      DescriptorPool::generated_pool();
+      FileDescriptorProto proto;
+      file->CopyTo(&proto);
+      google::protobuf::internal::VisitDescriptors(
+          *file, proto, [&](const auto& descriptor, const auto& proto) {
+            if (!ValidateTargetConstraints(proto.options(), *descriptor_pool,
+                                           *error_collector, file->name(),
+                                           GetTargetType(&descriptor))) {
+              validation_error = true;
+            }
+          });
+      if (FileDescriptorLegacy(file).syntax() !=
+          FileDescriptorLegacy::SYNTAX_EDITIONS) {
+        google::protobuf::internal::VisitDescriptors(*file, [&](const auto& desc) {
+          if (&google::protobuf::internal::InternalFeatureHelper::GetRawFeatures(desc) !=
+              &FeatureSet::default_instance()) {
             validation_error = true;
+            error_collector->RecordError(
+                file->name(), desc.name(), nullptr,
+                DescriptorPool::ErrorCollector::EDITIONS,
+                absl::StrCat("Features cannot be set on ",
+                             GetDescriptorFullName(desc), " in a ",
+                             FileDescriptorLegacy::SyntaxName(
+                                 FileDescriptorLegacy(file).syntax()),
+                             " file."));
           }
         });
+      }
+    }
   }
 
 

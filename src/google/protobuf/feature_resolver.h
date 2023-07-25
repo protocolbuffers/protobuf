@@ -72,6 +72,9 @@ class PROTOBUF_EXPORT FeatureResolver {
   absl::StatusOr<FeatureSet> MergeFeatures(
       const FeatureSet& merged_parent, const FeatureSet& unmerged_child) const;
 
+  // Returns the default feature set for this edition.
+  FeatureSet Defaults() const;
+
  private:
   FeatureResolver(absl::string_view edition, const Descriptor& descriptor,
                   std::unique_ptr<DynamicMessageFactory> message_factory,

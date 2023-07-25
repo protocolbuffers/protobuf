@@ -121,7 +121,7 @@ bool FileGenerator::ShouldSkipDependencyImports(
   // Skip feature imports, which are a visible (but non-functional) deviation
   // between editions and legacy syntax.
   if (options_.strip_nonfunctional_codegen &&
-      dep->name() == "third_party/protobuf/cpp_features.proto") {
+      IsEditionsNonFunctionalDependency(*dep)) {
     return true;
   }
 

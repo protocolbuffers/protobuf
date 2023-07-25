@@ -592,7 +592,15 @@ static PyObject* AddServiceDescriptor(PyObject* self, PyObject* descriptor) {
 }
 
 // The code below loads new Descriptors from a serialized FileDescriptorProto.
-static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
+static PyObject* AddSerializedFile(PyObject* pself, PyObject* args) {
+  PyObject* serialized_pb = nullptr;
+  PyObject* original_pb = nullptr;
+  if (!PyArg_ParseTuple(args, "O|O", &serialized_pb, &original_pb)) {
+    return nullptr;
+  }
+  if (original_pb != nullptr) {
+    serialized_pb = original_pb;
+  }
   PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
   char* message_type;
   Py_ssize_t message_len;
@@ -655,13 +663,15 @@ static PyObject* Add(PyObject* self, PyObject* file_descriptor_proto) {
   if (serialized_pb == nullptr) {
     return nullptr;
   }
-  return AddSerializedFile(self, serialized_pb.get());
+  ScopedPyObjectPtr args(PyTuple_New(1));
+  PyTuple_SET_ITEM(args.get(), 0, serialized_pb.release());
+  return AddSerializedFile(self, args.get());
 }
 
 static PyMethodDef Methods[] = {
     {"Add", Add, METH_O,
      "Adds the FileDescriptorProto and its types to this pool."},
-    {"AddSerializedFile", AddSerializedFile, METH_O,
+    {"AddSerializedFile", AddSerializedFile, METH_VARARGS,
      "Adds a serialized FileDescriptorProto to this pool."},
 
     {"AddFileDescriptor", AddFileDescriptor, METH_O,

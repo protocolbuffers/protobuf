@@ -134,6 +134,10 @@ std::string StripProto(absl::string_view filename) {
   }
 }
 
+bool IsEditionsNonFunctionalDependency(const FileDescriptor& dep) {
+  return dep.name() == "third_party/protobuf/cpp_features.proto";
+}
+
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

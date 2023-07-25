@@ -2761,6 +2761,19 @@ FileDescriptorProto InternalFeatureHelper::GetGeneratorProto(
       });
   return file_proto;
 }
+absl::StatusOr<FeatureSet> InternalFeatureHelper::GetEditionDefaultFeatures(
+    absl::string_view edition) {
+  if (edition == "proto2") {
+    return GetProto2Features();
+  } else if (edition == "proto3") {
+    return GetProto3Features();
+  } else {
+    auto resolver = FeatureResolver::Create(edition, FeatureSet::descriptor());
+    if (!resolver.ok()) return resolver.status();
+    return resolver->Defaults();
+  }
+}
+
 }  // namespace internal
 
 void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {

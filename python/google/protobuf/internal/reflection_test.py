@@ -1480,24 +1480,43 @@ class Proto2ReflectionTest(unittest.TestCase):
     if api_implementation.Type() != 'python':
       return
 
+    file_descriptor = descriptor.FileDescriptor(
+        'foo.proto', 'package', syntax='proto2'
+    )
     FieldDescriptor = descriptor.FieldDescriptor
     foo_field_descriptor = FieldDescriptor(
-        name='foo_field', full_name='MyProto.foo_field',
-        index=0, number=1, type=FieldDescriptor.TYPE_INT64,
+        name='foo_field',
+        full_name='MyProto.foo_field',
+        index=0,
+        number=1,
+        type=FieldDescriptor.TYPE_INT64,
         cpp_type=FieldDescriptor.CPPTYPE_INT64,
-        label=FieldDescriptor.LABEL_OPTIONAL, default_value=0,
-        containing_type=None, message_type=None, enum_type=None,
-        is_extension=False, extension_scope=None,
+        label=FieldDescriptor.LABEL_OPTIONAL,
+        default_value=0,
+        file=file_descriptor,
+        containing_type=None,
+        message_type=None,
+        enum_type=None,
+        is_extension=False,
+        extension_scope=None,
         options=descriptor_pb2.FieldOptions(),
         # pylint: disable=protected-access
-        create_key=descriptor._internal_create_key)
+        create_key=descriptor._internal_create_key,
+    )
     mydescriptor = descriptor.Descriptor(
-        name='MyProto', full_name='MyProto', filename='ignored',
-        containing_type=None, nested_types=[], enum_types=[],
-        fields=[foo_field_descriptor], extensions=[],
+        name='MyProto',
+        full_name='MyProto',
+        filename='ignored',
+        file=file_descriptor,
+        containing_type=None,
+        nested_types=[],
+        enum_types=[],
+        fields=[foo_field_descriptor],
+        extensions=[],
         options=descriptor_pb2.MessageOptions(),
         # pylint: disable=protected-access
-        create_key=descriptor._internal_create_key)
+        create_key=descriptor._internal_create_key,
+    )
 
     class MyProtoClass(
         message.Message, metaclass=reflection.GeneratedProtocolMessageType):

@@ -286,6 +286,9 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
   // `features` fields) and unresolved features (in the `raw_features` fields)
   // for every descriptor.
   static FileDescriptorProto GetGeneratorProto(const FileDescriptor& file);
+
+  static absl::StatusOr<FeatureSet> GetEditionDefaultFeatures(
+      absl::string_view edition);
 };
 
 }  // namespace internal

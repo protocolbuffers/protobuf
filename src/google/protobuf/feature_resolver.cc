@@ -273,14 +273,19 @@ absl::Status FeatureResolver::RegisterExtensions(const Descriptor& message) {
 
 absl::StatusOr<FeatureSet> FeatureResolver::MergeFeatures(
     const FeatureSet& merged_parent, const FeatureSet& unmerged_child) const {
-  FeatureSet merged;
-  ABSL_CHECK(merged.ParseFromString(defaults_->SerializeAsString()));
+  FeatureSet merged = Defaults();
   merged.MergeFrom(merged_parent);
   merged.MergeFrom(unmerged_child);
 
   RETURN_IF_ERROR(ValidateMergedFeatures(merged));
 
   return merged;
+}
+
+FeatureSet FeatureResolver::Defaults() const {
+  FeatureSet defaults;
+  ABSL_CHECK(defaults.ParseFromString(defaults_->SerializeAsString()));
+  return defaults;
 }
 
 }  // namespace protobuf

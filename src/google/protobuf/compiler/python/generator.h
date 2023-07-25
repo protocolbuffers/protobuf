@@ -72,6 +72,7 @@ struct GeneratorOptions {
   bool generate_pyi = false;
   bool annotate_pyi = false;
   bool bootstrap = false;
+  bool strip_nonfunctional_codegen = false;
 };
 
 class PROTOC_EXPORT Generator : public CodeGenerator {
@@ -98,20 +99,25 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   void PrintImports() const;
   void PrintFileDescriptor() const;
   void PrintAllNestedEnumsInFile() const;
-  void PrintNestedEnums(const Descriptor& descriptor) const;
-  void PrintEnum(const EnumDescriptor& enum_descriptor) const;
+  void PrintNestedEnums(const Descriptor& descriptor,
+                        const DescriptorProto& proto) const;
+  void PrintEnum(const EnumDescriptor& enum_descriptor,
+                 const EnumDescriptorProto& proto) const;
 
   void PrintFieldDescriptor(const FieldDescriptor& field,
-                            bool is_extension) const;
+                            const FieldDescriptorProto& proto) const;
   void PrintFieldDescriptorsInDescriptor(
-      const Descriptor& message_descriptor, bool is_extension,
-      absl::string_view list_variable_name, int (Descriptor::*CountFn)() const,
-      const FieldDescriptor* (Descriptor::*GetterFn)(int) const) const;
-  void PrintFieldsInDescriptor(const Descriptor& message_descriptor) const;
-  void PrintExtensionsInDescriptor(const Descriptor& message_descriptor) const;
+      const Descriptor& message_descriptor, const DescriptorProto& proto,
+      bool is_extension, absl::string_view list_variable_name) const;
+  void PrintFieldsInDescriptor(const Descriptor& message_descriptor,
+                               const DescriptorProto& proto) const;
+  void PrintExtensionsInDescriptor(const Descriptor& message_descriptor,
+                                   const DescriptorProto& proto) const;
   void PrintMessageDescriptors() const;
-  void PrintDescriptor(const Descriptor& message_descriptor) const;
-  void PrintNestedDescriptors(const Descriptor& containing_descriptor) const;
+  void PrintDescriptor(const Descriptor& message_descriptor,
+                       const DescriptorProto& proto) const;
+  void PrintNestedDescriptors(const Descriptor& containing_descriptor,
+                              const DescriptorProto& proto) const;
 
   void PrintMessages() const;
   void PrintMessage(const Descriptor& message_descriptor,
@@ -141,6 +147,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const DescriptorT& descriptor,
       const Descriptor* containing_descriptor) const;
 
+  void PrintEditionDefaults() const;
   void PrintTopBoilerplate() const;
   void PrintServices() const;
   void PrintServiceDescriptors() const;
@@ -150,7 +157,8 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   void PrintDescriptorKeyAndModuleName(
       const ServiceDescriptor& descriptor) const;
 
-  void PrintEnumValueDescriptor(const EnumValueDescriptor& descriptor) const;
+  void PrintEnumValueDescriptor(const EnumValueDescriptor& descriptor,
+                                const EnumValueDescriptorProto& proto) const;
   std::string OptionsValue(absl::string_view serialized_options) const;
   bool GeneratingDescriptorProto() const;
 
@@ -165,11 +173,16 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                                  absl::string_view name) const;
 
   void FixAllDescriptorOptions() const;
-  void FixOptionsForField(const FieldDescriptor& field) const;
-  void FixOptionsForOneof(const OneofDescriptor& oneof) const;
-  void FixOptionsForEnum(const EnumDescriptor& descriptor) const;
-  void FixOptionsForService(const ServiceDescriptor& descriptor) const;
-  void FixOptionsForMessage(const Descriptor& descriptor) const;
+  void FixOptionsForField(const FieldDescriptor& field,
+                          const FieldDescriptorProto& proto) const;
+  void FixOptionsForOneof(const OneofDescriptor& oneof,
+                          const OneofDescriptorProto& proto) const;
+  void FixOptionsForEnum(const EnumDescriptor& descriptor,
+                         const EnumDescriptorProto& proto) const;
+  void FixOptionsForService(const ServiceDescriptor& descriptor,
+                            const ServiceDescriptorProto& proto) const;
+  void FixOptionsForMessage(const Descriptor& descriptor,
+                            const DescriptorProto& proto) const;
 
   void SetSerializedPbInterval(const FileDescriptorProto& file) const;
   void SetMessagePbInterval(const DescriptorProto& message_proto,
@@ -182,7 +195,10 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   // Guards file_, printer_ and file_descriptor_serialized_.
   mutable absl::Mutex mutex_;
   mutable const FileDescriptor* file_;  // Set in Generate().  Under mutex_.
+  mutable FileDescriptorProto proto_;   // Set in Generate().  Under mutex_.
+  mutable GeneratorOptions options_;    // Set in Generate().  Under mutex_.
   mutable std::string file_descriptor_serialized_;
+  mutable std::string original_file_descriptor_serialized_;
   mutable io::Printer* printer_;  // Set in Generate().  Under mutex_.
 
   bool opensource_runtime_ = true;

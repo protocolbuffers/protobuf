@@ -155,6 +155,13 @@ class PROTOC_EXPORT CodeGenerator {
     StripSourceRetentionOptions(*file.pool(), proto);
     return proto;
   }
+
+  // Gets the default feature set for a specific edition or syntax.
+  static absl::StatusOr<FeatureSet> GetEditionDefaultFeatures(
+      absl::string_view edition_or_syntax) {
+    return ::google::protobuf::internal::InternalFeatureHelper::GetEditionDefaultFeatures(
+        edition_or_syntax);
+  }
 };
 
 // CodeGenerators generate one or more files in a given directory.  This
@@ -228,6 +235,11 @@ PROTOC_EXPORT void ParseGeneratorParameter(
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
 PROTOC_EXPORT std::string StripProto(absl::string_view filename);
+
+// Checks if an imported proto file is "non-functional" for a file migrated to
+// editions.  This is needed for generator feature sets which may subtly change
+// the generated code for an otherwise no-op transformation.
+PROTOC_EXPORT bool IsEditionsNonFunctionalDependency(const FileDescriptor& dep);
 
 }  // namespace compiler
 }  // namespace protobuf
