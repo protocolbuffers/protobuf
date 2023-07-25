@@ -133,7 +133,7 @@ class PROTOBUF_EXPORT SerialArena {
     // the pattern we are looking for.
     const size_t index = absl::bit_width(size - 1) - 4;
 
-    if (index >= cached_block_length_) return nullptr;
+    if (PROTOBUF_PREDICT_FALSE(index >= cached_block_length_)) return nullptr;
     auto& cached_head = cached_blocks_[index];
     if (cached_head == nullptr) return nullptr;
 
