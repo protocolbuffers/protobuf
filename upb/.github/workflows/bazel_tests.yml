@@ -1,0 +1,101 @@
+name: Bazel Tests
+
+on:
+  push:
+    branches:
+      - main
+      - '[0-9]+.x'
+  pull_request:
+    branches:
+      - main
+      - '[0-9]+.x'
+  workflow_dispatch:
+
+jobs:
+
+  ubuntu:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - { NAME: "Fastbuild", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "" }
+          - { NAME: "Optimized", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "-c opt" }  # Some warnings only fire with -c opt
+          - { NAME: "GCC Optimized", BAZEL: bazel, CC: gcc-12, os: ubuntu-22.04, flags: "-c opt" }
+          - { NAME: "FastTable", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--//:fasttable_enabled=true -- -cmake:test_generated_files" }
+          - { NAME: "ASAN", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--config=asan -c dbg -- -benchmarks:benchmark -python/..." }
+          - { NAME: "UBSAN", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--config=ubsan -c dbg -- -benchmarks:benchmark -python/... -lua/...", install: "libunwind-dev" }
+          - { NAME: "32-bit", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--copt=-m32 --linkopt=-m32 -- -... benchmarks:benchmark ", install: "g++-multilib" }
+          - { NAME: "Windows", BAZEL: bazel, os: windows-2019, startup-flags: "--output_user_root=C:/tmp", flags: "--config=cpp17_msvc", targets: "upb/... upbc/... python/... protos/... protos_generator/..." }
+          - { NAME: "macOS", BAZEL: bazel, CC: clang, os: macos-11 }
+          # Current github runners are all Intel based, so just build/compile for Apple Silicon to detect issues there.
+          - { NAME: "macOS ARM (build only)", BAZEL: bazel, BAZEL_CMD: build, CC: clang, os: macos-11, flags: "--cpu=darwin_arm64"}
+          # We support two Bazel versions back per https://opensource.google/documentation/policies/cplusplus-support
+          - { NAME: "Bazel 5.3.0", BAZEL: bazel-5.3.0-linux-x86_64, CC: clang, os: ubuntu-20-large }
+          - { NAME: "Bazel 6.1.0", BAZEL: bazel-6.1.0-linux-x86_64, CC: clang, os: ubuntu-20-large }
+
+    name: ${{ matrix.NAME }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Cloud SDK
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+          export_environment_variables: true
+        if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
+      - name: Download historical Bazel version
+        run: |
+             FILENAME=$HOME/bin/${{ matrix.BAZEL }}
+             VERSION=$(echo ${{ matrix.BAZEL }} | cut -d- -f 2 )
+             mkdir -p $HOME/bin
+             echo $HOME/bin >> $GITHUB_PATH
+             wget -O $FILENAME https://github.com/bazelbuild/bazel/releases/download/$VERSION/${{ matrix.BAZEL }}
+             chmod a+x $FILENAME
+        if: ${{ matrix.BAZEL != 'bazel' }}
+      - name: Check compiler versions
+        if: matrix.CC
+        run: ${{ matrix.CC }} --version
+      - name: Check Bazel versions
+        run: ${{ matrix.BAZEL }} --version
+      - id: bazel-cache
+        name: Set up Bazel caching
+        uses: ./.github/actions/setup-bazel-cache
+      - name: Setup Python venv
+        if: ${{ runner.os != 'Windows' }}
+        run: rm -rf /tmp/venv && python3 -m venv /tmp/venv && source /tmp/venv/bin/activate && python3 --version
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y ${{ matrix.install }}
+        if: matrix.install != ''
+      - name: Install numpy
+        run: pip3 install numpy
+      - name: Setup environment variables
+        if: matrix.CC
+        run: echo "CC=${{ matrix.CC }}" >> $GITHUB_ENV
+      - name: Run tests
+        run: cd ${{ github.workspace }} && ${{ matrix.BAZEL }} ${{ matrix.startup-flags }} ${{ matrix.BAZEL_CMD || 'test' }} --test_output=errors ${{ steps.bazel-cache.outputs.cache_args }} ${{ matrix.targets || '...' }} ${{ matrix.flags }}
+
+  no-python:
+    runs-on: ubuntu-20-large
+
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+
+    name: "No System Python"
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Cloud SDK
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+          export_environment_variables: true
+        if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
+      - id: bazel-cache
+        name: Set up Bazel caching
+        uses: ./.github/actions/setup-bazel-cache
+      - name: Uninstall python
+        run: which python3 && sudo mv `which python3` /tmp && ! which python3
+      - name: Run tests
+        run: cd ${{ github.workspace }} && bazel test --test_output=errors ${{ steps.bazel-cache.outputs.cache_args }} //python/... -- -//python/dist:source_wheel

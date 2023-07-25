@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package protos_generator.test;
+
+import public "protos_generator/tests/test_enum.proto";
+
+message ChildModel1 {
+  optional bool child_b1 = 44;
+  optional string child_str1 = 56;
+}
+
+message ChildModel3 {
+  string sub_key = 1;
+  bool bool1 = 2;
+  int32 i32 = 3;
+  optional string opt_str = 4;
+  optional bool opt_bool = 5;
+  optional int32 opt_i32 = 6;
+}

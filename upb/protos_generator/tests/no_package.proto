@@ -1,0 +1,18 @@
+syntax = "proto2";
+
+// option java_multiple_files = true;
+
+enum EnumWithNoPackage {
+  CELSIUS = 1;
+  FAHRENHEIT = 2;
+}
+
+message MessageWithEnumUpbTest {
+  enum EnumWithNoPackageInMessage {
+    UNKNOWN = 0;
+    AB_1 = 1;
+    CD_2 = 2;
+    EF_3 = 3;
+    GH_4 = 4;
+  }
+}

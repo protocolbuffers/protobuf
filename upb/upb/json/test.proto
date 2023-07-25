@@ -1,0 +1,22 @@
+syntax = "proto2";
+
+package upb_test;
+
+import "google/protobuf/struct.proto";
+
+enum Tag {
+  Z_NONE = 0;
+  Z_BAR = 1;
+  Z_BAZ = -2;
+  Z_BAT = 13;
+}
+
+message Box {
+  optional Tag first_tag = 1;
+  repeated Tag more_tags = 2;
+  optional Tag last_tag = 5;
+  optional string name = 4;
+  optional google.protobuf.Value val = 6;
+  optional float f = 7;
+  optional double d = 8;
+}

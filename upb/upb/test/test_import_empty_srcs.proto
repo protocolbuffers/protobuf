@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package upb_test;
+
+import "upb/test/test.proto";
+import "upb/test/test_cpp.proto";
+
+message ContainsImported {
+  optional MessageName message_name = 1;
+  optional upb.test.TestMessage test_message = 2;
+}

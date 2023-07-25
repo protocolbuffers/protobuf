@@ -1,0 +1,60 @@
+# temporary fix for https://github.com/bazelbuild/bazel/issues/12905 on macOS
+build --features=-debug_prefix_map_pwd_is_dot
+
+# Pin to C++17
+build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+build:cpp17_msvc --cxxopt=/std:c++17 --host_cxxopt=/std:c++17
+
+# Use our custom-configured c++ toolchain.
+
+build:m32 --copt=-m32 --linkopt=-m32
+build:asan --copt=-fsanitize=address --linkopt=-fsanitize=address
+build:msan --copt=-fsanitize=memory --linkopt=-fsanitize=memory
+
+# For Valgrind, we have to disable checks of "possible" leaks because the Python
+# interpreter does the sorts of things that flag Valgrind "possible" leak checks.
+# Ideally we could enforce a stricter check for the non-Python tests, but I don't
+# know of an easy way to do that.
+#
+# We also have to disable pymalloc to avoid triggering Valgrind.
+build:valgrind --run_under='valgrind --leak-check=full --track-origins=yes --trace-children=yes --show-leak-kinds=all --error-exitcode=1 --num-callers=500 ' --action_env=PYTHONMALLOC=malloc
+
+build:ubsan --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
+# Workaround for the fact that Bazel links with $CC, not $CXX
+# https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
+build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+# Workaround for https://bugs.llvm.org/show_bug.cgi?id=16404
+build:ubsan --linkopt=--rtlib=compiler-rt --linkopt=-lunwind
+
+build:Werror --copt=-Werror
+build:Werror --per_file_copt=json/parser@-Wno-error
+build:Werror --per_file_copt=com_google_protobuf@-Wno-error
+
+# GCC's -fanalyzer, a deeper static analysis than normal warnings.
+build:analyzer --copt=-fanalyzer --copt=-Werror
+build:analyzer --per_file_copt=json/parser@-fno-analyzer
+build:analyzer --per_file_copt=com_google_protobuf@-fno-analyzer
+build:analyzer --per_file_copt=com_github_google_benchmark@-fno-analyzer
+
+# --config=asan-libfuzzer
+build:asan-libfuzzer --action_env=CC=clang
+build:asan-libfuzzer --action_env=CXX=clang++
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:libfuzzer
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_instrumentation=libfuzzer
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_sanitizer=asan
+
+# --config=msan-libfuzzer
+build:msan-libfuzzer --action_env=CC=clang
+build:msan-libfuzzer --action_env=CXX=clang++
+build:msan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:libfuzzer
+build:msan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_instrumentation=libfuzzer
+build:msan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_sanitizer=msan
+
+# --config=ubsan-libfuzzer
+build:ubsan-libfuzzer --action_env=CC=clang
+build:ubsan-libfuzzer --action_env=CXX=clang++
+build:ubsan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:libfuzzer
+build:ubsan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_instrumentation=libfuzzer
+build:ubsan-libfuzzer --copt=-fsanitize=undefined
+build:ubsan-libfuzzer --linkopt=-fsanitize=undefined
+build:ubsan-libfuzzer --linkopt=-fsanitize-link-c++-runtime

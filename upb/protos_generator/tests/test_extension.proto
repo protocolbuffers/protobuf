@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package protos_generator.test.someotherpackage;
+
+import "protos_generator/tests/test_model.proto";
+
+// Define extension that is extending proto outside this package with a type
+// defined in different file.
+
+extend TestModel {
+  optional ThemeExtension styling = 13001;
+}

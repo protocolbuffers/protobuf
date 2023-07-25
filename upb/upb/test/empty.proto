@@ -1,0 +1,2 @@
+syntax = "proto2";
+package upb_test;
