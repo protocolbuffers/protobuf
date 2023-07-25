@@ -1,5 +1,5 @@
 # Protocol Buffers - Google's data interchange format
-# Copyright 2008 Google Inc.  All rights reserved.
+# Copyright 2022 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,57 +28,44 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# require mixins before we hook them into the java & c code
-require 'google/protobuf/message_exts'
-require 'google/protobuf/object_cache'
-
-# We define these before requiring the platform-specific modules.
-# That way the module init can grab references to these.
 module Google
   module Protobuf
-    class Error < StandardError; end
-    class ParseError < Error; end
-    class TypeError < ::TypeError; end
-
-    PREFER_FFI = case ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']
-                 when nil, "", /^native$/i
-                   false
-                 when /^ffi$/i
-                   true
-                 else
-                   warn "Unexpected value `#{ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']}` for environment variable `PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION`. Should be either \"FFI\", \"NATIVE\"."
-                   false
-                 end
-
-    def self.encode(msg, options = {})
-      msg.to_proto(options)
+    class FFI
+      # FileDescriptor
+      attach_function :file_def_name,   :upb_FileDef_Name,   [:FileDef], :string
+      attach_function :file_def_syntax, :upb_FileDef_Syntax, [:FileDef], Syntax
+      attach_function :file_def_pool,   :upb_FileDef_Pool,   [:FileDef], :DefPool
     end
+    class FileDescriptor
+      attr :descriptor_pool, :file_def
 
-    def self.encode_json(msg, options = {})
-      msg.to_json(options)
-    end
-
-    def self.decode(klass, proto, options = {})
-      klass.decode(proto, options)
-    end
-
-    def self.decode_json(klass, json, options = {})
-      klass.decode_json(json, options)
-    end
-
-    IMPLEMENTATION = if PREFER_FFI
-      begin
-        require 'google/protobuf_ffi'
-        :FFI
-      rescue LoadError
-        warn "Caught exception `#{$!.message}` while loading FFI implementation of google/protobuf."
-        warn "Falling back to native implementation."
-        require 'google/protobuf_native'
-        :NATIVE
+      def initialize(file_def, descriptor_pool)
+        @descriptor_pool = descriptor_pool
+        @file_def = file_def
       end
-    else
-      require 'google/protobuf_native'
-      :NATIVE
+
+      def to_s
+        inspect
+      end
+
+      def inspect
+        "#{self.class.name}: #{name}"
+      end
+
+      def syntax
+        case Google::Protobuf::FFI.file_def_syntax(@file_def)
+        when :Proto3
+          :proto3
+        when :Proto2
+          :proto2
+        else
+          nil
+        end
+      end
+
+      def name
+        Google::Protobuf::FFI.file_def_name(@file_def)
+      end
     end
   end
 end

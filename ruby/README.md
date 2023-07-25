@@ -2,10 +2,11 @@ This directory contains the Ruby extension that implements Protocol Buffers
 functionality in Ruby.
 
 The Ruby extension makes use of generated Ruby code that defines message and
-enum types in a Ruby DSL. You may write definitions in this DSL directly, but
-we recommend using protoc's Ruby generation support with .proto files. The
-build process in this directory only installs the extension; you need to
-install protoc as well to have Ruby code generation functionality.
+enum types in a Ruby DSL. You may write definitions in this DSL directly, but we
+recommend using protoc's Ruby generation support with .proto files. The build
+process in this directory only installs the extension; you need to install
+protoc as well to have Ruby code generation functionality. You can build protoc
+from source using `bazel build //:protoc`.
 
 Installation from Gem
 ---------------------
@@ -50,6 +51,18 @@ puts MyTestMessage.encode_json(mymessage)
 
 Installation from Source (Building Gem)
 ---------------------------------------
+ 
+
+Protocol Buffers has a new experimental backend that uses the
+[ffi](https://github.com/ffi/ffi) gem to provide a unified C-based
+implementation across Ruby interpreters based on
+[UPB](https://github.com/protocolbuffers/upb). For now, use of the FFI
+implementation is opt-in. If any of the following are true, the traditional
+platform-native implementations (MRI-ruby based on CRuby, Java based on JRuby)
+are used instead of the new FFI-based implementation: 1. `ffi` and
+`ffi-compiler` gems are not installed 2. `PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION`
+environment variable has a value other than `FFI` (case-insensitive). 3. FFI is
+unable to load the native library at runtime.
 
 To build this Ruby extension, you will need:
 
@@ -81,6 +94,12 @@ To run the specs:
 
     $ rake test
 
+To run the specs while using the FFI-based implementation:
+
+```
+$ PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI rake test
+```
+
 This gem includes the upb parsing and serialization library as a single-file
 amalgamation. It is up-to-date with upb git commit
 `535bc2fe2f2b467f59347ffc9449e11e47791257`.
@@ -91,6 +110,12 @@ From the project root (rather than the `ruby` directory):
 
 ```
 $ bazel test //ruby/tests/...
+```
+
+To run tests against the FFI implementation:
+
+```
+$ bazel test //ruby/tests/... //ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI
 ```
 
 Version Number Scheme

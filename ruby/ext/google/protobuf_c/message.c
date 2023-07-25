@@ -35,6 +35,7 @@
 #include "map.h"
 #include "protobuf.h"
 #include "repeated_field.h"
+#include "shared_message.h"
 
 static VALUE cParseError = Qnil;
 static VALUE cAbstractMessage = Qnil;
@@ -694,29 +695,13 @@ static VALUE Message_dup(VALUE _self) {
 // Support function for Message_eq, and also used by other #eq functions.
 bool Message_Equal(const upb_Message* m1, const upb_Message* m2,
                    const upb_MessageDef* m) {
-  if (m1 == m2) return true;
-
-  size_t size1, size2;
-  int encode_opts =
-      kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_Deterministic;
-  upb_Arena* arena_tmp = upb_Arena_New();
-  const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
-
-  // Compare deterministically serialized payloads with no unknown fields.
-  char* data1;
-  char* data2;
-  upb_EncodeStatus status1 =
-      upb_Encode(m1, layout, encode_opts, arena_tmp, &data1, &size1);
-  upb_EncodeStatus status2 =
-      upb_Encode(m2, layout, encode_opts, arena_tmp, &data2, &size2);
-
-  if (status1 == kUpb_EncodeStatus_Ok && status2 == kUpb_EncodeStatus_Ok) {
-    bool ret = (size1 == size2) && (memcmp(data1, data2, size1) == 0);
-    upb_Arena_Free(arena_tmp);
-    return ret;
+  upb_Status status;
+  upb_Status_Clear(&status);
+  bool return_value = shared_Message_Equal(m1, m2, m, &status);
+  if (upb_Status_IsOk(&status)) {
+    return return_value;
   } else {
-    upb_Arena_Free(arena_tmp);
-    rb_raise(cParseError, "Error comparing messages");
+    rb_raise(cParseError, upb_Status_ErrorMessage(&status));
   }
 }
 
@@ -741,23 +726,13 @@ static VALUE Message_eq(VALUE _self, VALUE _other) {
 
 uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
                       uint64_t seed) {
-  upb_Arena* arena = upb_Arena_New();
-  char* data;
-  size_t size;
-
-  // Hash a deterministically serialized payloads with no unknown fields.
-  upb_EncodeStatus status = upb_Encode(
-      msg, upb_MessageDef_MiniTable(m),
-      kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_Deterministic, arena,
-      &data, &size);
-
-  if (status == kUpb_EncodeStatus_Ok) {
-    uint64_t ret = _upb_Hash(data, size, seed);
-    upb_Arena_Free(arena);
-    return ret;
+  upb_Status status;
+  upb_Status_Clear(&status);
+  uint64_t return_value = shared_Message_Hash(msg, m, seed, &status);
+  if (upb_Status_IsOk(&status)) {
+    return return_value;
   } else {
-    upb_Arena_Free(arena);
-    rb_raise(cParseError, "Error calculating hash");
+    rb_raise(cParseError, upb_Status_ErrorMessage(&status));
   }
 }
 
