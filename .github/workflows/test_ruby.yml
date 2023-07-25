@@ -96,7 +96,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         version: ["2.7","3.0","3.1"]
-        ffi: FFI
+        ffi: ["FFI"]
         noop: [0,1,2,3,4,5,6,7,8,9]
         include:
         # Test both FFI and Native implementations on the highest and lowest
@@ -133,8 +133,11 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_macos/${{ matrix.version }}
           bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }} --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
+
       - run: mkdir -p logs/
+
       - run: ls -l > logs/directory_listing.txt
+
       - uses: actions/upload-artifact@v3
         with:
           name: logs-and-cores
