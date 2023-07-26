@@ -46,9 +46,10 @@ class DescriptorDatabaseConflictingDefinitionError(Error):
 class DescriptorDatabase(object):
   """A container accepting FileDescriptorProtos and maps DescriptorProtos."""
 
-  def __init__(self):
+  def __init__(self, verbose=False):
     self._file_desc_protos_by_file = {}
     self._file_desc_protos_by_symbol = {}
+    self._verbose = verbose
 
   def Add(self, file_desc_proto):
     """Adds the FileDescriptorProto and its types to this database.
@@ -149,7 +150,7 @@ class DescriptorDatabase(object):
     return []
 
   def _AddSymbol(self, name, file_desc_proto):
-    if name in self._file_desc_protos_by_symbol:
+    if name in self._file_desc_protos_by_symbol and self._verbose:
       warn_msg = ('Conflict register for file "' + file_desc_proto.name +
                   '": ' + name +
                   ' is already defined in file "' +
