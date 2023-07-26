@@ -3218,16 +3218,16 @@ static uint32_t AlignTo(uint32_t v) {
 }
 
 static internal::TailCallParseFunc GetFastParseFunction(
-    const internal::TailCallTableInfo::FastFieldInfo& field_info) {
+    absl::string_view func_name) {
 #define PROTOBUF_TC_PARSE_FUNCTION_X(value) \
   {"::_pbi::TcParser::" #value, internal::TcParser::value},
   static const auto* const map =
       new absl::flat_hash_map<absl::string_view, internal::TailCallParseFunc>{
           PROTOBUF_TC_PARSE_FUNCTION_LIST};
 #undef PROTOBUF_TC_PARSE_FUNCTION_X
-  auto it = map->find(field_info.func_name);
+  auto it = map->find(func_name);
   if (it == map->end()) {
-    ABSL_DLOG(FATAL) << "Failed to find function: " << field_info.func_name;
+    ABSL_DLOG(FATAL) << "Failed to find function: " << func_name;
     // Let's not crash in opt, just in case.
     // MiniParse is always a valid parser.
     return &internal::TcParser::MiniParse;
@@ -3257,26 +3257,19 @@ void Reflection::PopulateTcParseFastEntries(
     const internal::TailCallTableInfo& table_info,
     TcParseTableBase::FastFieldEntry* fast_entries) const {
   for (const auto& fast_field : table_info.fast_path_fields) {
-    if (fast_field.field == nullptr) {
-      if (fast_field.func_name.empty()) {
-        // No fast entry here. Use mini parser.
-        *fast_entries++ = {internal::TcParser::MiniParse, {}};
-      } else {
-        // No field, but still a special entry.
-        *fast_entries++ = {GetFastParseFunction(fast_field),
-                           {fast_field.coded_tag, fast_field.nonfield_info}};
-      }
-    } else if (fast_field.func_name.find("TcParser::FastEv") !=
-               fast_field.func_name.npos) {
-      // We can't use fast parsing for these entries because we can't specify
-      // the validator. Use the reflection based parser called from MiniParse.
-      // TODO(b/239592582): Implement a fast parser for these enums.
-      *fast_entries++ = {internal::TcParser::MiniParse, {}};
-    } else {
+    if (auto* nonfield = fast_field.AsNonField()) {
+      // No field, but still a special entry.
+      *fast_entries++ = {GetFastParseFunction(nonfield->func_name),
+                         {nonfield->coded_tag, nonfield->nonfield_info}};
+    } else if (auto* as_field = fast_field.AsField()) {
       *fast_entries++ = {
-          GetFastParseFunction(fast_field),
-          {fast_field.coded_tag, fast_field.hasbit_idx, fast_field.aux_idx,
-           static_cast<uint16_t>(schema_.GetFieldOffset(fast_field.field))}};
+          GetFastParseFunction(as_field->func_name),
+          {as_field->coded_tag, as_field->hasbit_idx, as_field->aux_idx,
+           static_cast<uint16_t>(schema_.GetFieldOffset(as_field->field))}};
+    } else {
+      ABSL_DCHECK(fast_field.is_empty());
+      // No fast entry here. Use mini parser.
+      *fast_entries++ = {internal::TcParser::MiniParse, {}};
     }
   }
 }
@@ -3435,9 +3428,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
           // Might be easier to do when all messages support TDP.
           /* use_direct_tcparser_table */ false,
 
-          /* is_lite */ false,          //
           ref_.schema_.IsSplit(field),  //
-          /* uses_codegen */ false      //
       };
     }
 
@@ -3445,8 +3436,12 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
     const Reflection& ref_;
   };
   internal::TailCallTableInfo table_info(
-      descriptor_, fields, ReflectionOptionProvider(*this), has_bit_indices,
-      inlined_string_indices);
+      descriptor_, fields,
+      {
+          /* is_lite */ false,
+          /* uses_codegen */ false,
+      },
+      ReflectionOptionProvider(*this), has_bit_indices, inlined_string_indices);
 
   const size_t fast_entries_count = table_info.fast_path_fields.size();
   ABSL_CHECK_EQ(static_cast<int>(fast_entries_count),

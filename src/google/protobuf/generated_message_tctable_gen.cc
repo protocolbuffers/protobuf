@@ -31,11 +31,13 @@
 #include "google/protobuf/generated_message_tctable_gen.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -121,9 +123,11 @@ bool HasLazyRep(const FieldDescriptor* field,
          options.lazy_opt != 0;
 }
 
-void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
-                            const TailCallTableInfo::PerFieldOptions& options,
-                            TailCallTableInfo::FastFieldInfo& info) {
+TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
+    const TailCallTableInfo::FieldEntryInfo& entry,
+    const TailCallTableInfo::MessageOptions& message_options,
+    const TailCallTableInfo::PerFieldOptions& options) {
+  TailCallTableInfo::FastFieldInfo::Field info{};
 #define PROTOBUF_PICK_FUNCTION(fn) \
   (field->number() < 16 ? TcParseFunction::fn##1 : TcParseFunction::fn##2)
 
@@ -207,7 +211,7 @@ void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
       picked = PROTOBUF_PICK_STRING_FUNCTION(kFastB);
       break;
     case FieldDescriptor::TYPE_STRING:
-      switch (internal::cpp::GetUtf8CheckMode(field, options.is_lite)) {
+      switch (internal::cpp::GetUtf8CheckMode(field, message_options.is_lite)) {
         case internal::cpp::Utf8CheckMode::kStrict:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastU);
           break;
@@ -236,6 +240,7 @@ void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
   ABSL_CHECK(picked != TcParseFunction::kNone);
   static constexpr absl::string_view ns = "::_pbi::TcParser::";
   info.func_name = absl::StrCat(ns, ParseFunctionValue(picked));
+  return info;
 
 #undef PROTOBUF_PICK_FUNCTION
 #undef PROTOBUF_PICK_SINGLE_FUNCTION
@@ -246,6 +251,7 @@ void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
 
 bool IsFieldEligibleForFastParsing(
     const TailCallTableInfo::FieldEntryInfo& entry,
+    const TailCallTableInfo::MessageOptions& message_options,
     const TailCallTableInfo::OptionProvider& option_provider) {
   const auto* field = entry.field;
   const auto options = option_provider.GetForField(field);
@@ -256,7 +262,7 @@ bool IsFieldEligibleForFastParsing(
     return false;
   }
 
-  if (HasLazyRep(field, options) && !options.uses_codegen) {
+  if (HasLazyRep(field, options) && !message_options.uses_codegen) {
     // Can't use TDP on lazy fields if we can't do codegen.
     return false;
   }
@@ -290,6 +296,18 @@ bool IsFieldEligibleForFastParsing(
         aux_idx = entry.inlined_string_idx;
       }
       break;
+
+    case FieldDescriptor::TYPE_ENUM: {
+      uint8_t rmax_value;
+      if (!message_options.uses_codegen &&
+          GetEnumRangeInfo(field, rmax_value) == EnumRangeInfo::kNone) {
+        // We can't use fast parsing for these entries because we can't specify
+        // the validator.
+        // TODO(b/239592582): Implement a fast parser for these enums.
+        return false;
+      }
+      break;
+    }
 
     default:
       break;
@@ -350,6 +368,7 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
     absl::optional<uint32_t> end_group_tag,
     const std::vector<TailCallTableInfo::FieldEntryInfo>& field_entries,
     int table_size_log2,
+    const TailCallTableInfo::MessageOptions& message_options,
     const TailCallTableInfo::OptionProvider& option_provider) {
   std::vector<TailCallTableInfo::FastFieldInfo> result(1 << table_size_log2);
   const uint32_t idx_mask = static_cast<uint32_t>(result.size() - 1);
@@ -373,14 +392,17 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
     const uint32_t fast_idx = tag_to_idx(tag);
 
     TailCallTableInfo::FastFieldInfo& info = result[fast_idx];
-    info.func_name = "::_pbi::TcParser::FastEndG";
-    info.func_name.append(*end_group_tag < 128 ? "1" : "2");
-    info.coded_tag = tag;
-    info.nonfield_info = *end_group_tag;
+    info.data = TailCallTableInfo::FastFieldInfo::NonField{
+        absl::StrCat("::_pbi::TcParser::FastEndG",
+                     *end_group_tag < 128 ? "1" : "2"),
+        static_cast<uint16_t>(tag),
+        static_cast<uint16_t>(*end_group_tag),
+    };
   }
 
   for (const auto& entry : field_entries) {
-    if (!IsFieldEligibleForFastParsing(entry, option_provider)) {
+    if (!IsFieldEligibleForFastParsing(entry, message_options,
+                                       option_provider)) {
       continue;
     }
 
@@ -390,25 +412,29 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
     const uint32_t fast_idx = tag_to_idx(tag);
 
     TailCallTableInfo::FastFieldInfo& info = result[fast_idx];
-    if (!info.func_name.empty()) {
+    if (info.AsNonField() != nullptr) {
       // Null field means END_GROUP which is guaranteed to be present.
-      if (info.field == nullptr) continue;
-
+      continue;
+    }
+    if (auto* as_field = info.AsField()) {
       // This field entry is already filled. Skip if previous entry is more
       // likely present.
-      const auto prev_options = option_provider.GetForField(info.field);
+      const auto prev_options = option_provider.GetForField(as_field->field);
       if (prev_options.presence_probability >= options.presence_probability) {
         continue;
       }
     }
 
+    // We reset the entry even if it had a field already.
     // Fill in this field's entry:
-    PopulateFastFieldEntry(entry, options, info);
-    info.field = field;
-    info.coded_tag = tag;
+    auto& fast_field =
+        info.data.emplace<TailCallTableInfo::FastFieldInfo::Field>(
+            MakeFastFieldEntry(entry, message_options, options));
+    fast_field.field = field;
+    fast_field.coded_tag = tag;
     // If this field does not have presence, then it can set an out-of-bounds
     // bit (tailcall parsing uses a uint64_t for hasbits, but only stores 32).
-    info.hasbit_idx = cpp::HasHasbit(field) ? entry.hasbit_idx : 63;
+    fast_field.hasbit_idx = cpp::HasHasbit(field) ? entry.hasbit_idx : 63;
   }
   return result;
 }
@@ -427,9 +453,8 @@ bool NeedsFieldNameForTable(const FieldDescriptor* field, bool is_lite) {
 
 absl::string_view FieldNameForTable(
     const TailCallTableInfo::FieldEntryInfo& entry,
-    const TailCallTableInfo::OptionProvider& option_provider) {
-  if (NeedsFieldNameForTable(
-          entry.field, option_provider.GetForField(entry.field).is_lite)) {
+    const TailCallTableInfo::MessageOptions& message_options) {
+  if (NeedsFieldNameForTable(entry.field, message_options.is_lite)) {
     return entry.field->name();
   }
   return "";
@@ -438,6 +463,7 @@ absl::string_view FieldNameForTable(
 std::vector<uint8_t> GenerateFieldNames(
     const Descriptor* descriptor,
     const std::vector<TailCallTableInfo::FieldEntryInfo>& entries,
+    const TailCallTableInfo::MessageOptions& message_options,
     const TailCallTableInfo::OptionProvider& option_provider) {
   static constexpr int kMaxNameLength = 255;
   std::vector<uint8_t> out;
@@ -445,7 +471,7 @@ std::vector<uint8_t> GenerateFieldNames(
   std::vector<absl::string_view> names;
   bool found_needed_name = false;
   for (const auto& entry : entries) {
-    names.push_back(FieldNameForTable(entry, option_provider));
+    names.push_back(FieldNameForTable(entry, message_options));
     if (!names.back().empty()) found_needed_name = true;
   }
 
@@ -548,6 +574,7 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
 
 uint16_t MakeTypeCardForField(
     const FieldDescriptor* field,
+    const TailCallTableInfo::MessageOptions& message_options,
     const TailCallTableInfo::PerFieldOptions& options) {
   uint16_t type_card;
   namespace fl = internal::field_layout;
@@ -651,7 +678,7 @@ uint16_t MakeTypeCardForField(
       type_card |= fl::kBytes;
       break;
     case FieldDescriptor::TYPE_STRING: {
-      switch (internal::cpp::GetUtf8CheckMode(field, options.is_lite)) {
+      switch (internal::cpp::GetUtf8CheckMode(field, message_options.is_lite)) {
         case internal::cpp::Utf8CheckMode::kStrict:
           type_card |= fl::kUtf8String;
           break;
@@ -732,6 +759,7 @@ uint16_t MakeTypeCardForField(
 TailCallTableInfo::TailCallTableInfo(
     const Descriptor* descriptor,
     const std::vector<const FieldDescriptor*>& ordered_fields,
+    const MessageOptions& message_options,
     const OptionProvider& option_provider,
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices) {
@@ -763,7 +791,7 @@ TailCallTableInfo::TailCallTableInfo(
                     ? has_bit_indices[static_cast<size_t>(field->index())]
                     : -1});
     auto& entry = field_entries.back();
-    entry.type_card = MakeTypeCardForField(field, options);
+    entry.type_card = MakeTypeCardForField(field, message_options, options);
 
     if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
         field->type() == FieldDescriptor::TYPE_GROUP) {
@@ -771,7 +799,7 @@ TailCallTableInfo::TailCallTableInfo(
       if (field->is_map()) {
         field_entries.back().aux_idx = aux_entries.size();
         aux_entries.push_back({kMapAuxInfo, {field}});
-        if (options.uses_codegen) {
+        if (message_options.uses_codegen) {
           // If we don't use codegen we can't add these.
           auto* map_value = field->message_type()->map_value();
           if (auto* sub = map_value->message_type()) {
@@ -783,7 +811,7 @@ TailCallTableInfo::TailCallTableInfo(
           }
         }
       } else if (HasLazyRep(field, options)) {
-        if (options.uses_codegen) {
+        if (message_options.uses_codegen) {
           field_entries.back().aux_idx = aux_entries.size();
           aux_entries.push_back({kSubMessage, {field}});
           if (options.lazy_opt == field_layout::kTvEager) {
@@ -850,12 +878,13 @@ TailCallTableInfo::TailCallTableInfo(
   auto end_group_tag = GetEndGroupTag(descriptor);
   for (int try_size_log2 : {0, 1, 2, 3, 4, 5}) {
     size_t try_size = 1 << try_size_log2;
-    auto split_fields = SplitFastFieldsForSize(end_group_tag, field_entries,
-                                               try_size_log2, option_provider);
+    auto split_fields =
+        SplitFastFieldsForSize(end_group_tag, field_entries, try_size_log2,
+                               message_options, option_provider);
     ABSL_CHECK_EQ(split_fields.size(), try_size);
     int try_num_fast_fields = 0;
     for (const auto& info : split_fields) {
-      if (!info.func_name.empty()) ++try_num_fast_fields;
+      if (!info.is_empty()) ++try_num_fast_fields;
     }
     // Use this size if (and only if) it covers more fields.
     if (try_num_fast_fields > num_fast_fields) {
@@ -885,8 +914,8 @@ TailCallTableInfo::TailCallTableInfo(
 
   num_to_entry_table = MakeNumToEntryTable(ordered_fields);
   ABSL_CHECK_EQ(field_entries.size(), ordered_fields.size());
-  field_name_data =
-      GenerateFieldNames(descriptor, field_entries, option_provider);
+  field_name_data = GenerateFieldNames(descriptor, field_entries,
+                                       message_options, option_provider);
 }
 
 }  // namespace internal
