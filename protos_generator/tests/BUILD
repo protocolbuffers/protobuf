@@ -94,7 +94,9 @@ upb_cc_proto_library(
 
 upb_cc_proto_library(
     name = "naming_conflict_upb_cc_proto",
-    visibility = ["//protos:__pkg__"],
+    visibility = [
+        "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
+    ],
     deps = [":naming_conflict_proto"],
 )
 
