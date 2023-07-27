@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2021, Google LLC
+ * Copyright (c) 2009-2023, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,30 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// These headers form a spanning tree for the upbc defs needed by FFI layers.
+#ifndef UPBC_GET_USED_FIELDS
+#define UPBC_GET_USED_FIELDS
 
-#include "upbc/get_used_fields.h"
-#include "upbc/upbdev.h"
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Consume |buf|, deserialize it to a Code_Generator_Request proto, then
+// upbc_Code_Generator_Request, and return it as a JSON-encoded string.
+UPB_API upb_StringView upbdev_GetUsedFields(
+    const char* request, size_t request_size, const char* payload,
+    size_t payload_size, const char* message_name, upb_Arena* arena);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port/undef.inc"
+
+#endif  // UPBC_GET_USED_FIELDS
