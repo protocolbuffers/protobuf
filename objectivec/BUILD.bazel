@@ -42,7 +42,7 @@ genrule(
         for wkt in _OBJC_WKT_NAMES
         for ext in _OBJC_EXTS
     ]),
-    exec_tools = ["//:protoc"],
+    tools = ["//:protoc"],
     tags = ["manual"],
 )
 
