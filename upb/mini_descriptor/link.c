@@ -129,7 +129,7 @@ bool upb_MiniTable_Link(upb_MiniTable* mt, const upb_MiniTable** sub_tables,
 
   for (int i = 0; i < mt->field_count; i++) {
     upb_MiniTableField* f = (upb_MiniTableField*)&mt->fields[i];
-    if (upb_MiniTableField_CType(f) == kUpb_CType_Enum) {
+    if (upb_MiniTableField_IsClosedEnum(f)) {
       const upb_MiniTableEnum* sub = sub_enums[enum_count++];
       if (enum_count > sub_enum_count) return false;
       if (sub != NULL) {
