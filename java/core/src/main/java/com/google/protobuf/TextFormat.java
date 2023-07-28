@@ -2055,37 +2055,18 @@ public final class TextFormat {
           endToken = "}";
         }
 
-        // Try to parse human readable format of Any in the form: [type_url]: { ... }
-        if (field.getMessageType().getFullName().equals("google.protobuf.Any")
-            && tokenizer.tryConsume("[")) {
-          // Use Proto reflection here since depending on Any would intoduce a cyclic dependency
-          // (java_proto_library for any_java_proto depends on the protobuf_impl).
-          Message anyBuilder = DynamicMessage.getDefaultInstance(field.getMessageType());
-          MessageReflection.MergeTarget anyField = target.newMergeTargetForField(field, anyBuilder);
-          mergeAnyFieldValue(
-              tokenizer,
-              extensionRegistry,
-              anyField,
-              parseTreeBuilder,
-              unknownFields,
-              field.getMessageType());
-          value = anyField.finish();
-          tokenizer.consume(endToken);
-        } else {
-          Message defaultInstance = (extension == null) ? null : extension.defaultInstance;
-          MessageReflection.MergeTarget subField =
-              target.newMergeTargetForField(field, defaultInstance);
+        Message defaultInstance = (extension == null) ? null : extension.defaultInstance;
+        MessageReflection.MergeTarget subField =
+            target.newMergeTargetForField(field, defaultInstance);
 
-          while (!tokenizer.tryConsume(endToken)) {
-            if (tokenizer.atEnd()) {
-              throw tokenizer.parseException("Expected \"" + endToken + "\".");
-            }
-            mergeField(tokenizer, extensionRegistry, subField, parseTreeBuilder, unknownFields);
+        while (!tokenizer.tryConsume(endToken)) {
+          if (tokenizer.atEnd()) {
+            throw tokenizer.parseException("Expected \"" + endToken + "\".");
           }
-
-          value = subField.finish();
+          mergeField(tokenizer, extensionRegistry, subField, parseTreeBuilder, unknownFields);
         }
 
+        value = subField.finish();
       } else {
         switch (field.getType()) {
           case INT32:
