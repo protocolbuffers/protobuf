@@ -51,13 +51,14 @@ jobs:
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
       - run: mkdir -p logs/
       - run: ls -l > logs/directory_listing.txt
+      - run: cat /proc/sys/kernel/core_pattern > logs/core_pattern.txt
       - uses: actions/upload-artifact@v3
         with:
           name: logs-and-cores
           path: |
             logs/
-            **/*.core
-            **/core.*
+            **/*core
+            **/core*
 
   linux-aarch64:
     name: Linux aarch64
