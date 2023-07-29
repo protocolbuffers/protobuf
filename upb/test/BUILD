@@ -187,6 +187,7 @@ cc_test(
         ":test_messages_proto3_upb_proto",
         ":test_upb_proto",
         "//:upb",
+        "//:base",
         "//:port",
         "@com_google_googletest//:gtest_main",
     ],

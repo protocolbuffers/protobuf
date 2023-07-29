@@ -27,7 +27,7 @@
 
 #include "upb/mini_descriptor/internal/encode.h"
 
-#include "upb/base/log2.h"
+#include "upb/base/internal/log2.h"
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_descriptor/internal/wire_constants.h"

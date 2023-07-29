@@ -29,7 +29,7 @@
 
 #include <math.h>
 
-#include "upb/base/log2.h"
+#include "upb/base/internal/log2.h"
 #include "upb/message/internal.h"
 
 // Must be last.

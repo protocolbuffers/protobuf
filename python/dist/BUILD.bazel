@@ -214,6 +214,7 @@ pkg_tar(
         "//:LICENSE",
         "//:source_files",
         "//python:message_srcs",
+        "//upb/base:source_files",
         "//upb/mini_descriptor:source_files",
         "//upb/mini_table:source_files",
         "//upb/util:source_files",

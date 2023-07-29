@@ -30,14 +30,14 @@
 
 #include <stdint.h>
 
+#include "upb/message/typedef.h"
+
 // Must be last.
 #include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef void upb_Message;
 
 // When a upb_Message* is stored in a message, array, or map, it is stored in a
 // tagged form.  If the tag bit is set, the referenced upb_Message is of type

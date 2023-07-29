@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/base/log2.h"
+#include "upb/base/internal/log2.h"
 #include "upb/collections/map_sorter_internal.h"
 
 // Must be last.

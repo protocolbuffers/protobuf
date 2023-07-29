@@ -100,6 +100,7 @@ sh_test(
         ":copy_protos",
         ":gen_cmakelists",
         "//:source_files",
+        "//upb/base:source_files",
         "//upb/mini_descriptor:source_files",
         "//upb/mini_table:source_files",
         "@utf8_range//:utf8_range_srcs",

@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2023, Google LLC
+# Copyright (c) 2009-2021, Google LLC
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,59 +23,34 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-)
+load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
-    name = "mini_table",
+    name = "base",
     srcs = [
-        "extension_registry.c",
-        "message.c",
+        "status.c",
     ],
     hdrs = [
-        "enum.h",
-        "extension.h",
-        "extension_registry.h",
-        "field.h",
-        "file.h",
-        "message.h",
-        "sub.h",
+        "descriptor_constants.h",
+        "status.h",
+        "string_view.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
-        "//:base",
-        "//:base_internal",
-        "//:hash",
-        "//:mem",
-        "//:message_typedef",
         "//:port",
     ],
 )
 
 cc_library(
     name = "internal",
-    srcs = [
-        "internal/message.c",
-    ],
     hdrs = [
-        "internal/enum.h",
-        "internal/extension.h",
-        "internal/field.h",
-        "internal/file.h",
-        "internal/message.h",
-        "internal/sub.h",
+        "internal/log2.h",
     ],
+    copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
-    deps = [
-        "//:base",
-        "//:base_internal",
-        "//:message_typedef",
-        "//:port",
-    ],
+    deps = ["//:port"],
 )
 
 # begin:github_only
@@ -86,7 +61,6 @@ filegroup(
             "**/*.c",
             "**/*.h",
         ],
-        exclude = ["encode_test.cc"],
     ),
     visibility = [
         "//cmake:__pkg__",

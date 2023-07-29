@@ -95,6 +95,7 @@ cc_test(
         "//:descriptor_upb_proto",
         "//:mem",
         "//:reflection",
+        "//upb/base:internal",
         "@com_github_google_benchmark//:benchmark_main",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_protobuf//:protobuf",

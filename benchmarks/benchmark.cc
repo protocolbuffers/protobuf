@@ -37,7 +37,7 @@
 #include "benchmarks/descriptor.upb.h"
 #include "benchmarks/descriptor.upbdefs.h"
 #include "benchmarks/descriptor_sv.pb.h"
-#include "upb/base/log2.h"
+#include "upb/base/internal/log2.h"
 #include "upb/mem/arena.h"
 #include "upb/reflection/def.hpp"
 

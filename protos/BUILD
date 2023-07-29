@@ -49,6 +49,7 @@ cc_library(
     deps = [
         ":protos",
         ":protos_traits",
+        "//:base",
         "//:collections_internal",
         "//:message_copy",
         "//:mini_table",

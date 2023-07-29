@@ -28,12 +28,11 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 #define UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 
+#include "upb/message/typedef.h"
 #include "upb/mini_table/internal/field.h"
 
 // Must be last.
 #include "upb/port/def.inc"
-
-typedef void upb_Message;
 
 struct upb_Decoder;
 typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,

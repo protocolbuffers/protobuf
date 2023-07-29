@@ -33,7 +33,7 @@
 
 #include <string.h>
 
-#include "upb/base/log2.h"
+#include "upb/base/internal/log2.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 

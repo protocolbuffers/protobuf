@@ -130,9 +130,6 @@ cc_library(
         "upb/alloc.h",
         "upb/arena.h",
         "upb/array.h",
-        "upb/base/descriptor_constants.h",
-        "upb/base/status.h",
-        "upb/base/string_view.h",
         "upb/collections/array.h",
         "upb/decode.h",
         "upb/encode.h",
@@ -155,32 +152,17 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":base",
+        ":base_internal",
         ":collections_internal",
         ":fastdecode",
         ":hash",
         ":lex",
         ":mem",
         ":message_internal",
+        ":mini_table",
         ":port",
         ":wire",
-        "//upb/mini_table",
     ],
-)
-
-cc_library(
-    name = "base",
-    srcs = [
-        "upb/base/status.c",
-    ],
-    hdrs = [
-        "upb/base/descriptor_constants.h",
-        "upb/base/log2.h",
-        "upb/base/status.h",
-        "upb/base/string_view.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
-    deps = [":port"],
 )
 
 cc_library(
@@ -191,23 +173,12 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":mem",
         ":message_internal",
+        ":mini_table",
         ":port",
-        "//upb/mini_table",
     ],
-)
-
-alias(
-    name = "mini_table",
-    actual = "//upb/mini_table",
-    visibility = ["//:friends"],
-)
-
-alias(
-    name = "mini_table_internal",
-    actual = "//upb/mini_table:internal",
-    visibility = ["//:friends"],
 )
 
 cc_library(
@@ -224,10 +195,11 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":base",
+        ":base_internal",
         ":hash",
         ":mem",
+        ":mini_table",
         ":port",
-        "//upb/mini_table",
     ],
 )
 
@@ -237,6 +209,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:friends"],
     deps = [
+        ":message_typedef",
         ":port",
     ],
 )
@@ -268,6 +241,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":collections_internal",
         ":eps_copy_input_stream",
         ":message_internal",
@@ -337,10 +311,21 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "message_typedef",
+    hdrs = [
+        "upb/message/typedef.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [],
+)
+
 cc_test(
     name = "message_accessors_test",
     srcs = ["upb/message/accessors_test.cc"],
     deps = [
+        ":base",
         ":collections",
         ":message_accessors",
         ":port",
@@ -362,6 +347,7 @@ cc_test(
     name = "message_promote_test",
     srcs = ["upb/message/promote_test.cc"],
     deps = [
+        ":base",
         ":collections",
         ":message_accessors",
         ":message_copy",
@@ -384,6 +370,7 @@ cc_test(
     name = "message_copy_test",
     srcs = ["upb/message/copy_test.cc"],
     deps = [
+        ":base",
         ":collections",
         ":message_accessors",
         ":message_copy",
@@ -429,6 +416,8 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
+        ":base_internal",
         ":collections_internal",
         ":message_accessors",
         ":message_accessors_internal",
@@ -548,13 +537,14 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         ":base",
+        ":base_internal",
         ":hash",
         ":mem",
         ":message_internal",
         ":message_rep_internal",
         ":message_tagged_ptr",
+        ":mini_table",
         ":port",
-        "//upb/mini_table",
     ],
 )
 
@@ -589,6 +579,7 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":collections",
         ":port",
         ":upb",
@@ -653,6 +644,7 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":collections",
         ":hash",
         ":message_accessors",
@@ -688,10 +680,36 @@ cc_library(
     ],
 )
 
+# Aliases ######################################################################
+
+alias(
+    name = "base",
+    actual = "//upb/base",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "base_internal",
+    actual = "//upb/base:internal",
+    visibility = ["//visibility:public"],
+)
+
 alias(
     name = "json",
     actual = "//upb/json",
     visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "mini_table",
+    actual = "//upb/mini_table",
+    visibility = ["//:friends"],
+)
+
+alias(
+    name = "mini_table_internal",
+    actual = "//upb/mini_table:internal",
+    visibility = ["//:friends"],
 )
 
 # Tests ########################################################################
@@ -720,6 +738,7 @@ cc_test(
     name = "collections_test",
     srcs = ["upb/collections/test.cc"],
     deps = [
+        ":base",
         ":collections",
         ":upb",
         "@com_google_googletest//:gtest_main",
@@ -840,9 +859,9 @@ cc_library(
     deps = [
         ":mem",
         ":message_internal",
+        ":mini_table",
         ":port",
         ":wire_internal",
-        "//upb/mini_table",
     ],
 )
 
@@ -872,10 +891,10 @@ cc_library(
         ":message_accessors_internal",
         ":message_internal",
         ":message_rep_internal",
+        ":mini_table",
         ":port",
         ":wire_reader",
         ":wire_types",
-        "//upb/mini_table",
         "@utf8_range",
     ],
 )
@@ -936,6 +955,7 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         ":base",
+        ":base_internal",
         ":mem",
         ":port",
     ],
@@ -1004,6 +1024,7 @@ upb_amalgamation(
         ":message_internal",
         ":message_rep_internal",
         ":message_tagged_ptr",
+        ":message_typedef",
         ":port",
         ":reflection_internal",
         ":reflection",
@@ -1011,6 +1032,7 @@ upb_amalgamation(
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
+        "//upb/base:internal",
         "//upb/mini_descriptor:encode_internal",
         "//upb/mini_descriptor:internal",
         "//upb/mini_descriptor:mini_descriptor",
@@ -1050,6 +1072,7 @@ upb_amalgamation(
         ":message_internal",
         ":message_rep_internal",
         ":message_tagged_ptr",
+        ":message_typedef",
         ":port",
         ":reflection_internal",
         ":reflection",
@@ -1057,6 +1080,7 @@ upb_amalgamation(
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
+        "//upb/base:internal",
         "//upb/mini_descriptor:encode_internal",
         "//upb/mini_descriptor:internal",
         "//upb/mini_descriptor:mini_descriptor",
@@ -1097,6 +1121,7 @@ upb_amalgamation(
         ":message_internal",
         ":message_rep_internal",
         ":message_tagged_ptr",
+        ":message_typedef",
         ":port",
         ":reflection_internal",
         ":reflection",
@@ -1104,6 +1129,7 @@ upb_amalgamation(
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
+        "//upb/base:internal",
         "//upb/mini_descriptor:encode_internal",
         "//upb/mini_descriptor:internal",
         "//upb/mini_descriptor:mini_descriptor",

@@ -30,7 +30,7 @@
 
 #include <string>
 
-#include "upb/base/log2.h"
+#include "upb/base/internal/log2.h"
 #include "upb/mini_descriptor/internal/encode.h"
 
 namespace upb {

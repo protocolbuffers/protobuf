@@ -19,6 +19,7 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//:base",
+        "//:base_internal",
         "//:port",
     ],
 )
@@ -41,9 +42,9 @@ cc_library(
         ":internal",
         "//:base",
         "//:mem",
+        "//:mini_table",
         "//:mini_table_internal",
         "//:port",
-        "//upb/mini_table",
     ],
 )
 
@@ -61,6 +62,7 @@ cc_library(
     deps = [
         ":internal",
         "//:base",
+        "//:base_internal",
         "//:port",
     ],
 )
