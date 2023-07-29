@@ -73,6 +73,11 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 
+#ifdef GOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS
+// This is needed because of https://github.com/bazelbuild/bazel/issues/19124.
+#include "google/protobuf/compiler/test_plugin_paths.h"
+#endif  // GOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 

@@ -30,7 +30,7 @@ jobs:
             targets: //python/... //python:aarch64_test
             # TODO(b/262628111) Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-3af05275178e16af30961976af126eabbbb2c733
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-222e7e87028b7098e088f5ca7cae06d32f483eb5
 
     name: Linux ${{ matrix.type }} ${{ matrix.version }}
     runs-on: ubuntu-latest
@@ -40,9 +40,9 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-508417e5215994ade7585d28ba3aad681a25fa5d', matrix.version) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
@@ -85,7 +85,7 @@ jobs:
           source venv/bin/activate
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+        uses: protocolbuffers/protobuf-ci/bazel@v2
         env:
           KOKORO_PYTHON_VERSION: ${{ matrix.version }}
         with:
