@@ -87,30 +87,16 @@ target_include_directories(upb INTERFACE
 )
 target_link_libraries(upb INTERFACE
   base
+  base_internal
   collections_internal
   fastdecode
   hash
   lex
   mem
   message_internal
+  mini_table
   port
-  wire
-  /upb/mini_table)
-
-add_library(base 
-    ../upb/base/status.c
-  ../upb/base/descriptor_constants.h
-  ../upb/base/log2.h
-  ../upb/base/status.h
-  ../upb/base/string_view.h
-)
-target_include_directories(base PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(base
-  port)
+  wire)
 
 add_library(message INTERFACE
     
@@ -121,10 +107,11 @@ target_include_directories(message INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
 )
 target_link_libraries(message INTERFACE
+  base
   mem
   message_internal
-  port
-  /upb/mini_table)
+  mini_table
+  port)
 
 add_library(message_internal 
     ../upb/message/message.c
@@ -139,10 +126,11 @@ target_include_directories(message_internal PUBLIC
 )
 target_link_libraries(message_internal
   base
+  base_internal
   hash
   mem
-  port
-  /upb/mini_table)
+  mini_table
+  port)
 
 add_library(message_tagged_ptr INTERFACE
     
@@ -153,6 +141,7 @@ target_include_directories(message_tagged_ptr INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
 )
 target_link_libraries(message_tagged_ptr INTERFACE
+  message_typedef
   port)
 
 add_library(message_accessors_internal INTERFACE
@@ -180,6 +169,7 @@ target_include_directories(message_accessors PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
 )
 target_link_libraries(message_accessors
+  base
   collections_internal
   eps_copy_input_stream
   message_internal
@@ -240,6 +230,17 @@ target_link_libraries(message_split64 INTERFACE
   message_accessors
   port)
 
+add_library(message_typedef INTERFACE
+    
+)
+target_include_directories(message_typedef INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
+)
+target_link_libraries(message_typedef INTERFACE
+  )
+
 add_library(fastdecode INTERFACE
     
 )
@@ -267,6 +268,8 @@ target_include_directories(generated_code_support__only_for_generated_code_do_no
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
 )
 target_link_libraries(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
+  base
+  base_internal
   collections_internal
   message_accessors
   message_accessors_internal
@@ -349,13 +352,14 @@ target_include_directories(collections_internal PUBLIC
 )
 target_link_libraries(collections_internal
   base
+  base_internal
   hash
   mem
   message_internal
   message_rep_internal
   message_tagged_ptr
-  port
-  /upb/mini_table)
+  mini_table
+  port)
 
 add_library(collections_split64 INTERFACE
     
@@ -427,9 +431,9 @@ target_include_directories(wire INTERFACE
 target_link_libraries(wire INTERFACE
   mem
   message_internal
+  mini_table
   port
-  wire_internal
-  /upb/mini_table)
+  wire_internal)
 
 add_library(wire_internal 
     ../upb/wire/decode.c
@@ -456,10 +460,10 @@ target_link_libraries(wire_internal
   message_accessors_internal
   message_internal
   message_rep_internal
+  mini_table
   port
   wire_reader
   wire_types
-  /upb/mini_table
   utf8_range)
 
 add_library(wire_types INTERFACE
@@ -512,6 +516,7 @@ target_include_directories(hash PUBLIC
 )
 target_link_libraries(hash
   base
+  base_internal
   mem
   port)
 
