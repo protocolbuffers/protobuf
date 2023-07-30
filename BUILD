@@ -129,12 +129,10 @@ cc_library(
     hdrs = [
         "upb/alloc.h",
         "upb/arena.h",
-        "upb/array.h",
         "upb/collections/array.h",
         "upb/decode.h",
         "upb/encode.h",
         "upb/extension_registry.h",
-        "upb/map.h",
         "upb/mem/alloc.h",
         "upb/mem/arena.h",
         "upb/message/extension_internal.h",
