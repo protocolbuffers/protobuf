@@ -2435,7 +2435,11 @@ class PROTOBUF_EXPORT DescriptorPool {
 
 // Arrays take an index parameter, obviously.
 #define PROTOBUF_DEFINE_ARRAY_ACCESSOR(CLASS, FIELD, TYPE) \
-  inline TYPE CLASS::FIELD(int index) const { return FIELD##s_ + index; }
+  inline TYPE CLASS::FIELD(int index) const {              \
+    ABSL_DCHECK_LE(0, index);                              \
+    ABSL_DCHECK_LT(index, FIELD##_count());                \
+    return FIELD##s_ + index;                              \
+  }
 
 #define PROTOBUF_DEFINE_OPTIONS_ACCESSOR(CLASS, TYPE) \
   inline const TYPE& CLASS::options() const { return *options_; }

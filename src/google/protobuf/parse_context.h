@@ -158,7 +158,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       return *this;
     }
 
-    ~LimitToken() = default;
+    ~LimitToken() { PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_)); }
 
     int token() && {
       int t = token_;

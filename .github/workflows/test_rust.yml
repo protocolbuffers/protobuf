@@ -21,9 +21,9 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.0.0-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: rust_linux
           bazel: |
