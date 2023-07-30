@@ -48,8 +48,10 @@ jobs:
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
       - run: mkdir -p logs/
       - run: ls -l > logs/directory_listing.txt
-      - run: echo "/workspace/core.%e.%p.%h.%t" > /proc/sys/kernel/core_pattern
       - run: cat /proc/sys/kernel/core_pattern > logs/core_pattern.txt
+      - run: whoami > logs/whoami.txt
+      - run: sysctl -w kernel.core_pattern=/workspace/core.%e.%p.%h.%t
+      - run: cat /proc/sys/kernel/core_pattern >> logs/core_pattern.txt
       - uses: actions/upload-artifact@v3
         with:
           name: logs-and-cores
