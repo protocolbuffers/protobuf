@@ -39,6 +39,12 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ inputs.safe-checkout }}
+      - run: mkdir -p logs/
+      - run: ls -l > logs/directory_listing.txt
+      - run: cat /proc/sys/kernel/core_pattern > logs/core_pattern.txt
+      - run: whoami > logs/whoami.txt
+      - run: sysctl -w kernel.core_pattern=/workspace/core.%e.%p.%h.%t
+      - run: cat /proc/sys/kernel/core_pattern >> logs/core_pattern.txt
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
@@ -46,12 +52,6 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
-      - run: mkdir -p logs/
-      - run: ls -l > logs/directory_listing.txt
-      - run: cat /proc/sys/kernel/core_pattern > logs/core_pattern.txt
-      - run: whoami > logs/whoami.txt
-      - run: sysctl -w kernel.core_pattern=/workspace/core.%e.%p.%h.%t
-      - run: cat /proc/sys/kernel/core_pattern >> logs/core_pattern.txt
       - uses: actions/upload-artifact@v3
         with:
           name: logs-and-cores
