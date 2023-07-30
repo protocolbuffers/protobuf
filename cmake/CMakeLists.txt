@@ -440,12 +440,12 @@ add_library(wire_internal
   ../upb/wire/decode_fast.c
   ../upb/wire/encode.c
   ../upb/wire/common.h
-  ../upb/wire/common_internal.h
   ../upb/wire/decode.h
   ../upb/wire/decode_fast.h
-  ../upb/wire/decode_internal.h
   ../upb/wire/encode.h
-  ../upb/wire/swap_internal.h
+  ../upb/wire/internal/common.h
+  ../upb/wire/internal/decode.h
+  ../upb/wire/internal/swap.h
 )
 target_include_directories(wire_internal PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
@@ -489,8 +489,8 @@ target_link_libraries(eps_copy_input_stream
   port)
 
 add_library(wire_reader 
-    ../upb/wire/reader.c
-  ../upb/wire/swap_internal.h
+    ../upb/wire/internal/swap.h
+  ../upb/wire/reader.c
   ../upb/wire/reader.h
 )
 target_include_directories(wire_reader PUBLIC
