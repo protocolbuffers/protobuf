@@ -38,12 +38,12 @@
 #include "upb/mini_table/sub.h"
 #include "upb/port/atomic.h"
 #include "upb/wire/common.h"
-#include "upb/wire/common_internal.h"
-#include "upb/wire/decode_internal.h"
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/internal/common.h"
+#include "upb/wire/internal/decode.h"
+#include "upb/wire/internal/swap.h"
 #include "upb/wire/reader.h"
-#include "upb/wire/swap_internal.h"
 #include "upb/wire/types.h"
 
 // Must be last.

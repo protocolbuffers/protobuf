@@ -35,7 +35,7 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "upb/wire/swap_internal.h"
+#include "upb/wire/internal/swap.h"
 #include "upb/wire/types.h"
 
 struct UnknownField;

@@ -874,12 +874,12 @@ cc_library(
     ],
     hdrs = [
         "upb/wire/common.h",
-        "upb/wire/common_internal.h",
         "upb/wire/decode.h",
         "upb/wire/decode_fast.h",
-        "upb/wire/decode_internal.h",
         "upb/wire/encode.h",
-        "upb/wire/swap_internal.h",
+        "upb/wire/internal/common.h",
+        "upb/wire/internal/decode.h",
+        "upb/wire/internal/swap.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
@@ -919,8 +919,8 @@ cc_library(
 cc_library(
     name = "wire_reader",
     srcs = [
+        "upb/wire/internal/swap.h",
         "upb/wire/reader.c",
-        "upb/wire/swap_internal.h",
     ],
     hdrs = ["upb/wire/reader.h"],
     visibility = ["//visibility:public"],

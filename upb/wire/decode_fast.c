@@ -38,7 +38,7 @@
 #include "upb/wire/decode_fast.h"
 
 #include "upb/collections/array_internal.h"
-#include "upb/wire/decode_internal.h"
+#include "upb/wire/internal/decode.h"
 
 // Must be last.
 #include "upb/port/def.inc"

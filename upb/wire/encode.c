@@ -37,8 +37,8 @@
 #include "upb/message/extension_internal.h"
 #include "upb/mini_table/sub.h"
 #include "upb/wire/common.h"
-#include "upb/wire/common_internal.h"
-#include "upb/wire/swap_internal.h"
+#include "upb/wire/internal/common.h"
+#include "upb/wire/internal/swap.h"
 #include "upb/wire/types.h"
 
 // Must be last.

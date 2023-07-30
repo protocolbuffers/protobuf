@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_WIRE_COMMON_INTERNAL_H_
-#define UPB_WIRE_COMMON_INTERNAL_H_
+#ifndef UPB_WIRE_INTERNAL_COMMON_H_
+#define UPB_WIRE_INTERNAL_COMMON_H_
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -47,4 +47,4 @@ enum {
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_WIRE_COMMON_INTERNAL_H_ */
+#endif /* UPB_WIRE_INTERNAL_COMMON_H_ */

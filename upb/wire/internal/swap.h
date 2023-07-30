@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_WIRE_SWAP_INTERNAL_H_
-#define UPB_WIRE_SWAP_INTERNAL_H_
+#ifndef UPB_WIRE_INTERNAL_SWAP_H_
+#define UPB_WIRE_INTERNAL_SWAP_H_
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -60,4 +60,4 @@ UPB_INLINE uint64_t _upb_BigEndian_Swap64(uint64_t val) {
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_WIRE_SWAP_INTERNAL_H_ */
+#endif /* UPB_WIRE_INTERNAL_SWAP_H_ */

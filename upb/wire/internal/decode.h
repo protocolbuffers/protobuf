@@ -30,8 +30,8 @@
  * decode.c and decode_fast.c.
  */
 
-#ifndef UPB_WIRE_DECODE_INTERNAL_H_
-#define UPB_WIRE_DECODE_INTERNAL_H_
+#ifndef UPB_WIRE_INTERNAL_DECODE_H_
+#define UPB_WIRE_INTERNAL_DECODE_H_
 
 #include "upb/mem/arena_internal.h"
 #include "upb/message/internal.h"
@@ -160,4 +160,4 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_WIRE_DECODE_INTERNAL_H_ */
+#endif /* UPB_WIRE_INTERNAL_DECODE_H_ */

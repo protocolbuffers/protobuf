@@ -29,7 +29,7 @@
 #define UPB_WIRE_READER_H_
 
 #include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/swap_internal.h"
+#include "upb/wire/internal/swap.h"
 #include "upb/wire/types.h"
 
 // Must be last.
