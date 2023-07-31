@@ -659,7 +659,6 @@ cc_library(
     ],
     hdrs = [
         "upb/text/encode.h",
-        "upb/text_encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
