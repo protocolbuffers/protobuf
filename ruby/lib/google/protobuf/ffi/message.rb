@@ -318,7 +318,7 @@ module Google
 
           def self.create_finalizer
             proc do | object_id |
-              $stderr.puts "Finalized #{object_id}"
+              # $stderr.puts "Finalized #{object_id}"
             end
           end
 
