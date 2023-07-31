@@ -26,20 +26,16 @@ jobs:
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
           # Set defaults
-          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:309dae3122031447d714414814d262e5f31cb93c0e248e9c02f9d8cdafd7e3b9
+          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
           - targets: //pkg/... //src/... @com_google_protobuf_examples//...
 
           # Override cases with custom images
           - config: { name: "TCMalloc" }
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:4df3b4749e787ba0a671ec0b783d0f1ba05f60be4c9e9fd72c875550a0cde1ea"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:e4493c58e7c3f3a0775e0b19a46bc822e866a5275b7a5463f509af8072f283db"
             targets: "//src/..."
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test"
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-3af05275178e16af30961976af126eabbbb2c733"
-          # TODO(b/278116805) Enable this once Bazel 6 is supported.
-          #- config: { name: "Bazel6" }
-          #  targets: "//src/..."
-          #  image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.0.0-6361b3a6e5c97e9951d03a4de28542fc45f1adab"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-222e7e87028b7098e088f5ca7cae06d32f483eb5"
     name: Linux ${{ matrix.config.name }}
     runs-on: ubuntu-latest
     steps:
@@ -48,7 +44,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -68,9 +64,9 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.version }}-5.4.0-2d15d9e888c9e7f90961dbd3afc8ea209717fb4b
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.version }}-6.3.0-518b4fcd8d0ded2484c94f02e835526cacfdac2d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
           bazel: test //pkg/... //src/... @com_google_protobuf_examples//...
@@ -90,19 +86,19 @@ jobs:
           submodules: recursive
       - name: Cross compile protoc for ${{ matrix.arch }}
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-${{ matrix.arch }}
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@v2
         with:
           cache-prefix: linux-release-${{ matrix.arch }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-3af05275178e16af30961976af126eabbbb2c733
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-222e7e87028b7098e088f5ca7cae06d32f483eb5
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >
@@ -137,12 +133,12 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@v2
         with:
           cache-prefix: linux-cmake-${{ matrix.name }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-e6272cdfe97c6df307e17b83f3a7a70844f6fc08
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -162,12 +158,12 @@ jobs:
           submodules: recursive
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@v2
         with:
           cache-prefix: linux-cmake-install
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -191,12 +187,12 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@v2
         with:
           cache-prefix: linux-cmake-examples
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -231,14 +227,14 @@ jobs:
           submodules: recursive
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@v2
         with:
           cache-prefix: linux-cmake-gcc-${{ matrix.name }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-5.4.0-307caa02808127e49720f3e77d6a9f3b3ef5a915
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-518b4fcd8d0ded2484c94f02e835526cacfdac2d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >-
@@ -261,12 +257,12 @@ jobs:
           submodules: recursive
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@v2
         with:
           cache-prefix: linux-cmake-${{ matrix.name }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -285,12 +281,12 @@ jobs:
           submodules: recursive
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@v2
         with:
           cache-prefix: linux-cmake-32-bit
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:f99f051daa8b12f4ebad5927f389bc71372f771ab080290ab451cbaf1648f9ea
           platform: linux/386
@@ -331,7 +327,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+        uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.bazel }}
@@ -386,7 +382,7 @@ jobs:
           submodules: recursive
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@v2
         with:
           cache-prefix: ${{ matrix.name }}
           vsversion: ${{ matrix.vsversion }}
@@ -394,7 +390,7 @@ jobs:
       # Install phase.
       - name: Configure CMake for install
         if: matrix.install-flags
-        uses: protocolbuffers/protobuf-ci/bash@v1
+        uses: protocolbuffers/protobuf-ci/bash@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.install-flags }} ${{ env.CCACHE_CMAKE_FLAGS }}
@@ -416,7 +412,7 @@ jobs:
         run: cmake --build . --target clean && rm CMakeCache.txt
 
       - name: Configure CMake
-        uses: protocolbuffers/protobuf-ci/bash@v1
+        uses: protocolbuffers/protobuf-ci/bash@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.flags }} ${{ env.CCACHE_CMAKE_FLAGS }}

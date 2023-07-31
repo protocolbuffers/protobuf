@@ -44,14 +44,14 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
       - name: Setup composer
-        uses: protocolbuffers/protobuf-ci/composer-setup@v1
+        uses: protocolbuffers/protobuf-ci/composer-setup@v2
         with:
           cache-prefix: php-${{ matrix.version-short }}
           directory: php
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-508417e5215994ade7585d28ba3aad681a25fa5d
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache
           command: ${{ matrix.command }}
@@ -85,20 +85,20 @@ jobs:
 
       - name: Cross compile protoc for i386
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
       - name: Setup composer
-        uses: protocolbuffers/protobuf-ci/composer-setup@v1
+        uses: protocolbuffers/protobuf-ci/composer-setup@v2
         with:
           cache-prefix: php-${{ matrix.version }}
           directory: php
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: ${{ env.image }}
           skip-staleness-check: true
@@ -123,20 +123,20 @@ jobs:
 
       - name: Cross compile protoc for aarch64
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
       - name: Setup composer
-        uses: protocolbuffers/protobuf-ci/composer-setup@v1
+        uses: protocolbuffers/protobuf-ci/composer-setup@v2
         with:
           cache-prefix: php-8.0
           directory: php
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64:0cc100b6e03d14c1e8f71ae794dc162ed122fe31@sha256:77b70feba68dced1f0fd21b52a08d3d2e0c5c797bfe68435a0038ce87ecfd310
           platform: linux/arm64
@@ -180,13 +180,13 @@ jobs:
         run: php --version | grep ${{ matrix.version }} || (echo "Invalid PHP version - $(php --version)" && exit 1)
 
       - name: Setup composer
-        uses: protocolbuffers/protobuf-ci/composer-setup@v1
+        uses: protocolbuffers/protobuf-ci/composer-setup@v2
         with:
           cache-prefix: php-${{ matrix.version }}
           directory: php
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+        uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}
@@ -199,7 +199,7 @@ jobs:
             popd
 
       - name: Run conformance tests
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+        uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}

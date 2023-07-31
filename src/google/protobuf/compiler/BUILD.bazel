@@ -12,6 +12,7 @@ load(
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
+load("test_plugin_injection.bzl", "inject_plugin_paths")
 
 proto_library(
     name = "plugin_proto",
@@ -267,6 +268,8 @@ cc_test(
     ],
 )
 
+inject_plugin_paths("test_plugin_paths")
+
 cc_test(
     name = "command_line_interface_unittest",
     srcs = ["command_line_interface_unittest.cc"],
@@ -278,8 +281,10 @@ cc_test(
         ],
     }) + [
         # Note: This only works on Windows with symlinks and runfiles enabled.
-        "-DGOOGLE_PROTOBUF_FAKE_PLUGIN_PATH=\\\"$(rootpath :fake_plugin)\\\"",
-        "-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH=\\\"$(rootpath :test_plugin)\\\"",
+        # "-DGOOGLE_PROTOBUF_FAKE_PLUGIN_PATH=\\\"$(rootpath :fake_plugin)\\\"",
+        # "-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH=\\\"$(rootpath :test_plugin)\\\"",
+        # Workaround for https://github.com/bazelbuild/bazel/issues/19124.
+        "-DGOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS=1",
     ],
     data = [
         ":fake_plugin",
@@ -293,6 +298,7 @@ cc_test(
         ":command_line_interface",
         ":command_line_interface_tester",
         ":mock_code_generator",
+        ":test_plugin_paths",
         "//:protobuf",
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:test_textproto",
