@@ -86,7 +86,13 @@ typedef struct {
 } upb_Message_InternalData;
 
 typedef struct {
-  upb_Message_InternalData* internal;
+  union {
+    upb_Message_InternalData* internal;
+
+    // Force 8-byte alignment, since the data members may contain members that
+    // require 8-byte alignment.
+    double d;
+  };
   /* Message data follows. */
 } upb_Message_Internal;
 
