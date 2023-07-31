@@ -1610,7 +1610,7 @@ public final class TextFormat {
           SingularOverwritePolicy.ALLOW_SINGULAR_OVERWRITES;
       private TextFormatParseInfoTree.Builder parseInfoTreeBuilder = null;
       private TypeRegistry typeRegistry = TypeRegistry.getEmptyTypeRegistry();
-      private int recursionLimit = 150;
+      private int recursionLimit = 100;
 
       /**
        * Sets the TypeRegistry for resolving Any. If this is not set, TextFormat will not be able to

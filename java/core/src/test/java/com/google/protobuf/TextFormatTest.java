@@ -1854,11 +1854,11 @@ public class TextFormatTest {
 
   @Test
   public void testDefaultRecursionLimit() throws Exception {
-    String depth150 = TextFormat.printer().printToString(makeRecursiveMessage(150));
-    String depth151 = TextFormat.printer().printToString(makeRecursiveMessage(151));
-    TextFormat.parse(depth150, TestRecursiveMessage.class);
+    String depth100 = TextFormat.printer().printToString(makeRecursiveMessage(100));
+    String depth101 = TextFormat.printer().printToString(makeRecursiveMessage(101));
+    TextFormat.parse(depth100, TestRecursiveMessage.class);
     try {
-      TextFormat.parse(depth151, TestRecursiveMessage.class);
+      TextFormat.parse(depth101, TestRecursiveMessage.class);
       assertWithMessage("Parsing deep message should have failed").fail();
     } catch (TextFormat.ParseException e) {
       assertThat(e).hasMessageThat().contains("too deep");
