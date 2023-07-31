@@ -80,6 +80,12 @@ module Google
             instance
           end
 
+          def freeze
+            super
+            @arena.pin self
+            self
+          end
+
           def dup
             duplicate = self.class.private_constructor(@arena)
             mini_table = Google::Protobuf::FFI.get_mini_table(self.class.descriptor)
