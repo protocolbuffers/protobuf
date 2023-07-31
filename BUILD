@@ -132,7 +132,6 @@ cc_library(
         "upb/collections/array.h",
         "upb/decode.h",
         "upb/encode.h",
-        "upb/extension_registry.h",
         "upb/mem/alloc.h",
         "upb/mem/arena.h",
         "upb/message/extension_internal.h",
