@@ -1117,10 +1117,11 @@ FeatureSet* CreateProto2DefaultFeatures() {
   features->set_field_presence(FeatureSet::EXPLICIT);
   features->set_enum_type(FeatureSet::CLOSED);
   features->set_repeated_field_encoding(FeatureSet::EXPANDED);
-  features->set_string_field_validation(FeatureSet::HINT);
   features->set_message_encoding(FeatureSet::LENGTH_PREFIXED);
   features->set_json_format(FeatureSet::LEGACY_BEST_EFFORT);
   features->MutableExtension(pb::cpp)->set_legacy_closed_enum(true);
+  features->MutableExtension(pb::cpp)->set_utf8_validation(
+      pb::CppFeatures::VERIFY_DLOG);
 
   return features;
 }
@@ -1145,9 +1146,11 @@ const FeatureSet& GetProto3Features() {
     features->set_field_presence(FeatureSet::IMPLICIT);
     features->set_enum_type(FeatureSet::OPEN);
     features->set_repeated_field_encoding(FeatureSet::PACKED);
-    features->set_string_field_validation(FeatureSet::MANDATORY);
     features->set_message_encoding(FeatureSet::LENGTH_PREFIXED);
     features->set_json_format(FeatureSet::ALLOW);
+    features->MutableExtension(pb::cpp)->set_legacy_closed_enum(false);
+    features->MutableExtension(pb::cpp)->set_utf8_validation(
+        pb::CppFeatures::VERIFY_PARSE);
     return features;
   }();
   return *kProto3Features;
@@ -3817,7 +3820,8 @@ bool FieldDescriptor::is_packed() const {
 
 static bool IsStrictUtf8(const FieldDescriptor* field) {
   return internal::InternalFeatureHelper::GetFeatures(*field)
-             .string_field_validation() == FeatureSet::MANDATORY;
+             .GetExtension(pb::cpp)
+             .utf8_validation() == pb::CppFeatures::VERIFY_PARSE;
 }
 
 bool FieldDescriptor::requires_utf8_validation() const {
@@ -7838,17 +7842,6 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
 }
 
-static bool IsStringMapType(const FieldDescriptor* field) {
-  if (!field->is_map()) return false;
-  for (int i = 0; i < field->message_type()->field_count(); ++i) {
-    if (field->message_type()->field(i)->type() ==
-        FieldDescriptor::TYPE_STRING) {
-      return true;
-    }
-  }
-  return false;
-}
-
 void DescriptorBuilder::ValidateFieldFeatures(
     const FieldDescriptor* field, const FieldDescriptorProto& proto) {
   // Rely on our legacy validation for proto2/proto3 files.
@@ -7894,12 +7887,6 @@ void DescriptorBuilder::ValidateFieldFeatures(
     AddError(
         field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
         "Only singular scalar fields can specify required field presence.");
-  }
-  if (field->type() != FieldDescriptor::TYPE_STRING &&
-      !IsStringMapType(field) &&
-      field->proto_features_->has_string_field_validation()) {
-    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-             "Only string fields can specify `string_field_validation`.");
   }
   if (!field->is_repeated() &&
       field->proto_features_->has_repeated_field_encoding()) {

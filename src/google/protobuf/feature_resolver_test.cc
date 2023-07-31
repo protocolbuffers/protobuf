@@ -144,7 +144,6 @@ TEST(FeatureResolverTest, DefaultsCore2023) {
   EXPECT_EQ(merged->field_presence(), FeatureSet::EXPLICIT);
   EXPECT_EQ(merged->enum_type(), FeatureSet::OPEN);
   EXPECT_EQ(merged->repeated_field_encoding(), FeatureSet::PACKED);
-  EXPECT_EQ(merged->string_field_validation(), FeatureSet::MANDATORY);
   EXPECT_EQ(merged->message_encoding(), FeatureSet::LENGTH_PREFIXED);
   EXPECT_FALSE(merged->HasExtension(pb::test));
 }
@@ -156,7 +155,6 @@ TEST(FeatureResolverTest, DefaultsTest2023) {
   EXPECT_EQ(merged->field_presence(), FeatureSet::EXPLICIT);
   EXPECT_EQ(merged->enum_type(), FeatureSet::OPEN);
   EXPECT_EQ(merged->repeated_field_encoding(), FeatureSet::PACKED);
-  EXPECT_EQ(merged->string_field_validation(), FeatureSet::MANDATORY);
   EXPECT_EQ(merged->message_encoding(), FeatureSet::LENGTH_PREFIXED);
 
   const pb::TestFeatures& ext = merged->GetExtension(pb::test);
@@ -185,7 +183,6 @@ TEST(FeatureResolverTest, DefaultsTestMessageExtension) {
   EXPECT_EQ(merged->field_presence(), FeatureSet::EXPLICIT);
   EXPECT_EQ(merged->enum_type(), FeatureSet::OPEN);
   EXPECT_EQ(merged->repeated_field_encoding(), FeatureSet::PACKED);
-  EXPECT_EQ(merged->string_field_validation(), FeatureSet::MANDATORY);
   EXPECT_EQ(merged->message_encoding(), FeatureSet::LENGTH_PREFIXED);
 
   const pb::TestFeatures& ext = merged->GetExtension(pb::test);
@@ -214,7 +211,6 @@ TEST(FeatureResolverTest, DefaultsTestNestedExtension) {
   EXPECT_EQ(merged->field_presence(), FeatureSet::EXPLICIT);
   EXPECT_EQ(merged->enum_type(), FeatureSet::OPEN);
   EXPECT_EQ(merged->repeated_field_encoding(), FeatureSet::PACKED);
-  EXPECT_EQ(merged->string_field_validation(), FeatureSet::MANDATORY);
   EXPECT_EQ(merged->message_encoding(), FeatureSet::LENGTH_PREFIXED);
 
   const pb::TestFeatures& ext = merged->GetExtension(pb::test);
@@ -370,7 +366,6 @@ TEST(FeatureResolverTest, MergeFeaturesChildOverrideCore) {
   EXPECT_EQ(merged->field_presence(), FeatureSet::IMPLICIT);
   EXPECT_EQ(merged->enum_type(), FeatureSet::OPEN);
   EXPECT_EQ(merged->repeated_field_encoding(), FeatureSet::EXPANDED);
-  EXPECT_EQ(merged->string_field_validation(), FeatureSet::MANDATORY);
   EXPECT_EQ(merged->message_encoding(), FeatureSet::LENGTH_PREFIXED);
 }
 
@@ -394,7 +389,6 @@ TEST(FeatureResolverTest, MergeFeaturesChildOverrideComplex) {
   EXPECT_EQ(merged->field_presence(), FeatureSet::IMPLICIT);
   EXPECT_EQ(merged->enum_type(), FeatureSet::OPEN);
   EXPECT_EQ(merged->repeated_field_encoding(), FeatureSet::EXPANDED);
-  EXPECT_EQ(merged->string_field_validation(), FeatureSet::MANDATORY);
   EXPECT_EQ(merged->message_encoding(), FeatureSet::LENGTH_PREFIXED);
 
   pb::TestFeatures ext = merged->GetExtension(pb::test);
@@ -421,7 +415,6 @@ TEST(FeatureResolverTest, MergeFeaturesParentOverrides) {
     }
   )pb");
   FeatureSet child = ParseTextOrDie(R"pb(
-    string_field_validation: NONE
     repeated_field_encoding: PACKED
     [pb.test] {
       int_field_feature: 9
@@ -434,7 +427,6 @@ TEST(FeatureResolverTest, MergeFeaturesParentOverrides) {
   EXPECT_EQ(merged->field_presence(), FeatureSet::IMPLICIT);
   EXPECT_EQ(merged->enum_type(), FeatureSet::OPEN);
   EXPECT_EQ(merged->repeated_field_encoding(), FeatureSet::PACKED);
-  EXPECT_EQ(merged->string_field_validation(), FeatureSet::NONE);
   EXPECT_EQ(merged->message_encoding(), FeatureSet::LENGTH_PREFIXED);
 
   pb::TestFeatures ext = merged->GetExtension(pb::test);
@@ -488,18 +480,6 @@ TEST(FeatureResolverTest, MergeFeaturesRepeatedFieldEncodingUnknown) {
               HasError(AllOf(
                   HasSubstr("field google.protobuf.FeatureSet.repeated_field_encoding"),
                   HasSubstr("REPEATED_FIELD_ENCODING_UNKNOWN"))));
-}
-
-TEST(FeatureResolverTest, MergeFeaturesStringFieldValidationUnknown) {
-  absl::StatusOr<FeatureResolver> resolver = SetupFeatureResolver("2023");
-  ASSERT_OK(resolver);
-  FeatureSet child = ParseTextOrDie(R"pb(
-    string_field_validation: STRING_FIELD_VALIDATION_UNKNOWN
-  )pb");
-  EXPECT_THAT(resolver->MergeFeatures(FeatureSet(), child),
-              HasError(AllOf(
-                  HasSubstr("field google.protobuf.FeatureSet.string_field_validation"),
-                  HasSubstr("STRING_FIELD_VALIDATION_UNKNOWN"))));
 }
 
 TEST(FeatureResolverTest, MergeFeaturesMessageEncodingUnknown) {

@@ -1560,7 +1560,6 @@ TEST_F(CommandLineInterfaceTest, Plugin_RuntimeFeatures) {
       EqualsProto(R"pb(field_presence: IMPLICIT
                        enum_type: OPEN
                        repeated_field_encoding: PACKED
-                       string_field_validation: MANDATORY
                        message_encoding: LENGTH_PREFIXED
                        json_format: ALLOW
                        raw_features { field_presence: IMPLICIT }
@@ -1577,7 +1576,6 @@ TEST_F(CommandLineInterfaceTest, Plugin_RuntimeFeatures) {
               EqualsProto(R"pb(field_presence: IMPLICIT
                                enum_type: OPEN
                                repeated_field_encoding: PACKED
-                               string_field_validation: MANDATORY
                                message_encoding: LENGTH_PREFIXED
                                json_format: ALLOW
                                raw_features { field_presence: IMPLICIT }

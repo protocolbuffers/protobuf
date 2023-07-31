@@ -63,8 +63,11 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
@@ -7254,26 +7257,32 @@ TEST_F(FeaturesTest, Proto2Features) {
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
-                string_field_validation: HINT
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
-                [pb.cpp] { legacy_closed_enum: true })pb"));
+                [pb.cpp] {
+                  legacy_closed_enum: true
+                  utf8_validation: VERIFY_DLOG
+                })pb"));
   EXPECT_THAT(GetFeatures(field), EqualsProto(R"pb(
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
-                string_field_validation: HINT
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
-                [pb.cpp] { legacy_closed_enum: true })pb"));
+                [pb.cpp] {
+                  legacy_closed_enum: true
+                  utf8_validation: VERIFY_DLOG
+                })pb"));
   EXPECT_THAT(GetFeatures(group), EqualsProto(R"pb(
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
-                string_field_validation: HINT
                 message_encoding: DELIMITED
                 json_format: LEGACY_BEST_EFFORT
-                [pb.cpp] { legacy_closed_enum: true })pb"));
+                [pb.cpp] {
+                  legacy_closed_enum: true
+                  utf8_validation: VERIFY_DLOG
+                })pb"));
   EXPECT_TRUE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
   EXPECT_FALSE(field->is_packed());
@@ -7324,16 +7333,22 @@ TEST_F(FeaturesTest, Proto3Features) {
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW)pb"));
+                json_format: ALLOW
+                [pb.cpp] {
+                  legacy_closed_enum: false
+                  utf8_validation: VERIFY_PARSE
+                })pb"));
   EXPECT_THAT(GetFeatures(field), EqualsProto(R"pb(
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW)pb"));
+                json_format: ALLOW
+                [pb.cpp] {
+                  legacy_closed_enum: false
+                  utf8_validation: VERIFY_PARSE
+                })pb"));
   EXPECT_FALSE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
   EXPECT_FALSE(field->is_packed());
@@ -7463,7 +7478,6 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
         field_presence: EXPLICIT
         enum_type: OPEN
         repeated_field_encoding: PACKED
-        string_field_validation: MANDATORY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         [pb.cpp] { legacy_closed_enum: false utf8_validation: VERIFY_PARSE }
@@ -7491,7 +7505,6 @@ TEST_F(FeaturesTest, ClearsOptions) {
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -7754,7 +7767,6 @@ TEST_F(FeaturesTest, NoOptions) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -7787,7 +7799,6 @@ TEST_F(FeaturesTest, FileFeatures) {
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -7865,7 +7876,6 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -7973,7 +7983,6 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8211,52 +8220,6 @@ TEST_F(FeaturesTest, MapFieldFeaturesOverride) {
   validate(value);
 }
 
-TEST_F(FeaturesTest, MapFieldFeaturesStringValidation) {
-  constexpr absl::string_view kProtoFile = R"schema(
-    edition = "2023";
-
-    message Foo {
-      map<string, string> map_field = 1 [
-        features.string_field_validation = HINT
-      ];
-      map<int32, string> map_field_value = 2 [
-        features.string_field_validation = HINT
-      ];
-      map<string, int32> map_field_key = 3 [
-        features.string_field_validation = HINT
-      ];
-    }
-  )schema";
-  io::ArrayInputStream input_stream(kProtoFile.data(), kProtoFile.size());
-  SimpleErrorCollector error_collector;
-  io::Tokenizer tokenizer(&input_stream, &error_collector);
-  compiler::Parser parser;
-  parser.RecordErrorsTo(&error_collector);
-  FileDescriptorProto proto;
-  ASSERT_TRUE(parser.Parse(&tokenizer, &proto))
-      << error_collector.last_error() << "\n"
-      << kProtoFile;
-  ASSERT_EQ("", error_collector.last_error());
-  proto.set_name("foo.proto");
-
-  BuildDescriptorMessagesInTestPool();
-  const FileDescriptor* file = pool_.BuildFile(proto);
-  ASSERT_THAT(file, NotNull());
-
-  auto validate_map_field = [](const FieldDescriptor* field) {
-    const FieldDescriptor* key = field->message_type()->field(0);
-    const FieldDescriptor* value = field->message_type()->field(1);
-
-    EXPECT_FALSE(field->requires_utf8_validation()) << field->DebugString();
-    EXPECT_FALSE(key->requires_utf8_validation()) << field->DebugString();
-    EXPECT_FALSE(value->requires_utf8_validation()) << field->DebugString();
-  };
-
-  validate_map_field(file->message_type(0)->field(0));
-  validate_map_field(file->message_type(0)->field(1));
-  validate_map_field(file->message_type(0)->field(2));
-}
-
 TEST_F(FeaturesTest, RootExtensionFeaturesOverride) {
   BuildDescriptorMessagesInTestPool();
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
@@ -8364,7 +8327,6 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8474,7 +8436,6 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8569,7 +8530,6 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8671,7 +8631,6 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8758,7 +8717,6 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8827,7 +8785,6 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8908,9 +8865,11 @@ TEST_F(FeaturesTest, MethodFeaturesOverride) {
 
 TEST_F(FeaturesTest, FieldFeatureHelpers) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::CppFeatures::GetDescriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
+    dependency: "google/protobuf/cpp_features.proto"
     edition: "2023"
     message_type {
       name: "Foo"
@@ -8950,14 +8909,22 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
         number: 7
         label: LABEL_REPEATED
         type: TYPE_STRING
-        options { features { string_field_validation: HINT } }
+        options {
+          features {
+            [pb.cpp] { utf8_validation: VERIFY_DLOG }
+          }
+        }
       }
       field {
         name: "utf8_none_field"
         number: 8
         label: LABEL_REPEATED
         type: TYPE_STRING
-        options { features { string_field_validation: NONE } }
+        options {
+          features {
+            [pb.cpp] { utf8_validation: NONE }
+          }
+        }
       }
     }
   )pb");
@@ -9243,6 +9210,35 @@ TEST_F(FeaturesTest, InvalidFieldRepeatedImplicit) {
       "implicit field presence.\n");
 }
 
+TEST_F(FeaturesTest, InvalidFieldMapImplicit) {
+  constexpr absl::string_view kProtoFile = R"schema(
+    edition = "2023";
+
+    message Foo {
+      map<string, Foo> bar = 1 [
+        features.field_presence = IMPLICIT
+      ];
+    }
+  )schema";
+  io::ArrayInputStream input_stream(kProtoFile.data(), kProtoFile.size());
+  SimpleErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  parser.RecordErrorsTo(&error_collector);
+  FileDescriptorProto proto;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &proto))
+      << error_collector.last_error() << "\n"
+      << kProtoFile;
+  ASSERT_EQ("", error_collector.last_error());
+  proto.set_name("foo.proto");
+
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      proto.DebugString(),
+      "foo.proto: Foo.bar: NAME: Only singular scalar fields can specify "
+      "implicit field presence.\n");
+}
+
 TEST_F(FeaturesTest, InvalidFieldOneofImplicit) {
   BuildDescriptorMessagesInTestPool();
   BuildFileWithErrors(
@@ -9311,95 +9307,6 @@ TEST_F(FeaturesTest, InvalidFieldOneofRequired) {
       )pb",
       "foo.proto: Foo.bar: NAME: Only singular scalar fields can specify "
       "required field presence.\n");
-}
-
-TEST_F(FeaturesTest, InvalidFieldNonStringWithStringValidation) {
-  BuildDescriptorMessagesInTestPool();
-  BuildFileWithErrors(
-      R"pb(
-        name: "foo.proto"
-        syntax: "editions"
-        edition: "2023"
-        message_type {
-          name: "Foo"
-          field {
-            name: "bar"
-            number: 1
-            label: LABEL_OPTIONAL
-            type: TYPE_INT64
-            options { features { string_field_validation: MANDATORY } }
-          }
-        }
-      )pb",
-      "foo.proto: Foo.bar: NAME: Only string fields can specify "
-      "`string_field_validation`.\n");
-}
-
-TEST_F(FeaturesTest, InvalidFieldNonStringMapWithStringValidation) {
-  BuildDescriptorMessagesInTestPool();
-  BuildFileWithErrors(
-      R"pb(
-        name: "foo.proto"
-        syntax: "editions"
-        edition: "2023"
-        message_type {
-          name: "Foo"
-          nested_type {
-            name: "MapFieldEntry"
-            field {
-              name: "key"
-              number: 1
-              label: LABEL_OPTIONAL
-              type: TYPE_INT32
-              options {
-                uninterpreted_option {
-                  name { name_part: "features" is_extension: false }
-                  name {
-                    name_part: "string_field_validation"
-                    is_extension: false
-                  }
-                  identifier_value: "HINT"
-                }
-              }
-            }
-            field {
-              name: "value"
-              number: 2
-              label: LABEL_OPTIONAL
-              type: TYPE_INT32
-              options {
-                uninterpreted_option {
-                  name { name_part: "features" is_extension: false }
-                  name {
-                    name_part: "string_field_validation"
-                    is_extension: false
-                  }
-                  identifier_value: "HINT"
-                }
-              }
-            }
-            options { map_entry: true }
-          }
-          field {
-            name: "map_field"
-            number: 1
-            label: LABEL_REPEATED
-            type_name: "MapFieldEntry"
-            options {
-              uninterpreted_option {
-                name { name_part: "features" is_extension: false }
-                name {
-                  name_part: "string_field_validation"
-                  is_extension: false
-                }
-                identifier_value: "HINT"
-              }
-            }
-          }
-        }
-      )pb",
-      "foo.proto: Foo.map_field: NAME: Only string fields can specify "
-      "`string_field_validation`.\n");
 }
 
 TEST_F(FeaturesTest, InvalidFieldNonRepeatedWithRepeatedEncoding) {
@@ -9519,7 +9426,6 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -9647,7 +9553,6 @@ TEST_F(FeaturesTest, RawFeatures) {
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -9674,7 +9579,6 @@ TEST_F(FeaturesTest, RawFeaturesConflict) {
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
-                string_field_validation: MANDATORY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
