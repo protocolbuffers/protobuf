@@ -77,6 +77,7 @@ module Google
           def self.new(initial_value = nil)
             instance = allocate
             instance.send(:initialize, initial_value)
+            ObjectSpace.define_finalizer(instance, create_finalizer)
             instance
           end
 
@@ -314,6 +315,12 @@ module Google
           # warning and are intended for use only within the gem.
 
           include Google::Protobuf::Internal::Convert
+
+          def self.create_finalizer
+            proc do | object_id |
+              $stderr.puts "Finalized #{object_id}"
+            end
+          end
 
           def self.setup_accessors!
             @descriptor.each do |field_descriptor|

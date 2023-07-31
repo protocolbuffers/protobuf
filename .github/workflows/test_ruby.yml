@@ -32,7 +32,7 @@ jobs:
 #          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
 
-    name: Linux ${{ matrix.name }}${{ matrix.noop == '' && '' || format('-{0}', matrix.noop) }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+    name: Linux ${{ matrix.name == 'Ruby X' && matrix.ruby || matrix.name }}${{ matrix.noop == '' && '' || format('-{0}', matrix.noop) }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -43,7 +43,7 @@ jobs:
       - run: ls -l > logs/directory_listing.txt
       - run: cat /proc/sys/kernel/core_pattern > logs/core_pattern.txt
       - run: whoami > logs/whoami.txt
-      - run: sysctl -w kernel.core_pattern=/workspace/core.%e.%p.%h.%t
+      - run: sudo sysctl -w kernel.core_pattern=/workspace/core.%e.%p.%h.%t
       - run: cat /proc/sys/kernel/core_pattern >> logs/core_pattern.txt
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v2
