@@ -34,7 +34,7 @@
 
 #include "lauxlib.h"
 #include "lua/upb.h"
-#include "upb/reflection.h"
+#include "upb/reflection/message.h"
 
 #define LUPB_ENUMDEF "lupb.enumdef"
 #define LUPB_ENUMVALDEF "lupb.enumvaldef"

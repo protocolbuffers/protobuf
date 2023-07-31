@@ -563,8 +563,6 @@ bootstrap_cc_library(
     hdrs = [
         "upb/def.h",
         "upb/def.hpp",
-        "upb/reflection.h",
-        "upb/reflection.hpp",
         "upb/reflection/def.h",
         "upb/reflection/def.hpp",
         "upb/reflection/message.h",
