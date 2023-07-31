@@ -51,13 +51,20 @@ jobs:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
-          bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
+          bash: |
+            # Allow core dumps
+            ulimit -c unlimited 
+            # Run Bazel
+            /entrypoint.sh test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ${{ env.BAZEL_FLAGS }}
       - uses: actions/upload-artifact@v3
         with:
           name: logs-and-cores
           path: |
             logs/
             core*
+            !core.rb
+            !core.h
+            !**/.DS_Store
 
   linux-aarch64:
     name: Linux aarch64
