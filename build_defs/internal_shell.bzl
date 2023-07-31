@@ -32,7 +32,7 @@ def inline_sh_binary(
     native.genrule(
         name = name + "_genrule",
         srcs = srcs,
-        exec_tools = tools,
+        tools = tools,
         outs = [name + ".sh"],
         cmd = "cat <<'EOF' >$(OUTS)\n#!/bin/bash -exu\n%s\nEOF\n" % cmd,
         visibility = ["//visibility:private"],
@@ -77,7 +77,7 @@ def inline_sh_test(
     native.genrule(
         name = name + "_genrule",
         srcs = srcs,
-        exec_tools = tools,
+        tools = tools,
         outs = [name + ".sh"],
         cmd = "cat <<'EOF' >$(OUTS)\n#!/bin/bash -exu\n%s\nEOF\n" % cmd,
         visibility = ["//visibility:private"],

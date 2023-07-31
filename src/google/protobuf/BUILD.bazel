@@ -138,7 +138,7 @@ genrule(
             --proto_path=$$(dirname $$(dirname $$(dirname $(location any.proto)))) \
             $(SRCS)
     """,
-    exec_tools = ["//:protoc"],
+    tools = ["//:protoc"],
     visibility = ["//visibility:private"],
 )
 
