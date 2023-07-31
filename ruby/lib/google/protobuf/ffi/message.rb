@@ -83,6 +83,7 @@ module Google
           def freeze
             super
             @arena.pin self
+            self
           end
 
           def dup
