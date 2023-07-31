@@ -376,7 +376,6 @@ target_link_libraries(collections_split64 INTERFACE
 add_library(textformat 
     ../upb/text/encode.c
   ../upb/text/encode.h
-  ../upb/text_encode.h
 )
 target_include_directories(textformat PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
