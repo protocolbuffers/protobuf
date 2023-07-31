@@ -137,7 +137,6 @@ cc_library(
         "upb/message/extension_internal.h",
         "upb/message/message.h",
         "upb/msg.h",
-        "upb/string_view.h",
         "upb/upb.h",
         "upb/upb.hpp",
         "upb/wire/common.h",
