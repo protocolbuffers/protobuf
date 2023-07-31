@@ -17,13 +17,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: Ruby 2.7, ruby: ruby-2.7.0, bazel: 5.1.1}
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, bazel: 5.1.1}
-          - { name: Ruby 3.1, ruby: ruby-3.1.0, bazel: 5.1.1}
-          - { name: Ruby 3.2, ruby: ruby-3.2.0, bazel: 5.1.1}
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, bazel: 5.1.1}
-          - { name: Ruby 2.7 (Bazel6), ruby: ruby-2.7.0, bazel: 6.0.0}
-          - { name: JRuby 9.4 (Bazel6), ruby: jruby-9.4.3.0, bazel: 6.0.0}
+          - { name: Ruby 2.7, ruby: ruby-2.7.0 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2 }
+          - { name: Ruby 3.1, ruby: ruby-3.1.0 }
+          - { name: Ruby 3.2, ruby: ruby-3.2.0 }
+          - { name: JRuby 9.4, ruby: jruby-9.4.3.0 }
 
     name: Linux ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -33,9 +31,9 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-{1}-508417e5215994ade7585d28ba3aad681a25fa5d', matrix.ruby, matrix.bazel) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION
@@ -51,14 +49,14 @@ jobs:
 
       - name: Cross compile protoc for aarch64
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: arm64v8/ruby:2.7.3-buster
           skip-staleness-check: true
@@ -96,7 +94,7 @@ jobs:
         run: ruby --version | grep ${{ matrix.version }} || (echo "Invalid Ruby version - $(ruby --version)" && exit 1)
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+        uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_macos/${{ matrix.version }}
@@ -107,13 +105,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: Ruby 2.7, ruby: ruby-2.7.0, bazel: 5.1.1}
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, bazel: 5.1.1}
-          - { name: Ruby 3.1, ruby: ruby-3.1.0, bazel: 5.1.1}
-          - { name: Ruby 3.2, ruby: ruby-3.2.0, bazel: 5.1.1}
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, bazel: 5.1.1}
-          - { name: Ruby 2.7 (Bazel6), ruby: ruby-2.7.0, bazel: 6.0.0}
-          - { name: JRuby 9.4 (Bazel6), ruby: jruby-9.4.3.0, bazel: 6.0.0}
+          - { name: Ruby 2.7, ruby: ruby-2.7.0 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2 }
+          - { name: Ruby 3.1, ruby: ruby-3.1.0 }
+          - { name: Ruby 3.2, ruby: ruby-3.2.0 }
+          - { name: JRuby 9.4, ruby: jruby-9.4.3.0 }
     name: Install ${{ matrix.name }}
     runs-on: ubuntu-latest
     steps:
@@ -122,9 +118,9 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-${{ matrix.bazel }}-508417e5215994ade7585d28ba3aad681a25fa5d
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
           bash: >
