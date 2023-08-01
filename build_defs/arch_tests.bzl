@@ -22,7 +22,7 @@ def _arch_test_impl(
 
     inline_sh_test(
         name = name,
-        tools = bazel_binaries,
+        srcs = bazel_binaries,
         cmd = """
           for binary in "%s"; do
             (file -L $$binary | grep -q "%s") \
@@ -50,6 +50,6 @@ def aarch64_test(**kwargs):
 def x86_64_test(**kwargs):
     _arch_test_impl(
         platform = "x86_64",
-        file_platform = "ELF 64-bit LSB.*, ARM x86_64",
+        file_platform = "x86.64",
         **kwargs
     )

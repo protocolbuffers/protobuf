@@ -161,3 +161,20 @@ load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_regi
 rules_rust_dependencies()
 
 rust_register_toolchains(edition = "2021")
+
+################################################################################
+# Register toolchains to cross-compile protoc
+################################################################################
+
+register_toolchains(
+    "//toolchain:osx-x86_64_toolchain",
+    "//toolchain:osx-aarch_64_toolchain",
+    "//toolchain:linux-aarch_64_toolchain",
+    "//toolchain:linux-ppcle_64_toolchain",
+    "//toolchain:linux-s390_64_toolchain",
+    "//toolchain:linux-x86_32_toolchain",
+    "//toolchain:linux-x86_64_toolchain",
+    "//toolchain:win32_toolchain",
+    "//toolchain:win64_toolchain",
+    "//toolchain:k8_toolchain",
+)

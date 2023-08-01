@@ -75,7 +75,7 @@ cc_binary(
         # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
         "manual",
     ],
-    deps = select({
+    deps = [":proto_api"] + select({
         "//conditions:default": [],
         ":use_fast_cpp_protos": ["//external:python_headers"],
     }),

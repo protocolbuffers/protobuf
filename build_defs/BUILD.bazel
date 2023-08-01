@@ -20,12 +20,16 @@ create_compiler_config_setting(
 
 config_setting(
     name = "aarch64",
-    values = {"cpu": "linux-aarch_64"},
+    constraint_values = [
+        "@platforms//cpu:arm64",
+    ],
 )
 
 config_setting(
     name = "x86_64",
-    values = {"cpu": "linux-x86_64"},
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+    ],
 )
 
 # Android NDK builds can specify different crosstool_top flags to choose which
@@ -89,7 +93,7 @@ selects.config_setting_group(
     match_any = [
         ":config_win32",
         ":config_win64",
-    ]
+    ],
 )
 
 config_setting(
@@ -107,7 +111,7 @@ selects.config_setting_group(
     match_any = [
         ":config_osx_aarch64",
         ":config_osx_x86_64",
-    ]
+    ],
 )
 
 # Internal testing:
