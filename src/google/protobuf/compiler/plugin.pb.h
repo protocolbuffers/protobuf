@@ -77,14 +77,6 @@ class Version;
 struct VersionDefaultTypeInternal;
 PROTOC_EXPORT extern VersionDefaultTypeInternal _Version_default_instance_;
 }  // namespace compiler
-template <>
-PROTOC_EXPORT ::google::protobuf::compiler::CodeGeneratorRequest* Arena::CreateMaybeMessage<::google::protobuf::compiler::CodeGeneratorRequest>(Arena*);
-template <>
-PROTOC_EXPORT ::google::protobuf::compiler::CodeGeneratorResponse* Arena::CreateMaybeMessage<::google::protobuf::compiler::CodeGeneratorResponse>(Arena*);
-template <>
-PROTOC_EXPORT ::google::protobuf::compiler::CodeGeneratorResponse_File* Arena::CreateMaybeMessage<::google::protobuf::compiler::CodeGeneratorResponse_File>(Arena*);
-template <>
-PROTOC_EXPORT ::google::protobuf::compiler::Version* Arena::CreateMaybeMessage<::google::protobuf::compiler::Version>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 

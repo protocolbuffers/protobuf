@@ -77,7 +77,6 @@ struct Options {
   bool bootstrap = false;
   bool opensource_runtime = false;
   bool annotate_accessor = false;
-  bool unverified_lazy_message_sets = false;
   bool profile_driven_inline_string = true;
   bool force_split = false;
   bool profile_driven_split = true;

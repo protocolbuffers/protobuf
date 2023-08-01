@@ -51,6 +51,7 @@ cc_library(
     srcs = [
         "accessors/accessors.cc",
         "accessors/singular_bytes.cc",
+        "accessors/singular_message.cc",
         "accessors/singular_scalar.cc",
     ],
     hdrs = ["accessors/accessors.h"],

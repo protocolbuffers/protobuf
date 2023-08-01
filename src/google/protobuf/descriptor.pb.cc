@@ -2480,7 +2480,8 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::Message& to_msg, const ::g
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_file()->MergeFrom(from._internal_file());
+  _this->_internal_mutable_file()->MergeFrom(
+      from._internal_file());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -3066,10 +3067,14 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   (void) cached_has_bits;
 
   _this->_internal_mutable_dependency()->MergeFrom(from._internal_dependency());
-  _this->_internal_mutable_message_type()->MergeFrom(from._internal_message_type());
-  _this->_internal_mutable_enum_type()->MergeFrom(from._internal_enum_type());
-  _this->_internal_mutable_service()->MergeFrom(from._internal_service());
-  _this->_internal_mutable_extension()->MergeFrom(from._internal_extension());
+  _this->_internal_mutable_message_type()->MergeFrom(
+      from._internal_message_type());
+  _this->_internal_mutable_enum_type()->MergeFrom(
+      from._internal_enum_type());
+  _this->_internal_mutable_service()->MergeFrom(
+      from._internal_service());
+  _this->_internal_mutable_extension()->MergeFrom(
+      from._internal_extension());
   _this->_internal_mutable_public_dependency()->MergeFrom(from._internal_public_dependency());
   _this->_internal_mutable_weak_dependency()->MergeFrom(from._internal_weak_dependency());
   cached_has_bits = from._impl_._has_bits_[0];
@@ -4066,13 +4071,20 @@ void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::goo
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_field()->MergeFrom(from._internal_field());
-  _this->_internal_mutable_nested_type()->MergeFrom(from._internal_nested_type());
-  _this->_internal_mutable_enum_type()->MergeFrom(from._internal_enum_type());
-  _this->_internal_mutable_extension_range()->MergeFrom(from._internal_extension_range());
-  _this->_internal_mutable_extension()->MergeFrom(from._internal_extension());
-  _this->_internal_mutable_oneof_decl()->MergeFrom(from._internal_oneof_decl());
-  _this->_internal_mutable_reserved_range()->MergeFrom(from._internal_reserved_range());
+  _this->_internal_mutable_field()->MergeFrom(
+      from._internal_field());
+  _this->_internal_mutable_nested_type()->MergeFrom(
+      from._internal_nested_type());
+  _this->_internal_mutable_enum_type()->MergeFrom(
+      from._internal_enum_type());
+  _this->_internal_mutable_extension_range()->MergeFrom(
+      from._internal_extension_range());
+  _this->_internal_mutable_extension()->MergeFrom(
+      from._internal_extension());
+  _this->_internal_mutable_oneof_decl()->MergeFrom(
+      from._internal_oneof_decl());
+  _this->_internal_mutable_reserved_range()->MergeFrom(
+      from._internal_reserved_range());
   _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -4756,8 +4768,10 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::Message& to_msg, const
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_declaration()->MergeFrom(from._internal_declaration());
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_declaration()->MergeFrom(
+      from._internal_declaration());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -6183,8 +6197,10 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_value()->MergeFrom(from._internal_value());
-  _this->_internal_mutable_reserved_range()->MergeFrom(from._internal_reserved_range());
+  _this->_internal_mutable_value()->MergeFrom(
+      from._internal_value());
+  _this->_internal_mutable_reserved_range()->MergeFrom(
+      from._internal_reserved_range());
   _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -6767,7 +6783,8 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, cons
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_method()->MergeFrom(from._internal_method());
+  _this->_internal_mutable_method()->MergeFrom(
+      from._internal_method());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -8106,7 +8123,8 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
@@ -8571,7 +8589,8 @@ void MessageOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -9384,8 +9403,10 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
   (void) cached_has_bits;
 
   _this->_internal_mutable_targets()->MergeFrom(from._internal_targets());
-  _this->_internal_mutable_edition_defaults()->MergeFrom(from._internal_edition_defaults());
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_edition_defaults()->MergeFrom(
+      from._internal_edition_defaults());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
@@ -9675,7 +9696,8 @@ void OneofOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
         from._internal_features());
@@ -10000,7 +10022,8 @@ void EnumOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -10323,7 +10346,8 @@ void EnumValueOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::go
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
@@ -10614,7 +10638,8 @@ void ServiceOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -10936,7 +10961,8 @@ void MethodOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::googl
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
@@ -11599,7 +11625,8 @@ void UninterpretedOption::MergeImpl(::google::protobuf::Message& to_msg, const :
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_name()->MergeFrom(from._internal_name());
+  _this->_internal_mutable_name()->MergeFrom(
+      from._internal_name());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -12263,8 +12290,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
   {
     int byte_size = _impl_._path_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(1, _internal_path(),
-                                                 byte_size, target);
+      target = stream->WriteInt32Packed(
+          1, _internal_path(), byte_size, target);
     }
   }
 
@@ -12272,8 +12299,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
   {
     int byte_size = _impl_._span_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(2, _internal_span(),
-                                                 byte_size, target);
+      target = stream->WriteInt32Packed(
+          2, _internal_span(), byte_size, target);
     }
   }
 
@@ -12575,7 +12602,8 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_location()->MergeFrom(from._internal_location());
+  _this->_internal_mutable_location()->MergeFrom(
+      from._internal_location());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -12783,8 +12811,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
   {
     int byte_size = _impl_._path_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(1, _internal_path(),
-                                                 byte_size, target);
+      target = stream->WriteInt32Packed(
+          1, _internal_path(), byte_size, target);
     }
   }
 
@@ -13091,7 +13119,8 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::g
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_annotation()->MergeFrom(from._internal_annotation());
+  _this->_internal_mutable_annotation()->MergeFrom(
+      from._internal_annotation());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -13122,126 +13151,6 @@ void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::FileDescriptorSet*
-Arena::CreateMaybeMessage< ::google::protobuf::FileDescriptorSet >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FileDescriptorSet >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FileDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::FileDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FileDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::DescriptorProto_ExtensionRange*
-Arena::CreateMaybeMessage< ::google::protobuf::DescriptorProto_ExtensionRange >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::DescriptorProto_ExtensionRange >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::DescriptorProto_ReservedRange*
-Arena::CreateMaybeMessage< ::google::protobuf::DescriptorProto_ReservedRange >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::DescriptorProto_ReservedRange >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::DescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::DescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::DescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::ExtensionRangeOptions_Declaration*
-Arena::CreateMaybeMessage< ::google::protobuf::ExtensionRangeOptions_Declaration >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::ExtensionRangeOptions_Declaration >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::ExtensionRangeOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::ExtensionRangeOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::ExtensionRangeOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FieldDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::FieldDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FieldDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::OneofDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::OneofDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::OneofDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumDescriptorProto_EnumReservedRange*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumDescriptorProto_EnumReservedRange >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumDescriptorProto_EnumReservedRange >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumValueDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumValueDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumValueDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::ServiceDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::ServiceDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::ServiceDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::MethodDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::MethodDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::MethodDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FileOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::FileOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FileOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::MessageOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::MessageOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::MessageOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FieldOptions_EditionDefault*
-Arena::CreateMaybeMessage< ::google::protobuf::FieldOptions_EditionDefault >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FieldOptions_EditionDefault >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FieldOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::FieldOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FieldOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::OneofOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::OneofOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::OneofOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumValueOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumValueOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumValueOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::ServiceOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::ServiceOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::ServiceOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::MethodOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::MethodOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::MethodOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::UninterpretedOption_NamePart*
-Arena::CreateMaybeMessage< ::google::protobuf::UninterpretedOption_NamePart >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::UninterpretedOption_NamePart >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::UninterpretedOption*
-Arena::CreateMaybeMessage< ::google::protobuf::UninterpretedOption >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::UninterpretedOption >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FeatureSet*
-Arena::CreateMaybeMessage< ::google::protobuf::FeatureSet >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FeatureSet >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::SourceCodeInfo_Location*
-Arena::CreateMaybeMessage< ::google::protobuf::SourceCodeInfo_Location >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::SourceCodeInfo_Location >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::SourceCodeInfo*
-Arena::CreateMaybeMessage< ::google::protobuf::SourceCodeInfo >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::SourceCodeInfo >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::GeneratedCodeInfo_Annotation*
-Arena::CreateMaybeMessage< ::google::protobuf::GeneratedCodeInfo_Annotation >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::GeneratedCodeInfo_Annotation >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::GeneratedCodeInfo*
-Arena::CreateMaybeMessage< ::google::protobuf::GeneratedCodeInfo >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::GeneratedCodeInfo >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

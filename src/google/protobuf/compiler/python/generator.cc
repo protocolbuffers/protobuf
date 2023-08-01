@@ -382,6 +382,7 @@ void Generator::PrintTopBoilerplate() const {
 
 // Prints Python imports for all modules imported by |file|.
 void Generator::PrintImports() const {
+  bool has_importlib = false;
   for (int i = 0; i < file_->dependency_count(); ++i) {
     absl::string_view filename = file_->dependency(i)->name();
 
@@ -396,7 +397,10 @@ void Generator::PrintImports() const {
       // module name and import it using importlib. Otherwise the usual kind of
       // import statement would result in a syntax error from the presence of
       // the keyword.
-      printer_->Print("import importlib\n");
+      if (has_importlib == false) {
+        printer_->Print("import importlib\n");
+        has_importlib = true;
+      }
       printer_->Print("$alias$ = importlib.import_module('$name$')\n", "alias",
                       module_alias, "name", module_name);
     } else {

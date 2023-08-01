@@ -77,7 +77,8 @@ void SetCordVariables(
 
 class CordFieldGenerator : public FieldGeneratorBase {
  public:
-  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
+  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options,
+                     MessageSCCAnalyzer* scc);
   ~CordFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -103,7 +104,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
 class CordOneofFieldGenerator : public CordFieldGenerator {
  public:
   CordOneofFieldGenerator(const FieldDescriptor* descriptor,
-                          const Options& options);
+                          const Options& options, MessageSCCAnalyzer* scc);
   ~CordOneofFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -123,8 +124,9 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
 
 
 CordFieldGenerator::CordFieldGenerator(const FieldDescriptor* descriptor,
-                                       const Options& options)
-    : FieldGeneratorBase(descriptor, options) {
+                                       const Options& options,
+                                       MessageSCCAnalyzer* scc)
+    : FieldGeneratorBase(descriptor, options, scc) {
   SetCordVariables(descriptor, &variables_, options);
 }
 
@@ -215,7 +217,7 @@ void CordFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
 }
 
 void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
-  ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+  ABSL_CHECK(!should_split());
   Formatter format(printer, variables_);
   if (!descriptor_->default_value_string().empty()) {
     format("$field$ = ::absl::string_view($default$, $default_length$);\n");
@@ -224,7 +226,7 @@ void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
 
 void CordFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (ShouldSplit(descriptor_, options_)) {
+  if (should_split()) {
     // A cord field in the `Split` struct is automatically destroyed when the
     // split pointer is deleted and should not be explicitly destroyed here.
     return;
@@ -270,7 +272,7 @@ void CordFieldGenerator::GenerateConstexprAggregateInitializer(
     )cc");
   } else {
     p->Emit(
-        {{"Split", ShouldSplit(descriptor_, options_) ? "Split::" : ""}},
+        {{"Split", should_split() ? "Split::" : ""}},
         R"cc(
           /*decltype($field$)*/ {::absl::strings_internal::MakeStringConstant(
               $classname$::Impl_::$Split$_default_$name$_func_{})},
@@ -279,7 +281,7 @@ void CordFieldGenerator::GenerateConstexprAggregateInitializer(
 }
 
 void CordFieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
-  if (ShouldSplit(descriptor_, options_)) {
+  if (should_split()) {
     p->Emit(R"cc(
       decltype(Impl_::Split::$name$_){},
     )cc");
@@ -293,8 +295,9 @@ void CordFieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
 // ===================================================================
 
 CordOneofFieldGenerator::CordOneofFieldGenerator(
-    const FieldDescriptor* descriptor, const Options& options)
-    : CordFieldGenerator(descriptor, options) {}
+    const FieldDescriptor* descriptor, const Options& options,
+    MessageSCCAnalyzer* scc)
+    : CordFieldGenerator(descriptor, options, scc) {}
 
 void CordOneofFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
@@ -410,14 +413,14 @@ void CordOneofFieldGenerator::GenerateArenaDestructorCode(
 std::unique_ptr<FieldGeneratorBase> MakeSingularCordGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<CordFieldGenerator>(desc, options);
+  return absl::make_unique<CordFieldGenerator>(desc, options, scc);
 }
 
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<CordOneofFieldGenerator>(desc, options);
+  return absl::make_unique<CordOneofFieldGenerator>(desc, options, scc);
 }
 
 }  // namespace cpp

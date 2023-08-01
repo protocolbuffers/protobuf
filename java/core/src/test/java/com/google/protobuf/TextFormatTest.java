@@ -56,6 +56,7 @@ import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestOneof2;
+import protobuf_unittest.UnittestProto.TestRecursiveMessage;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestReservedFields;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
@@ -1841,5 +1842,101 @@ public class TextFormatTest {
             .build();
     assertThat(TextFormat.printer().printToString(message))
         .isEqualTo("optional_float: -0.0\noptional_double: -0.0\n");
+  }
+
+  private TestRecursiveMessage makeRecursiveMessage(int depth) {
+    if (depth == 0) {
+      return TestRecursiveMessage.newBuilder().setI(5).build();
+    } else {
+      return TestRecursiveMessage.newBuilder().setA(makeRecursiveMessage(depth - 1)).build();
+    }
+  }
+
+  @Test
+  public void testDefaultRecursionLimit() throws Exception {
+    String depth100 = TextFormat.printer().printToString(makeRecursiveMessage(100));
+    String depth101 = TextFormat.printer().printToString(makeRecursiveMessage(101));
+    TextFormat.parse(depth100, TestRecursiveMessage.class);
+    try {
+      TextFormat.parse(depth101, TestRecursiveMessage.class);
+      assertWithMessage("Parsing deep message should have failed").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e).hasMessageThat().contains("too deep");
+    }
+  }
+
+  @Test
+  public void testRecursionLimitWithUnknownFields() throws Exception {
+    TextFormat.Parser parser =
+        TextFormat.Parser.newBuilder().setAllowUnknownFields(true).setRecursionLimit(2).build();
+    TestRecursiveMessage.Builder depth2 = TestRecursiveMessage.newBuilder();
+    parser.merge("u { u { i: 0 } }", depth2);
+    try {
+      TestRecursiveMessage.Builder depth3 = TestRecursiveMessage.newBuilder();
+      parser.merge("u { u { u { } } }", depth3);
+      assertWithMessage("Parsing deep message should have failed").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e).hasMessageThat().contains("too deep");
+    }
+  }
+
+  @Test
+  public void testRecursionLimitWithKnownAndUnknownFields() throws Exception {
+    TextFormat.Parser parser =
+        TextFormat.Parser.newBuilder().setAllowUnknownFields(true).setRecursionLimit(2).build();
+    TestRecursiveMessage.Builder depth2 = TestRecursiveMessage.newBuilder();
+    parser.merge("a { u { i: 0 } }", depth2);
+    try {
+      TestRecursiveMessage.Builder depth3 = TestRecursiveMessage.newBuilder();
+      parser.merge("a { u { u { } } }", depth3);
+      assertWithMessage("Parsing deep message should have failed").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e).hasMessageThat().contains("too deep");
+    }
+  }
+
+  @Test
+  public void testRecursionLimitWithAny() throws Exception {
+    TextFormat.Parser parser =
+        TextFormat.Parser.newBuilder()
+            .setRecursionLimit(2)
+            .setTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+            .build();
+    TestAny.Builder depth2 = TestAny.newBuilder();
+    parser.merge(
+        "value { [type.googleapis.com/protobuf_unittest.TestAllTypes] { optional_int32: 1 } }",
+        depth2);
+    try {
+      TestAny.Builder depth3 = TestAny.newBuilder();
+      parser.merge(
+          "value { [type.googleapis.com/protobuf_unittest.TestAllTypes] { optional_nested_message {"
+              + "} } }",
+          depth3);
+      assertWithMessage("Parsing deep message should have failed").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e).hasMessageThat().contains("too deep");
+    }
+  }
+
+  @Test
+  public void testRecursionLimitWithTopLevelAny() throws Exception {
+    TextFormat.Parser parser =
+        TextFormat.Parser.newBuilder()
+            .setRecursionLimit(2)
+            .setTypeRegistry(
+                TypeRegistry.newBuilder().add(TestRecursiveMessage.getDescriptor()).build())
+            .build();
+    Any.Builder depth2 = Any.newBuilder();
+    parser.merge(
+        "[type.googleapis.com/protobuf_unittest.TestRecursiveMessage] { a { i: 0 } }", depth2);
+    try {
+      Any.Builder depth3 = Any.newBuilder();
+      parser.merge(
+          "[type.googleapis.com/protobuf_unittest.TestRecursiveMessage] { a { a { i: 0 } } }",
+          depth3);
+      assertWithMessage("Parsing deep message should have failed").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e).hasMessageThat().contains("too deep");
+    }
   }
 }

@@ -81,7 +81,6 @@ class FeatureSet;
 namespace internal {
 class FieldSkipper;  // wire_format_lite.h
 class WireFormat;
-enum class LazyVerifyOption;
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -594,8 +593,8 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual void Clear() = 0;
 
     virtual const char* _InternalParse(const MessageLite& prototype,
-                                       Arena* arena, LazyVerifyOption option,
-                                       const char* ptr, ParseContext* ctx) = 0;
+                                       Arena* arena, const char* ptr,
+                                       ParseContext* ctx) = 0;
     virtual uint8_t* WriteMessageToArray(
         const MessageLite* prototype, int number, uint8_t* target,
         io::EpsCopyOutputStream* stream) const = 0;

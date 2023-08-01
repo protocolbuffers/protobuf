@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import protobuf_unittest.UnittestProto;
@@ -40,6 +41,16 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public final class TypeRegistryTest {
+
+  @Test
+  public void getDescriptorForTypeUrl_throwsExceptionForUnknownTypes() throws Exception {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> TypeRegistry.getEmptyTypeRegistry().getDescriptorForTypeUrl("UnknownType"));
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> TypeRegistry.getEmptyTypeRegistry().getDescriptorForTypeUrl("///"));
+  }
 
   @Test
   public void findDescriptorByFullName() throws Exception {

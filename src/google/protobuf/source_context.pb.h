@@ -58,8 +58,6 @@ namespace protobuf {
 class SourceContext;
 struct SourceContextDefaultTypeInternal;
 PROTOBUF_EXPORT extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
-template <>
-PROTOBUF_EXPORT ::google::protobuf::SourceContext* Arena::CreateMaybeMessage<::google::protobuf::SourceContext>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 

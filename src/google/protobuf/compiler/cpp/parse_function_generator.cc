@@ -119,10 +119,7 @@ class ParseFunctionGenerator::GeneratedOptionProvider final
         IsStringInlined(field, gen_->options_),
         IsImplicitWeakField(field, gen_->options_, gen_->scc_analyzer_),
         UseDirectTcParserTable(field, gen_->options_),
-        GetOptimizeFor(field->file(), gen_->options_) ==
-            FileOptions::LITE_RUNTIME,
         ShouldSplit(field, gen_->options_),
-        /* uses_codegen */ true,
     };
   }
 
@@ -145,8 +142,14 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       num_hasbits_(max_has_bit_index) {
   if (should_generate_tctable()) {
     tc_table_info_.reset(new TailCallTableInfo(
-        descriptor_, ordered_fields_, GeneratedOptionProvider(this),
-        has_bit_indices, inlined_string_indices));
+        descriptor_, ordered_fields_,
+        {
+            /* is_lite */ GetOptimizeFor(descriptor->file(), options_) ==
+                FileOptions::LITE_RUNTIME,
+            /* uses_codegen */ true,
+        },
+        GeneratedOptionProvider(this), has_bit_indices,
+        inlined_string_indices));
   }
   SetCommonMessageDataVariables(descriptor_, &variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
@@ -175,8 +178,7 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
         "const char* $classname$::_InternalParse(const char* ptr,\n"
         "                  ::_pbi::ParseContext* ctx) {\n"
         "$annotate_deserialize$");
-    if (!options_.unverified_lazy_message_sets &&
-        ShouldVerify(descriptor_, options_, scc_analyzer_)) {
+    if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
       format(
           "  ctx->set_lazy_eager_verify_func(&$classname$::InternalVerify);\n");
     }
@@ -634,20 +636,17 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
 
 void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
   for (const auto& info : tc_table_info_->fast_path_fields) {
-    if (info.field != nullptr) {
-      PrintFieldComment(format, info.field, options_);
-    }
-    if (info.func_name.empty()) {
-      format("{::_pbi::TcParser::MiniParse, {}},\n");
-    } else if (info.field == nullptr) {
+    if (auto* nonfield = info.AsNonField()) {
       // Fast slot that is not associated with a field. Eg end group tags.
-      format("{$1$, {$2$, $3$}},\n", info.func_name, info.coded_tag,
-             info.nonfield_info);
-    } else {
-      ABSL_CHECK(!ShouldSplit(info.field, options_));
+      format("{$1$, {$2$, $3$}},\n", nonfield->func_name, nonfield->coded_tag,
+             nonfield->nonfield_info);
+    } else if (auto* as_field = info.AsField()) {
+      PrintFieldComment(format, as_field->field, options_);
+      ABSL_CHECK(!ShouldSplit(as_field->field, options_));
 
-      std::string func_name = info.func_name;
-      if (GetOptimizeFor(info.field->file(), options_) == FileOptions::SPEED) {
+      std::string func_name = as_field->func_name;
+      if (GetOptimizeFor(as_field->field->file(), options_) ==
+          FileOptions::SPEED) {
         // For 1-byte tags we have a more optimized version of the varint parser
         // that can hardcode the offset and has bit.
         if (absl::EndsWith(func_name, "V8S1") ||
@@ -659,12 +658,12 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
                                        : "::uint64_t";
           func_name = absl::StrCat(
               "::_pbi::TcParser::SingularVarintNoZag1<", field_type,
-              ", offsetof(",                                 //
-              ClassName(info.field->containing_type()),      //
-              ", ",                                          //
-              FieldMemberName(info.field, /*split=*/false),  //
-              "), ",                                         //
-              info.hasbit_idx,                               //
+              ", offsetof(",                                      //
+              ClassName(as_field->field->containing_type()),      //
+              ", ",                                               //
+              FieldMemberName(as_field->field, /*split=*/false),  //
+              "), ",                                              //
+              as_field->hasbit_idx,                               //
               ">()");
         }
       }
@@ -672,8 +671,11 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
       format(
           "{$1$,\n"
           " {$2$, $3$, $4$, PROTOBUF_FIELD_OFFSET($classname$, $5$)}},\n",
-          func_name, info.coded_tag, info.hasbit_idx, info.aux_idx,
-          FieldMemberName(info.field, /*split=*/false));
+          func_name, as_field->coded_tag, as_field->hasbit_idx,
+          as_field->aux_idx, FieldMemberName(as_field->field, /*split=*/false));
+    } else {
+      ABSL_DCHECK(info.is_empty());
+      format("{::_pbi::TcParser::MiniParse, {}},\n");
     }
   }
 }
@@ -1041,12 +1043,15 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
           bool eager_verify =
               IsEagerlyVerifiedLazy(field, options_, scc_analyzer_);
           if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
-            format(
-                "ctx->set_lazy_eager_verify_func($1$);\n",
-                eager_verify
-                    ? absl::StrCat("&", ClassName(field->message_type(), true),
-                                   "::InternalVerify")
-                    : "nullptr");
+            if (eager_verify) {
+              format("ctx->set_lazy_eager_verify_func(&$1$::InternalVerify);\n",
+                     ClassName(field->message_type(), true));
+            } else {
+              format(
+                  "ctx->set_lazy_eager_verify_func(nullptr);\n"
+                  "auto old_mode = "
+                  "ctx->set_lazy_parse_mode(::_pbi::ParseContext::kLazy);\n");
+            }
           }
           if (field->real_containing_oneof()) {
             format(
@@ -1072,14 +1077,15 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
               "  ::$proto_ns$::internal::LazyField> parse_helper(\n"
               "    $1$::default_instance(),\n"
               "    $msg$GetArenaForAllocation(),\n"
-              "    ::google::protobuf::internal::LazyVerifyOption::$2$,\n"
               "    lazy_field);\n"
               "ptr = ctx->ParseMessage(&parse_helper, ptr);\n",
-              FieldMessageTypeName(field, options_),
-              eager_verify ? "kEager" : "kLazy");
-          if (ShouldVerify(descriptor_, options_, scc_analyzer_) &&
-              eager_verify) {
-            format("ctx->set_lazy_eager_verify_func(nullptr);\n");
+              FieldMessageTypeName(field, options_));
+          if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
+            if (eager_verify) {
+              format("ctx->set_lazy_eager_verify_func(nullptr);\n");
+            } else {
+              format("(void)ctx->set_lazy_parse_mode(old_mode);\n");
+            }
           }
         } else if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
           if (!field->is_repeated()) {

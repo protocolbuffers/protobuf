@@ -82,7 +82,7 @@ public class TypeRegistry {
 
   private static String getTypeName(String typeUrl) throws InvalidProtocolBufferException {
     String[] parts = typeUrl.split("/");
-    if (parts.length == 1) {
+    if (parts.length <= 1) {
       throw new InvalidProtocolBufferException("Invalid type url found: " + typeUrl);
     }
     return parts[parts.length - 1];

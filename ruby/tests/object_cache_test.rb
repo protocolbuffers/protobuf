@@ -4,7 +4,7 @@ require 'test/unit'
 class PlatformTest < Test::Unit::TestCase
   def test_correct_implementation_for_platform
     omit('OBJECT_CACHE not defined') unless defined? Google::Protobuf::OBJECT_CACHE
-    if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.7.0') and Google::Protobuf::SIZEOF_LONG >= Google::Protobuf::SIZEOF_VALUE
+    if Google::Protobuf::SIZEOF_LONG >= Google::Protobuf::SIZEOF_VALUE and not defined? JRUBY_VERSION
       assert_instance_of Google::Protobuf::ObjectCache, Google::Protobuf::OBJECT_CACHE
     else
       assert_instance_of Google::Protobuf::LegacyObjectCache, Google::Protobuf::OBJECT_CACHE
