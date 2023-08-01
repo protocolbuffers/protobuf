@@ -283,14 +283,14 @@ void PyiGenerator::PrintImports() const {
     std::string module_name = StrippedModuleName(public_dep->name());
     // Top level messages in public imports
     for (int i = 0; i < public_dep->message_type_count(); ++i) {
-      printer_->Print("from $module$ import $message_class$\n", "module",
-                      module_name, "message_class",
-                      public_dep->message_type(i)->name());
+      printer_->Print(
+          "from $module$ import $message_class$ as $message_class$\n", "module",
+          module_name, "message_class", public_dep->message_type(i)->name());
     }
     // Top level enums for public imports
     for (int i = 0; i < public_dep->enum_type_count(); ++i) {
-      printer_->Print("from $module$ import $enum_class$\n", "module",
-                      module_name, "enum_class",
+      printer_->Print("from $module$ import $enum_class$ as $enum_class$\n",
+                      "module", module_name, "enum_class",
                       public_dep->enum_type(i)->name());
     }
   }
