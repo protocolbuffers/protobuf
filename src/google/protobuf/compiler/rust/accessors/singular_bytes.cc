@@ -87,10 +87,10 @@ class SingularBytes final : public AccessorGenerator {
             {"clearer_thunk", Thunk(field, "clear")},
         },
         R"rs(
-          fn $hazzer_thunk$(raw_msg: $NonNull$<u8>) -> bool;
-          fn $getter_thunk$(raw_msg: $NonNull$<u8>) -> $pbi$::PtrAndLen;
-          fn $setter_thunk$(raw_msg: $NonNull$<u8>, val: *const u8, len: usize);
-          fn $clearer_thunk$(raw_msg: $NonNull$<u8>);
+          fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
+          fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::PtrAndLen;
+          fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: *const u8, len: usize);
+          fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
         )rs");
   }
 

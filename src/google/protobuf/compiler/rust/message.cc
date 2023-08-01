@@ -49,13 +49,13 @@ void MessageStructFields(Context<Descriptor> msg) {
   switch (msg.opts().kernel) {
     case Kernel::kCpp:
       msg.Emit(R"rs(
-        msg: $NonNull$<u8>,
+        msg: $pbi$::RawMessage,
       )rs");
       return;
 
     case Kernel::kUpb:
       msg.Emit(R"rs(
-        msg: $NonNull$<u8>,
+        msg: $pbi$::RawMessage,
         //~ rustc incorrectly thinks this field is never read, even though
         //~ it has a destructor!
         #[allow(dead_code)]
@@ -136,9 +136,7 @@ void MessageDeserialize(Context<Descriptor> msg) {
       msg.Emit({{"deserialize_thunk", Thunk(msg, "parse")}}, R"rs(
         let arena = $pbr$::Arena::new();
         let msg = unsafe {
-          $NonNull$::<u8>::new(
-            $deserialize_thunk$(data.as_ptr(), data.len(), arena.raw())
-          )
+          $deserialize_thunk$(data.as_ptr(), data.len(), arena.raw())
         };
 
         match msg {
@@ -169,10 +167,10 @@ void MessageExterns(Context<Descriptor> msg) {
               {"deserialize_thunk", Thunk(msg, "deserialize")},
           },
           R"rs(
-          fn $new_thunk$() -> $NonNull$<u8>;
-          fn $delete_thunk$(raw_msg: $NonNull$<u8>);
-          fn $serialize_thunk$(raw_msg: $NonNull$<u8>) -> $pbr$::SerializedData;
-          fn $deserialize_thunk$(raw_msg: $NonNull$<u8>, data: $pbr$::SerializedData) -> bool;
+          fn $new_thunk$() -> $pbi$::RawMessage;
+          fn $delete_thunk$(raw_msg: $pbi$::RawMessage);
+          fn $serialize_thunk$(raw_msg: $pbi$::RawMessage) -> $pbr$::SerializedData;
+          fn $deserialize_thunk$(raw_msg: $pbi$::RawMessage, data: $pbr$::SerializedData) -> bool;
         )rs");
       return;
 
@@ -184,9 +182,9 @@ void MessageExterns(Context<Descriptor> msg) {
               {"deserialize_thunk", Thunk(msg, "parse")},
           },
           R"rs(
-          fn $new_thunk$(arena: $pbr$::RawArena) -> $NonNull$<u8>;
-          fn $serialize_thunk$(msg: $NonNull$<u8>, arena: $pbr$::RawArena, len: &mut usize) -> $NonNull$<u8>;
-          fn $deserialize_thunk$(data: *const u8, size: usize, arena: $pbr$::RawArena) -> *mut u8;
+          fn $new_thunk$(arena: $pbi$::RawArena) -> $pbi$::RawMessage;
+          fn $serialize_thunk$(msg: $pbi$::RawMessage, arena: $pbi$::RawArena, len: &mut usize) -> $NonNull$<u8>;
+          fn $deserialize_thunk$(data: *const u8, size: usize, arena: $pbi$::RawArena) -> Option<$pbi$::RawMessage>;
       )rs");
       return;
   }
@@ -304,7 +302,7 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
 
         #[derive(Debug, Copy, Clone)]
         pub struct $Msg$View<'a> {
-          msg: $NonNull$<u8>,
+          _msg: $pbi$::RawMessage,
           _phantom: std::marker::PhantomData<&'a ()>,
         }
 
@@ -379,10 +377,10 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
     msg.printer().PrintRaw("\n");
     msg.Emit({{"Msg", msg.desc().name()}}, R"rs(
       impl $Msg$ {
-        pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $NonNull$<u8>) -> Self {
+        pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbi$::RawMessage) -> Self {
           Self { msg }
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $NonNull$<u8> {
+        pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $pbi$::RawMessage {
           self.msg
         }
       }

@@ -37,6 +37,54 @@ use std::slice;
 /// Used to protect internal-only items from being used accidentally.
 pub struct Private;
 
+/// Defines a set of opaque pointers and a unique non-accessible pointees.
+///
+/// This provides a type safety benefit over using `NonNull<u8>` everywhere.
+/// The [Rustonomicon][nomicon] currently recommends a zero-sized struct,
+/// though this should use [`extern type`] when that is stabilized.
+///
+/// Because this defines a new private module, it can only be called once per
+/// module.
+///
+/// [nomicon]: https://doc.rust-lang.org/nomicon/ffi.html#representing-opaque-structs
+/// [`extern type`]: https://github.com/rust-lang/rust/issues/43467
+macro_rules! define_opaque_nonnulls {
+    ($($(#[$meta:meta])* $vis:vis type $name:ident = NonNull<$raw_name:ident>;)*) => {
+        mod _opaque_pointees {
+            $(
+                #[doc = concat!("Opaque pointee for [`", stringify!($name), "`][pointer]")]
+                ///
+                /// This type is not meant to be dereferenced in Rust code.
+                /// It is only meant to provide type safety for raw pointers
+                /// which are manipulated behind FFI.
+                #[doc = concat!("[pointer]: super::", stringify!($name))]
+                #[repr(C)]
+                pub struct $raw_name {
+                    _data: [u8; 0],
+                    _marker: ::std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
+                }
+            )*
+        }
+        $(
+            $(#[$meta])*
+            ///
+            /// This is an opaque pointer used for FFI:
+            /// do not dereference this type in Rust code.
+            $vis type $name = ::std::ptr::NonNull<_opaque_pointees::$raw_name>;
+        )*
+    };
+}
+
+pub(crate) use define_opaque_nonnulls;
+
+define_opaque_nonnulls!(
+    /// A raw pointer to the underlying arena for this runtime.
+    pub type RawArena = NonNull<RawArenaData>;
+
+    /// A raw pointer to the underlying message for this runtime.
+    pub type RawMessage = NonNull<RawMessageData>;
+);
+
 /// Represents an ABI-stable version of `NonNull<[u8]>`/`string_view` (a
 /// borrowed slice of bytes) for FFI use only.
 ///

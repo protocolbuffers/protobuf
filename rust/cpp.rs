@@ -30,6 +30,7 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
+use crate::__internal::RawArena;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
 use std::fmt;
@@ -50,7 +51,7 @@ use std::ptr::{self, NonNull};
 #[derive(Debug)]
 pub struct Arena {
     #[allow(dead_code)]
-    ptr: NonNull<u8>,
+    ptr: RawArena,
     _not_sync: PhantomData<UnsafeCell<()>>,
 }
 
