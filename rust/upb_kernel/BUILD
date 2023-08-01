@@ -9,5 +9,6 @@ cc_library(
     ],
     deps = [
         "@upb//:upb",
+        "@upb//upb/mem",
     ],
 )

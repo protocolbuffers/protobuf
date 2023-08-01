@@ -488,13 +488,21 @@ UPB_INLINE bool upb_StringView_IsEqual(upb_StringView a, upb_StringView b) {
 
 #include <stdint.h>
 
+
+#ifndef UPB_MESSAGE_TYPEDEF_H_
+#define UPB_MESSAGE_TYPEDEF_H_
+
+// This typedef needs its own header to resolve a circular dependency between
+// messages and mini tables.
+typedef void upb_Message;
+
+#endif /* UPB_MESSAGE_TYPEDEF_H_ */
+
 // Must be last.
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef void upb_Message;
 
 // When a upb_Message* is stored in a message, array, or map, it is stored in a
 // tagged form.  If the tag bit is set, the referenced upb_Message is of type
@@ -627,8 +635,6 @@ UPB_INLINE bool upb_MiniTableEnum_CheckValue(const struct upb_MiniTableEnum* e,
 
 // Must be last.
 
-// LINT.IfChange(mini_table_field_layout)
-
 struct upb_MiniTableField {
   uint32_t number;
   uint16_t offset;
@@ -681,8 +687,6 @@ typedef enum {
 
 #define kUpb_FieldRep_Shift 6
 
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/mini_table_field.ts:mini_table_field_layout)
-
 UPB_INLINE upb_FieldRep
 _upb_MiniTableField_GetRep(const struct upb_MiniTableField* field) {
   return (upb_FieldRep)(field->mode >> kUpb_FieldRep_Shift);
@@ -734,8 +738,6 @@ UPB_INLINE bool upb_IsSubMessage(const struct upb_MiniTableField* field) {
 
 // Must be last.
 
-typedef void upb_Message;
-
 struct upb_Decoder;
 typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
                                      upb_Message* msg, intptr_t table,
@@ -756,8 +758,6 @@ typedef enum {
   // entry.  *Only* used during table building!
   kUpb_ExtMode_IsMapEntry = 4,
 } upb_ExtMode;
-
-// LINT.IfChange(mini_table_layout)
 
 union upb_MiniTableSub;
 
@@ -783,8 +783,6 @@ struct upb_MiniTable {
   // of flexible array members is a GNU extension, not in C99 unfortunately.
   _upb_FastTable_Entry fasttable[];
 };
-
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/mini_table.ts:presence_logic)
 
 #ifdef __cplusplus
 extern "C" {
@@ -1102,13 +1100,9 @@ UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 
 typedef struct upb_Arena upb_Arena;
 
-// LINT.IfChange(arena_head)
-
 typedef struct {
   char *ptr, *end;
 } _upb_ArenaHead;
-
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/arena.ts:arena_head)
 
 #ifdef __cplusplus
 extern "C" {
@@ -1932,7 +1926,7 @@ UPB_INLINE int upb_Log2Ceiling(int x) {
   return 32 - __builtin_clz(x - 1);
 #else
   int lg2 = 0;
-  while (1 << lg2 < x) lg2++;
+  while ((1 << lg2) < x) lg2++;
   return lg2;
 #endif
 }
@@ -2231,10 +2225,26 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
 
 #endif /* UPB_COLLECTIONS_MAP_GENCODE_UTIL_H_ */
 
-// This header is deprecated, use upb/mini_table/extension_registry.h instead
+#ifndef UPB_MESSAGE_ACCESSORS_H_
+#define UPB_MESSAGE_ACCESSORS_H_
 
-#ifndef UPB_EXTENSION_REGISTRY_H_
-#define UPB_EXTENSION_REGISTRY_H_
+
+#ifndef UPB_MESSAGE_ACCESSORS_INTERNAL_H_
+#define UPB_MESSAGE_ACCESSORS_INTERNAL_H_
+
+
+/*
+** Our memory representation for parsing tables and messages themselves.
+** Functions in this file are used by generated code and possibly reflection.
+**
+** The definitions in this file are internal to upb.
+**/
+
+#ifndef UPB_MESSAGE_INTERNAL_H_
+#define UPB_MESSAGE_INTERNAL_H_
+
+#include <stdlib.h>
+#include <string.h>
 
 
 #ifndef UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
@@ -2311,30 +2321,6 @@ UPB_API const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
 
 #endif /* UPB_MINI_TABLE_EXTENSION_REGISTRY_H_ */
 
-#endif /* UPB_EXTENSION_REGISTRY_H_ */
-
-#ifndef UPB_MESSAGE_ACCESSORS_H_
-#define UPB_MESSAGE_ACCESSORS_H_
-
-
-#ifndef UPB_MESSAGE_ACCESSORS_INTERNAL_H_
-#define UPB_MESSAGE_ACCESSORS_INTERNAL_H_
-
-
-/*
-** Our memory representation for parsing tables and messages themselves.
-** Functions in this file are used by generated code and possibly reflection.
-**
-** The definitions in this file are internal to upb.
-**/
-
-#ifndef UPB_MESSAGE_INTERNAL_H_
-#define UPB_MESSAGE_INTERNAL_H_
-
-#include <stdlib.h>
-#include <string.h>
-
-
 // Must be last.
 
 #ifdef __cplusplus
@@ -2375,7 +2361,13 @@ typedef struct {
 } upb_Message_InternalData;
 
 typedef struct {
-  upb_Message_InternalData* internal;
+  union {
+    upb_Message_InternalData* internal;
+
+    // Force 8-byte alignment, since the data members may contain members that
+    // require 8-byte alignment.
+    double d;
+  };
   /* Message data follows. */
 } upb_Message_Internal;
 
@@ -2496,7 +2488,6 @@ UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
 }
 
 // LINT.ThenChange(GoogleInternalName2)
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/presence.ts:presence_logic)
 
 UPB_INLINE bool _upb_MiniTableField_InOneOf(const upb_MiniTableField* field) {
   return field->presence < 0;
@@ -2520,8 +2511,6 @@ UPB_INLINE void _upb_Message_SetPresence(upb_Message* msg,
     *_upb_oneofcase_field(msg, field) = field->number;
   }
 }
-
-// LINT.IfChange(message_raw_fields)
 
 UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
                                               const upb_MiniTableField* field) {
@@ -2560,8 +2549,6 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
   }
   UPB_UNREACHABLE();
 }
-
-// LINT.ThenChange(//depot/google3/third_party/upb/js/impl/upb_bits/message.ts:message_raw_fields)
 
 UPB_INLINE size_t
 _upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
@@ -3357,9 +3344,9 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 // Must be last.
 
 struct upb_MiniTableFile {
-  const upb_MiniTable** msgs;
-  const upb_MiniTableEnum** enums;
-  const upb_MiniTableExtension** exts;
+  const struct upb_MiniTable** msgs;
+  const struct upb_MiniTableEnum** enums;
+  const struct upb_MiniTableExtension** exts;
   int msg_count;
   int enum_count;
   int ext_count;
@@ -11307,8 +11294,8 @@ double _upb_NoLocaleStrtod(const char *str, char **endptr);
 
 #endif /* UPB_LEX_STRTOD_H_ */
 
-#ifndef UPB_MEM_ARENA_INTERNAL_H_
-#define UPB_MEM_ARENA_INTERNAL_H_
+#ifndef UPB_MEM_INTERNAL_ARENA_H_
+#define UPB_MEM_INTERNAL_ARENA_H_
 
 
 // Must be last.
@@ -11390,7 +11377,7 @@ UPB_INLINE bool upb_Arena_HasInitialBlock(upb_Arena* arena) {
 }
 
 
-#endif /* UPB_MEM_ARENA_INTERNAL_H_ */
+#endif /* UPB_MEM_INTERNAL_ARENA_H_ */
 
 #ifndef UPB_PORT_ATOMIC_H_
 #define UPB_PORT_ATOMIC_H_
@@ -11486,8 +11473,8 @@ extern "C" {
 #define UPB_WIRE_READER_H_
 
 
-#ifndef UPB_WIRE_SWAP_INTERNAL_H_
-#define UPB_WIRE_SWAP_INTERNAL_H_
+#ifndef UPB_WIRE_INTERNAL_SWAP_H_
+#define UPB_WIRE_INTERNAL_SWAP_H_
 
 // Must be last.
 
@@ -11519,7 +11506,7 @@ UPB_INLINE uint64_t _upb_BigEndian_Swap64(uint64_t val) {
 #endif
 
 
-#endif /* UPB_WIRE_SWAP_INTERNAL_H_ */
+#endif /* UPB_WIRE_INTERNAL_SWAP_H_ */
 
 #ifndef UPB_WIRE_TYPES_H_
 #define UPB_WIRE_TYPES_H_
@@ -12399,8 +12386,8 @@ upb_MethodDef* _upb_MethodDefs_New(
 
 #endif /* UPB_REFLECTION_METHOD_DEF_INTERNAL_H_ */
 
-#ifndef UPB_WIRE_COMMON_INTERNAL_H_
-#define UPB_WIRE_COMMON_INTERNAL_H_
+#ifndef UPB_WIRE_INTERNAL_COMMON_H_
+#define UPB_WIRE_INTERNAL_COMMON_H_
 
 // Must be last.
 
@@ -12419,15 +12406,15 @@ enum {
 };
 
 
-#endif /* UPB_WIRE_COMMON_INTERNAL_H_ */
+#endif /* UPB_WIRE_INTERNAL_COMMON_H_ */
 
 /*
  * Internal implementation details of the decoder that are shared between
  * decode.c and decode_fast.c.
  */
 
-#ifndef UPB_WIRE_DECODE_INTERNAL_H_
-#define UPB_WIRE_DECODE_INTERNAL_H_
+#ifndef UPB_WIRE_INTERNAL_DECODE_H_
+#define UPB_WIRE_INTERNAL_DECODE_H_
 
 #include "utf8_range.h"
 
@@ -12550,7 +12537,7 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 }
 
 
-#endif /* UPB_WIRE_DECODE_INTERNAL_H_ */
+#endif /* UPB_WIRE_INTERNAL_DECODE_H_ */
 
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
