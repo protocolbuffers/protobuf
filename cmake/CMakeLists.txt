@@ -212,6 +212,7 @@ target_include_directories(message_copy PUBLIC
 )
 target_link_libraries(message_copy
   collections_internal
+  mem
   message_accessors
   message_internal
   port
@@ -255,9 +256,9 @@ target_link_libraries(fastdecode INTERFACE
   hash
   mem_internal
   message_internal
+  mini_table
   port
-  wire
-  /upb/mini_table)
+  wire)
 
 add_library(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
     
@@ -271,13 +272,14 @@ target_link_libraries(generated_code_support__only_for_generated_code_do_not_use
   base
   base_internal
   collections_internal
+  mem
   message_accessors
   message_accessors_internal
   message_internal
+  mini_table
   upb
   wire_internal
-  /upb/mini_descriptor
-  /upb/mini_table)
+  /upb/mini_descriptor)
 
 add_library(generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
     
@@ -291,9 +293,10 @@ target_link_libraries(generated_cpp_support__only_for_generated_code_do_not_use_
   base
   collections_internal
   hash
+  mem
   message_copy
-  upb
-  /upb/mini_table)
+  mini_table
+  upb)
 
 add_library(generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
     
@@ -304,6 +307,7 @@ target_include_directories(generated_reflection_support__only_for_generated_code
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
 )
 target_link_libraries(generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
+  mem
   reflection_internal
   /upb/mini_descriptor)
 
@@ -391,33 +395,6 @@ target_link_libraries(textformat
   wire
   wire_reader
   wire_types)
-
-add_library(mem INTERFACE
-    
-)
-target_include_directories(mem INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(mem INTERFACE
-  mem_internal
-  port)
-
-add_library(mem_internal 
-    ../upb/mem/alloc.c
-  ../upb/mem/arena.c
-  ../upb/mem/alloc.h
-  ../upb/mem/arena.h
-  ../upb/mem/arena_internal.h
-)
-target_include_directories(mem_internal PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(mem_internal
-  port)
 
 add_library(wire INTERFACE
     
