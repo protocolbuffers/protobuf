@@ -25,7 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/mem/arena_internal.h"
+#include "upb/mem/internal/arena.h"
+
 #include "upb/port/atomic.h"
 
 // Must be last.
@@ -67,7 +68,7 @@ static _upb_ArenaRoot _upb_Arena_FindRoot(upb_Arena* a) {
       //
       // This is true because:
       // - If no fuses occur, this will eventually become the root.
-      // - If fuses are actively occuring, the root may change, but the
+      // - If fuses are actively occurring, the root may change, but the
       //   invariant is that `parent_or_count` merely points to *a* parent.
       //
       // In other words, it is moving towards "the" root, and that root may move

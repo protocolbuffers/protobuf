@@ -127,13 +127,9 @@ cc_library(
 cc_library(
     name = "upb",
     hdrs = [
-        "upb/alloc.h",
-        "upb/arena.h",
         "upb/collections/array.h",
         "upb/decode.h",
         "upb/encode.h",
-        "upb/mem/alloc.h",
-        "upb/mem/arena.h",
         "upb/message/extension_internal.h",
         "upb/message/message.h",
         "upb/msg.h",
@@ -285,6 +281,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":collections_internal",
+        ":mem",
         ":message_accessors",
         ":message_internal",
         ":port",
@@ -367,10 +364,11 @@ cc_test(
     deps = [
         ":base",
         ":collections",
+        ":mem",
         ":message_accessors",
         ":message_copy",
+        ":mini_table",
         ":upb",
-        "//upb/mini_table",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
@@ -389,9 +387,9 @@ cc_library(
         ":hash",
         ":mem_internal",
         ":message_internal",
+        ":mini_table",
         ":port",
         ":wire",
-        "//upb/mini_table",
     ],
 )
 
@@ -414,13 +412,14 @@ cc_library(
         ":base",
         ":base_internal",
         ":collections_internal",
+        ":mem",
         ":message_accessors",
         ":message_accessors_internal",
         ":message_internal",
+        ":mini_table",
         ":upb",
         ":wire_internal",
         "//upb/mini_descriptor",
-        "//upb/mini_table",
     ],
 )
 
@@ -442,9 +441,10 @@ cc_library(
         ":base",
         ":collections_internal",
         ":hash",
+        ":mem",
         ":message_copy",
+        ":mini_table",
         ":upb",
-        "//upb/mini_table",
     ],
 )
 
@@ -459,6 +459,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":mem",
         ":reflection_internal",
         "//upb/mini_descriptor",
     ],
@@ -640,6 +641,7 @@ bootstrap_cc_library(
         ":base",
         ":collections",
         ":hash",
+        ":mem",
         ":message_accessors",
         ":port",
         ":upb",
@@ -690,6 +692,18 @@ alias(
     name = "json",
     actual = "//upb/json",
     visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "mem",
+    actual = "//upb/mem",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "mem_internal",
+    actual = "//upb/mem:internal",
+    visibility = ["//:__subpackages__"],
 )
 
 alias(
@@ -796,51 +810,6 @@ cc_test(
 )
 
 # Internal C/C++ libraries #####################################################
-
-cc_library(
-    name = "mem",
-    hdrs = [
-        "upb/mem/alloc.h",
-        "upb/mem/arena.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":mem_internal",
-        ":port",
-    ],
-)
-
-cc_test(
-    name = "arena_test",
-    srcs = ["upb/mem/arena_test.cc"],
-    deps = [
-        ":port",
-        ":upb",
-        "@com_google_absl//absl/random",
-        "@com_google_absl//absl/random:distributions",
-        "@com_google_absl//absl/synchronization",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "mem_internal",
-    srcs = [
-        "upb/mem/alloc.c",
-        "upb/mem/arena.c",
-    ],
-    hdrs = [
-        "upb/mem/alloc.h",
-        "upb/mem/arena.h",
-        "upb/mem/arena_internal.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = [
-        "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
-    ],
-    deps = [":port"],
-)
 
 cc_library(
     name = "wire",
@@ -1013,6 +982,7 @@ upb_amalgamation(
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         ":hash",
         ":lex",
+        ":mem",
         ":mem_internal",
         ":message_accessors",
         ":message_internal",
@@ -1061,6 +1031,7 @@ upb_amalgamation(
         ":hash",
         ":json",
         ":lex",
+        ":mem",
         ":mem_internal",
         ":message_accessors",
         ":message_internal",
@@ -1110,6 +1081,7 @@ upb_amalgamation(
         ":hash",
         ":json",
         ":lex",
+        ":mem",
         ":mem_internal",
         ":message_accessors",
         ":message_internal",

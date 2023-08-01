@@ -51,6 +51,7 @@ cc_library(
         ":protos_traits",
         "//:base",
         "//:collections_internal",
+        "//:mem",
         "//:message_copy",
         "//:mini_table",
         "//:port",
@@ -71,6 +72,7 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
+        "//:mem",
         "//:message_copy",
         "//:message_promote",
         "//:mini_table",
@@ -128,6 +130,7 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":protos_internal",
+        "//:mem",
         "//:upb",
         "//protos_generator/tests:test_model_upb_cc_proto",
         "//protos_generator/tests:test_model_upb_proto",

@@ -54,6 +54,7 @@ cc_library(
     deps = [
         ":zero_copy_stream",
         "//:upb",
+        "//:mem",
         "//:port",
     ],
 )

@@ -188,6 +188,7 @@ cc_test(
         ":test_upb_proto",
         "//:upb",
         "//:base",
+        "//:mem",
         "//:port",
         "@com_google_googletest//:gtest_main",
     ],

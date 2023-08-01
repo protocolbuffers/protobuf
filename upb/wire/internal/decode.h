@@ -33,7 +33,7 @@
 #ifndef UPB_WIRE_INTERNAL_DECODE_H_
 #define UPB_WIRE_INTERNAL_DECODE_H_
 
-#include "upb/mem/arena_internal.h"
+#include "upb/mem/internal/arena.h"
 #include "upb/message/internal.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/eps_copy_input_stream.h"

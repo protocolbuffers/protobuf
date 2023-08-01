@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MEM_ARENA_INTERNAL_H_
-#define UPB_MEM_ARENA_INTERNAL_H_
+#ifndef UPB_MEM_INTERNAL_ARENA_H_
+#define UPB_MEM_INTERNAL_ARENA_H_
 
 #include "upb/mem/arena.h"
 
@@ -111,4 +111,4 @@ UPB_INLINE bool upb_Arena_HasInitialBlock(upb_Arena* arena) {
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MEM_ARENA_INTERNAL_H_ */
+#endif /* UPB_MEM_INTERNAL_ARENA_H_ */
