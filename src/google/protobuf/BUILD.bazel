@@ -1491,6 +1491,18 @@ cc_test(
 )
 
 cc_test(
+    name = "generated_enum_util_test",
+    srcs = ["generated_enum_util_test.cc"],
+    deps = [
+        ":protobuf",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:span",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "retention_test",
     srcs = ["retention_test.cc"],
     deps = [
