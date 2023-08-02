@@ -64,6 +64,9 @@ py_proto_library(
 
 config_setting(
     name = "linux_aarch64_release",
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "True",
+    },
     values = {"cpu": "linux-aarch_64"},
 )
 
@@ -73,10 +76,16 @@ config_setting(
         "@platforms//os:linux",
         "@platforms//cpu:aarch64",
     ],
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "False",
+    },
 )
 
 config_setting(
     name = "linux_x86_64_release",
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "True",
+    },
     values = {"cpu": "linux-x86_64"},
 )
 
@@ -86,10 +95,16 @@ config_setting(
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
     ],
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "False",
+    },
 )
 
 config_setting(
     name = "osx_x86_64_release",
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "True",
+    },
     values = {"cpu": "osx-x86_64"},
 )
 
@@ -99,6 +114,9 @@ config_setting(
         "@platforms//os:osx",
         "@platforms//cpu:x86_64",
     ],
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "False",
+    },
 )
 
 selects.config_setting_group(
@@ -111,6 +129,9 @@ selects.config_setting_group(
 
 config_setting(
     name = "osx_aarch64_release",
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "True",
+    },
     values = {"cpu": "osx-aarch_64"},
 )
 
@@ -120,6 +141,9 @@ config_setting(
         "@platforms//os:osx",
         "@platforms//cpu:aarch64",
     ],
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "False",
+    },
 )
 
 selects.config_setting_group(
@@ -137,6 +161,9 @@ config_setting(
 
 config_setting(
     name = "windows_x86_32_release",
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "True",
+    },
     values = {"cpu": "win32"},
 )
 
@@ -146,6 +173,9 @@ config_setting(
         "@platforms//os:windows",
         "@platforms//cpu:x86_32",
     ],
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "False",
+    },
 )
 
 selects.config_setting_group(
@@ -158,6 +188,9 @@ selects.config_setting_group(
 
 config_setting(
     name = "windows_x86_64_release",
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "True",
+    },
     values = {"cpu": "win64"},
 )
 
@@ -167,6 +200,9 @@ config_setting(
         "@platforms//os:windows",
         "@platforms//cpu:x86_64",
     ],
+    flag_values = {
+        "@com_google_protobuf//toolchain:release": "False",
+    },
 )
 
 selects.config_setting_group(

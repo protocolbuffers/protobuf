@@ -39,7 +39,7 @@ jobs:
         name: Set up Bazel caching
         uses: ./.github/actions/setup-bazel-cache
       - name: Build Wheels
-        run: cd ${{ github.workspace }} && docker run -e GOOGLE_APPLICATION_CREDENTIALS=/workspace/$(basename $GOOGLE_APPLICATION_CREDENTIALS) -v$PWD:/workspace $DOCKER_IMAGE build $BAZEL_CACHE --crosstool_top=@com_google_protobuf//toolchain:clang_suite --symlink_prefix=/ -c dbg python/dist ${{ steps.bazel-cache.outputs.cache_args }} python/dist:test_wheel python/dist:source_wheel
+        run: cd ${{ github.workspace }} && docker run -e GOOGLE_APPLICATION_CREDENTIALS=/workspace/$(basename $GOOGLE_APPLICATION_CREDENTIALS) -v$PWD:/workspace $DOCKER_IMAGE build $BAZEL_CACHE --crosstool_top=@com_google_protobuf//toolchain:clang_suite --@com_google_protobuf//toolchain:release=true --symlink_prefix=/ -c dbg python/dist ${{ steps.bazel-cache.outputs.cache_args }} python/dist:test_wheel python/dist:source_wheel
       - name: Move Wheels
         run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
       - uses: actions/upload-artifact@v3
