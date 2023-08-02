@@ -1793,10 +1793,11 @@ bool Parser::ParseReservedName(std::string* name,
   int col = input_->current().column;
   DO(ConsumeString(name, error_message));
   if (!io::Tokenizer::IsIdentifier(*name)) {
-    RecordWarning(
+    RecordError(
         line, col,
         absl::StrFormat("Reserved name \"%s\" is not a valid identifier.",
                         *name));
+    return false;
   }
   return true;
 }

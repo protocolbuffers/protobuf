@@ -1745,7 +1745,7 @@ TEST_F(ParseErrorTest, EnumReservedMissingQuotes) {
 }
 
 TEST_F(ParseErrorTest, EnumReservedInvalidIdentifier) {
-  ExpectHasWarnings(
+  ExpectHasErrors(
       R"pb(
       enum TestEnum {
         FOO = 1;
@@ -1783,7 +1783,7 @@ TEST_F(ParseErrorTest, ReservedMissingQuotes) {
 }
 
 TEST_F(ParseErrorTest, ReservedInvalidIdentifier) {
-  ExpectHasWarnings(
+  ExpectHasErrors(
       R"pb(
       message Foo {
         reserved "foo bar";
