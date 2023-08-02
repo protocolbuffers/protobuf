@@ -481,3 +481,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/Azure/opendigitaltwins-dtdl
     *   Extensions: 1183
+
+1.  RabbitMQ
+
+*   Website: https://github.com/guihouchang/protoc-gen-go-event
+*   Extensions: 1184
