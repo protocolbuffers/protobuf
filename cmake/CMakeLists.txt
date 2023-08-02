@@ -270,7 +270,6 @@ target_include_directories(generated_code_support__only_for_generated_code_do_no
 )
 target_link_libraries(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
   base
-  base_internal
   collections_internal
   mem
   message_accessors
