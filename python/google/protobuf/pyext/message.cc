@@ -45,7 +45,6 @@
 #include "google/protobuf/pyext/safe_numerics.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 #include "google/protobuf/pyext/unknown_field_set.h"
-#include "google/protobuf/pyext/unknown_fields.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -1123,8 +1122,6 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
   self->composite_fields = nullptr;
   self->child_submessages = nullptr;
 
-  self->unknown_field_set = nullptr;
-
   return self;
 }
 
@@ -1185,10 +1182,6 @@ static void Dealloc(CMessage* self) {
   ABSL_DCHECK(!self->composite_fields || self->composite_fields->empty());
   delete self->child_submessages;
   delete self->composite_fields;
-  if (self->unknown_field_set) {
-    unknown_fields::Clear(
-        reinterpret_cast<PyUnknownFields*>(self->unknown_field_set));
-  }
 
   CMessage* parent = self->parent;
   if (!parent) {
@@ -1526,11 +1519,6 @@ PyObject* Clear(CMessage* self) {
   if (InternalReparentFields(self, messages_to_release, containers_to_release) <
       0) {
     return nullptr;
-  }
-  if (self->unknown_field_set) {
-    unknown_fields::Clear(
-        reinterpret_cast<PyUnknownFields*>(self->unknown_field_set));
-    self->unknown_field_set = nullptr;
   }
   self->message->Clear();
   Py_RETURN_NONE;
@@ -2345,19 +2333,6 @@ static PyObject* GetExtensionDict(CMessage* self, void *closure) {
   return reinterpret_cast<PyObject*>(extension_dict);
 }
 
-static PyObject* GetUnknownFields(CMessage* self) {
-  PyErr_Warn(nullptr,
-             "message.UnknownFields() is deprecated. Please use the "
-             "add one feature unknown_fields.UnknownFieldSet(message) in "
-             "unknown_fields.py instead.");
-  if (self->unknown_field_set == nullptr) {
-    self->unknown_field_set = unknown_fields::NewPyUnknownFields(self);
-  } else {
-    Py_INCREF(self->unknown_field_set);
-  }
-  return self->unknown_field_set;
-}
-
 static PyGetSetDef Getters[] = {
     {"Extensions", (getter)GetExtensionDict, nullptr, "Extension dict"},
     {nullptr},
@@ -2406,8 +2381,6 @@ static PyMethodDef Methods[] = {
      "Serializes the message to a string, only for initialized messages."},
     {"SetInParent", (PyCFunction)SetInParent, METH_NOARGS,
      "Sets the has bit of the given field in its parent message."},
-    {"UnknownFields", (PyCFunction)GetUnknownFields, METH_NOARGS,
-     "Parse unknown field set"},
     {"WhichOneof", (PyCFunction)WhichOneof, METH_O,
      "Returns the name of the field set inside a oneof, "
      "or None if no field is set."},
@@ -2878,20 +2851,12 @@ bool InitProto2MessageModule(PyObject *m) {
     }
   }
 
-  if (PyType_Ready(&PyUnknownFields_Type) < 0) {
-    return false;
-  }
-
   if (PyType_Ready(&PyUnknownFieldSet_Type) < 0) {
     return false;
   }
 
   PyModule_AddObject(m, "UnknownFieldSet",
                      reinterpret_cast<PyObject*>(&PyUnknownFieldSet_Type));
-
-  if (PyType_Ready(&PyUnknownFieldRef_Type) < 0) {
-    return false;
-  }
 
   if (PyType_Ready(&PyUnknownField_Type) < 0) {
     return false;
