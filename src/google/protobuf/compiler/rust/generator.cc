@@ -238,6 +238,7 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
       {"pbi", "::__pb::__internal"},
       {"pbr", "::__pb::__runtime"},
       {"NonNull", "::__std::ptr::NonNull"},
+      {"Phantom", "::__std::marker::PhantomData"},
   });
 
   file.Emit({{"kernel", KernelRsName(file.opts().kernel)}}, R"rs(

@@ -303,7 +303,7 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
         #[derive(Debug, Copy, Clone)]
         pub struct $Msg$View<'a> {
           _msg: $pbi$::RawMessage,
-          _phantom: std::marker::PhantomData<&'a ()>,
+          _phantom: $Phantom$<&'a ()>,
         }
 
         impl<'a> $pb$::ViewProxy<'a> for $Msg$View<'a> {
@@ -323,7 +323,7 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
 
         #[derive(Debug)]
         pub struct $Msg$Mut<'a> {
-          _phantom: std::marker::PhantomData<&'a mut ()>,
+          _phantom: $Phantom$<&'a mut ()>,
         }
 
         impl<'a> $pb$::MutProxy<'a> for $Msg$Mut<'a> {
