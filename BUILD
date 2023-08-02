@@ -410,7 +410,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":base",
-        ":base_internal",
         ":collections_internal",
         ":mem",
         ":message_accessors",
@@ -431,9 +430,6 @@ cc_library(
         "upb/port/def.inc",
         "upb/port/undef.inc",
         "upb/upb.hpp",
-        "upb/wire/decode.h",
-        "upb/wire/decode_fast.h",
-        "upb/wire/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
