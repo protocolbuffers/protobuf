@@ -948,7 +948,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
   for (auto oneof : OneOfRange(descriptor_)) {
     p->Emit({{"oneof_name", oneof->name()},
              Sub{"clear_oneof_name", absl::StrCat("clear_", oneof->name())}
-                 .AnnotatedAs(oneof),
+                 .AnnotatedAs({oneof, Semantic::kSet}),
              {"OneOfName", UnderscoresToCamelCase(oneof->name(), true)}},
             R"cc(
               void $clear_oneof_name$();
