@@ -103,42 +103,6 @@ constexpr int RepeatedFieldLowerClampLimit() {
 constexpr int kRepeatedFieldUpperClampLimit =
     (std::numeric_limits<int>::max() / 2) + 1;
 
-// Swaps two blocks of memory of size kSize:
-template <size_t kSize>
-void memswap(char* a, char* b) {
-#if __SIZEOF_INT128__
-  using Buffer = __uint128_t;
-#else
-  using Buffer = uint64_t;
-#endif
-
-  constexpr size_t kBlockSize = sizeof(Buffer);
-  Buffer buf;
-  for (size_t i = 0; i < kSize / kBlockSize; ++i) {
-    memcpy(&buf, a, kBlockSize);
-    memcpy(a, b, kBlockSize);
-    memcpy(b, &buf, kBlockSize);
-    a += kBlockSize;
-    b += kBlockSize;
-  }
-
-#if defined(__GNUC__) && !defined(__clang__)
-  // Workaround GCC bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99578
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
-#endif  // __GNUC__
-
-  // Swap the leftover bytes, could be zero.
-  memcpy(&buf, a, kSize % kBlockSize);
-  memcpy(a, b, kSize % kBlockSize);
-  memcpy(b, &buf, kSize % kBlockSize);
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif  // GCC
-}
-
 template <typename Element>
 class RepeatedIterator;
 
@@ -880,11 +844,11 @@ inline void RepeatedField<Element>::InternalSwap(RepeatedField* other) {
   // Swap all fields at once.
   static_assert(std::is_standard_layout<RepeatedField<Element>>::value,
                 "offsetof() requires standard layout before c++17");
+  static constexpr size_t kOffset = offsetof(RepeatedField, current_size_);
   internal::memswap<offsetof(RepeatedField, arena_or_elements_) +
-                    sizeof(this->arena_or_elements_) -
-                    offsetof(RepeatedField, current_size_)>(
-      reinterpret_cast<char*>(this) + offsetof(RepeatedField, current_size_),
-      reinterpret_cast<char*>(other) + offsetof(RepeatedField, current_size_));
+                    sizeof(this->arena_or_elements_) - kOffset>(
+      reinterpret_cast<char*>(this) + kOffset,
+      reinterpret_cast<char*>(other) + kOffset);
 }
 
 template <typename Element>
