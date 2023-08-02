@@ -301,8 +301,9 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
         }
 
         #[derive(Debug, Copy, Clone)]
+        #[allow(dead_code)]
         pub struct $Msg$View<'a> {
-          _msg: $pbi$::RawMessage,
+          msg: $pbi$::RawMessage,
           _phantom: $Phantom$<&'a ()>,
         }
 
@@ -310,35 +311,43 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
           type Proxied = $Msg$;
 
           fn as_view(&self) -> $pb$::View<'a, $Msg$> {
-            todo!("b/285309454")
+            *self
           }
-          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter { todo!("b/285309454") }
+          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter {
+            self
+          }
         }
 
         impl<'a> $pb$::SettableValue<$Msg$> for $Msg$View<'a> {
           fn set_on(self, _private: $pb$::__internal::Private, _mutator: $pb$::Mut<$Msg$>) {
-            todo!("b/285309454")
+            todo!()
           }
         }
 
-        #[derive(Debug)]
+        #[derive(Debug, Copy, Clone)]
+        #[allow(dead_code)]
         pub struct $Msg$Mut<'a> {
+          msg: $pbi$::RawMessage,
           _phantom: $Phantom$<&'a mut ()>,
         }
 
+        unsafe impl Sync for $Msg$Mut<'_> {}
+
         impl<'a> $pb$::MutProxy<'a> for $Msg$Mut<'a> {
           fn as_mut(&mut self) -> $pb$::Mut<'_, $Msg$> {
-            todo!("b/285309454")
+            $Msg$Mut { msg: self.msg, _phantom: self._phantom }
           }
-          fn into_mut<'shorter>(self) -> $pb$::Mut<'shorter, $Msg$> where 'a : 'shorter { todo!("b/285309454") }
+          fn into_mut<'shorter>(self) -> $pb$::Mut<'shorter, $Msg$> where 'a : 'shorter { self }
         }
 
         impl<'a> $pb$::ViewProxy<'a> for $Msg$Mut<'a> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
-            todo!("b/285309454")
+            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
           }
-          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter { todo!("b/285309454") }
+          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter {
+            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
+          }
         }
 
         impl $Msg$ {
