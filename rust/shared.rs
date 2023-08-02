@@ -67,6 +67,7 @@ pub mod __runtime;
 mod optional;
 mod proxied;
 mod string;
+mod vtable;
 
 /// An error that happened during deserialization.
 #[derive(Debug, Clone)]

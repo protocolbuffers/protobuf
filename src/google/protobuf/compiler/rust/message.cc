@@ -45,33 +45,12 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 namespace {
-void MessageStructFields(Context<Descriptor> msg) {
-  switch (msg.opts().kernel) {
-    case Kernel::kCpp:
-      msg.Emit(R"rs(
-        msg: $pbi$::RawMessage,
-      )rs");
-      return;
-
-    case Kernel::kUpb:
-      msg.Emit(R"rs(
-        msg: $pbi$::RawMessage,
-        //~ rustc incorrectly thinks this field is never read, even though
-        //~ it has a destructor!
-        #[allow(dead_code)]
-        arena: $pbr$::Arena,
-      )rs");
-      return;
-  }
-
-  ABSL_LOG(FATAL) << "unreachable";
-}
 
 void MessageNew(Context<Descriptor> msg) {
   switch (msg.opts().kernel) {
     case Kernel::kCpp:
       msg.Emit({{"new_thunk", Thunk(msg, "new")}}, R"rs(
-        Self { msg: unsafe { $new_thunk$() } }
+        Self { inner: $pbr$::MessageInner { msg: unsafe { $new_thunk$() } } }
       )rs");
       return;
 
@@ -79,8 +58,10 @@ void MessageNew(Context<Descriptor> msg) {
       msg.Emit({{"new_thunk", Thunk(msg, "new")}}, R"rs(
         let arena = $pbr$::Arena::new();
         Self {
-          msg: unsafe { $new_thunk$(arena.raw()) },
-          arena,
+          inner: $pbr$::MessageInner {
+            msg: unsafe { $new_thunk$(arena.raw()) },
+            arena,
+          }
         }
       )rs");
       return;
@@ -93,7 +74,7 @@ void MessageSerialize(Context<Descriptor> msg) {
   switch (msg.opts().kernel) {
     case Kernel::kCpp:
       msg.Emit({{"serialize_thunk", Thunk(msg, "serialize")}}, R"rs(
-        unsafe { $serialize_thunk$(self.msg) }
+        unsafe { $serialize_thunk$(self.inner.msg) }
       )rs");
       return;
 
@@ -102,7 +83,7 @@ void MessageSerialize(Context<Descriptor> msg) {
         let arena = $pbr$::Arena::new();
         let mut len = 0;
         unsafe {
-          let data = $serialize_thunk$(self.msg, arena.raw(), &mut len);
+          let data = $serialize_thunk$(self.inner.msg, arena.raw(), &mut len);
           $pbr$::SerializedData::from_raw_parts(arena, data, len)
         }
       )rs");
@@ -126,7 +107,7 @@ void MessageDeserialize(Context<Descriptor> msg) {
               data.len(),
             );
 
-            $deserialize_thunk$(self.msg, data)
+            $deserialize_thunk$(self.inner.msg, data)
           };
           success.then_some(()).ok_or($pb$::ParseError)
         )rs");
@@ -143,9 +124,9 @@ void MessageDeserialize(Context<Descriptor> msg) {
           None => Err($pb$::ParseError),
           Some(msg) => {
             // This assignment causes self.arena to be dropped and to deallocate
-            // any previous message pointed/owned to by self.msg.
-            self.arena = arena;
-            self.msg = msg;
+            // any previous message pointed/owned to by self.inner.msg.
+            self.inner.arena = arena;
+            self.inner.msg = msg;
             Ok(())
           }
         }
@@ -200,7 +181,7 @@ void MessageDrop(Context<Descriptor> msg) {
   }
 
   msg.Emit({{"delete_thunk", Thunk(msg, "delete")}}, R"rs(
-    unsafe { $delete_thunk$(self.msg); }
+    unsafe { $delete_thunk$(self.inner.msg); }
   )rs");
 }
 }  // namespace
@@ -213,7 +194,6 @@ void GenerateRs(Context<Descriptor> msg) {
   msg.Emit(
       {
           {"Msg", msg.desc().name()},
-          {"Msg.fields", [&] { MessageStructFields(msg); }},
           {"Msg::new", [&] { MessageNew(msg); }},
           {"Msg::serialize", [&] { MessageSerialize(msg); }},
           {"Msg::deserialize", [&] { MessageDeserialize(msg); }},
@@ -264,12 +244,15 @@ void GenerateRs(Context<Descriptor> msg) {
         #[allow(non_camel_case_types)]
         #[derive(Debug)]
         pub struct $Msg$ {
-          $Msg.fields$
+          inner: $pbr$::MessageInner
         }
 
+        // SAFETY:
+        // - `$Msg$` does not provide shared mutation with its arena.
+        // - `$Msg$Mut` is not `Send`, and so even in the presence of mutator
+        //   splitting, synchronous access of an arena that would conflict with
+        //   field access is impossible.
         unsafe impl Sync for $Msg$ {}
-        unsafe impl Sync for $Msg$View<'_> {}
-        unsafe impl Send for $Msg$View<'_> {}
 
         impl $pb$::Proxied for $Msg$ {
           type View<'a> = $Msg$View<'a>;
@@ -282,6 +265,15 @@ void GenerateRs(Context<Descriptor> msg) {
           msg: $pbi$::RawMessage,
           _phantom: $Phantom$<&'a ()>,
         }
+
+        // SAFETY:
+        // - `$Msg$View` does not perform any mutation.
+        // - While a `$Msg$View` exists, a `$Msg$Mut` can't exist to mutate
+        //   the arena that would conflict with field access.
+        // - `$Msg$Mut` is not `Send`, and so even in the presence of mutator
+        //   splitting, synchronous access of an arena is impossible.
+        unsafe impl Sync for $Msg$View<'_> {}
+        unsafe impl Send for $Msg$View<'_> {}
 
         impl<'a> $pb$::ViewProxy<'a> for $Msg$View<'a> {
           type Proxied = $Msg$;
@@ -303,15 +295,18 @@ void GenerateRs(Context<Descriptor> msg) {
         #[derive(Debug, Copy, Clone)]
         #[allow(dead_code)]
         pub struct $Msg$Mut<'a> {
-          msg: $pbi$::RawMessage,
-          _phantom: $Phantom$<&'a mut ()>,
+          inner: $pbr$::MutatorMessageRef<'a>,
         }
 
+        // SAFETY:
+        // - `$Msg$Mut` does not perform any shared mutation.
+        // - `$Msg$Mut` is not `Send`, and so even in the presence of mutator
+        //   splitting, synchronous access of an arena is impossible.
         unsafe impl Sync for $Msg$Mut<'_> {}
 
         impl<'a> $pb$::MutProxy<'a> for $Msg$Mut<'a> {
           fn as_mut(&mut self) -> $pb$::Mut<'_, $Msg$> {
-            $Msg$Mut { msg: self.msg, _phantom: self._phantom }
+            $Msg$Mut { inner: self.inner }
           }
           fn into_mut<'shorter>(self) -> $pb$::Mut<'shorter, $Msg$> where 'a : 'shorter { self }
         }
@@ -319,10 +314,10 @@ void GenerateRs(Context<Descriptor> msg) {
         impl<'a> $pb$::ViewProxy<'a> for $Msg$Mut<'a> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
-            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
+            $Msg$View { msg: self.inner.msg(), _phantom: std::marker::PhantomData }
           }
           fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter {
-            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
+            $Msg$View { msg: self.inner.msg(), _phantom: std::marker::PhantomData }
           }
         }
 
@@ -363,10 +358,10 @@ void GenerateRs(Context<Descriptor> msg) {
     msg.Emit({{"Msg", msg.desc().name()}}, R"rs(
       impl $Msg$ {
         pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbi$::RawMessage) -> Self {
-          Self { msg }
+          Self { inner: $pbr$::MessageInner { msg } }
         }
         pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $pbi$::RawMessage {
-          self.msg
+          self.inner.msg
         }
       }
     )rs");

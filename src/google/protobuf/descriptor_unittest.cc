@@ -45,8 +45,6 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/any.pb.h"
-#include "google/protobuf/compiler/importer.h"
-#include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
@@ -63,6 +61,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor_database.h"

@@ -28,7 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/// Tests covering accessors for singular bool, int32, int64, and bytes fields.
+//! Tests covering accessors for singular bool, int32, int64, and bytes fields.
+
+use protobuf::Optional;
 use unittest_proto::proto2_unittest::TestAllTypes;
 
 #[test]
@@ -216,16 +218,93 @@ fn test_optional_bool_accessors() {
 #[test]
 fn test_optional_bytes_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_bytes_opt(), None);
+    assert_eq!(msg.optional_bytes(), b"");
+    assert_eq!(msg.optional_bytes_opt(), Optional::Unset(&b""[..]));
+    assert_eq!(msg.optional_bytes_mut().get(), b"");
+    assert!(msg.optional_bytes_mut().is_unset());
 
-    msg.optional_bytes_set(Some(b"accessors_test"));
-    assert_eq!(msg.optional_bytes_opt().unwrap(), b"accessors_test");
+    {
+        let s = Vec::from(&b"hello world"[..]);
+        msg.optional_bytes_mut().set(&s[..]);
+    }
+    assert_eq!(msg.optional_bytes(), b"hello world");
+    assert_eq!(msg.optional_bytes_opt(), Optional::Set(&b"hello world"[..]));
+    assert!(msg.optional_bytes_mut().is_set());
+    assert_eq!(msg.optional_bytes_mut().get(), b"hello world");
 
-    msg.optional_bytes_set(None);
-    assert_eq!(msg.optional_bytes_opt(), None);
+    msg.optional_bytes_mut().or_default().set(b"accessors_test");
+    assert_eq!(msg.optional_bytes(), b"accessors_test");
+    assert_eq!(msg.optional_bytes_opt(), Optional::Set(&b"accessors_test"[..]));
+    assert!(msg.optional_bytes_mut().is_set());
+    assert_eq!(msg.optional_bytes_mut().get(), b"accessors_test");
+    assert_eq!(msg.optional_bytes_mut().or_default().get(), b"accessors_test");
 
-    msg.optional_bytes_set(Some(b""));
-    assert_eq!(msg.optional_bytes_opt().unwrap(), b"");
+    msg.optional_bytes_mut().clear();
+    assert_eq!(msg.optional_bytes(), b"");
+    assert_eq!(msg.optional_bytes_opt(), Optional::Unset(&b""[..]));
+    assert!(msg.optional_bytes_mut().is_unset());
+
+    msg.optional_bytes_mut().set(b"");
+    assert_eq!(msg.optional_bytes(), b"");
+    assert_eq!(msg.optional_bytes_opt(), Optional::Set(&b""[..]));
+
+    msg.optional_bytes_mut().clear();
+    msg.optional_bytes_mut().or_default();
+    assert_eq!(msg.optional_bytes(), b"");
+    assert_eq!(msg.optional_bytes_opt(), Optional::Set(&b""[..]));
+
+    msg.optional_bytes_mut().or_default().set(b"\xffbinary\x85non-utf8");
+    assert_eq!(msg.optional_bytes(), b"\xffbinary\x85non-utf8");
+    assert_eq!(msg.optional_bytes_opt(), Optional::Set(&b"\xffbinary\x85non-utf8"[..]));
+    assert!(msg.optional_bytes_mut().is_set());
+    assert_eq!(msg.optional_bytes_mut().get(), b"\xffbinary\x85non-utf8");
+    assert_eq!(msg.optional_bytes_mut().or_default().get(), b"\xffbinary\x85non-utf8");
+}
+
+#[test]
+fn test_nonempty_default_bytes_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert_eq!(msg.default_bytes(), b"world");
+    assert_eq!(msg.default_bytes_opt(), Optional::Unset(&b"world"[..]));
+    assert_eq!(msg.default_bytes_mut().get(), b"world");
+    assert!(msg.default_bytes_mut().is_unset());
+
+    {
+        let s = String::from("hello world");
+        msg.default_bytes_mut().set(s.as_bytes());
+    }
+    assert_eq!(msg.default_bytes(), b"hello world");
+    assert_eq!(msg.default_bytes_opt(), Optional::Set(&b"hello world"[..]));
+    assert!(msg.default_bytes_mut().is_set());
+    assert_eq!(msg.default_bytes_mut().get(), b"hello world");
+
+    msg.default_bytes_mut().or_default().set(b"accessors_test");
+    assert_eq!(msg.default_bytes(), b"accessors_test");
+    assert_eq!(msg.default_bytes_opt(), Optional::Set(&b"accessors_test"[..]));
+    assert!(msg.default_bytes_mut().is_set());
+    assert_eq!(msg.default_bytes_mut().get(), b"accessors_test");
+    assert_eq!(msg.default_bytes_mut().or_default().get(), b"accessors_test");
+
+    msg.default_bytes_mut().clear();
+    assert_eq!(msg.default_bytes(), b"world");
+    assert_eq!(msg.default_bytes_opt(), Optional::Unset(&b"world"[..]));
+    assert!(msg.default_bytes_mut().is_unset());
+
+    msg.default_bytes_mut().set(b"");
+    assert_eq!(msg.default_bytes(), b"");
+    assert_eq!(msg.default_bytes_opt(), Optional::Set(&b""[..]));
+
+    msg.default_bytes_mut().clear();
+    msg.default_bytes_mut().or_default();
+    assert_eq!(msg.default_bytes(), b"world");
+    assert_eq!(msg.default_bytes_opt(), Optional::Set(&b"world"[..]));
+
+    msg.default_bytes_mut().or_default().set(b"\xffbinary\x85non-utf8");
+    assert_eq!(msg.default_bytes(), b"\xffbinary\x85non-utf8");
+    assert_eq!(msg.default_bytes_opt(), Optional::Set(&b"\xffbinary\x85non-utf8"[..]));
+    assert!(msg.default_bytes_mut().is_set());
+    assert_eq!(msg.default_bytes_mut().get(), b"\xffbinary\x85non-utf8");
+    assert_eq!(msg.default_bytes_mut().or_default().get(), b"\xffbinary\x85non-utf8");
 }
 
 #[test]
