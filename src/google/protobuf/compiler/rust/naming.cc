@@ -111,20 +111,18 @@ absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field) {
   switch (field.desc().type()) {
     case FieldDescriptor::TYPE_BOOL:
       return "bool";
-    case FieldDescriptor::TYPE_FIXED32:
-      return "i32";
-    case FieldDescriptor::TYPE_FIXED64:
-      return "i64";
     case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SFIXED32:
       return "i32";
     case FieldDescriptor::TYPE_INT64:
-      return "i64";
-    case FieldDescriptor::TYPE_SINT32:
-      return "i32";
     case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_SFIXED64:
       return "i64";
+    case FieldDescriptor::TYPE_FIXED32:
     case FieldDescriptor::TYPE_UINT32:
       return "u32";
+    case FieldDescriptor::TYPE_FIXED64:
     case FieldDescriptor::TYPE_UINT64:
       return "u64";
     case FieldDescriptor::TYPE_FLOAT:
@@ -138,25 +136,6 @@ absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field) {
   }
   ABSL_LOG(FATAL) << "Unsupported field type: " << field.desc().type_name();
   return "";
-}
-
-bool IsSupportedFieldType(Context<FieldDescriptor> field) {
-  return !field.desc().is_repeated() &&
-         // We do not support [ctype=FOO] (used to set the field type in C++ to
-         // cord or string_piece) in V0 API.
-         !field.desc().options().has_ctype() &&
-         (field.desc().type() == FieldDescriptor::TYPE_BOOL ||
-          field.desc().type() == FieldDescriptor::TYPE_FIXED32 ||
-          field.desc().type() == FieldDescriptor::TYPE_FIXED64 ||
-          field.desc().type() == FieldDescriptor::TYPE_INT32 ||
-          field.desc().type() == FieldDescriptor::TYPE_INT64 ||
-          field.desc().type() == FieldDescriptor::TYPE_SINT32 ||
-          field.desc().type() == FieldDescriptor::TYPE_SINT64 ||
-          field.desc().type() == FieldDescriptor::TYPE_UINT32 ||
-          field.desc().type() == FieldDescriptor::TYPE_UINT64 ||
-          field.desc().type() == FieldDescriptor::TYPE_FLOAT ||
-          field.desc().type() == FieldDescriptor::TYPE_DOUBLE ||
-          field.desc().type() == FieldDescriptor::TYPE_BYTES);
 }
 
 std::string RustModule(Context<Descriptor> msg) {

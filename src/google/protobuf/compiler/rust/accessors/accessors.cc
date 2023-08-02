@@ -53,6 +53,8 @@ std::unique_ptr<AccessorGenerator> AccessorGenerator::For(
     case FieldDescriptor::TYPE_INT64:
     case FieldDescriptor::TYPE_FIXED32:
     case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_SFIXED64:
     case FieldDescriptor::TYPE_SINT32:
     case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_UINT32:
