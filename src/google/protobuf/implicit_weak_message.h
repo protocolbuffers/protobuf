@@ -198,13 +198,13 @@ struct WeakRepeatedPtrField {
     return pointer_iterator(base().raw_mutable_data());
   }
   const_pointer_iterator pointer_begin() const {
-    return const_pointer_iterator(base().raw_mutable_data());
+    return const_pointer_iterator(base().raw_data());
   }
   pointer_iterator pointer_end() {
     return pointer_iterator(base().raw_mutable_data() + base().size());
   }
   const_pointer_iterator pointer_end() const {
-    return const_pointer_iterator(base().raw_mutable_data() + base().size());
+    return const_pointer_iterator(base().raw_data() + base().size());
   }
 
   MessageLite* AddWeak(const MessageLite* prototype) {
