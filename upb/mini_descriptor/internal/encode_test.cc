@@ -34,7 +34,7 @@
 #include "gtest/gtest.h"
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/descriptor.h"
-#include "upb/message/accessors_internal.h"
+#include "upb/message/internal/accessors.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/modifiers.h"

@@ -208,7 +208,7 @@ cc_library(
 cc_library(
     name = "message_accessors_internal",
     hdrs = [
-        "upb/message/accessors_internal.h",
+        "upb/message/internal/accessors.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:friends"],
@@ -224,7 +224,7 @@ cc_library(
     name = "message_accessors",
     srcs = [
         "upb/message/accessors.c",
-        "upb/message/accessors_internal.h",
+        "upb/message/internal/accessors.h",
     ],
     hdrs = [
         "upb/message/accessors.h",

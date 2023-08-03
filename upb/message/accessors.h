@@ -33,8 +33,8 @@
 #include "upb/collections/array_internal.h"
 #include "upb/collections/map.h"
 #include "upb/collections/map_internal.h"
-#include "upb/message/accessors_internal.h"
 #include "upb/message/internal.h"
+#include "upb/message/internal/accessors.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
 

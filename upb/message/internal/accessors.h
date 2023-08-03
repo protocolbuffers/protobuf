@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MESSAGE_ACCESSORS_INTERNAL_H_
-#define UPB_MESSAGE_ACCESSORS_INTERNAL_H_
+#ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
+#define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 
 #include "upb/collections/map_internal.h"
 #include "upb/message/extension_internal.h"
@@ -383,4 +383,4 @@ UPB_INLINE upb_Map* _upb_Message_GetOrCreateMutableMap(
 
 #include "upb/port/undef.inc"
 
-#endif  // UPB_MESSAGE_ACCESSORS_INTERNAL_H_
+#endif  // UPB_MESSAGE_INTERNAL_ACCESSORS_H_
