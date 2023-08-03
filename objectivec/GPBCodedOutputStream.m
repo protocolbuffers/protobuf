@@ -60,6 +60,36 @@ typedef struct GPBOutputBufferState {
 static const int32_t LITTLE_ENDIAN_32_SIZE = sizeof(uint32_t);
 static const int32_t LITTLE_ENDIAN_64_SIZE = sizeof(uint64_t);
 
+// Helper to write bytes to an NSOutputStream looping incase a subset is written in
+// any of the attempts.
+static NSInteger WriteToOutputStream(NSOutputStream *output, uint8_t *bytes, size_t length) {
+  size_t total = 0;
+
+  while (length) {
+    NSInteger written = [output write:bytes maxLength:length];
+
+    // Fast path - done.
+    if (written == (NSInteger)length) {
+      return total + written;
+    }
+
+    if (written > 0) {
+      // Record the subset written and continue incase it was a partial write.
+      total += written;
+      length -= written;
+      bytes += written;
+    } else if (written == 0) {
+      // Stream refused to write more, return what was written.
+      return total;
+    } else {
+      // Return the error.
+      return written;
+    }
+  }
+
+  return total;
+}
+
 // Internal helper that writes the current buffer to the output. The
 // buffer position is reset to its initial value when this returns.
 static void GPBRefreshBuffer(GPBOutputBufferState *state) {
@@ -68,7 +98,7 @@ static void GPBRefreshBuffer(GPBOutputBufferState *state) {
     [NSException raise:GPBCodedOutputStreamException_OutOfSpace format:@""];
   }
   if (state->position != 0) {
-    NSInteger written = [state->output write:state->bytes maxLength:state->position];
+    NSInteger written = WriteToOutputStream(state->output, state->bytes, state->position);
     if (written != (NSInteger)state->position) {
       [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
     }
@@ -891,7 +921,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
       state_.position = length;
     } else {
       // Write is very big.  Let's do it all at once.
-      NSInteger written = [state_.output write:((uint8_t *)value) + offset maxLength:length];
+      NSInteger written = WriteToOutputStream(state_.output, ((uint8_t *)value) + offset, length);
       if (written != (NSInteger)length) {
         [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
       }
