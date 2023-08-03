@@ -164,6 +164,7 @@ struct Offset {
 #endif
 
 struct FieldAuxDefaultMessage {};
+struct FieldAuxEnumData {};
 
 // Small type card used by mini parse to handle map entries.
 // Map key/values are very limited, so we can encode the whole thing in a single
@@ -405,8 +406,8 @@ struct alignas(uint64_t) TcParseTableBase {
   // Auxiliary entries for field types that need extra information.
   union FieldAux {
     constexpr FieldAux() : message_default_p(nullptr) {}
-    constexpr FieldAux(bool (*enum_validator)(int))
-        : enum_validator(enum_validator) {}
+    constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
+        : enum_data(enum_data) {}
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
     constexpr FieldAux(int16_t range_start, uint16_t range_length)
         : enum_range{range_start, range_length} {}
@@ -419,13 +420,13 @@ struct alignas(uint64_t) TcParseTableBase {
         : create_in_arena(create_in_arena) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
-    bool (*enum_validator)(int);
     struct {
       int16_t start;    // minimum enum number (if it fits)
       uint16_t length;  // length of range (i.e., max = start + length - 1)
     } enum_range;
     uint32_t offset;
     const void* message_default_p;
+    const uint32_t* enum_data;
     const TcParseTableBase* table;
     MapAuxInfo map_info;
     void (*create_in_arena)(Arena*, void*);

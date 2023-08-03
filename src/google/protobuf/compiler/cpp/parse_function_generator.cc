@@ -527,7 +527,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
                 break;
               case TailCallTableInfo::kEnumValidator:
                 format(
-                    "{$1$_IsValid},\n",
+                    "{::_pbi::FieldAuxEnumData{}, $1$_internal_data_},\n",
                     QualifiedClassName(aux_entry.field->enum_type(), options_));
                 break;
               case TailCallTableInfo::kNumericOffset:

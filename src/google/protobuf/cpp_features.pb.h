@@ -74,6 +74,7 @@ enum CppFeatures_Utf8Validation : int {
 };
 
 PROTOBUF_EXPORT bool CppFeatures_Utf8Validation_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t CppFeatures_Utf8Validation_internal_data_[];
 constexpr CppFeatures_Utf8Validation CppFeatures_Utf8Validation_Utf8Validation_MIN = static_cast<CppFeatures_Utf8Validation>(0);
 constexpr CppFeatures_Utf8Validation CppFeatures_Utf8Validation_Utf8Validation_MAX = static_cast<CppFeatures_Utf8Validation>(3);
 constexpr int CppFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;

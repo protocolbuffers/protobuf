@@ -282,15 +282,10 @@ const ::google::protobuf::EnumDescriptor* CodeGeneratorResponse_Feature_descript
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto[0];
 }
+PROTOBUF_CONSTINIT const uint32_t CodeGeneratorResponse_Feature_internal_data_[] = {
+    196608u, 0u, };
 bool CodeGeneratorResponse_Feature_IsValid(int value) {
-  switch (value) {
-    case 0:
-    case 1:
-    case 2:
-      return true;
-    default:
-      return false;
-  }
+  return 0 <= value && value <= 2;
 }
 #if (__cplusplus < 201703) && \
   (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))

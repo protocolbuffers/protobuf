@@ -167,7 +167,7 @@ enum TransformValidation : uint16_t {
 
   // Varint fields:
   kTvZigZag    = 1 << kTvShift,
-  kTvEnum      = 2 << kTvShift,  // validate using generated _IsValid()
+  kTvEnum      = 2 << kTvShift,  // validate using ValidateEnum()
   kTvRange     = 3 << kTvShift,  // validate using FieldAux::enum_range
   // String fields:
   kTvUtf8Debug = 1 << kTvShift,  // proto2
@@ -493,7 +493,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   // Functions referenced by generated fast tables (closed enum):
   //   E: closed enum (N.B.: open enums use V32, above)
-  //   r: enum range  v: enum validator (_IsValid function)
+  //   r: enum range  v: enum validator (ValidateEnum function)
   //   S: singular   R: repeated   P: packed
   //   1/2: tag length (bytes)
   static const char* FastErS1(PROTOBUF_TC_PARAM_DECL);

@@ -908,6 +908,20 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_UNUSED
 #endif
 
+// For the toolchains that support it, evalutes to `true` if the input is
+// determined to be a compile time constant after optimizations have happened
+// (like inlining and constant propagation). A `false` result means that the
+// compiler could not determine it is constant (it might still be but couldn't
+// figure it out).
+#ifdef PROTOBUF_BUILTIN_CONSTANT_P
+#error PROTOBUF_BUILTIN_CONSTANT_P was previously defined
+#endif
+#if __has_builtin(__builtin_constant_p)
+#define PROTOBUF_BUILTIN_CONSTANT_P(x) __builtin_constant_p(x)
+#else
+#define PROTOBUF_BUILTIN_CONSTANT_P(x) false
+#endif
+
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
 // autoheader defines this in some circumstances
