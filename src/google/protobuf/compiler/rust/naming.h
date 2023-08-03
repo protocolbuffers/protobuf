@@ -51,8 +51,6 @@ std::string GetHeaderFile(Context<FileDescriptor> file);
 std::string Thunk(Context<FieldDescriptor> field, absl::string_view op);
 std::string Thunk(Context<Descriptor> msg, absl::string_view op);
 
-bool IsSupportedFieldType(Context<FieldDescriptor> field);
-
 absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field);
 
 std::string FieldInfoComment(Context<FieldDescriptor> field);

@@ -34,14 +34,16 @@ use unittest_proto::proto2_unittest::TestAllTypes;
 #[test]
 fn test_default_accessors() {
     let msg = TestAllTypes::new();
-    assert_eq!(msg.default_fixed32(), 47);
-    assert_eq!(msg.default_fixed64(), 48);
     assert_eq!(msg.default_int32(), 41);
     assert_eq!(msg.default_int64(), 42);
-    assert_eq!(msg.default_sint32(), -45);
-    assert_eq!(msg.default_sint64(), 46);
     assert_eq!(msg.default_uint32(), 43);
     assert_eq!(msg.default_uint64(), 44);
+    assert_eq!(msg.default_sint32(), -45);
+    assert_eq!(msg.default_sint64(), 46);
+    assert_eq!(msg.default_fixed32(), 47);
+    assert_eq!(msg.default_fixed64(), 48);
+    assert_eq!(msg.default_sfixed32(), 49);
+    assert_eq!(msg.default_sfixed64(), -50);
     assert_eq!(msg.default_float(), 51.5);
     assert_eq!(msg.default_double(), 52000.0);
     assert_eq!(msg.default_bool(), true);
