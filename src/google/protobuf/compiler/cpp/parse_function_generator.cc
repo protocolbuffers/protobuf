@@ -36,6 +36,7 @@
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -285,6 +286,8 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
            FieldNameDataSize(tc_table_info_->field_name_data)},
           {"field_lookup_size", field_num_to_entry_table.size16()},
       },
+      // Force instantiation of TcParseTable template so we get enough debug
+      // info for prettyprinter scripts.
       R"cc(
         friend class ::$proto_ns$::internal::TcParser;
         $SECTION$
@@ -292,6 +295,7 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
             $table_size_log2$, $num_field_entries$, $num_field_aux$,
             $name_table_size$, $field_lookup_size$>
             _table_;
+        inline void instantiateParseTable() { (void)_table_.header; }
       )cc");
 }
 
