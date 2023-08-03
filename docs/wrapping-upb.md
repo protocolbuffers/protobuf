@@ -234,7 +234,7 @@ APIs to do this do not exist yet.
 
 To use MiniTable-based access:
 
-1. Load and access MiniDescriptors data using the interfaces in upb/mini_table/decode.h.
+1. Load and access MiniDescriptors data using the interfaces in upb/mini_descriptor/decode.h.
 2. Access message data using the interfaces in upb/message/accessors.h.
 
 ## Memory Management
