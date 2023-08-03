@@ -160,7 +160,7 @@ target_link_libraries(message_accessors_internal INTERFACE
 
 add_library(message_accessors 
     ../upb/message/accessors.c
-  ../upb/message/accessors_internal.h
+  ../upb/message/internal/accessors.h
   ../upb/message/accessors.h
 )
 target_include_directories(message_accessors PUBLIC
