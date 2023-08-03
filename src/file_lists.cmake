@@ -652,6 +652,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/dynamic_message_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/feature_resolver_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_reflection_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_lite_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/has_bits_test.cc
