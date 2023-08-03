@@ -60,7 +60,7 @@ typedef struct GPBOutputBufferState {
 static const int32_t LITTLE_ENDIAN_32_SIZE = sizeof(uint32_t);
 static const int32_t LITTLE_ENDIAN_64_SIZE = sizeof(uint64_t);
 
-// Helper to write bytes to an NSOutputStream looping incase a subset is written in
+// Helper to write bytes to an NSOutputStream looping in case a subset is written in
 // any of the attempts.
 static NSInteger WriteToOutputStream(NSOutputStream *output, uint8_t *bytes, size_t length) {
   size_t total = 0;
@@ -74,7 +74,7 @@ static NSInteger WriteToOutputStream(NSOutputStream *output, uint8_t *bytes, siz
     }
 
     if (written > 0) {
-      // Record the subset written and continue incase it was a partial write.
+      // Record the subset written and continue in case it was a partial write.
       total += written;
       length -= written;
       bytes += written;
