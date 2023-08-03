@@ -312,7 +312,9 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
     output(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
-            upb_Message* clone = upb_Message_DeepClone(value->msg(), &$9, arena_);
+            upb_Message* clone = upb_Message_DeepClone(
+                ::protos::internal::PrivateAccess::GetInternalMsg(value), &$9,
+                arena_);
             $6return $4_$8_set(msg_, $7, ($5*)clone, arena_);
           }
         )cc",
@@ -324,7 +326,9 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
     output(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
-            upb_Message* clone = upb_Message_DeepClone(value->msg(), &$9, arena_);
+            upb_Message* clone = upb_Message_DeepClone(
+                ::protos::internal::PrivateAccess::GetInternalMsg(value), &$9,
+                arena_);
             $6return $4_$8_set(msg_, $7, ($5*)clone, arena_);
           }
         )cc",
@@ -484,7 +488,6 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
     output("using $0Access::$1_NOT_SET;\n", class_name,
            absl::AsciiStrToUpper(oneof->name()));
   }
-  output("using $0Access::msg;\n", class_name);
 }
 
 void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,

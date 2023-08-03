@@ -134,7 +134,8 @@ class RepeatedFieldProxy
   void push_back(const T& t) {
     upb_MessageValue message_value;
     message_value.msg_val = upb_Message_DeepClone(
-        GetInternalMsg(&t), ::protos::internal::GetMiniTable(&t), this->arena_);
+        PrivateAccess::GetInternalMsg(&t), ::protos::internal::GetMiniTable(&t),
+        this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
   }
 
@@ -143,7 +144,7 @@ class RepeatedFieldProxy
             typename = std::enable_if_t<b>>
   void push_back(T&& msg) {
     upb_MessageValue message_value;
-    message_value.msg_val = GetInternalMsg(&msg);
+    message_value.msg_val = PrivateAccess::GetInternalMsg(&msg);
     upb_Arena_Fuse(GetArena(&msg), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
     T moved_msg = std::move(msg);
