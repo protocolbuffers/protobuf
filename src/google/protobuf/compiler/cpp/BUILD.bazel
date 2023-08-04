@@ -187,6 +187,19 @@ cc_test(
 )
 
 cc_test(
+    name = "file_unittest",
+    srcs = ["file_unittest.cc"],
+    deps = [
+        ":cpp",
+        "//:protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "generator_unittest",
     srcs = ["generator_unittest.cc"],
     deps = [
