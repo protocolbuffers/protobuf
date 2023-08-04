@@ -27,7 +27,7 @@ load("//bazel:py_proto_library.bzl", "py_proto_library")
 load(":dist.bzl", "py_dist", "py_dist_module")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@com_google_protobuf//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
-load("@rules_pkg//:mappings.bzl", "pkg_files")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
@@ -237,16 +237,20 @@ pkg_files(
     prefix = "utf8_range",
 )
 
-# NOTE: This package currently only works for macos and ubuntu, MSVC users
-# should use a binary wheel.
-pkg_tar(
-    name = "source_tarball",
+pkg_files(
+    name = "dist_source_files",
     srcs = [
         "MANIFEST.in",
         "setup.py",
-        ":generated_wkt",
-        ":generated_wkt_compiler",
-        ":utf8_range_source_files",
+    ],
+)
+
+# Passing filegroups to pkg_tar directly results in incorrect
+# `protobuf/external/upb/` directory structure when built from the protobuf
+# repo. This can be removed once repositories are merged.
+pkg_files(
+    name = "filegroup_source_files",
+    srcs = [
         "//:LICENSE",
         "//:source_files",
         "//python:message_srcs",
@@ -255,6 +259,20 @@ pkg_tar(
         "//upb/mini_descriptor:source_files",
         "//upb/mini_table:source_files",
         "//upb/util:source_files",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+)
+
+# NOTE: This package currently only works for macos and ubuntu, MSVC users
+# should use a binary wheel.
+pkg_tar(
+    name = "source_tarball",
+    srcs = [
+        ":dist_source_files",
+        ":filegroup_source_files",
+        ":generated_wkt",
+        ":generated_wkt_compiler",
+        ":utf8_range_source_files",
         "@com_google_protobuf//python:python_source_files",
     ],
     extension = "tar.gz",
