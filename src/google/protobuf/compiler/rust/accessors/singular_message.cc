@@ -50,8 +50,8 @@ class SingularMessage final : public AccessorGenerator {
         },
         R"rs(
           // inMsgImpl
-          pub fn $field$(&self) -> std::convert::Infallible {
-            todo!("b/285309454")
+          pub fn r#$field$(&self) -> $Msg$View {
+            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
           }
         )rs");
   }
