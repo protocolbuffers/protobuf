@@ -45,6 +45,7 @@
 #include "json/json.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
+#include "google/protobuf/endian.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -58,6 +59,7 @@ using google::protobuf::Descriptor;
 using google::protobuf::FieldDescriptor;
 using google::protobuf::Message;
 using google::protobuf::internal::WireFormatLite;
+using google::protobuf::internal::little_endian::FromHost;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using proto2_messages::TestAllTypesProto2;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
@@ -117,9 +119,18 @@ string longvarint(uint64_t x, int extra) {
   return string(buf, len);
 }
 
-// TODO: proper byte-swapping for big-endian machines.
-string fixed32(void* data) { return string(static_cast<char*>(data), 4); }
-string fixed64(void* data) { return string(static_cast<char*>(data), 8); }
+string fixed32(void* data) {
+  uint32_t data_le;
+  std::memcpy(&data_le, data, 4);
+  data_le = FromHost(data_le);
+  return string(reinterpret_cast<char*>(&data_le), 4);
+}
+string fixed64(void* data) {
+  uint64_t data_le;
+  std::memcpy(&data_le, data, 8);
+  data_le = FromHost(data_le);
+  return string(reinterpret_cast<char*>(&data_le), 8);
+}
 
 string delim(const string& buf) {
   return absl::StrCat(varint(buf.size()), buf);
@@ -3100,12 +3111,8 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForValue() {
       },
       true);
   RunValidJsonTestWithValidator(
-      "NullValueInNormalMessage", RECOMMENDED,
-      R"({"optionalNullValue": null})",
-      [](const Json::Value& value) {
-        return value.empty();
-      },
-      true);
+      "NullValueInNormalMessage", RECOMMENDED, R"({"optionalNullValue": null})",
+      [](const Json::Value& value) { return value.empty(); }, true);
   ExpectSerializeFailureForJson("ValueRejectNanNumberValue", RECOMMENDED,
                                 "optional_value: { number_value: nan}");
   ExpectSerializeFailureForJson("ValueRejectInfNumberValue", RECOMMENDED,
