@@ -424,6 +424,15 @@ message TestNestedChildExtensionData {
   optional TestChildExtensionData child = 2;
 }
 
+// Required and closed enum fields are considered unknown fields if the value is
+// not valid. We need to make sure it functions as expected.
+message TestRequiredEnum {
+  // Required closed enum results in missing required fields.
+  required ForeignEnum required_enum = 1;
+  // A dummy optional field.
+  optional int32 a = 2;
+}
+
 // We have separate messages for testing required fields because it's
 // annoying to have to fill in required fields in TestProto in order to
 // do anything with it.  Note that we don't need to test every type of
@@ -496,6 +505,8 @@ message TestNestedRequiredForeign {
   optional TestNestedRequiredForeign child = 1;
   optional TestRequiredForeign payload = 2;
   optional int32 dummy = 3;
+  // optional message to test required closed enum.
+  optional TestRequiredEnum required_enum = 5;
 }
 
 // Test that we can use NestedMessage from outside TestAllTypes.
