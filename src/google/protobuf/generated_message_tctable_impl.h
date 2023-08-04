@@ -894,8 +894,12 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* MpVarint(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
   static const char* MpRepeatedVarint(PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split, typename FieldType, uint16_t xform_val>
+  static const char* MpRepeatedVarintT(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
   static const char* MpPackedVarint(PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split, typename FieldType, uint16_t xform_val>
+  static const char* MpPackedVarintT(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
   static const char* MpFixed(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>

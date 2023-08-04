@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <numeric>
@@ -38,7 +39,9 @@
 
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/numeric/bits.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/inlined_string_field.h"
@@ -1984,13 +1987,56 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
+template <bool is_split, typename FieldType, uint16_t xform_val_in>
+const char* TcParser::MpRepeatedVarintT(PROTOBUF_TC_PARAM_DECL) {
+  const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
+  const uint32_t decoded_tag = data.tag();
+  // For is_split we ignore the incoming xform_val and read it from entry to
+  // reduce duplication for the uncommon paths.
+  const uint16_t xform_val =
+      is_split ? (entry.type_card & field_layout::kTvMask) : xform_val_in;
+  const bool is_zigzag = xform_val == field_layout::kTvZigZag;
+  const bool is_validated_enum = xform_val & field_layout::kTvEnum;
+
+  const char* ptr2 = ptr;
+  uint32_t next_tag;
+  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  auto& field = MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
+      base, entry.offset, msg);
+
+  do {
+    uint64_t tmp;
+    ptr = ParseVarint(ptr2, &tmp);
+    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
+    if (is_validated_enum) {
+      if (!EnumIsValidAux(static_cast<int32_t>(tmp), xform_val,
+                          *table->field_aux(&entry))) {
+        ptr = ptr2;
+        PROTOBUF_MUSTTAIL return MpUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
+      }
+    } else if (is_zigzag) {
+      tmp = sizeof(FieldType) == 8 ? WireFormatLite::ZigZagDecode64(tmp)
+                                   : WireFormatLite::ZigZagDecode32(tmp);
+    }
+    field.Add(static_cast<FieldType>(tmp));
+    if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+    ptr2 = ReadTag(ptr, &next_tag);
+    if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) goto error;
+  } while (next_tag == decoded_tag);
+
+parse_loop:
+  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+error:
+  PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+
 template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
     PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
-  auto type_card = entry.type_card;
+  const auto type_card = entry.type_card;
   const uint32_t decoded_tag = data.tag();
-  auto decoded_wiretype = decoded_tag & 7;
+  const auto decoded_wiretype = decoded_tag & 7;
 
   // Check for packed repeated fallback:
   if (decoded_wiretype == WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -2000,127 +2046,143 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
   if (decoded_wiretype != WireFormatLite::WIRETYPE_VARINT) {
     PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
   }
-  uint16_t xform_val = (type_card & field_layout::kTvMask);
+  // For split we avoid the duplicate code and have the impl reload the value.
+  // Less code bloat for uncommon paths.
+  const uint16_t xform_val = (type_card & field_layout::kTvMask);
+  const uint16_t rep = type_card & field_layout::kRepMask;
+  switch (rep >> field_layout::kRepShift) {
+    case field_layout::kRep64Bits >> field_layout::kRepShift:
+      if (xform_val == 0) {
+        PROTOBUF_MUSTTAIL return MpRepeatedVarintT<is_split, uint64_t, 0>(
+            PROTOBUF_TC_PARAM_PASS);
+      } else {
+        ABSL_DCHECK_EQ(xform_val, +field_layout::kTvZigZag);
+        PROTOBUF_MUSTTAIL return MpRepeatedVarintT<
+            is_split, uint64_t, (is_split ? 0 : field_layout::kTvZigZag)>(
+            PROTOBUF_TC_PARAM_PASS);
+      }
+    case field_layout::kRep32Bits >> field_layout::kRepShift:
+      switch (xform_val >> field_layout::kTvShift) {
+        case 0:
+          PROTOBUF_MUSTTAIL return MpRepeatedVarintT<is_split, uint32_t, 0>(
+              PROTOBUF_TC_PARAM_PASS);
+        case field_layout::kTvZigZag >> field_layout::kTvShift:
+          PROTOBUF_MUSTTAIL return MpRepeatedVarintT<
+              is_split, uint32_t, (is_split ? 0 : field_layout::kTvZigZag)>(
+              PROTOBUF_TC_PARAM_PASS);
+        case field_layout::kTvEnum >> field_layout::kTvShift:
+          PROTOBUF_MUSTTAIL return MpRepeatedVarintT<
+              is_split, uint32_t, (is_split ? 0 : field_layout::kTvEnum)>(
+              PROTOBUF_TC_PARAM_PASS);
+        case field_layout::kTvRange >> field_layout::kTvShift:
+          PROTOBUF_MUSTTAIL return MpRepeatedVarintT<
+              is_split, uint32_t, (is_split ? 0 : field_layout::kTvRange)>(
+              PROTOBUF_TC_PARAM_PASS);
+        default:
+          PROTOBUF_ASSUME(false);
+      }
+    case field_layout::kRep8Bits >> field_layout::kRepShift:
+      PROTOBUF_MUSTTAIL return MpRepeatedVarintT<is_split, bool, 0>(
+          PROTOBUF_TC_PARAM_PASS);
+
+    default:
+      PROTOBUF_ASSUME(false);
+  }
+}
+
+template <bool is_split, typename FieldType, uint16_t xform_val_in>
+const char* TcParser::MpPackedVarintT(PROTOBUF_TC_PARAM_DECL) {
+  const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
+  // For is_split we ignore the incoming xform_val and read it from entry to
+  // reduce duplication for the uncommon paths.
+  const uint16_t xform_val =
+      is_split ? (entry.type_card & field_layout::kTvMask) : xform_val_in;
   const bool is_zigzag = xform_val == field_layout::kTvZigZag;
   const bool is_validated_enum = xform_val & field_layout::kTvEnum;
 
   void* const base = MaybeGetSplitBase(msg, is_split, table);
-  uint16_t rep = type_card & field_layout::kRepMask;
-  if (rep == field_layout::kRep64Bits) {
-    auto& field = MaybeCreateRepeatedFieldRefAt<uint64_t, is_split>(
-        base, entry.offset, msg);
-    const char* ptr2 = ptr;
-    uint32_t next_tag;
-    do {
-      uint64_t tmp;
-      ptr = ParseVarint(ptr2, &tmp);
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
-      field.Add(is_zigzag ? WireFormatLite::ZigZagDecode64(tmp) : tmp);
-      if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-      ptr2 = ReadTag(ptr, &next_tag);
-      if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) goto error;
-    } while (next_tag == decoded_tag);
-  } else if (rep == field_layout::kRep32Bits) {
-    auto& field = MaybeCreateRepeatedFieldRefAt<uint32_t, is_split>(
-        base, entry.offset, msg);
-    const char* ptr2 = ptr;
-    uint32_t next_tag;
-    do {
-      uint64_t tmp;
-      ptr = ParseVarint(ptr2, &tmp);
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
-      if (is_validated_enum) {
-        if (!EnumIsValidAux(tmp, xform_val, *table->field_aux(&entry))) {
-          ptr = ptr2;
-          PROTOBUF_MUSTTAIL return MpUnknownEnumFallback(
-              PROTOBUF_TC_PARAM_PASS);
-        }
-      } else if (is_zigzag) {
-        tmp = WireFormatLite::ZigZagDecode32(tmp);
-      }
-      field.Add(tmp);
-      if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-      ptr2 = ReadTag(ptr, &next_tag);
-      if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) goto error;
-    } while (next_tag == decoded_tag);
-  } else {
-    ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
-    auto& field =
-        MaybeCreateRepeatedFieldRefAt<bool, is_split>(base, entry.offset, msg);
-    const char* ptr2 = ptr;
-    uint32_t next_tag;
-    do {
-      uint64_t tmp;
-      ptr = ParseVarint(ptr2, &tmp);
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
-      field.Add(static_cast<bool>(tmp));
-      if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-      ptr2 = ReadTag(ptr, &next_tag);
-      if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) goto error;
-    } while (next_tag == decoded_tag);
-  }
+  auto* field = &MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
+      base, entry.offset, msg);
 
-  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-parse_loop:
-  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-error:
-  PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  if (is_validated_enum) {
+    const TcParseTableBase::FieldAux aux = *table->field_aux(entry.aux_idx);
+    return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
+      if (!EnumIsValidAux(value, xform_val, aux)) {
+        AddUnknownEnum(msg, table, data.tag(), value);
+      } else {
+        field->Add(value);
+      }
+    });
+  } else {
+    return ctx->ReadPackedVarint(ptr, [=](uint64_t value) {
+      field->Add(is_zigzag ? (sizeof(FieldType) == 8
+                                  ? WireFormatLite::ZigZagDecode64(value)
+                                  : WireFormatLite::ZigZagDecode32(
+                                        static_cast<uint32_t>(value)))
+                           : value);
+    });
+  }
 }
 
 template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpPackedVarint(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
-  auto type_card = entry.type_card;
-  auto decoded_wiretype = data.tag() & 7;
+  const auto type_card = entry.type_card;
+  const auto decoded_wiretype = data.tag() & 7;
 
   // Check for non-packed repeated fallback:
   if (decoded_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
     PROTOBUF_MUSTTAIL return MpRepeatedVarint<is_split>(PROTOBUF_TC_PARAM_PASS);
   }
+
+  // For split we avoid the duplicate code and have the impl reload the value.
+  // Less code bloat for uncommon paths.
   const uint16_t xform_val = (type_card & field_layout::kTvMask);
-  const bool is_zigzag = xform_val == field_layout::kTvZigZag;
-  const bool is_validated_enum = xform_val & field_layout::kTvEnum;
 
   // Since ctx->ReadPackedFixed does not use TailCall<> or Return<>, sync any
   // pending hasbits now:
   SyncHasbits(msg, hasbits, table);
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
-  uint16_t rep = type_card & field_layout::kRepMask;
-  if (rep == field_layout::kRep64Bits) {
-    auto* field = &MaybeCreateRepeatedFieldRefAt<uint64_t, is_split>(
-        base, entry.offset, msg);
-    return ctx->ReadPackedVarint(ptr, [field, is_zigzag](uint64_t value) {
-      field->Add(is_zigzag ? WireFormatLite::ZigZagDecode64(value) : value);
-    });
-  } else if (rep == field_layout::kRep32Bits) {
-    auto* field = &MaybeCreateRepeatedFieldRefAt<uint32_t, is_split>(
-        base, entry.offset, msg);
-    if (is_validated_enum) {
-      const TcParseTableBase::FieldAux aux = *table->field_aux(entry.aux_idx);
-      return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
-        if (!EnumIsValidAux(value, xform_val, aux)) {
-          AddUnknownEnum(msg, table, data.tag(), value);
-        } else {
-          field->Add(value);
-        }
-      });
-    } else {
-      return ctx->ReadPackedVarint(ptr, [field, is_zigzag](uint64_t value) {
-        field->Add(is_zigzag ? WireFormatLite::ZigZagDecode32(
-                                   static_cast<uint32_t>(value))
-                             : value);
-      });
-    }
-  } else {
-    ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
-    auto* field =
-        &MaybeCreateRepeatedFieldRefAt<bool, is_split>(base, entry.offset, msg);
-    return ctx->ReadPackedVarint(
-        ptr, [field](uint64_t value) { field->Add(static_cast<bool>(value)); });
-  }
+  const uint16_t rep = type_card & field_layout::kRepMask;
 
-  PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  switch (rep >> field_layout::kRepShift) {
+    case field_layout::kRep64Bits >> field_layout::kRepShift:
+      if (xform_val == 0) {
+        PROTOBUF_MUSTTAIL return MpPackedVarintT<is_split, uint64_t, 0>(
+            PROTOBUF_TC_PARAM_PASS);
+      } else {
+        ABSL_DCHECK_EQ(xform_val, +field_layout::kTvZigZag);
+        PROTOBUF_MUSTTAIL return MpPackedVarintT<
+            is_split, uint64_t, (is_split ? 0 : field_layout::kTvZigZag)>(
+            PROTOBUF_TC_PARAM_PASS);
+      }
+    case field_layout::kRep32Bits >> field_layout::kRepShift:
+      switch (xform_val >> field_layout::kTvShift) {
+        case 0:
+          PROTOBUF_MUSTTAIL return MpPackedVarintT<is_split, uint32_t, 0>(
+              PROTOBUF_TC_PARAM_PASS);
+        case field_layout::kTvZigZag >> field_layout::kTvShift:
+          PROTOBUF_MUSTTAIL return MpPackedVarintT<
+              is_split, uint32_t, (is_split ? 0 : field_layout::kTvZigZag)>(
+              PROTOBUF_TC_PARAM_PASS);
+        case field_layout::kTvEnum >> field_layout::kTvShift:
+          PROTOBUF_MUSTTAIL return MpPackedVarintT<
+              is_split, uint32_t, (is_split ? 0 : field_layout::kTvEnum)>(
+              PROTOBUF_TC_PARAM_PASS);
+        case field_layout::kTvRange >> field_layout::kTvShift:
+          PROTOBUF_MUSTTAIL return MpPackedVarintT<
+              is_split, uint32_t, (is_split ? 0 : field_layout::kTvRange)>(
+              PROTOBUF_TC_PARAM_PASS);
+        default:
+          PROTOBUF_ASSUME(false);
+      }
+    case field_layout::kRep8Bits >> field_layout::kRepShift:
+      PROTOBUF_MUSTTAIL return MpPackedVarintT<is_split, bool, 0>(
+          PROTOBUF_TC_PARAM_PASS);
+
+    default:
+      PROTOBUF_ASSUME(false);
+  }
 }
 
 bool TcParser::MpVerifyUtf8(absl::string_view wire_bytes,
