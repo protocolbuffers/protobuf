@@ -75,6 +75,11 @@ jobs:
         run: echo "CC=${{ matrix.CC }}" >> $GITHUB_ENV
       - name: Run tests
         run: cd ${{ github.workspace }} && ${{ matrix.BAZEL }} ${{ matrix.startup-flags }} ${{ matrix.BAZEL_CMD || 'test' }} --test_output=errors ${{ steps.bazel-cache.outputs.cache_args }} ${{ matrix.targets || '...' }} ${{ matrix.flags }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: logs
+          path: |
+            **/*.log
 
   no-python:
     runs-on: ubuntu-20-large

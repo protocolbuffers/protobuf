@@ -76,7 +76,8 @@ UPB_INLINE size_t _upb_ArenaHas(upb_Arena* a) {
 
 UPB_API_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
   size = UPB_ALIGN_MALLOC(size);
-  if (UPB_UNLIKELY(_upb_ArenaHas(a) < size)) {
+  size_t span = size + UPB_ASAN_GUARD_SIZE;
+  if (UPB_UNLIKELY(_upb_ArenaHas(a) < span)) {
     return _upb_Arena_SlowMalloc(a, size);
   }
 
@@ -87,18 +88,7 @@ UPB_API_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
   UPB_ASSERT(UPB_ALIGN_MALLOC(size) == size);
   UPB_UNPOISON_MEMORY_REGION(ret, size);
 
-  h->ptr += size;
-
-#if UPB_ASAN
-  {
-    size_t guard_size = 32;
-    if (_upb_ArenaHas(a) >= guard_size) {
-      h->ptr += guard_size;
-    } else {
-      h->ptr = h->end;
-    }
-  }
-#endif
+  h->ptr += span;
 
   return ret;
 }
@@ -112,7 +102,8 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr,
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
-  UPB_ASSERT((char*)ptr + oldsize == h->ptr);  // Must be the last alloc.
+  // Must be the last alloc.
+  UPB_ASSERT((char*)ptr + oldsize == h->ptr - UPB_ASAN_GUARD_SIZE);
   UPB_ASSERT(size <= oldsize);
   h->ptr = (char*)ptr + size;
 }
