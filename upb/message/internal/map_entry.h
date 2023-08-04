@@ -57,7 +57,15 @@ typedef struct {
 } upb_MapEntryData;
 
 typedef struct {
-  void* internal_data;
+  // LINT.IfChange(internal_layout)
+  union {
+    void* internal_data;
+
+    // Force 8-byte alignment, since the data members may contain members that
+    // require 8-byte alignment.
+    double d;
+  };
+  // LINT.ThenChange(//depot/google3/third_party/upb/upb/message/internal.h:internal_layout)
   upb_MapEntryData data;
 } upb_MapEntry;
 

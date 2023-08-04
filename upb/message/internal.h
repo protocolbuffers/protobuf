@@ -86,6 +86,7 @@ typedef struct {
 } upb_Message_InternalData;
 
 typedef struct {
+  // LINT.IfChange(internal_layout)
   union {
     upb_Message_InternalData* internal;
 
@@ -93,6 +94,7 @@ typedef struct {
     // require 8-byte alignment.
     double d;
   };
+  // LINT.ThenChange(//depot/google3/third_party/upb/upb/message/internal/map_entry.h:internal_layout)
   /* Message data follows. */
 } upb_Message_Internal;
 
