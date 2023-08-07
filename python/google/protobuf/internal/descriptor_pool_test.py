@@ -563,6 +563,37 @@ class DescriptorPoolTestBase(object):
       with self.assertRaises(TypeError):
         pool.FindFileByName(conflict_fd.name)
 
+  def testTypeNotSet(self):
+    f = descriptor_pb2.FileDescriptorProto(
+        name='google/protobuf/internal/not_type.proto',
+        package='google.protobuf.python.internal',
+        syntax='proto3')
+    f.enum_type.add(name='TestEnum').value.add(name='DEFAULTVALUE',
+                                               number=0)
+    msg_proto = f.message_type.add(name='TestMessage')
+    msg_proto.nested_type.add(name='Nested')
+    # type may not set if type_name is set in FieldDescriptorProto
+    msg_proto.field.add(name='nested_field',
+                        number=1,
+                        label=descriptor.FieldDescriptor.LABEL_OPTIONAL,
+                        type_name='Nested')
+    msg_proto.field.add(name='enum_field',
+                        number=2,
+                        label=descriptor.FieldDescriptor.LABEL_REPEATED,
+                        type_name='TestEnum')
+    pool = descriptor_pool.DescriptorPool()
+    pool.Add(f)
+    file_des = pool.FindFileByName('google/protobuf/internal/not_type.proto')
+    msg = file_des.message_types_by_name['TestMessage']
+    nested_field = msg.fields_by_name['nested_field']
+    self.assertTrue(nested_field.has_presence)
+    # cpp extension and upb do not provide is_packed on FieldDescriptor
+    if api_implementation.Type() == 'python':
+      self.assertFalse(nested_field.is_packed)
+    enum_field = msg.fields_by_name['enum_field']
+    self.assertFalse(enum_field.has_presence)
+    if api_implementation.Type() == 'python':
+      self.assertTrue(enum_field.is_packed)
 
 @testing_refleaks.TestCase
 class DefaultDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
