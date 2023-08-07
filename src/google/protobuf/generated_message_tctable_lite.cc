@@ -2087,6 +2087,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
 
     default:
       PROTOBUF_ASSUME(false);
+      return nullptr;  // To silence -Werror=return-type in some toolchains
   }
 }
 
@@ -2182,6 +2183,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedVarint(PROTOBUF_TC_PARAM_DECL) {
 
     default:
       PROTOBUF_ASSUME(false);
+      return nullptr;  // To silence -Werror=return-type in some toolchains
   }
 }
 
