@@ -1017,6 +1017,13 @@ TEST(MESSAGE_TEST_NAME, MessageIsStillValidAfterParseFails) {
   }
 }
 
+TEST(MESSAGE_TEST_NAME, NonCanonicalTag) {
+  UNITTEST::TestAllTypes message;
+  // optional_lazy_message (27) LEN(3) with non canonical tag: (1).
+  const char encoded[] = {'\332', 1, 3, '\210', 0, 0};
+  EXPECT_TRUE(message.ParseFromArray(encoded, sizeof(encoded)));
+}
+
 
 namespace {
 
