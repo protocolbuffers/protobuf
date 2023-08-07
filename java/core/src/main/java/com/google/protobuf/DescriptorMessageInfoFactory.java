@@ -129,6 +129,8 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
         return ProtoSyntax.PROTO2;
       case PROTO3:
         return ProtoSyntax.PROTO3;
+      case EDITIONS:
+        return ProtoSyntax.EDITIONS;
       default:
         throw new IllegalArgumentException("Unsupported syntax: " + syntax);
     }
