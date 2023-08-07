@@ -150,7 +150,7 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "01fed1cc1ba255bf22b49393ba054b8d270e6ba3",
-            sha256 = "387bef0d61094773a4ce7dd1c3d92bb99444155531e00945161ec9cd36e5bfce",
+            commit = "58877b55e0796bcca743e9bd4d2be42092562f30",
+            sha256 = "b3a3279cffb91e22fd38fb316a39ded87211bf89ff39337c7f151d88ed3b71fd",
             patches = ["@com_google_protobuf//build_defs:upb.patch"],
         )
