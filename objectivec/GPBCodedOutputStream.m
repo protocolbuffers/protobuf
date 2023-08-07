@@ -36,6 +36,10 @@
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
 
+// TODO(b/294836507): Consider using on other functions to reduce bloat when
+// some compiler optimizations are enabled.
+#define GPB_NOINLINE __attribute__((noinline))
+
 // These values are the existing values so as not to break any code that might
 // have already been inspecting them when they weren't documented/exposed.
 NSString *const GPBCodedOutputStreamException_OutOfSpace = @"OutOfSpace";
@@ -62,6 +66,7 @@ static const int32_t LITTLE_ENDIAN_64_SIZE = sizeof(uint64_t);
 
 // Helper to write bytes to an NSOutputStream looping in case a subset is written in
 // any of the attempts.
+GPB_NOINLINE
 static NSInteger WriteToOutputStream(NSOutputStream *output, uint8_t *bytes, size_t length) {
   size_t total = 0;
 
