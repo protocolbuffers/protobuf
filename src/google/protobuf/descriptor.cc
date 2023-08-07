@@ -81,6 +81,7 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/text_format.h"
@@ -5249,11 +5250,9 @@ typename DescriptorT::OptionsType* DescriptorBuilder::AllocateOptionsImpl(
     return nullptr;
   }
 
-  // Avoid using MergeFrom()/CopyFrom() in this class to make it -fno-rtti
-  // friendly. Without RTTI, MergeFrom() and CopyFrom() will fallback to the
-  // reflection based method, which requires the Descriptor. However, we are in
-  // the middle of building the descriptors, thus the deadlock.
-  options->ParseFromString(orig_options.SerializeAsString());
+  const bool parse_success =
+      internal::ParseNoReflection(orig_options.SerializeAsString(), *options);
+  ABSL_DCHECK(parse_success);
 
   // Don't add to options_to_interpret_ unless there were uninterpreted
   // options.  This not only avoids unnecessary work, but prevents a
@@ -9422,6 +9421,16 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
           file->pool_->CrossLinkOnDemandHelper(lazy_name, false).descriptor();
     });
   }
+}
+
+bool ParseNoReflection(absl::string_view from, google::protobuf::MessageLite& to) {
+  to.Clear();
+  const char* ptr;
+  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                             false, &ptr, from);
+  ptr = to._InternalParse(ptr, &ctx);
+  if (ptr == nullptr || !ctx.EndedAtLimit()) return false;
+  return to.IsInitializedWithErrors();
 }
 
 namespace cpp {

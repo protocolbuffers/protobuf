@@ -123,6 +123,9 @@ class UninterpretedOption;
 class FeatureSet;
 class SourceCodeInfo;
 
+// Defined in message_lite.h
+class MessageLite;
+
 // Defined in message.h
 class Message;
 class Reflection;
@@ -2829,6 +2832,13 @@ struct FieldRangeImpl {
 
   const T* descriptor;
 };
+
+// While building descriptors, we need to avoid using MergeFrom()/CopyFrom() to
+// be -fno-rtti friendly. Without RTTI, MergeFrom() and CopyFrom() will fallback
+// to the reflection based method, which requires the Descriptor. However, while
+// building the descriptors, this causes deadlock. We also must disable lazy
+// parsing because that uses reflection to verify consistency.
+bool ParseNoReflection(absl::string_view from, google::protobuf::MessageLite& to);
 
 // The context for these functions under `cpp` is "for the C++ implementation".
 // In particular, questions like "does this field have a has bit?" have a
