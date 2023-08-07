@@ -1364,8 +1364,8 @@ def _Clear(self):
 def _UnknownFields(self):
   warnings.warn(
       'message.UnknownFields() is deprecated. Please use the add one '
-      'feature message_factotry.UnknownFieldSet(message) in '
-      'message_factotry.py instead.'
+      'feature message_factory.UnknownFieldSet(message) in '
+      'message_factory.py instead.'
   )
   if self._unknown_field_set is None:  # pylint: disable=protected-access
     # pylint: disable=protected-access

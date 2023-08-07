@@ -2370,8 +2370,8 @@ static PyObject* GetExtensionDict(CMessage* self, void *closure) {
 static PyObject* GetUnknownFields(CMessage* self) {
   PyErr_Warn(nullptr,
              "message.UnknownFields() is deprecated. Please use the "
-             "add one feature message_factotry.UnknownFieldSet(message) in "
-             "message_factotry.py instead.");
+             "add one feature message_factory.UnknownFieldSet(message) in "
+             "message_factory.py instead.");
   if (self->unknown_field_set == nullptr) {
     self->unknown_field_set = unknown_fields::NewPyUnknownFields(self);
   } else {
