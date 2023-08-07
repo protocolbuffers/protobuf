@@ -1190,7 +1190,8 @@ bool IsWellKnownMessage(const FileDescriptor* file) {
   return well_known_files->find(file->name()) != well_known_files->end();
 }
 
-void NamespaceOpener::ChangeTo(absl::string_view name) {
+void NamespaceOpener::ChangeTo(absl::string_view name,
+                               io::Printer::SourceLocation loc) {
   std::vector<std::string> new_stack =
       absl::StrSplit(name, "::", absl::SkipEmpty());
   size_t len = std::min(name_stack_.size(), new_stack.size());
@@ -1205,12 +1206,14 @@ void NamespaceOpener::ChangeTo(absl::string_view name) {
   for (size_t i = name_stack_.size(); i > common_idx; i--) {
     p_->Emit({{"ns", name_stack_[i - 1]}}, R"(
       }  // namespace $ns$
-    )");
+    )",
+             loc);
   }
   for (size_t i = common_idx; i < new_stack.size(); ++i) {
     p_->Emit({{"ns", new_stack[i]}}, R"(
       namespace $ns$ {
-    )");
+    )",
+             loc);
   }
 
   name_stack_ = std::move(new_stack);

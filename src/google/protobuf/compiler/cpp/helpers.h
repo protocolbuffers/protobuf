@@ -979,21 +979,37 @@ void PrintFieldComment(const Formatter& format, const T* field,
 
 class PROTOC_EXPORT NamespaceOpener {
  public:
-  explicit NamespaceOpener(io::Printer* p) : p_(p) {}
-  explicit NamespaceOpener(const Formatter& format) : p_(format.printer()) {}
-  NamespaceOpener(absl::string_view name, const Formatter& format)
-      : NamespaceOpener(format) {
-    ChangeTo(name);
-  }
-  NamespaceOpener(absl::string_view name, io::Printer* p) : NamespaceOpener(p) {
-    ChangeTo(name);
-  }
-  ~NamespaceOpener() { ChangeTo(""); }
+  explicit NamespaceOpener(
+      io::Printer* p,
+      io::Printer::SourceLocation loc = io::Printer::SourceLocation::current())
+      : p_(p), loc_(loc) {}
 
-  void ChangeTo(absl::string_view name);
+  explicit NamespaceOpener(
+      const Formatter& format,
+      io::Printer::SourceLocation loc = io::Printer::SourceLocation::current())
+      : NamespaceOpener(format.printer(), loc) {}
+
+  NamespaceOpener(
+      absl::string_view name, const Formatter& format,
+      io::Printer::SourceLocation loc = io::Printer::SourceLocation::current())
+      : NamespaceOpener(name, format.printer(), loc) {}
+
+  NamespaceOpener(
+      absl::string_view name, io::Printer* p,
+      io::Printer::SourceLocation loc = io::Printer::SourceLocation::current())
+      : NamespaceOpener(p, loc) {
+    ChangeTo(name, loc);
+  }
+
+  ~NamespaceOpener() { ChangeTo("", loc_); }
+
+  void ChangeTo(
+      absl::string_view name,
+      io::Printer::SourceLocation loc = io::Printer::SourceLocation::current());
 
  private:
   io::Printer* p_;
+  io::Printer::SourceLocation loc_;
   std::vector<std::string> name_stack_;
 };
 
