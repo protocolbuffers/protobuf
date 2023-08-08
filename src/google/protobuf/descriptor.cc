@@ -6677,6 +6677,10 @@ void DescriptorBuilder::BuildReservedRange(
     AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Reserved numbers must be positive integers.");
   }
+  if (result->start >= result->end) {
+    AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
+             "Reserved range end number must be greater than start number.");
+  }
 }
 
 void DescriptorBuilder::BuildReservedRange(

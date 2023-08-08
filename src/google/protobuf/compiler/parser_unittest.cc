@@ -2038,6 +2038,22 @@ TEST_F(ParserValidationErrorTest, ExtensionRangeNumberError) {
       "1:13: Suggested field numbers for Foo: 1\n");
 }
 
+TEST_F(ParserValidationErrorTest, ExtensionRangeNumberOrderError) {
+  ExpectHasValidationErrors(
+      "message Foo {\n"
+      "  extensions 2 to 1;\n"
+      "}\n",
+      "1:13: Extension range end number must be greater than start number.\n");
+}
+
+TEST_F(ParserValidationErrorTest, ReservedRangeError) {
+  ExpectHasValidationErrors(
+      "message Foo {\n"
+      "  reserved 2 to 1;\n"
+      "}\n",
+      "1:11: Reserved range end number must be greater than start number.\n");
+}
+
 TEST_F(ParserValidationErrorTest, Proto3ExtensionError) {
   ExpectHasValidationErrors(
       "syntax = 'proto3';\n"
@@ -2232,6 +2248,15 @@ TEST_F(ParserValidationErrorTest, EnumValueAliasError) {
       "2:8: \"BAZ\" uses the same enum value as \"BAR\". If this is "
       "intended, set 'option allow_alias = true;' to the enum "
       "definition. The next available enum value is 2.\n");
+}
+
+TEST_F(ParserValidationErrorTest, EnumReservedRangeError) {
+  ExpectHasValidationErrors(
+      "enum Foo {\n"
+      "  BAR = 1;\n"
+      "  reserved 2 to 1;\n"
+      "}\n",
+      "2:11: Reserved range end number must be greater than start number.\n");
 }
 
 TEST_F(ParserValidationErrorTest, ExplicitlyMapEntryError) {

@@ -1818,6 +1818,8 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
     LocationRecorder location(parent_location, message->reserved_range_size());
 
     DescriptorProto::ReservedRange* range = message->add_reserved_range();
+    location.RecordLegacyLocation(range,
+                                  DescriptorPool::ErrorCollector::NUMBER);
     int start, end;
     io::Tokenizer::Token start_token;
     {
@@ -1895,6 +1897,8 @@ bool Parser::ParseReservedNumbers(EnumDescriptorProto* proto,
     LocationRecorder location(parent_location, proto->reserved_range_size());
 
     EnumDescriptorProto::EnumReservedRange* range = proto->add_reserved_range();
+    location.RecordLegacyLocation(range,
+                                  DescriptorPool::ErrorCollector::NUMBER);
     int start, end;
     io::Tokenizer::Token start_token;
     {
