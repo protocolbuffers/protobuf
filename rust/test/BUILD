@@ -6,13 +6,10 @@ load(
     "rust_upb_proto_library",
 )
 
-UNITTEST_PROTO_TARGET = (
-    "//src/google/protobuf:test_protos"
-)
-
-UNITTEST_CC_PROTO_TARGET = (
-    "//src/google/protobuf:cc_test_protos"
-)
+UNITTEST_PROTO_TARGET = "//src/google/protobuf:test_protos"
+UNITTEST_CC_PROTO_TARGET = "//src/google/protobuf:cc_test_protos"
+UNITTEST_PROTO3_TARGET = "//src/google/protobuf:test_protos"
+UNITTEST_PROTO3_CC_TARGET = "//src/google/protobuf:cc_test_protos"
 
 alias(
     name = "unittest_cc_proto",
