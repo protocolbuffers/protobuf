@@ -1777,6 +1777,12 @@ bool Parser::ParseReserved(DescriptorProto* message,
                               DescriptorProto::kReservedNameFieldNumber);
     location.StartAt(start_token);
     return ParseReservedNames(message, location);
+  } else if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER) && syntax_identifier_ == "editions") {
+    // As of first edition, we also accept identifiers instead of string literals.
+    LocationRecorder location(message_location,
+                              DescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
+    return ParseReservedIdentifiers(message, location);
   } else {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedRangeFieldNumber);
@@ -1806,6 +1812,22 @@ bool Parser::ParseReservedNames(DescriptorProto* message,
   do {
     LocationRecorder location(parent_location, message->reserved_name_size());
     DO(ParseReservedName(message->add_reserved_name(), "Expected field name."));
+  } while (TryConsume(","));
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifier(std::string* name,
+                               absl::string_view error_message) {
+  DO(ConsumeIdentifier(name, error_message));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifiers(DescriptorProto* message,
+                                const LocationRecorder& parent_location) {
+  do {
+    LocationRecorder location(parent_location, message->reserved_name_size());
+    DO(ParseReservedIdentifier(message->add_reserved_name(), "Expected field name identifier."));
   } while (TryConsume(","));
   DO(ConsumeEndOfDeclaration(";", &parent_location));
   return true;
@@ -1870,6 +1892,12 @@ bool Parser::ParseReserved(EnumDescriptorProto* proto,
                               EnumDescriptorProto::kReservedNameFieldNumber);
     location.StartAt(start_token);
     return ParseReservedNames(proto, location);
+  } else if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER) && syntax_identifier_ == "editions") {
+    // As of first edition, we also accept identifiers instead of string literals.
+    LocationRecorder location(enum_location,
+                              EnumDescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
+    return ParseReservedIdentifiers(proto, location);
   } else {
     LocationRecorder location(enum_location,
                               EnumDescriptorProto::kReservedRangeFieldNumber);
@@ -1883,6 +1911,16 @@ bool Parser::ParseReservedNames(EnumDescriptorProto* proto,
   do {
     LocationRecorder location(parent_location, proto->reserved_name_size());
     DO(ParseReservedName(proto->add_reserved_name(), "Expected enum value."));
+  } while (TryConsume(","));
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifiers(EnumDescriptorProto* proto,
+                                const LocationRecorder& parent_location) {
+  do {
+    LocationRecorder location(parent_location, proto->reserved_name_size());
+    DO(ParseReservedIdentifier(proto->add_reserved_name(), "Expected enum value identifier."));
   } while (TryConsume(","));
   DO(ConsumeEndOfDeclaration(";", &parent_location));
   return true;

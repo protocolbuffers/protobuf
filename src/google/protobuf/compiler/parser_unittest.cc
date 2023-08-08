@@ -869,6 +869,22 @@ TEST_F(ParseMessageTest, ReservedNames) {
       "}");
 }
 
+TEST_F(ParseMessageTest, ReservedIdentifiers) {
+  ExpectParsesTo(
+      "edition = \"2023\";\n"
+      "message TestMessage {\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+
+      "syntax: \"editions\" "
+      "edition: \"2023\" "
+      "message_type {"
+      "  name: \"TestMessage\""
+      "  reserved_name: \"foo\""
+      "  reserved_name: \"bar\""
+      "}");
+}
+
 TEST_F(ParseMessageTest, ExtensionRange) {
   ExpectParsesTo(
       "message TestMessage {\n"
@@ -1227,6 +1243,24 @@ TEST_F(ParseEnumTest, ReservedNames) {
       "}");
 }
 
+TEST_F(ParseEnumTest, ReservedIdentifiers) {
+  ExpectParsesTo(
+      "edition = \"2023\";\n"
+      "enum TestEnum {\n"
+      "  FOO = 0;\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+
+      "syntax: \"editions\" "
+      "edition: \"2023\" "
+      "enum_type {"
+      "  name: \"TestEnum\""
+      "  value { name:\"FOO\" number:0 }"
+      "  reserved_name: \"foo\""
+      "  reserved_name: \"bar\""
+      "}");
+}
+
 // ===================================================================
 
 typedef ParserTest ParseServiceTest;
@@ -1498,6 +1532,42 @@ TEST_F(ParseErrorTest, DuplicateJsonName) {
       "  optional uint32 foo = 1 [json_name=\"a\",json_name=\"b\"];\n"
       "}\n",
       "1:41: Already set option \"json_name\".\n");
+}
+
+TEST_F(ParseErrorTest, MsgReservedIdentifierOnlyInEditions) {
+  ExpectHasErrors(
+      "message TestMessage {\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+      "1:11: Expected field name or number range.\n");
+}
+
+TEST_F(ParseErrorTest, MsgReservedIdentifierCantMixWithStrings) {
+  ExpectHasErrors(
+      "edition = \"2023\";\n"
+      "message TestMessage {\n"
+      "  reserved foo, \"bar\";\n"
+      "}\n",
+      "2:16: Expected field name identifier.\n");
+}
+
+TEST_F(ParseErrorTest, EnumReservedIdentifierOnlyInEditions) {
+  ExpectHasErrors(
+      "enum TestEnum {\n"
+      "  FOO = 0;\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+      "2:11: Expected enum value or number range.\n");
+}
+
+TEST_F(ParseErrorTest, EnumReservedIdentifierCantMixWithStrings) {
+  ExpectHasErrors(
+      "edition = \"2023\";\n"
+      "enum TestEnum {\n"
+      "  FOO = 0;\n"
+      "  reserved foo, \"bar\";\n"
+      "}\n",
+      "3:16: Expected enum value identifier.\n");
 }
 
 TEST_F(ParseErrorTest, EnumValueOutOfRange) {
