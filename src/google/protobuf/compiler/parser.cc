@@ -571,6 +571,27 @@ void Parser::SkipRestOfBlock() {
 
 // ===================================================================
 
+bool Parser::ValidateMessage(const DescriptorProto* proto) {
+  for (int i = 0; i < proto->options().uninterpreted_option_size(); i++) {
+    const UninterpretedOption& option = proto->options().uninterpreted_option(i);
+    if (option.name_size() > 0 &&
+        !option.name(0).is_extension() &&
+        option.name(0).name_part() == "map_entry") {
+      int line = -1, col = 0; // indicates line and column not known
+      if (source_location_table_ != nullptr) {
+         source_location_table_->Find(&option,
+                                      DescriptorPool::ErrorCollector::OPTION_NAME,
+                                      &line, &col);
+      }
+      RecordError(line, col,
+                  "map_entry should not be set explicitly. "
+                  "Use map<KeyType, ValueType> instead.");
+      return false;
+    }
+  }
+  return true;
+}
+
 bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   bool has_allow_alias = false;
   bool allow_alias = false;
@@ -867,6 +888,7 @@ bool IsMessageSetWireFormatMessage(const DescriptorProto& message) {
   for (int i = 0; i < options.uninterpreted_option_size(); ++i) {
     const UninterpretedOption& uninterpreted = options.uninterpreted_option(i);
     if (uninterpreted.name_size() == 1 &&
+        !uninterpreted.name(0).is_extension() &&
         uninterpreted.name(0).name_part() == "message_set_wire_format" &&
         uninterpreted.identifier_value() == "true") {
       return true;
@@ -932,25 +954,8 @@ bool Parser::ParseMessageBlock(DescriptorProto* message,
     AdjustReservedRangesWithMaxEndNumber(message);
   }
 
-  // check if map_entry option was explicitly set
-  if (message->has_options()) {
-    const MessageOptions& opts = message->options();
-    for (int i = 0; i < opts.uninterpreted_option_size(); i++) {
-      const UninterpretedOption& opt = opts.uninterpreted_option(i);
-      if (opt.name_size() > 0 && !opt.name(0).is_extension()
-          && opt.name(0).name_part() == "map_entry") {
-        int line = -1, col = 0;
-        if (source_location_table_ != nullptr) {
-           source_location_table_->Find(&opt,
-                                        DescriptorPool::ErrorCollector::OPTION_NAME,
-                                        &line, &col);
-        }
-        RecordError(line, col,
-                    "map_entry should not be set explicitly. "
-                    "Use map<KeyType, ValueType> instead.");
-      }
-    }
-  }
+  DO(ValidateMessage(message));
+
   return true;
 }
 
