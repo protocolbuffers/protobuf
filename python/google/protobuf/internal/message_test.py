@@ -1371,6 +1371,11 @@ class Proto2Test(unittest.TestCase):
     message.repeated_nested_message.add().bb = 123
     self.assertNotEqual(message, copy)
 
+  def testCopyFromEmpty(self):
+    message = more_messages_pb2.TestMapMessage()
+    message2 = more_messages_pb2.TestMapMessage()
+    message2.CopyFrom(message)
+
   def testCopyFromAllExtensions(self):
     all_set = unittest_pb2.TestAllExtensions()
     test_util.SetAllExtensions(all_set)

@@ -366,3 +366,9 @@ message RequiredField {
 message RequiredWrapper {
   optional RequiredField request = 1;
 }
+
+message TestMapMessage {
+    optional int64 field_one = 1;
+    optional int64 field_two = 2;
+    map<int32, double> map_field = 3;
+}
