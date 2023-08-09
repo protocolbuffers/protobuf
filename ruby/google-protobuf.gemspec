@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "google-protobuf"
-  s.version     = "3.24.0"
+  s.version     = "3.23.0"
   git_tag       = "v#{s.version.to_s.sub('.rc.', '-rc')}" # Converts X.Y.Z.rc.N to vX.Y.Z-rcN, used for the git tag
   s.licenses    = ["BSD-3-Clause"]
   s.summary     = "Protocol Buffers"
@@ -31,7 +31,7 @@ Gem::Specification.new do |s|
     ]
     s.add_development_dependency "rake-compiler-dock", "= 1.2.1"
   end
-  s.required_ruby_version = '>= 2.7'
+  s.required_ruby_version = '>= 2.5'
   s.add_development_dependency "rake", "~> 13"
   s.add_development_dependency "ffi", "~>1"
   s.add_development_dependency "ffi-compiler", "~>1"
