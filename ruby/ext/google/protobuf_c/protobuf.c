@@ -276,17 +276,25 @@ static void ObjectCache_Init(VALUE protobuf) {
   rb_const_set(protobuf, rb_intern("SIZEOF_VALUE"), INT2NUM(SIZEOF_VALUE));
 }
 
-VALUE ObjectCache_TryAdd(const void *key, VALUE val) {
+static VALUE ObjectCache_GetKey(const void *key) {
   VALUE key_val = (VALUE)key;
   PBRUBY_ASSERT((key_val & 3) == 0);
-  return rb_funcall(weak_obj_cache, item_try_add, 2, LL2NUM(key_val), val);
+  // Ensure the key can be stored as a Fixnum since 1 bit is needed for
+  // FIXNUM_FLAG and 1 bit is needed for the sign bit.
+  VALUE new_key = LL2NUM(key_val >> 2);
+  PBRUBY_ASSERT(FIXNUM_P(new_key));
+  return new_key;
+}
+
+VALUE ObjectCache_TryAdd(const void *key, VALUE val) {
+  VALUE key_val = ObjectCache_GetKey(key);
+  return rb_funcall(weak_obj_cache, item_try_add, 2, key_val, val);
 }
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void *key) {
-  VALUE key_val = (VALUE)key;
-  PBRUBY_ASSERT((key_val & 3) == 0);
-  return rb_funcall(weak_obj_cache, item_get, 1, LL2NUM(key_val));
+  VALUE key_val = ObjectCache_GetKey(key);
+  return rb_funcall(weak_obj_cache, item_get, 1, key_val);
 }
 
 /*
