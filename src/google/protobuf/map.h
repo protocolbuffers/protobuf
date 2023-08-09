@@ -580,6 +580,25 @@ class PROTOBUF_EXPORT UntypedMapBase {
   // All the end iterators are singletons anyway.
   static UntypedMapIterator EndIterator() { return {}; }
 
+  struct ClearInput {
+    MapNodeSizeInfoT size_info;
+    uint8_t destroy_bits;
+    bool reset_table;
+    void (*destroy_node)(NodeBase*);
+  };
+
+  enum {
+    kKeyIsString = 1 << 0,
+    kValueIsString = 1 << 1,
+    kValueIsProto = 1 << 2,
+    kUseDestructFunc = 1 << 3,
+  };
+
+  void MaybeClearTable(ClearInput input) {
+    if (this->num_buckets_ == internal::kGlobalEmptyTableSize) return;
+    ClearTable(input);
+  }
+
  protected:
   friend class TcParser;
   friend struct MapTestPeer;
@@ -726,12 +745,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
     return s;
   }
 
-  enum {
-    kKeyIsString = 1 << 0,
-    kValueIsString = 1 << 1,
-    kValueIsProto = 1 << 2,
-    kUseDestructFunc = 1 << 3,
-  };
   template <typename Key, typename Value>
   static constexpr uint8_t MakeDestroyBits() {
     uint8_t result = 0;
@@ -753,13 +766,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
     }
     return result;
   }
-
-  struct ClearInput {
-    MapNodeSizeInfoT size_info;
-    uint8_t destroy_bits;
-    bool reset_table;
-    void (*destroy_node)(NodeBase*);
-  };
 
   template <typename Node>
   static void DestroyNode(NodeBase* node) {

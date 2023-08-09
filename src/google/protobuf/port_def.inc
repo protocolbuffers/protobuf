@@ -1132,8 +1132,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 namespace google {
 namespace protobuf {
 namespace internal {
-PROTOBUF_EXPORT void protobuf_assumption_failed(const char *pred,
-                                                const char *file, int line);
+[[noreturn]] PROTOBUF_EXPORT void protobuf_assumption_failed(const char *pred,
+                                                             const char *file,
+                                                             int line);
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -1166,6 +1167,31 @@ PROTOBUF_EXPORT void protobuf_assumption_failed(const char *pred,
 #define PROTOBUF_ASSUME(pred)
 #endif  // !NDEBUG
 #endif  // has_builtin(__builtin_assume)
+
+// PROTOBUF_UNREACHABLE() tells the compiler that it can assume code execution
+// will never reach this statement. In optimized builds it can be used to remove
+// unncessary checks and branches.
+// In debug mode it traps.
+#ifdef PROTOBUF_UNREACHABLE
+#error PROTOBUF_UNREACHABLE was previously defined
+#endif
+#if defined(NDEBUG)
+#if defined(__cpp_lib_unreachable) && __cpp_lib_unreachable >= 202202L
+#define PROTOBUF_UNREACHABLE() std::unreachable()
+#elif __has_builtin(__builtin_unreachable)
+#define PROTOBUF_UNREACHABLE() __builtin_unreachable()
+#elif __has_builtin(__builtin_assume)
+#define PROTOBUF_UNREACHABLE() __builtin_assume(false)
+#elif defined(_MSC_VER)
+#define PROTOBUF_UNREACHABLE() __assume(false)
+#endif
+#endif  // NDEBUG
+#if !defined(PROTOBUF_UNREACHABLE)
+#define PROTOBUF_UNREACHABLE()                                            \
+  ::google::protobuf::internal::protobuf_assumption_failed("Unreachable", __FILE__, \
+                                                 __LINE__)
+#endif
+
 
 // We don't want code outside port_def doing complex testing, so
 // remove our portable condition test macros to nudge folks away from

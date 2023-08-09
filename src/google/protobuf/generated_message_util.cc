@@ -38,10 +38,15 @@
 #include <limits>
 #include <vector>
 
+#include "absl/log/absl_log.h"
+#include "absl/strings/cord.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/map.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/repeated_field.h"
@@ -402,6 +407,185 @@ MessageLite* GetOwnedMessageInternal(Arena* message_arena,
     ret->CheckTypeAndMergeFrom(*submessage);
     return ret;
   }
+}
+
+namespace {
+
+template <typename T>
+T& RefAt(void* p, size_t offset) {
+  return *reinterpret_cast<T*>(static_cast<char*>(p) + offset);
+}
+
+template <typename T>
+T& RefField(void* p, const TcParseTableBase::FieldEntry& field) {
+  return RefAt<T>(p, field.offset);
+}
+
+template <typename T>
+void DestroyField(MessageLite* msg, const TcParseTableBase::FieldEntry& field) {
+  RefField<T>(msg, field).~T();
+}
+
+void DestroyMapField(MessageLite* msg, const TcParseTableBase* table,
+                     const TcParseTableBase::FieldEntry& field) {
+  const auto* aux = table->field_aux(&field);
+  const auto map_info = aux[0].map_info;
+
+  ABSL_DCHECK(map_info.use_lite);
+
+  UntypedMapBase& map = RefField<UntypedMapBase>(msg, field);
+
+  UntypedMapBase::ClearInput config{};
+  config.size_info = map_info.node_size_info;
+  config.reset_table = false;
+
+  if (map_info.key_type_card.cpp_type() == MapTypeCard::kString) {
+    config.destroy_bits |= UntypedMapBase::kKeyIsString;
+  }
+  if (map_info.value_type_card.cpp_type() == MapTypeCard::kString) {
+    config.destroy_bits |= UntypedMapBase::kValueIsString;
+  } else if (map_info.value_type_card.cpp_type() == MapTypeCard::kMessage) {
+    config.destroy_bits |= UntypedMapBase::kValueIsProto;
+  }
+
+  map.MaybeClearTable(config);
+}
+
+void DestroyRepeatedField(MessageLite* msg, const TcParseTableBase* table,
+                          const TcParseTableBase::FieldEntry& field) {
+  namespace fl = field_layout;
+  switch (field.type_card & fl::kFkMask) {
+    case fl::kFkVarint:
+    case fl::kFkPackedVarint:
+    case fl::kFkFixed:
+    case fl::kFkPackedFixed:
+      switch (field.type_card & fl::kRepMask) {
+        case fl::kRep8Bits:
+          return DestroyField<RepeatedField<bool>>(msg, field);
+        case fl::kRep32Bits:
+          return DestroyField<RepeatedField<uint32_t>>(msg, field);
+        case fl::kRep64Bits:
+          return DestroyField<RepeatedField<uint64_t>>(msg, field);
+        default:
+          PROTOBUF_UNREACHABLE();
+      }
+      break;
+    case fl::kFkString:
+      switch (field.type_card & fl::kRepMask) {
+        case fl::kRepCord:
+          return DestroyField<RepeatedField<absl::Cord>>(msg, field);
+        case fl::kRepSString:
+          return DestroyField<RepeatedPtrField<std::string>>(msg, field);
+        default:
+          PROTOBUF_UNREACHABLE();
+      }
+    case fl::kFkMessage:
+      ABSL_DCHECK((field.type_card & fl::kRepMask) == fl::kRepMessage ||
+                  (field.type_card & fl::kRepMask) == fl::kRepGroup);
+      return DestroyField<RepeatedPtrField<MessageLite>>(msg, field);
+    case fl::kFkMap:
+      return DestroyMapField(msg, table, field);
+    default:
+      PROTOBUF_UNREACHABLE();
+  }
+}
+
+void DestroyOptionalField(MessageLite* msg,
+                          const TcParseTableBase::FieldEntry& field) {
+  namespace fl = field_layout;
+  switch (field.type_card & fl::kFkMask) {
+    case fl::kFkVarint:
+    case fl::kFkFixed:
+      return;
+    case fl::kFkString:
+      switch (field.type_card & fl::kRepMask) {
+        case fl::kRepAString:
+          RefField<ArenaStringPtr>(msg, field).Destroy();
+          return;
+        case fl::kRepIString:
+          ABSL_LOG(FATAL) << "Not supported";
+        case fl::kRepCord:
+          return DestroyField<absl::Cord>(msg, field);
+        default:
+          PROTOBUF_UNREACHABLE();
+      }
+    case fl::kFkMessage:
+      ABSL_DCHECK((field.type_card & fl::kRepMask) == fl::kRepMessage ||
+                  (field.type_card & fl::kRepMask) == fl::kRepGroup);
+      delete RefField<MessageLite*>(msg, field);
+      return;
+    default:
+      PROTOBUF_UNREACHABLE();
+  }
+}
+
+void DestroyOneofField(MessageLite* msg, const TcParseTableBase* table,
+                       const TcParseTableBase::FieldEntry& field_in) {
+  namespace fl = field_layout;
+
+  uint32_t& oneof_case = RefAt<uint32_t>(msg, field_in.has_idx);
+  if (oneof_case == 0) return;
+
+  // Find the real field set in the oneof.
+  const auto& field = *TcParser::FindFieldEntry(table, oneof_case);
+
+  // Reset the case so that we only try to destroy the oneof once.
+  oneof_case = 0;
+
+  switch (field.type_card & fl::kFkMask) {
+    case fl::kFkVarint:
+    case fl::kFkFixed:
+      return;
+    case fl::kFkString:
+      switch (field.type_card & fl::kRepMask) {
+        case fl::kRepAString:
+          RefField<ArenaStringPtr>(msg, field).Destroy();
+          return;
+        case fl::kRepCord:
+          delete RefField<absl::Cord*>(msg, field);
+          return;
+        default:
+          PROTOBUF_UNREACHABLE();
+      }
+    case fl::kFkMessage:
+      ABSL_DCHECK((field.type_card & fl::kRepMask) == fl::kRepMessage ||
+                  (field.type_card & fl::kRepMask) == fl::kRepGroup);
+      delete RefField<MessageLite*>(msg, field);
+      return;
+    default:
+      PROTOBUF_UNREACHABLE();
+  }
+}
+
+}  // namespace
+
+void TableDrivenDestroy(MessageLite* msg, const TcParseTableBase* table) {
+  namespace fl = field_layout;
+
+  ABSL_DCHECK(msg->GetArena() == nullptr);
+
+  for (const auto& field : table->field_entries()) {
+    ABSL_DCHECK_EQ((field.type_card & fl::kSplitTrue), 0);
+    switch (field.type_card & fl::kFcMask) {
+      case fl::kFcSingular:
+      case fl::kFcOptional:
+        DestroyOptionalField(msg, field);
+        break;
+      case fl::kFcRepeated:
+        DestroyRepeatedField(msg, table, field);
+        break;
+      case fl::kFcOneof:
+        DestroyOneofField(msg, table, field);
+        break;
+      default:
+        PROTOBUF_UNREACHABLE();
+    }
+  }
+
+  if (table->extension_offset != 0) {
+    RefAt<ExtensionSet>(msg, table->extension_offset).~ExtensionSet();
+  }
+  PrivateAccess::GetMetadata(*msg).Delete<std::string>();
 }
 
 }  // namespace internal

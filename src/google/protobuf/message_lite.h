@@ -85,6 +85,7 @@ class ZeroCopyOutputStream;
 }  // namespace io
 namespace internal {
 
+struct PrivateAccess;
 class SwapFieldHelper;
 
 // See parse_context.h for explanation
@@ -519,6 +520,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class FastReflectionStringSetter;
   friend class Message;
   friend class Reflection;
+  friend internal::PrivateAccess;
   friend class internal::ExtensionSet;
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;
@@ -537,6 +539,13 @@ class PROTOBUF_EXPORT MessageLite {
 };
 
 namespace internal {
+
+struct PrivateAccess {
+  template <typename T>
+  static auto& GetMetadata(T& msg) {
+    return msg._internal_metadata_;
+  }
+};
 
 template <bool alias>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,

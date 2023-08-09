@@ -1540,14 +1540,18 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   }
 
   if (!HasSimpleBaseClass(descriptor_, options_)) {
-    format(
-        "int GetCachedSize() const final { return "
-        "$cached_size$.Get(); }"
-        "\n\nprivate:\n"
-        "void SharedCtor(::$proto_ns$::Arena* arena);\n"
-        "void SharedDtor();\n"
-        "void SetCachedSize(int size) const$ full_final$;\n"
-        "void InternalSwap($classname$* other);\n");
+    p->Emit({{"shared_dtor", HasDescriptorMethods(descriptor_->file(), options_)
+                                 ? "void SharedDtor()"
+                                 : ""}},
+            R"cc(
+              int GetCachedSize() const final { return $cached_size$.Get(); }
+
+              private:
+              void SharedCtor(::$proto_ns$::Arena* arena);
+              $shared_dtor$;
+              void SetCachedSize(int size) const$ full_final$;
+              void InternalSwap($classname$* other);
+            )cc");
   }
 
   format(
@@ -2389,7 +2393,10 @@ void MessageGenerator::GenerateInitDefaultSplitInstance(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
-  if (HasSimpleBaseClass(descriptor_, options_)) return;
+  if (HasSimpleBaseClass(descriptor_, options_) ||
+      !HasDescriptorMethods(descriptor_->file(), options_)) {
+    return;
+  }
   auto emit_field_dtors = [&](bool split_fields) {
     // Write the destructors for each field except oneof members.
     // optimized_order_ does not contain oneof fields.
@@ -2921,6 +2928,15 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
     // message with a simple base class.  This works only as long as
     // we have no fields needing destruction, of course.  (No strings
     // or extensions)
+  } else if (!HasDescriptorMethods(descriptor_->file(), options_)) {
+    // We use the table-driven destructor to reduce code size.
+    p->Emit(
+        R"cc(
+          $classname$::~$classname$() {
+            // @@protoc_insertion_point(destructor:$full_name$)
+            ::_pbi::TableDrivenDestroy(this, &_table_.header);
+          }
+        )cc");
   } else {
     p->Emit(
         R"cc(

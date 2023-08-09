@@ -683,6 +683,9 @@ class PROTOBUF_EXPORT TcParser final {
     Arena::CreateInArenaStorage(static_cast<T*>(p), arena);
   }
 
+  static const TcParseTableBase::FieldEntry* FindFieldEntry(
+      const TcParseTableBase* table, uint32_t field_num);
+
  private:
   // Optimized small tag varint parser for int32/int64
   template <typename FieldType>
@@ -861,8 +864,6 @@ class PROTOBUF_EXPORT TcParser final {
                                       Arena* arena);
 
   // Mini field lookup:
-  static const TcParseTableBase::FieldEntry* FindFieldEntry(
-      const TcParseTableBase* table, uint32_t field_num);
   static absl::string_view MessageName(const TcParseTableBase* table);
   static absl::string_view FieldName(const TcParseTableBase* table,
                                      const TcParseTableBase::FieldEntry*);

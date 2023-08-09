@@ -41,6 +41,7 @@
 #include <cstdint>
 #include <type_traits>
 
+#include "absl/types/span.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 
@@ -400,6 +401,9 @@ struct alignas(uint64_t) TcParseTableBase {
   FieldEntry* field_entries_begin() {
     return reinterpret_cast<FieldEntry*>(reinterpret_cast<uintptr_t>(this) +
                                          field_entries_offset);
+  }
+  absl::Span<const FieldEntry> field_entries() const {
+    return {field_entries_begin(), num_field_entries};
   }
 
   // Auxiliary entries for field types that need extra information.

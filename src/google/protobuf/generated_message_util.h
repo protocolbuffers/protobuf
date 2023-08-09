@@ -51,6 +51,7 @@
 #include "absl/base/casts.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/any.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/implicit_weak_message.h"
 #include "google/protobuf/message_lite.h"
@@ -254,6 +255,14 @@ inline void OnShutdownDestroyMessage(const void* ptr) {
 inline void OnShutdownDestroyString(const std::string* ptr) {
   OnShutdownRun(DestroyString, ptr);
 }
+
+// Destroy the contents of a `MessageLite` object, including its metadata
+// member.
+// REQUIRES:
+//  - Must be a LITE message.
+//  - Must be a heap object.
+//  - Must not have inline, lazy or split fields.
+void TableDrivenDestroy(MessageLite* msg, const TcParseTableBase* table);
 
 }  // namespace internal
 }  // namespace protobuf
