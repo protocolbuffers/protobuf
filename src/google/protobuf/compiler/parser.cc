@@ -931,6 +931,26 @@ bool Parser::ParseMessageBlock(DescriptorProto* message,
   if (message->reserved_range_size() > 0) {
     AdjustReservedRangesWithMaxEndNumber(message);
   }
+
+  // check if map_entry option was explicitly set
+  if (message->has_options()) {
+    const MessageOptions& opts = message->options();
+    for (int i = 0; i < opts.uninterpreted_option_size(); i++) {
+      const UninterpretedOption& opt = opts.uninterpreted_option(i);
+      if (opt.name_size() > 0 && !opt.name(0).is_extension()
+          && opt.name(0).name_part() == "map_entry") {
+        int line = -1, col = 0;
+        if (source_location_table_ != nullptr) {
+           source_location_table_->Find(&opt,
+                                        DescriptorPool::ErrorCollector::OPTION_NAME,
+                                        &line, &col);
+        }
+        RecordError(line, col,
+                    "map_entry should not be set explicitly. "
+                    "Use map<KeyType, ValueType> instead.");
+      }
+    }
+  }
   return true;
 }
 
