@@ -35,6 +35,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstddef>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -161,10 +162,11 @@ class PROTOBUF_EXPORT SerialArena {
       }
     }
 
-    if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) {
-      return AllocateAlignedFallback(n);
+    void* ptr;
+    if (PROTOBUF_PREDICT_TRUE(MaybeAllocateAligned(n, &ptr))) {
+      return ptr;
     }
-    return AllocateFromExisting(n);
+    return AllocateAlignedFallback(n);
   }
 
  private:
@@ -182,13 +184,6 @@ class PROTOBUF_EXPORT SerialArena {
     return (a <= ArenaAlignDefault::align)
                ? ArenaAlignDefault::CeilDefaultAligned(p)
                : ArenaAlignAs(a).CeilDefaultAligned(p);
-  }
-
-  void* AllocateFromExisting(size_t n) {
-    PROTOBUF_UNPOISON_MEMORY_REGION(ptr(), n);
-    void* ret = ptr();
-    set_ptr(static_cast<char*>(ret) + n);
-    return ret;
   }
 
   // See comments on `cached_blocks_` member for details.
@@ -247,7 +242,10 @@ class PROTOBUF_EXPORT SerialArena {
     ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) return false;
-    *out = AllocateFromExisting(n);
+    char* ret = ptr();
+    PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
+    set_ptr(ret + n);
+    *out = ret;
     return true;
   }
 
@@ -303,7 +301,8 @@ class PROTOBUF_EXPORT SerialArena {
                                                 void (*destructor)(void*)) {
     n = AlignUpTo(n, align);
     PROTOBUF_UNPOISON_MEMORY_REGION(ptr(), n);
-    void* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
+    char* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
+
     set_ptr(ptr() + n);
     ABSL_DCHECK_GE(limit_, ptr());
     AddCleanupFromExisting(ret, destructor);
@@ -320,6 +319,7 @@ class PROTOBUF_EXPORT SerialArena {
     ABSL_DCHECK_GE(limit_, ptr());
     cleanup::CreateNode(tag, limit_, elem, destructor);
   }
+
 
  private:
   friend class ThreadSafeArena;

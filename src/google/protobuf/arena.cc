@@ -40,6 +40,7 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/log/absl_check.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arenaz_sampler.h"
@@ -216,7 +217,10 @@ SizedPtr SerialArena::Free(Deallocator deallocator) {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedFallback(size_t n) {
   AllocateNewBlock(n);
-  return AllocateFromExisting(n);
+  void* ret;
+  bool res = MaybeAllocateAligned(n, &ret);
+  ABSL_DCHECK(res);
+  return ret;
 }
 
 PROTOBUF_NOINLINE
