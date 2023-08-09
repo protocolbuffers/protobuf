@@ -97,6 +97,18 @@ rust_test(
 )
 
 rust_test(
+    name = "accessors_proto3_cpp_test",
+    srcs = ["accessors_proto3_test.rs"],
+    deps = ["//rust/test:unittest_proto3_cc_rust_proto"],
+)
+
+rust_test(
+    name = "accessors_proto3_upb_test",
+    srcs = ["accessors_proto3_test.rs"],
+    deps = ["//rust/test:unittest_proto3_upb_rust_proto"],
+)
+
+rust_test(
     name = "serialization_upb_test",
     srcs = ["serialization_test.rs"],
     deps = ["//rust/test:unittest_upb_rust_proto"],

@@ -216,16 +216,16 @@ fn test_optional_bool_accessors() {
 #[test]
 fn test_optional_bytes_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_bytes(), None);
+    assert_eq!(msg.optional_bytes_opt(), None);
 
     msg.optional_bytes_set(Some(b"accessors_test"));
-    assert_eq!(msg.optional_bytes().unwrap(), b"accessors_test");
+    assert_eq!(msg.optional_bytes_opt().unwrap(), b"accessors_test");
 
     msg.optional_bytes_set(None);
-    assert_eq!(msg.optional_bytes(), None);
+    assert_eq!(msg.optional_bytes_opt(), None);
 
     msg.optional_bytes_set(Some(b""));
-    assert_eq!(msg.optional_bytes().unwrap(), b"");
+    assert_eq!(msg.optional_bytes_opt().unwrap(), b"");
 }
 
 #[test]
