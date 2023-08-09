@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <ostream>
@@ -43,6 +44,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
+#include "google/protobuf/descriptor.h"
 
 
 // Must be included last.
@@ -367,6 +369,7 @@ TEST(ValidateEnumTest, GenerateEnumDataWithOverflowOnBoth) {
 
   TestRoundTrip(values, __LINE__);
 }
+
 
 
 }  // namespace

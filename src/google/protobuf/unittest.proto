@@ -1710,3 +1710,61 @@ message TestPackedEnumSmallRange {
   }
   repeated NestedEnum vals = 1 [packed = true];
 }
+
+message EnumsForBenchmark {
+  enum Flat {
+    A0 = 0;
+    A1 = 1;
+    A2 = 2;
+    A3 = 3;
+    A4 = 4;
+    A5 = 5;
+    A6 = 6;
+    A7 = 7;
+    A8 = 8;
+    A9 = 9;
+    A10 = 10;
+    A11 = 11;
+    A12 = 12;
+    A13 = 13;
+    A14 = 14;
+    A15 = 15;
+  }
+  // Has a few holes, bitmap can be used.
+  enum AlmostFlat {
+    B0 = 0;
+    B1 = 1;
+    B2 = 2;
+    B3 = 3;
+    B5 = 5;
+    B6 = 6;
+    B7 = 7;
+    B8 = 8;
+    B9 = 9;
+    B11 = 11;
+    B12 = 12;
+    B13 = 13;
+    B14 = 14;
+    B15 = 15;
+    B17 = 17;
+    B19 = 19;
+  }
+  enum Sparse {
+    C536 = 536;
+    C8387 = 8387;
+    C9673 = 9673;
+    C10285 = 10285;
+    C13318 = 13318;
+    C15963 = 15963;
+    C16439 = 16439;
+    C18197 = 18197;
+    C19430 = 19430;
+    C20361 = 20361;
+    C20706 = 20706;
+    C21050 = 21050;
+    C21906 = 21906;
+    C27265 = 27265;
+    C30109 = 30109;
+    C31670 = 31670;
+  }
+}
