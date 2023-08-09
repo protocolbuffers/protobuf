@@ -154,10 +154,12 @@ class PROTOC_EXPORT Version final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -366,10 +368,12 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -594,10 +598,12 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -823,10 +829,12 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -1395,28 +1403,30 @@ inline int CodeGeneratorRequest::_internal_proto_file_size() const {
 inline int CodeGeneratorRequest::proto_file_size() const {
   return _internal_proto_file_size();
 }
-inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::mutable_proto_file(int index) {
+inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::mutable_proto_file(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _internal_mutable_proto_file()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
-CodeGeneratorRequest::mutable_proto_file() {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* CodeGeneratorRequest::mutable_proto_file()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_proto_file();
 }
-inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::proto_file(int index) const {
+inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::proto_file(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-    return _internal_proto_file().Get(index);
+  return _internal_proto_file().Get(index);
 }
-inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_proto_file() {
+inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_proto_file() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_proto_file()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _add;
 }
-inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
-CodeGeneratorRequest::proto_file() const {
+inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& CodeGeneratorRequest::proto_file() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _internal_proto_file();
 }
@@ -1438,28 +1448,30 @@ inline int CodeGeneratorRequest::_internal_source_file_descriptors_size() const 
 inline int CodeGeneratorRequest::source_file_descriptors_size() const {
   return _internal_source_file_descriptors_size();
 }
-inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::mutable_source_file_descriptors(int index) {
+inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::mutable_source_file_descriptors(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   return _internal_mutable_source_file_descriptors()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
-CodeGeneratorRequest::mutable_source_file_descriptors() {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* CodeGeneratorRequest::mutable_source_file_descriptors()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_source_file_descriptors();
 }
-inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::source_file_descriptors(int index) const {
+inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::source_file_descriptors(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
-    return _internal_source_file_descriptors().Get(index);
+  return _internal_source_file_descriptors().Get(index);
 }
-inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_source_file_descriptors() {
+inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_source_file_descriptors() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_source_file_descriptors()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   return _add;
 }
-inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
-CodeGeneratorRequest::source_file_descriptors() const {
+inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& CodeGeneratorRequest::source_file_descriptors() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   return _internal_source_file_descriptors();
 }
@@ -1490,7 +1502,7 @@ inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::_inter
   const ::google::protobuf::compiler::Version* p = _impl_.compiler_version_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::compiler::Version&>(::google::protobuf::compiler::_Version_default_instance_);
 }
-inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compiler_version() const {
+inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compiler_version() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
   return _internal_compiler_version();
 }
@@ -1544,7 +1556,7 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::_internal_mu
   }
   return _impl_.compiler_version_;
 }
-inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() {
+inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::compiler::Version* _msg = _internal_mutable_compiler_version();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
   return _msg;
@@ -1796,7 +1808,7 @@ inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::
   const ::google::protobuf::GeneratedCodeInfo* p = _impl_.generated_code_info_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::GeneratedCodeInfo&>(::google::protobuf::_GeneratedCodeInfo_default_instance_);
 }
-inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::generated_code_info() const {
+inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::generated_code_info() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
   return _internal_generated_code_info();
 }
@@ -1850,7 +1862,7 @@ inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::_inter
   }
   return _impl_.generated_code_info_;
 }
-inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::mutable_generated_code_info() {
+inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::mutable_generated_code_info() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::GeneratedCodeInfo* _msg = _internal_mutable_generated_code_info();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
   return _msg;
@@ -1990,28 +2002,30 @@ inline void CodeGeneratorResponse::clear_file() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.file_.Clear();
 }
-inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::mutable_file(int index) {
+inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::mutable_file(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.file)
   return _internal_mutable_file()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >*
-CodeGeneratorResponse::mutable_file() {
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* CodeGeneratorResponse::mutable_file()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorResponse.file)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_file();
 }
-inline const ::google::protobuf::compiler::CodeGeneratorResponse_File& CodeGeneratorResponse::file(int index) const {
+inline const ::google::protobuf::compiler::CodeGeneratorResponse_File& CodeGeneratorResponse::file(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.file)
-    return _internal_file().Get(index);
+  return _internal_file().Get(index);
 }
-inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::add_file() {
+inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::add_file() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::google::protobuf::compiler::CodeGeneratorResponse_File* _add = _internal_mutable_file()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorResponse.file)
   return _add;
 }
-inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
-CodeGeneratorResponse::file() const {
+inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& CodeGeneratorResponse::file() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorResponse.file)
   return _internal_file();
 }

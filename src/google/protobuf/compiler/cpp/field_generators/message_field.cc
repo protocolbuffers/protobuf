@@ -201,7 +201,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           const $Submsg$* p = $cast_field_$;
           return p != nullptr ? *p : reinterpret_cast<const $Submsg$&>($kDefault$);
         }
-        inline const $Submsg$& $Msg$::$name$() const {
+        inline const $Submsg$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $annotate_get$;
           // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
           return _internal_$name$();
@@ -263,7 +263,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           }
           return $cast_field_$;
         }
-        inline $Submsg$* $Msg$::mutable_$name$() {
+        inline $Submsg$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
           //~ TODO(b/122856539): add tests to make sure all write accessors are
           //~ able to prepare split message allocation.
           $PrepareSplitMessageForWrite$;
@@ -579,96 +579,112 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       p->WithVars({{"release_name", SafeFunctionName(field_->containing_type(),
                                                      field_, "release_")}});
 
+  p->Emit(R"cc(
+    inline $Submsg$* $Msg$::$release_name$() {
+      $annotate_release$;
+      // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
+      $StrongRef$;
+      if ($has_field$) {
+        clear_has_$oneof_name$();
+        $Submsg$* temp = $cast_field_$;
+        if (GetArenaForAllocation() != nullptr) {
+          temp = $pbi$::DuplicateIfNonNull(temp);
+        }
+        $field_$ = nullptr;
+        return temp;
+      } else {
+        return nullptr;
+      }
+    }
+  )cc");
+  p->Emit(R"cc(
+    inline const $Submsg$& $Msg$::_internal_$name$() const {
+      $StrongRef$;
+      return $has_field$ ? *$cast_field_$ : reinterpret_cast<$Submsg$&>($kDefault$);
+    }
+  )cc");
+  p->Emit(R"cc(
+    inline const $Submsg$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $annotate_get$;
+      // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+      return _internal_$name$();
+    }
+  )cc");
+  p->Emit(R"cc(
+    inline $Submsg$* $Msg$::unsafe_arena_release_$name$() {
+      $annotate_release$;
+      // @@protoc_insertion_point(field_unsafe_arena_release:$pkg.Msg.field$)
+      $StrongRef$;
+      if ($has_field$) {
+        clear_has_$oneof_name$();
+        $Submsg$* temp = $cast_field_$;
+        $field_$ = nullptr;
+        return temp;
+      } else {
+        return nullptr;
+      }
+    }
+  )cc");
   p->Emit(
-      "inline $Submsg$* $Msg$::$release_name$() {\n"
-      "$annotate_release$"
-      "  // @@protoc_insertion_point(field_release:$pkg.Msg.field$)\n"
-      "$StrongRef$;"
-      "  if ($has_field$) {\n"
-      "    clear_has_$oneof_name$();\n"
-      "    $Submsg$* temp = $cast_field_$;\n"
-      "    if (GetArenaForAllocation() != nullptr) {\n"
-      "      temp = $pbi$::DuplicateIfNonNull(temp);\n"
-      "    }\n"
-      "    $field_$ = nullptr;\n"
-      "    return temp;\n"
-      "  } else {\n"
-      "    return nullptr;\n"
-      "  }\n"
-      "}\n");
-
+      {
+          {"maybe_cast_weak_input",
+           [&] {
+             if (is_weak()) {
+               p->Emit("reinterpret_cast<$pb$::MessageLite*>($name$);");
+             } else {
+               p->Emit("$name$;");
+             }
+           }},
+      },
+      R"cc(
+        inline void $Msg$::unsafe_arena_set_allocated_$name$($Submsg$* $name$) {
+          // We rely on the oneof clear method to free the earlier contents
+          // of this oneof. We can directly use the pointer we're given to
+          // set the new value.
+          clear_$oneof_name$();
+          if ($name$) {
+            set_has_$name$();
+            $field_$ = $maybe_cast_weak_input$;
+          }
+          $annotate_set$;
+          // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
+        }
+      )cc");
   p->Emit(
-      "inline const $Submsg$& $Msg$::_internal_$name$() const {\n"
-      "$StrongRef$;"
-      "  return $has_field$\n"
-      "      ? *$cast_field_$\n"
-      "      : reinterpret_cast<$Submsg$&>($kDefault$);\n"
-      "}\n"
-      "inline const $Submsg$& $Msg$::$name$() const {\n"
-      "$annotate_get$"
-      "  // @@protoc_insertion_point(field_get:$pkg.Msg.field$)\n"
-      "  return _internal_$name$();\n"
-      "}\n"
-      "inline $Submsg$* $Msg$::unsafe_arena_release_$name$() {\n"
-      "$annotate_release$"
-      "  // @@protoc_insertion_point(field_unsafe_arena_release"
-      ":$pkg.Msg.field$)\n"
-      "$StrongRef$;"
-      "  if ($has_field$) {\n"
-      "    clear_has_$oneof_name$();\n"
-      "    $Submsg$* temp = $cast_field_$;\n"
-      "    $field_$ = nullptr;\n"
-      "    return temp;\n"
-      "  } else {\n"
-      "    return nullptr;\n"
-      "  }\n"
-      "}\n"
-      "inline void $Msg$::unsafe_arena_set_allocated_$name$"
-      "($Submsg$* $name$) {\n"
-      // We rely on the oneof clear method to free the earlier contents of
-      // this oneof. We can directly use the pointer we're given to set the
-      // new value.
-      "  clear_$oneof_name$();\n"
-      "  if ($name$) {\n"
-      "    set_has_$name$();\n");
-  if (is_weak()) {
-    p->Emit(
-        "    $field_$ = "
-        "reinterpret_cast<$pb$::MessageLite*>($name$);\n");
-  } else {
-    p->Emit("    $field_$ = $name$;\n");
-  }
-  p->Emit(
-      "  }\n"
-      "$annotate_set$"
-      "  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:"
-      "$pkg.Msg.field$)\n"
-      "}\n"
-      "inline $Submsg$* $Msg$::_internal_mutable_$name$() {\n"
-      "$StrongRef$;"
-      "  if ($not_has_field$) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n");
-  if (is_weak()) {
-    p->Emit(
-        "    $field_$ = "
-        "reinterpret_cast<$pb$::MessageLite*>(CreateMaybeMessage< "
-        "$Submsg$ >(GetArenaForAllocation()));\n");
-  } else {
-    p->Emit(
-        "    $field_$ = CreateMaybeMessage< $Submsg$ "
-        ">(GetArenaForAllocation());\n");
-  }
-  p->Emit(
-      "  }\n"
-      "  return $cast_field_$;\n"
-      "}\n"
-      "inline $Submsg$* $Msg$::mutable_$name$() {\n"
-      "  $Submsg$* _msg = _internal_mutable_$name$();\n"
-      "$annotate_mutable$"
-      "  // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)\n"
-      "  return _msg;\n"
-      "}\n");
+      {
+          {"maybe_cast_weak_new",
+           [&] {
+             if (is_weak()) {
+               p->Emit(R"cc(
+                 reinterpret_cast<$pb$::MessageLite*>(
+                     CreateMaybeMessage<$Submsg$>(GetArenaForAllocation()));
+               )cc");
+             } else {
+               p->Emit(R"cc(
+                 CreateMaybeMessage<$Submsg$>(GetArenaForAllocation());
+               )cc");
+             }
+           }},
+      },
+      R"cc(
+        inline $Submsg$* $Msg$::_internal_mutable_$name$() {
+          $StrongRef$;
+          if ($not_has_field$) {
+            clear_$oneof_name$();
+            set_has_$name$();
+            $field_$ = $maybe_cast_weak_new$;
+          }
+          return $cast_field_$;
+        }
+      )cc");
+  p->Emit(R"cc(
+    inline $Submsg$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $Submsg$* _msg = _internal_mutable_$name$();
+      $annotate_mutable$;
+      // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
+      return _msg;
+    }
+  )cc");
 }
 
 void OneofMessage::GenerateClearingCode(io::Printer* p) const {
@@ -781,52 +797,63 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
+  // TODO(dlj): move insertion points
+  p->Emit(R"cc(
+    inline $Submsg$* $Msg$::mutable_$name$(int index)
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $annotate_mutable$;
+      // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
+      $StrongRef$;
+      return _internal_mutable_$name$()->Mutable(index);
+    }
+  )cc");
+  p->Emit(R"cc(
+    inline $pb$::RepeatedPtrField<$Submsg$>* $Msg$::mutable_$name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $annotate_mutable_list$;
+      // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+      $StrongRef$;
+      $TsanDetectConcurrentMutation$;
+      return _internal_mutable_$name$();
+    }
+  )cc");
   p->Emit(
-      "inline $Submsg$* $Msg$::mutable_$name$(int index) {\n"
-      "$annotate_mutable$"
-      // TODO(dlj): move insertion points
-      "  // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)\n"
-      "$StrongRef$;"
-      "  return _internal_mutable_$name$()->Mutable(index);\n"
-      "}\n"
-      "inline $pb$::RepeatedPtrField< $Submsg$ >*\n"
-      "$Msg$::mutable_$name$() {\n"
-      "$annotate_mutable_list$"
-      "  // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)\n"
-      "$StrongRef$;"
-      "  $TsanDetectConcurrentMutation$;\n"
-      "  return _internal_mutable_$name$();\n"
-      "}\n");
-
-  p->Emit({{"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
-           {"GetExtraArg",
-            [&] {
-              p->Emit(opts_->safe_boundary_check
-                          ? ", reinterpret_cast<const $Submsg$&>($kDefault$)"
-                          : "");
-            }}},
-          "inline const $Submsg$& $Msg$::$name$(int index) const {\n"
-          "$annotate_get$"
-          "  // @@protoc_insertion_point(field_get:$pkg.Msg.field$)\n"
-          "  $StrongRef$;"
-          "  return _internal_$name$().$Get$(index$GetExtraArg$);\n"
-          "}\n"
-          "inline $Submsg$* $Msg$::add_$name$() {\n"
-          "  $TsanDetectConcurrentMutation$;\n"
-          "  $Submsg$* _add = _internal_mutable_$name$()->Add();\n"
-          "$annotate_add_mutable$"
-          "  // @@protoc_insertion_point(field_add:$pkg.Msg.field$)\n"
-          "  return _add;\n"
-          "}\n");
-
-  p->Emit(
-      "inline const $pb$::RepeatedPtrField< $Submsg$ >&\n"
-      "$Msg$::$name$() const {\n"
-      "$annotate_list$"
-      "  // @@protoc_insertion_point(field_list:$pkg.Msg.field$)\n"
-      "$StrongRef$;"
-      "  return _internal_$name$();\n"
-      "}\n");
+      {
+          {"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
+          {"GetExtraArg",
+           [&] {
+             p->Emit(opts_->safe_boundary_check
+                         ? ", reinterpret_cast<const $Submsg$&>($kDefault$)"
+                         : "");
+           }},
+      },
+      R"cc(
+        inline const $Submsg$& $Msg$::$name$(int index) const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $annotate_get$;
+          // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+          $StrongRef$;
+          return _internal_$name$().$Get$(index$GetExtraArg$);
+        }
+      )cc");
+  p->Emit(R"cc(
+    inline $Submsg$* $Msg$::add_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $TsanDetectConcurrentMutation$;
+      $Submsg$* _add = _internal_mutable_$name$()->Add();
+      $annotate_add_mutable$;
+      // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
+      return _add;
+    }
+  )cc");
+  p->Emit(R"cc(
+    inline const $pb$::RepeatedPtrField<$Submsg$>& $Msg$::$name$() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $annotate_list$;
+      // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+      $StrongRef$;
+      return _internal_$name$();
+    }
+  )cc");
 
   if (should_split()) {
     p->Emit(R"cc(
