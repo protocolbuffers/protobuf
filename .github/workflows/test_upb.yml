@@ -1,0 +1,41 @@
+name: μpb Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        config:
+          - { name: "Fastbuild" }
+          - { name: "Optimized", flags: "-c opt" }
+          - { name: "FastTable", flags: "--@upb//:fasttable_enabled=true" }
+        include:
+          # Set defaults
+          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
+          - targets: "@upb//..."
+    name: ${{ matrix.config.name }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: ${{ matrix.image }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: upb-bazel
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.targets }} ${{ matrix.config.flags }}

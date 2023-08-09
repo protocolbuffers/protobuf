@@ -176,6 +176,14 @@ jobs:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
+  upb:
+    name: μpb
+    needs: [check-tag]
+    uses: ./.github/workflows/test_upb.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
   staleness:
     name: Staleness
     needs: [check-tag]
