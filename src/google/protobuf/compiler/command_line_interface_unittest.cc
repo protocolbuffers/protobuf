@@ -1681,7 +1681,6 @@ TEST_F(CommandLineInterfaceTest, PluginNoEditionsSupport) {
       "code generator prefix-gen-plug hasn't been updated to support editions");
 }
 
-
 TEST_F(CommandLineInterfaceTest, DirectDependencies_Missing_EmptyList) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
