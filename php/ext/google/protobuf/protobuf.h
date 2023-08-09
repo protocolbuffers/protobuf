@@ -49,7 +49,7 @@ upb_DefPool *get_global_symtab();
 #if PHP_VERSION_ID < 70400
 #define PROTO_RETURN_VAL void
 #else
-#define PROTO_RETURN_VAL zval*
+#define PROTO_RETURN_VAL zval *
 #endif
 
 // Since php 8.0, the Object Handlers API was changed to receive zend_object*
@@ -58,18 +58,34 @@ upb_DefPool *get_global_symtab();
 #if PHP_VERSION_ID < 80000
 #define PROTO_VAL zval
 #define PROTO_STR zval
-#define PROTO_VAL_P(obj) (void*)Z_OBJ_P(obj)
+#define PROTO_VAL_P(obj) (void *)Z_OBJ_P(obj)
 #define PROTO_STRVAL_P(obj) Z_STRVAL_P(obj)
 #define PROTO_STRLEN_P(obj) Z_STRLEN_P(obj)
-#define ZVAL_OBJ_COPY(z, o) do { ZVAL_OBJ(z, o); GC_ADDREF(o); } while (0)
+#define ZVAL_OBJ_COPY(z, o) \
+  do {                      \
+    ZVAL_OBJ(z, o);         \
+    GC_ADDREF(o);           \
+  } while (0)
 #define RETVAL_OBJ_COPY(r) ZVAL_OBJ_COPY(return_value, r)
-#define RETURN_OBJ_COPY(r) do { RETVAL_OBJ_COPY(r); return; } while (0)
-#define RETURN_COPY(zv) do { ZVAL_COPY(return_value, zv); return; } while (0)
-#define RETURN_COPY_VALUE(zv) do { ZVAL_COPY_VALUE(return_value, zv); return; } while (0)
+#define RETURN_OBJ_COPY(r) \
+  do {                     \
+    RETVAL_OBJ_COPY(r);    \
+    return;                \
+  } while (0)
+#define RETURN_COPY(zv)          \
+  do {                           \
+    ZVAL_COPY(return_value, zv); \
+    return;                      \
+  } while (0)
+#define RETURN_COPY_VALUE(zv)          \
+  do {                                 \
+    ZVAL_COPY_VALUE(return_value, zv); \
+    return;                            \
+  } while (0)
 #else
 #define PROTO_VAL zend_object
 #define PROTO_STR zend_string
-#define PROTO_VAL_P(obj) (void*)(obj)
+#define PROTO_VAL_P(obj) (void *)(obj)
 #define PROTO_STRVAL_P(obj) ZSTR_VAL(obj)
 #define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
 #endif
@@ -82,17 +98,24 @@ upb_DefPool *get_global_symtab();
 // PHP 7.2.0.
 #if PHP_VERSION_ID < 70200
 #define zend_ce_countable spl_ce_Countable
-#define ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(name, return_reference, required_num_args, class_name, allow_null) \
-        ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
+#define ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(                        \
+    name, return_reference, required_num_args, class_name, allow_null) \
+  ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
 #endif
 
-// polyfill for ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX, which changes between 7.1 and 7.2
+// polyfill for ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX, which changes
+// between 7.1 and 7.2
 #if PHP_VERSION_ID < 70200
-#define PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
-        ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, /*class_name*/ 0, allow_null)
+#define PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(               \
+    name, return_reference, required_num_args, type, allow_null)   \
+  ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference,  \
+                                          required_num_args, type, \
+                                          /*class_name*/ 0, allow_null)
 #else
-#define PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
-        ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null)
+#define PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(              \
+    name, return_reference, required_num_args, type, allow_null)  \
+  ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, \
+                                          required_num_args, type, allow_null)
 #endif
 
 // In PHP 8.1, mismatched tentative return types emit a deprecation notice.
@@ -100,8 +123,9 @@ upb_DefPool *get_global_symtab();
 //
 // When compiling for earlier php versions, the return type is dropped.
 #if PHP_VERSION_ID < 80100
-#define ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
-        ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
+#define ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(       \
+    name, return_reference, required_num_args, type, allow_null) \
+  ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
 #endif
 
 #ifndef IS_VOID
@@ -124,10 +148,10 @@ ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_setter, 0, 0, 1)
-  ZEND_ARG_INFO(0, value)
+ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-#define PHP_PROTOBUF_VERSION "3.23.0"
+#define PHP_PROTOBUF_VERSION "3.24.0"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
@@ -155,8 +179,8 @@ void NameMap_AddMessage(const upb_MessageDef *m);
 void NameMap_AddEnum(const upb_EnumDef *m);
 const upb_MessageDef *NameMap_GetMessage(zend_class_entry *ce);
 const upb_EnumDef *NameMap_GetEnum(zend_class_entry *ce);
-void NameMap_EnterConstructor(zend_class_entry* ce);
-void NameMap_ExitConstructor(zend_class_entry* ce);
+void NameMap_EnterConstructor(zend_class_entry *ce);
+void NameMap_ExitConstructor(zend_class_entry *ce);
 
 // Add this descriptor object to the global list of descriptors that will be
 // kept alive for the duration of the request but destroyed when the request
