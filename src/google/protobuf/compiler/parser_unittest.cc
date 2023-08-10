@@ -871,6 +871,22 @@ TEST_F(ParseMessageTest, ReservedNames) {
       "}");
 }
 
+TEST_F(ParseMessageTest, ReservedIdentifiers) {
+  ExpectParsesTo(
+      "edition = \"2023\";\n"
+      "message TestMessage {\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+
+      "syntax: \"editions\" "
+      "edition: \"2023\" "
+      "message_type {"
+      "  name: \"TestMessage\""
+      "  reserved_name: \"foo\""
+      "  reserved_name: \"bar\""
+      "}");
+}
+
 TEST_F(ParseMessageTest, ExtensionRange) {
   ExpectParsesTo(
       "message TestMessage {\n"
@@ -1229,6 +1245,24 @@ TEST_F(ParseEnumTest, ReservedNames) {
       "}");
 }
 
+TEST_F(ParseEnumTest, ReservedIdentifiers) {
+  ExpectParsesTo(
+      "edition = \"2023\";\n"
+      "enum TestEnum {\n"
+      "  FOO = 0;\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+
+      "syntax: \"editions\" "
+      "edition: \"2023\" "
+      "enum_type {"
+      "  name: \"TestEnum\""
+      "  value { name:\"FOO\" number:0 }"
+      "  reserved_name: \"foo\""
+      "  reserved_name: \"bar\""
+      "}");
+}
+
 // ===================================================================
 
 typedef ParserTest ParseServiceTest;
@@ -1502,6 +1536,44 @@ TEST_F(ParseErrorTest, DuplicateJsonName) {
       "1:41: Already set option \"json_name\".\n");
 }
 
+TEST_F(ParseErrorTest, MsgReservedIdentifierOnlyInEditions) {
+  ExpectHasErrors(
+      "message TestMessage {\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+      "1:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
+}
+TEST_F(ParseErrorTest, MsgReservedNameStringNotInEditions) {
+  ExpectHasErrors(
+      "edition = \"2023\";\n"
+      "message TestMessage {\n"
+      "  reserved \"foo\", \"bar\";\n"
+      "}\n",
+      "2:11: Reserved names must be identifiers in editions, not string "
+      "literals.\n");
+}
+
+TEST_F(ParseErrorTest, EnumReservedIdentifierOnlyInEditions) {
+  ExpectHasErrors(
+      "enum TestEnum {\n"
+      "  FOO = 0;\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+      "2:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
+}
+TEST_F(ParseErrorTest, EnumReservedNameStringNotInEditions) {
+  ExpectHasErrors(
+      "edition = \"2023\";\n"
+      "enum TestEnum {\n"
+      "  FOO = 0;\n"
+      "  reserved \"foo\", \"bar\";\n"
+      "}\n",
+      "3:11: Reserved names must be identifiers in editions, not string "
+      "literals.\n");
+}
+
 TEST_F(ParseErrorTest, EnumValueOutOfRange) {
   ExpectHasErrors(
       "enum TestEnum {\n"
@@ -1701,13 +1773,16 @@ TEST_F(ParseErrorTest, EnumValueMissingNumber) {
       "1:5: Missing numeric value for enum constant.\n");
 }
 
+// NB: with editions, this would be accepted and would reserve a value name of
+// "max"
 TEST_F(ParseErrorTest, EnumReservedStandaloneMaxNotAllowed) {
   ExpectHasErrors(
       "enum TestEnum {\n"
       "  FOO = 1;\n"
       "  reserved max;\n"
       "}\n",
-      "2:11: Expected enum value or number range.\n");
+      "2:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
 }
 
 TEST_F(ParseErrorTest, EnumReservedMixNameAndNumber) {
@@ -1717,6 +1792,15 @@ TEST_F(ParseErrorTest, EnumReservedMixNameAndNumber) {
       "  reserved 10, \"foo\";\n"
       "}\n",
       "2:15: Expected enum number range.\n");
+}
+TEST_F(ParseErrorTest, EnumReservedMixNameAndNumberEditions) {
+  ExpectHasErrors(
+      "edition = \"2023\";\n"
+      "enum TestEnum {\n"
+      "  FOO = 1;\n"
+      "  reserved 10, foo;\n"
+      "}\n",
+      "3:15: Expected enum number range.\n");
 }
 
 TEST_F(ParseErrorTest, EnumReservedPositiveNumberOutOfRange) {
@@ -1743,29 +1827,33 @@ TEST_F(ParseErrorTest, EnumReservedMissingQuotes) {
       "  FOO = 1;\n"
       "  reserved foo;\n"
       "}\n",
-      "2:11: Expected enum value or number range.\n");
+      "2:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
 }
 
 TEST_F(ParseErrorTest, EnumReservedInvalidIdentifier) {
   ExpectHasWarnings(
-      R"(
-      enum TestEnum {
-        FOO = 1;
-        reserved "foo bar";
-      }
-      )",
-      "3:17: Reserved name \"foo bar\" is not a valid identifier.\n");
+      R"schema(
+        enum TestEnum {
+          FOO = 1;
+          reserved "foo bar";
+        }
+      )schema",
+      "3:19: Reserved name \"foo bar\" is not a valid identifier.\n");
 }
 
 // -------------------------------------------------------------------
 // Reserved field number errors
 
+// NB: with editions, this would be accepted and would reserve a field name of
+// "max"
 TEST_F(ParseErrorTest, ReservedStandaloneMaxNotAllowed) {
   ExpectHasErrors(
       "message Foo {\n"
       "  reserved max;\n"
       "}\n",
-      "1:11: Expected field name or number range.\n");
+      "1:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
 }
 
 TEST_F(ParseErrorTest, ReservedMixNameAndNumber) {
@@ -1775,23 +1863,32 @@ TEST_F(ParseErrorTest, ReservedMixNameAndNumber) {
       "}\n",
       "1:15: Expected field number range.\n");
 }
+TEST_F(ParseErrorTest, ReservedMixNameAndNumberEditions) {
+  ExpectHasErrors(
+      "edition = \"2023\";\n"
+      "message Foo {\n"
+      "  reserved 10, foo;\n"
+      "}\n",
+      "2:15: Expected field number range.\n");
+}
 
 TEST_F(ParseErrorTest, ReservedMissingQuotes) {
   ExpectHasErrors(
       "message Foo {\n"
       "  reserved foo;\n"
       "}\n",
-      "1:11: Expected field name or number range.\n");
+      "1:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
 }
 
 TEST_F(ParseErrorTest, ReservedInvalidIdentifier) {
   ExpectHasWarnings(
-      R"(
-      message Foo {
-        reserved "foo bar";
-      }
-      )",
-      "2:17: Reserved name \"foo bar\" is not a valid identifier.\n");
+      R"schema(
+        message Foo {
+          reserved "foo bar";
+        }
+      )schema",
+      "2:19: Reserved name \"foo bar\" is not a valid identifier.\n");
 }
 
 TEST_F(ParseErrorTest, ReservedNegativeNumber) {
