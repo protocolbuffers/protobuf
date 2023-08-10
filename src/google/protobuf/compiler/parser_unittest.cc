@@ -171,6 +171,8 @@ class ParserTest : public testing::Test {
   // input.
   void ExpectHasEarlyExitErrors(const char* text, const char* expected_errors) {
     SetupParser(text);
+    SourceLocationTable source_locations;
+    parser_->RecordSourceLocationsTo(&source_locations);
     FileDescriptorProto file;
     EXPECT_FALSE(parser_->Parse(input_.get(), &file));
     EXPECT_EQ(expected_errors, error_collector_.text_);
@@ -1746,12 +1748,12 @@ TEST_F(ParseErrorTest, EnumReservedMissingQuotes) {
 
 TEST_F(ParseErrorTest, EnumReservedInvalidIdentifier) {
   ExpectHasWarnings(
-      R"pb(
+      R"(
       enum TestEnum {
         FOO = 1;
         reserved "foo bar";
       }
-      )pb",
+      )",
       "3:17: Reserved name \"foo bar\" is not a valid identifier.\n");
 }
 
@@ -1784,11 +1786,11 @@ TEST_F(ParseErrorTest, ReservedMissingQuotes) {
 
 TEST_F(ParseErrorTest, ReservedInvalidIdentifier) {
   ExpectHasWarnings(
-      R"pb(
+      R"(
       message Foo {
         reserved "foo bar";
       }
-      )pb",
+      )",
       "2:17: Reserved name \"foo bar\" is not a valid identifier.\n");
 }
 
@@ -2235,7 +2237,7 @@ TEST_F(ParserValidationErrorTest, EnumValueAliasError) {
 }
 
 TEST_F(ParserValidationErrorTest, ExplicitlyMapEntryError) {
-  ExpectHasValidationErrors(
+  ExpectHasErrors(
       "message Foo {\n"
       "  message ValueEntry {\n"
       "    option map_entry = true;\n"
@@ -2243,9 +2245,8 @@ TEST_F(ParserValidationErrorTest, ExplicitlyMapEntryError) {
       "    optional int32 value = 2;\n"
       "    extensions 99 to 999;\n"
       "  }\n"
-      "  repeated ValueEntry value = 1;\n"
       "}",
-      "7:11: map_entry should not be set explicitly. Use "
+      "2:11: map_entry should not be set explicitly. Use "
       "map<KeyType, ValueType> instead.\n");
 }
 
@@ -2950,7 +2951,7 @@ class SourceInfoTest : public ParserTest {
       }
     }
 
-      return false;
+    return false;
   }
 
  private:
@@ -4141,7 +4142,6 @@ TEST_F(ParseEditionsTest, FeaturesWithoutEditions) {
       "1:8: Features are only valid under editions.\n"
       "4:17: Features are only valid under editions.\n");
 }
-
 
 
 }  // anonymous namespace
