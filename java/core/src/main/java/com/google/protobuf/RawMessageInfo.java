@@ -37,6 +37,7 @@ package com.google.protobuf;
 @CheckReturnValue
 final class RawMessageInfo implements MessageInfo {
   private static final int IS_PROTO2_BIT = 0x1;
+  private static final int IS_EDITION_BIT = 0x4;
 
   private final MessageLite defaultInstance;
 
@@ -61,7 +62,8 @@ final class RawMessageInfo implements MessageInfo {
    * <p>The integer sequence encoded in the String object has the following layout:
    *
    * <ul>
-   *   <li>[0]: flags, flags & 0x1 = is proto2?, flags & 0x2 = is message?
+   *   <li>[0]: flags, flags & 0x1 = is proto2?, flags & 0x2 = is message?, flags & 0x4 = is
+   *       edition?
    *   <li>[1]: field count, if 0, this is the end of the integer sequence and the corresponding
    *       Object[] array should be null.
    *   <li>[2]: oneof count
@@ -215,6 +217,8 @@ final class RawMessageInfo implements MessageInfo {
   public ProtoSyntax getSyntax() {
     if ((flags & IS_PROTO2_BIT) != 0) {
       return ProtoSyntax.PROTO2;
+    } else if ((flags & IS_EDITION_BIT) == 0x4) {
+      return ProtoSyntax.EDITIONS;
     } else {
       return ProtoSyntax.PROTO3;
     }
