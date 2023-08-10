@@ -67,7 +67,7 @@ message NestedMessage {
 message ResponseMessage {
 }
 
-service Service {
+service DescriptorTestService {
   rpc CallMethod(.protobuf_unittest.NestedMessage) returns (.protobuf_unittest.ResponseMessage);
 }
 
@@ -97,8 +97,7 @@ class DescriptorTest(unittest.TestCase):
     enum_proto.value.add(name='FOREIGN_BAZ', number=6)
 
     file_proto.message_type.add(name='ResponseMessage')
-    service_proto = file_proto.service.add(
-        name='Service')
+    service_proto = file_proto.service.add(name='DescriptorTestService')
     method_proto = service_proto.method.add(
         name='CallMethod',
         input_type='.protobuf_unittest.NestedMessage',
