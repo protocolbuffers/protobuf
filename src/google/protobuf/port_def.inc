@@ -246,6 +246,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_EXTENSION_RANGE_CLASS 1
 
+// Used to lock down wrong ctype usages in proto file.
+// Owner: jieluo@
+#define PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE 1
+
 #endif
 
 #ifdef PROTOBUF_VERSION

@@ -172,6 +172,40 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
       "Field Foo.bar has a closed enum type with implicit presence.");
 }
 
+#ifdef PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
+TEST_F(CppGeneratorTest, CtypeOnNoneStringFieldTest) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    message Foo {
+      int32 bar = 1 [ctype=STRING];
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring(
+      "Field Foo.bar specifies ctype, but is not "
+      "a string nor bytes field.");
+}
+
+TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    message Foo {
+      extensions 1 to max;
+    }
+    extend Foo {
+      bytes bar = 1 [ctype=CORD];
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring(
+      "Extension bar specifies ctype=CORD which is "
+      "not supported for extensions.");
+}
+#endif  // !PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
 }  // namespace
 }  // namespace cpp
 }  // namespace compiler
