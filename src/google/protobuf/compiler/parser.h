@@ -403,12 +403,18 @@ class PROTOBUF_EXPORT Parser {
   bool ParseReservedNames(DescriptorProto* message,
                           const LocationRecorder& parent_location);
   bool ParseReservedName(std::string* name, absl::string_view error_message);
+  bool ParseReservedIdentifiers(DescriptorProto* message,
+                                const LocationRecorder& parent_location);
+  bool ParseReservedIdentifier(std::string* name,
+                               absl::string_view error_message);
   bool ParseReservedNumbers(DescriptorProto* message,
                             const LocationRecorder& parent_location);
   bool ParseReserved(EnumDescriptorProto* message,
                      const LocationRecorder& message_location);
   bool ParseReservedNames(EnumDescriptorProto* message,
                           const LocationRecorder& parent_location);
+  bool ParseReservedIdentifiers(EnumDescriptorProto* message,
+                                const LocationRecorder& parent_location);
   bool ParseReservedNumbers(EnumDescriptorProto* message,
                             const LocationRecorder& parent_location);
 
