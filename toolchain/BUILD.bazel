@@ -1,8 +1,14 @@
 load(":cc_toolchain_config.bzl", "cc_toolchain_config")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 package(default_visibility = ["//visibility:public"])
 
 filegroup(name = "empty")
+
+bool_flag(
+    name = "release",
+    build_setting_default = False,
+)
 
 TOOLCHAINS = {
     "osx-x86_64": "cc-compiler-osx-x86_64",
@@ -19,7 +25,7 @@ TOOLCHAINS = {
 
 cc_toolchain_suite(
     name = "clang_suite",
-    toolchains = TOOLCHAINS
+    toolchains = TOOLCHAINS,
 )
 
 [
@@ -50,8 +56,8 @@ cc_toolchain_config(
 
 cc_toolchain_config(
     name = "linux-aarch_64-config",
-    sysroot = "/opt/manylinux/2014/aarch64",
     linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/aarch64",
     target_cpu = "aarch64",
     target_full_name = "aarch64-linux-gnu",
 )
