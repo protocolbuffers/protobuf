@@ -275,7 +275,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
         // only wrong in the rare cases an enum is declared in a proto3 syntax
         // file but used for a field in the proto2 syntax file.
         BOOL isClosedEnum =
-            (coreDesc->dataType == GPBDataTypeEnum && fileSyntax != GPBFileSyntaxProto3);
+            (coreDesc->dataType == GPBDataTypeEnum && fileSyntax == GPBFileSyntaxProto2);
         if (isClosedEnum) {
           coreDesc->flags |= GPBFieldClosedEnum;
         }
