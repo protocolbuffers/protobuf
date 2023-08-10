@@ -73,6 +73,13 @@ TEST(DescriptorProtoHelpers, IsDescriptorOptionMessage) {
   EXPECT_FALSE(IsDescriptorOptionMessage(DescriptorProto::descriptor()));
 }
 
+// https://github.com/protocolbuffers/protobuf/issues/13482
+TEST(CSharpIdentifiers2, UnderscoresToCamelCase) {
+    EXPECT_EQ("My.Scope._3", UnderscoresToCamelCase("my.scope._3", true));
+    EXPECT_EQ("My.Scope.Fd_3", UnderscoresToCamelCase("my.Scope.fd_3", true));
+    EXPECT_EQ("My.Scope.Fd", UnderscoresToCamelCase("my._scope.Fd", true));
+}
+
 TEST(CSharpIdentifiers, UnderscoresToCamelCase) {
 	EXPECT_EQ("FooBar", UnderscoresToCamelCase("Foo_Bar", true));
 	EXPECT_EQ("fooBar", UnderscoresToCamelCase("FooBar", false));
