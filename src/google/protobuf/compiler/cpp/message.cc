@@ -2351,6 +2351,8 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
 #endif  // PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION
              )cc");
            }},
+          {"lite",
+           HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite"},
           {"clear_oneofs",
            [&] {
              for (auto oneof : OneOfRange(descriptor_)) {
@@ -2362,7 +2364,10 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
            }},
       },
       R"cc(
+        PROTOBUF_EXPORT extern char $classname$_buf$lite$_[20 * 1024];
+        char $classname$_buf$lite$_[20 * 1024]{1};
         inline void $classname$::SharedCtor(::_pb::Arena* arena) {
+          if ($classname$_buf$lite$_[59]) printf("%p", $classname$_buf$lite$_);
           (void)arena;
           new (&_impl_) Impl_{
               $impl_init$,
