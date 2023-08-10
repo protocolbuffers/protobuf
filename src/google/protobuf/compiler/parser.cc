@@ -571,26 +571,6 @@ void Parser::SkipRestOfBlock() {
 
 // ===================================================================
 
-bool Parser::ValidateMessage(const DescriptorProto* proto) {
-  for (int i = 0; i < proto->options().uninterpreted_option_size(); i++) {
-    const UninterpretedOption& option =
-        proto->options().uninterpreted_option(i);
-    if (option.name_size() > 0 && !option.name(0).is_extension() &&
-        option.name(0).name_part() == "map_entry") {
-      int line = -1, col = 0;  // indicates line and column not known
-      if (source_location_table_ != nullptr) {
-        source_location_table_->Find(
-            &option, DescriptorPool::ErrorCollector::OPTION_NAME, &line, &col);
-      }
-      RecordError(line, col,
-                  "map_entry should not be set explicitly. "
-                  "Use map<KeyType, ValueType> instead.");
-      return false;
-    }
-  }
-  return true;
-}
-
 bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   bool has_allow_alias = false;
   bool allow_alias = false;
@@ -681,8 +661,9 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
     root_location.RecordLegacyLocation(file,
                                        DescriptorPool::ErrorCollector::OTHER);
 
-    if (require_syntax_identifier_ || LookingAt("syntax") ||
-        LookingAt("edition")) {
+    if (require_syntax_identifier_ || LookingAt("syntax")
+        || LookingAt("edition")
+    ) {
       if (!ParseSyntaxIdentifier(file, root_location)) {
         // Don't attempt to parse the file if we didn't recognize the syntax
         // identifier.
@@ -886,7 +867,6 @@ bool IsMessageSetWireFormatMessage(const DescriptorProto& message) {
   for (int i = 0; i < options.uninterpreted_option_size(); ++i) {
     const UninterpretedOption& uninterpreted = options.uninterpreted_option(i);
     if (uninterpreted.name_size() == 1 &&
-        !uninterpreted.name(0).is_extension() &&
         uninterpreted.name(0).name_part() == "message_set_wire_format" &&
         uninterpreted.identifier_value() == "true") {
       return true;
@@ -951,9 +931,6 @@ bool Parser::ParseMessageBlock(DescriptorProto* message,
   if (message->reserved_range_size() > 0) {
     AdjustReservedRangesWithMaxEndNumber(message);
   }
-
-  DO(ValidateMessage(message));
-
   return true;
 }
 
