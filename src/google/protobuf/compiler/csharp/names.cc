@@ -184,6 +184,15 @@ std::string UnderscoresToCamelCase(absl::string_view input,
     } else if ('0' <= input[i] && input[i] <= '9') {
       result += input[i];
       cap_next_letter = true;
+    // https://github.com/protocolbuffers/protobuf/issues/13482
+    // Preserve underscores before numbers if the come right after a dot
+    } else if (
+            input[i] == '_' &&      // checks if the current letter is an underscore, if so
+            i >= 1 &&               // (first check if the index is not zero)
+            input[i-1] == '.' &&    // check the previous character is a dot
+            i < (input.size() - 1) && // (check if the length of the string is ok to test the next char)
+            ('0' <= input[i+1] && input[i+1] <= '9')) { // then check if the preceding character is a number
+        result += input[i];
     } else {
       cap_next_letter = true;
       if (input[i] == '.' && preserve_period) {
