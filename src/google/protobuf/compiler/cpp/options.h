@@ -67,7 +67,6 @@ struct Options {
   std::string annotation_guard_name;
   FieldListenerOptions field_listener_options;
   EnforceOptimizeMode enforce_mode = EnforceOptimizeMode::kNoEnforcement;
-  enum { kTCTableNever, kTCTableAlways } tctable_mode = kTCTableAlways;
   int num_cc_files = 0;
   bool safe_boundary_check = false;
   bool proto_h = false;

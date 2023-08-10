@@ -624,19 +624,6 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
     return Arena::CreateMessage<EntryType>(this->arena());
   }
 
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-    typename Derived::template Parser<MapField, Map<Key, T>> parser(this);
-    return parser._InternalParse(ptr, ctx);
-  }
-  template <typename UnknownType>
-  const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
-                                      bool (*is_valid)(int), uint32_t field_num,
-                                      InternalMetadata* metadata) {
-    typename Derived::template Parser<MapField, Map<Key, T>> parser(this);
-    return parser.template ParseWithEnumValidation<UnknownType>(
-        ptr, ctx, is_valid, field_num, metadata);
-  }
-
  private:
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;

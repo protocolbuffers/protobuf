@@ -191,16 +191,6 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       } while (pos < value.size());
     } else if (key == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
-    } else if (key == "experimental_tail_call_table_mode") {
-      if (value == "never") {
-        file_options.tctable_mode = Options::kTCTableNever;
-      } else if (value == "always") {
-        file_options.tctable_mode = Options::kTCTableAlways;
-      } else {
-        *error = absl::StrCat(
-            "Unknown value for experimental_tail_call_table_mode: ", value);
-        return false;
-      }
     } else if (key == "experimental_strip_nonfunctional_codegen") {
       file_options.strip_nonfunctional_codegen = true;
     } else {

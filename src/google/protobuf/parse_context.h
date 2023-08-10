@@ -611,17 +611,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   Data data_;
 };
 
-template <uint32_t tag>
-bool ExpectTag(const char* ptr) {
-  if (tag < 128) {
-    return *ptr == static_cast<char>(tag);
-  } else {
-    static_assert(tag < 128 * 128, "We only expect tags for 1 or 2 bytes");
-    char buf[2] = {static_cast<char>(tag | 0x80), static_cast<char>(tag >> 7)};
-    return std::memcmp(ptr, buf, 2) == 0;
-  }
-}
-
 template <int>
 struct EndianHelper;
 
