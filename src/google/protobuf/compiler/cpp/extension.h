@@ -41,6 +41,9 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/port.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 class FieldDescriptor;  // descriptor.h
@@ -60,7 +63,7 @@ class MessageSCCAnalyzer;
 // Generates code for an extension, which may be within the scope of some
 // message or may be at file scope.  This is much simpler than FieldGenerator
 // since extensions are just simple identifiers with interesting types.
-class ExtensionGenerator {
+class PROTOC_EXPORT ExtensionGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
   explicit ExtensionGenerator(const FieldDescriptor* descriptor,
@@ -91,5 +94,7 @@ class ExtensionGenerator {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__

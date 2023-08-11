@@ -23,153 +23,153 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
         template <typename>
-PROTOBUF_CONSTEXPR FileDescriptorSet::FileDescriptorSet(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR UninterpretedOption_NamePart::UninterpretedOption_NamePart(::_pbi::ConstantInitialized)
     : _impl_{
-      /*decltype(_impl_.file_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.name_part_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.is_extension_)*/ false,
     } {}
-struct FileDescriptorSetDefaultTypeInternal {
+struct UninterpretedOption_NamePartDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr FileDescriptorSetDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr UninterpretedOption_NamePartDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  FileDescriptorSetDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) FileDescriptorSet(); };
+  UninterpretedOption_NamePartDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) UninterpretedOption_NamePart(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~FileDescriptorSetDefaultTypeInternal() {}
+  ~UninterpretedOption_NamePartDefaultTypeInternal() {}
   union {
-    FileDescriptorSet _instance;
+    UninterpretedOption_NamePart _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR FileDescriptorProto::FileDescriptorProto(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR SourceCodeInfo_Location::SourceCodeInfo_Location(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.dependency_)*/ {},
-      /*decltype(_impl_.message_type_)*/ {},
-      /*decltype(_impl_.enum_type_)*/ {},
-      /*decltype(_impl_.service_)*/ {},
-      /*decltype(_impl_.extension_)*/ {},
-      /*decltype(_impl_.public_dependency_)*/ {},
-      /*decltype(_impl_.weak_dependency_)*/ {},
-      /*decltype(_impl_.name_)*/ {
+      /*decltype(_impl_.path_)*/ {},
+      /* _impl_._path_cached_byte_size_ = */ {0},
+      /*decltype(_impl_.span_)*/ {},
+      /* _impl_._span_cached_byte_size_ = */ {0},
+      /*decltype(_impl_.leading_detached_comments_)*/ {},
+      /*decltype(_impl_.leading_comments_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.package_)*/ {
+      /*decltype(_impl_.trailing_comments_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.syntax_)*/ {
+    } {}
+struct SourceCodeInfo_LocationDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr SourceCodeInfo_LocationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  SourceCodeInfo_LocationDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) SourceCodeInfo_Location(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~SourceCodeInfo_LocationDefaultTypeInternal() {}
+  union {
+    SourceCodeInfo_Location _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.path_)*/ {},
+      /* _impl_._path_cached_byte_size_ = */ {0},
+      /*decltype(_impl_.source_file_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
+      /*decltype(_impl_.begin_)*/ 0,
+      /*decltype(_impl_.end_)*/ 0,
+      /*decltype(_impl_.semantic_)*/ 0,
+    } {}
+struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr GeneratedCodeInfo_AnnotationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  GeneratedCodeInfo_AnnotationDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) GeneratedCodeInfo_Annotation(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~GeneratedCodeInfo_AnnotationDefaultTypeInternal() {}
+  union {
+    GeneratedCodeInfo_Annotation _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR FieldOptions_EditionDefault::FieldOptions_EditionDefault(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
       /*decltype(_impl_.edition_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.options_)*/ nullptr,
-      /*decltype(_impl_.source_code_info_)*/ nullptr,
-    } {}
-struct FileDescriptorProtoDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr FileDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  FileDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) FileDescriptorProto(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~FileDescriptorProtoDefaultTypeInternal() {}
-  union {
-    FileDescriptorProto _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.options_)*/ nullptr,
-      /*decltype(_impl_.start_)*/ 0,
-      /*decltype(_impl_.end_)*/ 0,
-    } {}
-struct DescriptorProto_ExtensionRangeDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr DescriptorProto_ExtensionRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  DescriptorProto_ExtensionRangeDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) DescriptorProto_ExtensionRange(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~DescriptorProto_ExtensionRangeDefaultTypeInternal() {}
-  union {
-    DescriptorProto_ExtensionRange _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.start_)*/ 0,
-      /*decltype(_impl_.end_)*/ 0,
-    } {}
-struct DescriptorProto_ReservedRangeDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr DescriptorProto_ReservedRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  DescriptorProto_ReservedRangeDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) DescriptorProto_ReservedRange(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~DescriptorProto_ReservedRangeDefaultTypeInternal() {}
-  union {
-    DescriptorProto_ReservedRange _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR DescriptorProto::DescriptorProto(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.field_)*/ {},
-      /*decltype(_impl_.nested_type_)*/ {},
-      /*decltype(_impl_.enum_type_)*/ {},
-      /*decltype(_impl_.extension_range_)*/ {},
-      /*decltype(_impl_.extension_)*/ {},
-      /*decltype(_impl_.oneof_decl_)*/ {},
-      /*decltype(_impl_.reserved_range_)*/ {},
-      /*decltype(_impl_.reserved_name_)*/ {},
-      /*decltype(_impl_.name_)*/ {
+      /*decltype(_impl_.value_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.options_)*/ nullptr,
     } {}
-struct DescriptorProtoDefaultTypeInternal {
+struct FieldOptions_EditionDefaultDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr DescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr FieldOptions_EditionDefaultDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  DescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) DescriptorProto(); };
+  FieldOptions_EditionDefaultDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) FieldOptions_EditionDefault(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~DescriptorProtoDefaultTypeInternal() {}
+  ~FieldOptions_EditionDefaultDefaultTypeInternal() {}
   union {
-    DescriptorProto _instance;
+    FieldOptions_EditionDefault _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_EditionDefaultDefaultTypeInternal _FieldOptions_EditionDefault_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR FeatureSet::FeatureSet(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.raw_features_)*/ nullptr,
+      /*decltype(_impl_.field_presence_)*/ 0,
+      /*decltype(_impl_.enum_type_)*/ 0,
+      /*decltype(_impl_.repeated_field_encoding_)*/ 0,
+      /*decltype(_impl_.string_field_validation_)*/ 0,
+      /*decltype(_impl_.message_encoding_)*/ 0,
+      /*decltype(_impl_.json_format_)*/ 0,
+    } {}
+struct FeatureSetDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr FeatureSetDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  FeatureSetDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) FeatureSet(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~FeatureSetDefaultTypeInternal() {}
+  union {
+    FeatureSet _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaultTypeInternal _FeatureSet_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::_pbi::ConstantInitialized)
     : _impl_{
@@ -203,105 +203,6 @@ struct ExtensionRangeOptions_DeclarationDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptions_DeclarationDefaultTypeInternal _ExtensionRangeOptions_Declaration_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR ExtensionRangeOptions::ExtensionRangeOptions(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.declaration_)*/ {},
-      /*decltype(_impl_.uninterpreted_option_)*/ {},
-      /*decltype(_impl_.features_)*/ nullptr,
-      /*decltype(_impl_.verification_)*/ 1,
-    } {}
-struct ExtensionRangeOptionsDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr ExtensionRangeOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ExtensionRangeOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) ExtensionRangeOptions(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~ExtensionRangeOptionsDefaultTypeInternal() {}
-  union {
-    ExtensionRangeOptions _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR FieldDescriptorProto::FieldDescriptorProto(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.extendee_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.type_name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.default_value_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.json_name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.options_)*/ nullptr,
-      /*decltype(_impl_.number_)*/ 0,
-      /*decltype(_impl_.oneof_index_)*/ 0,
-      /*decltype(_impl_.proto3_optional_)*/ false,
-      /*decltype(_impl_.label_)*/ 1,
-      /*decltype(_impl_.type_)*/ 1,
-    } {}
-struct FieldDescriptorProtoDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr FieldDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  FieldDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) FieldDescriptorProto(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~FieldDescriptorProtoDefaultTypeInternal() {}
-  union {
-    FieldDescriptorProto _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR OneofDescriptorProto::OneofDescriptorProto(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.options_)*/ nullptr,
-    } {}
-struct OneofDescriptorProtoDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr OneofDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  OneofDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) OneofDescriptorProto(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~OneofDescriptorProtoDefaultTypeInternal() {}
-  union {
-    OneofDescriptorProto _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_;
-        template <typename>
 PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
@@ -325,124 +226,211 @@ struct EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal _EnumDescriptorProto_EnumReservedRange_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR EnumDescriptorProto::EnumDescriptorProto(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.value_)*/ {},
-      /*decltype(_impl_.reserved_range_)*/ {},
-      /*decltype(_impl_.reserved_name_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.start_)*/ 0,
+      /*decltype(_impl_.end_)*/ 0,
     } {}
-struct EnumDescriptorProtoDefaultTypeInternal {
+struct DescriptorProto_ReservedRangeDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr EnumDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr DescriptorProto_ReservedRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  EnumDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) EnumDescriptorProto(); };
+  DescriptorProto_ReservedRangeDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) DescriptorProto_ReservedRange(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~EnumDescriptorProtoDefaultTypeInternal() {}
+  ~DescriptorProto_ReservedRangeDefaultTypeInternal() {}
   union {
-    EnumDescriptorProto _instance;
+    DescriptorProto_ReservedRange _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR EnumValueDescriptorProto::EnumValueDescriptorProto(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR UninterpretedOption::UninterpretedOption(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {
+      /*decltype(_impl_.name_)*/ {},
+      /*decltype(_impl_.identifier_value_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.options_)*/ nullptr,
-      /*decltype(_impl_.number_)*/ 0,
+      /*decltype(_impl_.string_value_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.aggregate_value_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.positive_int_value_)*/ ::uint64_t{0u},
+      /*decltype(_impl_.negative_int_value_)*/ ::int64_t{0},
+      /*decltype(_impl_.double_value_)*/ 0,
     } {}
-struct EnumValueDescriptorProtoDefaultTypeInternal {
+struct UninterpretedOptionDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr EnumValueDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr UninterpretedOptionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  EnumValueDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) EnumValueDescriptorProto(); };
+  UninterpretedOptionDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) UninterpretedOption(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~EnumValueDescriptorProtoDefaultTypeInternal() {}
+  ~UninterpretedOptionDefaultTypeInternal() {}
   union {
-    EnumValueDescriptorProto _instance;
+    UninterpretedOption _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR ServiceDescriptorProto::ServiceDescriptorProto(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR SourceCodeInfo::SourceCodeInfo(::_pbi::ConstantInitialized)
     : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_.location_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.method_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.options_)*/ nullptr,
     } {}
-struct ServiceDescriptorProtoDefaultTypeInternal {
+struct SourceCodeInfoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr ServiceDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr SourceCodeInfoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ServiceDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) ServiceDescriptorProto(); };
+  SourceCodeInfoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) SourceCodeInfo(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~ServiceDescriptorProtoDefaultTypeInternal() {}
+  ~SourceCodeInfoDefaultTypeInternal() {}
   union {
-    ServiceDescriptorProto _instance;
+    SourceCodeInfo _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR MethodDescriptorProto::MethodDescriptorProto(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR GeneratedCodeInfo::GeneratedCodeInfo(::_pbi::ConstantInitialized)
     : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_.annotation_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.input_type_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.output_type_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.options_)*/ nullptr,
-      /*decltype(_impl_.client_streaming_)*/ false,
-      /*decltype(_impl_.server_streaming_)*/ false,
     } {}
-struct MethodDescriptorProtoDefaultTypeInternal {
+struct GeneratedCodeInfoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr MethodDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr GeneratedCodeInfoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  MethodDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) MethodDescriptorProto(); };
+  GeneratedCodeInfoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) GeneratedCodeInfo(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~MethodDescriptorProtoDefaultTypeInternal() {}
+  ~GeneratedCodeInfoDefaultTypeInternal() {}
   union {
-    MethodDescriptorProto _instance;
+    GeneratedCodeInfo _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR ServiceOptions::ServiceOptions(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.uninterpreted_option_)*/ {},
+      /*decltype(_impl_.features_)*/ nullptr,
+      /*decltype(_impl_.deprecated_)*/ false,
+    } {}
+struct ServiceOptionsDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr ServiceOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ServiceOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) ServiceOptions(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~ServiceOptionsDefaultTypeInternal() {}
+  union {
+    ServiceOptions _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR OneofOptions::OneofOptions(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.uninterpreted_option_)*/ {},
+      /*decltype(_impl_.features_)*/ nullptr,
+    } {}
+struct OneofOptionsDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr OneofOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  OneofOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) OneofOptions(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~OneofOptionsDefaultTypeInternal() {}
+  union {
+    OneofOptions _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR MethodOptions::MethodOptions(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.uninterpreted_option_)*/ {},
+      /*decltype(_impl_.features_)*/ nullptr,
+      /*decltype(_impl_.deprecated_)*/ false,
+      /*decltype(_impl_.idempotency_level_)*/ 0,
+    } {}
+struct MethodOptionsDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr MethodOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  MethodOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) MethodOptions(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~MethodOptionsDefaultTypeInternal() {}
+  union {
+    MethodOptions _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR MessageOptions::MessageOptions(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.uninterpreted_option_)*/ {},
+      /*decltype(_impl_.features_)*/ nullptr,
+      /*decltype(_impl_.message_set_wire_format_)*/ false,
+      /*decltype(_impl_.no_standard_descriptor_accessor_)*/ false,
+      /*decltype(_impl_.deprecated_)*/ false,
+      /*decltype(_impl_.map_entry_)*/ false,
+      /*decltype(_impl_.deprecated_legacy_json_field_conflicts_)*/ false,
+    } {}
+struct MessageOptionsDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr MessageOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  MessageOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) MessageOptions(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~MessageOptionsDefaultTypeInternal() {}
+  union {
+    MessageOptions _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR FileOptions::FileOptions(::_pbi::ConstantInitialized)
     : _impl_{
@@ -518,64 +506,6 @@ struct FileOptionsDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileOptionsDefaultTypeInternal _FileOptions_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR MessageOptions::MessageOptions(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.uninterpreted_option_)*/ {},
-      /*decltype(_impl_.features_)*/ nullptr,
-      /*decltype(_impl_.message_set_wire_format_)*/ false,
-      /*decltype(_impl_.no_standard_descriptor_accessor_)*/ false,
-      /*decltype(_impl_.deprecated_)*/ false,
-      /*decltype(_impl_.map_entry_)*/ false,
-      /*decltype(_impl_.deprecated_legacy_json_field_conflicts_)*/ false,
-    } {}
-struct MessageOptionsDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr MessageOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  MessageOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) MessageOptions(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~MessageOptionsDefaultTypeInternal() {}
-  union {
-    MessageOptions _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR FieldOptions_EditionDefault::FieldOptions_EditionDefault(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.edition_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.value_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-    } {}
-struct FieldOptions_EditionDefaultDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr FieldOptions_EditionDefaultDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  FieldOptions_EditionDefaultDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) FieldOptions_EditionDefault(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~FieldOptions_EditionDefaultDefaultTypeInternal() {}
-  union {
-    FieldOptions_EditionDefault _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_EditionDefaultDefaultTypeInternal _FieldOptions_EditionDefault_default_instance_;
-        template <typename>
 PROTOBUF_CONSTEXPR FieldOptions::FieldOptions(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
@@ -611,29 +541,57 @@ struct FieldOptionsDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptionsDefaultTypeInternal _FieldOptions_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR OneofOptions::OneofOptions(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR ExtensionRangeOptions::ExtensionRangeOptions(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.declaration_)*/ {},
+      /*decltype(_impl_.uninterpreted_option_)*/ {},
+      /*decltype(_impl_.features_)*/ nullptr,
+      /*decltype(_impl_.verification_)*/ 1,
+    } {}
+struct ExtensionRangeOptionsDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr ExtensionRangeOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ExtensionRangeOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) ExtensionRangeOptions(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~ExtensionRangeOptionsDefaultTypeInternal() {}
+  union {
+    ExtensionRangeOptions _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR EnumValueOptions::EnumValueOptions(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
       /*decltype(_impl_.uninterpreted_option_)*/ {},
       /*decltype(_impl_.features_)*/ nullptr,
+      /*decltype(_impl_.deprecated_)*/ false,
+      /*decltype(_impl_.debug_redact_)*/ false,
     } {}
-struct OneofOptionsDefaultTypeInternal {
+struct EnumValueOptionsDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr OneofOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr EnumValueOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  OneofOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) OneofOptions(); };
+  EnumValueOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) EnumValueOptions(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~OneofOptionsDefaultTypeInternal() {}
+  ~EnumValueOptionsDefaultTypeInternal() {}
   union {
-    OneofOptions _instance;
+    EnumValueOptions _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR EnumOptions::EnumOptions(::_pbi::ConstantInitialized)
     : _impl_{
@@ -662,280 +620,322 @@ struct EnumOptionsDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumOptionsDefaultTypeInternal _EnumOptions_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR EnumValueOptions::EnumValueOptions(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.uninterpreted_option_)*/ {},
-      /*decltype(_impl_.features_)*/ nullptr,
-      /*decltype(_impl_.deprecated_)*/ false,
-      /*decltype(_impl_.debug_redact_)*/ false,
-    } {}
-struct EnumValueOptionsDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr EnumValueOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  EnumValueOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) EnumValueOptions(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~EnumValueOptionsDefaultTypeInternal() {}
-  union {
-    EnumValueOptions _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR ServiceOptions::ServiceOptions(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.uninterpreted_option_)*/ {},
-      /*decltype(_impl_.features_)*/ nullptr,
-      /*decltype(_impl_.deprecated_)*/ false,
-    } {}
-struct ServiceOptionsDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr ServiceOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ServiceOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) ServiceOptions(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~ServiceOptionsDefaultTypeInternal() {}
-  union {
-    ServiceOptions _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR MethodOptions::MethodOptions(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.uninterpreted_option_)*/ {},
-      /*decltype(_impl_.features_)*/ nullptr,
-      /*decltype(_impl_.deprecated_)*/ false,
-      /*decltype(_impl_.idempotency_level_)*/ 0,
-    } {}
-struct MethodOptionsDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr MethodOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  MethodOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) MethodOptions(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~MethodOptionsDefaultTypeInternal() {}
-  union {
-    MethodOptions _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR UninterpretedOption_NamePart::UninterpretedOption_NamePart(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR OneofDescriptorProto::OneofDescriptorProto(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_part_)*/ {
+      /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.is_extension_)*/ false,
+      /*decltype(_impl_.options_)*/ nullptr,
     } {}
-struct UninterpretedOption_NamePartDefaultTypeInternal {
+struct OneofDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr UninterpretedOption_NamePartDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr OneofDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  UninterpretedOption_NamePartDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) UninterpretedOption_NamePart(); };
+  OneofDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) OneofDescriptorProto(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~UninterpretedOption_NamePartDefaultTypeInternal() {}
+  ~OneofDescriptorProtoDefaultTypeInternal() {}
   union {
-    UninterpretedOption_NamePart _instance;
+    OneofDescriptorProto _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR UninterpretedOption::UninterpretedOption(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR MethodDescriptorProto::MethodDescriptorProto(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {},
-      /*decltype(_impl_.identifier_value_)*/ {
+      /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.string_value_)*/ {
+      /*decltype(_impl_.input_type_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.aggregate_value_)*/ {
+      /*decltype(_impl_.output_type_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.positive_int_value_)*/ ::uint64_t{0u},
-      /*decltype(_impl_.negative_int_value_)*/ ::int64_t{0},
-      /*decltype(_impl_.double_value_)*/ 0,
+      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.client_streaming_)*/ false,
+      /*decltype(_impl_.server_streaming_)*/ false,
     } {}
-struct UninterpretedOptionDefaultTypeInternal {
+struct MethodDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr UninterpretedOptionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr MethodDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  UninterpretedOptionDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) UninterpretedOption(); };
+  MethodDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) MethodDescriptorProto(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~UninterpretedOptionDefaultTypeInternal() {}
+  ~MethodDescriptorProtoDefaultTypeInternal() {}
   union {
-    UninterpretedOption _instance;
+    MethodDescriptorProto _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR FeatureSet::FeatureSet(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.raw_features_)*/ nullptr,
-      /*decltype(_impl_.field_presence_)*/ 0,
-      /*decltype(_impl_.enum_type_)*/ 0,
-      /*decltype(_impl_.repeated_field_encoding_)*/ 0,
-      /*decltype(_impl_.string_field_validation_)*/ 0,
-      /*decltype(_impl_.message_encoding_)*/ 0,
-      /*decltype(_impl_.json_format_)*/ 0,
-    } {}
-struct FeatureSetDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr FeatureSetDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  FeatureSetDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) FeatureSet(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~FeatureSetDefaultTypeInternal() {}
-  union {
-    FeatureSet _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaultTypeInternal _FeatureSet_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR SourceCodeInfo_Location::SourceCodeInfo_Location(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR FieldDescriptorProto::FieldDescriptorProto(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.path_)*/ {},
-      /* _impl_._path_cached_byte_size_ = */ {0},
-      /*decltype(_impl_.span_)*/ {},
-      /* _impl_._span_cached_byte_size_ = */ {0},
-      /*decltype(_impl_.leading_detached_comments_)*/ {},
-      /*decltype(_impl_.leading_comments_)*/ {
+      /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.trailing_comments_)*/ {
+      /*decltype(_impl_.extendee_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
+      /*decltype(_impl_.type_name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.default_value_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.json_name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.number_)*/ 0,
+      /*decltype(_impl_.oneof_index_)*/ 0,
+      /*decltype(_impl_.proto3_optional_)*/ false,
+      /*decltype(_impl_.label_)*/ 1,
+      /*decltype(_impl_.type_)*/ 1,
     } {}
-struct SourceCodeInfo_LocationDefaultTypeInternal {
+struct FieldDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr SourceCodeInfo_LocationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr FieldDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  SourceCodeInfo_LocationDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) SourceCodeInfo_Location(); };
+  FieldDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) FieldDescriptorProto(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~SourceCodeInfo_LocationDefaultTypeInternal() {}
+  ~FieldDescriptorProtoDefaultTypeInternal() {}
   union {
-    SourceCodeInfo_Location _instance;
+    FieldDescriptorProto _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR SourceCodeInfo::SourceCodeInfo(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.location_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
-struct SourceCodeInfoDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr SourceCodeInfoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  SourceCodeInfoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) SourceCodeInfo(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~SourceCodeInfoDefaultTypeInternal() {}
-  union {
-    SourceCodeInfo _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR EnumValueDescriptorProto::EnumValueDescriptorProto(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.path_)*/ {},
-      /* _impl_._path_cached_byte_size_ = */ {0},
-      /*decltype(_impl_.source_file_)*/ {
+      /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.begin_)*/ 0,
+      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.number_)*/ 0,
+    } {}
+struct EnumValueDescriptorProtoDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr EnumValueDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  EnumValueDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) EnumValueDescriptorProto(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~EnumValueDescriptorProtoDefaultTypeInternal() {}
+  union {
+    EnumValueDescriptorProto _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.start_)*/ 0,
       /*decltype(_impl_.end_)*/ 0,
-      /*decltype(_impl_.semantic_)*/ 0,
     } {}
-struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
+struct DescriptorProto_ExtensionRangeDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr GeneratedCodeInfo_AnnotationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr DescriptorProto_ExtensionRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  GeneratedCodeInfo_AnnotationDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) GeneratedCodeInfo_Annotation(); };
+  DescriptorProto_ExtensionRangeDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) DescriptorProto_ExtensionRange(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~GeneratedCodeInfo_AnnotationDefaultTypeInternal() {}
+  ~DescriptorProto_ExtensionRangeDefaultTypeInternal() {}
   union {
-    GeneratedCodeInfo_Annotation _instance;
+    DescriptorProto_ExtensionRange _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR GeneratedCodeInfo::GeneratedCodeInfo(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR ServiceDescriptorProto::ServiceDescriptorProto(::_pbi::ConstantInitialized)
     : _impl_{
-      /*decltype(_impl_.annotation_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.method_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.options_)*/ nullptr,
+    } {}
+struct ServiceDescriptorProtoDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr ServiceDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ServiceDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) ServiceDescriptorProto(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~ServiceDescriptorProtoDefaultTypeInternal() {}
+  union {
+    ServiceDescriptorProto _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR EnumDescriptorProto::EnumDescriptorProto(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.value_)*/ {},
+      /*decltype(_impl_.reserved_range_)*/ {},
+      /*decltype(_impl_.reserved_name_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.options_)*/ nullptr,
+    } {}
+struct EnumDescriptorProtoDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr EnumDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  EnumDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) EnumDescriptorProto(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~EnumDescriptorProtoDefaultTypeInternal() {}
+  union {
+    EnumDescriptorProto _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR DescriptorProto::DescriptorProto(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.field_)*/ {},
+      /*decltype(_impl_.nested_type_)*/ {},
+      /*decltype(_impl_.enum_type_)*/ {},
+      /*decltype(_impl_.extension_range_)*/ {},
+      /*decltype(_impl_.extension_)*/ {},
+      /*decltype(_impl_.oneof_decl_)*/ {},
+      /*decltype(_impl_.reserved_range_)*/ {},
+      /*decltype(_impl_.reserved_name_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.options_)*/ nullptr,
+    } {}
+struct DescriptorProtoDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr DescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  DescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) DescriptorProto(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~DescriptorProtoDefaultTypeInternal() {}
+  union {
+    DescriptorProto _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR FileDescriptorProto::FileDescriptorProto(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.dependency_)*/ {},
+      /*decltype(_impl_.message_type_)*/ {},
+      /*decltype(_impl_.enum_type_)*/ {},
+      /*decltype(_impl_.service_)*/ {},
+      /*decltype(_impl_.extension_)*/ {},
+      /*decltype(_impl_.public_dependency_)*/ {},
+      /*decltype(_impl_.weak_dependency_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.package_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.syntax_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.edition_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.source_code_info_)*/ nullptr,
+    } {}
+struct FileDescriptorProtoDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr FileDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  FileDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) FileDescriptorProto(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~FileDescriptorProtoDefaultTypeInternal() {}
+  union {
+    FileDescriptorProto _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR FileDescriptorSet::FileDescriptorSet(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.file_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
     } {}
-struct GeneratedCodeInfoDefaultTypeInternal {
+struct FileDescriptorSetDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr GeneratedCodeInfoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr FileDescriptorSetDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  GeneratedCodeInfoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) GeneratedCodeInfo(); };
+  FileDescriptorSetDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) FileDescriptorSet(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~GeneratedCodeInfoDefaultTypeInternal() {}
+  ~FileDescriptorSetDefaultTypeInternal() {}
   union {
-    GeneratedCodeInfo _instance;
+    FileDescriptorSet _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[30];
