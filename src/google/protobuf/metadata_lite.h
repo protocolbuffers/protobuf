@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
 
@@ -47,19 +48,21 @@ class PROTOBUF_EXPORT InternalMetadata {
     ptr_ = reinterpret_cast<intptr_t>(arena);
   }
 
-  // Delete will delete the unknown fields only if they weren't allocated on an
-  // arena.  Then it updates the flags so that if you call
+  // Delete the unknown fields. Then it updates the flags so that if you call
   // have_unknown_fields(), it will return false.
+  //
+  // REQUIRES: have_unknown_fields() == true
   //
   // It is designed to be used as part of a Message class's destructor call, so
   // that when control eventually gets to ~InternalMetadata(), we don't need to
   // check for have_unknown_fields() again.
   template <typename T>
-  void Delete() {
-    // Note that Delete<> should be called not more than once.
-    if (have_unknown_fields()) {
-      DeleteOutOfLineHelper<T>();
-    }
+  void DeleteKnownHasValue() {
+    ABSL_DCHECK(have_unknown_fields());
+    delete PtrValue<Container<T>>();
+    // TODO:  This store is load-bearing.  Since we are destructing
+    // the message at this point, see if we can eliminate it.
+    ptr_ = 0;
   }
 
   PROTOBUF_NDEBUG_INLINE Arena* arena() const {
@@ -158,14 +161,6 @@ class PROTOBUF_EXPORT InternalMetadata {
   };
 
   template <typename T>
-  PROTOBUF_NOINLINE void DeleteOutOfLineHelper() {
-    delete PtrValue<Container<T>>();
-    // TODO:  This store is load-bearing.  Since we are destructing
-    // the message at this point, see if we can eliminate it.
-    ptr_ = 0;
-  }
-
-  template <typename T>
   PROTOBUF_NOINLINE T* mutable_unknown_fields_slow() {
     Arena* my_arena = arena();
     Container<T>* container = Arena::Create<Container<T>>(my_arena);
@@ -216,8 +211,6 @@ extern template PROTOBUF_EXPORT void
 InternalMetadata::DoMergeFrom<UnknownFieldSet>(const UnknownFieldSet& other);
 extern template PROTOBUF_EXPORT void
 InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
-extern template PROTOBUF_EXPORT void
-InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
 extern template PROTOBUF_EXPORT UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 

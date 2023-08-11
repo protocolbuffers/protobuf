@@ -727,6 +727,8 @@ void ShutdownProtobufLibrary() {
 }
 
 
+template void MessageLite::DeleteMetadataSlow<std::string>();
+
 }  // namespace protobuf
 }  // namespace google
 

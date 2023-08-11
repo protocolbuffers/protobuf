@@ -2386,12 +2386,12 @@ inline void FileDescriptorSet::SharedCtor(::_pb::Arena* arena) {
 }
 FileDescriptorSet::~FileDescriptorSet() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileDescriptorSet)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void FileDescriptorSet::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -2614,7 +2614,6 @@ inline void FileDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 FileDescriptorProto::~FileDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void FileDescriptorProto::SharedDtor() {
@@ -2625,6 +2624,7 @@ inline void FileDescriptorProto::SharedDtor() {
   delete _impl_.options_;
   delete _impl_.source_code_info_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -3192,13 +3192,13 @@ inline void DescriptorProto_ExtensionRange::SharedCtor(::_pb::Arena* arena) {
 }
 DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ExtensionRange)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void DescriptorProto_ExtensionRange::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.options_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -3455,12 +3455,12 @@ inline void DescriptorProto_ReservedRange::SharedCtor(::_pb::Arena* arena) {
 }
 DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ReservedRange)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void DescriptorProto_ReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -3711,7 +3711,6 @@ inline void DescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 DescriptorProto::~DescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void DescriptorProto::SharedDtor() {
@@ -3719,6 +3718,7 @@ inline void DescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -4203,7 +4203,6 @@ inline void ExtensionRangeOptions_Declaration::SharedCtor(::_pb::Arena* arena) {
 }
 ExtensionRangeOptions_Declaration::~ExtensionRangeOptions_Declaration() {
   // @@protoc_insertion_point(destructor:google.protobuf.ExtensionRangeOptions.Declaration)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void ExtensionRangeOptions_Declaration::SharedDtor() {
@@ -4211,6 +4210,7 @@ inline void ExtensionRangeOptions_Declaration::SharedDtor() {
   _impl_.full_name_.Destroy();
   _impl_.type_.Destroy();
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -4537,13 +4537,13 @@ inline void ExtensionRangeOptions::SharedCtor(::_pb::Arena* arena) {
 }
 ExtensionRangeOptions::~ExtensionRangeOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.ExtensionRangeOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void ExtensionRangeOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.features_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -4883,7 +4883,6 @@ inline void FieldDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 FieldDescriptorProto::~FieldDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void FieldDescriptorProto::SharedDtor() {
@@ -4895,6 +4894,7 @@ inline void FieldDescriptorProto::SharedDtor() {
   _impl_.json_name_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -5389,7 +5389,6 @@ inline void OneofDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 OneofDescriptorProto::~OneofDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.OneofDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void OneofDescriptorProto::SharedDtor() {
@@ -5397,6 +5396,7 @@ inline void OneofDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -5632,12 +5632,12 @@ inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(::_pb::Arena* aren
 }
 EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -5878,7 +5878,6 @@ inline void EnumDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 EnumDescriptorProto::~EnumDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void EnumDescriptorProto::SharedDtor() {
@@ -5886,6 +5885,7 @@ inline void EnumDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -6223,7 +6223,6 @@ inline void EnumValueDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 EnumValueDescriptorProto::~EnumValueDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumValueDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void EnumValueDescriptorProto::SharedDtor() {
@@ -6231,6 +6230,7 @@ inline void EnumValueDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -6511,7 +6511,6 @@ inline void ServiceDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 ServiceDescriptorProto::~ServiceDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.ServiceDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void ServiceDescriptorProto::SharedDtor() {
@@ -6519,6 +6518,7 @@ inline void ServiceDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -6813,7 +6813,6 @@ inline void MethodDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 MethodDescriptorProto::~MethodDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void MethodDescriptorProto::SharedDtor() {
@@ -6823,6 +6822,7 @@ inline void MethodDescriptorProto::SharedDtor() {
   _impl_.output_type_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -7217,7 +7217,6 @@ inline void FileOptions::SharedCtor(::_pb::Arena* arena) {
 }
 FileOptions::~FileOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void FileOptions::SharedDtor() {
@@ -7234,6 +7233,7 @@ inline void FileOptions::SharedDtor() {
   _impl_.ruby_package_.Destroy();
   delete _impl_.features_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -8013,13 +8013,13 @@ inline void MessageOptions::SharedCtor(::_pb::Arena* arena) {
 }
 MessageOptions::~MessageOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.MessageOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void MessageOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.features_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -8385,13 +8385,13 @@ inline void FieldOptions_EditionDefault::SharedCtor(::_pb::Arena* arena) {
 }
 FieldOptions_EditionDefault::~FieldOptions_EditionDefault() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions.EditionDefault)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void FieldOptions_EditionDefault::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.value_.Destroy();
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -8646,13 +8646,13 @@ inline void FieldOptions::SharedCtor(::_pb::Arena* arena) {
 }
 FieldOptions::~FieldOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void FieldOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.features_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -9180,13 +9180,13 @@ inline void OneofOptions::SharedCtor(::_pb::Arena* arena) {
 }
 OneofOptions::~OneofOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.OneofOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void OneofOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.features_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -9456,13 +9456,13 @@ inline void EnumOptions::SharedCtor(::_pb::Arena* arena) {
 }
 EnumOptions::~EnumOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void EnumOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.features_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -9806,13 +9806,13 @@ inline void EnumValueOptions::SharedCtor(::_pb::Arena* arena) {
 }
 EnumValueOptions::~EnumValueOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumValueOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void EnumValueOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.features_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -10132,13 +10132,13 @@ inline void ServiceOptions::SharedCtor(::_pb::Arena* arena) {
 }
 ServiceOptions::~ServiceOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.ServiceOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void ServiceOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.features_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -10439,13 +10439,13 @@ inline void MethodOptions::SharedCtor(::_pb::Arena* arena) {
 }
 MethodOptions::~MethodOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void MethodOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.features_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -10761,13 +10761,13 @@ inline void UninterpretedOption_NamePart::SharedCtor(::_pb::Arena* arena) {
 }
 UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
   // @@protoc_insertion_point(destructor:google.protobuf.UninterpretedOption.NamePart)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void UninterpretedOption_NamePart::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_part_.Destroy();
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -11019,7 +11019,6 @@ inline void UninterpretedOption::SharedCtor(::_pb::Arena* arena) {
 }
 UninterpretedOption::~UninterpretedOption() {
   // @@protoc_insertion_point(destructor:google.protobuf.UninterpretedOption)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void UninterpretedOption::SharedDtor() {
@@ -11028,6 +11027,7 @@ inline void UninterpretedOption::SharedDtor() {
   _impl_.string_value_.Destroy();
   _impl_.aggregate_value_.Destroy();
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -11407,12 +11407,12 @@ inline void FeatureSet::SharedCtor(::_pb::Arena* arena) {
 }
 FeatureSet::~FeatureSet() {
   // @@protoc_insertion_point(destructor:google.protobuf.FeatureSet)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void FeatureSet::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -11757,13 +11757,13 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedCtor(::_pb::Arena
 }
 FeatureSetDefaults_FeatureSetEditionDefault::~FeatureSetDefaults_FeatureSetEditionDefault() {
   // @@protoc_insertion_point(destructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.features_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -12016,12 +12016,12 @@ inline void FeatureSetDefaults::SharedCtor(::_pb::Arena* arena) {
 }
 FeatureSetDefaults::~FeatureSetDefaults() {
   // @@protoc_insertion_point(destructor:google.protobuf.FeatureSetDefaults)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void FeatureSetDefaults::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -12289,7 +12289,6 @@ inline void SourceCodeInfo_Location::SharedCtor(::_pb::Arena* arena) {
 }
 SourceCodeInfo_Location::~SourceCodeInfo_Location() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceCodeInfo.Location)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void SourceCodeInfo_Location::SharedDtor() {
@@ -12297,6 +12296,7 @@ inline void SourceCodeInfo_Location::SharedDtor() {
   _impl_.leading_comments_.Destroy();
   _impl_.trailing_comments_.Destroy();
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -12618,12 +12618,12 @@ inline void SourceCodeInfo::SharedCtor(::_pb::Arena* arena) {
 }
 SourceCodeInfo::~SourceCodeInfo() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceCodeInfo)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void SourceCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -12830,13 +12830,13 @@ inline void GeneratedCodeInfo_Annotation::SharedCtor(::_pb::Arena* arena) {
 }
 GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo.Annotation)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void GeneratedCodeInfo_Annotation::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.source_file_.Destroy();
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -13150,12 +13150,12 @@ inline void GeneratedCodeInfo::SharedCtor(::_pb::Arena* arena) {
 }
 GeneratedCodeInfo::~GeneratedCodeInfo() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void GeneratedCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*

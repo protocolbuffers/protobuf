@@ -474,11 +474,12 @@ template void InternalMetadata::DoClear<UnknownFieldSet>();
 template void InternalMetadata::DoMergeFrom<UnknownFieldSet>(
     const UnknownFieldSet& other);
 template void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
-template void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
 template UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 
 }  // namespace internal
+
+template void MessageLite::DeleteMetadataSlow<UnknownFieldSet>();
 
 }  // namespace protobuf
 }  // namespace google

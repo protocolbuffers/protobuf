@@ -2763,6 +2763,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
           $oneof_field_dtors$;
           $weak_fields_dtor$;
           $impl_dtor$;
+          $superclass$::DeleteMetadata<$unknown_fields_type$>();
         }
       )cc");
 }
@@ -3209,7 +3210,6 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
         R"cc(
           $classname$::~$classname$() {
             // @@protoc_insertion_point(destructor:$full_name$)
-            _internal_metadata_.Delete<$unknown_fields_type$>();
             SharedDtor();
           }
         )cc");

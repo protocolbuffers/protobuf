@@ -132,9 +132,9 @@ class MapEntry : public MapEntryBase {
 
   ~MapEntry() override {
     if (GetArena() != nullptr) return;
-    Message::_internal_metadata_.template Delete<UnknownFieldSet>();
     KeyTypeHandler::DeleteNoArena(key_);
     ValueTypeHandler::DeleteNoArena(value_);
+    Message::DeleteMetadata<UnknownFieldSet>();
   }
 
   using InternalArenaConstructable_ = void;

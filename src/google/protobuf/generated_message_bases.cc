@@ -30,9 +30,7 @@ void ZeroFieldsBase::Clear() {
   _internal_metadata_.Clear<UnknownFieldSet>();  //
 }
 
-ZeroFieldsBase::~ZeroFieldsBase() {
-  _internal_metadata_.Delete<UnknownFieldSet>();
-}
+ZeroFieldsBase::~ZeroFieldsBase() { DeleteMetadata<UnknownFieldSet>(); }
 
 size_t ZeroFieldsBase::ByteSizeLong() const {
   return MaybeComputeUnknownFieldsSize(0, &_cached_size_);

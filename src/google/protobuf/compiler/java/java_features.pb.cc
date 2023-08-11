@@ -179,12 +179,12 @@ inline void JavaFeatures::SharedCtor(::_pb::Arena* arena) {
 }
 JavaFeatures::~JavaFeatures() {
   // @@protoc_insertion_point(destructor:pb.JavaFeatures)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void JavaFeatures::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*

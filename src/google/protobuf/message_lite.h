@@ -580,6 +580,14 @@ class PROTOBUF_EXPORT MessageLite {
   // ClassData::cached_size_offset.
   internal::CachedSize& AccessCachedSize() const;
 
+  template <typename T>
+  void DeleteMetadata() {
+    if (PROTOBUF_PREDICT_TRUE(!_internal_metadata_.have_unknown_fields())) {
+      return;
+    }
+    DeleteMetadataSlow<T>();
+  }
+
  public:
   enum ParseFlags {
     kMerge = 0,
@@ -627,6 +635,12 @@ class PROTOBUF_EXPORT MessageLite {
   void LogInitializationErrorMessage() const;
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
+
+  // We make this function a member function in MessageLite to allow passing the
+  // existing `this` pointer instead of having to calculate a new pointer for
+  // it. It makes the tail call simpler.
+  template <typename T>
+  PROTOBUF_NOINLINE void DeleteMetadataSlow();
 };
 
 namespace internal {
@@ -674,6 +688,18 @@ bool MergeFromImpl(const SourceWrapper<T>& input, MessageLite* msg,
 }
 
 }  // namespace internal
+
+// Not marked `inline` on purpose to prevent instantiations on the callers.
+// Only the explicit instantiations should do it.
+template <typename T>
+PROTOBUF_NOINLINE void MessageLite::DeleteMetadataSlow() {
+  _internal_metadata_.DeleteKnownHasValue<T>();
+}
+
+extern template PROTOBUF_EXPORT void
+MessageLite::DeleteMetadataSlow<std::string>();
+extern template PROTOBUF_EXPORT void
+MessageLite::DeleteMetadataSlow<UnknownFieldSet>();
 
 template <MessageLite::ParseFlags flags, typename T>
 bool MessageLite::ParseFrom(const T& input) {

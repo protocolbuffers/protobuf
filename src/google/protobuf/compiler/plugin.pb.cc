@@ -364,13 +364,13 @@ inline void Version::SharedCtor(::_pb::Arena* arena) {
 }
 Version::~Version() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.Version)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void Version::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.suffix_.Destroy();
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -674,7 +674,6 @@ inline void CodeGeneratorRequest::SharedCtor(::_pb::Arena* arena) {
 }
 CodeGeneratorRequest::~CodeGeneratorRequest() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorRequest)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void CodeGeneratorRequest::SharedDtor() {
@@ -682,6 +681,7 @@ inline void CodeGeneratorRequest::SharedDtor() {
   _impl_.parameter_.Destroy();
   delete _impl_.compiler_version_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -1019,7 +1019,6 @@ inline void CodeGeneratorResponse_File::SharedCtor(::_pb::Arena* arena) {
 }
 CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse.File)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void CodeGeneratorResponse_File::SharedDtor() {
@@ -1029,6 +1028,7 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
   _impl_.content_.Destroy();
   delete _impl_.generated_code_info_;
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
@@ -1342,13 +1342,13 @@ inline void CodeGeneratorResponse::SharedCtor(::_pb::Arena* arena) {
 }
 CodeGeneratorResponse::~CodeGeneratorResponse() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
 inline void CodeGeneratorResponse::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.error_.Destroy();
   _impl_.~Impl_();
+  ::google::protobuf::Message::DeleteMetadata<::google::protobuf::UnknownFieldSet>();
 }
 
 const ::google::protobuf::MessageLite::ClassData*
