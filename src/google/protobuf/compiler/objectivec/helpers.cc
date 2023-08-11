@@ -105,7 +105,14 @@ std::string HandleExtremeFloatingPoint(std::string val, bool add_float_suffix) {
   }
 }
 
+const char* kDescriptorProtoName = "google/protobuf/descriptor.proto";
+
 }  // namespace
+
+bool ExtensionIsCustomOption(const FieldDescriptor* extension_field) {
+  return extension_field->containing_type()->file()->name() ==
+         kDescriptorProtoName;
+}
 
 std::string GetCapitalizedType(const FieldDescriptor* field) {
   switch (field->type()) {

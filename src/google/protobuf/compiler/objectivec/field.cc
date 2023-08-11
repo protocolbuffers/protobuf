@@ -30,6 +30,7 @@
 
 #include "google/protobuf/compiler/objectivec/field.h"
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -447,15 +448,9 @@ void RepeatedFieldGenerator::EmitArrayComment(io::Printer* printer) const {
 
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor)
     : descriptor_(descriptor),
-      field_generators_(descriptor->field_count()),
-      extension_generators_(descriptor->extension_count()) {
-  // Construct all the FieldGenerators.
+      field_generators_(static_cast<size_t>(descriptor->field_count())) {
   for (int i = 0; i < descriptor->field_count(); i++) {
     field_generators_[i].reset(FieldGenerator::Make(descriptor->field(i)));
-  }
-  for (int i = 0; i < descriptor->extension_count(); i++) {
-    extension_generators_[i].reset(
-        FieldGenerator::Make(descriptor->extension(i)));
   }
 }
 
@@ -463,10 +458,6 @@ const FieldGenerator& FieldGeneratorMap::get(
     const FieldDescriptor* field) const {
   ABSL_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
-}
-
-const FieldGenerator& FieldGeneratorMap::get_extension(int index) const {
-  return *extension_generators_[index];
 }
 
 int FieldGeneratorMap::CalculateHasBits() {
