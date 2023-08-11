@@ -22,6 +22,12 @@ add_custom_command(
       --cpp_out=${protobuf_SOURCE_DIR}/conformance
 )
 
+add_custom_target(conformance_cpp_gen
+  DEPENDS
+    ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
+    ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
+)
+
 add_custom_command(
   OUTPUT
     ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
@@ -34,6 +40,14 @@ add_custom_command(
                  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.proto
       --proto_path=${protobuf_SOURCE_DIR}/src
       --cpp_out=${protobuf_SOURCE_DIR}/src
+)
+
+add_custom_target(test_messages_cpp_gen
+  DEPENDS
+    ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
+    ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
+    ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
+    ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
 )
 
 add_executable(conformance_test_runner
