@@ -109,6 +109,33 @@ load("@upb//bazel:workspace_deps.bzl", "upb_deps")
 
 upb_deps()
 
+http_archive(
+    name = "lua",
+    build_file = "@upb//bazel:lua.BUILD",
+    sha256 = "b9e2e4aad6789b3b63a056d442f7b39f0ecfca3ae0f1fc0ae4e9614401b69f4b",
+    strip_prefix = "lua-5.2.4",
+    urls = [
+        "https://mirror.bazel.build/www.lua.org/ftp/lua-5.2.4.tar.gz",
+        "https://www.lua.org/ftp/lua-5.2.4.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "com_github_google_benchmark",
+    urls = ["https://github.com/google/benchmark/archive/0baacde3618ca617da95375e0af13ce1baadea47.zip"],
+    strip_prefix = "benchmark-0baacde3618ca617da95375e0af13ce1baadea47",
+    sha256 = "62e2f2e6d8a744d67e4bbc212fcfd06647080de4253c97ad5c6749e09faf2cb0",
+)
+
+http_archive(
+    name = "com_google_googleapis",
+    urls = ["https://github.com/googleapis/googleapis/archive/30ed2662a85403cbdeb9ea38df1e414a2a276b83.zip"],
+    strip_prefix = "googleapis-30ed2662a85403cbdeb9ea38df1e414a2a276b83",
+    sha256 = "4dfc28101127d22abd6f0f6308d915d490c4594c0cfcf7643769c446d6763a46",
+    build_file = "@upb//benchmarks:BUILD.googleapis",
+    patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
+)
+
 load("@upb//bazel:system_python.bzl", "system_python")
 
 system_python(
