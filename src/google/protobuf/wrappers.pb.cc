@@ -23,54 +23,6 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
         template <typename>
-PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ 0,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
-struct DoubleValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR DoubleValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~DoubleValueDefaultTypeInternal() {}
-  union {
-    DoubleValue _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR FloatValue::FloatValue(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ 0,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
-struct FloatValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR FloatValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~FloatValueDefaultTypeInternal() {}
-  union {
-    FloatValue _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FloatValueDefaultTypeInternal _FloatValue_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR Int64Value::Int64Value(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ ::int64_t{0},
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
-struct Int64ValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR Int64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~Int64ValueDefaultTypeInternal() {}
-  union {
-    Int64Value _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
-        template <typename>
 PROTOBUF_CONSTEXPR UInt64Value::UInt64Value(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_.value_)*/ ::uint64_t{0u},
@@ -87,22 +39,6 @@ struct UInt64ValueDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR Int32Value::Int32Value(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ 0,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
-struct Int32ValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR Int32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~Int32ValueDefaultTypeInternal() {}
-  union {
-    Int32Value _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
-        template <typename>
 PROTOBUF_CONSTEXPR UInt32Value::UInt32Value(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_.value_)*/ 0u,
@@ -118,22 +54,6 @@ struct UInt32ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR BoolValue::BoolValue(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ false,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
-struct BoolValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR BoolValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~BoolValueDefaultTypeInternal() {}
-  union {
-    BoolValue _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 BoolValueDefaultTypeInternal _BoolValue_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR StringValue::StringValue(::_pbi::ConstantInitialized)
     : _impl_{
@@ -154,6 +74,70 @@ struct StringValueDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StringValueDefaultTypeInternal _StringValue_default_instance_;
         template <typename>
+PROTOBUF_CONSTEXPR Int64Value::Int64Value(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ ::int64_t{0},
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
+struct Int64ValueDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR Int64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~Int64ValueDefaultTypeInternal() {}
+  union {
+    Int64Value _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR Int32Value::Int32Value(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
+struct Int32ValueDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR Int32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~Int32ValueDefaultTypeInternal() {}
+  union {
+    Int32Value _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR FloatValue::FloatValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
+struct FloatValueDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR FloatValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~FloatValueDefaultTypeInternal() {}
+  union {
+    FloatValue _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FloatValueDefaultTypeInternal _FloatValue_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
+struct DoubleValueDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR DoubleValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~DoubleValueDefaultTypeInternal() {}
+  union {
+    DoubleValue _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
+        template <typename>
 PROTOBUF_CONSTEXPR BytesValue::BytesValue(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_.value_)*/ {
@@ -172,6 +156,22 @@ struct BytesValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 BytesValueDefaultTypeInternal _BytesValue_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR BoolValue::BoolValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.value_)*/ false,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
+struct BoolValueDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR BoolValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~BoolValueDefaultTypeInternal() {}
+  union {
+    BoolValue _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 BoolValueDefaultTypeInternal _BoolValue_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[9];

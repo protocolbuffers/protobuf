@@ -23,34 +23,26 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
         template <typename>
-PROTOBUF_CONSTEXPR Type::Type(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR Option::Option(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.fields_)*/ {},
-      /*decltype(_impl_.oneofs_)*/ {},
-      /*decltype(_impl_.options_)*/ {},
       /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.edition_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.source_context_)*/ nullptr,
-      /*decltype(_impl_.syntax_)*/ 0,
+      /*decltype(_impl_.value_)*/ nullptr,
     } {}
-struct TypeDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR TypeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~TypeDefaultTypeInternal() {}
+struct OptionDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR OptionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~OptionDefaultTypeInternal() {}
   union {
-    Type _instance;
+    Option _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TypeDefaultTypeInternal _Type_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OptionDefaultTypeInternal _Option_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR Field::Field(::_pbi::ConstantInitialized)
     : _impl_{
@@ -89,6 +81,56 @@ struct FieldDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDefaultTypeInternal _Field_default_instance_;
         template <typename>
+PROTOBUF_CONSTEXPR EnumValue::EnumValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.options_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.number_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
+struct EnumValueDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR EnumValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~EnumValueDefaultTypeInternal() {}
+  union {
+    EnumValue _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDefaultTypeInternal _EnumValue_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR Type::Type(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.fields_)*/ {},
+      /*decltype(_impl_.oneofs_)*/ {},
+      /*decltype(_impl_.options_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.edition_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.source_context_)*/ nullptr,
+      /*decltype(_impl_.syntax_)*/ 0,
+    } {}
+struct TypeDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR TypeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~TypeDefaultTypeInternal() {}
+  union {
+    Type _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TypeDefaultTypeInternal _Type_default_instance_;
+        template <typename>
 PROTOBUF_CONSTEXPR Enum::Enum(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
@@ -116,48 +158,6 @@ struct EnumDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDefaultTypeInternal _Enum_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR EnumValue::EnumValue(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.options_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.number_)*/ 0,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
-struct EnumValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR EnumValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~EnumValueDefaultTypeInternal() {}
-  union {
-    EnumValue _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDefaultTypeInternal _EnumValue_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR Option::Option(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.value_)*/ nullptr,
-    } {}
-struct OptionDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR OptionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~OptionDefaultTypeInternal() {}
-  union {
-    Option _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OptionDefaultTypeInternal _Option_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2ftype_2eproto[5];

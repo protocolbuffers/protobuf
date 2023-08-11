@@ -77,6 +77,450 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
+class PROTOBUF_EXPORT Mixin final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Mixin) */ {
+ public:
+  inline Mixin() : Mixin(nullptr) {}
+  ~Mixin() override;
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR Mixin(::google::protobuf::internal::ConstantInitialized);
+
+  Mixin(const Mixin& from);
+  Mixin(Mixin&& from) noexcept
+    : Mixin() {
+    *this = ::std::move(from);
+  }
+
+  inline Mixin& operator=(const Mixin& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Mixin& operator=(Mixin&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const Mixin& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const Mixin* internal_default_instance() {
+    return reinterpret_cast<const Mixin*>(
+               &_Mixin_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  friend void swap(Mixin& a, Mixin& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Mixin* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Mixin* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  Mixin* New(::google::protobuf::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<Mixin>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const Mixin& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom( const Mixin& from) {
+    Mixin::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  ::size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Mixin* other);
+
+  private:
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::absl::string_view FullMessageName() {
+    return "google.protobuf.Mixin";
+  }
+  protected:
+  explicit Mixin(::google::protobuf::Arena* arena);
+  public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNameFieldNumber = 1,
+    kRootFieldNumber = 2,
+  };
+  // string name = 1;
+  void clear_name() ;
+  const std::string& name() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
+  std::string* mutable_name();
+  PROTOBUF_NODISCARD std::string* release_name();
+  void set_allocated_name(std::string* ptr);
+
+  private:
+  const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
+      const std::string& value);
+  std::string* _internal_mutable_name();
+
+  public:
+  // string root = 2;
+  void clear_root() ;
+  const std::string& root() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_root(Arg_&& arg, Args_... args);
+  std::string* mutable_root();
+  PROTOBUF_NODISCARD std::string* release_root();
+  void set_allocated_root(std::string* ptr);
+
+  private:
+  const std::string& _internal_root() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_root(
+      const std::string& value);
+  std::string* _internal_mutable_root();
+
+  public:
+  // @@protoc_insertion_point(class_scope:google.protobuf.Mixin)
+ private:
+  class _Internal;
+
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 0,
+      38, 2>
+      _table_;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::google::protobuf::internal::ArenaStringPtr name_;
+    ::google::protobuf::internal::ArenaStringPtr root_;
+    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
+};// -------------------------------------------------------------------
+
+class PROTOBUF_EXPORT Method final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Method) */ {
+ public:
+  inline Method() : Method(nullptr) {}
+  ~Method() override;
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR Method(::google::protobuf::internal::ConstantInitialized);
+
+  Method(const Method& from);
+  Method(Method&& from) noexcept
+    : Method() {
+    *this = ::std::move(from);
+  }
+
+  inline Method& operator=(const Method& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Method& operator=(Method&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const Method& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const Method* internal_default_instance() {
+    return reinterpret_cast<const Method*>(
+               &_Method_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    1;
+
+  friend void swap(Method& a, Method& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Method* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Method* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  Method* New(::google::protobuf::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<Method>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const Method& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom( const Method& from) {
+    Method::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  ::size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Method* other);
+
+  private:
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::absl::string_view FullMessageName() {
+    return "google.protobuf.Method";
+  }
+  protected:
+  explicit Method(::google::protobuf::Arena* arena);
+  public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kOptionsFieldNumber = 6,
+    kNameFieldNumber = 1,
+    kRequestTypeUrlFieldNumber = 2,
+    kResponseTypeUrlFieldNumber = 4,
+    kRequestStreamingFieldNumber = 3,
+    kResponseStreamingFieldNumber = 5,
+    kSyntaxFieldNumber = 7,
+  };
+  // repeated .google.protobuf.Option options = 6;
+  int options_size() const;
+  private:
+  int _internal_options_size() const;
+
+  public:
+  void clear_options() ;
+  ::google::protobuf::Option* mutable_options(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
+      mutable_options();
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* _internal_mutable_options();
+  public:
+  const ::google::protobuf::Option& options(int index) const;
+  ::google::protobuf::Option* add_options();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+      options() const;
+  // string name = 1;
+  void clear_name() ;
+  const std::string& name() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
+  std::string* mutable_name();
+  PROTOBUF_NODISCARD std::string* release_name();
+  void set_allocated_name(std::string* ptr);
+
+  private:
+  const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
+      const std::string& value);
+  std::string* _internal_mutable_name();
+
+  public:
+  // string request_type_url = 2;
+  void clear_request_type_url() ;
+  const std::string& request_type_url() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_request_type_url(Arg_&& arg, Args_... args);
+  std::string* mutable_request_type_url();
+  PROTOBUF_NODISCARD std::string* release_request_type_url();
+  void set_allocated_request_type_url(std::string* ptr);
+
+  private:
+  const std::string& _internal_request_type_url() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_request_type_url(
+      const std::string& value);
+  std::string* _internal_mutable_request_type_url();
+
+  public:
+  // string response_type_url = 4;
+  void clear_response_type_url() ;
+  const std::string& response_type_url() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_response_type_url(Arg_&& arg, Args_... args);
+  std::string* mutable_response_type_url();
+  PROTOBUF_NODISCARD std::string* release_response_type_url();
+  void set_allocated_response_type_url(std::string* ptr);
+
+  private:
+  const std::string& _internal_response_type_url() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_response_type_url(
+      const std::string& value);
+  std::string* _internal_mutable_response_type_url();
+
+  public:
+  // bool request_streaming = 3;
+  void clear_request_streaming() ;
+  bool request_streaming() const;
+  void set_request_streaming(bool value);
+
+  private:
+  bool _internal_request_streaming() const;
+  void _internal_set_request_streaming(bool value);
+
+  public:
+  // bool response_streaming = 5;
+  void clear_response_streaming() ;
+  bool response_streaming() const;
+  void set_response_streaming(bool value);
+
+  private:
+  bool _internal_response_streaming() const;
+  void _internal_set_response_streaming(bool value);
+
+  public:
+  // .google.protobuf.Syntax syntax = 7;
+  void clear_syntax() ;
+  ::google::protobuf::Syntax syntax() const;
+  void set_syntax(::google::protobuf::Syntax value);
+
+  private:
+  ::google::protobuf::Syntax _internal_syntax() const;
+  void _internal_set_syntax(::google::protobuf::Syntax value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:google.protobuf.Method)
+ private:
+  class _Internal;
+
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      3, 7, 1,
+      68, 2>
+      _table_;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
+    ::google::protobuf::internal::ArenaStringPtr name_;
+    ::google::protobuf::internal::ArenaStringPtr request_type_url_;
+    ::google::protobuf::internal::ArenaStringPtr response_type_url_;
+    bool request_streaming_;
+    bool response_streaming_;
+    int syntax_;
+    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
+};// -------------------------------------------------------------------
+
 class PROTOBUF_EXPORT Api final :
     public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Api) */ {
  public:
@@ -346,450 +790,6 @@ class PROTOBUF_EXPORT Api final :
     ::google::protobuf::internal::ArenaStringPtr version_;
     ::google::protobuf::SourceContext* source_context_;
     int syntax_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
-  };
-  union { Impl_ _impl_; };
-  friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
-};// -------------------------------------------------------------------
-
-class PROTOBUF_EXPORT Method final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Method) */ {
- public:
-  inline Method() : Method(nullptr) {}
-  ~Method() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR Method(::google::protobuf::internal::ConstantInitialized);
-
-  Method(const Method& from);
-  Method(Method&& from) noexcept
-    : Method() {
-    *this = ::std::move(from);
-  }
-
-  inline Method& operator=(const Method& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline Method& operator=(Method&& from) noexcept {
-    if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetOwningArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::google::protobuf::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
-  static const Method& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Method* internal_default_instance() {
-    return reinterpret_cast<const Method*>(
-               &_Method_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    1;
-
-  friend void swap(Method& a, Method& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(Method* other) {
-    if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() != nullptr &&
-        GetOwningArena() == other->GetOwningArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() == other->GetOwningArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(Method* other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  Method* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Method>(arena);
-  }
-  using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const Method& from);
-  using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const Method& from) {
-    Method::MergeImpl(*this, from);
-  }
-  private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
-  public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
-  ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
-
-  private:
-  void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(Method* other);
-
-  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.Method";
-  }
-  protected:
-  explicit Method(::google::protobuf::Arena* arena);
-  public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  enum : int {
-    kOptionsFieldNumber = 6,
-    kNameFieldNumber = 1,
-    kRequestTypeUrlFieldNumber = 2,
-    kResponseTypeUrlFieldNumber = 4,
-    kRequestStreamingFieldNumber = 3,
-    kResponseStreamingFieldNumber = 5,
-    kSyntaxFieldNumber = 7,
-  };
-  // repeated .google.protobuf.Option options = 6;
-  int options_size() const;
-  private:
-  int _internal_options_size() const;
-
-  public:
-  void clear_options() ;
-  ::google::protobuf::Option* mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options();
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* _internal_mutable_options();
-  public:
-  const ::google::protobuf::Option& options(int index) const;
-  ::google::protobuf::Option* add_options();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-      options() const;
-  // string name = 1;
-  void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
-
-  private:
-  const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
-  std::string* _internal_mutable_name();
-
-  public:
-  // string request_type_url = 2;
-  void clear_request_type_url() ;
-  const std::string& request_type_url() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_request_type_url(Arg_&& arg, Args_... args);
-  std::string* mutable_request_type_url();
-  PROTOBUF_NODISCARD std::string* release_request_type_url();
-  void set_allocated_request_type_url(std::string* ptr);
-
-  private:
-  const std::string& _internal_request_type_url() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_request_type_url(
-      const std::string& value);
-  std::string* _internal_mutable_request_type_url();
-
-  public:
-  // string response_type_url = 4;
-  void clear_response_type_url() ;
-  const std::string& response_type_url() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_response_type_url(Arg_&& arg, Args_... args);
-  std::string* mutable_response_type_url();
-  PROTOBUF_NODISCARD std::string* release_response_type_url();
-  void set_allocated_response_type_url(std::string* ptr);
-
-  private:
-  const std::string& _internal_response_type_url() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_response_type_url(
-      const std::string& value);
-  std::string* _internal_mutable_response_type_url();
-
-  public:
-  // bool request_streaming = 3;
-  void clear_request_streaming() ;
-  bool request_streaming() const;
-  void set_request_streaming(bool value);
-
-  private:
-  bool _internal_request_streaming() const;
-  void _internal_set_request_streaming(bool value);
-
-  public:
-  // bool response_streaming = 5;
-  void clear_response_streaming() ;
-  bool response_streaming() const;
-  void set_response_streaming(bool value);
-
-  private:
-  bool _internal_response_streaming() const;
-  void _internal_set_response_streaming(bool value);
-
-  public:
-  // .google.protobuf.Syntax syntax = 7;
-  void clear_syntax() ;
-  ::google::protobuf::Syntax syntax() const;
-  void set_syntax(::google::protobuf::Syntax value);
-
-  private:
-  ::google::protobuf::Syntax _internal_syntax() const;
-  void _internal_set_syntax(::google::protobuf::Syntax value);
-
-  public:
-  // @@protoc_insertion_point(class_scope:google.protobuf.Method)
- private:
-  class _Internal;
-
-  friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      3, 7, 1,
-      68, 2>
-      _table_;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
-  struct Impl_ {
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
-    ::google::protobuf::internal::ArenaStringPtr name_;
-    ::google::protobuf::internal::ArenaStringPtr request_type_url_;
-    ::google::protobuf::internal::ArenaStringPtr response_type_url_;
-    bool request_streaming_;
-    bool response_streaming_;
-    int syntax_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
-  };
-  union { Impl_ _impl_; };
-  friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
-};// -------------------------------------------------------------------
-
-class PROTOBUF_EXPORT Mixin final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Mixin) */ {
- public:
-  inline Mixin() : Mixin(nullptr) {}
-  ~Mixin() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR Mixin(::google::protobuf::internal::ConstantInitialized);
-
-  Mixin(const Mixin& from);
-  Mixin(Mixin&& from) noexcept
-    : Mixin() {
-    *this = ::std::move(from);
-  }
-
-  inline Mixin& operator=(const Mixin& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline Mixin& operator=(Mixin&& from) noexcept {
-    if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetOwningArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::google::protobuf::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
-  static const Mixin& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Mixin* internal_default_instance() {
-    return reinterpret_cast<const Mixin*>(
-               &_Mixin_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    2;
-
-  friend void swap(Mixin& a, Mixin& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(Mixin* other) {
-    if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() != nullptr &&
-        GetOwningArena() == other->GetOwningArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() == other->GetOwningArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(Mixin* other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  Mixin* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Mixin>(arena);
-  }
-  using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const Mixin& from);
-  using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const Mixin& from) {
-    Mixin::MergeImpl(*this, from);
-  }
-  private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
-  public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
-  ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
-
-  private:
-  void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(Mixin* other);
-
-  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.Mixin";
-  }
-  protected:
-  explicit Mixin(::google::protobuf::Arena* arena);
-  public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  enum : int {
-    kNameFieldNumber = 1,
-    kRootFieldNumber = 2,
-  };
-  // string name = 1;
-  void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
-
-  private:
-  const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
-  std::string* _internal_mutable_name();
-
-  public:
-  // string root = 2;
-  void clear_root() ;
-  const std::string& root() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_root(Arg_&& arg, Args_... args);
-  std::string* mutable_root();
-  PROTOBUF_NODISCARD std::string* release_root();
-  void set_allocated_root(std::string* ptr);
-
-  private:
-  const std::string& _internal_root() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_root(
-      const std::string& value);
-  std::string* _internal_mutable_root();
-
-  public:
-  // @@protoc_insertion_point(class_scope:google.protobuf.Mixin)
- private:
-  class _Internal;
-
-  friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 0,
-      38, 2>
-      _table_;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
-  struct Impl_ {
-    ::google::protobuf::internal::ArenaStringPtr name_;
-    ::google::protobuf::internal::ArenaStringPtr root_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };

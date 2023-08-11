@@ -23,34 +23,28 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
         template <typename>
-PROTOBUF_CONSTEXPR Api::Api(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR Mixin::Mixin(::_pbi::ConstantInitialized)
     : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.methods_)*/ {},
-      /*decltype(_impl_.options_)*/ {},
-      /*decltype(_impl_.mixins_)*/ {},
       /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.version_)*/ {
+      /*decltype(_impl_.root_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.source_context_)*/ nullptr,
-      /*decltype(_impl_.syntax_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
     } {}
-struct ApiDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR ApiDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~ApiDefaultTypeInternal() {}
+struct MixinDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR MixinDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~MixinDefaultTypeInternal() {}
   union {
-    Api _instance;
+    Mixin _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ApiDefaultTypeInternal _Api_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MixinDefaultTypeInternal _Mixin_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR Method::Method(::_pbi::ConstantInitialized)
     : _impl_{
@@ -83,28 +77,34 @@ struct MethodDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDefaultTypeInternal _Method_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR Mixin::Mixin(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR Api::Api(::_pbi::ConstantInitialized)
     : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.methods_)*/ {},
+      /*decltype(_impl_.options_)*/ {},
+      /*decltype(_impl_.mixins_)*/ {},
       /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.root_)*/ {
+      /*decltype(_impl_.version_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.source_context_)*/ nullptr,
+      /*decltype(_impl_.syntax_)*/ 0,
     } {}
-struct MixinDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR MixinDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~MixinDefaultTypeInternal() {}
+struct ApiDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR ApiDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~ApiDefaultTypeInternal() {}
   union {
-    Mixin _instance;
+    Api _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MixinDefaultTypeInternal _Mixin_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ApiDefaultTypeInternal _Api_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fapi_2eproto[3];

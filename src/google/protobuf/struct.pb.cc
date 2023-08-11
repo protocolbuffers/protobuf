@@ -22,18 +22,22 @@ namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
-      template <typename>
-PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::_pbi::ConstantInitialized) {}
-struct Struct_FieldsEntry_DoNotUseDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUseDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~Struct_FieldsEntry_DoNotUseDefaultTypeInternal() {}
+        template <typename>
+PROTOBUF_CONSTEXPR ListValue::ListValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.values_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
+struct ListValueDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR ListValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~ListValueDefaultTypeInternal() {}
   union {
-    Struct_FieldsEntry_DoNotUse _instance;
+    ListValue _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Struct_FieldsEntry_DoNotUseDefaultTypeInternal _Struct_FieldsEntry_DoNotUse_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ListValueDefaultTypeInternal _ListValue_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR Struct::Struct(::_pbi::ConstantInitialized)
     : _impl_{
@@ -50,6 +54,18 @@ struct StructDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StructDefaultTypeInternal _Struct_default_instance_;
+      template <typename>
+PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::_pbi::ConstantInitialized) {}
+struct Struct_FieldsEntry_DoNotUseDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUseDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~Struct_FieldsEntry_DoNotUseDefaultTypeInternal() {}
+  union {
+    Struct_FieldsEntry_DoNotUse _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Struct_FieldsEntry_DoNotUseDefaultTypeInternal _Struct_FieldsEntry_DoNotUse_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR Value::Value(::_pbi::ConstantInitialized)
     : _impl_{
@@ -67,22 +83,6 @@ struct ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ValueDefaultTypeInternal _Value_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR ListValue::ListValue(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.values_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
-struct ListValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR ListValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~ListValueDefaultTypeInternal() {}
-  union {
-    ListValue _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ListValueDefaultTypeInternal _ListValue_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fstruct_2eproto[4];
