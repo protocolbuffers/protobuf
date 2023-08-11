@@ -74,10 +74,6 @@ rust_test(
     name = "protobuf_upb_test",
     crate = ":protobuf_upb",
     rustc_flags = ["--cfg=upb_kernel"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
 )
 
 # The Rust Protobuf runtime using the cpp kernel.
@@ -110,10 +106,6 @@ rust_test(
     name = "protobuf_cpp_test",
     crate = ":protobuf_cpp",
     rustc_flags = ["--cfg=cpp_kernel"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
 )
 
 rust_library(
