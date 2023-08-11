@@ -126,14 +126,9 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
     return false;
   }
 
-  // As much as checking field->has_default_value() seems useful, it isn't
-  // because of enums. proto2 syntax allows the first item in an enum (the
-  // default) to be non zero. So checking field->has_default_value() would
-  // result in missing this non zero default.  See MessageWithOneBasedEnum in
-  // objectivec/Tests/unittest_objc.proto for a test Message to confirm this.
-
-  // Some proto file set the default to the zero value, so make sure the value
-  // isn't the zero case.
+  // Some proto files set the default to the zero value, so make sure the value
+  // isn't the zero case instead of relying on has_default_value() to tell when
+  // non zero.
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
       return field->default_value_int32() != 0;
@@ -151,9 +146,12 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
       return field->default_value_bool();
     case FieldDescriptor::CPPTYPE_STRING: {
       const std::string& default_string = field->default_value_string();
-      return default_string.length() != 0;
+      return !default_string.empty();
     }
     case FieldDescriptor::CPPTYPE_ENUM:
+      // The default value for an enum field is the first enum value, so there
+      // even more reason we can't use has_default_value() for checking for
+      // zero.
       return field->default_value_enum()->number() != 0;
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return false;

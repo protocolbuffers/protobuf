@@ -223,7 +223,7 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
           GetOptionalDeprecatedAttribute(descriptor, descriptor->file())) {
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     oneof_generators_.push_back(
-        std::make_unique<OneofGenerator>(descriptor_->oneof_decl(i)));
+        std::make_unique<OneofGenerator>(descriptor_->real_oneof_decl(i)));
   }
 
   // Assign has bits:

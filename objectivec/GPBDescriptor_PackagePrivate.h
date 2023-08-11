@@ -128,8 +128,8 @@ typedef struct GPBMessageFieldDescription {
   GPBDataType dataType;
 } GPBMessageFieldDescription;
 
-// Fields in messages defined in a 'proto2' syntax file can provide a default
-// value. This struct provides the default along with the field info.
+// If a message uses fields where they provide default values that are non zero, then this
+// struct is used to provide the values along with the field info.
 typedef struct GPBMessageFieldDescriptionWithDefault {
   // Default value for the ivar.
   GPBGenericValue defaultValue;
