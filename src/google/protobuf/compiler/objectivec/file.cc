@@ -31,6 +31,8 @@
 #include "google/protobuf/compiler/objectivec/file.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <iterator>
 #include <memory>
@@ -44,9 +46,11 @@
 #include "absl/strings/str_join.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
+#include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/import_writer.h"
 #include "google/protobuf/compiler/objectivec/message.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
@@ -64,28 +68,48 @@ const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30007;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
-// Checks if a message contains any extension definitions (on the message or
-// a nested message under it).
-bool MessageContainsExtensions(const Descriptor* message) {
+// Checks if a message contains extension definitions (on the message or
+// a nested message under it). `include_custom_options` decides if custom
+// options count as extensions.
+bool MessageContainsExtensions(const Descriptor* message,
+                               bool include_custom_options) {
   if (message->extension_count() > 0) {
-    return true;
+    if (include_custom_options) {
+      return true;
+    }
+    for (int i = 0; i < message->extension_count(); i++) {
+      if (!ExtensionIsCustomOption(message->extension(i))) {
+        return true;
+      }
+    }
   }
   for (int i = 0; i < message->nested_type_count(); i++) {
-    if (MessageContainsExtensions(message->nested_type(i))) {
+    if (MessageContainsExtensions(message->nested_type(i),
+                                  include_custom_options)) {
       return true;
     }
   }
   return false;
 }
 
-// Checks if the file contains any extensions definitions (at the root or
-// nested under a message).
-bool FileContainsExtensions(const FileDescriptor* file) {
+// Checks if the file contains extensions definitions (at the root or
+// nested under a message). `include_custom_options` decides if custom
+// options count as extensions.
+bool FileContainsExtensions(const FileDescriptor* file,
+                            bool include_custom_options) {
   if (file->extension_count() > 0) {
-    return true;
+    if (include_custom_options) {
+      return true;
+    }
+    for (int i = 0; i < file->extension_count(); i++) {
+      if (!ExtensionIsCustomOption(file->extension(i))) {
+        return true;
+      }
+    }
   }
   for (int i = 0; i < file->message_type_count(); i++) {
-    if (MessageContainsExtensions(file->message_type(i))) {
+    if (MessageContainsExtensions(file->message_type(i),
+                                  include_custom_options)) {
       return true;
     }
   }
@@ -112,7 +136,8 @@ void MakeDescriptors(
     const Descriptor* descriptor, const std::string& file_description_name,
     std::vector<std::unique_ptr<EnumGenerator>>* enum_generators,
     std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
-    std::vector<std::unique_ptr<MessageGenerator>>* message_generators) {
+    std::vector<std::unique_ptr<MessageGenerator>>* message_generators,
+    bool strip_custom_options) {
   for (int i = 0; i < descriptor->enum_type_count(); i++) {
     enum_generators->emplace_back(
         std::make_unique<EnumGenerator>(descriptor->enum_type(i)));
@@ -120,9 +145,11 @@ void MakeDescriptors(
   for (int i = 0; i < descriptor->nested_type_count(); i++) {
     message_generators->emplace_back(std::make_unique<MessageGenerator>(
         file_description_name, descriptor->nested_type(i)));
-    message_generators->back()->AddExtensionGenerators(extension_generators);
+    message_generators->back()->AddExtensionGenerators(extension_generators,
+                                                       strip_custom_options);
     MakeDescriptors(descriptor->nested_type(i), file_description_name,
-                    enum_generators, extension_generators, message_generators);
+                    enum_generators, extension_generators, message_generators,
+                    strip_custom_options);
   }
 }
 
@@ -184,7 +211,8 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
     }
   }
 
-  const bool file_has_exts = FileContainsExtensions(file);
+  const bool file_has_exts =
+      FileContainsExtensions(file, include_custom_options);
 
   // Fast path: if nothing to prune or there was only one dep, the prune work is
   // a waste, skip it.
@@ -241,16 +269,23 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
         std::make_unique<EnumGenerator>(file_->enum_type(i)));
   }
   for (int i = 0; i < file_->extension_count(); i++) {
-    extension_generators_.push_back(std::make_unique<ExtensionGenerator>(
-        root_class_name_, file_->extension(i)));
+    const FieldDescriptor* extension = file_->extension(i);
+    if (!generation_options.strip_custom_options ||
+        !ExtensionIsCustomOption(extension)) {
+      extension_generators_.push_back(
+          std::make_unique<ExtensionGenerator>(root_class_name_, extension));
+    }
   }
+  file_scoped_extension_count_ = extension_generators_.size();
   for (int i = 0; i < file_->message_type_count(); i++) {
     message_generators_.emplace_back(std::make_unique<MessageGenerator>(
         file_description_name_, file_->message_type(i)));
-    message_generators_.back()->AddExtensionGenerators(&extension_generators_);
+    message_generators_.back()->AddExtensionGenerators(
+        &extension_generators_, generation_options.strip_custom_options);
     MakeDescriptors(file_->message_type(i), file_description_name_,
                     &enum_generators_, &extension_generators_,
-                    &message_generators_);
+                    &message_generators_,
+                    generation_options.strip_custom_options);
   }
 }
 
@@ -298,17 +333,17 @@ void FileGenerator::GenerateHeader(io::Printer* p) const {
 
     // The dynamic methods block is only needed if there are extensions that are
     // file level scoped (not message scoped). The first
-    // file_->extension_count() of extension_generators_ are the file scoped
+    // file_scoped_extension_count_ of extension_generators_ are the file scoped
     // ones.
-    if (file_->extension_count()) {
+    if (file_scoped_extension_count_) {
       p->Emit("@interface $root_class_name$ (DynamicMethods)\n");
 
-      for (int i = 0; i < file_->extension_count(); i++) {
+      for (size_t i = 0; i < file_scoped_extension_count_; i++) {
         extension_generators_[i]->GenerateMembersHeader(p);
       }
 
       p->Emit("@end\n\n");
-    }  // file_->extension_count()
+    }
 
     for (const auto& generator : message_generators_) {
       generator->GenerateMessageHeader(p);
@@ -594,17 +629,10 @@ void FileGenerator::EmitRootImplementation(
   // output a registry to override to create the file specific
   // registry.
   if (extension_generators_.empty() && deps_with_extensions.empty()) {
-    if (file_->dependency_count() == 0) {
-      p->Emit(R"objc(
-        // No extensions in the file and no imports, so no need to generate
-        // +extensionRegistry.
-      )objc");
-    } else {
-      p->Emit(R"objc(
-        // No extensions in the file and none of the imports (direct or indirect)
-        // defined extensions, so no need to generate +extensionRegistry.
-      )objc");
-    }
+    p->Emit(R"objc(
+      // No extensions in the file and no imports or none of the imports (direct or
+      // indirect) defined extensions, so no need to generate +extensionRegistry.
+    )objc");
   } else {
     EmitRootExtensionRegistryImplementation(p, deps_with_extensions);
   }

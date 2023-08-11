@@ -172,7 +172,6 @@ class FieldGeneratorMap {
   FieldGeneratorMap& operator=(const FieldGeneratorMap&) = delete;
 
   const FieldGenerator& get(const FieldDescriptor* field) const;
-  const FieldGenerator& get_extension(int index) const;
 
   // Assigns the has bits and returns the number of bits needed.
   int CalculateHasBits();
@@ -185,7 +184,6 @@ class FieldGeneratorMap {
  private:
   const Descriptor* descriptor_;
   std::vector<std::unique_ptr<FieldGenerator>> field_generators_;
-  std::vector<std::unique_ptr<FieldGenerator>> extension_generators_;
 };
 
 }  // namespace objectivec

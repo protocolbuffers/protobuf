@@ -46,6 +46,9 @@ struct GenerationOptions {
   // TODO(thomasvl): Eventually flip this default to false for better interop
   // with Swift if proto usages span modules made from ObjC sources.
   bool headers_use_forward_declarations = true;
+  // TODO(thomasvl): Removing this so there is one less path to validate in
+  // code generation.
+  bool strip_custom_options = true;
   bool experimental_multi_source_generation = false;
 };
 

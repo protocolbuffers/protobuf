@@ -59,7 +59,8 @@ class MessageGenerator {
   MessageGenerator& operator=(const MessageGenerator&) = delete;
 
   void AddExtensionGenerators(
-      std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators);
+      std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
+      bool strip_custom_options);
 
   void GenerateMessageHeader(io::Printer* printer) const;
   void GenerateSource(io::Printer* printer) const;
