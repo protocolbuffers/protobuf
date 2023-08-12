@@ -81,6 +81,12 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
       {"base_cast",
        absl::Substitute("reinterpret_cast<$0*>",
                         !is_foreign && !weak ? qualified_type : base)},
+      Sub{"weak_cast",
+          !weak ? "" : absl::Substitute("reinterpret_cast<$0*>", base)}
+          .ConditionalFunctionCall(),
+      Sub{"foreign_cast",
+          !is_foreign ? "" : absl::Substitute("reinterpret_cast<$0*>", base)}
+          .ConditionalFunctionCall(),
       {"cast_field_", !weak ? field_name
                             : absl::Substitute("reinterpret_cast<$0*>($1)",
                                                qualified_type, field_name)},
@@ -587,33 +593,23 @@ class OneofMessage : public SingularMessage {
 };
 
 void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
-  p->Emit({{"casted_name",
-            [&] {
-              if (field_->file() != field_->message_type()->file()) {
-                // We have to read the arena through the virtual method, because
-                // the type isn't defined in this file.
-                p->Emit(R"cc(reinterpret_cast<$pb$::MessageLite*>($name$))cc");
-              } else {
-                p->Emit(R"cc($name$)cc");
-              }
-            }}},
-          R"cc(
-            void $Msg$::set_allocated_$name$($Submsg$* $name$) {
-              $pb$::Arena* message_arena = GetArenaForAllocation();
-              clear_$oneof_name$();
-              if ($name$) {
-                $pb$::Arena* submessage_arena =
-                    $pb$::Arena::InternalGetOwningArena($casted_name$);
-                if (message_arena != submessage_arena) {
-                  $name$ = $pbi$::GetOwnedMessage(message_arena, $name$, submessage_arena);
-                }
-                set_has_$name$();
-                $field_$ = $name$;
-              }
-              $annotate_set$;
-              // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
-            }
-          )cc");
+  p->Emit(R"cc(
+    void $Msg$::set_allocated_$name$($Submsg$* $name$) {
+      $pb$::Arena* message_arena = GetArenaForAllocation();
+      clear_$oneof_name$();
+      if ($name$) {
+        $pb$::Arena* submessage_arena =
+            $pb$::Arena::InternalGetOwningArena($foreign_cast$($name$));
+        if (message_arena != submessage_arena) {
+          $name$ = $pbi$::GetOwnedMessage(message_arena, $name$, submessage_arena);
+        }
+        set_has_$name$();
+        $field_$ = $name$;
+      }
+      $annotate_set$;
+      // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
+    }
+  )cc");
 }
 
 void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
@@ -667,58 +663,32 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       }
     }
   )cc");
-  p->Emit(
-      {
-          {"maybe_cast_weak_input",
-           [&] {
-             if (is_weak()) {
-               p->Emit("reinterpret_cast<$pb$::MessageLite*>($name$);");
-             } else {
-               p->Emit("$name$;");
-             }
-           }},
-      },
-      R"cc(
-        inline void $Msg$::unsafe_arena_set_allocated_$name$($Submsg$* $name$) {
-          // We rely on the oneof clear method to free the earlier contents
-          // of this oneof. We can directly use the pointer we're given to
-          // set the new value.
-          clear_$oneof_name$();
-          if ($name$) {
-            set_has_$name$();
-            $field_$ = $maybe_cast_weak_input$;
-          }
-          $annotate_set$;
-          // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
-        }
-      )cc");
-  p->Emit(
-      {
-          {"maybe_cast_weak_new",
-           [&] {
-             if (is_weak()) {
-               p->Emit(R"cc(
-                 reinterpret_cast<$pb$::MessageLite*>(
-                     CreateMaybeMessage<$Submsg$>(GetArenaForAllocation()));
-               )cc");
-             } else {
-               p->Emit(R"cc(
-                 CreateMaybeMessage<$Submsg$>(GetArenaForAllocation());
-               )cc");
-             }
-           }},
-      },
-      R"cc(
-        inline $Submsg$* $Msg$::_internal_mutable_$name$() {
-          $StrongRef$;
-          if ($not_has_field$) {
-            clear_$oneof_name$();
-            set_has_$name$();
-            $field_$ = $maybe_cast_weak_new$;
-          }
-          return $cast_field_$;
-        }
-      )cc");
+  p->Emit(R"cc(
+    inline void $Msg$::unsafe_arena_set_allocated_$name$($Submsg$* $name$) {
+      // We rely on the oneof clear method to free the earlier contents
+      // of this oneof. We can directly use the pointer we're given to
+      // set the new value.
+      clear_$oneof_name$();
+      if ($name$) {
+        set_has_$name$();
+        $field_$ = $weak_cast$($name$);
+      }
+      $annotate_set$;
+      // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
+    }
+  )cc");
+  p->Emit(R"cc(
+    inline $Submsg$* $Msg$::_internal_mutable_$name$() {
+      $StrongRef$;
+      if ($not_has_field$) {
+        clear_$oneof_name$();
+        set_has_$name$();
+        $field_$ =
+            $weak_cast$(CreateMaybeMessage<$Submsg$>(GetArenaForAllocation()));
+      }
+      return $cast_field_$;
+    }
+  )cc");
   p->Emit(R"cc(
     inline $Submsg$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $Submsg$* _msg = _internal_mutable_$name$();
@@ -730,10 +700,10 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 }
 
 void OneofMessage::GenerateClearingCode(io::Printer* p) const {
-  p->Emit(
-      "if (GetArenaForAllocation() == nullptr) {\n"
-      "  delete $field_$;\n"
-      "}\n");
+  p->Emit(R"cc(
+    if (GetArenaForAllocation() == nullptr) {
+      delete $field_$;
+    })cc");
 }
 
 void OneofMessage::GenerateMessageClearingCode(io::Printer* p) const {

@@ -765,6 +765,9 @@ class PROTOBUF_EXPORT Printer {
   bool at_start_of_line_ = true;
   bool failed_ = false;
 
+  size_t paren_depth_ = 0;
+  std::vector<size_t> paren_depth_to_omit_;
+
   std::vector<std::function<absl::optional<ValueView>(absl::string_view)>>
       var_lookups_;
 
@@ -861,6 +864,7 @@ struct Printer::ValueImpl {
 
   StringOrCallback value;
   std::string consume_after;
+  bool consume_parens_if_empty = false;
 
  private:
   // go/ranked-overloads
@@ -905,6 +909,7 @@ Printer::ValueImpl<owned>& Printer::ValueImpl<owned>::operator=(
   }
 
   consume_after = that.consume_after;
+  consume_parens_if_empty = that.consume_parens_if_empty;
   return *this;
 }
 
@@ -972,6 +977,11 @@ class Printer::Sub {
 
   Sub WithSuffix(std::string sub_suffix) && {
     value_.consume_after = std::move(sub_suffix);
+    return std::move(*this);
+  }
+
+  Sub ConditionalFunctionCall() && {
+    value_.consume_parens_if_empty = true;
     return std::move(*this);
   }
 
