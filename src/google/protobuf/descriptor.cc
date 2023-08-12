@@ -353,7 +353,7 @@ class FlatAllocation {
   template <typename U>
   bool Destroy() {
     if (std::is_trivially_destructible<U>::value) return true;
-    for (U* it = Begin<U>(), *end = End<U>(); it != end; ++it) {
+    for (U *it = Begin<U>(), *end = End<U>(); it != end; ++it) {
       it->~U();
     }
     return true;
@@ -6125,8 +6125,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
-    result->reserved_names_[i] =
-        alloc.AllocateStrings(proto.reserved_name(i));
+    result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
   // Copy options.
@@ -6676,6 +6675,10 @@ void DescriptorBuilder::BuildReservedRange(
     AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Reserved numbers must be positive integers.");
   }
+  if (result->start >= result->end) {
+    AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
+             "Reserved range end number must be greater than start number.");
+  }
 }
 
 void DescriptorBuilder::BuildReservedRange(
@@ -6824,8 +6827,7 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
-    result->reserved_names_[i] =
-        alloc.AllocateStrings(proto.reserved_name(i));
+    result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
   // Copy options.
@@ -7570,8 +7572,7 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
     std::vector<Range> used_ordinals;
     auto add_ordinal = [&](int ordinal) {
       if (ordinal <= 0 || ordinal > FieldDescriptor::kMaxNumber) return;
-      if (!used_ordinals.empty() &&
-          ordinal == used_ordinals.back().to) {
+      if (!used_ordinals.empty() && ordinal == used_ordinals.back().to) {
         used_ordinals.back().to = ordinal + 1;
       } else {
         used_ordinals.push_back({ordinal, ordinal + 1});
@@ -8784,23 +8785,24 @@ bool DescriptorBuilder::OptionInterpreter::ExamineIfOptionIsSet(
 namespace {
 // Helpers for method below
 
-template <typename T> std::string ValueOutOfRange(
-    absl::string_view type_name, absl::string_view option_name) {
-  return absl::StrFormat(
-    "Value out of range, %d to %d, for %s option \"%s\".", \
-    std::numeric_limits<T>::min(), std::numeric_limits<T>::max(),
-    type_name, option_name);
+template <typename T>
+std::string ValueOutOfRange(absl::string_view type_name,
+                            absl::string_view option_name) {
+  return absl::StrFormat("Value out of range, %d to %d, for %s option \"%s\".",
+                         std::numeric_limits<T>::min(),
+                         std::numeric_limits<T>::max(), type_name, option_name);
 }
 
-template <typename T> std::string ValueMustBeInt(
-    absl::string_view type_name, absl::string_view option_name) {
+template <typename T>
+std::string ValueMustBeInt(absl::string_view type_name,
+                           absl::string_view option_name) {
   return absl::StrFormat(
-    "Value must be integer, from %d to %d, for %s option \"%s\".", \
-    std::numeric_limits<T>::min(), std::numeric_limits<T>::max(),
-    type_name, option_name);
+      "Value must be integer, from %d to %d, for %s option \"%s\".",
+      std::numeric_limits<T>::min(), std::numeric_limits<T>::max(), type_name,
+      option_name);
 }
 
-} // namespace
+}  // namespace
 
 bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
     const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields) {
