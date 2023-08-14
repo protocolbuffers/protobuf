@@ -35,6 +35,7 @@
 
 #include "google/protobuf/port.h"
 #include "absl/log/absl_check.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_entry_lite.h"
@@ -70,6 +71,12 @@ class MapFieldLite {
   constexpr MapFieldLite() : map_() {}
   explicit MapFieldLite(Arena* arena) : map_(arena) {}
   MapFieldLite(ArenaInitialized, Arena* arena) : MapFieldLite(arena) {}
+
+  MapFieldLite(InternalVisibility, Arena* arena) : map_(arena) {}
+  MapFieldLite(InternalVisibility, Arena* arena, const MapFieldLite& from)
+      : map_(arena) {
+    MergeFrom(from);
+  }
 
 #ifdef NDEBUG
   ~MapFieldLite() { map_.~Map(); }
