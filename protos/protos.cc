@@ -30,9 +30,25 @@
 
 #include "protos/protos.h"
 
+#include <atomic>
+#include <cstddef>
+
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
+#include "protos/protos_extension_lock.h"
+#include "upb/mem/arena.h"
+#include "upb/message/copy.h"
+#include "upb/message/extension_internal.h"
 #include "upb/message/promote.h"
+#include "upb/message/typedef.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/common.h"
+#include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 namespace protos {
 
@@ -95,8 +111,33 @@ upb_ExtensionRegistry* GetUpbExtensions(
   return extension_registry.registry_;
 }
 
+/**
+ * MessageLock(msg) acquires lock on msg when constructed and releases it when
+ * destroyed.
+ */
+class MessageLock {
+ public:
+  explicit MessageLock(const upb_Message* msg) : msg_(msg) {
+    UpbExtensionLocker locker =
+        upb_extension_locker_global.load(std::memory_order_acquire);
+    unlocker_ = (locker != nullptr) ? locker(msg) : nullptr;
+  }
+  MessageLock(const MessageLock&) = delete;
+  void operator=(const MessageLock&) = delete;
+  ~MessageLock() {
+    if (unlocker_ != nullptr) {
+      unlocker_(msg_);
+    }
+  }
+
+ private:
+  const upb_Message* msg_;
+  UpbExtensionUnlocker unlocker_;
+};
+
 bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid) {
+  MessageLock msg_lock(msg);
   return _upb_Message_Getext(msg, eid) != nullptr ||
          upb_MiniTable_FindUnknown(msg, eid->field.number,
                                    kUpb_WireFormat_DefaultDepthLimit)
@@ -105,12 +146,13 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
 
 const upb_Message_Extension* GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena) {
+  MessageLock msg_lock(msg);
   const upb_Message_Extension* ext = _upb_Message_Getext(msg, eid);
   if (ext == nullptr) {
     upb_GetExtension_Status ext_status = upb_MiniTable_GetOrPromoteExtension(
         (upb_Message*)msg, eid, kUpb_WireFormat_DefaultDepthLimit, arena, &ext);
     if (ext_status != kUpb_GetExtension_Ok) {
-      return nullptr;
+      ext = nullptr;
     }
   }
   return ext;
@@ -119,6 +161,7 @@ const upb_Message_Extension* GetOrPromoteExtension(
 absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
                                             const upb_MiniTable* mini_table,
                                             upb_Arena* arena, int options) {
+  MessageLock msg_lock(message);
   size_t len;
   char* ptr;
   upb_EncodeStatus status =
@@ -127,6 +170,18 @@ absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
     return absl::string_view(ptr, len);
   }
   return MessageEncodeError(status);
+}
+
+void DeepCopy(upb_Message* target, const upb_Message* source,
+              const upb_MiniTable* mini_table, upb_Arena* arena) {
+  MessageLock msg_lock(source);
+  upb_Message_DeepCopy(target, source, mini_table, arena);
+}
+
+upb_Message* DeepClone(const upb_Message* source,
+                       const upb_MiniTable* mini_table, upb_Arena* arena) {
+  MessageLock msg_lock(source);
+  return upb_Message_DeepClone(source, mini_table, arena);
 }
 
 }  // namespace internal

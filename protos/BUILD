@@ -72,13 +72,16 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":protos_extension_lock",
         "//:mem",
         "//:message_copy",
         "//:message_promote",
+        "//:message_typedef",
         "//:mini_table",
         "//:upb",
         "//:wire",
         "//:wire_internal",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
@@ -103,11 +106,26 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":protos",
+        "//:mem",
+        "//:message_typedef",
         "//:mini_table",
         "//:upb",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "protos_extension_lock",
+    srcs = ["protos_extension_lock.cc"],
+    hdrs = ["protos_extension_lock.h"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:message_typedef",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/synchronization",
     ],
 )
 
@@ -123,6 +141,8 @@ cc_library(
         ":protos",
         ":protos_internal",
         ":repeated_field",
+        "//:mem",
+        "//:message_typedef",
     ],
 )
 
@@ -151,6 +171,20 @@ cc_test(
     srcs = ["repeated_field_iterator_test.cc"],
     deps = [
         ":repeated_field",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "protos_extension_lock_test",
+    srcs = ["protos_extension_lock_test.cc"],
+    deps = [
+        "//:upb",
+        "//protos",
+        "//protos:protos_extension_lock",
+        "//protos_generator/tests:test_model_upb_cc_proto",
+        "@com_google_absl//absl/hash",
+        "@com_google_absl//absl/log:absl_check",
         "@com_google_googletest//:gtest_main",
     ],
 )

@@ -28,21 +28,27 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPB_PROTOS_PROTOS_INTERNAL_H_
-#define UPB_PROTOS_PROTOS_INTERNAL_H_
+#ifndef UPB_PROTOS_PROTOS_EXTENSION_LOCK_H_
+#define UPB_PROTOS_PROTOS_EXTENSION_LOCK_H_
 
-#include "upb/mem/arena.h"
-#include "upb/message/typedef.h"
+#include <atomic>
 
 namespace protos::internal {
 
-// Moves ownership of a message created in a source arena.
+// TODO(b/295355754): Temporary locking api for cross-language
+// concurrency issue around extension api that uses lazy promotion
+// from unknown data to upb_MiniTableExtension. Will be replaced by
+// a core runtime solution in the future.
 //
-// Utility function to provide a way to move ownership across languages or VMs.
-template <typename T>
-T MoveMessage(upb_Message* msg, upb_Arena* arena) {
-  return T(msg, arena);
-}
+// Any api(s) using unknown or extension data (GetOrPromoteExtension,
+// Serialize and others) call lock/unlock to provide a way for
+// mixed language implementations to avoid race conditions)
+using UpbExtensionUnlocker = void (*)(const void*);
+using UpbExtensionLocker = UpbExtensionUnlocker (*)(const void*);
+
+// TODO(b/295355754): Expose as function instead of global.
+extern std::atomic<UpbExtensionLocker> upb_extension_locker_global;
 
 }  // namespace protos::internal
-#endif
+
+#endif  // UPB_PROTOS_PROTOS_EXTENSION_LOCK_H_

@@ -28,21 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPB_PROTOS_PROTOS_INTERNAL_H_
-#define UPB_PROTOS_PROTOS_INTERNAL_H_
+#include "protos/protos_extension_lock.h"
 
-#include "upb/mem/arena.h"
-#include "upb/message/typedef.h"
+#include <atomic>
 
 namespace protos::internal {
 
-// Moves ownership of a message created in a source arena.
-//
-// Utility function to provide a way to move ownership across languages or VMs.
-template <typename T>
-T MoveMessage(upb_Message* msg, upb_Arena* arena) {
-  return T(msg, arena);
-}
+std::atomic<UpbExtensionLocker> upb_extension_locker_global;
 
 }  // namespace protos::internal
-#endif

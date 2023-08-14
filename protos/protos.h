@@ -135,52 +135,6 @@ typename T::Proxy CreateMessage(::protos::Arena& arena) {
                            arena.ptr());
 }
 
-template <typename T>
-typename T::Proxy CloneMessage(Ptr<T> message, upb::Arena& arena) {
-  return
-      typename T::Proxy(upb_Message_DeepClone(internal::GetInternalMsg(message),
-                                              T::minitable(), arena.ptr()),
-                        arena.ptr());
-}
-
-template <typename T>
-void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
-  static_assert(!std::is_const_v<T>);
-  upb_Message_DeepCopy(
-      internal::GetInternalMsg(target_message),
-      internal::GetInternalMsg(source_message), T::minitable(),
-      static_cast<upb_Arena*>(target_message->GetInternalArena()));
-}
-
-template <typename T>
-void DeepCopy(Ptr<const T> source_message, T* target_message) {
-  static_assert(!std::is_const_v<T>);
-  DeepCopy(source_message, protos::Ptr(target_message));
-}
-
-template <typename T>
-void DeepCopy(const T* source_message, Ptr<T> target_message) {
-  static_assert(!std::is_const_v<T>);
-  DeepCopy(protos::Ptr(source_message), target_message);
-}
-
-template <typename T>
-void DeepCopy(const T* source_message, T* target_message) {
-  static_assert(!std::is_const_v<T>);
-  DeepCopy(protos::Ptr(source_message), protos::Ptr(target_message));
-}
-
-template <typename T>
-void ClearMessage(Ptr<T> message) {
-  static_assert(!std::is_const_v<T>, "");
-  upb_Message_Clear(internal::GetInternalMsg(message), T::minitable());
-}
-
-template <typename T>
-void ClearMessage(T* message) {
-  ClearMessage(protos::Ptr(message));
-}
-
 // begin:github_only
 // This type exists to work around an absl type that has not yet been
 // released.
@@ -288,7 +242,59 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
 const upb_Message_Extension* GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena);
 
+void DeepCopy(upb_Message* target, const upb_Message* source,
+              const upb_MiniTable* mini_table, upb_Arena* arena);
+
+upb_Message* DeepClone(const upb_Message* source,
+                       const upb_MiniTable* mini_table, upb_Arena* arena);
+
 }  // namespace internal
+
+template <typename T>
+void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
+  static_assert(!std::is_const_v<T>);
+  ::protos::internal::DeepCopy(
+      internal::GetInternalMsg(target_message),
+      internal::GetInternalMsg(source_message), T::minitable(),
+      static_cast<upb_Arena*>(target_message->GetInternalArena()));
+}
+
+template <typename T>
+typename T::Proxy CloneMessage(Ptr<T> message, upb::Arena& arena) {
+  return typename T::Proxy(
+      ::protos::internal::DeepClone(internal::GetInternalMsg(message),
+                                    T::minitable(), arena.ptr()),
+      arena.ptr());
+}
+
+template <typename T>
+void DeepCopy(Ptr<const T> source_message, T* target_message) {
+  static_assert(!std::is_const_v<T>);
+  DeepCopy(source_message, protos::Ptr(target_message));
+}
+
+template <typename T>
+void DeepCopy(const T* source_message, Ptr<T> target_message) {
+  static_assert(!std::is_const_v<T>);
+  DeepCopy(protos::Ptr(source_message), target_message);
+}
+
+template <typename T>
+void DeepCopy(const T* source_message, T* target_message) {
+  static_assert(!std::is_const_v<T>);
+  DeepCopy(protos::Ptr(source_message), protos::Ptr(target_message));
+}
+
+template <typename T>
+void ClearMessage(Ptr<T> message) {
+  static_assert(!std::is_const_v<T>, "");
+  upb_Message_Clear(internal::GetInternalMsg(message), T::minitable());
+}
+
+template <typename T>
+void ClearMessage(T* message) {
+  ClearMessage(protos::Ptr(message));
+}
 
 class ExtensionRegistry {
  public:
