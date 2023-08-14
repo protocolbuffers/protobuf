@@ -138,6 +138,24 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateAggregateInitializer(io::Printer* p) const override;
   void GenerateCopyAggregateInitializer(io::Printer* p) const override;
 
+  void GenerateMemberConstexprConstructor(io::Printer* p) const override {
+    p->Emit("$name$_{nullptr}");
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const override {
+    p->Emit("$name$_{nullptr}");
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const override {
+    p->Emit("$name$_{CreateMaybeMessage<$Submsg$>(arena, *from.$name$_)}");
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const override {
+    p->Emit(R"cc(
+      $field$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field$);
+    )cc");
+  }
+
  private:
   friend class OneofMessage;
 
@@ -448,19 +466,43 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
 
 using internal::cpp::HasHasbit;
 
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
+
 void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   if (has_hasbit_) {
-    p->Emit(
-        "if ((from.$has_hasbit$) != 0) {\n"
-        "  _this->$field_$ = new $Submsg$(*from.$field_$);\n"
-        "}\n");
+    p->Emit(R"cc(
+      if ((from.$has_hasbit$) != 0) {
+        _this->$field_$ = new $Submsg$(*from.$field_$);
+      }
+    )cc");
   } else {
-    p->Emit(
-        "if (from._internal_has_$name$()) {\n"
-        "  _this->$field_$ = new $Submsg$(*from.$field_$);\n"
-        "}\n");
+    p->Emit(R"cc(
+      if (from._internal_has_$name$()) {
+        _this->$field_$ = new $Submsg$(*from.$field_$);
+      }
+    )cc");
   }
 }
+
+#else  // PROTOBUF_EXPLICIT_CONSTRUCTORS
+
+void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
+  if (has_hasbit_) {
+    p->Emit(R"cc(
+      if ((from.$has_hasbit$) != 0) {
+        _this->$field_$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field_$);
+      }
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      if (from._internal_has_$name$()) {
+        _this->$field_$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field_$);
+      }
+    )cc");
+  }
+}
+
+#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
 
 void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
@@ -931,7 +973,9 @@ void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
       $field_$.DeleteIfNotDefault();
     )cc");
   } else {
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
     p->Emit("$field_$.~$Weak$RepeatedPtrField();\n");
+#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
   }
 }
 
