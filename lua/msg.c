@@ -29,10 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
- * lupb_Message -- Message/Array/Map objects in Lua/C that wrap upb/msg.h
+ * lupb_Message -- Message/Array/Map objects in Lua/C that wrap upb
  */
-
-#include "upb/msg.h"
 
 #include <float.h>
 #include <math.h>
@@ -45,6 +43,7 @@
 #include "upb/collections/map.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
+#include "upb/message/message.h"
 #include "upb/port/def.inc"
 #include "upb/reflection/message.h"
 #include "upb/text/encode.h"

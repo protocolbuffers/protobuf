@@ -23,11 +23,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-    "UPB_DEFAULT_CPPOPTS",
-)
+load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
@@ -127,32 +123,20 @@ cc_library(
 cc_library(
     name = "upb",
     hdrs = [
-        "upb/collections/array.h",
-        "upb/decode.h",
-        "upb/encode.h",
         "upb/message/extension_internal.h",
         "upb/message/message.h",
-        "upb/msg.h",
         "upb/upb.h",
         "upb/upb.hpp",
-        "upb/wire/common.h",
-        "upb/wire/decode.h",
-        "upb/wire/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":base",
-        ":base_internal",
         ":collections_internal",
-        ":fastdecode",
-        ":hash",
-        ":lex",
         ":mem",
         ":message_internal",
         ":mini_table",
         ":port",
-        ":wire",
     ],
 )
 
@@ -237,11 +221,12 @@ cc_library(
         ":eps_copy_input_stream",
         ":message_internal",
         ":mini_table",
+        ":mini_table_internal",
         ":port",
         ":upb",
         ":wire",
+        ":wire_internal",
         ":wire_reader",
-        "//upb/mini_table:internal",
     ],
 )
 
@@ -261,11 +246,12 @@ cc_library(
         ":hash",
         ":message_accessors",
         ":message_internal",
+        ":mini_table",
         ":port",
         ":upb",
         ":wire",
+        ":wire_internal",
         ":wire_reader",
-        "//upb/mini_table",
     ],
 )
 
@@ -280,13 +266,16 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":collections_internal",
         ":mem",
         ":message_accessors",
         ":message_internal",
+        ":message_typedef",
+        ":mini_table",
+        ":mini_table_internal",
         ":port",
         ":upb",
-        "//upb/mini_table",
     ],
 )
 
@@ -320,12 +309,14 @@ cc_test(
         ":base",
         ":collections",
         ":message_accessors",
+        ":mini_descriptor",
+        ":mini_descriptor_encode_internal",
+        ":mini_descriptor_internal",
+        ":mini_table",
         ":port",
         ":upb",
-        "//upb/mini_descriptor",
-        "//upb/mini_descriptor:encode_internal",
-        "//upb/mini_descriptor:internal",
-        "//upb/mini_table",
+        ":wire",
+        ":wire_internal",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
@@ -344,11 +335,13 @@ cc_test(
         ":message_accessors",
         ":message_copy",
         ":message_promote",
+        ":mini_descriptor_encode_internal",
+        ":mini_descriptor_internal",
+        ":mini_table",
         ":port",
         ":upb",
-        "//upb/mini_descriptor:encode_internal",
-        "//upb/mini_descriptor:internal",
-        "//upb/mini_table",
+        ":wire",
+        ":wire_internal",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
@@ -367,8 +360,10 @@ cc_test(
         ":mem",
         ":message_accessors",
         ":message_copy",
+        ":message_internal",
         ":mini_table",
         ":upb",
+        ":wire",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
@@ -415,10 +410,10 @@ cc_library(
         ":message_accessors",
         ":message_accessors_internal",
         ":message_internal",
+        ":mini_descriptor",
         ":mini_table",
         ":upb",
         ":wire_internal",
-        "//upb/mini_descriptor",
     ],
 )
 
@@ -439,6 +434,7 @@ cc_library(
         ":hash",
         ":mem",
         ":message_copy",
+        ":message_typedef",
         ":mini_table",
         ":upb",
     ],
@@ -456,8 +452,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":mem",
+        ":mini_descriptor",
         ":reflection_internal",
-        "//upb/mini_descriptor",
     ],
 )
 
@@ -482,74 +478,15 @@ upb_proto_reflection_library(
 )
 
 cc_library(
-    name = "collections",
-    hdrs = [
-        "upb/collections/array.h",
-        "upb/collections/map.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":collections_internal",
-        ":mem",
-        ":port",
-    ],
-)
-
-cc_library(
     name = "message_rep_internal",
     hdrs = [
         "upb/message/internal/map_entry.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    deps = [
-        ":base",
-        ":hash",
-    ],
-)
-
-cc_library(
-    name = "collections_internal",
-    srcs = [
-        "upb/collections/array.c",
-        "upb/collections/map.c",
-        "upb/collections/map_sorter.c",
-    ],
-    hdrs = [
-        "upb/collections/array.h",
-        "upb/collections/array_internal.h",
-        "upb/collections/map.h",
-        "upb/collections/map_gencode_util.h",
-        "upb/collections/map_internal.h",
-        "upb/collections/map_sorter_internal.h",
-        "upb/collections/message_value.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
     deps = [
         ":base",
-        ":base_internal",
         ":hash",
-        ":mem",
-        ":message_internal",
-        ":message_rep_internal",
-        ":message_tagged_ptr",
-        ":mini_table",
-        ":port",
-    ],
-)
-
-cc_library(
-    name = "collections_split64",
-    hdrs = [
-        "upb/collections/array_split64.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":collections",
-        ":port",
     ],
 )
 
@@ -559,7 +496,6 @@ bootstrap_cc_library(
     name = "reflection",
     hdrs = [
         "upb/def.h",
-        "upb/def.hpp",
         "upb/reflection/def.h",
         "upb/reflection/def.hpp",
         "upb/reflection/message.h",
@@ -639,38 +575,17 @@ bootstrap_cc_library(
         ":hash",
         ":mem",
         ":message_accessors",
+        ":mini_descriptor",
+        ":mini_descriptor_encode_internal",
+        ":mini_descriptor_internal",
+        ":mini_table",
         ":port",
         ":upb",
-        "//upb/mini_descriptor",
-        "//upb/mini_descriptor:encode_internal",
-        "//upb/mini_descriptor:internal",
-        "//upb/mini_table",
-    ],
-)
-
-cc_library(
-    name = "textformat",
-    srcs = [
-        "upb/text/encode.c",
-    ],
-    hdrs = [
-        "upb/text/encode.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":collections_internal",
-        ":eps_copy_input_stream",
-        ":lex",
-        ":port",
-        ":reflection",
-        ":wire",
-        ":wire_reader",
-        ":wire_types",
     ],
 )
 
 # Aliases ######################################################################
+# TODO(b/295870230): Remove these.
 
 alias(
     name = "base",
@@ -685,8 +600,38 @@ alias(
 )
 
 alias(
+    name = "collections",
+    actual = "//upb/collections",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "collections_internal",
+    actual = "//upb/collections:internal",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "collections_split64",
+    actual = "//upb/collections:split64",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "hash",
+    actual = "//upb/hash",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "json",
     actual = "//upb/json",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "lex",
+    actual = "//upb/lex",
     visibility = ["//visibility:public"],
 )
 
@@ -703,6 +648,24 @@ alias(
 )
 
 alias(
+    name = "mini_descriptor",
+    actual = "//upb/mini_descriptor",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "mini_descriptor_encode_internal",
+    actual = "//upb/mini_descriptor:encode_internal",
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
+    name = "mini_descriptor_internal",
+    actual = "//upb/mini_descriptor:internal",
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
     name = "mini_table",
     actual = "//upb/mini_table",
     visibility = ["//:friends"],
@@ -712,6 +675,42 @@ alias(
     name = "mini_table_internal",
     actual = "//upb/mini_table:internal",
     visibility = ["//:friends"],
+)
+
+alias(
+    name = "text",
+    actual = "//upb/text",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "wire",
+    actual = "//upb/wire",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "wire_internal",
+    actual = "//upb/wire:internal",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "wire_reader",
+    actual = "//upb/wire:reader",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "wire_types",
+    actual = "//upb/wire:types",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "eps_copy_input_stream",
+    actual = "//upb/wire:eps_copy_input_stream",
+    visibility = ["//visibility:public"],
 )
 
 # Tests ########################################################################
@@ -737,17 +736,6 @@ cc_test(
 )
 
 cc_test(
-    name = "collections_test",
-    srcs = ["upb/collections/test.cc"],
-    deps = [
-        ":base",
-        ":collections",
-        ":upb",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
     name = "message_test",
     srcs = ["upb/message/test.cc"],
     deps = [
@@ -756,7 +744,7 @@ cc_test(
         ":message_test_upb_proto_reflection",
         ":reflection",
         ":upb",
-        "//upb/json",
+        ":wire",
         "//upb/test:fuzz_util",
         "//upb/test:test_messages_proto3_upb_proto",
         "@com_google_googletest//:gtest_main",
@@ -782,162 +770,7 @@ upb_proto_reflection_library(
     deps = [":message_test_proto"],
 )
 
-cc_test(
-    name = "atoi_test",
-    srcs = ["upb/lex/atoi_test.cc"],
-    copts = UPB_DEFAULT_CPPOPTS,
-    deps = [
-        ":lex",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "hash_test",
-    srcs = ["upb/hash/test.cc"],
-    copts = UPB_DEFAULT_CPPOPTS,
-    deps = [
-        ":hash",
-        ":port",
-        ":upb",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
 # Internal C/C++ libraries #####################################################
-
-cc_library(
-    name = "wire",
-    hdrs = [
-        "upb/wire/decode.h",
-        "upb/wire/encode.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":mem",
-        ":message_internal",
-        ":mini_table",
-        ":port",
-        ":wire_internal",
-    ],
-)
-
-cc_library(
-    name = "wire_internal",
-    srcs = [
-        "upb/wire/decode.c",
-        "upb/wire/decode_fast.c",
-        "upb/wire/encode.c",
-    ],
-    hdrs = [
-        "upb/wire/common.h",
-        "upb/wire/decode.h",
-        "upb/wire/decode_fast.h",
-        "upb/wire/encode.h",
-        "upb/wire/internal/common.h",
-        "upb/wire/internal/decode.h",
-        "upb/wire/internal/swap.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":base",
-        ":collections_internal",
-        ":eps_copy_input_stream",
-        ":mem_internal",
-        ":message_accessors_internal",
-        ":message_internal",
-        ":message_rep_internal",
-        ":mini_table",
-        ":port",
-        ":wire_reader",
-        ":wire_types",
-        "@utf8_range",
-    ],
-)
-
-cc_library(
-    name = "wire_types",
-    hdrs = ["upb/wire/types.h"],
-    visibility = ["//visibility:public"],
-)
-
-cc_library(
-    name = "eps_copy_input_stream",
-    srcs = ["upb/wire/eps_copy_input_stream.c"],
-    hdrs = ["upb/wire/eps_copy_input_stream.h"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":mem",
-        ":port",
-    ],
-)
-
-cc_library(
-    name = "wire_reader",
-    srcs = [
-        "upb/wire/internal/swap.h",
-        "upb/wire/reader.c",
-    ],
-    hdrs = ["upb/wire/reader.h"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":eps_copy_input_stream",
-        ":port",
-        ":wire_types",
-    ],
-)
-
-cc_test(
-    name = "eps_copy_input_stream_test",
-    srcs = ["upb/wire/eps_copy_input_stream_test.cc"],
-    deps = [
-        ":eps_copy_input_stream",
-        ":upb",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "hash",
-    srcs = [
-        "upb/hash/common.c",
-    ],
-    hdrs = [
-        "upb/hash/common.h",
-        "upb/hash/int_table.h",
-        "upb/hash/str_table.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":base",
-        ":base_internal",
-        ":mem",
-        ":port",
-    ],
-)
-
-cc_library(
-    name = "lex",
-    srcs = [
-        "upb/lex/atoi.c",
-        "upb/lex/round_trip.c",
-        "upb/lex/strtod.c",
-        "upb/lex/unicode.c",
-    ],
-    hdrs = [
-        "upb/lex/atoi.h",
-        "upb/lex/round_trip.h",
-        "upb/lex/strtod.h",
-        "upb/lex/unicode.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
-    deps = [":port"],
-)
 
 cc_binary(
     name = "libupb.so",
@@ -953,9 +786,9 @@ cc_binary(
         ":message",
         ":message_accessors",
         ":message_split64",
+        ":mini_descriptor",
         ":mini_table",
         ":port",
-        "//upb/mini_descriptor",
     ],
 )
 
@@ -971,6 +804,7 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
+        ":base_internal",
         ":collections_internal",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
@@ -985,6 +819,11 @@ upb_amalgamation(
         ":message_rep_internal",
         ":message_tagged_ptr",
         ":message_typedef",
+        ":mini_descriptor",
+        ":mini_descriptor_encode_internal",
+        ":mini_descriptor_internal",
+        ":mini_table",
+        ":mini_table_internal",
         ":port",
         ":reflection_internal",
         ":reflection",
@@ -992,12 +831,6 @@ upb_amalgamation(
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
-        "//upb/base:internal",
-        "//upb/mini_descriptor:encode_internal",
-        "//upb/mini_descriptor:internal",
-        "//upb/mini_descriptor:mini_descriptor",
-        "//upb/mini_table:internal",
-        "//upb/mini_table:mini_table",
     ],
     strip_import_prefix = ["src"],
 )
@@ -1018,6 +851,7 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
+        ":base_internal",
         ":collections_internal",
         ":descriptor_upb_proto_reflection",
         ":descriptor_upb_proto",
@@ -1034,6 +868,11 @@ upb_amalgamation(
         ":message_rep_internal",
         ":message_tagged_ptr",
         ":message_typedef",
+        ":mini_descriptor",
+        ":mini_descriptor_encode_internal",
+        ":mini_descriptor_internal",
+        ":mini_table",
+        ":mini_table_internal",
         ":port",
         ":reflection_internal",
         ":reflection",
@@ -1041,12 +880,6 @@ upb_amalgamation(
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
-        "//upb/base:internal",
-        "//upb/mini_descriptor:encode_internal",
-        "//upb/mini_descriptor:internal",
-        "//upb/mini_descriptor:mini_descriptor",
-        "//upb/mini_table:internal",
-        "//upb/mini_table:mini_table",
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
@@ -1069,6 +902,7 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
+        ":base_internal",
         ":collections_internal",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
@@ -1084,6 +918,11 @@ upb_amalgamation(
         ":message_rep_internal",
         ":message_tagged_ptr",
         ":message_typedef",
+        ":mini_descriptor",
+        ":mini_descriptor_encode_internal",
+        ":mini_descriptor_internal",
+        ":mini_table",
+        ":mini_table_internal",
         ":port",
         ":reflection_internal",
         ":reflection",
@@ -1091,12 +930,6 @@ upb_amalgamation(
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
-        "//upb/base:internal",
-        "//upb/mini_descriptor:encode_internal",
-        "//upb/mini_descriptor:internal",
-        "//upb/mini_descriptor:mini_descriptor",
-        "//upb/mini_table:internal",
-        "//upb/mini_table:mini_table",
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],
@@ -1160,7 +993,19 @@ filegroup(
 #     ]),
 #     kotlin_package = "upb",
 #     no_string_conversion = ["_upb_MiniTable_Build"],
-#     strict_enums = ["upb_FieldType"],
+#     strict_enums = [
+#         "upb_CType",
+#         "upb_DecodeStatus",
+#         "upb_EncodeStatus",
+#         "upb_FieldType",
+#         "upb_FindUnknown_Status",
+#         "upb_GetExtension_Status",
+#         "upb_GetExtensionAsBytes_Status",
+#         "upb_Label",
+#         "upb_MapInsertStatus",
+#         "upb_UnknownToMessage_Status",
+#         "upb_WireType",
+#     ],
 #     visibility = ["//:__subpackages__"],
 # )
 #

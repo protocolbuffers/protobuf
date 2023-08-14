@@ -673,7 +673,8 @@ end
 function test_foo()
   local defpool = upb.DefPool()
   local filename = "external/com_google_protobuf/src/google/protobuf/descriptor_proto-descriptor-set.proto.bin"
-  local file = io.open(filename, "rb") or io.open("bazel-bin/" .. filename, "rb")
+  local alternate_filename = "src/google/protobuf/descriptor_proto-descriptor-set.proto.bin"
+  local file = io.open(filename, "rb") or io.open("bazel-bin/" .. filename, "rb") or io.open(alternate_filename, "rb")
   assert_not_nil(file)
   local descriptor = file:read("*a")
   assert_true(#descriptor > 0)

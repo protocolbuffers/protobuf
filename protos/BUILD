@@ -77,6 +77,8 @@ cc_library(
         "//:message_promote",
         "//:mini_table",
         "//:upb",
+        "//:wire",
+        "//:wire_internal",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",

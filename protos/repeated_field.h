@@ -42,7 +42,7 @@
 #include "protos/repeated_field_iterator.h"
 #include "upb/base/string_view.h"
 #include "upb/collections/array.h"
-#include "upb/collections/array_internal.h"
+#include "upb/collections/internal/array.h"
 #include "upb/mem/arena.h"
 #include "upb/message/copy.h"
 

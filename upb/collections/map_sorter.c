@@ -28,8 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "upb/collections/internal/map_sorter.h"
+
 #include "upb/base/internal/log2.h"
-#include "upb/collections/map_sorter_internal.h"
 
 // Must be last.
 #include "upb/port/def.inc"

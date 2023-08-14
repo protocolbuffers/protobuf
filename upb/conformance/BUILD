@@ -94,24 +94,25 @@ cc_binary(
         "//:json",
         "//:port",
         "//:reflection",
-        "//:textformat",
+        "//:text",
         "//:wire",
-        "//upb/json",
     ],
 )
 
 make_shell_script(
     name = "gen_test_conformance_upb",
     out = "test_conformance_upb.sh",
-    contents = "external/com_google_protobuf/conformance/conformance_test_runner" +
-               " --enforce_recommended" +
-               " --failure_list upb/conformance/conformance_upb_failures.txt" +
-               " upb/conformance/conformance_upb",
+    contents = "$1 --enforce_recommended --failure_list $2 $3",
 )
 
 sh_test(
     name = "test_conformance_upb",
     srcs = ["test_conformance_upb.sh"],
+    args = [
+        "$(location @com_google_protobuf//conformance:conformance_test_runner)",
+        "$(location :conformance_upb_failures.txt)",
+        "$(location :conformance_upb)",
+    ],
     data = [
         "conformance_upb_failures.txt",
         ":conformance_upb",
@@ -144,24 +145,25 @@ cc_binary(
         "//:json",
         "//:port",
         "//:reflection",
-        "//:textformat",
+        "//:text",
         "//:wire",
-        "//upb/json",
     ],
 )
 
 make_shell_script(
     name = "gen_test_conformance_upb_dynamic_minitable",
     out = "test_conformance_upb_dynamic_minitable.sh",
-    contents = "external/com_google_protobuf/conformance/conformance_test_runner" +
-               " --enforce_recommended" +
-               " --failure_list upb/conformance/conformance_upb_failures.txt" +
-               " upb/conformance/conformance_upb_dynamic_minitable",
+    contents = "$1 --enforce_recommended --failure_list $2 $3",
 )
 
 sh_test(
     name = "test_conformance_upb_dynamic_minitable",
     srcs = ["test_conformance_upb_dynamic_minitable.sh"],
+    args = [
+        "$(location @com_google_protobuf//conformance:conformance_test_runner)",
+        "$(location :conformance_upb_failures.txt)",
+        "$(location :conformance_upb_dynamic_minitable)",
+    ],
     data = [
         "conformance_upb_failures.txt",
         ":conformance_upb_dynamic_minitable",

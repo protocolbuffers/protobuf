@@ -33,7 +33,7 @@
 
 // IWYU pragma: begin_exports
 #include "upb/collections/array.h"
-#include "upb/collections/array_internal.h"
+#include "upb/collections/internal/array.h"
 #include "upb/collections/map_gencode_util.h"
 #include "upb/collections/message_value.h"
 #include "upb/message/accessors.h"

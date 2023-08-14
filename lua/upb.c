@@ -59,7 +59,7 @@
 #include <string.h>
 
 #include "lauxlib.h"
-#include "upb/msg.h"
+#include "upb/message/message.h"
 
 /* Lua compatibility code *****************************************************/
 

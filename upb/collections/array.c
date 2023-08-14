@@ -28,9 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <string.h>
+#include "upb/collections/internal/array.h"
 
-#include "upb/collections/array_internal.h"
+#include <string.h>
 
 // Must be last.
 #include "upb/port/def.inc"

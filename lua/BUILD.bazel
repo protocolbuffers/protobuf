@@ -49,8 +49,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:json",
+        "//:message",
         "//:reflection",
-        "//:textformat",
+        "//:text",
         "//:upb",
         "@lua//:liblua",
     ],
@@ -72,6 +73,7 @@ exports_files(["upb.lua"])
 cc_test(
     name = "test_lua",
     srcs = ["main.c"],
+    args = ["$(location :test_upb.lua)"],
     copts = UPB_DEFAULT_COPTS,
     data = [
         "test_upb.lua",

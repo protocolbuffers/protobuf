@@ -30,9 +30,18 @@
 
 #include "upb/message/copy.h"
 
+#include <stdbool.h>
+#include <string.h>
+
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
+#include "upb/message/internal.h"
 #include "upb/message/message.h"
+#include "upb/message/typedef.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -290,20 +299,17 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   if (unknown_size != 0) {
     UPB_ASSERT(ptr);
     // Make a copy into destination arena.
-    void* dst_unknowns = upb_Arena_Malloc(arena, unknown_size);
-    if (dst_unknowns == NULL) return NULL;
-    memcpy(dst_unknowns, ptr, unknown_size);
-    if (!_upb_Message_AddUnknown(dst, dst_unknowns, unknown_size, arena)) {
+    if (!_upb_Message_AddUnknown(dst, ptr, unknown_size, arena)) {
       return NULL;
     }
   }
   return dst;
 }
 
-void upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
+bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
                           const upb_MiniTable* mini_table, upb_Arena* arena) {
   upb_Message_Clear(dst, mini_table);
-  _upb_Message_Copy(dst, src, mini_table, arena);
+  return _upb_Message_Copy(dst, src, mini_table, arena) != NULL;
 }
 
 // Deep clones a message using the provided target arena.

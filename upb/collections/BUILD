@@ -26,15 +26,17 @@
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
-    name = "mem",
+    name = "collections",
     hdrs = [
-        "alloc.h",
-        "arena.h",
+        "array.h",
+        "map.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        "//:base",
+        "//:mem",
         "//:port",
     ],
 )
@@ -42,29 +44,65 @@ cc_library(
 cc_library(
     name = "internal",
     srcs = [
-        "alloc.c",
-        "arena.c",
+        "array.c",
+        "map.c",
+        "map_sorter.c",
     ],
     hdrs = [
-        "alloc.h",
-        "arena.h",
-        "internal/arena.h",
+        "array.h",
+        "internal/array.h",
+        "internal/map.h",
+        "internal/map_sorter.h",
+        "map.h",
+        "map_gencode_util.h",
+        "message_value.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__pkg__"],
-    deps = ["//:port"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:base",
+        "//:base_internal",
+        "//:hash",
+        "//:mem",
+        "//:message_internal",
+        "//:message_rep_internal",
+        "//:message_tagged_ptr",
+        "//:mini_table",
+        "//:port",
+    ],
+)
+
+cc_library(
+    name = "split64",
+    hdrs = [
+        "array_split64.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":collections",
+        "//:port",
+    ],
 )
 
 cc_test(
-    name = "arena_test",
-    srcs = ["arena_test.cc"],
+    name = "array_test",
+    srcs = ["array_test.cc"],
     deps = [
-        "//:mem",
-        "//:port",
+        ":collections",
+        "//:base",
         "//:upb",
-        "@com_google_absl//absl/random",
-        "@com_google_absl//absl/random:distributions",
-        "@com_google_absl//absl/synchronization",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "map_test",
+    srcs = ["map_test.cc"],
+    deps = [
+        ":collections",
+        "//:base",
+        "//:upb",
         "@com_google_googletest//:gtest_main",
     ],
 )

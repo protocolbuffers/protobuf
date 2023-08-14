@@ -48,7 +48,6 @@ cc_library(
     deps = [
         ":internal",
         "//:base",
-        "//:base_internal",
         "//:hash",
         "//:mem",
         "//:message_typedef",
@@ -72,7 +71,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:base",
-        "//:base_internal",
         "//:message_typedef",
         "//:port",
     ],
@@ -86,7 +84,6 @@ filegroup(
             "**/*.c",
             "**/*.h",
         ],
-        exclude = ["encode_test.cc"],
     ),
     visibility = [
         "//cmake:__pkg__",

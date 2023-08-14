@@ -130,11 +130,11 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//protos_generator:__pkg__"],
     deps = [
+        "//:mini_descriptor",
         "//:mini_table",
         "//:mini_table_internal",
         "//:port",
         "//:upb",
-        "//upb/mini_descriptor",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
     ],
@@ -231,13 +231,12 @@ cc_library(
         "//:descriptor_upb_proto",
         "//:json",
         "//:mem",
+        "//:mini_descriptor",
         "//:mini_table",
         "//:port",
         "//:reflection",
         "//:reflection_internal",
         "//:wire",
-        "//upb/json",
-        "//upb/mini_descriptor",
     ],
 )
 

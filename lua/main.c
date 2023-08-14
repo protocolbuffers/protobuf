@@ -59,11 +59,22 @@ const char* init =
     "bazel-bin/?.lua;"
     "bazel-bin/external/com_google_protobuf/src/?.lua;"
     "bazel-bin/external/com_google_protobuf/?.lua;"
-    "bazel-bin/external/com_google_protobuf/?.lua;"
-    "lua/?.lua"
+    "lua/?.lua;"
+    // These additional paths handle the case where this test is invoked from
+    // the protobuf repo's Bazel workspace.
+    "external/upb/?.lua;"
+    "external/upb/third_party/lunit/?.lua;"
+    "src/?.lua;"
+    "bazel-bin/external/upb/?.lua;"
+    "external/upb/lua/?.lua"
     "'";
 
 int main(int argc, char** argv) {
+  if (argc < 2) {
+    fprintf(stderr, "missing argument with path to .lua file\n");
+    return 1;
+  }
+
   int ret = 0;
   L = luaL_newstate();
   luaL_openlibs(L);
@@ -72,8 +83,7 @@ int main(int argc, char** argv) {
   lua_pushcfunction(L, luaopen_lupb);
 
   signal(SIGINT, sighandler);
-  ret = ret || lua_pcall(L, 1, LUA_MULTRET, 0) ||
-        luaL_dofile(L, "lua/test_upb.lua");
+  ret = ret || lua_pcall(L, 1, LUA_MULTRET, 0) || luaL_dofile(L, argv[1]);
   signal(SIGINT, SIG_DFL);
 
   if (ret) {

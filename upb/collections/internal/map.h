@@ -30,8 +30,8 @@
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-#ifndef UPB_COLLECTIONS_MAP_INTERNAL_H_
-#define UPB_COLLECTIONS_MAP_INTERNAL_H_
+#ifndef UPB_COLLECTIONS_INTERNAL_MAP_H_
+#define UPB_COLLECTIONS_INTERNAL_MAP_H_
 
 #include "upb/base/string_view.h"
 #include "upb/collections/map.h"
@@ -170,4 +170,4 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_COLLECTIONS_MAP_INTERNAL_H_ */
+#endif /* UPB_COLLECTIONS_INTERNAL_MAP_H_ */

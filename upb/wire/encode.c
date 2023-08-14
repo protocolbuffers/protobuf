@@ -34,8 +34,8 @@
 
 #include <string.h>
 
-#include "upb/collections/array_internal.h"
-#include "upb/collections/map_sorter_internal.h"
+#include "upb/collections/internal/array.h"
+#include "upb/collections/internal/map_sorter.h"
 #include "upb/message/extension_internal.h"
 #include "upb/message/internal/accessors.h"
 #include "upb/mini_table/sub.h"

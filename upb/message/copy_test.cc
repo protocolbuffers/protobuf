@@ -36,19 +36,22 @@
 
 #include "upb/message/copy.h"
 
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <string>
 #include <vector>
 
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
-#include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/string_view.h"
-#include "upb/collections/array.h"
 #include "upb/collections/map.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
-#include "upb/test/test.upb.h"
-#include "upb/upb.h"
+#include "upb/message/internal.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/message.h"
+#include "upb/wire/encode.h"
 
 namespace {
 
@@ -287,4 +290,55 @@ TEST(GeneratedCode, DeepCloneMessageExtensions) {
       upb_StringView_FromString(kTestStr1)));
   upb_Arena_Free(arena);
 }
+
+TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_Arena* unknown_arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(source_arena);
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_int32_double_set(
+          msg, 12, 1200.5, source_arena));
+  ASSERT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_map_string_string_set(
+          msg, upb_StringView_FromString("key1"),
+          upb_StringView_FromString("value1"), source_arena));
+  // Create unknown data.
+  protobuf_test_messages_proto2_UnknownToTestAllTypes* unknown_source =
+      protobuf_test_messages_proto2_UnknownToTestAllTypes_new(unknown_arena);
+  protobuf_test_messages_proto2_UnknownToTestAllTypes_set_optional_bool(
+      unknown_source, true);
+  protobuf_test_messages_proto2_UnknownToTestAllTypes_set_optional_int32(
+      unknown_source, 123);
+  // Encode unknown message to bytes.
+  size_t len;
+  char* data;
+  upb_Arena* encode_arena = upb_Arena_New();
+  upb_EncodeStatus status =
+      upb_Encode(unknown_source,
+                 &protobuf_test_messages_proto2_UnknownToTestAllTypes_msg_init,
+                 kUpb_EncodeOption_CheckRequired, encode_arena, &data, &len);
+  ASSERT_EQ(status, kUpb_EncodeStatus_Ok);
+  std::string unknown_data(data, len);
+  // Add unknown data.
+  _upb_Message_AddUnknown(msg, data, len, source_arena);
+  // Create clone.
+  upb_Arena* clone_arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* clone =
+      (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
+          msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
+          clone_arena);
+  upb_Arena_Free(source_arena);
+  upb_Arena_Free(unknown_arena);
+  upb_Arena_Free(encode_arena);
+  // Read unknown data from clone and verify.
+  size_t cloned_length;
+  const char* cloned_unknown_data =
+      upb_Message_GetUnknown(clone, &cloned_length);
+  EXPECT_EQ(cloned_length, len);
+  EXPECT_EQ(memcmp(cloned_unknown_data, unknown_data.c_str(), cloned_length),
+            0);
+  upb_Arena_Free(clone_arena);
+}
+
 }  // namespace

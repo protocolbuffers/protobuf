@@ -26,45 +26,30 @@
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
-    name = "mem",
+    name = "lex",
+    srcs = [
+        "atoi.c",
+        "round_trip.c",
+        "strtod.c",
+        "unicode.c",
+    ],
     hdrs = [
-        "alloc.h",
-        "arena.h",
+        "atoi.h",
+        "round_trip.h",
+        "strtod.h",
+        "unicode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
-    deps = [
-        ":internal",
-        "//:port",
-    ],
-)
-
-cc_library(
-    name = "internal",
-    srcs = [
-        "alloc.c",
-        "arena.c",
-    ],
-    hdrs = [
-        "alloc.h",
-        "arena.h",
-        "internal/arena.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__pkg__"],
     deps = ["//:port"],
 )
 
 cc_test(
-    name = "arena_test",
-    srcs = ["arena_test.cc"],
+    name = "atoi_test",
+    srcs = ["atoi_test.cc"],
     deps = [
-        "//:mem",
-        "//:port",
-        "//:upb",
-        "@com_google_absl//absl/random",
-        "@com_google_absl//absl/random:distributions",
-        "@com_google_absl//absl/synchronization",
+        ":lex",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
 )

@@ -408,9 +408,11 @@ def GetDict(obj):
 globs = GetDict(converter)
 
 workspace_dict = GetDict(WorkspaceFileFunctions(converter))
-exec(open("bazel/workspace_deps.bzl").read(), workspace_dict)
-exec(open("WORKSPACE").read(), workspace_dict)
-exec(open("BUILD").read(), GetDict(BuildFileFunctions(converter)))
+# We take all file paths as command-line arguments to ensure that we can find
+# each file regardless of how exactly Bazel was invoked.
+exec(open(sys.argv[1]).read(), workspace_dict)  # workspace_deps.bzl
+exec(open(sys.argv[2]).read(), workspace_dict)  # WORKSPACE
+exec(open(sys.argv[3]).read(), GetDict(BuildFileFunctions(converter)))  # BUILD
 
-with open(sys.argv[1], "w") as f:
+with open(sys.argv[4], "w") as f:
   f.write(converter.convert())

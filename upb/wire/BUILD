@@ -26,15 +26,18 @@
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
-    name = "mem",
+    name = "wire",
     hdrs = [
-        "alloc.h",
-        "arena.h",
+        "decode.h",
+        "encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        "//:mem",
+        "//:message_internal",
+        "//:mini_table",
         "//:port",
     ],
 )
@@ -42,29 +45,75 @@ cc_library(
 cc_library(
     name = "internal",
     srcs = [
-        "alloc.c",
-        "arena.c",
+        "decode.c",
+        "decode_fast.c",
+        "encode.c",
     ],
     hdrs = [
-        "alloc.h",
-        "arena.h",
-        "internal/arena.h",
+        "common.h",
+        "decode.h",
+        "decode_fast.h",
+        "encode.h",
+        "internal/common.h",
+        "internal/decode.h",
+        "internal/swap.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__pkg__"],
-    deps = ["//:port"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":eps_copy_input_stream",
+        ":reader",
+        ":types",
+        "//:base",
+        "//:collections_internal",
+        "//:mem_internal",
+        "//:message_accessors_internal",
+        "//:message_internal",
+        "//:message_rep_internal",
+        "//:mini_table",
+        "//:port",
+        "@utf8_range",
+    ],
 )
 
-cc_test(
-    name = "arena_test",
-    srcs = ["arena_test.cc"],
+cc_library(
+    name = "reader",
+    srcs = [
+        "internal/swap.h",
+        "reader.c",
+    ],
+    hdrs = ["reader.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":eps_copy_input_stream",
+        ":types",
+        "//:port",
+    ],
+)
+
+cc_library(
+    name = "types",
+    hdrs = ["types.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "eps_copy_input_stream",
+    srcs = ["eps_copy_input_stream.c"],
+    hdrs = ["eps_copy_input_stream.h"],
+    visibility = ["//visibility:public"],
     deps = [
         "//:mem",
         "//:port",
+    ],
+)
+
+cc_test(
+    name = "eps_copy_input_stream_test",
+    srcs = ["eps_copy_input_stream_test.cc"],
+    deps = [
+        ":eps_copy_input_stream",
         "//:upb",
-        "@com_google_absl//absl/random",
-        "@com_google_absl//absl/random:distributions",
-        "@com_google_absl//absl/synchronization",
         "@com_google_googletest//:gtest_main",
     ],
 )

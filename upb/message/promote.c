@@ -31,7 +31,7 @@
 #include "upb/message/promote.h"
 
 #include "upb/collections/array.h"
-#include "upb/collections/array_internal.h"
+#include "upb/collections/internal/array.h"
 #include "upb/collections/map.h"
 #include "upb/message/accessors.h"
 #include "upb/message/message.h"

@@ -33,7 +33,7 @@
 #ifndef UPB_COLLECTIONS_MAP_GENCODE_UTIL_H_
 #define UPB_COLLECTIONS_MAP_GENCODE_UTIL_H_
 
-#include "upb/collections/map_internal.h"
+#include "upb/collections/internal/map.h"
 
 // Must be last.
 #include "upb/port/def.inc"

@@ -33,8 +33,8 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
-#include "upb/collections/array_internal.h"
-#include "upb/collections/map_internal.h"
+#include "upb/collections/internal/array.h"
+#include "upb/collections/internal/map.h"
 #include "upb/mem/internal/arena.h"
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/map_entry.h"

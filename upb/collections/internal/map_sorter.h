@@ -30,12 +30,12 @@
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-#ifndef UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_
-#define UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_
+#ifndef UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_
+#define UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_
 
 #include <stdlib.h>
 
-#include "upb/collections/map_internal.h"
+#include "upb/collections/internal/map.h"
 #include "upb/message/extension_internal.h"
 #include "upb/message/internal/map_entry.h"
 
@@ -109,4 +109,4 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_ */
+#endif /* UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_ */

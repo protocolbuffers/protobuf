@@ -31,7 +31,7 @@
 #ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 #define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 
-#include "upb/collections/map_internal.h"
+#include "upb/collections/internal/map.h"
 #include "upb/message/extension_internal.h"
 #include "upb/message/internal.h"
 #include "upb/mini_table/internal/field.h"

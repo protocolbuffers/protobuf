@@ -20,7 +20,7 @@ _upbc_base = "//upbc:protoc-gen-upb"
 
 # begin:github_only
 _is_google3 = False
-_extra_proto_path = "-Iexternal/com_google_protobuf/src "
+_extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_proto_srcs))/../.. "
 # end:github_only
 
 def _upbc(stage):

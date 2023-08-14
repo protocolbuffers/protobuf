@@ -58,7 +58,10 @@ genrule(
         "//bazel:workspace_deps.bzl",
     ],
     outs = ["generated-in/CMakeLists.txt"],
-    cmd = "$(location :make_cmakelists) $@",
+    cmd = "$(location :make_cmakelists) " +
+          "$(location //bazel:workspace_deps.bzl) " +
+          "$(location //:WORKSPACE) " +
+          "$(location //:BUILD) $@",
     tools = [":make_cmakelists"],
 )
 
@@ -89,21 +92,27 @@ make_shell_script(
     name = "gen_run_cmake_build",
     out = "run_cmake_build.sh",
     contents = "set -ex\n" +
-               "(cd cmake/generated-in && rsync -avR . ..)\n" +
+               "cd $(dirname $1) && rsync -avR . .. && cd ../..\n" +
                "mkdir build && cd build && cmake ../cmake && make -j8 && make test",
 )
 
 sh_test(
     name = "cmake_build",
     srcs = ["run_cmake_build.sh"],
+    args = ["$(location :gen_cmakelists)"],
     data = [
         ":copy_protos",
         ":gen_cmakelists",
         "//:source_files",
         "//upb/base:source_files",
+        "//upb/collections:source_files",
+        "//upb/hash:source_files",
+        "//upb/lex:source_files",
         "//upb/mem:source_files",
         "//upb/mini_descriptor:source_files",
         "//upb/mini_table:source_files",
+        "//upb/text:source_files",
+        "//upb/wire:source_files",
         "@utf8_range//:utf8_range_srcs",
     ],
     target_compatible_with = select({

@@ -32,7 +32,7 @@
 
 #include <string.h>
 
-#include "upb/collections/map_internal.h"
+#include "upb/collections/internal/map.h"
 #include "upb/mem/arena.h"
 
 // Must be last.
