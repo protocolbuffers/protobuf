@@ -656,8 +656,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/wire_format.h", p);
   }
 
-  if (HasGeneratedMethods(file_, options_) &&
-      options_.tctable_mode != Options::kTCTableNever) {
+  if (HasGeneratedMethods(file_, options_)) {
     IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
   }
 
@@ -703,8 +702,7 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
     namespace _pbi = ::$proto_ns$::internal;
   )cc");
 
-  if (HasGeneratedMethods(file_, options_) &&
-      options_.tctable_mode != Options::kTCTableNever) {
+  if (HasGeneratedMethods(file_, options_)) {
     p->Emit(R"cc(
       namespace _fl = ::$proto_ns$::internal::field_layout;
     )cc");
@@ -1554,8 +1552,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (HasSimpleBaseClasses(file_, options_)) {
     IncludeFile("third_party/protobuf/generated_message_bases.h", p);
   }
-  if (HasGeneratedMethods(file_, options_) &&
-      options_.tctable_mode != Options::kTCTableNever) {
+  if (HasGeneratedMethods(file_, options_)) {
     IncludeFile("third_party/protobuf/generated_message_tctable_decl.h", p);
   }
   IncludeFile("third_party/protobuf/generated_message_util.h", p);
