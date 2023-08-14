@@ -445,10 +445,9 @@ void Value::set_allocated_struct_value(::google::protobuf::Struct* struct_value)
   clear_kind();
   if (struct_value) {
     ::google::protobuf::Arena* submessage_arena =
-      ::google::protobuf::Arena::InternalGetOwningArena(struct_value);
+        ::google::protobuf::Arena::InternalGetOwningArena(struct_value);
     if (message_arena != submessage_arena) {
-      struct_value = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, struct_value, submessage_arena);
+      struct_value = ::google::protobuf::internal::GetOwnedMessage(message_arena, struct_value, submessage_arena);
     }
     set_has_struct_value();
     _impl_.kind_.struct_value_ = struct_value;
@@ -460,10 +459,9 @@ void Value::set_allocated_list_value(::google::protobuf::ListValue* list_value) 
   clear_kind();
   if (list_value) {
     ::google::protobuf::Arena* submessage_arena =
-      ::google::protobuf::Arena::InternalGetOwningArena(list_value);
+        ::google::protobuf::Arena::InternalGetOwningArena(list_value);
     if (message_arena != submessage_arena) {
-      list_value = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, list_value, submessage_arena);
+      list_value = ::google::protobuf::internal::GetOwnedMessage(message_arena, list_value, submessage_arena);
     }
     set_has_list_value();
     _impl_.kind_.list_value_ = list_value;
