@@ -114,6 +114,7 @@
 #include <atomic>
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <limits>
 #include <string>
@@ -893,6 +894,45 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     ptr = WriteLengthDelim(num, size, ptr);
     auto it = r.data();
     auto end = it + r.size();
+    constexpr int unroll_size = 4;
+    for (int x = 0; x < r.size() - unroll_size + 1; x += unroll_size) {
+      uint64_t values[unroll_size];
+      ptrdiff_t sizes[unroll_size];
+      uint8_t data[10 * unroll_size];
+      int totals[unroll_size];
+      for (int i = 0; i < unroll_size; i++) {
+        values[i] = *it++;
+      }
+      for (int i = 0; i < unroll_size; i++) {
+        sizes[i] = reinterpret_cast<ptrdiff_t>(
+            UnsafeVarint(encode(values[i]), &data[i * 10]) - &data[i * 10]);
+        totals[i] = sizes[i];
+        if (i > 0) {
+          totals[i] += totals[i - 1];
+        }
+      }
+      uint8_t* old_ptr = ptr;
+      ptr = EnsureSpace(ptr + totals[unroll_size - 1]);
+      memcpy(old_ptr, &data[0], sizes[0]);
+      for (int i = 1; i < unroll_size; i++) {
+        memcpy(old_ptr + totals[i - 1], &data[i * 10], sizes[i]);
+      }
+      /*
+      for (int i = 0;i < unroll_size; i++) {
+        std::cerr << "i " << i << " value " << values[i] << " size " << sizes[i]
+      << "  totals " << totals[i] << std::endl; std::cerr << "data "; for(int
+      j=0;j<unroll_size*10;j++) { std::cerr << static_cast<int>(data[j]) << " ";
+        }
+        std::cerr << std::endl;
+      }
+      std::cerr << "old " << reinterpret_cast<ptrdiff_t>(old_ptr) << " new " <<
+      reinterpret_cast<ptrdiff_t>(ptr) << " actual "; for (int
+      i=0;i<totals[unroll_size - 1];i++) { std::cerr <<
+      static_cast<int>(*(old_ptr + i)) << " ";
+      }
+      std::cerr << std::endl;
+      */
+    }
     do {
       ptr = EnsureSpace(ptr);
       ptr = UnsafeVarint(encode(*it++), ptr);
