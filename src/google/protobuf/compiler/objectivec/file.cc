@@ -629,17 +629,10 @@ void FileGenerator::EmitRootImplementation(
   // output a registry to override to create the file specific
   // registry.
   if (extension_generators_.empty() && deps_with_extensions.empty()) {
-    if (file_->dependency_count() == 0) {
-      p->Emit(R"objc(
-        // No extensions in the file and no imports, so no need to generate
-        // +extensionRegistry.
-      )objc");
-    } else {
-      p->Emit(R"objc(
-        // No extensions in the file and none of the imports (direct or indirect)
-        // defined extensions, so no need to generate +extensionRegistry.
-      )objc");
-    }
+    p->Emit(R"objc(
+      // No extensions in the file and no imports or none of the imports (direct or
+      // indirect) defined extensions, so no need to generate +extensionRegistry.
+    )objc");
   } else {
     EmitRootExtensionRegistryImplementation(p, deps_with_extensions);
   }
