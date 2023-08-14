@@ -62,6 +62,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 #ifdef SWIG
@@ -83,9 +84,7 @@ template <typename Enum>
 struct is_proto_enum;
 
 namespace internal {
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType key_wire_type,
-          WireFormatLite::FieldType value_wire_type>
+template <typename Key, typename T>
 class MapFieldLite;
 
 template <typename Derived, typename Key, typename T,
@@ -1671,9 +1670,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   friend class internal::TypeDefinedMapFieldBase;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  template <typename Derived, typename K, typename V,
-            internal::WireFormatLite::FieldType key_wire_type,
-            internal::WireFormatLite::FieldType value_wire_type>
+  template <typename K, typename V>
   friend class internal::MapFieldLite;
   friend class internal::TcParser;
   friend struct internal::MapTestPeer;

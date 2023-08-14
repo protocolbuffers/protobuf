@@ -284,8 +284,7 @@ void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* printer) {
   if (!should_generate_tctable()) {
     return;
   }
-  Formatter format(printer, variables_);
-  GenerateTailCallTable(format);
+  GenerateTailCallTable(printer);
 }
 
 static NumToEntryTable MakeNumToEntryTable(
@@ -350,7 +349,8 @@ static NumToEntryTable MakeNumToEntryTable(
   return num_to_entry_table;
 }
 
-void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
+void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
+  Formatter format(printer, variables_);
   ABSL_CHECK(should_generate_tctable());
   // All entries without a fast-path parsing function need a fallback.
   std::string fallback = "::_pbi::TcParser::GenericFallback";
@@ -538,19 +538,31 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
                     aux_entry.field,
                     GetOptimizeFor(aux_entry.field->file(), options_) ==
                         FileOptions::LITE_RUNTIME);
+                auto* map_key = aux_entry.field->message_type()->map_key();
                 auto* map_value = aux_entry.field->message_type()->map_value();
                 const bool validated_enum =
                     map_value->type() == FieldDescriptor::TYPE_ENUM &&
                     !internal::cpp::HasPreservingUnknownEnumSemantics(
                         map_value);
-                format(
-                    "{::_pbi::TcParser::GetMapAuxInfo<decltype($classname$("
-                    ").$1$)>($2$, $3$, $4$)},\n",
-                    FieldMemberName(aux_entry.field,
-                                    ShouldSplit(aux_entry.field, options_)),
-                    utf8_check == internal::cpp::Utf8CheckMode::kStrict,
-                    utf8_check == internal::cpp::Utf8CheckMode::kVerify,
-                    validated_enum);
+                printer->Emit(
+                    {
+                        {"field", FieldMemberName(
+                                      aux_entry.field,
+                                      ShouldSplit(aux_entry.field, options_))},
+                        {"strict",
+                         utf8_check == internal::cpp::Utf8CheckMode::kStrict},
+                        {"verify",
+                         utf8_check == internal::cpp::Utf8CheckMode::kVerify},
+                        {"validate", validated_enum},
+                        {"key_wire", map_key->type()},
+                        {"value_wire", map_value->type()},
+                    },
+                    R"cc(
+                      {::_pbi::TcParser::GetMapAuxInfo<
+                          decltype($classname$().$field$)>(
+                          $strict$, $verify$, $validate$, $key_wire$,
+                          $value_wire$)},
+                    )cc");
                 break;
               }
               case TailCallTableInfo::kCreateInArena:

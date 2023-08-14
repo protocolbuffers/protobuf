@@ -80,7 +80,7 @@ class ParseFunctionGenerator {
   void GenerateTailcallParseFunction(Formatter& format);
 
   // Generates the tail-call table definition.
-  void GenerateTailCallTable(Formatter& format);
+  void GenerateTailCallTable(io::Printer* printer);
   void GenerateFastFieldEntries(Formatter& format);
   void GenerateFieldEntries(Formatter& format);
   void GenerateFieldNames(Formatter& format);

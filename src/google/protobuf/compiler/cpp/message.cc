@@ -1151,6 +1151,8 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
+  if (!ShouldGenerateClass(descriptor_, options_)) return;
+
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
@@ -1901,6 +1903,8 @@ void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
 }
 
 void MessageGenerator::GenerateClassMethods(io::Printer* p) {
+  if (!ShouldGenerateClass(descriptor_, options_)) return;
+
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
@@ -2526,6 +2530,8 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
+  if (!ShouldGenerateClass(descriptor_, options_)) return;
+
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   auto c = p->WithVars({{"constexpr", "PROTOBUF_CONSTEXPR"}});
@@ -2955,7 +2961,8 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
-  if (ShouldGenerateExternSpecializations(options_)) {
+  if (ShouldGenerateExternSpecializations(options_) &&
+      ShouldGenerateClass(descriptor_, options_)) {
     format(
         "template<> "
         "PROTOBUF_NOINLINE $classtype$*\n"
