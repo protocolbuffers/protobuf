@@ -544,35 +544,33 @@ class OneofMessage : public SingularMessage {
 };
 
 void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
-  p->Emit(
-      "void $Msg$::set_allocated_$name$($Submsg$* $name$) {\n"
-      "  $pb$::Arena* message_arena = GetArenaForAllocation();\n"
-      "  clear_$oneof_name$();\n"
-      "  if ($name$) {\n");
-  if (field_->file() != field_->message_type()->file()) {
-    // We have to read the arena through the virtual method, because the type
-    // isn't defined in this file.
-    p->Emit(
-        "    $pb$::Arena* submessage_arena =\n"
-        "        $pb$::Arena::InternalGetOwningArena(\n"
-        "                reinterpret_cast<$pb$::MessageLite*>("
-        "$name$));\n");
-  } else {
-    p->Emit(
-        "    $pb$::Arena* submessage_arena =\n"
-        "      $pb$::Arena::InternalGetOwningArena($name$);\n");
-  }
-  p->Emit(
-      "    if (message_arena != submessage_arena) {\n"
-      "      $name$ = $pbi$::GetOwnedMessage(\n"
-      "          message_arena, $name$, submessage_arena);\n"
-      "    }\n"
-      "    set_has_$name$();\n"
-      "    $field_$ = $name$;\n"
-      "  }\n"
-      "$annotate_set$"
-      "  // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)\n"
-      "}\n");
+  p->Emit({{"casted_name",
+            [&] {
+              if (field_->file() != field_->message_type()->file()) {
+                // We have to read the arena through the virtual method, because
+                // the type isn't defined in this file.
+                p->Emit(R"cc(reinterpret_cast<$pb$::MessageLite*>($name$))cc");
+              } else {
+                p->Emit(R"cc($name$)cc");
+              }
+            }}},
+          R"cc(
+            void $Msg$::set_allocated_$name$($Submsg$* $name$) {
+              $pb$::Arena* message_arena = GetArenaForAllocation();
+              clear_$oneof_name$();
+              if ($name$) {
+                $pb$::Arena* submessage_arena =
+                    $pb$::Arena::InternalGetOwningArena($casted_name$);
+                if (message_arena != submessage_arena) {
+                  $name$ = $pbi$::GetOwnedMessage(message_arena, $name$, submessage_arena);
+                }
+                set_has_$name$();
+                $field_$ = $name$;
+              }
+              $annotate_set$;
+              // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
+            }
+          )cc");
 }
 
 void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
