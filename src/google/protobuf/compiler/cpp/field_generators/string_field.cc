@@ -718,9 +718,11 @@ class RepeatedString : public FieldGeneratorBase {
   }
 
   void GenerateClearingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      _internal_mutable_$name$()->Clear();
-    )cc");
+    if (should_split()) {
+      p->Emit("$field_$.ClearIfNotDefault();\n");
+    } else {
+      p->Emit("$field_$.Clear();\n");
+    }
   }
 
   void GenerateMergingCode(io::Printer* p) const override {

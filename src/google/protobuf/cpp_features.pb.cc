@@ -195,6 +195,7 @@ void CppFeatures::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void CppFeatures::Clear() {
 // @@protoc_insertion_point(message_clear_start:pb.CppFeatures)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;

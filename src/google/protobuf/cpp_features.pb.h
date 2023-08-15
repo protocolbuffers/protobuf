@@ -326,6 +326,7 @@ inline bool CppFeatures::has_legacy_closed_enum() const {
   return value;
 }
 inline void CppFeatures::clear_legacy_closed_enum() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.legacy_closed_enum_ = false;
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -353,6 +354,7 @@ inline bool CppFeatures::has_utf8_validation() const {
   return value;
 }
 inline void CppFeatures::clear_utf8_validation() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.utf8_validation_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
