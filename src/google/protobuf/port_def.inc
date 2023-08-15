@@ -1091,6 +1091,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 // This causes spurious warnings in GCC 13.
 #pragma GCC diagnostic ignored "-Wself-move"
+// Ignore warning: extra ';' [-Wpedantic]
+#pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 #if __GNUC__ == 12 && __GNUC_MINOR__ < 4
 // Wrong warning emitted when assigning a single char c-string to a std::string
