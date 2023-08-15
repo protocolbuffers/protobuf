@@ -72,9 +72,14 @@ class Amalgamator:
   def _process_file(self, infile_name, outfile):
     lines = open(infile_name).readlines()
 
-    has_copyright = lines[1].startswith(" * Copyright")
+    has_copyright = lines[0].startswith(
+        "// Protocol Buffers - Google's data interchange format"
+    )
     if has_copyright:
-      while not lines[0].startswith(" */"):
+      while not lines[0].startswith(
+          "// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH"
+          " DAMAGE"
+      ):
         lines.pop(0)
       lines.pop(0)
 
