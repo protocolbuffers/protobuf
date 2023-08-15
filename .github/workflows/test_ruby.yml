@@ -44,7 +44,7 @@ jobs:
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
 
   linux-32bit:
-    name: Linux aarch64
+    name: Linux 32-bit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
