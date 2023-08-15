@@ -87,16 +87,11 @@ target_include_directories(upb INTERFACE
 )
 target_link_libraries(upb INTERFACE
   base
-  base_internal
   collections_internal
-  fastdecode
-  hash
-  lex
   mem
   message_internal
   mini_table
-  port
-  wire)
+  port)
 
 add_library(message INTERFACE
     
@@ -174,11 +169,12 @@ target_link_libraries(message_accessors
   eps_copy_input_stream
   message_internal
   mini_table
+  mini_table_internal
   port
   upb
   wire
-  wire_reader
-  /upb/mini_table:internal)
+  wire_internal
+  wire_reader)
 
 add_library(message_promote 
     ../upb/message/promote.c
@@ -190,16 +186,20 @@ target_include_directories(message_promote PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
 )
 target_link_libraries(message_promote
+  base
   collections_internal
   eps_copy_input_stream
   hash
+  mem
   message_accessors
   message_internal
+  message_typedef
+  mini_table
   port
   upb
   wire
-  wire_reader
-  /upb/mini_table)
+  wire_internal
+  wire_reader)
 
 add_library(message_copy 
     ../upb/message/copy.c
@@ -211,13 +211,16 @@ target_include_directories(message_copy PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
 )
 target_link_libraries(message_copy
+  base
   collections_internal
   mem
   message_accessors
   message_internal
+  message_typedef
+  mini_table
+  mini_table_internal
   port
-  upb
-  /upb/mini_table)
+  upb)
 
 add_library(message_split64 INTERFACE
     
@@ -275,10 +278,10 @@ target_link_libraries(generated_code_support__only_for_generated_code_do_not_use
   message_accessors
   message_accessors_internal
   message_internal
+  mini_descriptor
   mini_table
   upb
-  wire_internal
-  /upb/mini_descriptor)
+  wire_internal)
 
 add_library(generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
     
@@ -294,6 +297,7 @@ target_link_libraries(generated_cpp_support__only_for_generated_code_do_not_use_
   hash
   mem
   message_copy
+  message_typedef
   mini_table
   upb)
 
@@ -307,22 +311,8 @@ target_include_directories(generated_reflection_support__only_for_generated_code
 )
 target_link_libraries(generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
   mem
-  reflection_internal
-  /upb/mini_descriptor)
-
-add_library(collections INTERFACE
-    
-)
-target_include_directories(collections INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(collections INTERFACE
-  base
-  collections_internal
-  mem
-  port)
+  mini_descriptor
+  reflection_internal)
 
 add_library(message_rep_internal INTERFACE
     
@@ -335,182 +325,5 @@ target_include_directories(message_rep_internal INTERFACE
 target_link_libraries(message_rep_internal INTERFACE
   base
   hash)
-
-add_library(collections_internal 
-    ../upb/collections/array.c
-  ../upb/collections/map.c
-  ../upb/collections/map_sorter.c
-  ../upb/collections/array.h
-  ../upb/collections/array_internal.h
-  ../upb/collections/map.h
-  ../upb/collections/map_gencode_util.h
-  ../upb/collections/map_internal.h
-  ../upb/collections/map_sorter_internal.h
-  ../upb/collections/message_value.h
-)
-target_include_directories(collections_internal PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(collections_internal
-  base
-  base_internal
-  hash
-  mem
-  message_internal
-  message_rep_internal
-  message_tagged_ptr
-  mini_table
-  port)
-
-add_library(collections_split64 INTERFACE
-    
-)
-target_include_directories(collections_split64 INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(collections_split64 INTERFACE
-  collections
-  port)
-
-add_library(textformat 
-    ../upb/text/encode.c
-  ../upb/text/encode.h
-)
-target_include_directories(textformat PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(textformat
-  collections_internal
-  eps_copy_input_stream
-  lex
-  port
-  reflection
-  wire
-  wire_reader
-  wire_types)
-
-add_library(wire INTERFACE
-    
-)
-target_include_directories(wire INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(wire INTERFACE
-  mem
-  message_internal
-  mini_table
-  port
-  wire_internal)
-
-add_library(wire_internal 
-    ../upb/wire/decode.c
-  ../upb/wire/decode_fast.c
-  ../upb/wire/encode.c
-  ../upb/wire/common.h
-  ../upb/wire/decode.h
-  ../upb/wire/decode_fast.h
-  ../upb/wire/encode.h
-  ../upb/wire/internal/common.h
-  ../upb/wire/internal/decode.h
-  ../upb/wire/internal/swap.h
-)
-target_include_directories(wire_internal PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(wire_internal
-  base
-  collections_internal
-  eps_copy_input_stream
-  mem_internal
-  message_accessors_internal
-  message_internal
-  message_rep_internal
-  mini_table
-  port
-  wire_reader
-  wire_types
-  utf8_range)
-
-add_library(wire_types INTERFACE
-    
-)
-target_include_directories(wire_types INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-
-add_library(eps_copy_input_stream 
-    ../upb/wire/eps_copy_input_stream.c
-  ../upb/wire/eps_copy_input_stream.h
-)
-target_include_directories(eps_copy_input_stream PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(eps_copy_input_stream
-  mem
-  port)
-
-add_library(wire_reader 
-    ../upb/wire/internal/swap.h
-  ../upb/wire/reader.c
-  ../upb/wire/reader.h
-)
-target_include_directories(wire_reader PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(wire_reader
-  eps_copy_input_stream
-  port
-  wire_types)
-
-add_library(hash 
-    ../upb/hash/common.c
-  ../upb/hash/common.h
-  ../upb/hash/int_table.h
-  ../upb/hash/str_table.h
-)
-target_include_directories(hash PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(hash
-  base
-  base_internal
-  mem
-  port)
-
-add_library(lex 
-    ../upb/lex/atoi.c
-  ../upb/lex/round_trip.c
-  ../upb/lex/strtod.c
-  ../upb/lex/unicode.c
-  ../upb/lex/atoi.h
-  ../upb/lex/round_trip.h
-  ../upb/lex/strtod.h
-  ../upb/lex/unicode.h
-)
-target_include_directories(lex PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(lex
-  port)
 
 
