@@ -1564,6 +1564,10 @@ TEST_F(CommandLineInterfaceTest, Plugin_RuntimeFeatures) {
                        message_encoding: LENGTH_PREFIXED
                        json_format: ALLOW
                        raw_features { field_presence: IMPLICIT }
+                       [pb.cpp] {
+                         legacy_closed_enum: false
+                         utf8_validation: VERIFY_PARSE
+                       }
       )pb"));
   EXPECT_THAT(request.source_file_descriptors(0)
                   .message_type(0)
@@ -1577,6 +1581,10 @@ TEST_F(CommandLineInterfaceTest, Plugin_RuntimeFeatures) {
                                message_encoding: LENGTH_PREFIXED
                                json_format: ALLOW
                                raw_features { field_presence: IMPLICIT }
+                               [pb.cpp] {
+                                 legacy_closed_enum: false
+                                 utf8_validation: VERIFY_PARSE
+                               }
               )pb"));
 }
 

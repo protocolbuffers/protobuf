@@ -37,6 +37,7 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -58,8 +59,10 @@ class PROTOBUF_EXPORT FeatureResolver {
   // Creates a new FeatureResolver at a specific edition.  This validates the
   // built-in features for the given edition, and calculates the default feature
   // set.
-  static absl::StatusOr<FeatureResolver> Create(absl::string_view edition,
-                                                const Descriptor* descriptor);
+  static absl::StatusOr<FeatureResolver> Create(
+      absl::string_view edition, const Descriptor* descriptor,
+      const DescriptorPool* generated_pool =
+          DescriptorPool::internal_generated_pool());
 
   // Registers a potential extension of the FeatureSet proto.  Any visible
   // extensions will be used during merging.  Returns an error if the extension
@@ -69,17 +72,22 @@ class PROTOBUF_EXPORT FeatureResolver {
   // Creates a new feature set using inheritance and default behavior. This is
   // designed to be called recursively, and the parent feature set is expected
   // to be a fully merged one.
+  // The returned FeatureSet will be fully resolved for any extensions that were
+  // explicitly registered (in the custom pool) or linked into this binary (in
+  // the generated pool).
   absl::StatusOr<FeatureSet> MergeFeatures(
       const FeatureSet& merged_parent, const FeatureSet& unmerged_child) const;
 
  private:
   FeatureResolver(absl::string_view edition, const Descriptor& descriptor,
                   std::unique_ptr<DynamicMessageFactory> message_factory,
-                  std::unique_ptr<Message> defaults)
+                  std::unique_ptr<Message> defaults,
+                  FeatureSet generated_defaults)
       : edition_(edition),
         descriptor_(descriptor),
         message_factory_(std::move(message_factory)),
-        defaults_(std::move(defaults)) {}
+        defaults_(std::move(defaults)),
+        generated_defaults_(std::move(generated_defaults)) {}
 
   absl::Status RegisterExtensions(const Descriptor& message);
   absl::Status RegisterExtension(const FieldDescriptor& extension);
@@ -89,6 +97,7 @@ class PROTOBUF_EXPORT FeatureResolver {
   absl::flat_hash_set<const FieldDescriptor*> extensions_;
   std::unique_ptr<DynamicMessageFactory> message_factory_;
   std::unique_ptr<Message> defaults_;
+  FeatureSet generated_defaults_;
 };
 
 }  // namespace protobuf
