@@ -53,8 +53,12 @@ cc_library(
         "accessors/singular_bytes.cc",
         "accessors/singular_message.cc",
         "accessors/singular_scalar.cc",
+        "accessors/unsupported_field.cc",
     ],
-    hdrs = ["accessors/accessors.h"],
+    hdrs = [
+      "accessors/accessors.h",
+      "accessors/accessor_generator.h",
+    ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/rust",
     deps = [
