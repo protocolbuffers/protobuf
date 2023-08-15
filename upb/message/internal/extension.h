@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPB_MESSAGE_EXTENSION_INTERNAL_H_
-#define UPB_MESSAGE_EXTENSION_INTERNAL_H_
+#ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
+#define UPB_MESSAGE_INTERNAL_EXTENSION_H_
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
@@ -83,4 +83,4 @@ const upb_Message_Extension* _upb_Message_Getext(
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MESSAGE_EXTENSION_INTERNAL_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_EXTENSION_H_ */

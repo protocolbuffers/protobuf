@@ -42,7 +42,7 @@
 #include <string.h>
 
 #include "upb/hash/common.h"
-#include "upb/message/extension_internal.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"

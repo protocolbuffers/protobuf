@@ -68,7 +68,7 @@ typedef struct {
     // require 8-byte alignment.
     double d;
   };
-  // LINT.ThenChange(//depot/google3/third_party/upb/upb/message/internal.h:internal_layout)
+  // LINT.ThenChange(//depot/google3/third_party/upb/upb/message/internal/message.h:internal_layout)
   upb_MapEntryData data;
 } upb_MapEntry;
 

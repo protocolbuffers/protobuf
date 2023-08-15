@@ -32,7 +32,7 @@
 #define UPB_MESSAGE_COPY_H_
 
 #include "upb/collections/message_value.h"
-#include "upb/message/internal.h"
+#include "upb/message/internal/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"

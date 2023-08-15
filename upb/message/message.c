@@ -33,7 +33,7 @@
 #include <math.h>
 
 #include "upb/base/internal/log2.h"
-#include "upb/message/internal.h"
+#include "upb/message/internal/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"

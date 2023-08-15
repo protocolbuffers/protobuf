@@ -36,7 +36,7 @@
 #include <stdlib.h>
 
 #include "upb/collections/internal/map.h"
-#include "upb/message/extension_internal.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/internal/map_entry.h"
 
 // Must be last.

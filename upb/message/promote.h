@@ -32,7 +32,7 @@
 #define UPB_MESSAGE_PROMOTE_H_
 
 #include "upb/collections/array.h"
-#include "upb/message/extension_internal.h"
+#include "upb/message/internal/extension.h"
 #include "upb/wire/decode.h"
 
 // Must be last.

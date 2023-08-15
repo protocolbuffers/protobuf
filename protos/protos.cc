@@ -40,7 +40,7 @@
 #include "protos/protos_extension_lock.h"
 #include "upb/mem/arena.h"
 #include "upb/message/copy.h"
-#include "upb/message/extension_internal.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/promote.h"
 #include "upb/message/typedef.h"
 #include "upb/mini_table/extension.h"

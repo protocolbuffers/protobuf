@@ -123,7 +123,7 @@ cc_library(
 cc_library(
     name = "upb",
     hdrs = [
-        "upb/message/extension_internal.h",
+        "upb/message/internal/extension.h",
         "upb/message/message.h",
         "upb/upb.h",
         "upb/upb.hpp",
@@ -162,8 +162,8 @@ cc_library(
         "upb/message/message.c",
     ],
     hdrs = [
-        "upb/message/extension_internal.h",
-        "upb/message/internal.h",
+        "upb/message/internal/extension.h",
+        "upb/message/internal/message.h",
         "upb/message/message.h",
     ],
     copts = UPB_DEFAULT_COPTS,

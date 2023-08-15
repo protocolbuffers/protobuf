@@ -38,7 +38,7 @@
 #include "absl/status/statusor.h"
 #include "upb/mem/arena.h"
 #include "upb/message/copy.h"
-#include "upb/message/extension_internal.h"
+#include "upb/message/internal/extension.h"
 #include "upb/upb.hpp"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"

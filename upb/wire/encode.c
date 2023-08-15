@@ -36,8 +36,8 @@
 
 #include "upb/collections/internal/array.h"
 #include "upb/collections/internal/map_sorter.h"
-#include "upb/message/extension_internal.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/extension.h"
 #include "upb/mini_table/sub.h"
 #include "upb/wire/common.h"
 #include "upb/wire/internal/common.h"
