@@ -49,4 +49,25 @@ message CppFeatures {
     targets = TARGET_TYPE_FILE,
     edition_defaults = { edition: "2023", value: "false" }
   ];
+
+  // The UTF8 validation strategy to use.  See go/editions-utf8-validation for
+  // more information on this feature.
+  enum Utf8Validation {
+    // Invalid default, which should never be used.
+    UTF8_VALIDATION_UNKNOWN = 0;
+    // Default proto3 behavior, which verifies UTF8 validity during parse.
+    VERIFY_PARSE = 1;
+    // Default proto2 behavior, which verifies UTF8 validity during both parse
+    // and serialize in debug builds.  On failure an error is logged, but the
+    // operation continues.
+    VERIFY_DLOG = 2;
+    // No UTF8 validation is done ever.
+    NONE = 3;
+  }
+  optional Utf8Validation utf8_validation = 2 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: "2023", value: "VERIFY_PARSE" }
+  ];
 }
