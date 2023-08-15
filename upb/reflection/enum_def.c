@@ -28,17 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "upb/reflection/internal/enum_def.h"
+
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 #include "upb/mini_descriptor/decode.h"
-#include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/desc_state_internal.h"
-#include "upb/reflection/enum_def_internal.h"
-#include "upb/reflection/enum_reserved_range_internal.h"
-#include "upb/reflection/enum_value_def_internal.h"
-#include "upb/reflection/file_def_internal.h"
-#include "upb/reflection/message_def_internal.h"
+#include "upb/reflection/internal/def_builder.h"
+#include "upb/reflection/internal/desc_state.h"
+#include "upb/reflection/internal/enum_reserved_range.h"
+#include "upb/reflection/internal/enum_value_def.h"
+#include "upb/reflection/internal/file_def.h"
+#include "upb/reflection/internal/message_def.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -180,7 +181,7 @@ bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
   // Duplicate values are allowed but we only encode each value once.
   uint32_t previous = 0;
 
-  for (size_t i = 0; i < e->value_count; i++) {
+  for (int i = 0; i < e->value_count; i++) {
     const uint32_t current =
         upb_EnumValueDef_Number(sorted ? sorted[i] : upb_EnumDef_Value(e, i));
     if (i != 0 && previous == current) continue;
@@ -220,7 +221,7 @@ static upb_MiniTableEnum* create_enumlayout(upb_DefBuilder* ctx,
 static upb_StringView* _upb_EnumReservedNames_New(
     upb_DefBuilder* ctx, int n, const upb_StringView* protos) {
   upb_StringView* sv = _upb_DefBuilder_Alloc(ctx, sizeof(upb_StringView) * n);
-  for (size_t i = 0; i < n; i++) {
+  for (int i = 0; i < n; i++) {
     sv[i].data =
         upb_strdup2(protos[i].data, protos[i].size, _upb_DefBuilder_Arena(ctx));
     sv[i].size = protos[i].size;
@@ -305,7 +306,7 @@ upb_EnumDef* _upb_EnumDefs_New(
                                      : _upb_FileDef_RawPackage(ctx->file);
 
   upb_EnumDef* e = _upb_DefBuilder_Alloc(ctx, sizeof(upb_EnumDef) * n);
-  for (size_t i = 0; i < n; i++) {
+  for (int i = 0; i < n; i++) {
     create_enumdef(ctx, name, protos[i], &e[i]);
     e[i].containing_type = containing_type;
   }

@@ -36,8 +36,8 @@
 #include "upb/port/vsnprintf_compat.h"
 #include "upb/reflection/enum_reserved_range.h"
 #include "upb/reflection/extension_range.h"
-#include "upb/reflection/field_def_internal.h"
-#include "upb/reflection/file_def_internal.h"
+#include "upb/reflection/internal/field_def.h"
+#include "upb/reflection/internal/file_def.h"
 #include "upb/reflection/message.h"
 #include "upb/reflection/message_reserved_range.h"
 
@@ -499,7 +499,7 @@ static google_protobuf_ServiceDescriptorProto* servicedef_toproto(
   size_t n = upb_ServiceDef_MethodCount(s);
   google_protobuf_MethodDescriptorProto** methods =
       google_protobuf_ServiceDescriptorProto_resize_method(proto, n, ctx->arena);
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     methods[i] = methoddef_toproto(ctx, upb_ServiceDef_Method(s, i));
   }
 
@@ -544,7 +544,7 @@ static google_protobuf_FileDescriptorProto* filedef_toproto(upb_ToProto_Context*
   n = upb_FileDef_DependencyCount(f);
   upb_StringView* deps =
       google_protobuf_FileDescriptorProto_resize_dependency(proto, n, ctx->arena);
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     deps[i] = strviewdup(ctx, upb_FileDef_Name(upb_FileDef_Dependency(f, i)));
   }
 
@@ -563,28 +563,28 @@ static google_protobuf_FileDescriptorProto* filedef_toproto(upb_ToProto_Context*
   n = upb_FileDef_TopLevelMessageCount(f);
   google_protobuf_DescriptorProto** msgs =
       google_protobuf_FileDescriptorProto_resize_message_type(proto, n, ctx->arena);
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     msgs[i] = msgdef_toproto(ctx, upb_FileDef_TopLevelMessage(f, i));
   }
 
   n = upb_FileDef_TopLevelEnumCount(f);
   google_protobuf_EnumDescriptorProto** enums =
       google_protobuf_FileDescriptorProto_resize_enum_type(proto, n, ctx->arena);
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     enums[i] = enumdef_toproto(ctx, upb_FileDef_TopLevelEnum(f, i));
   }
 
   n = upb_FileDef_ServiceCount(f);
   google_protobuf_ServiceDescriptorProto** services =
       google_protobuf_FileDescriptorProto_resize_service(proto, n, ctx->arena);
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     services[i] = servicedef_toproto(ctx, upb_FileDef_Service(f, i));
   }
 
   n = upb_FileDef_TopLevelExtensionCount(f);
   google_protobuf_FieldDescriptorProto** exts =
       google_protobuf_FileDescriptorProto_resize_extension(proto, n, ctx->arena);
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     exts[i] = fielddef_toproto(ctx, upb_FileDef_TopLevelExtension(f, i));
   }
 

@@ -28,12 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/def_builder_internal.h"
+#include "upb/reflection/internal/enum_reserved_range.h"
+
 #include "upb/reflection/enum_def.h"
-#include "upb/reflection/enum_reserved_range_internal.h"
-// #include "upb/reflection/extension_range_internal.h"
 #include "upb/reflection/field_def.h"
-// #include "upb/reflection/message_def.h"
+#include "upb/reflection/internal/def_builder.h"
 
 // Must be last.
 #include "upb/port/def.inc"

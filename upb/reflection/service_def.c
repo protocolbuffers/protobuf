@@ -28,11 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/def_builder_internal.h"
+#include "upb/reflection/internal/service_def.h"
+
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/file_def_internal.h"
-#include "upb/reflection/method_def_internal.h"
-#include "upb/reflection/service_def_internal.h"
+#include "upb/reflection/internal/def_builder.h"
+#include "upb/reflection/internal/file_def.h"
+#include "upb/reflection/internal/method_def.h"
 
 // Must be last.
 #include "upb/port/def.inc"

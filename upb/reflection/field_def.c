@@ -28,22 +28,23 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "upb/reflection/internal/field_def.h"
+
 #include <ctype.h>
 #include <errno.h>
 
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/reflection/def.h"
-#include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/desc_state_internal.h"
-#include "upb/reflection/enum_def_internal.h"
-#include "upb/reflection/enum_value_def_internal.h"
-#include "upb/reflection/field_def_internal.h"
-#include "upb/reflection/file_def_internal.h"
-#include "upb/reflection/message_def_internal.h"
-#include "upb/reflection/oneof_def_internal.h"
+#include "upb/reflection/internal/def_builder.h"
+#include "upb/reflection/internal/desc_state.h"
+#include "upb/reflection/internal/enum_def.h"
+#include "upb/reflection/internal/enum_value_def.h"
+#include "upb/reflection/internal/file_def.h"
+#include "upb/reflection/internal/message_def.h"
+#include "upb/reflection/internal/oneof_def.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -624,8 +625,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
   }
 
   if (UPB_DESC(FieldDescriptorProto_has_oneof_index)(field_proto)) {
-    uint32_t oneof_index =
-        UPB_DESC(FieldDescriptorProto_oneof_index)(field_proto);
+    int oneof_index = UPB_DESC(FieldDescriptorProto_oneof_index)(field_proto);
 
     if (upb_FieldDef_Label(f) != kUpb_Label_Optional) {
       _upb_DefBuilder_Errf(ctx, "fields in oneof must have OPTIONAL label (%s)",

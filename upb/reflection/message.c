@@ -40,7 +40,7 @@
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/field_def_internal.h"
+#include "upb/reflection/internal/field_def.h"
 #include "upb/reflection/message_def.h"
 #include "upb/reflection/oneof_def.h"
 

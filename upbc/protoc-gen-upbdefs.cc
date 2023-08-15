@@ -68,7 +68,7 @@ void WriteDefHeader(upb::FileDefPtr file, Output& output) {
       "#ifndef $0_UPBDEFS_H_\n"
       "#define $0_UPBDEFS_H_\n\n"
       "#include \"upb/reflection/def.h\"\n"
-      "#include \"upb/reflection/def_pool_internal.h\"\n"
+      "#include \"upb/reflection/internal/def_pool.h\"\n"
       "#include \"upb/port/def.inc\"\n"
       "#ifdef __cplusplus\n"
       "extern \"C\" {\n"

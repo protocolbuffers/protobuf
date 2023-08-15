@@ -28,11 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/def_builder_internal.h"
+#include "upb/reflection/internal/enum_value_def.h"
+
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/enum_def_internal.h"
-#include "upb/reflection/enum_value_def_internal.h"
-#include "upb/reflection/file_def_internal.h"
+#include "upb/reflection/internal/def_builder.h"
+#include "upb/reflection/internal/enum_def.h"
+#include "upb/reflection/internal/file_def.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -128,7 +129,7 @@ upb_EnumValueDef* _upb_EnumValueDefs_New(
 
   *is_sorted = true;
   uint32_t previous = 0;
-  for (size_t i = 0; i < n; i++) {
+  for (int i = 0; i < n; i++) {
     create_enumvaldef(ctx, prefix, protos[i], e, &v[i]);
 
     const uint32_t current = v[i].number;

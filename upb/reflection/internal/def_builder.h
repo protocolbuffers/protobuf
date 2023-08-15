@@ -32,8 +32,8 @@
 #define UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
 
 #include "upb/reflection/common.h"
-#include "upb/reflection/def_pool_internal.h"
 #include "upb/reflection/def_type.h"
+#include "upb/reflection/internal/def_pool.h"
 
 // Must be last.
 #include "upb/port/def.inc"

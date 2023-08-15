@@ -37,8 +37,8 @@
 #include <vector>
 
 #include "upb/reflection/def.h"
-#include "upb/reflection/def_pool_internal.h"
-#include "upb/reflection/enum_def_internal.h"
+#include "upb/reflection/internal/def_pool.h"
+#include "upb/reflection/internal/enum_def.h"
 #include "upb/reflection/message.h"
 #include "upb/upb.hpp"
 

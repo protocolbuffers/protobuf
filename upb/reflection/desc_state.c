@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/desc_state_internal.h"
+#include "upb/reflection/internal/desc_state.h"
 
 // Must be last.
 #include "upb/port/def.inc"

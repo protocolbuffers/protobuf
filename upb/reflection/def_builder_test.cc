@@ -28,9 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "upb/reflection/internal/def_builder.h"
+
 #include "gtest/gtest.h"
 #include "absl/strings/string_view.h"
-#include "upb/reflection/def_builder_internal.h"
 #include "upb/upb.hpp"
 
 // Must be last.

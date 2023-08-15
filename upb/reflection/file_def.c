@@ -28,13 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/def_builder_internal.h"
+#include "upb/reflection/internal/file_def.h"
+
 #include "upb/reflection/def_pool.h"
-#include "upb/reflection/enum_def_internal.h"
-#include "upb/reflection/field_def_internal.h"
-#include "upb/reflection/file_def_internal.h"
-#include "upb/reflection/message_def_internal.h"
-#include "upb/reflection/service_def_internal.h"
+#include "upb/reflection/internal/def_builder.h"
+#include "upb/reflection/internal/enum_def.h"
+#include "upb/reflection/internal/field_def.h"
+#include "upb/reflection/internal/message_def.h"
+#include "upb/reflection/internal/service_def.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -207,7 +208,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   UPB_DESC(FileDescriptorProto_extension)(file_proto, &n);
   int ext_count = n;
   msgs = UPB_DESC(FileDescriptorProto_message_type)(file_proto, &n);
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     ext_count += count_exts_in_msg(msgs[i]);
   }
   file->ext_count = ext_count;
