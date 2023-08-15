@@ -279,6 +279,7 @@ void Struct::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Struct::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Struct)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -544,6 +545,7 @@ void Value::SetCachedSize(int size) const {
 
 void Value::clear_kind() {
 // @@protoc_insertion_point(one_of_clear_start:google.protobuf.Value)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   switch (kind_case()) {
     case kNullValue: {
       // No need to clear
@@ -583,6 +585,7 @@ void Value::clear_kind() {
 
 PROTOBUF_NOINLINE void Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Value)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -871,11 +874,12 @@ void ListValue::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void ListValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ListValue)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_values()->Clear();
+  _impl_.values_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 

@@ -260,6 +260,7 @@ class PROTOBUF_EXPORT Duration final :
 
 // int64 seconds = 1;
 inline void Duration::clear_seconds() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.seconds_ = ::int64_t{0};
 }
 inline ::int64_t Duration::seconds() const {
@@ -282,6 +283,7 @@ inline void Duration::_internal_set_seconds(::int64_t value) {
 
 // int32 nanos = 2;
 inline void Duration::clear_nanos() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.nanos_ = 0;
 }
 inline ::int32_t Duration::nanos() const {

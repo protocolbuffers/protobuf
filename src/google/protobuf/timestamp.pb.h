@@ -260,6 +260,7 @@ class PROTOBUF_EXPORT Timestamp final :
 
 // int64 seconds = 1;
 inline void Timestamp::clear_seconds() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.seconds_ = ::int64_t{0};
 }
 inline ::int64_t Timestamp::seconds() const {
@@ -282,6 +283,7 @@ inline void Timestamp::_internal_set_seconds(::int64_t value) {
 
 // int32 nanos = 2;
 inline void Timestamp::clear_nanos() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.nanos_ = 0;
 }
 inline ::int32_t Timestamp::nanos() const {

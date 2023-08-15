@@ -780,6 +780,7 @@ inline int Struct::fields_size() const {
   return _internal_fields_size();
 }
 inline void Struct::clear_fields() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.fields_.Clear();
 }
 inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::_internal_fields() const {
@@ -811,6 +812,7 @@ inline void Value::set_has_null_value() {
   _impl_._oneof_case_[0] = kNullValue;
 }
 inline void Value::clear_null_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (kind_case() == kNullValue) {
     _impl_.kind_.null_value_ = 0;
     clear_has_kind();
@@ -846,6 +848,7 @@ inline void Value::set_has_number_value() {
   _impl_._oneof_case_[0] = kNumberValue;
 }
 inline void Value::clear_number_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (kind_case() == kNumberValue) {
     _impl_.kind_.number_value_ = 0;
     clear_has_kind();
@@ -881,6 +884,7 @@ inline void Value::set_has_string_value() {
   _impl_._oneof_case_[0] = kStringValue;
 }
 inline void Value::clear_string_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (kind_case() == kStringValue) {
     _impl_.kind_.string_value_.Destroy();
     clear_has_kind();
@@ -964,6 +968,7 @@ inline void Value::set_has_bool_value() {
   _impl_._oneof_case_[0] = kBoolValue;
 }
 inline void Value::clear_bool_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (kind_case() == kBoolValue) {
     _impl_.kind_.bool_value_ = false;
     clear_has_kind();
@@ -1002,6 +1007,7 @@ inline void Value::set_has_struct_value() {
   _impl_._oneof_case_[0] = kStructValue;
 }
 inline void Value::clear_struct_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (kind_case() == kStructValue) {
     if (GetArenaForAllocation() == nullptr) {
       delete _impl_.kind_.struct_value_;
@@ -1076,6 +1082,7 @@ inline void Value::set_has_list_value() {
   _impl_._oneof_case_[0] = kListValue;
 }
 inline void Value::clear_list_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (kind_case() == kListValue) {
     if (GetArenaForAllocation() == nullptr) {
       delete _impl_.kind_.list_value_;
@@ -1160,7 +1167,8 @@ inline int ListValue::values_size() const {
   return _internal_values_size();
 }
 inline void ListValue::clear_values() {
-  _internal_mutable_values()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.values_.Clear();
 }
 inline ::google::protobuf::Value* ListValue::mutable_values(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.ListValue.values)

@@ -272,7 +272,8 @@ inline int FieldMask::paths_size() const {
   return _internal_paths_size();
 }
 inline void FieldMask::clear_paths() {
-  _internal_mutable_paths()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.paths_.Clear();
 }
 inline std::string* FieldMask::add_paths() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);

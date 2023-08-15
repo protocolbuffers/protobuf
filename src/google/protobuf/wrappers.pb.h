@@ -1572,6 +1572,7 @@ class PROTOBUF_EXPORT BoolValue final :
 
 // double value = 1;
 inline void DoubleValue::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_ = 0;
 }
 inline double DoubleValue::value() const {
@@ -1598,6 +1599,7 @@ inline void DoubleValue::_internal_set_value(double value) {
 
 // float value = 1;
 inline void FloatValue::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_ = 0;
 }
 inline float FloatValue::value() const {
@@ -1624,6 +1626,7 @@ inline void FloatValue::_internal_set_value(float value) {
 
 // int64 value = 1;
 inline void Int64Value::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_ = ::int64_t{0};
 }
 inline ::int64_t Int64Value::value() const {
@@ -1650,6 +1653,7 @@ inline void Int64Value::_internal_set_value(::int64_t value) {
 
 // uint64 value = 1;
 inline void UInt64Value::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_ = ::uint64_t{0u};
 }
 inline ::uint64_t UInt64Value::value() const {
@@ -1676,6 +1680,7 @@ inline void UInt64Value::_internal_set_value(::uint64_t value) {
 
 // int32 value = 1;
 inline void Int32Value::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_ = 0;
 }
 inline ::int32_t Int32Value::value() const {
@@ -1702,6 +1707,7 @@ inline void Int32Value::_internal_set_value(::int32_t value) {
 
 // uint32 value = 1;
 inline void UInt32Value::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_ = 0u;
 }
 inline ::uint32_t UInt32Value::value() const {
@@ -1728,6 +1734,7 @@ inline void UInt32Value::_internal_set_value(::uint32_t value) {
 
 // bool value = 1;
 inline void BoolValue::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_ = false;
 }
 inline bool BoolValue::value() const {
@@ -1754,6 +1761,7 @@ inline void BoolValue::_internal_set_value(bool value) {
 
 // string value = 1;
 inline void StringValue::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_.ClearToEmpty();
 }
 inline const std::string& StringValue::value() const {
@@ -1809,6 +1817,7 @@ inline void StringValue::set_allocated_value(std::string* value) {
 
 // bytes value = 1;
 inline void BytesValue::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_.ClearToEmpty();
 }
 inline const std::string& BytesValue::value() const {

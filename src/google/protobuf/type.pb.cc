@@ -471,6 +471,7 @@ const ::google::protobuf::SourceContext& Type::_Internal::source_context(const T
   return *msg->_impl_.source_context_;
 }
 void Type::clear_source_context() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -558,13 +559,14 @@ void Type::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Type::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_fields()->Clear();
-  _internal_mutable_oneofs()->Clear();
-  _internal_mutable_options()->Clear();
+  _impl_.fields_.Clear();
+  _impl_.oneofs_.Clear();
+  _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.edition_.ClearToEmpty();
   cached_has_bits = _impl_._has_bits_[0];
@@ -971,11 +973,12 @@ void Field::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Field::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_options()->Clear();
+  _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.type_url_.ClearToEmpty();
   _impl_.json_name_.ClearToEmpty();
@@ -1352,6 +1355,7 @@ const ::google::protobuf::SourceContext& Enum::_Internal::source_context(const E
   return *msg->_impl_.source_context_;
 }
 void Enum::clear_source_context() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -1436,12 +1440,13 @@ void Enum::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Enum::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_enumvalue()->Clear();
-  _internal_mutable_options()->Clear();
+  _impl_.enumvalue_.Clear();
+  _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.edition_.ClearToEmpty();
   cached_has_bits = _impl_._has_bits_[0];
@@ -1774,11 +1779,12 @@ void EnumValue::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void EnumValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_options()->Clear();
+  _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.number_ = 0;
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -1975,6 +1981,7 @@ const ::google::protobuf::Any& Option::_Internal::value(const Option* msg) {
   return *msg->_impl_.value_;
 }
 void Option::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.value_ != nullptr) _impl_.value_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -2036,6 +2043,7 @@ void Option::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Option::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;

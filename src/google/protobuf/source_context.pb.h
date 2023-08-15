@@ -254,6 +254,7 @@ class PROTOBUF_EXPORT SourceContext final :
 
 // string file_name = 1;
 inline void SourceContext::clear_file_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.file_name_.ClearToEmpty();
 }
 inline const std::string& SourceContext::file_name() const {

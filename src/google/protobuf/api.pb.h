@@ -814,6 +814,7 @@ class PROTOBUF_EXPORT Api final :
 
 // string name = 1;
 inline void Api::clear_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.name_.ClearToEmpty();
 }
 inline const std::string& Api::name() const {
@@ -871,7 +872,8 @@ inline int Api::methods_size() const {
   return _internal_methods_size();
 }
 inline void Api::clear_methods() {
-  _internal_mutable_methods()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.methods_.Clear();
 }
 inline ::google::protobuf::Method* Api::mutable_methods(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.methods)
@@ -954,6 +956,7 @@ Api::_internal_mutable_options() {
 
 // string version = 4;
 inline void Api::clear_version() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.version_.ClearToEmpty();
 }
 inline const std::string& Api::version() const {
@@ -1103,7 +1106,8 @@ inline int Api::mixins_size() const {
   return _internal_mixins_size();
 }
 inline void Api::clear_mixins() {
-  _internal_mutable_mixins()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.mixins_.Clear();
 }
 inline ::google::protobuf::Mixin* Api::mutable_mixins(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.mixins)
@@ -1143,6 +1147,7 @@ Api::_internal_mutable_mixins() {
 
 // .google.protobuf.Syntax syntax = 7;
 inline void Api::clear_syntax() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.syntax_ = 0;
 }
 inline ::google::protobuf::Syntax Api::syntax() const {
@@ -1169,6 +1174,7 @@ inline void Api::_internal_set_syntax(::google::protobuf::Syntax value) {
 
 // string name = 1;
 inline void Method::clear_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.name_.ClearToEmpty();
 }
 inline const std::string& Method::name() const {
@@ -1220,6 +1226,7 @@ inline void Method::set_allocated_name(std::string* value) {
 
 // string request_type_url = 2;
 inline void Method::clear_request_type_url() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.request_type_url_.ClearToEmpty();
 }
 inline const std::string& Method::request_type_url() const {
@@ -1271,6 +1278,7 @@ inline void Method::set_allocated_request_type_url(std::string* value) {
 
 // bool request_streaming = 3;
 inline void Method::clear_request_streaming() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.request_streaming_ = false;
 }
 inline bool Method::request_streaming() const {
@@ -1293,6 +1301,7 @@ inline void Method::_internal_set_request_streaming(bool value) {
 
 // string response_type_url = 4;
 inline void Method::clear_response_type_url() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.response_type_url_.ClearToEmpty();
 }
 inline const std::string& Method::response_type_url() const {
@@ -1344,6 +1353,7 @@ inline void Method::set_allocated_response_type_url(std::string* value) {
 
 // bool response_streaming = 5;
 inline void Method::clear_response_streaming() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.response_streaming_ = false;
 }
 inline bool Method::response_streaming() const {
@@ -1409,6 +1419,7 @@ Method::_internal_mutable_options() {
 
 // .google.protobuf.Syntax syntax = 7;
 inline void Method::clear_syntax() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.syntax_ = 0;
 }
 inline ::google::protobuf::Syntax Method::syntax() const {
@@ -1435,6 +1446,7 @@ inline void Method::_internal_set_syntax(::google::protobuf::Syntax value) {
 
 // string name = 1;
 inline void Mixin::clear_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.name_.ClearToEmpty();
 }
 inline const std::string& Mixin::name() const {
@@ -1486,6 +1498,7 @@ inline void Mixin::set_allocated_name(std::string* value) {
 
 // string root = 2;
 inline void Mixin::clear_root() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.root_.ClearToEmpty();
 }
 inline const std::string& Mixin::root() const {

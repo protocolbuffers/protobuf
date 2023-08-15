@@ -308,6 +308,7 @@ class PROTOBUF_EXPORT Any final :
 
 // string type_url = 1;
 inline void Any::clear_type_url() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.type_url_.ClearToEmpty();
 }
 inline const std::string& Any::type_url() const {
@@ -359,6 +360,7 @@ inline void Any::set_allocated_type_url(std::string* value) {
 
 // bytes value = 2;
 inline void Any::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_.ClearToEmpty();
 }
 inline const std::string& Any::value() const {

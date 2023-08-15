@@ -1502,6 +1502,7 @@ class PROTOBUF_EXPORT Enum final :
 
 // string name = 1;
 inline void Type::clear_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.name_.ClearToEmpty();
 }
 inline const std::string& Type::name() const {
@@ -1559,7 +1560,8 @@ inline int Type::fields_size() const {
   return _internal_fields_size();
 }
 inline void Type::clear_fields() {
-  _internal_mutable_fields()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.fields_.Clear();
 }
 inline ::google::protobuf::Field* Type::mutable_fields(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.fields)
@@ -1605,7 +1607,8 @@ inline int Type::oneofs_size() const {
   return _internal_oneofs_size();
 }
 inline void Type::clear_oneofs() {
-  _internal_mutable_oneofs()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.oneofs_.Clear();
 }
 inline std::string* Type::add_oneofs() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -1701,7 +1704,8 @@ inline int Type::options_size() const {
   return _internal_options_size();
 }
 inline void Type::clear_options() {
-  _internal_mutable_options()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.options_.Clear();
 }
 inline ::google::protobuf::Option* Type::mutable_options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.options)
@@ -1833,6 +1837,7 @@ inline void Type::set_allocated_source_context(::google::protobuf::SourceContext
 
 // .google.protobuf.Syntax syntax = 6;
 inline void Type::clear_syntax() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.syntax_ = 0;
 }
 inline ::google::protobuf::Syntax Type::syntax() const {
@@ -1855,6 +1860,7 @@ inline void Type::_internal_set_syntax(::google::protobuf::Syntax value) {
 
 // string edition = 7;
 inline void Type::clear_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.edition_.ClearToEmpty();
 }
 inline const std::string& Type::edition() const {
@@ -1910,6 +1916,7 @@ inline void Type::set_allocated_edition(std::string* value) {
 
 // .google.protobuf.Field.Kind kind = 1;
 inline void Field::clear_kind() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.kind_ = 0;
 }
 inline ::google::protobuf::Field_Kind Field::kind() const {
@@ -1932,6 +1939,7 @@ inline void Field::_internal_set_kind(::google::protobuf::Field_Kind value) {
 
 // .google.protobuf.Field.Cardinality cardinality = 2;
 inline void Field::clear_cardinality() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.cardinality_ = 0;
 }
 inline ::google::protobuf::Field_Cardinality Field::cardinality() const {
@@ -1954,6 +1962,7 @@ inline void Field::_internal_set_cardinality(::google::protobuf::Field_Cardinali
 
 // int32 number = 3;
 inline void Field::clear_number() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.number_ = 0;
 }
 inline ::int32_t Field::number() const {
@@ -1976,6 +1985,7 @@ inline void Field::_internal_set_number(::int32_t value) {
 
 // string name = 4;
 inline void Field::clear_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.name_.ClearToEmpty();
 }
 inline const std::string& Field::name() const {
@@ -2027,6 +2037,7 @@ inline void Field::set_allocated_name(std::string* value) {
 
 // string type_url = 6;
 inline void Field::clear_type_url() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.type_url_.ClearToEmpty();
 }
 inline const std::string& Field::type_url() const {
@@ -2078,6 +2089,7 @@ inline void Field::set_allocated_type_url(std::string* value) {
 
 // int32 oneof_index = 7;
 inline void Field::clear_oneof_index() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.oneof_index_ = 0;
 }
 inline ::int32_t Field::oneof_index() const {
@@ -2100,6 +2112,7 @@ inline void Field::_internal_set_oneof_index(::int32_t value) {
 
 // bool packed = 8;
 inline void Field::clear_packed() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.packed_ = false;
 }
 inline bool Field::packed() const {
@@ -2128,7 +2141,8 @@ inline int Field::options_size() const {
   return _internal_options_size();
 }
 inline void Field::clear_options() {
-  _internal_mutable_options()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.options_.Clear();
 }
 inline ::google::protobuf::Option* Field::mutable_options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Field.options)
@@ -2168,6 +2182,7 @@ Field::_internal_mutable_options() {
 
 // string json_name = 10;
 inline void Field::clear_json_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.json_name_.ClearToEmpty();
 }
 inline const std::string& Field::json_name() const {
@@ -2219,6 +2234,7 @@ inline void Field::set_allocated_json_name(std::string* value) {
 
 // string default_value = 11;
 inline void Field::clear_default_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.default_value_.ClearToEmpty();
 }
 inline const std::string& Field::default_value() const {
@@ -2274,6 +2290,7 @@ inline void Field::set_allocated_default_value(std::string* value) {
 
 // string name = 1;
 inline void Enum::clear_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.name_.ClearToEmpty();
 }
 inline const std::string& Enum::name() const {
@@ -2331,7 +2348,8 @@ inline int Enum::enumvalue_size() const {
   return _internal_enumvalue_size();
 }
 inline void Enum::clear_enumvalue() {
-  _internal_mutable_enumvalue()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.enumvalue_.Clear();
 }
 inline ::google::protobuf::EnumValue* Enum::mutable_enumvalue(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.enumvalue)
@@ -2377,7 +2395,8 @@ inline int Enum::options_size() const {
   return _internal_options_size();
 }
 inline void Enum::clear_options() {
-  _internal_mutable_options()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.options_.Clear();
 }
 inline ::google::protobuf::Option* Enum::mutable_options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.options)
@@ -2509,6 +2528,7 @@ inline void Enum::set_allocated_source_context(::google::protobuf::SourceContext
 
 // .google.protobuf.Syntax syntax = 5;
 inline void Enum::clear_syntax() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.syntax_ = 0;
 }
 inline ::google::protobuf::Syntax Enum::syntax() const {
@@ -2531,6 +2551,7 @@ inline void Enum::_internal_set_syntax(::google::protobuf::Syntax value) {
 
 // string edition = 6;
 inline void Enum::clear_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.edition_.ClearToEmpty();
 }
 inline const std::string& Enum::edition() const {
@@ -2586,6 +2607,7 @@ inline void Enum::set_allocated_edition(std::string* value) {
 
 // string name = 1;
 inline void EnumValue::clear_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.name_.ClearToEmpty();
 }
 inline const std::string& EnumValue::name() const {
@@ -2637,6 +2659,7 @@ inline void EnumValue::set_allocated_name(std::string* value) {
 
 // int32 number = 2;
 inline void EnumValue::clear_number() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.number_ = 0;
 }
 inline ::int32_t EnumValue::number() const {
@@ -2665,7 +2688,8 @@ inline int EnumValue::options_size() const {
   return _internal_options_size();
 }
 inline void EnumValue::clear_options() {
-  _internal_mutable_options()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.options_.Clear();
 }
 inline ::google::protobuf::Option* EnumValue::mutable_options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValue.options)
@@ -2709,6 +2733,7 @@ EnumValue::_internal_mutable_options() {
 
 // string name = 1;
 inline void Option::clear_name() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.name_.ClearToEmpty();
 }
 inline const std::string& Option::name() const {
