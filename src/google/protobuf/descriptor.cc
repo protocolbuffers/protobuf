@@ -7875,23 +7875,43 @@ void DescriptorBuilder::ValidateFieldFeatures(
   }
 
   // Validate explicitly specified features on the field proto.
-  if ((field->containing_oneof() != nullptr || field->is_repeated() ||
-       field->message_type() != nullptr) &&
-      field->proto_features_->field_presence() == FeatureSet::IMPLICIT) {
-    AddError(
-        field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-        "Only singular scalar fields can specify implicit field presence.");
-  }
-  if ((field->containing_oneof() != nullptr || field->is_repeated()) &&
-      field->proto_features_->field_presence() == FeatureSet::LEGACY_REQUIRED) {
-    AddError(
-        field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-        "Only singular scalar fields can specify required field presence.");
+  if (field->proto_features_->has_field_presence()) {
+    if (field->containing_oneof() != nullptr) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Oneof fields can't specify field presence.");
+    } else if (field->is_repeated()) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Repeated fields can't specify field presence.");
+    } else if (field->is_extension() &&
+               field->proto_features_->field_presence() !=
+                   FeatureSet::LEGACY_REQUIRED) {
+      // Note: required extensions will fail elsewhere, so we skip reporting a
+      // second error here.
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Extensions can't specify field presence.");
+    } else if (field->message_type() != nullptr &&
+               field->proto_features_->field_presence() ==
+                   FeatureSet::IMPLICIT) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Message fields can't specify implicit presence.");
+    }
   }
   if (!field->is_repeated() &&
       field->proto_features_->has_repeated_field_encoding()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-             "Only repeated fields can specify `repeated_field_encoding`.");
+             "Only repeated fields can specify repeated field encoding.");
+  }
+  if (!field->is_packable() &&
+      field->proto_features_->repeated_field_encoding() == FeatureSet::PACKED) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Only repeated primitive fields can specify PACKED repeated field "
+             "encoding.");
+  }
+  if ((field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE ||
+       field->is_map_message_type()) &&
+      field->proto_features_->has_message_encoding()) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Only message fields can specify message encoding.");
   }
 }
 
