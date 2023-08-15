@@ -526,36 +526,6 @@ inline bool FeatureSet_RepeatedFieldEncoding_Parse(absl::string_view name, Featu
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_RepeatedFieldEncoding>(
       FeatureSet_RepeatedFieldEncoding_descriptor(), name, value);
 }
-enum FeatureSet_StringFieldValidation : int {
-  FeatureSet_StringFieldValidation_STRING_FIELD_VALIDATION_UNKNOWN = 0,
-  FeatureSet_StringFieldValidation_MANDATORY = 1,
-  FeatureSet_StringFieldValidation_HINT = 2,
-  FeatureSet_StringFieldValidation_NONE = 3,
-};
-
-PROTOBUF_EXPORT bool FeatureSet_StringFieldValidation_IsValid(int value);
-constexpr FeatureSet_StringFieldValidation FeatureSet_StringFieldValidation_StringFieldValidation_MIN = static_cast<FeatureSet_StringFieldValidation>(0);
-constexpr FeatureSet_StringFieldValidation FeatureSet_StringFieldValidation_StringFieldValidation_MAX = static_cast<FeatureSet_StringFieldValidation>(3);
-constexpr int FeatureSet_StringFieldValidation_StringFieldValidation_ARRAYSIZE = 3 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
-FeatureSet_StringFieldValidation_descriptor();
-template <typename T>
-const std::string& FeatureSet_StringFieldValidation_Name(T value) {
-  static_assert(std::is_same<T, FeatureSet_StringFieldValidation>::value ||
-                    std::is_integral<T>::value,
-                "Incorrect type passed to StringFieldValidation_Name().");
-  return FeatureSet_StringFieldValidation_Name(static_cast<FeatureSet_StringFieldValidation>(value));
-}
-template <>
-inline const std::string& FeatureSet_StringFieldValidation_Name(FeatureSet_StringFieldValidation value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_StringFieldValidation_descriptor,
-                                                 0, 3>(
-      static_cast<int>(value));
-}
-inline bool FeatureSet_StringFieldValidation_Parse(absl::string_view name, FeatureSet_StringFieldValidation* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_StringFieldValidation>(
-      FeatureSet_StringFieldValidation_descriptor(), name, value);
-}
 enum FeatureSet_MessageEncoding : int {
   FeatureSet_MessageEncoding_MESSAGE_ENCODING_UNKNOWN = 0,
   FeatureSet_MessageEncoding_LENGTH_PREFIXED = 1,
@@ -1718,28 +1688,6 @@ class PROTOBUF_EXPORT FeatureSet final :
     return FeatureSet_RepeatedFieldEncoding_Parse(name, value);
   }
 
-  using StringFieldValidation = FeatureSet_StringFieldValidation;
-  static constexpr StringFieldValidation STRING_FIELD_VALIDATION_UNKNOWN = FeatureSet_StringFieldValidation_STRING_FIELD_VALIDATION_UNKNOWN;
-  static constexpr StringFieldValidation MANDATORY = FeatureSet_StringFieldValidation_MANDATORY;
-  static constexpr StringFieldValidation HINT = FeatureSet_StringFieldValidation_HINT;
-  static constexpr StringFieldValidation NONE = FeatureSet_StringFieldValidation_NONE;
-  static inline bool StringFieldValidation_IsValid(int value) {
-    return FeatureSet_StringFieldValidation_IsValid(value);
-  }
-  static constexpr StringFieldValidation StringFieldValidation_MIN = FeatureSet_StringFieldValidation_StringFieldValidation_MIN;
-  static constexpr StringFieldValidation StringFieldValidation_MAX = FeatureSet_StringFieldValidation_StringFieldValidation_MAX;
-  static constexpr int StringFieldValidation_ARRAYSIZE = FeatureSet_StringFieldValidation_StringFieldValidation_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor* StringFieldValidation_descriptor() {
-    return FeatureSet_StringFieldValidation_descriptor();
-  }
-  template <typename T>
-  static inline const std::string& StringFieldValidation_Name(T value) {
-    return FeatureSet_StringFieldValidation_Name(value);
-  }
-  static inline bool StringFieldValidation_Parse(absl::string_view name, StringFieldValidation* value) {
-    return FeatureSet_StringFieldValidation_Parse(name, value);
-  }
-
   using MessageEncoding = FeatureSet_MessageEncoding;
   static constexpr MessageEncoding MESSAGE_ENCODING_UNKNOWN = FeatureSet_MessageEncoding_MESSAGE_ENCODING_UNKNOWN;
   static constexpr MessageEncoding LENGTH_PREFIXED = FeatureSet_MessageEncoding_LENGTH_PREFIXED;
@@ -1785,29 +1733,12 @@ class PROTOBUF_EXPORT FeatureSet final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kRawFeaturesFieldNumber = 999,
     kFieldPresenceFieldNumber = 1,
     kEnumTypeFieldNumber = 2,
     kRepeatedFieldEncodingFieldNumber = 3,
-    kStringFieldValidationFieldNumber = 4,
     kMessageEncodingFieldNumber = 5,
     kJsonFormatFieldNumber = 6,
   };
-  // optional .google.protobuf.FeatureSet raw_features = 999 [targets = TARGET_TYPE_UNKNOWN];
-  bool has_raw_features() const;
-  void clear_raw_features() ;
-  const ::google::protobuf::FeatureSet& raw_features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
-  ::google::protobuf::FeatureSet* mutable_raw_features();
-  void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
-  ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_raw_features() const;
-  ::google::protobuf::FeatureSet* _internal_mutable_raw_features();
-
-  public:
   // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_field_presence() const;
   void clear_field_presence() ;
@@ -1839,17 +1770,6 @@ class PROTOBUF_EXPORT FeatureSet final :
   private:
   ::google::protobuf::FeatureSet_RepeatedFieldEncoding _internal_repeated_field_encoding() const;
   void _internal_set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value);
-
-  public:
-  // optional .google.protobuf.FeatureSet.StringFieldValidation string_field_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool has_string_field_validation() const;
-  void clear_string_field_validation() ;
-  ::google::protobuf::FeatureSet_StringFieldValidation string_field_validation() const;
-  void set_string_field_validation(::google::protobuf::FeatureSet_StringFieldValidation value);
-
-  private:
-  ::google::protobuf::FeatureSet_StringFieldValidation _internal_string_field_validation() const;
-  void _internal_set_string_field_validation(::google::protobuf::FeatureSet_StringFieldValidation value);
 
   public:
   // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -2031,8 +1951,8 @@ class PROTOBUF_EXPORT FeatureSet final :
 
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 7, 7,
-      0, 7>
+      3, 5, 5,
+      0, 2>
       _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
@@ -2042,11 +1962,9 @@ class PROTOBUF_EXPORT FeatureSet final :
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::FeatureSet* raw_features_;
     int field_presence_;
     int enum_type_;
     int repeated_field_encoding_;
-    int string_field_validation_;
     int message_encoding_;
     int json_format_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
@@ -17376,13 +17294,13 @@ inline void UninterpretedOption::set_allocated_aggregate_value(std::string* valu
 
 // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_field_presence() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
   return value;
 }
 inline void FeatureSet::clear_field_presence() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.field_presence_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000002u;
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline ::google::protobuf::FeatureSet_FieldPresence FeatureSet::field_presence() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.field_presence)
@@ -17399,19 +17317,19 @@ inline ::google::protobuf::FeatureSet_FieldPresence FeatureSet::_internal_field_
 inline void FeatureSet::_internal_set_field_presence(::google::protobuf::FeatureSet_FieldPresence value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_FieldPresence_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.field_presence_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_enum_type() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
   return value;
 }
 inline void FeatureSet::clear_enum_type() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.enum_type_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000004u;
+  _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline ::google::protobuf::FeatureSet_EnumType FeatureSet::enum_type() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.enum_type)
@@ -17428,19 +17346,19 @@ inline ::google::protobuf::FeatureSet_EnumType FeatureSet::_internal_enum_type()
 inline void FeatureSet::_internal_set_enum_type(::google::protobuf::FeatureSet_EnumType value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_EnumType_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.enum_type_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_repeated_field_encoding() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
 inline void FeatureSet::clear_repeated_field_encoding() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.repeated_field_encoding_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline ::google::protobuf::FeatureSet_RepeatedFieldEncoding FeatureSet::repeated_field_encoding() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.repeated_field_encoding)
@@ -17457,48 +17375,19 @@ inline ::google::protobuf::FeatureSet_RepeatedFieldEncoding FeatureSet::_interna
 inline void FeatureSet::_internal_set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_RepeatedFieldEncoding_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.repeated_field_encoding_ = value;
-}
-
-// optional .google.protobuf.FeatureSet.StringFieldValidation string_field_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-inline bool FeatureSet::has_string_field_validation() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
-  return value;
-}
-inline void FeatureSet::clear_string_field_validation() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.string_field_validation_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000010u;
-}
-inline ::google::protobuf::FeatureSet_StringFieldValidation FeatureSet::string_field_validation() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.string_field_validation)
-  return _internal_string_field_validation();
-}
-inline void FeatureSet::set_string_field_validation(::google::protobuf::FeatureSet_StringFieldValidation value) {
-  _internal_set_string_field_validation(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.string_field_validation)
-}
-inline ::google::protobuf::FeatureSet_StringFieldValidation FeatureSet::_internal_string_field_validation() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return static_cast<::google::protobuf::FeatureSet_StringFieldValidation>(_impl_.string_field_validation_);
-}
-inline void FeatureSet::_internal_set_string_field_validation(::google::protobuf::FeatureSet_StringFieldValidation value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  assert(::google::protobuf::FeatureSet_StringFieldValidation_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000010u;
-  _impl_.string_field_validation_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_message_encoding() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline void FeatureSet::clear_message_encoding() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.message_encoding_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000020u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline ::google::protobuf::FeatureSet_MessageEncoding FeatureSet::message_encoding() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.message_encoding)
@@ -17515,19 +17404,19 @@ inline ::google::protobuf::FeatureSet_MessageEncoding FeatureSet::_internal_mess
 inline void FeatureSet::_internal_set_message_encoding(::google::protobuf::FeatureSet_MessageEncoding value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_MessageEncoding_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000020u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.message_encoding_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_json_format() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline void FeatureSet::clear_json_format() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.json_format_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000040u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline ::google::protobuf::FeatureSet_JsonFormat FeatureSet::json_format() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.json_format)
@@ -17544,105 +17433,8 @@ inline ::google::protobuf::FeatureSet_JsonFormat FeatureSet::_internal_json_form
 inline void FeatureSet::_internal_set_json_format(::google::protobuf::FeatureSet_JsonFormat value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_JsonFormat_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000040u;
+  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.json_format_ = value;
-}
-
-// optional .google.protobuf.FeatureSet raw_features = 999 [targets = TARGET_TYPE_UNKNOWN];
-inline bool FeatureSet::has_raw_features() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.raw_features_ != nullptr);
-  return value;
-}
-inline void FeatureSet::clear_raw_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (_impl_.raw_features_ != nullptr) _impl_.raw_features_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000001u;
-}
-inline const ::google::protobuf::FeatureSet& FeatureSet::_internal_raw_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  const ::google::protobuf::FeatureSet* p = _impl_.raw_features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
-}
-inline const ::google::protobuf::FeatureSet& FeatureSet::raw_features() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.raw_features)
-  return _internal_raw_features();
-}
-inline void FeatureSet::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
-  }
-  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FeatureSet.raw_features)
-}
-inline ::google::protobuf::FeatureSet* FeatureSet::release_raw_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::google::protobuf::FeatureSet* released = _impl_.raw_features_;
-  _impl_.raw_features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
-  return released;
-}
-inline ::google::protobuf::FeatureSet* FeatureSet::unsafe_arena_release_raw_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSet.raw_features)
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::google::protobuf::FeatureSet* temp = _impl_.raw_features_;
-  _impl_.raw_features_ = nullptr;
-  return temp;
-}
-inline ::google::protobuf::FeatureSet* FeatureSet::_internal_mutable_raw_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
-  if (_impl_.raw_features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
-  }
-  return _impl_.raw_features_;
-}
-inline ::google::protobuf::FeatureSet* FeatureSet::mutable_raw_features() {
-  ::google::protobuf::FeatureSet* _msg = _internal_mutable_raw_features();
-  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSet.raw_features)
-  return _msg;
-}
-inline void FeatureSet::set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.raw_features_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-
-  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSet.raw_features)
 }
 
 // -------------------------------------------------------------------
@@ -18359,12 +18151,6 @@ struct is_proto_enum<::google::protobuf::FeatureSet_RepeatedFieldEncoding> : std
 template <>
 inline const EnumDescriptor* GetEnumDescriptor<::google::protobuf::FeatureSet_RepeatedFieldEncoding>() {
   return ::google::protobuf::FeatureSet_RepeatedFieldEncoding_descriptor();
-}
-template <>
-struct is_proto_enum<::google::protobuf::FeatureSet_StringFieldValidation> : std::true_type {};
-template <>
-inline const EnumDescriptor* GetEnumDescriptor<::google::protobuf::FeatureSet_StringFieldValidation>() {
-  return ::google::protobuf::FeatureSet_StringFieldValidation_descriptor();
 }
 template <>
 struct is_proto_enum<::google::protobuf::FeatureSet_MessageEncoding> : std::true_type {};
