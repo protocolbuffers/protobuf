@@ -92,7 +92,7 @@ make_shell_script(
     name = "gen_run_cmake_build",
     out = "run_cmake_build.sh",
     contents = "set -ex\n" +
-               "cd $(dirname $1) && rsync -avR . .. && cd ../..\n" +
+               "cd $(dirname $1) && cp -r . .. && cd ../..\n" +
                "mkdir build && cd build && cmake ../cmake && make -j8 && make test",
 )
 
