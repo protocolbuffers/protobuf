@@ -290,10 +290,8 @@ TEST_P(MiniTableTest, Extendible) {
   upb::Arena arena;
   upb::MtDataEncoder e;
   ASSERT_TRUE(e.StartMessage(kUpb_MessageModifier_IsExtendable));
-  int count = 0;
   for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
     ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i, 0));
-    count++;
   }
   upb::Status status;
   upb_MiniTable* table = _upb_MiniTable_Build(
