@@ -338,12 +338,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
     !defined(_ARCH_PPC) && !defined(__wasm__) &&                      \
     !(defined(_MSC_VER) && defined(_M_IX86)) && !defined(__i386__) && \
     !(defined(__NDK_MAJOR__) && __NDK_MAJOR <= 24)
-#  ifndef PROTO2_OPENSOURCE
 // Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
 // Compilation fails on X86 Windows:
 // https://github.com/llvm/llvm-project/issues/53271
-#  endif
 #define PROTOBUF_MUSTTAIL [[clang::musttail]]
 #define PROTOBUF_TAILCALL true
 #else
