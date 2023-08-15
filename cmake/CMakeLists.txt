@@ -110,8 +110,8 @@ target_link_libraries(message INTERFACE
 
 add_library(message_internal 
     ../upb/message/message.c
-  ../upb/message/extension_internal.h
-  ../upb/message/internal.h
+  ../upb/message/internal/extension.h
+  ../upb/message/internal/message.h
   ../upb/message/message.h
 )
 target_include_directories(message_internal PUBLIC
