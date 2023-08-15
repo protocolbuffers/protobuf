@@ -33,7 +33,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/editions/golden/test_messages_proto2.pb.h"
 #include "google/protobuf/editions/golden/test_messages_proto3.pb.h"
-#include "google/protobuf/editions/proto/editions_default_features.pb.h"
+#include "google/protobuf/editions/proto/test_editions_default_features.pb.h"
 #include "google/protobuf/test_textproto.h"
 
 // These tests provide some basic minimal coverage that protos work as expected.
@@ -166,7 +166,6 @@ TEST(Generated, EditionDefaults2023InternalFeatures) {
         field_presence: EXPLICIT
         enum_type: OPEN
         repeated_field_encoding: PACKED
-        string_field_validation: MANDATORY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         [pb.cpp] { legacy_closed_enum: false utf8_validation: VERIFY_PARSE }

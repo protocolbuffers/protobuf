@@ -87,7 +87,6 @@ TEST_F(CppGeneratorTest, BasicError) {
       "foo.proto:4:7: Expected \"required\", \"optional\", or \"repeated\"");
 }
 
-
 TEST_F(CppGeneratorTest, LegacyClosedEnumOnNonEnumField) {
   CreateTempFile("foo.proto",
                  R"schema(
@@ -150,8 +149,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
 }
 
 TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
-  CreateTempFile("foo.proto",
-                 R"schema(
+  CreateTempFile("foo.proto", R"schema(
     edition = "2023";
     import "google/protobuf/cpp_features.proto";
     option features.(pb.cpp).legacy_closed_enum = true;
@@ -162,7 +160,8 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
     message Foo {
       TestEnum bar = 1 [features.field_presence = IMPLICIT];
       int32 baz = 2;
-    })schema");
+    }
+  )schema");
 
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
@@ -172,6 +171,88 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
       "Field Foo.bar has a closed enum type with implicit presence.");
 }
 
+TEST_F(CppGeneratorTest, Utf8ValidationMap) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      map<string, string> map_field = 1 [
+        features.(pb.cpp).utf8_validation = NONE
+      ];
+      map<int32, string> map_field_value = 2 [
+        features.(pb.cpp).utf8_validation = VERIFY_PARSE
+      ];
+      map<string, int32> map_field_key = 3 [
+        features.(pb.cpp).utf8_validation = VERIFY_DLOG
+      ];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, Utf8ValidationNonString) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      int64 bar = 1 [
+        features.(pb.cpp).utf8_validation = NONE
+      ];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectErrorSubstring("Field Foo.bar specifies the utf8_validation feature");
+}
+
+TEST_F(CppGeneratorTest, Utf8ValidationNonStringMap) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      map<int64, int64> bar = 1 [
+        features.(pb.cpp).utf8_validation = VERIFY_PARSE
+      ];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectErrorSubstring("Field Foo.bar specifies the utf8_validation feature");
+}
+
+TEST_F(CppGeneratorTest, Utf8ValidationUnknownValue) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      string bar = 1 [
+        features.(pb.cpp).utf8_validation = UTF8_VALIDATION_UNKNOWN
+      ];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectErrorSubstring(
+      "Field Foo.bar has an unknown value for the utf8_validation feature.");
+}
 #ifdef PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
 TEST_F(CppGeneratorTest, CtypeOnNoneStringFieldTest) {
   CreateTempFile("foo.proto",

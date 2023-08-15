@@ -74,7 +74,8 @@ absl::Status Error(Args... args) {
 bool IsNonFeatureField(const FieldDescriptor& field) {
   return field.containing_type() &&
          field.containing_type()->full_name() == "google.protobuf.FeatureSet" &&
-         field.name() == "raw_features";
+         (field.name() == "raw_features" ||
+          field.name() == "string_field_validation");
 }
 
 bool EditionsLessThan(absl::string_view a, absl::string_view b) {
@@ -197,6 +198,7 @@ absl::Status ValidateMergedFeatures(const Message& msg) {
   const Reflection& reflection = *msg.GetReflection();
   for (int i = 0; i < descriptor.field_count(); ++i) {
     const FieldDescriptor& field = *descriptor.field(i);
+    if (IsNonFeatureField(field)) continue;
     // Validate enum features.
     if (field.enum_type() != nullptr) {
       ABSL_DCHECK(reflection.HasField(msg, &field));
