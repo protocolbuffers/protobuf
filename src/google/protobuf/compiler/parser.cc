@@ -661,9 +661,8 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
     root_location.RecordLegacyLocation(file,
                                        DescriptorPool::ErrorCollector::OTHER);
 
-    if (require_syntax_identifier_ || LookingAt("syntax")
-        || LookingAt("edition")
-    ) {
+    if (require_syntax_identifier_ || LookingAt("syntax") ||
+        LookingAt("edition")) {
       if (!ParseSyntaxIdentifier(file, root_location)) {
         // Don't attempt to parse the file if we didn't recognize the syntax
         // identifier.
@@ -1853,6 +1852,8 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
     LocationRecorder location(parent_location, message->reserved_range_size());
 
     DescriptorProto::ReservedRange* range = message->add_reserved_range();
+    location.RecordLegacyLocation(range,
+                                  DescriptorPool::ErrorCollector::NUMBER);
     int start, end;
     io::Tokenizer::Token start_token;
     {
@@ -1959,6 +1960,8 @@ bool Parser::ParseReservedNumbers(EnumDescriptorProto* proto,
     LocationRecorder location(parent_location, proto->reserved_range_size());
 
     EnumDescriptorProto::EnumReservedRange* range = proto->add_reserved_range();
+    location.RecordLegacyLocation(range,
+                                  DescriptorPool::ErrorCollector::NUMBER);
     int start, end;
     io::Tokenizer::Token start_token;
     {
