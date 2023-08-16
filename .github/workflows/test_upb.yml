@@ -20,6 +20,9 @@ jobs:
           - { name: "Fastbuild" }
           - { name: "Optimized", flags: "-c opt" }
           - { name: "FastTable", flags: "--@upb//:fasttable_enabled=true" }
+          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-@upb//benchmarks:benchmark -@upb//python/..." }
+          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-@upb//benchmarks:benchmark -@upb//python/... -@upb//lua/..." }
+          - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-@upb//benchmarks:benchmark -@upb//python/..." }
         include:
           # Set defaults
           - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
@@ -39,3 +42,4 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
           bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.targets }} ${{ matrix.config.flags }}
+          exclude-targets: ${{ matrix.config.exclude-targets }}
