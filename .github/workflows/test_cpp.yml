@@ -31,11 +31,11 @@ jobs:
 
           # Override cases with custom images
           - config: { name: "TCMalloc" }
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:e4493c58e7c3f3a0775e0b19a46bc822e866a5275b7a5463f509af8072f283db"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:bd39119d74b8a3fad4ae335d4cf5294e70384676331b7e19949459fc7a8d8328"
             targets: "//src/..."
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test"
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-222e7e87028b7098e088f5ca7cae06d32f483eb5"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e02879ddc84fa6917e4e22833e7f75884ea890b8"
     name: Linux ${{ matrix.config.name }}
     runs-on: ubuntu-latest
     steps:
@@ -98,7 +98,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-222e7e87028b7098e088f5ca7cae06d32f483eb5
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-e02879ddc84fa6917e4e22833e7f75884ea890b8
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >
