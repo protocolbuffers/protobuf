@@ -39,7 +39,7 @@ load(
 
 # begin:google_only
 # load(
-#     "//third_party/bazel_rules/rules_kotlin/kotlin/native:native_interop_hint.bzl",
+#     "//tools/build_defs/kotlin/native:rules.bzl",
 #     "kt_native_interop_hint",
 # )
 # load("//tools/build_defs/license:license.bzl", "license")
