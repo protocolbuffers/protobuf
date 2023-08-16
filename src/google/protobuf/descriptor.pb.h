@@ -633,6 +633,10 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
     *this = ::std::move(from);
   }
 
+  inline UninterpretedOption_NamePart(::google::protobuf::Arena* arena, const UninterpretedOption_NamePart& from)
+    : UninterpretedOption_NamePart(arena) {
+    MergeFrom(from);
+  }
   inline UninterpretedOption_NamePart& operator=(const UninterpretedOption_NamePart& from) {
     CopyFrom(from);
     return *this;
@@ -815,6 +819,10 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
     *this = ::std::move(from);
   }
 
+  inline SourceCodeInfo_Location(::google::protobuf::Arena* arena, const SourceCodeInfo_Location& from)
+    : SourceCodeInfo_Location(arena) {
+    MergeFrom(from);
+  }
   inline SourceCodeInfo_Location& operator=(const SourceCodeInfo_Location& from) {
     CopyFrom(from);
     return *this;
@@ -1075,6 +1083,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
     *this = ::std::move(from);
   }
 
+  inline GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena, const GeneratedCodeInfo_Annotation& from)
+    : GeneratedCodeInfo_Annotation(arena) {
+    MergeFrom(from);
+  }
   inline GeneratedCodeInfo_Annotation& operator=(const GeneratedCodeInfo_Annotation& from) {
     CopyFrom(from);
     return *this;
@@ -1325,6 +1337,10 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
     *this = ::std::move(from);
   }
 
+  inline FieldOptions_EditionDefault(::google::protobuf::Arena* arena, const FieldOptions_EditionDefault& from)
+    : FieldOptions_EditionDefault(arena) {
+    MergeFrom(from);
+  }
   inline FieldOptions_EditionDefault& operator=(const FieldOptions_EditionDefault& from) {
     CopyFrom(from);
     return *this;
@@ -1513,6 +1529,10 @@ class PROTOBUF_EXPORT FeatureSet final :
     *this = ::std::move(from);
   }
 
+  inline FeatureSet(::google::protobuf::Arena* arena, const FeatureSet& from)
+    : FeatureSet(arena) {
+    MergeFrom(from);
+  }
   inline FeatureSet& operator=(const FeatureSet& from) {
     CopyFrom(from);
     return *this;
@@ -1987,6 +2007,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     *this = ::std::move(from);
   }
 
+  inline ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena, const ExtensionRangeOptions_Declaration& from)
+    : ExtensionRangeOptions_Declaration(arena) {
+    MergeFrom(from);
+  }
   inline ExtensionRangeOptions_Declaration& operator=(const ExtensionRangeOptions_Declaration& from) {
     CopyFrom(from);
     return *this;
@@ -2214,6 +2238,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
     *this = ::std::move(from);
   }
 
+  inline EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena, const EnumDescriptorProto_EnumReservedRange& from)
+    : EnumDescriptorProto_EnumReservedRange(arena) {
+    MergeFrom(from);
+  }
   inline EnumDescriptorProto_EnumReservedRange& operator=(const EnumDescriptorProto_EnumReservedRange& from) {
     CopyFrom(from);
     return *this;
@@ -2390,6 +2418,10 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
     *this = ::std::move(from);
   }
 
+  inline DescriptorProto_ReservedRange(::google::protobuf::Arena* arena, const DescriptorProto_ReservedRange& from)
+    : DescriptorProto_ReservedRange(arena) {
+    MergeFrom(from);
+  }
   inline DescriptorProto_ReservedRange& operator=(const DescriptorProto_ReservedRange& from) {
     CopyFrom(from);
     return *this;
@@ -2566,6 +2598,10 @@ class PROTOBUF_EXPORT UninterpretedOption final :
     *this = ::std::move(from);
   }
 
+  inline UninterpretedOption(::google::protobuf::Arena* arena, const UninterpretedOption& from)
+    : UninterpretedOption(arena) {
+    MergeFrom(from);
+  }
   inline UninterpretedOption& operator=(const UninterpretedOption& from) {
     CopyFrom(from);
     return *this;
@@ -2834,6 +2870,10 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
     *this = ::std::move(from);
   }
 
+  inline SourceCodeInfo(::google::protobuf::Arena* arena, const SourceCodeInfo& from)
+    : SourceCodeInfo(arena) {
+    MergeFrom(from);
+  }
   inline SourceCodeInfo& operator=(const SourceCodeInfo& from) {
     CopyFrom(from);
     return *this;
@@ -3005,6 +3045,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
     *this = ::std::move(from);
   }
 
+  inline GeneratedCodeInfo(::google::protobuf::Arena* arena, const GeneratedCodeInfo& from)
+    : GeneratedCodeInfo(arena) {
+    MergeFrom(from);
+  }
   inline GeneratedCodeInfo& operator=(const GeneratedCodeInfo& from) {
     CopyFrom(from);
     return *this;
@@ -3176,6 +3220,10 @@ class PROTOBUF_EXPORT ServiceOptions final :
     *this = ::std::move(from);
   }
 
+  inline ServiceOptions(::google::protobuf::Arena* arena, const ServiceOptions& from)
+    : ServiceOptions(arena) {
+    MergeFrom(from);
+  }
   inline ServiceOptions& operator=(const ServiceOptions& from) {
     CopyFrom(from);
     return *this;
@@ -3529,6 +3577,10 @@ class PROTOBUF_EXPORT OneofOptions final :
     *this = ::std::move(from);
   }
 
+  inline OneofOptions(::google::protobuf::Arena* arena, const OneofOptions& from)
+    : OneofOptions(arena) {
+    MergeFrom(from);
+  }
   inline OneofOptions& operator=(const OneofOptions& from) {
     CopyFrom(from);
     return *this;
@@ -3869,6 +3921,10 @@ class PROTOBUF_EXPORT MethodOptions final :
     *this = ::std::move(from);
   }
 
+  inline MethodOptions(::google::protobuf::Arena* arena, const MethodOptions& from)
+    : MethodOptions(arena) {
+    MergeFrom(from);
+  }
   inline MethodOptions& operator=(const MethodOptions& from) {
     CopyFrom(from);
     return *this;
@@ -4256,6 +4312,10 @@ class PROTOBUF_EXPORT MessageOptions final :
     *this = ::std::move(from);
   }
 
+  inline MessageOptions(::google::protobuf::Arena* arena, const MessageOptions& from)
+    : MessageOptions(arena) {
+    MergeFrom(from);
+  }
   inline MessageOptions& operator=(const MessageOptions& from) {
     CopyFrom(from);
     return *this;
@@ -4661,6 +4721,10 @@ class PROTOBUF_EXPORT FileOptions final :
     *this = ::std::move(from);
   }
 
+  inline FileOptions(::google::protobuf::Arena* arena, const FileOptions& from)
+    : FileOptions(arena) {
+    MergeFrom(from);
+  }
   inline FileOptions& operator=(const FileOptions& from) {
     CopyFrom(from);
     return *this;
@@ -5342,6 +5406,10 @@ class PROTOBUF_EXPORT FieldOptions final :
     *this = ::std::move(from);
   }
 
+  inline FieldOptions(::google::protobuf::Arena* arena, const FieldOptions& from)
+    : FieldOptions(arena) {
+    MergeFrom(from);
+  }
   inline FieldOptions& operator=(const FieldOptions& from) {
     CopyFrom(from);
     return *this;
@@ -5933,6 +6001,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
     *this = ::std::move(from);
   }
 
+  inline ExtensionRangeOptions(::google::protobuf::Arena* arena, const ExtensionRangeOptions& from)
+    : ExtensionRangeOptions(arena) {
+    MergeFrom(from);
+  }
   inline ExtensionRangeOptions& operator=(const ExtensionRangeOptions& from) {
     CopyFrom(from);
     return *this;
@@ -6328,6 +6400,10 @@ class PROTOBUF_EXPORT EnumValueOptions final :
     *this = ::std::move(from);
   }
 
+  inline EnumValueOptions(::google::protobuf::Arena* arena, const EnumValueOptions& from)
+    : EnumValueOptions(arena) {
+    MergeFrom(from);
+  }
   inline EnumValueOptions& operator=(const EnumValueOptions& from) {
     CopyFrom(from);
     return *this;
@@ -6694,6 +6770,10 @@ class PROTOBUF_EXPORT EnumOptions final :
     *this = ::std::move(from);
   }
 
+  inline EnumOptions(::google::protobuf::Arena* arena, const EnumOptions& from)
+    : EnumOptions(arena) {
+    MergeFrom(from);
+  }
   inline EnumOptions& operator=(const EnumOptions& from) {
     CopyFrom(from);
     return *this;
@@ -7073,6 +7153,10 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
     *this = ::std::move(from);
   }
 
+  inline OneofDescriptorProto(::google::protobuf::Arena* arena, const OneofDescriptorProto& from)
+    : OneofDescriptorProto(arena) {
+    MergeFrom(from);
+  }
   inline OneofDescriptorProto& operator=(const OneofDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -7259,6 +7343,10 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
     *this = ::std::move(from);
   }
 
+  inline MethodDescriptorProto(::google::protobuf::Arena* arena, const MethodDescriptorProto& from)
+    : MethodDescriptorProto(arena) {
+    MergeFrom(from);
+  }
   inline MethodDescriptorProto& operator=(const MethodDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -7509,6 +7597,10 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
     *this = ::std::move(from);
   }
 
+  inline FieldDescriptorProto(::google::protobuf::Arena* arena, const FieldDescriptorProto& from)
+    : FieldDescriptorProto(arena) {
+    MergeFrom(from);
+  }
   inline FieldDescriptorProto& operator=(const FieldDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -7893,6 +7985,10 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
     *this = ::std::move(from);
   }
 
+  inline EnumValueDescriptorProto(::google::protobuf::Arena* arena, const EnumValueDescriptorProto& from)
+    : EnumValueDescriptorProto(arena) {
+    MergeFrom(from);
+  }
   inline EnumValueDescriptorProto& operator=(const EnumValueDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -8092,6 +8188,10 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
     *this = ::std::move(from);
   }
 
+  inline DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena, const DescriptorProto_ExtensionRange& from)
+    : DescriptorProto_ExtensionRange(arena) {
+    MergeFrom(from);
+  }
   inline DescriptorProto_ExtensionRange& operator=(const DescriptorProto_ExtensionRange& from) {
     CopyFrom(from);
     return *this;
@@ -8285,6 +8385,10 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
     *this = ::std::move(from);
   }
 
+  inline ServiceDescriptorProto(::google::protobuf::Arena* arena, const ServiceDescriptorProto& from)
+    : ServiceDescriptorProto(arena) {
+    MergeFrom(from);
+  }
   inline ServiceDescriptorProto& operator=(const ServiceDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -8491,6 +8595,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
     *this = ::std::move(from);
   }
 
+  inline EnumDescriptorProto(::google::protobuf::Arena* arena, const EnumDescriptorProto& from)
+    : EnumDescriptorProto(arena) {
+    MergeFrom(from);
+  }
   inline EnumDescriptorProto& operator=(const EnumDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -8749,6 +8857,10 @@ class PROTOBUF_EXPORT DescriptorProto final :
     *this = ::std::move(from);
   }
 
+  inline DescriptorProto(::google::protobuf::Arena* arena, const DescriptorProto& from)
+    : DescriptorProto(arena) {
+    MergeFrom(from);
+  }
   inline DescriptorProto& operator=(const DescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -9108,6 +9220,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     *this = ::std::move(from);
   }
 
+  inline FileDescriptorProto(::google::protobuf::Arena* arena, const FileDescriptorProto& from)
+    : FileDescriptorProto(arena) {
+    MergeFrom(from);
+  }
   inline FileDescriptorProto& operator=(const FileDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -9518,6 +9634,10 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
     *this = ::std::move(from);
   }
 
+  inline FileDescriptorSet(::google::protobuf::Arena* arena, const FileDescriptorSet& from)
+    : FileDescriptorSet(arena) {
+    MergeFrom(from);
+  }
   inline FileDescriptorSet& operator=(const FileDescriptorSet& from) {
     CopyFrom(from);
     return *this;

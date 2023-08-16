@@ -132,6 +132,10 @@ class PROTOC_EXPORT Version final :
     *this = ::std::move(from);
   }
 
+  inline Version(::google::protobuf::Arena* arena, const Version& from)
+    : Version(arena) {
+    MergeFrom(from);
+  }
   inline Version& operator=(const Version& from) {
     CopyFrom(from);
     return *this;
@@ -340,6 +344,10 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
     *this = ::std::move(from);
   }
 
+  inline CodeGeneratorResponse_File(::google::protobuf::Arena* arena, const CodeGeneratorResponse_File& from)
+    : CodeGeneratorResponse_File(arena) {
+    MergeFrom(from);
+  }
   inline CodeGeneratorResponse_File& operator=(const CodeGeneratorResponse_File& from) {
     CopyFrom(from);
     return *this;
@@ -564,6 +572,10 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
     *this = ::std::move(from);
   }
 
+  inline CodeGeneratorResponse(::google::protobuf::Arena* arena, const CodeGeneratorResponse& from)
+    : CodeGeneratorResponse(arena) {
+    MergeFrom(from);
+  }
   inline CodeGeneratorResponse& operator=(const CodeGeneratorResponse& from) {
     CopyFrom(from);
     return *this;
@@ -789,6 +801,10 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
     *this = ::std::move(from);
   }
 
+  inline CodeGeneratorRequest(::google::protobuf::Arena* arena, const CodeGeneratorRequest& from)
+    : CodeGeneratorRequest(arena) {
+    MergeFrom(from);
+  }
   inline CodeGeneratorRequest& operator=(const CodeGeneratorRequest& from) {
     CopyFrom(from);
     return *this;
