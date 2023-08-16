@@ -602,10 +602,6 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   // Define message type for internal repeated field.
   typedef Derived EntryType;
 
-  // Define abbreviation for parent MapFieldLite
-  typedef MapFieldLite<Derived, Key, T, kKeyFieldType_, kValueFieldType_>
-      MapFieldLiteType;
-
  public:
   typedef Map<Key, T> MapType;
   static constexpr WireFormatLite::FieldType kKeyFieldType = kKeyFieldType_;

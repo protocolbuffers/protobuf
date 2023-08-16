@@ -712,6 +712,8 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
 void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
   MessageGenerator* generator = message_generators_[idx].get();
 
+  if (!ShouldGenerateClass(generator->descriptor(), options_)) return;
+
   // Generate the split instance first because it's needed in the constexpr
   // constructor.
   if (ShouldSplit(generator->descriptor(), options_)) {
@@ -1409,6 +1411,7 @@ class FileGenerator::ForwardDeclarations {
   void PrintTopLevelDecl(io::Printer* p, const Options& options) const {
     if (ShouldGenerateExternSpecializations(options)) {
       for (const auto& c : classes_) {
+        if (!ShouldGenerateClass(c.second, options)) continue;
         // To reduce total linker input size in large binaries we make these
         // functions extern and define then in the pb.cc file. This avoids bloat
         // in callers by having duplicate definitions of the template.
@@ -1464,11 +1467,12 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
 
   absl::btree_map<std::string, ForwardDeclarations> decls;
   for (const auto* d : classes) {
-    if (d != nullptr && !public_set.count(d->file()))
+    if (d != nullptr && !public_set.contains(d->file()) &&
+        ShouldGenerateClass(d, options_))
       decls[Namespace(d, options_)].AddMessage(d);
   }
   for (const auto* e : enums) {
-    if (e != nullptr && !public_set.count(e->file()))
+    if (e != nullptr && !public_set.contains(e->file()))
       decls[Namespace(e, options_)].AddEnum(e);
   }
   for (const auto& mg : message_generators_) {
@@ -1596,7 +1600,6 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
       IncludeFile("third_party/protobuf/map_entry.h", p);
       IncludeFile("third_party/protobuf/map_field_inl.h", p);
     } else {
-      IncludeFile("third_party/protobuf/map_entry_lite.h", p);
       IncludeFile("third_party/protobuf/map_field_lite.h", p);
     }
   }
