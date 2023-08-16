@@ -357,8 +357,8 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
 
 #endif /* UPB_BASE_STATUS_H_ */
 
-#ifndef UPB_INTERNAL_ARRAY_INTERNAL_H_
-#define UPB_INTERNAL_ARRAY_INTERNAL_H_
+#ifndef UPB_COLLECTIONS_INTERNAL_ARRAY_H_
+#define UPB_COLLECTIONS_INTERNAL_ARRAY_H_
 
 #include <string.h>
 
@@ -1364,7 +1364,7 @@ UPB_INLINE void _upb_array_detach(const void* msg, size_t ofs) {
 #endif
 
 
-#endif /* UPB_INTERNAL_ARRAY_INTERNAL_H_ */
+#endif /* UPB_COLLECTIONS_INTERNAL_ARRAY_H_ */
 
 #ifndef UPB_COLLECTIONS_MAP_H_
 #define UPB_COLLECTIONS_MAP_H_
@@ -1477,8 +1477,8 @@ UPB_API upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter);
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-#ifndef UPB_COLLECTIONS_MAP_INTERNAL_H_
-#define UPB_COLLECTIONS_MAP_INTERNAL_H_
+#ifndef UPB_COLLECTIONS_INTERNAL_MAP_H_
+#define UPB_COLLECTIONS_INTERNAL_MAP_H_
 
 
 #ifndef UPB_HASH_STR_TABLE_H_
@@ -1914,47 +1914,18 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
 #endif
 
 
-#endif /* UPB_COLLECTIONS_MAP_INTERNAL_H_ */
-
-#ifndef UPB_BASE_LOG2_H_
-#define UPB_BASE_LOG2_H_
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE int upb_Log2Ceiling(int x) {
-  if (x <= 1) return 0;
-#ifdef __GNUC__
-  return 32 - __builtin_clz(x - 1);
-#else
-  int lg2 = 0;
-  while ((1 << lg2) < x) lg2++;
-  return lg2;
-#endif
-}
-
-UPB_INLINE int upb_Log2CeilingSize(int x) { return 1 << upb_Log2Ceiling(x); }
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_BASE_LOG2_H_ */
+#endif /* UPB_COLLECTIONS_INTERNAL_MAP_H_ */
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-#ifndef UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_
-#define UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_
+#ifndef UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_
+#define UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_
 
 #include <stdlib.h>
 
 
-#ifndef UPB_MESSAGE_EXTENSION_INTERNAL_H_
-#define UPB_MESSAGE_EXTENSION_INTERNAL_H_
+#ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
+#define UPB_MESSAGE_INTERNAL_EXTENSION_H_
 
 
 // Public APIs for message operations that do not depend on the schema.
@@ -2068,7 +2039,7 @@ const upb_Message_Extension* _upb_Message_Getext(
 #endif
 
 
-#endif /* UPB_MESSAGE_EXTENSION_INTERNAL_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_EXTENSION_H_ */
 
 #ifndef UPB_MINI_TABLE_INTERNAL_MAP_ENTRY_DATA_H_
 #define UPB_MINI_TABLE_INTERNAL_MAP_ENTRY_DATA_H_
@@ -2108,7 +2079,7 @@ typedef struct {
     // require 8-byte alignment.
     double d;
   };
-  // LINT.ThenChange(//depot/google3/third_party/upb/upb/message/internal.h:internal_layout)
+  // LINT.ThenChange(//depot/google3/third_party/upb/upb/message/internal/message.h:internal_layout)
   upb_MapEntryData data;
 } upb_MapEntry;
 
@@ -2182,7 +2153,36 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
 #endif
 
 
-#endif /* UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_ */
+#endif /* UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_ */
+
+#ifndef UPB_BASE_LOG2_H_
+#define UPB_BASE_LOG2_H_
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE int upb_Log2Ceiling(int x) {
+  if (x <= 1) return 0;
+#ifdef __GNUC__
+  return 32 - __builtin_clz(x - 1);
+#else
+  int lg2 = 0;
+  while ((1 << lg2) < x) lg2++;
+  return lg2;
+#endif
+}
+
+UPB_INLINE int upb_Log2CeilingSize(int x) { return 1 << upb_Log2Ceiling(x); }
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_BASE_LOG2_H_ */
 
 #ifndef UPB_REFLECTION_DEF_H_
 #define UPB_REFLECTION_DEF_H_
@@ -2278,6 +2278,10 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
 
 #ifndef UPB_MESSAGE_ACCESSORS_H_
 #define UPB_MESSAGE_ACCESSORS_H_
+
+
+#ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
+#define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 
 
 /*
@@ -2458,10 +2462,6 @@ bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
 
 
 #endif /* UPB_MESSAGE_INTERNAL_H_ */
-
-#ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
-#define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
-
 
 // Must be last.
 
@@ -11952,6 +11952,266 @@ UPB_INLINE const char* upb_WireReader_SkipValue(
 
 #endif  // UPB_WIRE_READER_H_
 
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
+
+
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE char _upb_ToBase92(int8_t ch) {
+  extern const char _kUpb_ToBase92[];
+  UPB_ASSERT(0 <= ch && ch < 92);
+  return _kUpb_ToBase92[ch];
+}
+
+UPB_INLINE char _upb_FromBase92(uint8_t ch) {
+  extern const int8_t _kUpb_FromBase92[];
+  if (' ' > ch || ch > '~') return -1;
+  return _kUpb_FromBase92[ch - ' '];
+}
+
+UPB_INLINE const char* _upb_Base92_DecodeVarint(const char* ptr,
+                                                const char* end, char first_ch,
+                                                uint8_t min, uint8_t max,
+                                                uint32_t* out_val) {
+  uint32_t val = 0;
+  uint32_t shift = 0;
+  const int bits_per_char =
+      upb_Log2Ceiling(_upb_FromBase92(max) - _upb_FromBase92(min));
+  char ch = first_ch;
+  while (1) {
+    uint32_t bits = _upb_FromBase92(ch) - _upb_FromBase92(min);
+    val |= bits << shift;
+    if (ptr == end || *ptr < min || max < *ptr) {
+      *out_val = val;
+      UPB_ASSUME(ptr != NULL);
+      return ptr;
+    }
+    ch = *ptr++;
+    shift += bits_per_char;
+    if (shift >= 32) return NULL;
+  }
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
+
+// Must be last.
+
+// upb_MdDecoder: used internally for decoding MiniDescriptors for messages,
+// extensions, and enums.
+typedef struct {
+  const char* end;
+  upb_Status* status;
+  jmp_buf err;
+} upb_MdDecoder;
+
+UPB_PRINTF(2, 3)
+UPB_NORETURN UPB_INLINE void upb_MdDecoder_ErrorJmp(upb_MdDecoder* d,
+                                                    const char* fmt, ...) {
+  if (d->status) {
+    va_list argp;
+    upb_Status_SetErrorMessage(d->status, "Error building mini table: ");
+    va_start(argp, fmt);
+    upb_Status_VAppendErrorFormat(d->status, fmt, argp);
+    va_end(argp);
+  }
+  UPB_LONGJMP(d->err, 1);
+}
+
+UPB_INLINE void upb_MdDecoder_CheckOutOfMemory(upb_MdDecoder* d,
+                                               const void* ptr) {
+  if (!ptr) upb_MdDecoder_ErrorJmp(d, "Out of memory");
+}
+
+UPB_INLINE const char* upb_MdDecoder_DecodeBase92Varint(
+    upb_MdDecoder* d, const char* ptr, char first_ch, uint8_t min, uint8_t max,
+    uint32_t* out_val) {
+  ptr = _upb_Base92_DecodeVarint(ptr, d->end, first_ch, min, max, out_val);
+  if (!ptr) upb_MdDecoder_ErrorJmp(d, "Overlong varint");
+  return ptr;
+}
+
+
+#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
+
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
+
+
+// Must be last.
+
+typedef enum {
+  kUpb_EncodedType_Double = 0,
+  kUpb_EncodedType_Float = 1,
+  kUpb_EncodedType_Fixed32 = 2,
+  kUpb_EncodedType_Fixed64 = 3,
+  kUpb_EncodedType_SFixed32 = 4,
+  kUpb_EncodedType_SFixed64 = 5,
+  kUpb_EncodedType_Int32 = 6,
+  kUpb_EncodedType_UInt32 = 7,
+  kUpb_EncodedType_SInt32 = 8,
+  kUpb_EncodedType_Int64 = 9,
+  kUpb_EncodedType_UInt64 = 10,
+  kUpb_EncodedType_SInt64 = 11,
+  kUpb_EncodedType_OpenEnum = 12,
+  kUpb_EncodedType_Bool = 13,
+  kUpb_EncodedType_Bytes = 14,
+  kUpb_EncodedType_String = 15,
+  kUpb_EncodedType_Group = 16,
+  kUpb_EncodedType_Message = 17,
+  kUpb_EncodedType_ClosedEnum = 18,
+
+  kUpb_EncodedType_RepeatedBase = 20,
+} upb_EncodedType;
+
+typedef enum {
+  kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
+  kUpb_EncodedFieldModifier_IsRequired = 1 << 1,
+  kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
+} upb_EncodedFieldModifier;
+
+enum {
+  kUpb_EncodedValue_MinField = ' ',
+  kUpb_EncodedValue_MaxField = 'I',
+  kUpb_EncodedValue_MinModifier = 'L',
+  kUpb_EncodedValue_MaxModifier = '[',
+  kUpb_EncodedValue_End = '^',
+  kUpb_EncodedValue_MinSkip = '_',
+  kUpb_EncodedValue_MaxSkip = '~',
+  kUpb_EncodedValue_OneofSeparator = '~',
+  kUpb_EncodedValue_FieldSeparator = '|',
+  kUpb_EncodedValue_MinOneofField = ' ',
+  kUpb_EncodedValue_MaxOneofField = 'b',
+  kUpb_EncodedValue_MaxEnumMask = 'A',
+};
+
+enum {
+  kUpb_EncodedVersion_EnumV1 = '!',
+  kUpb_EncodedVersion_ExtensionV1 = '#',
+  kUpb_EncodedVersion_MapV1 = '%',
+  kUpb_EncodedVersion_MessageV1 = '$',
+  kUpb_EncodedVersion_MessageSetV1 = '&',
+};
+
+
+#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
+
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
+
+// Must be last.
+
+typedef enum {
+  kUpb_FieldModifier_IsRepeated = 1 << 0,
+  kUpb_FieldModifier_IsPacked = 1 << 1,
+  kUpb_FieldModifier_IsClosedEnum = 1 << 2,
+  kUpb_FieldModifier_IsProto3Singular = 1 << 3,
+  kUpb_FieldModifier_IsRequired = 1 << 4,
+} kUpb_FieldModifier;
+
+typedef enum {
+  kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
+  kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
+  kUpb_MessageModifier_IsExtendable = 1 << 2,
+} kUpb_MessageModifier;
+
+
+#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
+
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
+
+
+// Must be last.
+
+// If the input buffer has at least this many bytes available, the encoder call
+// is guaranteed to succeed (as long as field number order is maintained).
+#define kUpb_MtDataEncoder_MinSize 16
+
+typedef struct {
+  char* end;  // Limit of the buffer passed as a parameter.
+  // Aliased to internal-only members in .cc.
+  char internal[32];
+} upb_MtDataEncoder;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Encodes field/oneof information for a given message.  The sequence of calls
+// should look like:
+//
+//   upb_MtDataEncoder e;
+//   char buf[256];
+//   char* ptr = buf;
+//   e.end = ptr + sizeof(buf);
+//   unit64_t msg_mod = ...; // bitwise & of kUpb_MessageModifiers or zero
+//   ptr = upb_MtDataEncoder_StartMessage(&e, ptr, msg_mod);
+//   // Fields *must* be in field number order.
+//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
+//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
+//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
+//
+//   // If oneofs are present.  Oneofs must be encoded after regular fields.
+//   ptr = upb_MiniTable_StartOneof(&e, ptr)
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//
+//   ptr = upb_MiniTable_StartOneof(&e, ptr);
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//
+// Oneofs must be encoded after all regular fields.
+char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
+                                     uint64_t msg_mod);
+char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
+                                 upb_FieldType type, uint32_t field_num,
+                                 uint64_t field_mod);
+char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr);
+char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
+                                      uint32_t field_num);
+
+// Encodes the set of values for a given enum. The values must be given in
+// order (after casting to uint32_t), and repeats are not allowed.
+char* upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e, char* ptr);
+char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
+                                     uint32_t val);
+char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr);
+
+// Encodes an entire mini descriptor for an extension.
+char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
+                                        upb_FieldType type, uint32_t field_num,
+                                        uint64_t field_mod);
+
+// Encodes an entire mini descriptor for a map.
+char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
+                                  upb_FieldType key_type,
+                                  upb_FieldType value_type, uint64_t key_mod,
+                                  uint64_t value_mod);
+
+// Encodes an entire mini descriptor for a message set.
+char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_ */
+
 #ifndef UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
 #define UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
 
@@ -12270,87 +12530,6 @@ upb_ServiceDef* _upb_ServiceDefs_New(
 #define UPB_REFLECTION_DESC_STATE_INTERNAL_H_
 
 
-#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
-#define UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
-
-
-// Must be last.
-
-// If the input buffer has at least this many bytes available, the encoder call
-// is guaranteed to succeed (as long as field number order is maintained).
-#define kUpb_MtDataEncoder_MinSize 16
-
-typedef struct {
-  char* end;  // Limit of the buffer passed as a parameter.
-  // Aliased to internal-only members in .cc.
-  char internal[32];
-} upb_MtDataEncoder;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Encodes field/oneof information for a given message.  The sequence of calls
-// should look like:
-//
-//   upb_MtDataEncoder e;
-//   char buf[256];
-//   char* ptr = buf;
-//   e.end = ptr + sizeof(buf);
-//   unit64_t msg_mod = ...; // bitwise & of kUpb_MessageModifiers or zero
-//   ptr = upb_MtDataEncoder_StartMessage(&e, ptr, msg_mod);
-//   // Fields *must* be in field number order.
-//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
-//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
-//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
-//
-//   // If oneofs are present.  Oneofs must be encoded after regular fields.
-//   ptr = upb_MiniTable_StartOneof(&e, ptr)
-//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
-//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
-//
-//   ptr = upb_MiniTable_StartOneof(&e, ptr);
-//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
-//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
-//
-// Oneofs must be encoded after all regular fields.
-char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
-                                     uint64_t msg_mod);
-char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
-                                 upb_FieldType type, uint32_t field_num,
-                                 uint64_t field_mod);
-char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr);
-char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
-                                      uint32_t field_num);
-
-// Encodes the set of values for a given enum. The values must be given in
-// order (after casting to uint32_t), and repeats are not allowed.
-char* upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e, char* ptr);
-char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
-                                     uint32_t val);
-char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr);
-
-// Encodes an entire mini descriptor for an extension.
-char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
-                                        upb_FieldType type, uint32_t field_num,
-                                        uint64_t field_mod);
-
-// Encodes an entire mini descriptor for a map.
-char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
-                                  upb_FieldType key_type,
-                                  upb_FieldType value_type, uint64_t key_mod,
-                                  uint64_t value_mod);
-
-// Encodes an entire mini descriptor for a message set.
-char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_ */
-
 // Must be last.
 
 // Manages the storage for mini descriptor strings as they are being encoded.
@@ -12453,28 +12632,6 @@ upb_ExtensionRange* _upb_ExtensionRanges_New(
 
 
 #endif /* UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_ */
-
-#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
-#define UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
-
-// Must be last.
-
-typedef enum {
-  kUpb_FieldModifier_IsRepeated = 1 << 0,
-  kUpb_FieldModifier_IsPacked = 1 << 1,
-  kUpb_FieldModifier_IsClosedEnum = 1 << 2,
-  kUpb_FieldModifier_IsProto3Singular = 1 << 3,
-  kUpb_FieldModifier_IsRequired = 1 << 4,
-} kUpb_FieldModifier;
-
-typedef enum {
-  kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
-  kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
-  kUpb_MessageModifier_IsExtendable = 1 << 2,
-} kUpb_MessageModifier;
-
-
-#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
 
 #ifndef UPB_REFLECTION_ONEOF_DEF_INTERNAL_H_
 #define UPB_REFLECTION_ONEOF_DEF_INTERNAL_H_
@@ -12728,163 +12885,6 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 
 
 #endif /* UPB_WIRE_INTERNAL_DECODE_H_ */
-
-#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
-#define UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE char _upb_ToBase92(int8_t ch) {
-  extern const char _kUpb_ToBase92[];
-  UPB_ASSERT(0 <= ch && ch < 92);
-  return _kUpb_ToBase92[ch];
-}
-
-UPB_INLINE char _upb_FromBase92(uint8_t ch) {
-  extern const int8_t _kUpb_FromBase92[];
-  if (' ' > ch || ch > '~') return -1;
-  return _kUpb_FromBase92[ch - ' '];
-}
-
-UPB_INLINE const char* _upb_Base92_DecodeVarint(const char* ptr,
-                                                const char* end, char first_ch,
-                                                uint8_t min, uint8_t max,
-                                                uint32_t* out_val) {
-  uint32_t val = 0;
-  uint32_t shift = 0;
-  const int bits_per_char =
-      upb_Log2Ceiling(_upb_FromBase92(max) - _upb_FromBase92(min));
-  char ch = first_ch;
-  while (1) {
-    uint32_t bits = _upb_FromBase92(ch) - _upb_FromBase92(min);
-    val |= bits << shift;
-    if (ptr == end || *ptr < min || max < *ptr) {
-      *out_val = val;
-      UPB_ASSUME(ptr != NULL);
-      return ptr;
-    }
-    ch = *ptr++;
-    shift += bits_per_char;
-    if (shift >= 32) return NULL;
-  }
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
-
-#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
-#define UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
-
-
-// Must be last.
-
-typedef enum {
-  kUpb_EncodedType_Double = 0,
-  kUpb_EncodedType_Float = 1,
-  kUpb_EncodedType_Fixed32 = 2,
-  kUpb_EncodedType_Fixed64 = 3,
-  kUpb_EncodedType_SFixed32 = 4,
-  kUpb_EncodedType_SFixed64 = 5,
-  kUpb_EncodedType_Int32 = 6,
-  kUpb_EncodedType_UInt32 = 7,
-  kUpb_EncodedType_SInt32 = 8,
-  kUpb_EncodedType_Int64 = 9,
-  kUpb_EncodedType_UInt64 = 10,
-  kUpb_EncodedType_SInt64 = 11,
-  kUpb_EncodedType_OpenEnum = 12,
-  kUpb_EncodedType_Bool = 13,
-  kUpb_EncodedType_Bytes = 14,
-  kUpb_EncodedType_String = 15,
-  kUpb_EncodedType_Group = 16,
-  kUpb_EncodedType_Message = 17,
-  kUpb_EncodedType_ClosedEnum = 18,
-
-  kUpb_EncodedType_RepeatedBase = 20,
-} upb_EncodedType;
-
-typedef enum {
-  kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
-  kUpb_EncodedFieldModifier_IsRequired = 1 << 1,
-  kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
-} upb_EncodedFieldModifier;
-
-enum {
-  kUpb_EncodedValue_MinField = ' ',
-  kUpb_EncodedValue_MaxField = 'I',
-  kUpb_EncodedValue_MinModifier = 'L',
-  kUpb_EncodedValue_MaxModifier = '[',
-  kUpb_EncodedValue_End = '^',
-  kUpb_EncodedValue_MinSkip = '_',
-  kUpb_EncodedValue_MaxSkip = '~',
-  kUpb_EncodedValue_OneofSeparator = '~',
-  kUpb_EncodedValue_FieldSeparator = '|',
-  kUpb_EncodedValue_MinOneofField = ' ',
-  kUpb_EncodedValue_MaxOneofField = 'b',
-  kUpb_EncodedValue_MaxEnumMask = 'A',
-};
-
-enum {
-  kUpb_EncodedVersion_EnumV1 = '!',
-  kUpb_EncodedVersion_ExtensionV1 = '#',
-  kUpb_EncodedVersion_MapV1 = '%',
-  kUpb_EncodedVersion_MessageV1 = '$',
-  kUpb_EncodedVersion_MessageSetV1 = '&',
-};
-
-
-#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
-
-#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
-#define UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
-
-
-// Must be last.
-
-// upb_MdDecoder: used internally for decoding MiniDescriptors for messages,
-// extensions, and enums.
-typedef struct {
-  const char* end;
-  upb_Status* status;
-  jmp_buf err;
-} upb_MdDecoder;
-
-UPB_PRINTF(2, 3)
-UPB_NORETURN UPB_INLINE void upb_MdDecoder_ErrorJmp(upb_MdDecoder* d,
-                                                    const char* fmt, ...) {
-  if (d->status) {
-    va_list argp;
-    upb_Status_SetErrorMessage(d->status, "Error building mini table: ");
-    va_start(argp, fmt);
-    upb_Status_VAppendErrorFormat(d->status, fmt, argp);
-    va_end(argp);
-  }
-  UPB_LONGJMP(d->err, 1);
-}
-
-UPB_INLINE void upb_MdDecoder_CheckOutOfMemory(upb_MdDecoder* d,
-                                               const void* ptr) {
-  if (!ptr) upb_MdDecoder_ErrorJmp(d, "Out of memory");
-}
-
-UPB_INLINE const char* upb_MdDecoder_DecodeBase92Varint(
-    upb_MdDecoder* d, const char* ptr, char first_ch, uint8_t min, uint8_t max,
-    uint32_t* out_val) {
-  ptr = _upb_Base92_DecodeVarint(ptr, d->end, first_ch, min, max, out_val);
-  if (!ptr) upb_MdDecoder_ErrorJmp(d, "Overlong varint");
-  return ptr;
-}
-
-
-#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
 
 // This should #undef all macros #defined in def.inc
 
