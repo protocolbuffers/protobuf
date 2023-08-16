@@ -469,7 +469,6 @@ cc_library(
 bootstrap_cc_library(
     name = "reflection",
     hdrs = [
-        "upb/def.h",
         "upb/reflection/def.h",
         "upb/reflection/def.hpp",
         "upb/reflection/message.h",

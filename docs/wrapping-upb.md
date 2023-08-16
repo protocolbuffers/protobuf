@@ -173,7 +173,7 @@ class MyMessage(_message.Message):
 
 To use reflection-based access:
 
-1. Load and access descriptor data using the interfaces in upb/def.h.
+1. Load and access descriptor data using the interfaces in upb/reflection/def.h.
 2. Access message data using the interfaces in upb/reflection/message.h.
 
 ### MiniTables
