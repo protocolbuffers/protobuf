@@ -398,7 +398,6 @@ cc_library(
         "implicit_weak_message.h",
         "inlined_string_field.h",
         "map.h",
-        "map_entry_lite.h",
         "map_field_lite.h",
         "map_type_handler.h",
         "message_lite.h",

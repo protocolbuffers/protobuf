@@ -660,15 +660,16 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename MapField>
   static constexpr MapAuxInfo GetMapAuxInfo(bool fail_on_utf8_failure,
                                             bool log_debug_utf8_failure,
-                                            bool validated_enum_value) {
+                                            bool validated_enum_value,
+                                            int key_type, int value_type) {
     using MapType = typename MapField::MapType;
     using Node = typename MapType::Node;
     static_assert(alignof(Node) == alignof(NodeBase), "");
     // Verify the assumption made in MpMap, guaranteed by Map<>.
     assert(PROTOBUF_FIELD_OFFSET(Node, kv.first) == sizeof(NodeBase));
     return {
-        MakeMapTypeCard(MapField::kKeyFieldType),
-        MakeMapTypeCard(MapField::kValueFieldType),
+        MakeMapTypeCard(static_cast<WireFormatLite::FieldType>(key_type)),
+        MakeMapTypeCard(static_cast<WireFormatLite::FieldType>(value_type)),
         true,
         !std::is_base_of<MapFieldBaseForParse, MapField>::value,
         fail_on_utf8_failure,

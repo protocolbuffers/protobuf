@@ -1080,6 +1080,11 @@ std::vector<io::Printer::Sub> AnnotatedAccessors(
 // dynamic initialization.
 bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options);
 
+// Determine if we should generate a class for the descriptor.
+// Some descriptors, like some map entries, are not represented as a generated
+// class.
+bool ShouldGenerateClass(const Descriptor* descriptor, const Options& options);
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

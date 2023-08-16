@@ -44,7 +44,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
@@ -1593,13 +1592,13 @@ static bool HasExtensionFromFile(const Message& msg, const FileDescriptor* file,
 static bool HasBootstrapProblem(const FileDescriptor* file,
                                 const Options& options,
                                 bool* has_opt_codesize_extension) {
-  struct BoostrapGlobals {
+  struct BootstrapGlobals {
     absl::Mutex mutex;
     absl::flat_hash_set<const FileDescriptor*> cached ABSL_GUARDED_BY(mutex);
     absl::flat_hash_set<const FileDescriptor*> non_cached
         ABSL_GUARDED_BY(mutex);
   };
-  static auto& bootstrap_cache = *new BoostrapGlobals();
+  static auto& bootstrap_cache = *new BootstrapGlobals();
 
   absl::MutexLock lock(&bootstrap_cache.mutex);
   if (bootstrap_cache.cached.contains(file)) return true;
@@ -1718,6 +1717,11 @@ bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options) {
     if (file->message_type(i)->name() == "FileDescriptorProto") return true;
   }
   return false;
+}
+
+bool ShouldGenerateClass(const Descriptor* descriptor, const Options& options) {
+  return !IsMapEntryMessage(descriptor) ||
+         HasDescriptorMethods(descriptor->file(), options);
 }
 
 }  // namespace cpp
