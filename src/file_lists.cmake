@@ -160,7 +160,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/json.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_entry.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_entry_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field_inl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field_lite.h
@@ -260,7 +259,6 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_impl_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_entry_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_type_handler.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.h

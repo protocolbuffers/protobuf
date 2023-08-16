@@ -318,7 +318,10 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
     {PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_), 0, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMap)},
   }}, {{
-    {::_pbi::TcParser::GetMapAuxInfo<decltype(Struct()._impl_.fields_)>(1, 0, 0)},
+    {::_pbi::TcParser::GetMapAuxInfo<
+        decltype(Struct()._impl_.fields_)>(
+        1, 0, 0, 9,
+        11)},
     {::_pbi::TcParser::CreateInArenaStorageCb<::google::protobuf::Value>},
   }}, {{
     "\26\6\0\0\0\0\0\0"
@@ -337,7 +340,9 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
   // map<string, .google.protobuf.Value> fields = 1;
   if (!_internal_fields().empty()) {
     using MapType = ::google::protobuf::Map<std::string, ::google::protobuf::Value>;
-    using WireHelper = Struct_FieldsEntry_DoNotUse::Funcs;
+    using WireHelper = _pbi::MapEntryFuncs<std::string, ::google::protobuf::Value,
+                                   _pbi::WireFormatLite::TYPE_STRING,
+                                   _pbi::WireFormatLite::TYPE_MESSAGE>;
     const auto& field = _internal_fields();
 
     if (stream->IsSerializationDeterministic() && field.size() > 1) {
@@ -379,7 +384,9 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
   // map<string, .google.protobuf.Value> fields = 1;
   total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_fields_size());
   for (const auto& entry : _internal_fields()) {
-    total_size += Struct_FieldsEntry_DoNotUse::Funcs::ByteSizeLong(entry.first, entry.second);
+    total_size += _pbi::MapEntryFuncs<std::string, ::google::protobuf::Value,
+                                   _pbi::WireFormatLite::TYPE_STRING,
+                                   _pbi::WireFormatLite::TYPE_MESSAGE>::ByteSizeLong(entry.first, entry.second);
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
