@@ -70,15 +70,6 @@ endif()
 enable_testing()
 
 
-add_library(port INTERFACE
-    
-)
-target_include_directories(port INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-
 add_library(upb INTERFACE
     
 )
@@ -282,7 +273,6 @@ target_link_libraries(generated_code_support__only_for_generated_code_do_not_use
   message_internal
   mini_descriptor
   mini_table
-  upb
   wire_internal)
 
 add_library(generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
