@@ -1024,6 +1024,22 @@ TEST(MESSAGE_TEST_NAME, NonCanonicalTag) {
   EXPECT_TRUE(message.ParseFromArray(encoded, sizeof(encoded)));
 }
 
+TEST(MESSAGE_TEST_NAME, Zero5BTag) {
+  UNITTEST::TestAllTypes message;
+  // optional_nested_message (18) LEN(6) with 5B but zero tag.
+  const char encoded[] = {'\222', 1,      6,      '\200', '\200',
+                          '\200', '\200', '\020', 0};
+  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+}
+
+TEST(MESSAGE_TEST_NAME, Zero5BTagLazy) {
+  UNITTEST::TestAllTypes message;
+  // optional_lazy_message (27) LEN(6) with 5B but zero tag.
+  const char encoded[] = {'\332', 1,      6,      '\200', '\200',
+                          '\200', '\200', '\020', 0};
+  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+}
+
 
 namespace {
 
