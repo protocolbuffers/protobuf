@@ -309,12 +309,14 @@ bool EnforceEditionsSupport(
     for (const auto fd : parsed_files) {
       if (FileDescriptorLegacy(fd).syntax() ==
           FileDescriptorLegacy::SYNTAX_EDITIONS) {
-        std::cerr << fd->name() << ": is an editions file, but code generator "
-                  << codegen_name
-                  << " hasn't been updated to support editions yet. Please ask "
-                     "the owner of this code generator to add support or "
-                     "switch back to proto2/proto3."
-                  << std::endl;
+        std::cerr
+            << fd->name() << ": is an editions file, but code generator "
+            << codegen_name
+            << " hasn't been updated to support editions yet.  Please ask "
+               "the owner of this code generator to add support or "
+               "switch back to proto2/proto3.\n\nSee "
+               "https://protobuf.dev/editions/overview/ for more information."
+            << std::endl;
         return false;
       }
     }
