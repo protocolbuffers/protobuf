@@ -78,7 +78,8 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[
     "Utf8Validation\022\033\n\027UTF8_VALIDATION_UNKNOW"
     "N\020\000\022\020\n\014VERIFY_PARSE\020\001\022\017\n\013VERIFY_DLOG\020\002\022\010"
     "\n\004NONE\020\003::\n\003cpp\022\033.google.protobuf.Featur"
-    "eSet\030\350\007 \001(\0132\017.pb.CppFeatures"
+    "eSet\030\350\007 \001(\0132\017.pb.CppFeaturesB\'\n\023com.goog"
+    "le.protobufB\020CppFeaturesProto"
 };
 static const ::_pbi::DescriptorTable* const descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_deps[1] =
     {
@@ -88,7 +89,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2ep
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto = {
     false,
     false,
-    388,
+    429,
     descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
     "google/protobuf/cpp_features.proto",
     &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_once,
