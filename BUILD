@@ -362,21 +362,6 @@ cc_test(
     ],
 )
 
-cc_library(
-    name = "fastdecode",
-    copts = UPB_DEFAULT_COPTS,
-    deps = [
-        ":base",
-        ":collections_internal",
-        ":hash",
-        ":mem_internal",
-        ":message_internal",
-        ":mini_table",
-        ":port",
-        ":wire",
-    ],
-)
-
 # Common support routines used by generated code.  This library has no
 # implementation, but depends on :upb and exposes a few more hdrs.
 #
@@ -803,7 +788,6 @@ upb_amalgamation(
         ":collections_internal",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
-        ":fastdecode",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         ":hash",
         ":lex",
@@ -851,7 +835,6 @@ upb_amalgamation(
         ":descriptor_upb_proto_reflection",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
-        ":fastdecode",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         ":hash",
         ":json",
@@ -901,7 +884,6 @@ upb_amalgamation(
         ":collections_internal",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
-        ":fastdecode",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         ":hash",
         ":json",
