@@ -9165,6 +9165,29 @@ TEST_F(FeaturesTest, InvalidFieldRequiredExtension) {
       "foo.proto: bar: NAME: Extensions can't be required.\n");
 }
 
+TEST_F(FeaturesTest, InvalidFieldImplicitExtension) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: "2023"
+        message_type {
+          name: "Foo"
+          extension_range { start: 1 end: 100 }
+        }
+        extension {
+          name: "bar"
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_STRING
+          options { features { field_presence: IMPLICIT } }
+          extendee: "Foo"
+        }
+      )pb",
+      "foo.proto: bar: NAME: Extensions can't specify field presence.\n");
+}
+
 TEST_F(FeaturesTest, InvalidFieldMessageImplicit) {
   BuildDescriptorMessagesInTestPool();
   BuildFileWithErrors(
@@ -9184,8 +9207,8 @@ TEST_F(FeaturesTest, InvalidFieldMessageImplicit) {
           }
         }
       )pb",
-      "foo.proto: Foo.bar: NAME: Only singular scalar fields can specify "
-      "implicit field presence.\n");
+      "foo.proto: Foo.bar: NAME: Message fields can't specify implicit "
+      "presence.\n");
 }
 
 TEST_F(FeaturesTest, InvalidFieldRepeatedImplicit) {
@@ -9206,8 +9229,8 @@ TEST_F(FeaturesTest, InvalidFieldRepeatedImplicit) {
           }
         }
       )pb",
-      "foo.proto: Foo.bar: NAME: Only singular scalar fields can specify "
-      "implicit field presence.\n");
+      "foo.proto: Foo.bar: NAME: Repeated fields can't specify field "
+      "presence.\n");
 }
 
 TEST_F(FeaturesTest, InvalidFieldMapImplicit) {
@@ -9233,10 +9256,9 @@ TEST_F(FeaturesTest, InvalidFieldMapImplicit) {
   proto.set_name("foo.proto");
 
   BuildDescriptorMessagesInTestPool();
-  BuildFileWithErrors(
-      proto.DebugString(),
-      "foo.proto: Foo.bar: NAME: Only singular scalar fields can specify "
-      "implicit field presence.\n");
+  BuildFileWithErrors(proto.DebugString(),
+                      "foo.proto: Foo.bar: NAME: Repeated fields can't specify "
+                      "field presence.\n");
 }
 
 TEST_F(FeaturesTest, InvalidFieldOneofImplicit) {
@@ -9259,8 +9281,7 @@ TEST_F(FeaturesTest, InvalidFieldOneofImplicit) {
           oneof_decl { name: "_foo" }
         }
       )pb",
-      "foo.proto: Foo.bar: NAME: Only singular scalar fields can specify "
-      "implicit field presence.\n");
+      "foo.proto: Foo.bar: NAME: Oneof fields can't specify field presence.\n");
 }
 
 TEST_F(FeaturesTest, InvalidFieldRepeatedRequired) {
@@ -9281,8 +9302,8 @@ TEST_F(FeaturesTest, InvalidFieldRepeatedRequired) {
           }
         }
       )pb",
-      "foo.proto: Foo.bar: NAME: Only singular scalar fields can specify "
-      "required field presence.\n");
+      "foo.proto: Foo.bar: NAME: Repeated fields can't specify field "
+      "presence.\n");
 }
 
 TEST_F(FeaturesTest, InvalidFieldOneofRequired) {
@@ -9305,8 +9326,7 @@ TEST_F(FeaturesTest, InvalidFieldOneofRequired) {
           oneof_decl { name: "_foo" }
         }
       )pb",
-      "foo.proto: Foo.bar: NAME: Only singular scalar fields can specify "
-      "required field presence.\n");
+      "foo.proto: Foo.bar: NAME: Oneof fields can't specify field presence.\n");
 }
 
 TEST_F(FeaturesTest, InvalidFieldNonRepeatedWithRepeatedEncoding) {
@@ -9323,12 +9343,85 @@ TEST_F(FeaturesTest, InvalidFieldNonRepeatedWithRepeatedEncoding) {
             number: 1
             label: LABEL_OPTIONAL
             type: TYPE_INT64
+            options { features { repeated_field_encoding: EXPANDED } }
+          }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NAME: Only repeated fields can specify repeated "
+      "field encoding.\n");
+}
+
+TEST_F(FeaturesTest, InvalidFieldNonPackableWithPackedRepeatedEncoding) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: "2023"
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_STRING
             options { features { repeated_field_encoding: PACKED } }
           }
         }
       )pb",
-      "foo.proto: Foo.bar: NAME: Only repeated fields can specify "
-      "`repeated_field_encoding`.\n");
+      "foo.proto: Foo.bar: NAME: Only repeated primitive fields can specify "
+      "PACKED repeated field encoding.\n");
+}
+
+TEST_F(FeaturesTest, InvalidFieldNonMessageWithMessageEncoding) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: "2023"
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT64
+            options { features { message_encoding: DELIMITED } }
+          }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NAME: Only message fields can specify message "
+      "encoding.\n");
+}
+
+TEST_F(FeaturesTest, InvalidFieldMapWithMessageEncoding) {
+  constexpr absl::string_view kProtoFile = R"schema(
+    edition = "2023";
+
+    message Foo {
+      map<string, Foo> bar = 1 [
+        features.message_encoding = DELIMITED
+      ];
+    }
+  )schema";
+  io::ArrayInputStream input_stream(kProtoFile.data(), kProtoFile.size());
+  SimpleErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  parser.RecordErrorsTo(&error_collector);
+  FileDescriptorProto proto;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &proto))
+      << error_collector.last_error() << "\n"
+      << kProtoFile;
+  ASSERT_EQ("", error_collector.last_error());
+  proto.set_name("foo.proto");
+
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      proto.DebugString(),
+      "foo.proto: Foo.bar: NAME: Only message fields can specify message "
+      "encoding.\n");
 }
 
 TEST_F(FeaturesTest, InvalidOpenEnumNonZeroFirstValue) {
