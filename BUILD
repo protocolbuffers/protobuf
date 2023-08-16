@@ -107,20 +107,6 @@ package_group(
 # Public C/C++ libraries #######################################################
 
 cc_library(
-    name = "port",
-    hdrs = [
-        "upb/port/atomic.h",
-        "upb/port/vsnprintf_compat.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    textual_hdrs = [
-        "upb/port/def.inc",
-        "upb/port/undef.inc",
-    ],
-    visibility = ["//:__subpackages__"],
-)
-
-cc_library(
     name = "upb",
     hdrs = [
         "upb/message/internal/extension.h",
@@ -402,8 +388,7 @@ cc_library(
     hdrs = ["upb/generated_code_support.h"],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "upb/port/def.inc",
-        "upb/port/undef.inc",
+        "//upb/port:inc",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -415,7 +400,6 @@ cc_library(
         ":message_internal",
         ":mini_descriptor",
         ":mini_table",
-        ":upb",
         ":wire_internal",
     ],
 )
@@ -425,11 +409,12 @@ cc_library(
     name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
         "upb/message/message.h",
-        "upb/port/def.inc",
-        "upb/port/undef.inc",
         "upb/upb.hpp",
     ],
     copts = UPB_DEFAULT_COPTS,
+    textual_hdrs = [
+        "//upb/port:inc",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         ":base",
@@ -446,12 +431,13 @@ cc_library(
 cc_library(
     name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
-        "upb/port/def.inc",
-        "upb/port/undef.inc",
         "upb/reflection/def.h",
         "upb/reflection/internal/def_pool.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    textual_hdrs = [
+        "//upb/port:inc",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         ":mem",
@@ -678,6 +664,12 @@ alias(
     name = "mini_table_internal",
     actual = "//upb/mini_table:internal",
     visibility = ["//:friends"],
+)
+
+alias(
+    name = "port",
+    actual = "//upb/port",
+    visibility = ["//visibility:public"],
 )
 
 alias(

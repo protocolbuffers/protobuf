@@ -111,6 +111,7 @@ sh_test(
         "//upb/mem:source_files",
         "//upb/mini_descriptor:source_files",
         "//upb/mini_table:source_files",
+        "//upb/port:source_files",
         "//upb/text:source_files",
         "//upb/wire:source_files",
         "@utf8_range//:utf8_range_srcs",

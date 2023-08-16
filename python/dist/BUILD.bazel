@@ -261,6 +261,7 @@ pkg_files(
         "//upb/mem:source_files",
         "//upb/mini_descriptor:source_files",
         "//upb/mini_table:source_files",
+        "//upb/port:source_files",
         "//upb/text:source_files",
         "//upb/util:source_files",
         "//upb/wire:source_files",
