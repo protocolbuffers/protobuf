@@ -109,6 +109,7 @@ sh_test(
         "//upb/hash:source_files",
         "//upb/lex:source_files",
         "//upb/mem:source_files",
+        "//upb/message:source_files",
         "//upb/mini_descriptor:source_files",
         "//upb/mini_table:source_files",
         "//upb/port:source_files",

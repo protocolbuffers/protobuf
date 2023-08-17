@@ -27,7 +27,7 @@ jobs:
           - { NAME: "ASAN", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--config=asan -c dbg -- -benchmarks:benchmark -python/..." }
           - { NAME: "UBSAN", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--config=ubsan -c dbg -- -benchmarks:benchmark -python/... -lua/...", install: "libunwind-dev" }
           - { NAME: "32-bit", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--copt=-m32 --linkopt=-m32 -- benchmarks:benchmark -python/...", install: "g++-multilib" }
-          - { NAME: "32-bit ASAN", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--config=asan -c dbg --copt=-m32 --linkopt=-m32 -- -//benchmarks/... -//python/... -//:message_copy_test -//:message_promote_test -//:message_test -//upb/test:test_generated_code", install: "g++-multilib" }
+          - { NAME: "32-bit ASAN", BAZEL: bazel, CC: clang, os: ubuntu-20-large, flags: "--config=asan -c dbg --copt=-m32 --linkopt=-m32 -- -//benchmarks/... -//python/... -//upb/message:copy_test -//upb/message:promote_test -//upb/message:test -//upb/test:test_generated_code", install: "g++-multilib" }
           - { NAME: "Windows", BAZEL: bazel, os: windows-2019, startup-flags: "--output_user_root=C:/tmp", flags: "--config=cpp17_msvc", targets: "upb/... upbc/... python/... protos/... protos_generator/..." }
           - { NAME: "macOS", BAZEL: bazel, CC: clang, os: macos-11 }
           # Current github runners are all Intel based, so just build/compile for Apple Silicon to detect issues there.

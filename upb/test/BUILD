@@ -139,6 +139,7 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//:upb",
+        "//:message",
         "//:mini_descriptor",
         "//:mini_table",
         "//:mini_table_internal",
