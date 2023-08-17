@@ -284,11 +284,6 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
   static const FeatureSet& GetRawFeatures(const DescriptorT& desc) {
     return *desc.proto_features_;
   }
-
-  // Provides the full descriptor tree including both resolved features (in the
-  // `features` fields) and unresolved features (in the `raw_features` fields)
-  // for every descriptor.
-  static FileDescriptorProto GetGeneratorProto(const FileDescriptor& file);
 };
 
 }  // namespace internal

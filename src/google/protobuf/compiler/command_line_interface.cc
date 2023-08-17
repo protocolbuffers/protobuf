@@ -344,8 +344,7 @@ void CommandLineInterface::GetTransitiveDependencies(
 
   // Add this file.
   FileDescriptorProto* new_descriptor = output->Add();
-  *new_descriptor =
-      google::protobuf::internal::InternalFeatureHelper::GetGeneratorProto(*file);
+  file->CopyTo(new_descriptor);
   if (options.include_source_code_info) {
     file->CopySourceCodeInfoTo(new_descriptor);
   }
@@ -2632,8 +2631,7 @@ bool CommandLineInterface::GeneratePluginOutput(
     if (files_to_generate.contains(file_proto.name())) {
       const FileDescriptor* file = pool->FindFileByName(file_proto.name());
       *request.add_source_file_descriptors() = std::move(file_proto);
-      file_proto =
-          google::protobuf::internal::InternalFeatureHelper::GetGeneratorProto(*file);
+      file->CopyTo(&file_proto);
       file->CopySourceCodeInfoTo(&file_proto);
       file->CopyJsonNameTo(&file_proto);
       StripSourceRetentionOptions(*file->pool(), file_proto);

@@ -61,7 +61,6 @@ class TestGenerator : public CodeGenerator {
   }
 
   // Expose the protected methods for testing.
-  using CodeGenerator::GetRuntimeProto;
   using CodeGenerator::GetSourceFeatures;
   using CodeGenerator::GetSourceRawFeatures;
 };
@@ -222,89 +221,6 @@ TEST_F(CodeGeneratorTest, GetSourceFeaturesInherited) {
   EXPECT_EQ(ext.int_multiple_feature(), 9);
   EXPECT_EQ(ext.int_source_feature(), 5);
   EXPECT_EQ(ext.string_source_feature(), "field");
-}
-
-TEST_F(CodeGeneratorTest, GetRuntimeProtoTrivial) {
-  auto file = BuildFile(R"schema(
-    edition = "2023";
-    package protobuf_unittest;
-  )schema");
-  ASSERT_THAT(file, NotNull());
-
-  FileDescriptorProto proto = TestGenerator::GetRuntimeProto(*file);
-  const FeatureSet& features = proto.options().features();
-
-  EXPECT_TRUE(features.has_raw_features());
-  EXPECT_THAT(features.raw_features(), EqualsProto(R"pb()pb"));
-}
-
-TEST_F(CodeGeneratorTest, GetRuntimeProtoRoot) {
-  auto file = BuildFile(R"schema(
-    edition = "2023";
-    package protobuf_unittest;
-
-    import "google/protobuf/unittest_features.proto";
-
-    option features.enum_type = CLOSED;
-    option features.(pb.test).int_source_feature = 5;
-    option features.(pb.test).int_file_feature = 6;
-  )schema");
-  ASSERT_THAT(file, NotNull());
-
-  FileDescriptorProto proto = TestGenerator::GetRuntimeProto(*file);
-  const FeatureSet& features = proto.options().features();
-  const pb::TestFeatures& ext = features.GetExtension(pb::test);
-
-  EXPECT_THAT(features.raw_features(),
-              EqualsProto(R"pb(enum_type: CLOSED
-                               [pb.test] { int_file_feature: 6 })pb"));
-  EXPECT_EQ(features.enum_type(), FeatureSet::CLOSED);
-  EXPECT_TRUE(features.has_field_presence());
-  EXPECT_EQ(features.field_presence(), FeatureSet::EXPLICIT);
-
-  EXPECT_FALSE(ext.has_int_source_feature());
-  EXPECT_EQ(ext.int_file_feature(), 6);
-}
-
-TEST_F(CodeGeneratorTest, GetRuntimeProtoInherited) {
-  auto file = BuildFile(R"schema(
-    edition = "2023";
-    package protobuf_unittest;
-
-    import "google/protobuf/unittest_features.proto";
-
-    option features.enum_type = CLOSED;
-    option features.(pb.test).int_source_feature = 5;
-    option features.(pb.test).int_file_feature = 6;
-    message EditionsMessage {
-      option features.(pb.test).int_message_feature = 7;
-      option features.(pb.test).int_multiple_feature = 8;
-
-      string field = 1 [
-        features.field_presence = IMPLICIT,
-        features.(pb.test).int_multiple_feature = 9,
-        features.(pb.test).string_source_feature = "field"
-      ];
-    }
-  )schema");
-  ASSERT_THAT(file, NotNull());
-
-  FileDescriptorProto proto = TestGenerator::GetRuntimeProto(*file);
-  const FieldDescriptorProto& field = proto.message_type(0).field(0);
-  const FeatureSet& features = field.options().features();
-  const pb::TestFeatures& ext = features.GetExtension(pb::test);
-
-  EXPECT_THAT(features.raw_features(), google::protobuf::EqualsProto(R"pb(
-                field_presence: IMPLICIT
-                [pb.test] { int_multiple_feature: 9 }
-              )pb"));
-  EXPECT_EQ(features.enum_type(), FeatureSet::CLOSED);
-  EXPECT_EQ(features.field_presence(), FeatureSet::IMPLICIT);
-  EXPECT_EQ(ext.int_multiple_feature(), 9);
-  EXPECT_EQ(ext.int_message_feature(), 7);
-  EXPECT_EQ(ext.int_file_feature(), 6);
-  EXPECT_FALSE(ext.has_int_source_feature());
-  EXPECT_FALSE(ext.has_string_source_feature());
 }
 
 }  // namespace
