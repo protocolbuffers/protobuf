@@ -583,7 +583,9 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename T>
   static inline T& RefAt(void* x, size_t offset) {
     T* target = reinterpret_cast<T*>(static_cast<char*>(x) + offset);
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
+    // Check the alignment in debug mode, except in 32-bit msvc because it does
+    // not respect the alignment as expressed by `alignof(T)`
     if (PROTOBUF_PREDICT_FALSE(
             reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
@@ -597,18 +599,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   template <typename T>
   static inline const T& RefAt(const void* x, size_t offset) {
-    const T* target =
-        reinterpret_cast<const T*>(static_cast<const char*>(x) + offset);
-#ifndef NDEBUG
-    if (PROTOBUF_PREDICT_FALSE(
-            reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
-      AlignFail(std::integral_constant<size_t, alignof(T)>(),
-                reinterpret_cast<uintptr_t>(target));
-      // Explicit abort to let compilers know this code-path does not return
-      abort();
-    }
-#endif
-    return *target;
+    return RefAt<T>(const_cast<void*>(x), offset);
   }
 
   template <typename T, bool is_split>
