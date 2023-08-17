@@ -1733,28 +1733,12 @@ class PROTOBUF_EXPORT FeatureSet final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kRawFeaturesFieldNumber = 999,
     kFieldPresenceFieldNumber = 1,
     kEnumTypeFieldNumber = 2,
     kRepeatedFieldEncodingFieldNumber = 3,
     kMessageEncodingFieldNumber = 5,
     kJsonFormatFieldNumber = 6,
   };
-  // optional .google.protobuf.FeatureSet raw_features = 999 [targets = TARGET_TYPE_UNKNOWN];
-  bool has_raw_features() const;
-  void clear_raw_features() ;
-  const ::google::protobuf::FeatureSet& raw_features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_raw_features();
-  ::google::protobuf::FeatureSet* mutable_raw_features();
-  void set_allocated_raw_features(::google::protobuf::FeatureSet* value);
-  void unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value);
-  ::google::protobuf::FeatureSet* unsafe_arena_release_raw_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_raw_features() const;
-  ::google::protobuf::FeatureSet* _internal_mutable_raw_features();
-
-  public:
   // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_field_presence() const;
   void clear_field_presence() ;
@@ -1967,8 +1951,8 @@ class PROTOBUF_EXPORT FeatureSet final :
 
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 6, 6,
-      0, 7>
+      3, 5, 5,
+      0, 2>
       _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
@@ -1978,7 +1962,6 @@ class PROTOBUF_EXPORT FeatureSet final :
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::FeatureSet* raw_features_;
     int field_presence_;
     int enum_type_;
     int repeated_field_encoding_;
@@ -17311,13 +17294,13 @@ inline void UninterpretedOption::set_allocated_aggregate_value(std::string* valu
 
 // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_field_presence() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
   return value;
 }
 inline void FeatureSet::clear_field_presence() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.field_presence_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000002u;
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline ::google::protobuf::FeatureSet_FieldPresence FeatureSet::field_presence() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.field_presence)
@@ -17334,19 +17317,19 @@ inline ::google::protobuf::FeatureSet_FieldPresence FeatureSet::_internal_field_
 inline void FeatureSet::_internal_set_field_presence(::google::protobuf::FeatureSet_FieldPresence value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_FieldPresence_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.field_presence_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_enum_type() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
   return value;
 }
 inline void FeatureSet::clear_enum_type() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.enum_type_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000004u;
+  _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline ::google::protobuf::FeatureSet_EnumType FeatureSet::enum_type() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.enum_type)
@@ -17363,19 +17346,19 @@ inline ::google::protobuf::FeatureSet_EnumType FeatureSet::_internal_enum_type()
 inline void FeatureSet::_internal_set_enum_type(::google::protobuf::FeatureSet_EnumType value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_EnumType_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.enum_type_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_repeated_field_encoding() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
 inline void FeatureSet::clear_repeated_field_encoding() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.repeated_field_encoding_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline ::google::protobuf::FeatureSet_RepeatedFieldEncoding FeatureSet::repeated_field_encoding() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.repeated_field_encoding)
@@ -17392,19 +17375,19 @@ inline ::google::protobuf::FeatureSet_RepeatedFieldEncoding FeatureSet::_interna
 inline void FeatureSet::_internal_set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_RepeatedFieldEncoding_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.repeated_field_encoding_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_message_encoding() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline void FeatureSet::clear_message_encoding() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.message_encoding_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000010u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline ::google::protobuf::FeatureSet_MessageEncoding FeatureSet::message_encoding() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.message_encoding)
@@ -17421,19 +17404,19 @@ inline ::google::protobuf::FeatureSet_MessageEncoding FeatureSet::_internal_mess
 inline void FeatureSet::_internal_set_message_encoding(::google::protobuf::FeatureSet_MessageEncoding value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_MessageEncoding_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.message_encoding_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_json_format() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline void FeatureSet::clear_json_format() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.json_format_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000020u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline ::google::protobuf::FeatureSet_JsonFormat FeatureSet::json_format() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.json_format)
@@ -17450,105 +17433,8 @@ inline ::google::protobuf::FeatureSet_JsonFormat FeatureSet::_internal_json_form
 inline void FeatureSet::_internal_set_json_format(::google::protobuf::FeatureSet_JsonFormat value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_JsonFormat_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000020u;
+  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.json_format_ = value;
-}
-
-// optional .google.protobuf.FeatureSet raw_features = 999 [targets = TARGET_TYPE_UNKNOWN];
-inline bool FeatureSet::has_raw_features() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.raw_features_ != nullptr);
-  return value;
-}
-inline void FeatureSet::clear_raw_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (_impl_.raw_features_ != nullptr) _impl_.raw_features_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000001u;
-}
-inline const ::google::protobuf::FeatureSet& FeatureSet::_internal_raw_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  const ::google::protobuf::FeatureSet* p = _impl_.raw_features_;
-  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
-}
-inline const ::google::protobuf::FeatureSet& FeatureSet::raw_features() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.raw_features)
-  return _internal_raw_features();
-}
-inline void FeatureSet::unsafe_arena_set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.raw_features_);
-  }
-  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FeatureSet.raw_features)
-}
-inline ::google::protobuf::FeatureSet* FeatureSet::release_raw_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::google::protobuf::FeatureSet* released = _impl_.raw_features_;
-  _impl_.raw_features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
-  return released;
-}
-inline ::google::protobuf::FeatureSet* FeatureSet::unsafe_arena_release_raw_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSet.raw_features)
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::google::protobuf::FeatureSet* temp = _impl_.raw_features_;
-  _impl_.raw_features_ = nullptr;
-  return temp;
-}
-inline ::google::protobuf::FeatureSet* FeatureSet::_internal_mutable_raw_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
-  if (_impl_.raw_features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
-  }
-  return _impl_.raw_features_;
-}
-inline ::google::protobuf::FeatureSet* FeatureSet::mutable_raw_features() {
-  ::google::protobuf::FeatureSet* _msg = _internal_mutable_raw_features();
-  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSet.raw_features)
-  return _msg;
-}
-inline void FeatureSet::set_allocated_raw_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.raw_features_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-
-  _impl_.raw_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSet.raw_features)
 }
 
 // -------------------------------------------------------------------
