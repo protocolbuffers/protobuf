@@ -779,7 +779,15 @@ message EnumOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to 529999999;
+
+  // New extensions should be declared acc. to latest guidelines:
+  // go/protobuf-extensions-migration-guide
+  extensions 530000000 [declaration = {
+    number: 530000000,
+    full_name: ".ccc.hosted.store.constants.EssAnnotations.es_entity_type",
+    type: ".ccc.hosted.store.constants.EntityType"
+  }];
 }
 
 message EnumValueOptions {
@@ -801,7 +809,36 @@ message EnumValueOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to 529999999;
+
+  extensions 530000000 to max
+  [declaration = {
+    number: 530000000,
+    full_name: ".ccc.hosted.store.constants.EssAnnotations.ess_attribute",
+    type: ".ccc.hosted.store.ess.api.SettingId.Attribute"
+  },
+   declaration = {
+     number: 530000001,
+     full_name: ".ccc.hosted.store.constants.EssAnnotations.proto_type_name",
+     type: "string"
+   },
+   declaration = {
+     number: 530000002,
+     full_name: ".ccc.hosted.store.constants.EssAnnotations.inheritable_es_entity_types",
+     type: ".ccc.hosted.store.constants.EntityType",
+     repeated: true
+   },
+   declaration = {
+     number: 530000003,
+     full_name: ".ccc.hosted.store.constants.EssAnnotations.eligible_es_entity_types",
+     type: ".ccc.hosted.store.constants.EntityType",
+     repeated: true
+   },
+   declaration = {
+     number: 530000004,
+     full_name: ".ccc.hosted.store.constants.EssAnnotations.ess_mva_prefix",
+     type: "string",
+   }];
 }
 
 message ServiceOptions {
