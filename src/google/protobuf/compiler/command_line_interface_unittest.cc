@@ -3155,6 +3155,320 @@ TEST_F(CommandLineInterfaceTest,
       "Option protobuf_unittest.B.i cannot be set on an entity of type `file`.");
 }
 
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationEnforcement) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 9000,
+          full_name: ".baz.z"
+          type: ".foo.Bar"
+      }];
+    }
+
+    extend Foo {
+      optional int32 o = 5000;
+      repeated int32 i = 9000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "extension field 9000 is expected to be type \".foo.Bar\", not "
+      "\"int32\"");
+  ExpectErrorSubstring(
+      "extension field 9000 is expected to have field name \".baz.z\", not "
+      "\".foo.i\"");
+  ExpectErrorSubstring("extension field 9000 is expected to be optional");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationDuplicateNames) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 9000,
+          full_name: ".foo.o"
+          type: ".foo.Bar"
+      }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension field name \".foo.o\" is declared multiple times");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationDuplicateNumbers) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: ".foo.Bar"
+      }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension declaration number 5000 is declared multiple times");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationCannotUseReservedNumber) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          reserved: true
+          full_name: ".foo.o"
+          type: "int32"
+        }];
+    }
+
+    extend Foo {
+      optional int32 o = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Cannot use number 5000 for extension field foo.o, as it is reserved in "
+      "the extension declarations for message foo.Foo.");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationReservedMissingOneOfNameAndType) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          reserved: true
+          type: "int32"
+        }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension declaration #5000 should have both \"full_name\" and \"type\" "
+      "set");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationMissingBothNameAndType) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 6000
+        }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension declaration #6000 should have both \"full_name\" and \"type\" "
+      "set");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationReservedOptionalNameAndType) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          reserved: true
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 9000,
+          reserved: true
+        }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationRequireDeclarationsForAll) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [ declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        }];
+    }
+
+    extend Foo {
+      optional int32 o = 5000;
+      repeated int32 i = 9000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Missing extension declaration for field foo.i with number 9000 in "
+      "extendee message foo.Foo");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationVerificationDeclarationUndeclaredError) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [verification = DECLARATION];
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Missing extension declaration for field foo.my_field with number 5000 "
+      "in extendee message foo.Foo");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationVerificationDeclarationDeclaredCompile) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        verification = DECLARATION,
+        declaration = {
+          number: 5000,
+          full_name: ".foo.my_field",
+          type: "string"
+      }];
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationUnverifiedWithDeclarationsError) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        verification = UNVERIFIED,
+        declaration = {
+          number: 5000,
+          full_name: "foo.my_field",
+          type: "string"
+        }];
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Cannot mark the extension range as UNVERIFIED when it has extension(s) "
+      "declared.");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationDefaultUnverifiedEmptyRange) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max;
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+// Returns true if x is a prefix of y.
+bool IsPrefix(absl::Span<const int> x, absl::Span<const int> y) {
+  return x.size() <= y.size() && x == y.subspan(0, x.size());
+}
+
+TEST_F(CommandLineInterfaceTest, SourceInfoOptionRetention) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {\n"
+                 "  extensions 1000 to max [\n"
+                 "    declaration = {\n"
+                 "      number: 1000\n"
+                 "      full_name: \".video.cat_video\"\n"
+                 "      type: \".video.CatVideo\"\n"
+                 "  }];\n"
+                 "}\n");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--include_source_info --proto_path=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  if (HasFatalFailure()) return;
+  ASSERT_EQ(descriptor_set.file_size(), 1);
+  EXPECT_EQ(descriptor_set.file(0).name(), "foo.proto");
+
+  // Everything starting with this path should be have been stripped from the
+  // source code info.
+  const int declaration_option_path[] = {
+      FileDescriptorProto::kMessageTypeFieldNumber,
+      0,
+      DescriptorProto::kExtensionRangeFieldNumber,
+      0,
+      DescriptorProto::ExtensionRange::kOptionsFieldNumber,
+      ExtensionRangeOptions::kDeclarationFieldNumber};
+
+  const SourceCodeInfo& source_code_info =
+      descriptor_set.file(0).source_code_info();
+  EXPECT_GT(source_code_info.location_size(), 0);
+  for (const SourceCodeInfo::Location& location : source_code_info.location()) {
+    EXPECT_FALSE(IsPrefix(declaration_option_path, location.path()));
+  }
+}
+
 // ===================================================================
 
 // Test for --encode and --decode.  Note that it would be easier to do this

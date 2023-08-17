@@ -58,6 +58,8 @@
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
 #include "absl/log/scoped_mock_log.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -86,6 +88,18 @@ using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
 using ::testing::NotNull;
+
+absl::Status GetStatus(const absl::Status& s) { return s; }
+template <typename T>
+absl::Status GetStatus(const absl::StatusOr<T>& s) {
+  return s.status();
+}
+MATCHER_P(StatusIs, status,
+          absl::StrCat(".status() is ", testing::PrintToString(status))) {
+  return GetStatus(arg).code() == status;
+}
+#define EXPECT_OK(x) EXPECT_THAT(x, StatusIs(absl::StatusCode::kOk))
+#define ASSERT_OK(x) ASSERT_THAT(x, StatusIs(absl::StatusCode::kOk))
 
 namespace google {
 namespace protobuf {
@@ -3997,6 +4011,11 @@ TEST(CustomOptions, DebugString) {
 
 class ValidationErrorTest : public testing::Test {
  protected:
+  void SetUp() override {
+    // Enable extension declaration enforcement since most test cases want to
+    // exercise the full validation.
+    pool_.EnforceExtensionDeclarations(true);
+  }
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect no errors.
   const FileDescriptor* BuildFile(const std::string& file_text) {
@@ -9998,6 +10017,671 @@ INSTANTIATE_TEST_SUITE_P(
     [](const ::testing::TestParamInfo<FeaturesDebugStringTest::ParamType>&
            info) { return std::string(std::get<0>(info.param)); });
 
+
+
+TEST_F(ValidationErrorTest, ExtensionDeclarationsMatchFullNameCompile) {
+  BuildFile(R"pb(
+    name: "foo.proto"
+    package: "ext.test"
+    message_type {
+      name: "Foo"
+      extension_range {
+        start: 11
+        end: 999
+        options: {
+          declaration: {
+            number: 100
+            full_name: ".ext.test.foo"
+            type: ".ext.test.Bar"
+          }
+        }
+      }
+    }
+    message_type { name: "Bar" }
+    extension { extendee: "Foo" name: "foo" number: 100 type_name: "Bar" }
+  )pb");
+}
+
+TEST_F(ValidationErrorTest, ExtensionDeclarationsMismatchFullName) {
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 11
+            end: 999
+            options: {
+              declaration: {
+                number: 100
+                full_name: ".ext.test.buz"
+                type: ".ext.test.Bar"
+              }
+            }
+          }
+        }
+        message_type { name: "Bar" }
+        extension { extendee: "Foo" name: "foo" number: 100 type_name: "Bar" }
+      )pb",
+      "foo.proto: ext.test.foo: EXTENDEE: \"ext.test.Foo\" extension field 100"
+      " is expected to have field name \".ext.test.buz\", not "
+      "\".ext.test.foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, ExtensionDeclarationsMismatchFullNameAllowed) {
+  // Make sure that extension declaration names and types are not validated
+  // outside of protoc. This is important for allowing extensions to be renamed
+  // safely.
+  pool_.EnforceExtensionDeclarations(false);
+  BuildFile(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 11
+            end: 999
+            options: {
+              declaration: {
+                number: 100
+                full_name: ".ext.test.buz"
+                type: ".ext.test.Bar"
+              }
+            }
+          }
+        }
+        message_type { name: "Bar" }
+        extension { extendee: "Foo" name: "foo" number: 100 type_name: "Bar" }
+      )pb");
+}
+
+TEST_F(ValidationErrorTest,
+       ExtensionDeclarationsFullNameDoesNotLookLikeIdentifier) {
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 10
+            end: 11
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext..test.bar"
+                type: ".baz"
+              }
+            }
+          }
+        }
+      )pb",
+      "foo.proto: Foo: NAME: \".ext..test.bar\" contains invalid "
+      "identifiers.\n");
+}
+
+TEST_F(ValidationErrorTest, ExtensionDeclarationsDuplicateNames) {
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 11
+            end: 1000
+            options: {
+              declaration: {
+                number: 123
+                full_name: ".foo.Bar.baz",
+                type: ".Bar"
+              }
+              declaration: {
+                number: 999
+                full_name: ".foo.Bar.baz",
+                type: "int32"
+              }
+            }
+          }
+        }
+      )pb",
+      "foo.proto: .foo.Bar.baz: NAME: Extension field name \".foo.Bar.baz\" is "
+      "declared multiple times.\n");
+}
+
+TEST_F(ValidationErrorTest, ExtensionDeclarationMissingFullNameOrType) {
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 10
+            end: 11
+            options: { declaration: { number: 10 full_name: ".foo.Bar.foo" } }
+          }
+          extension_range {
+            start: 11
+            end: 12
+            options: { declaration: { number: 11 type: ".Baz" } }
+          }
+        }
+      )pb",
+      "foo.proto: Foo: EXTENDEE: Extension declaration #10 should have both"
+      " \"full_name\" and \"type\" set.\n"
+      "foo.proto: Foo: EXTENDEE: Extension declaration #11 should have both"
+      " \"full_name\" and \"type\" set.\n");
+}
+
+TEST_F(ValidationErrorTest, ExtensionDeclarationsNumberNotInRange) {
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 4
+            end: 9999
+            options: {
+              declaration: { number: 9999 full_name: ".abc" type: ".Bar" }
+            }
+          }
+        }
+      )pb",
+      "foo.proto: Foo: NUMBER: Extension declaration number 9999 is not in the "
+      "extension range.\n");
+}
+
+TEST_F(ValidationErrorTest, ExtensionDeclarationsFullNameMissingLeadingDot) {
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 4
+            end: 9999
+            options: {
+              declaration: { number: 10 full_name: "bar" type: "fixed64" }
+            }
+          }
+        }
+      )pb",
+      "foo.proto: Foo: NAME: \"bar\" must have a leading dot to indicate the "
+      "fully-qualified scope.\n");
+}
+
+struct ExtensionDeclarationsTestParams {
+  std::string test_name;
+};
+
+// For OSS, we only have declaration to test with.
+using ExtensionDeclarationsTest =
+    testing::TestWithParam<ExtensionDeclarationsTestParams>;
+
+// For OSS, this is a function that directly returns the parsed
+// FileDescriptorProto.
+absl::StatusOr<FileDescriptorProto> ParameterizeFileProto(
+    absl::string_view file_text, const ExtensionDeclarationsTestParams& param) {
+  (void)file_text;  // Parameter is used by Google-internal code.
+  (void)param;      // Parameter is used by Google-internal code.
+  FileDescriptorProto file_proto;
+  if (!TextFormat::ParseFromString(file_text, &file_proto)) {
+    return absl::InvalidArgumentError("Failed to parse the input file text.");
+  }
+
+  return file_proto;
+}
+
+TEST_P(ExtensionDeclarationsTest, DotPrefixTypeCompile) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 4
+            end: 99999
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext.test.bar"
+                type: ".ext.test.Bar"
+              }
+            }
+          }
+        }
+        message_type { name: "Bar" }
+        extension { extendee: "Foo" name: "bar" number: 10 type_name: "Bar" }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
+}
+
+TEST_P(ExtensionDeclarationsTest, EnumTypeCompile) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 4
+            end: 99999
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext.test.bar"
+                type: ".ext.test.Bar"
+              }
+            }
+          }
+        }
+        enum_type {
+          name: "Bar"
+          value: { name: "BUZ" number: 123 }
+        }
+        extension { extendee: "Foo" name: "bar" number: 10 type_name: "Bar" }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
+}
+
+TEST_P(ExtensionDeclarationsTest, MismatchEnumType) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 4
+            end: 99999
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext.test.bar"
+                type: ".ext.test.Bar"
+              }
+            }
+          }
+        }
+        enum_type {
+          name: "Bar"
+          value: { name: "BUZ1" number: 123 }
+        }
+        enum_type {
+          name: "Abc"
+          value: { name: "BUZ2" number: 456 }
+        }
+        extension { extendee: "Foo" name: "bar" number: 10 type_name: "Abc" }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  MockErrorCollector error_collector;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
+            nullptr);
+  EXPECT_EQ(
+      error_collector.text_,
+      "foo.proto: ext.test.bar: EXTENDEE: \"ext.test.Foo\" extension field 10 "
+      "is expected to be type \".ext.test.Bar\", not \".ext.test.Abc\".\n");
+}
+
+TEST_P(ExtensionDeclarationsTest, DotPrefixFullNameCompile) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 4
+            end: 99999
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext.test.bar"
+                type: ".ext.test.Bar"
+              }
+            }
+          }
+        }
+        message_type { name: "Bar" }
+        extension { extendee: "Foo" name: "bar" number: 10 type_name: "Bar" }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
+}
+
+TEST_P(ExtensionDeclarationsTest, MismatchDotPrefixTypeExpectingMessage) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 4
+            end: 99999
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext.test.bar"
+                type: ".int32"
+              }
+            }
+          }
+        }
+        extension { name: "bar" number: 10 type: TYPE_INT32 extendee: "Foo" }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  MockErrorCollector error_collector;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
+            nullptr);
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: ext.test.bar: EXTENDEE: \"ext.test.Foo\" extension "
+            "field 10 is expected to be type \".int32\", not \"int32\".\n");
+}
+
+TEST_P(ExtensionDeclarationsTest, MismatchDotPrefixTypeExpectingNonMessage) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 4
+            end: 99999
+            options: {
+              declaration: { number: 10 full_name: ".bar" type: "int32" }
+            }
+          }
+        }
+        message_type { name: "int32" }
+        extension { name: "bar" number: 10 type_name: "int32" extendee: "Foo" }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  MockErrorCollector error_collector;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
+            nullptr);
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: bar: EXTENDEE: \"Foo\" extension field 10 is expected "
+            "to be type \"int32\", not \".int32\".\n");
+}
+
+TEST_P(ExtensionDeclarationsTest, MismatchMessageType) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 4
+            end: 99999
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext.test.foo"
+                type: ".ext.test.Foo"
+              }
+            }
+          }
+        }
+        message_type { name: "Bar" }
+        extension { extendee: "Foo" name: "foo" number: 10 type_name: "Bar" }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  MockErrorCollector error_collector;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
+            nullptr);
+  EXPECT_EQ(
+      error_collector.text_,
+      "foo.proto: ext.test.foo: EXTENDEE: \"ext.test.Foo\" extension field 10 "
+      "is expected to be type \".ext.test.Foo\", not \".ext.test.Bar\".\n");
+}
+
+TEST_P(ExtensionDeclarationsTest, NonMessageTypeCompile) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 10
+            end: 11
+            options: {
+              declaration: { number: 10 full_name: ".bar" type: "fixed64" }
+            }
+          }
+        }
+        extension { name: "bar" number: 10 type: TYPE_FIXED64 extendee: "Foo" }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
+}
+
+TEST_P(ExtensionDeclarationsTest, MismatchNonMessageType) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 10
+            end: 11
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext.test.bar"
+                type: "int32"
+              }
+            }
+          }
+        }
+        extension { name: "bar" number: 10 type: TYPE_FIXED64 extendee: "Foo" }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  MockErrorCollector error_collector;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
+            nullptr);
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: ext.test.bar: EXTENDEE: \"ext.test.Foo\" extension "
+            "field 10 is expected to be type \"int32\", not \"fixed64\".\n");
+}
+
+TEST_P(ExtensionDeclarationsTest, MismatchCardinalityExpectingRepeated) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 10
+            end: 11
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext.test.bar"
+                type: "fixed64"
+                repeated: true
+              }
+            }
+          }
+        }
+        extension { name: "bar" number: 10 type: TYPE_FIXED64 extendee: "Foo" }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  MockErrorCollector error_collector;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
+            nullptr);
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: ext.test.bar: EXTENDEE: \"ext.test.Foo\" extension "
+            "field 10 is expected to be repeated.\n");
+}
+
+TEST_P(ExtensionDeclarationsTest, MismatchCardinalityExpectingOptional) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 10
+            end: 11
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext.test.bar"
+                type: "fixed64"
+              }
+            }
+          }
+        }
+        extension {
+          name: "bar"
+          number: 10
+          type: TYPE_FIXED64
+          extendee: "Foo"
+          label: LABEL_REPEATED
+        }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  MockErrorCollector error_collector;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
+            nullptr);
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: ext.test.bar: EXTENDEE: \"ext.test.Foo\" extension "
+            "field 10 is expected to be optional.\n");
+}
+
+TEST_P(ExtensionDeclarationsTest, TypeDoesNotLookLikeIdentifier) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 10
+            end: 11
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext.test.bar"
+                type: ".b#az"
+              }
+            }
+          }
+        }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  MockErrorCollector error_collector;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(*file_proto, &error_collector),
+            nullptr);
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: Foo: NAME: \".b#az\" contains invalid identifiers.\n");
+}
+
+TEST_P(ExtensionDeclarationsTest, MultipleDeclarationsInARangeCompile) {
+  absl::StatusOr<FileDescriptorProto> file_proto = ParameterizeFileProto(
+      R"pb(
+        name: "foo.proto"
+        package: "ext.test"
+        message_type {
+          name: "Foo"
+          extension_range {
+            start: 4
+            end: 99999
+            options: {
+              declaration: {
+                number: 10
+                full_name: ".ext.test.foo"
+                type: ".ext.test.Bar"
+              }
+              declaration: {
+                number: 99998
+                full_name: ".ext.test.bar"
+                type: ".ext.test.Bar"
+              }
+              declaration: {
+                number: 12345
+                full_name: ".ext.test.baz"
+                type: ".ext.test.Bar"
+              }
+            }
+          }
+        }
+        message_type { name: "Bar" }
+        extension { extendee: "Foo" name: "foo" number: 10 type_name: "Bar" }
+        extension { extendee: "Foo" name: "bar" number: 99998 type_name: "Bar" }
+        extension { extendee: "Foo" name: "baz" number: 12345 type_name: "Bar" }
+      )pb",
+      GetParam());
+  ASSERT_OK(file_proto);
+
+  DescriptorPool pool;
+  pool.EnforceExtensionDeclarations(true);
+  EXPECT_NE(pool.BuildFile(*file_proto), nullptr);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ExtensionDeclarationTests, ExtensionDeclarationsTest,
+    testing::ValuesIn<ExtensionDeclarationsTestParams>({
+        {"Declaration"},
+    }),
+    [](const testing::TestParamInfo<ExtensionDeclarationsTest::ParamType>&
+           info) { return info.param.test_name; });
 
 
 TEST_F(ValidationErrorTest, PackageTooLong) {
