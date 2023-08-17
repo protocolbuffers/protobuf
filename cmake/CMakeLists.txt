@@ -235,8 +235,6 @@ target_include_directories(message_typedef INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
 )
-target_link_libraries(message_typedef INTERFACE
-  )
 
 add_library(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
     
