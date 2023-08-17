@@ -111,7 +111,6 @@ cc_library(
     hdrs = [
         "upb/message/internal/extension.h",
         "upb/message/message.h",
-        "upb/upb.h",
         "upb/upb.hpp",
     ],
     copts = UPB_DEFAULT_COPTS,
@@ -288,7 +287,6 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
-    deps = [],
 )
 
 cc_test(

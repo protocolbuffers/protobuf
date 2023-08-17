@@ -140,9 +140,9 @@ cc_library(
     hdrs = ["compare.h"],
     visibility = ["//visibility:public"],
     deps = [
+        "//:base",
         "//:eps_copy_input_stream",
         "//:port",
-        "//:upb",
         "//:wire_reader",
         "//:wire_types",
     ],

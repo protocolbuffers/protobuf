@@ -32,7 +32,7 @@
 
 #include <stdlib.h>
 
-#include "upb/upb.h"
+#include "upb/base/string_view.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
@@ -218,7 +218,7 @@ static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
   return fields;
 }
 
-// Compares two sorted upb_UnknwonFields structures for equality.
+// Compares two sorted upb_UnknownFields structures for equality.
 static bool upb_UnknownFields_IsEqual(const upb_UnknownFields* uf1,
                                       const upb_UnknownFields* uf2) {
   if (uf1->size != uf2->size) return false;
