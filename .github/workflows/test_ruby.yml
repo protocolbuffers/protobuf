@@ -38,6 +38,39 @@ jobs:
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION
 
+  linux-32bit:
+    name: Linux 32-bit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+          submodules: recursive
+
+      - name: Cross compile protoc for i386
+        id: cross-compile
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          architecture: linux-i386
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v2
+        with:
+          image: i386/ruby:2.7.3-buster
+          skip-staleness-check: true
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: >-
+            /bin/bash -cex '
+            gem install bundler;
+            cd /workspace/ruby;
+            bundle;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
+            rake clobber_package gem;
+            PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake test'
+
   linux-aarch64:
     name: Linux aarch64
     runs-on: ubuntu-latest
