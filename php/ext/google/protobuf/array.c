@@ -628,12 +628,12 @@ PHP_METHOD(RepeatedFieldIter, valid) {
   RETURN_BOOL(intern->position < upb_Array_Size(field->array));
 }
 
+// clang-format: off
 ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_current, 0, 0,
                                                   IS_MIXED, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_key, 0, 0, IS_MIXED,
-                                                  0)
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_key, 0, 0, IS_MIXED, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_next, 0, 0, IS_VOID, 0)
@@ -646,12 +646,14 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_rewind, 0, 0, IS_VOID, 0)
 ZEND_END_ARG_INFO()
 
 static zend_function_entry repeated_field_iter_methods[] = {
-    PHP_ME(RepeatedFieldIter, rewind, arginfo_rewind, ZEND_ACC_PUBLIC)
-        PHP_ME(RepeatedFieldIter, current, arginfo_current, ZEND_ACC_PUBLIC)
-            PHP_ME(RepeatedFieldIter, key, arginfo_key, ZEND_ACC_PUBLIC) PHP_ME(
-                RepeatedFieldIter, next, arginfo_next, ZEND_ACC_PUBLIC)
-                PHP_ME(RepeatedFieldIter, valid, arginfo_valid, ZEND_ACC_PUBLIC)
-                    ZEND_FE_END};
+  PHP_ME(RepeatedFieldIter, rewind, arginfo_rewind, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, current, arginfo_current, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, key, arginfo_key, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, next, arginfo_next, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, valid, arginfo_valid, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+// clang-format: on
 
 // -----------------------------------------------------------------------------
 // Module init.
