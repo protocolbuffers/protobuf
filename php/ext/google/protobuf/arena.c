@@ -41,13 +41,13 @@ typedef struct Arena {
   upb_Arena* arena;
 } Arena;
 
-zend_class_entry *Arena_class_entry;
+zend_class_entry* Arena_class_entry;
 static zend_object_handlers Arena_object_handlers;
 
 // PHP Object Handlers /////////////////////////////////////////////////////////
 
-static zend_object* Arena_Create(zend_class_entry *class_type) {
-  Arena *intern = emalloc(sizeof(Arena));
+static zend_object* Arena_Create(zend_class_entry* class_type) {
+  Arena* intern = emalloc(sizeof(Arena));
   zend_object_std_init(&intern->std, class_type);
   intern->std.handlers = &Arena_object_handlers;
   intern->arena = upb_Arena_New();
@@ -63,12 +63,10 @@ static void Arena_Free(zend_object* obj) {
 
 // C Functions from arena.h ////////////////////////////////////////////////////
 
-void Arena_Init(zval* val) {
-  ZVAL_OBJ(val, Arena_Create(Arena_class_entry));
-}
+void Arena_Init(zval* val) { ZVAL_OBJ(val, Arena_Create(Arena_class_entry)); }
 
-upb_Arena *Arena_Get(zval *val) {
-  Arena *a = (Arena*)Z_OBJ_P(val);
+upb_Arena* Arena_Get(zval* val) {
+  Arena* a = (Arena*)Z_OBJ_P(val);
   return a->arena;
 }
 
@@ -77,9 +75,7 @@ upb_Arena *Arena_Get(zval *val) {
 // -----------------------------------------------------------------------------
 
 // No public methods.
-static const zend_function_entry Arena_methods[] = {
-  ZEND_FE_END
-};
+static const zend_function_entry Arena_methods[] = {ZEND_FE_END};
 
 void Arena_ModuleInit() {
   zend_class_entry tmp_ce;
