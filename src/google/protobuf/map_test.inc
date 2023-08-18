@@ -2380,25 +2380,11 @@ class MyMapEntry
   static bool ValidateValue(void*) { return true; }
 };
 
-class MyMapEntryLite
-    : public internal::MapEntryLite<MyMapEntryLite, ::int32_t, ::int32_t,
-                                    internal::WireFormatLite::TYPE_INT32,
-                                    internal::WireFormatLite::TYPE_INT32> {
- public:
-  constexpr MyMapEntryLite() {}
-  explicit MyMapEntryLite(Arena*) { ABSL_CHECK(false); }
-  static bool ValidateKey(void*) { return true; }
-  static bool ValidateValue(void*) { return true; }
-};
-
 TEST(MapEntryTest, ConstInit) {
   // This verifies that `MapEntry`, `MapEntryLite` and `MapEntryImpl` can be
   // constant initialized.
   PROTOBUF_CONSTINIT static MyMapEntry entry{};
   EXPECT_NE(entry.SpaceUsed(), 0);
-
-  PROTOBUF_CONSTINIT static MyMapEntryLite entry_lite{};  // NOLINT
-  EXPECT_TRUE(entry_lite.IsInitialized());
 }
 
 // Generated Message Test ===========================================

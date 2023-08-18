@@ -68,6 +68,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -948,7 +949,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
   for (auto oneof : OneOfRange(descriptor_)) {
     p->Emit({{"oneof_name", oneof->name()},
              Sub{"clear_oneof_name", absl::StrCat("clear_", oneof->name())}
-                 .AnnotatedAs(oneof),
+                 .AnnotatedAs({oneof, Semantic::kSet}),
              {"OneOfName", UnderscoresToCamelCase(oneof->name(), true)}},
             R"cc(
               void $clear_oneof_name$();
@@ -1106,6 +1107,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
             }}},
           R"cc(
             $inline $void $classname$::clear_$name$() {
+              PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
               $body$;
               $annotate_clear$;
             }
@@ -1149,6 +1151,8 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
+  if (!ShouldGenerateClass(descriptor_, options_)) return;
+
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
@@ -1280,6 +1284,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "  *this = ::std::move(from);\n"
       "}\n"
       "\n"
+      "inline $classname$(::$proto_ns$::Arena* arena,"
+      " const $classname$& from)\n"
+      "  : $classname$(arena) {\n"
+      "  MergeFrom(from);\n"
+      "}\n"
       "inline $classname$& operator=(const $classname$& from) {\n"
       "  CopyFrom(from);\n"
       "  return *this;\n"
@@ -1300,11 +1309,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "\n");
 
   p->Emit(R"cc(
-    inline const $unknown_fields_type$& unknown_fields() const {
+    inline const $unknown_fields_type$& unknown_fields() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_unknown_fields$;
       return $unknown_fields$;
     }
-    inline $unknown_fields_type$* mutable_unknown_fields() {
+    inline $unknown_fields_type$* mutable_unknown_fields()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_mutable_unknown_fields$;
       return $mutable_unknown_fields$;
     }
@@ -1899,6 +1910,8 @@ void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
 }
 
 void MessageGenerator::GenerateClassMethods(io::Printer* p) {
+  if (!ShouldGenerateClass(descriptor_, options_)) return;
+
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
@@ -2524,6 +2537,8 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
+  if (!ShouldGenerateClass(descriptor_, options_)) return;
+
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   auto c = p->WithVars({{"constexpr", "PROTOBUF_CONSTEXPR"}});
@@ -2953,12 +2968,15 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
-  format(
-      "template<> "
-      "PROTOBUF_NOINLINE $classtype$*\n"
-      "Arena::CreateMaybeMessage< $classtype$ >(Arena* arena) {\n"
-      "  return Arena::CreateMessageInternal< $classtype$ >(arena);\n"
-      "}\n");
+  if (ShouldGenerateExternSpecializations(options_) &&
+      ShouldGenerateClass(descriptor_, options_)) {
+    format(
+        "template<> "
+        "PROTOBUF_NOINLINE $classtype$*\n"
+        "Arena::CreateMaybeMessage< $classtype$ >(Arena* arena) {\n"
+        "  return Arena::CreateMessageInternal< $classtype$ >(arena);\n"
+        "}\n");
+  }
 }
 
 void MessageGenerator::GenerateClear(io::Printer* p) {
@@ -2973,6 +2991,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       "PROTOBUF_NOINLINE void $classname$::Clear() {\n"
       "// @@protoc_insertion_point(message_clear_start:$full_name$)\n");
   format.Indent();
+
+  format("PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);\n");
 
   format(
       // TODO(jwb): It would be better to avoid emitting this if it is not used,
@@ -3174,6 +3194,7 @@ void MessageGenerator::GenerateOneofClear(io::Printer* p) {
         "void $classname$::clear_$oneofname$() {\n"
         "// @@protoc_insertion_point(one_of_clear_start:$full_name$)\n");
     format.Indent();
+    format("PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);\n");
     format("switch ($oneofname$_case()) {\n");
     format.Indent();
     for (auto field : FieldRange(oneof)) {

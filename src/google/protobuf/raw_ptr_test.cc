@@ -82,6 +82,42 @@ TEST(RawPtr, Constexpr) {
   EXPECT_FALSE(raw2.IsDefault());
 }
 
+TEST(RawPtr, DeleteIfNotDefault) {
+  RawPtr<Obj> raw;
+  EXPECT_TRUE(raw.IsDefault());
+
+  // Shouldn't trigger an allocator problem by deallocating default ptr.
+  raw.DeleteIfNotDefault();
+
+  raw.Set(new Obj());
+  EXPECT_FALSE(raw.IsDefault());
+
+  // Shouldn't leak.
+  raw.DeleteIfNotDefault();
+}
+
+TEST(RawPtr, ClearIfNotDefault) {
+  struct ObjectWithClear {
+    int called = 0;
+    void Clear() { ++called; }
+  };
+  RawPtr<ObjectWithClear> raw;
+  EXPECT_TRUE(raw.IsDefault());
+
+  // Shouldn't trigger / crash
+  raw.ClearIfNotDefault();
+  EXPECT_EQ(raw.Get()->called, 0);
+
+  raw.Set(new ObjectWithClear());
+  EXPECT_FALSE(raw.IsDefault());
+
+  // Should invoke Clear
+  raw.ClearIfNotDefault();
+  EXPECT_EQ(raw.Get()->called, 1);
+
+  raw.DeleteIfNotDefault();
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

@@ -888,7 +888,9 @@ bool EncodedDescriptorDatabase::FindAllFileNames(
 bool EncodedDescriptorDatabase::MaybeParse(
     std::pair<const void*, int> encoded_file, FileDescriptorProto* output) {
   if (encoded_file.first == nullptr) return false;
-  return output->ParseFromArray(encoded_file.first, encoded_file.second);
+  absl::string_view source(static_cast<const char*>(encoded_file.first),
+                           encoded_file.second);
+  return internal::ParseNoReflection(source, *output);
 }
 
 EncodedDescriptorDatabase::EncodedDescriptorDatabase()

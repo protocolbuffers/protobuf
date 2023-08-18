@@ -139,7 +139,7 @@ genrule(
             --proto_path=$$(dirname $$(dirname $$(dirname $(location any.proto)))) \
             $(SRCS)
     """,
-    exec_tools = ["//:protoc"],
+    tools = ["//:protoc"],
     visibility = ["//visibility:private"],
 )
 
@@ -398,7 +398,6 @@ cc_library(
         "implicit_weak_message.h",
         "inlined_string_field.h",
         "map.h",
-        "map_entry_lite.h",
         "map_field_lite.h",
         "map_type_handler.h",
         "message_lite.h",
@@ -685,7 +684,6 @@ filegroup(
         "unittest_features.proto",
         "unittest_import.proto",
         "unittest_import_public.proto",
-        "unittest_invalid_features.proto",
         "unittest_lite_imports_nonlite.proto",
         "unittest_mset.proto",
         "unittest_mset_wire_format.proto",
@@ -973,6 +971,7 @@ cc_test(
     name = "arenastring_unittest",
     srcs = ["arenastring_unittest.cc"],
     deps = [
+        ":port_def",
         ":protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
@@ -1485,6 +1484,18 @@ cc_test(
         "//src/google/protobuf/util:differencer",
         "@com_google_absl//absl/log:scoped_mock_log",
         "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generated_enum_util_test",
+    srcs = ["generated_enum_util_test.cc"],
+    deps = [
+        ":protobuf",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
     ],
 )

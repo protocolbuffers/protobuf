@@ -41,6 +41,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/map_entry.h"
 #include "google/protobuf/map_field_lite.h"
 #include "google/protobuf/map_type_handler.h"
@@ -601,10 +602,6 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   // Define message type for internal repeated field.
   typedef Derived EntryType;
 
-  // Define abbreviation for parent MapFieldLite
-  typedef MapFieldLite<Derived, Key, T, kKeyFieldType_, kValueFieldType_>
-      MapFieldLiteType;
-
  public:
   typedef Map<Key, T> MapType;
   static constexpr WireFormatLite::FieldType kKeyFieldType = kKeyFieldType_;
@@ -618,23 +615,17 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   explicit MapField(Arena* arena) : TypeDefinedMapFieldBase<Key, T>(arena) {}
   MapField(ArenaInitialized, Arena* arena) : MapField(arena) {}
 
+  MapField(InternalVisibility, Arena* arena)
+      : TypeDefinedMapFieldBase<Key, T>(arena) {}
+  MapField(InternalVisibility, Arena* arena, const MapField& from)
+      : TypeDefinedMapFieldBase<Key, T>(arena) {
+    TypeDefinedMapFieldBase<Key, T>::MergeFrom(from);
+  }
+
   // Used in the implementation of parsing. Caller should take the ownership iff
   // arena_ is nullptr.
   EntryType* NewEntry() const {
     return Arena::CreateMessage<EntryType>(this->arena());
-  }
-
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-    typename Derived::template Parser<MapField, Map<Key, T>> parser(this);
-    return parser._InternalParse(ptr, ctx);
-  }
-  template <typename UnknownType>
-  const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
-                                      bool (*is_valid)(int), uint32_t field_num,
-                                      InternalMetadata* metadata) {
-    typename Derived::template Parser<MapField, Map<Key, T>> parser(this);
-    return parser.template ParseWithEnumValidation<UnknownType>(
-        ptr, ctx, is_valid, field_num, metadata);
   }
 
  private:

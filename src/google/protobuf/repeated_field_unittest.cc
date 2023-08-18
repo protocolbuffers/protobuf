@@ -41,6 +41,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -885,13 +887,9 @@ TEST(RepeatedField, MoveAssign) {
         Arena::CreateMessage<RepeatedField<int>>(&arena);
     destination->Add(3);
     const int* source_data = source->data();
-    const int* destination_data = destination->data();
     *destination = std::move(*source);
     EXPECT_EQ(source_data, destination->data());
     EXPECT_THAT(*destination, ElementsAre(1, 2));
-    // This property isn't guaranteed but it's useful to have a test that would
-    // catch changes in this area.
-    EXPECT_EQ(destination_data, source->data());
     EXPECT_THAT(*source, ElementsAre(3));
   }
   {
@@ -1655,9 +1653,18 @@ TEST(RepeatedPtrField, AddAllocated) {
     field.Add()->assign("filler");
   }
 
+  const auto ensure_at_capacity = [&] {
+    while (field.size() < field.Capacity()) {
+      field.Add()->assign("filler");
+    }
+  };
+  const auto ensure_not_at_capacity = [&] { field.Reserve(field.size() + 1); };
+
+  ensure_at_capacity();
   int index = field.size();
 
   // First branch:  Field is at capacity with no cleared objects.
+  ASSERT_EQ(field.size(), field.Capacity());
   std::string* foo = new std::string("foo");
   field.AddAllocated(foo);
   EXPECT_EQ(index + 1, field.size());
@@ -1665,6 +1672,7 @@ TEST(RepeatedPtrField, AddAllocated) {
   EXPECT_EQ(foo, &field.Get(index));
 
   // Last branch:  Field is not at capacity and there are no cleared objects.
+  ensure_not_at_capacity();
   std::string* bar = new std::string("bar");
   field.AddAllocated(bar);
   ++index;
@@ -1673,6 +1681,7 @@ TEST(RepeatedPtrField, AddAllocated) {
   EXPECT_EQ(bar, &field.Get(index));
 
   // Third branch:  Field is not at capacity and there are no cleared objects.
+  ensure_not_at_capacity();
   field.RemoveLast();
   std::string* baz = new std::string("baz");
   field.AddAllocated(baz);
@@ -1681,9 +1690,7 @@ TEST(RepeatedPtrField, AddAllocated) {
   EXPECT_EQ(baz, &field.Get(index));
 
   // Second branch:  Field is at capacity but has some cleared objects.
-  while (field.size() < field.Capacity()) {
-    field.Add()->assign("filler2");
-  }
+  ensure_at_capacity();
   field.RemoveLast();
   index = field.size();
   std::string* moo = new std::string("moo");
@@ -1841,6 +1848,47 @@ TEST(RepeatedPtrField, IteratorConstruct_Proto) {
   EXPECT_EQ(values[1].bb(), other.Get(1).bb());
 }
 
+TEST(RepeatedPtrField, SmallOptimization) {
+  // Properties checked here are not part of the contract of RepeatedPtrField,
+  // but we test them to verify that SSO is working as expected by the
+  // implementation.
+
+  // We use an arena to easily measure memory usage, but not needed.
+  Arena arena;
+  auto* array = Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+  EXPECT_EQ(array->Capacity(), 1);
+  EXPECT_EQ(array->SpaceUsedExcludingSelf(), 0);
+  std::string str;
+  auto usage_before = arena.SpaceUsed();
+  // We use UnsafeArenaAddAllocated just to grow the array without creating
+  // objects or causing extra cleanup costs in the arena to make the
+  // measurements simpler.
+  array->UnsafeArenaAddAllocated(&str);
+  // No backing array, just the string.
+  EXPECT_EQ(array->SpaceUsedExcludingSelf(), sizeof(str));
+  // We have not used any arena space.
+  EXPECT_EQ(usage_before, arena.SpaceUsed());
+  // Verify the string is where we think it is.
+  EXPECT_EQ(&*array->begin(), &str);
+  EXPECT_EQ(array->pointer_begin()[0], &str);
+  // The T** in pointer_begin points into the sso in the object.
+  EXPECT_TRUE(std::less_equal<void*>{}(array, &*array->pointer_begin()));
+  EXPECT_TRUE(std::less_equal<void*>{}(&*array->pointer_begin(), array + 1));
+
+  // Adding a second object stops sso.
+  std::string str2;
+  array->UnsafeArenaAddAllocated(&str2);
+  EXPECT_EQ(array->Capacity(), 3);
+  // Backing array and the strings.
+  EXPECT_EQ(array->SpaceUsedExcludingSelf(),
+            (1 + array->Capacity()) * sizeof(void*) + 2 * sizeof(str));
+  // We used some arena space now.
+  EXPECT_LT(usage_before, arena.SpaceUsed());
+  // And the pointer_begin is not in the sso anymore.
+  EXPECT_FALSE(std::less_equal<void*>{}(array, &*array->pointer_begin()) &&
+               std::less_equal<void*>{}(&*array->pointer_begin(), array + 1));
+}
+
 TEST(RepeatedPtrField, CopyAssign) {
   RepeatedPtrField<std::string> source, destination;
   source.Add()->assign("4");
@@ -1906,13 +1954,9 @@ TEST(RepeatedPtrField, MoveAssign) {
     RepeatedPtrField<std::string> destination;
     *destination.Add() = "3";
     const std::string* const* source_data = source.data();
-    const std::string* const* destination_data = destination.data();
     destination = std::move(source);
     EXPECT_EQ(source_data, destination.data());
     EXPECT_THAT(destination, ElementsAre("1", "2"));
-    // This property isn't guaranteed but it's useful to have a test that would
-    // catch changes in this area.
-    EXPECT_EQ(destination_data, source.data());
     EXPECT_THAT(source, ElementsAre("3"));
   }
   {
@@ -1925,13 +1969,9 @@ TEST(RepeatedPtrField, MoveAssign) {
         Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
     *destination->Add() = "3";
     const std::string* const* source_data = source->data();
-    const std::string* const* destination_data = destination->data();
     *destination = std::move(*source);
     EXPECT_EQ(source_data, destination->data());
     EXPECT_THAT(*destination, ElementsAre("1", "2"));
-    // This property isn't guaranteed but it's useful to have a test that would
-    // catch changes in this area.
-    EXPECT_EQ(destination_data, source->data());
     EXPECT_THAT(*source, ElementsAre("3"));
   }
   {

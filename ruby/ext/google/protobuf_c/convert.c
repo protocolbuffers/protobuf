@@ -41,6 +41,7 @@
 
 #include "message.h"
 #include "protobuf.h"
+#include "shared_convert.h"
 
 static upb_StringView Convert_StringData(VALUE str, upb_Arena* arena) {
   upb_StringView ret;
@@ -111,8 +112,7 @@ static int32_t Convert_ToEnum(VALUE value, const char* name,
     case T_SYMBOL: {
       const upb_EnumValueDef* ev =
           upb_EnumDef_FindValueByName(e, rb_id2name(SYM2ID(value)));
-      if (!ev)
-        goto unknownval;
+      if (!ev) goto unknownval;
       val = upb_EnumValueDef_Number(ev);
       break;
     }
@@ -255,7 +255,7 @@ VALUE Convert_UpbToRuby(upb_MessageValue upb_val, TypeInfo type_info,
     case kUpb_CType_UInt64:
       return ULL2NUM(upb_val.int64_val);
     case kUpb_CType_Enum: {
-      const upb_EnumValueDef *ev = upb_EnumDef_FindValueByNumber(
+      const upb_EnumValueDef* ev = upb_EnumDef_FindValueByNumber(
           type_info.def.enumdef, upb_val.int32_val);
       if (ev) {
         return ID2SYM(rb_intern(upb_EnumValueDef_Name(ev)));
@@ -312,50 +312,26 @@ upb_MessageValue Msgval_DeepCopy(upb_MessageValue msgval, TypeInfo type_info,
 
 bool Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
                     TypeInfo type_info) {
-  switch (type_info.type) {
-    case kUpb_CType_Bool:
-      return memcmp(&val1, &val2, 1) == 0;
-    case kUpb_CType_Float:
-    case kUpb_CType_Int32:
-    case kUpb_CType_UInt32:
-    case kUpb_CType_Enum:
-      return memcmp(&val1, &val2, 4) == 0;
-    case kUpb_CType_Double:
-    case kUpb_CType_Int64:
-    case kUpb_CType_UInt64:
-      return memcmp(&val1, &val2, 8) == 0;
-    case kUpb_CType_String:
-    case kUpb_CType_Bytes:
-      return val1.str_val.size == val2.str_val.size &&
-             memcmp(val1.str_val.data, val2.str_val.data, val1.str_val.size) ==
-                 0;
-    case kUpb_CType_Message:
-      return Message_Equal(val1.msg_val, val2.msg_val, type_info.def.msgdef);
-    default:
-      rb_raise(rb_eRuntimeError, "Internal error, unexpected type");
+  upb_Status status;
+  upb_Status_Clear(&status);
+  bool return_value = shared_Msgval_IsEqual(val1, val2, type_info.type,
+                                            type_info.def.msgdef, &status);
+  if (upb_Status_IsOk(&status)) {
+    return return_value;
+  } else {
+    rb_raise(rb_eRuntimeError, upb_Status_ErrorMessage(&status));
   }
 }
 
 uint64_t Msgval_GetHash(upb_MessageValue val, TypeInfo type_info,
                         uint64_t seed) {
-  switch (type_info.type) {
-    case kUpb_CType_Bool:
-      return _upb_Hash(&val, 1, seed);
-    case kUpb_CType_Float:
-    case kUpb_CType_Int32:
-    case kUpb_CType_UInt32:
-    case kUpb_CType_Enum:
-      return _upb_Hash(&val, 4, seed);
-    case kUpb_CType_Double:
-    case kUpb_CType_Int64:
-    case kUpb_CType_UInt64:
-      return _upb_Hash(&val, 8, seed);
-    case kUpb_CType_String:
-    case kUpb_CType_Bytes:
-      return _upb_Hash(val.str_val.data, val.str_val.size, seed);
-    case kUpb_CType_Message:
-      return Message_Hash(val.msg_val, type_info.def.msgdef, seed);
-    default:
-      rb_raise(rb_eRuntimeError, "Internal error, unexpected type");
+  upb_Status status;
+  upb_Status_Clear(&status);
+  uint64_t return_value = shared_Msgval_GetHash(
+      val, type_info.type, type_info.def.msgdef, seed, &status);
+  if (upb_Status_IsOk(&status)) {
+    return return_value;
+  } else {
+    rb_raise(rb_eRuntimeError, upb_Status_ErrorMessage(&status));
   }
 }

@@ -73,6 +73,11 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 
+#ifdef GOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS
+// This is needed because of https://github.com/bazelbuild/bazel/issues/19124.
+#include "google/protobuf/compiler/test_plugin_paths.h"
+#endif  // GOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -1552,27 +1557,13 @@ TEST_F(CommandLineInterfaceTest, Plugin_RuntimeFeatures) {
 
   EXPECT_THAT(
       request.proto_file(0).message_type(0).field(0).options().features(),
-      EqualsProto(R"pb(field_presence: IMPLICIT
-                       enum_type: OPEN
-                       repeated_field_encoding: PACKED
-                       string_field_validation: MANDATORY
-                       message_encoding: LENGTH_PREFIXED
-                       json_format: ALLOW
-                       raw_features { field_presence: IMPLICIT }
-      )pb"));
+      EqualsProto(R"pb(field_presence: IMPLICIT)pb"));
   EXPECT_THAT(request.source_file_descriptors(0)
                   .message_type(0)
                   .field(0)
                   .options()
                   .features(),
-              EqualsProto(R"pb(field_presence: IMPLICIT
-                               enum_type: OPEN
-                               repeated_field_encoding: PACKED
-                               string_field_validation: MANDATORY
-                               message_encoding: LENGTH_PREFIXED
-                               json_format: ALLOW
-                               raw_features { field_presence: IMPLICIT }
-              )pb"));
+              EqualsProto(R"pb(field_presence: IMPLICIT)pb"));
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
@@ -1618,10 +1609,8 @@ TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
     ASSERT_EQ(request.proto_file(2).name(), "foo.proto");
     const FeatureSet& features =
         request.proto_file(2).message_type(0).field(0).options().features();
-    EXPECT_THAT(features.raw_features(),
+    EXPECT_THAT(features,
                 EqualsProto(R"pb([pb.test] { int_field_feature: 99 })pb"));
-    EXPECT_FALSE(features.GetExtension(pb::test).has_int_source_feature());
-    EXPECT_EQ(features.GetExtension(pb::test).int_field_feature(), 99);
   }
 
   {
@@ -1631,13 +1620,10 @@ TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
                                      .field(0)
                                      .options()
                                      .features();
-    EXPECT_THAT(features.raw_features(),
-                EqualsProto(R"pb([pb.test] {
-                                   int_field_feature: 99
-                                   int_source_feature: 87
-                                 })pb"));
-    EXPECT_EQ(features.GetExtension(pb::test).int_field_feature(), 99);
-    EXPECT_EQ(features.GetExtension(pb::test).int_source_feature(), 87);
+    EXPECT_THAT(features, EqualsProto(R"pb([pb.test] {
+                                             int_field_feature: 99
+                                             int_source_feature: 87
+                                           })pb"));
   }
 }
 

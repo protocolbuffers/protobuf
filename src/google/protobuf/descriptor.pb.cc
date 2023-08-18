@@ -23,153 +23,151 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
         template <typename>
-PROTOBUF_CONSTEXPR FileDescriptorSet::FileDescriptorSet(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR UninterpretedOption_NamePart::UninterpretedOption_NamePart(::_pbi::ConstantInitialized)
     : _impl_{
-      /*decltype(_impl_.file_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.name_part_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.is_extension_)*/ false,
     } {}
-struct FileDescriptorSetDefaultTypeInternal {
+struct UninterpretedOption_NamePartDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr FileDescriptorSetDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr UninterpretedOption_NamePartDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  FileDescriptorSetDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) FileDescriptorSet(); };
+  UninterpretedOption_NamePartDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) UninterpretedOption_NamePart(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~FileDescriptorSetDefaultTypeInternal() {}
+  ~UninterpretedOption_NamePartDefaultTypeInternal() {}
   union {
-    FileDescriptorSet _instance;
+    UninterpretedOption_NamePart _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR FileDescriptorProto::FileDescriptorProto(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR SourceCodeInfo_Location::SourceCodeInfo_Location(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.dependency_)*/ {},
-      /*decltype(_impl_.message_type_)*/ {},
-      /*decltype(_impl_.enum_type_)*/ {},
-      /*decltype(_impl_.service_)*/ {},
-      /*decltype(_impl_.extension_)*/ {},
-      /*decltype(_impl_.public_dependency_)*/ {},
-      /*decltype(_impl_.weak_dependency_)*/ {},
-      /*decltype(_impl_.name_)*/ {
+      /*decltype(_impl_.path_)*/ {},
+      /* _impl_._path_cached_byte_size_ = */ {0},
+      /*decltype(_impl_.span_)*/ {},
+      /* _impl_._span_cached_byte_size_ = */ {0},
+      /*decltype(_impl_.leading_detached_comments_)*/ {},
+      /*decltype(_impl_.leading_comments_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.package_)*/ {
+      /*decltype(_impl_.trailing_comments_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.syntax_)*/ {
+    } {}
+struct SourceCodeInfo_LocationDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr SourceCodeInfo_LocationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  SourceCodeInfo_LocationDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) SourceCodeInfo_Location(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~SourceCodeInfo_LocationDefaultTypeInternal() {}
+  union {
+    SourceCodeInfo_Location _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.path_)*/ {},
+      /* _impl_._path_cached_byte_size_ = */ {0},
+      /*decltype(_impl_.source_file_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
+      /*decltype(_impl_.begin_)*/ 0,
+      /*decltype(_impl_.end_)*/ 0,
+      /*decltype(_impl_.semantic_)*/ 0,
+    } {}
+struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr GeneratedCodeInfo_AnnotationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  GeneratedCodeInfo_AnnotationDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) GeneratedCodeInfo_Annotation(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~GeneratedCodeInfo_AnnotationDefaultTypeInternal() {}
+  union {
+    GeneratedCodeInfo_Annotation _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR FieldOptions_EditionDefault::FieldOptions_EditionDefault(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
       /*decltype(_impl_.edition_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.options_)*/ nullptr,
-      /*decltype(_impl_.source_code_info_)*/ nullptr,
-    } {}
-struct FileDescriptorProtoDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr FileDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  FileDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) FileDescriptorProto(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~FileDescriptorProtoDefaultTypeInternal() {}
-  union {
-    FileDescriptorProto _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.options_)*/ nullptr,
-      /*decltype(_impl_.start_)*/ 0,
-      /*decltype(_impl_.end_)*/ 0,
-    } {}
-struct DescriptorProto_ExtensionRangeDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr DescriptorProto_ExtensionRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  DescriptorProto_ExtensionRangeDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) DescriptorProto_ExtensionRange(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~DescriptorProto_ExtensionRangeDefaultTypeInternal() {}
-  union {
-    DescriptorProto_ExtensionRange _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.start_)*/ 0,
-      /*decltype(_impl_.end_)*/ 0,
-    } {}
-struct DescriptorProto_ReservedRangeDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr DescriptorProto_ReservedRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  DescriptorProto_ReservedRangeDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) DescriptorProto_ReservedRange(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~DescriptorProto_ReservedRangeDefaultTypeInternal() {}
-  union {
-    DescriptorProto_ReservedRange _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR DescriptorProto::DescriptorProto(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.field_)*/ {},
-      /*decltype(_impl_.nested_type_)*/ {},
-      /*decltype(_impl_.enum_type_)*/ {},
-      /*decltype(_impl_.extension_range_)*/ {},
-      /*decltype(_impl_.extension_)*/ {},
-      /*decltype(_impl_.oneof_decl_)*/ {},
-      /*decltype(_impl_.reserved_range_)*/ {},
-      /*decltype(_impl_.reserved_name_)*/ {},
-      /*decltype(_impl_.name_)*/ {
+      /*decltype(_impl_.value_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.options_)*/ nullptr,
     } {}
-struct DescriptorProtoDefaultTypeInternal {
+struct FieldOptions_EditionDefaultDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr DescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr FieldOptions_EditionDefaultDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  DescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) DescriptorProto(); };
+  FieldOptions_EditionDefaultDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) FieldOptions_EditionDefault(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~DescriptorProtoDefaultTypeInternal() {}
+  ~FieldOptions_EditionDefaultDefaultTypeInternal() {}
   union {
-    DescriptorProto _instance;
+    FieldOptions_EditionDefault _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_EditionDefaultDefaultTypeInternal _FieldOptions_EditionDefault_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR FeatureSet::FeatureSet(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.field_presence_)*/ 0,
+      /*decltype(_impl_.enum_type_)*/ 0,
+      /*decltype(_impl_.repeated_field_encoding_)*/ 0,
+      /*decltype(_impl_.message_encoding_)*/ 0,
+      /*decltype(_impl_.json_format_)*/ 0,
+    } {}
+struct FeatureSetDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr FeatureSetDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  FeatureSetDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) FeatureSet(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~FeatureSetDefaultTypeInternal() {}
+  union {
+    FeatureSet _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaultTypeInternal _FeatureSet_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::_pbi::ConstantInitialized)
     : _impl_{
@@ -203,105 +201,6 @@ struct ExtensionRangeOptions_DeclarationDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptions_DeclarationDefaultTypeInternal _ExtensionRangeOptions_Declaration_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR ExtensionRangeOptions::ExtensionRangeOptions(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.declaration_)*/ {},
-      /*decltype(_impl_.uninterpreted_option_)*/ {},
-      /*decltype(_impl_.features_)*/ nullptr,
-      /*decltype(_impl_.verification_)*/ 1,
-    } {}
-struct ExtensionRangeOptionsDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr ExtensionRangeOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ExtensionRangeOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) ExtensionRangeOptions(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~ExtensionRangeOptionsDefaultTypeInternal() {}
-  union {
-    ExtensionRangeOptions _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR FieldDescriptorProto::FieldDescriptorProto(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.extendee_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.type_name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.default_value_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.json_name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.options_)*/ nullptr,
-      /*decltype(_impl_.number_)*/ 0,
-      /*decltype(_impl_.oneof_index_)*/ 0,
-      /*decltype(_impl_.proto3_optional_)*/ false,
-      /*decltype(_impl_.label_)*/ 1,
-      /*decltype(_impl_.type_)*/ 1,
-    } {}
-struct FieldDescriptorProtoDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr FieldDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  FieldDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) FieldDescriptorProto(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~FieldDescriptorProtoDefaultTypeInternal() {}
-  union {
-    FieldDescriptorProto _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR OneofDescriptorProto::OneofDescriptorProto(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.options_)*/ nullptr,
-    } {}
-struct OneofDescriptorProtoDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr OneofDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  OneofDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) OneofDescriptorProto(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~OneofDescriptorProtoDefaultTypeInternal() {}
-  union {
-    OneofDescriptorProto _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_;
-        template <typename>
 PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
@@ -325,124 +224,211 @@ struct EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal _EnumDescriptorProto_EnumReservedRange_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR EnumDescriptorProto::EnumDescriptorProto(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.value_)*/ {},
-      /*decltype(_impl_.reserved_range_)*/ {},
-      /*decltype(_impl_.reserved_name_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.start_)*/ 0,
+      /*decltype(_impl_.end_)*/ 0,
     } {}
-struct EnumDescriptorProtoDefaultTypeInternal {
+struct DescriptorProto_ReservedRangeDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr EnumDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr DescriptorProto_ReservedRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  EnumDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) EnumDescriptorProto(); };
+  DescriptorProto_ReservedRangeDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) DescriptorProto_ReservedRange(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~EnumDescriptorProtoDefaultTypeInternal() {}
+  ~DescriptorProto_ReservedRangeDefaultTypeInternal() {}
   union {
-    EnumDescriptorProto _instance;
+    DescriptorProto_ReservedRange _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR EnumValueDescriptorProto::EnumValueDescriptorProto(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR UninterpretedOption::UninterpretedOption(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {
+      /*decltype(_impl_.name_)*/ {},
+      /*decltype(_impl_.identifier_value_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.options_)*/ nullptr,
-      /*decltype(_impl_.number_)*/ 0,
+      /*decltype(_impl_.string_value_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.aggregate_value_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.positive_int_value_)*/ ::uint64_t{0u},
+      /*decltype(_impl_.negative_int_value_)*/ ::int64_t{0},
+      /*decltype(_impl_.double_value_)*/ 0,
     } {}
-struct EnumValueDescriptorProtoDefaultTypeInternal {
+struct UninterpretedOptionDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr EnumValueDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr UninterpretedOptionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  EnumValueDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) EnumValueDescriptorProto(); };
+  UninterpretedOptionDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) UninterpretedOption(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~EnumValueDescriptorProtoDefaultTypeInternal() {}
+  ~UninterpretedOptionDefaultTypeInternal() {}
   union {
-    EnumValueDescriptorProto _instance;
+    UninterpretedOption _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR ServiceDescriptorProto::ServiceDescriptorProto(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR SourceCodeInfo::SourceCodeInfo(::_pbi::ConstantInitialized)
     : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_.location_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.method_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.options_)*/ nullptr,
     } {}
-struct ServiceDescriptorProtoDefaultTypeInternal {
+struct SourceCodeInfoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr ServiceDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr SourceCodeInfoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ServiceDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) ServiceDescriptorProto(); };
+  SourceCodeInfoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) SourceCodeInfo(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~ServiceDescriptorProtoDefaultTypeInternal() {}
+  ~SourceCodeInfoDefaultTypeInternal() {}
   union {
-    ServiceDescriptorProto _instance;
+    SourceCodeInfo _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR MethodDescriptorProto::MethodDescriptorProto(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR GeneratedCodeInfo::GeneratedCodeInfo(::_pbi::ConstantInitialized)
     : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_.annotation_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.input_type_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.output_type_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.options_)*/ nullptr,
-      /*decltype(_impl_.client_streaming_)*/ false,
-      /*decltype(_impl_.server_streaming_)*/ false,
     } {}
-struct MethodDescriptorProtoDefaultTypeInternal {
+struct GeneratedCodeInfoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr MethodDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr GeneratedCodeInfoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  MethodDescriptorProtoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) MethodDescriptorProto(); };
+  GeneratedCodeInfoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) GeneratedCodeInfo(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~MethodDescriptorProtoDefaultTypeInternal() {}
+  ~GeneratedCodeInfoDefaultTypeInternal() {}
   union {
-    MethodDescriptorProto _instance;
+    GeneratedCodeInfo _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR ServiceOptions::ServiceOptions(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.uninterpreted_option_)*/ {},
+      /*decltype(_impl_.features_)*/ nullptr,
+      /*decltype(_impl_.deprecated_)*/ false,
+    } {}
+struct ServiceOptionsDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr ServiceOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ServiceOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) ServiceOptions(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~ServiceOptionsDefaultTypeInternal() {}
+  union {
+    ServiceOptions _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR OneofOptions::OneofOptions(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.uninterpreted_option_)*/ {},
+      /*decltype(_impl_.features_)*/ nullptr,
+    } {}
+struct OneofOptionsDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr OneofOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  OneofOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) OneofOptions(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~OneofOptionsDefaultTypeInternal() {}
+  union {
+    OneofOptions _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR MethodOptions::MethodOptions(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.uninterpreted_option_)*/ {},
+      /*decltype(_impl_.features_)*/ nullptr,
+      /*decltype(_impl_.deprecated_)*/ false,
+      /*decltype(_impl_.idempotency_level_)*/ 0,
+    } {}
+struct MethodOptionsDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr MethodOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  MethodOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) MethodOptions(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~MethodOptionsDefaultTypeInternal() {}
+  union {
+    MethodOptions _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR MessageOptions::MessageOptions(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.uninterpreted_option_)*/ {},
+      /*decltype(_impl_.features_)*/ nullptr,
+      /*decltype(_impl_.message_set_wire_format_)*/ false,
+      /*decltype(_impl_.no_standard_descriptor_accessor_)*/ false,
+      /*decltype(_impl_.deprecated_)*/ false,
+      /*decltype(_impl_.map_entry_)*/ false,
+      /*decltype(_impl_.deprecated_legacy_json_field_conflicts_)*/ false,
+    } {}
+struct MessageOptionsDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr MessageOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  MessageOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) MessageOptions(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~MessageOptionsDefaultTypeInternal() {}
+  union {
+    MessageOptions _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR FileOptions::FileOptions(::_pbi::ConstantInitialized)
     : _impl_{
@@ -518,64 +504,6 @@ struct FileOptionsDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileOptionsDefaultTypeInternal _FileOptions_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR MessageOptions::MessageOptions(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.uninterpreted_option_)*/ {},
-      /*decltype(_impl_.features_)*/ nullptr,
-      /*decltype(_impl_.message_set_wire_format_)*/ false,
-      /*decltype(_impl_.no_standard_descriptor_accessor_)*/ false,
-      /*decltype(_impl_.deprecated_)*/ false,
-      /*decltype(_impl_.map_entry_)*/ false,
-      /*decltype(_impl_.deprecated_legacy_json_field_conflicts_)*/ false,
-    } {}
-struct MessageOptionsDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr MessageOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  MessageOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) MessageOptions(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~MessageOptionsDefaultTypeInternal() {}
-  union {
-    MessageOptions _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR FieldOptions_EditionDefault::FieldOptions_EditionDefault(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.edition_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.value_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-    } {}
-struct FieldOptions_EditionDefaultDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr FieldOptions_EditionDefaultDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  FieldOptions_EditionDefaultDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) FieldOptions_EditionDefault(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~FieldOptions_EditionDefaultDefaultTypeInternal() {}
-  union {
-    FieldOptions_EditionDefault _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_EditionDefaultDefaultTypeInternal _FieldOptions_EditionDefault_default_instance_;
-        template <typename>
 PROTOBUF_CONSTEXPR FieldOptions::FieldOptions(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
@@ -611,29 +539,57 @@ struct FieldOptionsDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptionsDefaultTypeInternal _FieldOptions_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR OneofOptions::OneofOptions(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR ExtensionRangeOptions::ExtensionRangeOptions(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._extensions_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.declaration_)*/ {},
+      /*decltype(_impl_.uninterpreted_option_)*/ {},
+      /*decltype(_impl_.features_)*/ nullptr,
+      /*decltype(_impl_.verification_)*/ 1,
+    } {}
+struct ExtensionRangeOptionsDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr ExtensionRangeOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ExtensionRangeOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) ExtensionRangeOptions(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~ExtensionRangeOptionsDefaultTypeInternal() {}
+  union {
+    ExtensionRangeOptions _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR EnumValueOptions::EnumValueOptions(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._extensions_)*/ {},
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
       /*decltype(_impl_.uninterpreted_option_)*/ {},
       /*decltype(_impl_.features_)*/ nullptr,
+      /*decltype(_impl_.deprecated_)*/ false,
+      /*decltype(_impl_.debug_redact_)*/ false,
     } {}
-struct OneofOptionsDefaultTypeInternal {
+struct EnumValueOptionsDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr OneofOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr EnumValueOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  OneofOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) OneofOptions(); };
+  EnumValueOptionsDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) EnumValueOptions(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~OneofOptionsDefaultTypeInternal() {}
+  ~EnumValueOptionsDefaultTypeInternal() {}
   union {
-    OneofOptions _instance;
+    EnumValueOptions _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR EnumOptions::EnumOptions(::_pbi::ConstantInitialized)
     : _impl_{
@@ -662,284 +618,326 @@ struct EnumOptionsDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumOptionsDefaultTypeInternal _EnumOptions_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR EnumValueOptions::EnumValueOptions(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.uninterpreted_option_)*/ {},
-      /*decltype(_impl_.features_)*/ nullptr,
-      /*decltype(_impl_.deprecated_)*/ false,
-      /*decltype(_impl_.debug_redact_)*/ false,
-    } {}
-struct EnumValueOptionsDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr EnumValueOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  EnumValueOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) EnumValueOptions(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~EnumValueOptionsDefaultTypeInternal() {}
-  union {
-    EnumValueOptions _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR ServiceOptions::ServiceOptions(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.uninterpreted_option_)*/ {},
-      /*decltype(_impl_.features_)*/ nullptr,
-      /*decltype(_impl_.deprecated_)*/ false,
-    } {}
-struct ServiceOptionsDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr ServiceOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ServiceOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) ServiceOptions(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~ServiceOptionsDefaultTypeInternal() {}
-  union {
-    ServiceOptions _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR MethodOptions::MethodOptions(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.uninterpreted_option_)*/ {},
-      /*decltype(_impl_.features_)*/ nullptr,
-      /*decltype(_impl_.deprecated_)*/ false,
-      /*decltype(_impl_.idempotency_level_)*/ 0,
-    } {}
-struct MethodOptionsDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr MethodOptionsDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  MethodOptionsDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) MethodOptions(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~MethodOptionsDefaultTypeInternal() {}
-  union {
-    MethodOptions _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR UninterpretedOption_NamePart::UninterpretedOption_NamePart(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR OneofDescriptorProto::OneofDescriptorProto(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_part_)*/ {
+      /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.is_extension_)*/ false,
+      /*decltype(_impl_.options_)*/ nullptr,
     } {}
-struct UninterpretedOption_NamePartDefaultTypeInternal {
+struct OneofDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr UninterpretedOption_NamePartDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr OneofDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  UninterpretedOption_NamePartDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) UninterpretedOption_NamePart(); };
+  OneofDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) OneofDescriptorProto(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~UninterpretedOption_NamePartDefaultTypeInternal() {}
+  ~OneofDescriptorProtoDefaultTypeInternal() {}
   union {
-    UninterpretedOption_NamePart _instance;
+    OneofDescriptorProto _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR UninterpretedOption::UninterpretedOption(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR MethodDescriptorProto::MethodDescriptorProto(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {},
-      /*decltype(_impl_.identifier_value_)*/ {
+      /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.string_value_)*/ {
+      /*decltype(_impl_.input_type_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.aggregate_value_)*/ {
+      /*decltype(_impl_.output_type_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.positive_int_value_)*/ ::uint64_t{0u},
-      /*decltype(_impl_.negative_int_value_)*/ ::int64_t{0},
-      /*decltype(_impl_.double_value_)*/ 0,
+      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.client_streaming_)*/ false,
+      /*decltype(_impl_.server_streaming_)*/ false,
     } {}
-struct UninterpretedOptionDefaultTypeInternal {
+struct MethodDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr UninterpretedOptionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr MethodDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  UninterpretedOptionDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) UninterpretedOption(); };
+  MethodDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) MethodDescriptorProto(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~UninterpretedOptionDefaultTypeInternal() {}
+  ~MethodDescriptorProtoDefaultTypeInternal() {}
   union {
-    UninterpretedOption _instance;
+    MethodDescriptorProto _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR FeatureSet::FeatureSet(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._extensions_)*/ {},
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.raw_features_)*/ nullptr,
-      /*decltype(_impl_.field_presence_)*/ 0,
-      /*decltype(_impl_.enum_type_)*/ 0,
-      /*decltype(_impl_.repeated_field_encoding_)*/ 0,
-      /*decltype(_impl_.string_field_validation_)*/ 0,
-      /*decltype(_impl_.message_encoding_)*/ 0,
-      /*decltype(_impl_.json_format_)*/ 0,
-    } {}
-struct FeatureSetDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr FeatureSetDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  FeatureSetDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) FeatureSet(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~FeatureSetDefaultTypeInternal() {}
-  union {
-    FeatureSet _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaultTypeInternal _FeatureSet_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR SourceCodeInfo_Location::SourceCodeInfo_Location(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR FieldDescriptorProto::FieldDescriptorProto(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.path_)*/ {},
-      /* _impl_._path_cached_byte_size_ = */ {0},
-      /*decltype(_impl_.span_)*/ {},
-      /* _impl_._span_cached_byte_size_ = */ {0},
-      /*decltype(_impl_.leading_detached_comments_)*/ {},
-      /*decltype(_impl_.leading_comments_)*/ {
+      /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.trailing_comments_)*/ {
+      /*decltype(_impl_.extendee_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
+      /*decltype(_impl_.type_name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.default_value_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.json_name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.number_)*/ 0,
+      /*decltype(_impl_.oneof_index_)*/ 0,
+      /*decltype(_impl_.proto3_optional_)*/ false,
+      /*decltype(_impl_.label_)*/ 1,
+      /*decltype(_impl_.type_)*/ 1,
     } {}
-struct SourceCodeInfo_LocationDefaultTypeInternal {
+struct FieldDescriptorProtoDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr SourceCodeInfo_LocationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr FieldDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  SourceCodeInfo_LocationDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) SourceCodeInfo_Location(); };
+  FieldDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) FieldDescriptorProto(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~SourceCodeInfo_LocationDefaultTypeInternal() {}
+  ~FieldDescriptorProtoDefaultTypeInternal() {}
   union {
-    SourceCodeInfo_Location _instance;
+    FieldDescriptorProto _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR SourceCodeInfo::SourceCodeInfo(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.location_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
-struct SourceCodeInfoDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr SourceCodeInfoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  SourceCodeInfoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) SourceCodeInfo(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~SourceCodeInfoDefaultTypeInternal() {}
-  union {
-    SourceCodeInfo _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR EnumValueDescriptorProto::EnumValueDescriptorProto(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.path_)*/ {},
-      /* _impl_._path_cached_byte_size_ = */ {0},
-      /*decltype(_impl_.source_file_)*/ {
+      /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.begin_)*/ 0,
+      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.number_)*/ 0,
+    } {}
+struct EnumValueDescriptorProtoDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr EnumValueDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  EnumValueDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) EnumValueDescriptorProto(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~EnumValueDescriptorProtoDefaultTypeInternal() {}
+  union {
+    EnumValueDescriptorProto _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.start_)*/ 0,
       /*decltype(_impl_.end_)*/ 0,
-      /*decltype(_impl_.semantic_)*/ 0,
     } {}
-struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
+struct DescriptorProto_ExtensionRangeDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr GeneratedCodeInfo_AnnotationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr DescriptorProto_ExtensionRangeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  GeneratedCodeInfo_AnnotationDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) GeneratedCodeInfo_Annotation(); };
+  DescriptorProto_ExtensionRangeDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) DescriptorProto_ExtensionRange(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~GeneratedCodeInfo_AnnotationDefaultTypeInternal() {}
+  ~DescriptorProto_ExtensionRangeDefaultTypeInternal() {}
   union {
-    GeneratedCodeInfo_Annotation _instance;
+    DescriptorProto_ExtensionRange _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR GeneratedCodeInfo::GeneratedCodeInfo(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR ServiceDescriptorProto::ServiceDescriptorProto(::_pbi::ConstantInitialized)
     : _impl_{
-      /*decltype(_impl_.annotation_)*/ {},
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.method_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.options_)*/ nullptr,
+    } {}
+struct ServiceDescriptorProtoDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr ServiceDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ServiceDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) ServiceDescriptorProto(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~ServiceDescriptorProtoDefaultTypeInternal() {}
+  union {
+    ServiceDescriptorProto _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR EnumDescriptorProto::EnumDescriptorProto(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.value_)*/ {},
+      /*decltype(_impl_.reserved_range_)*/ {},
+      /*decltype(_impl_.reserved_name_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.options_)*/ nullptr,
+    } {}
+struct EnumDescriptorProtoDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr EnumDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  EnumDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) EnumDescriptorProto(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~EnumDescriptorProtoDefaultTypeInternal() {}
+  union {
+    EnumDescriptorProto _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR DescriptorProto::DescriptorProto(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.field_)*/ {},
+      /*decltype(_impl_.nested_type_)*/ {},
+      /*decltype(_impl_.enum_type_)*/ {},
+      /*decltype(_impl_.extension_range_)*/ {},
+      /*decltype(_impl_.extension_)*/ {},
+      /*decltype(_impl_.oneof_decl_)*/ {},
+      /*decltype(_impl_.reserved_range_)*/ {},
+      /*decltype(_impl_.reserved_name_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.options_)*/ nullptr,
+    } {}
+struct DescriptorProtoDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr DescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  DescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) DescriptorProto(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~DescriptorProtoDefaultTypeInternal() {}
+  union {
+    DescriptorProto _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR FileDescriptorProto::FileDescriptorProto(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.dependency_)*/ {},
+      /*decltype(_impl_.message_type_)*/ {},
+      /*decltype(_impl_.enum_type_)*/ {},
+      /*decltype(_impl_.service_)*/ {},
+      /*decltype(_impl_.extension_)*/ {},
+      /*decltype(_impl_.public_dependency_)*/ {},
+      /*decltype(_impl_.weak_dependency_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.package_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.syntax_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.edition_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.options_)*/ nullptr,
+      /*decltype(_impl_.source_code_info_)*/ nullptr,
+    } {}
+struct FileDescriptorProtoDefaultTypeInternal {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  constexpr FileDescriptorProtoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  FileDescriptorProtoDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) FileDescriptorProto(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+  ~FileDescriptorProtoDefaultTypeInternal() {}
+  union {
+    FileDescriptorProto _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR FileDescriptorSet::FileDescriptorSet(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.file_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
     } {}
-struct GeneratedCodeInfoDefaultTypeInternal {
+struct FileDescriptorSetDefaultTypeInternal {
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr GeneratedCodeInfoDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  constexpr FileDescriptorSetDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
 #else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  GeneratedCodeInfoDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) GeneratedCodeInfo(); };
+  FileDescriptorSetDefaultTypeInternal() {}
+  void Init() { ::new (&_instance) FileDescriptorSet(); };
 #endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~GeneratedCodeInfoDefaultTypeInternal() {}
+  ~FileDescriptorSetDefaultTypeInternal() {}
   union {
-    GeneratedCodeInfo _instance;
+    FileDescriptorSet _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[30];
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[16];
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[15];
 static constexpr const ::_pb::ServiceDescriptor**
     file_level_service_descriptors_google_2fprotobuf_2fdescriptor_2eproto = nullptr;
 const ::uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
@@ -1436,17 +1434,13 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] P
     PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.field_presence_),
     PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.enum_type_),
     PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.repeated_field_encoding_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.string_field_validation_),
     PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.message_encoding_),
     PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.json_format_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_.raw_features_),
+    0,
     1,
     2,
     3,
     4,
-    5,
-    6,
-    0,
     PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _internal_metadata_),
     ~0u,  // no _extensions_
@@ -1530,11 +1524,11 @@ static const ::_pbi::MigrationSchema
         {431, 443, -1, sizeof(::google::protobuf::MethodOptions)},
         {447, 457, -1, sizeof(::google::protobuf::UninterpretedOption_NamePart)},
         {459, 474, -1, sizeof(::google::protobuf::UninterpretedOption)},
-        {481, 496, -1, sizeof(::google::protobuf::FeatureSet)},
-        {503, 516, -1, sizeof(::google::protobuf::SourceCodeInfo_Location)},
-        {521, -1, -1, sizeof(::google::protobuf::SourceCodeInfo)},
-        {530, 543, -1, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
-        {548, -1, -1, sizeof(::google::protobuf::GeneratedCodeInfo)},
+        {481, 494, -1, sizeof(::google::protobuf::FeatureSet)},
+        {499, 512, -1, sizeof(::google::protobuf::SourceCodeInfo_Location)},
+        {517, -1, -1, sizeof(::google::protobuf::SourceCodeInfo)},
+        {526, 539, -1, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
+        {544, -1, -1, sizeof(::google::protobuf::GeneratedCodeInfo)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -1747,7 +1741,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
     "e\030\004 \001(\004\022\032\n\022negative_int_value\030\005 \001(\003\022\024\n\014d"
     "ouble_value\030\006 \001(\001\022\024\n\014string_value\030\007 \001(\014\022"
     "\027\n\017aggregate_value\030\010 \001(\t\0323\n\010NamePart\022\021\n\t"
-    "name_part\030\001 \002(\t\022\024\n\014is_extension\030\002 \002(\010\"\252\t"
+    "name_part\030\001 \002(\t\022\024\n\014is_extension\030\002 \002(\010\"\253\007"
     "\n\nFeatureSet\022_\n\016field_presence\030\001 \001(\0162).g"
     "oogle.protobuf.FeatureSet.FieldPresenceB"
     "\034\210\001\001\230\001\004\230\001\001\242\001\020\n\0042023\022\010EXPLICIT\022Q\n\tenum_ty"
@@ -1755,51 +1749,45 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
     "umTypeB\030\210\001\001\230\001\006\230\001\001\242\001\014\n\0042023\022\004OPEN\022n\n\027repe"
     "ated_field_encoding\030\003 \001(\01621.google.proto"
     "buf.FeatureSet.RepeatedFieldEncodingB\032\210\001"
-    "\001\230\001\004\230\001\001\242\001\016\n\0042023\022\006PACKED\022q\n\027string_field"
-    "_validation\030\004 \001(\01621.google.protobuf.Feat"
-    "ureSet.StringFieldValidationB\035\210\001\001\230\001\004\230\001\001\242"
-    "\001\021\n\0042023\022\tMANDATORY\022j\n\020message_encoding\030"
-    "\005 \001(\0162+.google.protobuf.FeatureSet.Messa"
-    "geEncodingB#\210\001\001\230\001\004\230\001\001\242\001\027\n\0042023\022\017LENGTH_P"
-    "REFIXED\022Y\n\013json_format\030\006 \001(\0162&.google.pr"
-    "otobuf.FeatureSet.JsonFormatB\034\210\001\001\230\001\003\230\001\006\230"
-    "\001\001\242\001\r\n\0042023\022\005ALLOW\0227\n\014raw_features\030\347\007 \001("
-    "\0132\033.google.protobuf.FeatureSetB\003\230\001\000\"\\\n\rF"
-    "ieldPresence\022\032\n\026FIELD_PRESENCE_UNKNOWN\020\000"
-    "\022\014\n\010EXPLICIT\020\001\022\014\n\010IMPLICIT\020\002\022\023\n\017LEGACY_R"
-    "EQUIRED\020\003\"7\n\010EnumType\022\025\n\021ENUM_TYPE_UNKNO"
-    "WN\020\000\022\010\n\004OPEN\020\001\022\n\n\006CLOSED\020\002\"V\n\025RepeatedFi"
-    "eldEncoding\022#\n\037REPEATED_FIELD_ENCODING_U"
-    "NKNOWN\020\000\022\n\n\006PACKED\020\001\022\014\n\010EXPANDED\020\002\"_\n\025St"
-    "ringFieldValidation\022#\n\037STRING_FIELD_VALI"
-    "DATION_UNKNOWN\020\000\022\r\n\tMANDATORY\020\001\022\010\n\004HINT\020"
-    "\002\022\010\n\004NONE\020\003\"S\n\017MessageEncoding\022\034\n\030MESSAG"
-    "E_ENCODING_UNKNOWN\020\000\022\023\n\017LENGTH_PREFIXED\020"
-    "\001\022\r\n\tDELIMITED\020\002\"H\n\nJsonFormat\022\027\n\023JSON_F"
-    "ORMAT_UNKNOWN\020\000\022\t\n\005ALLOW\020\001\022\026\n\022LEGACY_BES"
-    "T_EFFORT\020\002*\006\010\350\007\020\351\007*\006\010\351\007\020\352\007*\006\010\213N\020\220N\"\325\001\n\016S"
-    "ourceCodeInfo\022:\n\010location\030\001 \003(\0132(.google"
-    ".protobuf.SourceCodeInfo.Location\032\206\001\n\010Lo"
-    "cation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002"
-    "\020\001\022\030\n\020leading_comments\030\003 \001(\t\022\031\n\021trailing"
-    "_comments\030\004 \001(\t\022!\n\031leading_detached_comm"
-    "ents\030\006 \003(\t\"\234\002\n\021GeneratedCodeInfo\022A\n\nanno"
-    "tation\030\001 \003(\0132-.google.protobuf.Generated"
-    "CodeInfo.Annotation\032\303\001\n\nAnnotation\022\020\n\004pa"
-    "th\030\001 \003(\005B\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005beg"
-    "in\030\003 \001(\005\022\013\n\003end\030\004 \001(\005\022H\n\010semantic\030\005 \001(\0162"
-    "6.google.protobuf.GeneratedCodeInfo.Anno"
-    "tation.Semantic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n"
-    "\003SET\020\001\022\t\n\005ALIAS\020\002B~\n\023com.google.protobuf"
-    "B\020DescriptorProtosH\001Z-google.golang.org/"
-    "protobuf/types/descriptorpb\370\001\001\242\002\003GPB\252\002\032G"
-    "oogle.Protobuf.Reflection"
+    "\001\230\001\004\230\001\001\242\001\016\n\0042023\022\006PACKED\022j\n\020message_enco"
+    "ding\030\005 \001(\0162+.google.protobuf.FeatureSet."
+    "MessageEncodingB#\210\001\001\230\001\004\230\001\001\242\001\027\n\0042023\022\017LEN"
+    "GTH_PREFIXED\022Y\n\013json_format\030\006 \001(\0162&.goog"
+    "le.protobuf.FeatureSet.JsonFormatB\034\210\001\001\230\001"
+    "\003\230\001\006\230\001\001\242\001\r\n\0042023\022\005ALLOW\"\\\n\rFieldPresence"
+    "\022\032\n\026FIELD_PRESENCE_UNKNOWN\020\000\022\014\n\010EXPLICIT"
+    "\020\001\022\014\n\010IMPLICIT\020\002\022\023\n\017LEGACY_REQUIRED\020\003\"7\n"
+    "\010EnumType\022\025\n\021ENUM_TYPE_UNKNOWN\020\000\022\010\n\004OPEN"
+    "\020\001\022\n\n\006CLOSED\020\002\"V\n\025RepeatedFieldEncoding\022"
+    "#\n\037REPEATED_FIELD_ENCODING_UNKNOWN\020\000\022\n\n\006"
+    "PACKED\020\001\022\014\n\010EXPANDED\020\002\"S\n\017MessageEncodin"
+    "g\022\034\n\030MESSAGE_ENCODING_UNKNOWN\020\000\022\023\n\017LENGT"
+    "H_PREFIXED\020\001\022\r\n\tDELIMITED\020\002\"H\n\nJsonForma"
+    "t\022\027\n\023JSON_FORMAT_UNKNOWN\020\000\022\t\n\005ALLOW\020\001\022\026\n"
+    "\022LEGACY_BEST_EFFORT\020\002*\006\010\350\007\020\351\007*\006\010\351\007\020\352\007*\006\010"
+    "\213N\020\220NJ\004\010\004\020\005J\006\010\347\007\020\350\007\"\325\001\n\016SourceCodeInfo\022:"
+    "\n\010location\030\001 \003(\0132(.google.protobuf.Sourc"
+    "eCodeInfo.Location\032\206\001\n\010Location\022\020\n\004path\030"
+    "\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leading_c"
+    "omments\030\003 \001(\t\022\031\n\021trailing_comments\030\004 \001(\t"
+    "\022!\n\031leading_detached_comments\030\006 \003(\t\"\234\002\n\021"
+    "GeneratedCodeInfo\022A\n\nannotation\030\001 \003(\0132-."
+    "google.protobuf.GeneratedCodeInfo.Annota"
+    "tion\032\303\001\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\023\n"
+    "\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003end"
+    "\030\004 \001(\005\022H\n\010semantic\030\005 \001(\01626.google.protob"
+    "uf.GeneratedCodeInfo.Annotation.Semantic"
+    "\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n\003SET\020\001\022\t\n\005ALIAS"
+    "\020\002B~\n\023com.google.protobufB\020DescriptorPro"
+    "tosH\001Z-google.golang.org/protobuf/types/"
+    "descriptorpb\370\001\001\242\002\003GPB\252\002\032Google.Protobuf."
+    "Reflection"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false,
     false,
-    8945,
+    8690,
     descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
@@ -2229,37 +2217,9 @@ constexpr int FeatureSet::RepeatedFieldEncoding_ARRAYSIZE;
 
 #endif  // (__cplusplus < 201703) &&
         // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-const ::google::protobuf::EnumDescriptor* FeatureSet_StringFieldValidation_descriptor() {
-  ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[12];
-}
-bool FeatureSet_StringFieldValidation_IsValid(int value) {
-  switch (value) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-      return true;
-    default:
-      return false;
-  }
-}
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FeatureSet_StringFieldValidation FeatureSet::STRING_FIELD_VALIDATION_UNKNOWN;
-constexpr FeatureSet_StringFieldValidation FeatureSet::MANDATORY;
-constexpr FeatureSet_StringFieldValidation FeatureSet::HINT;
-constexpr FeatureSet_StringFieldValidation FeatureSet::NONE;
-constexpr FeatureSet_StringFieldValidation FeatureSet::StringFieldValidation_MIN;
-constexpr FeatureSet_StringFieldValidation FeatureSet::StringFieldValidation_MAX;
-constexpr int FeatureSet::StringFieldValidation_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FeatureSet_MessageEncoding_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[13];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[12];
 }
 bool FeatureSet_MessageEncoding_IsValid(int value) {
   switch (value) {
@@ -2285,7 +2245,7 @@ constexpr int FeatureSet::MessageEncoding_ARRAYSIZE;
         // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FeatureSet_JsonFormat_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[14];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[13];
 }
 bool FeatureSet_JsonFormat_IsValid(int value) {
   switch (value) {
@@ -2311,7 +2271,7 @@ constexpr int FeatureSet::JsonFormat_ARRAYSIZE;
         // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* GeneratedCodeInfo_Annotation_Semantic_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[15];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[14];
 }
 bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value) {
   switch (value) {
@@ -2380,11 +2340,12 @@ void FileDescriptorSet::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FileDescriptorSet)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_file()->Clear();
+  _impl_.file_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -2480,7 +2441,8 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::Message& to_msg, const ::g
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_file()->MergeFrom(from._internal_file());
+  _this->_internal_mutable_file()->MergeFrom(
+      from._internal_file());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -2670,17 +2632,18 @@ void FileDescriptorProto::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FileDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_dependency()->Clear();
-  _internal_mutable_message_type()->Clear();
-  _internal_mutable_enum_type()->Clear();
-  _internal_mutable_service()->Clear();
-  _internal_mutable_extension()->Clear();
-  _internal_mutable_public_dependency()->Clear();
-  _internal_mutable_weak_dependency()->Clear();
+  _impl_.dependency_.Clear();
+  _impl_.message_type_.Clear();
+  _impl_.enum_type_.Clear();
+  _impl_.service_.Clear();
+  _impl_.extension_.Clear();
+  _impl_.public_dependency_.Clear();
+  _impl_.weak_dependency_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -3066,10 +3029,14 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   (void) cached_has_bits;
 
   _this->_internal_mutable_dependency()->MergeFrom(from._internal_dependency());
-  _this->_internal_mutable_message_type()->MergeFrom(from._internal_message_type());
-  _this->_internal_mutable_enum_type()->MergeFrom(from._internal_enum_type());
-  _this->_internal_mutable_service()->MergeFrom(from._internal_service());
-  _this->_internal_mutable_extension()->MergeFrom(from._internal_extension());
+  _this->_internal_mutable_message_type()->MergeFrom(
+      from._internal_message_type());
+  _this->_internal_mutable_enum_type()->MergeFrom(
+      from._internal_enum_type());
+  _this->_internal_mutable_service()->MergeFrom(
+      from._internal_service());
+  _this->_internal_mutable_extension()->MergeFrom(
+      from._internal_extension());
   _this->_internal_mutable_public_dependency()->MergeFrom(from._internal_public_dependency());
   _this->_internal_mutable_weak_dependency()->MergeFrom(from._internal_weak_dependency());
   cached_has_bits = from._impl_._has_bits_[0];
@@ -3227,6 +3194,7 @@ void DescriptorProto_ExtensionRange::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto.ExtensionRange)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -3477,6 +3445,7 @@ void DescriptorProto_ReservedRange::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto.ReservedRange)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -3747,18 +3716,19 @@ void DescriptorProto::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void DescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_field()->Clear();
-  _internal_mutable_nested_type()->Clear();
-  _internal_mutable_enum_type()->Clear();
-  _internal_mutable_extension_range()->Clear();
-  _internal_mutable_extension()->Clear();
-  _internal_mutable_oneof_decl()->Clear();
-  _internal_mutable_reserved_range()->Clear();
-  _internal_mutable_reserved_name()->Clear();
+  _impl_.field_.Clear();
+  _impl_.nested_type_.Clear();
+  _impl_.enum_type_.Clear();
+  _impl_.extension_range_.Clear();
+  _impl_.extension_.Clear();
+  _impl_.oneof_decl_.Clear();
+  _impl_.reserved_range_.Clear();
+  _impl_.reserved_name_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -4066,13 +4036,20 @@ void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::goo
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_field()->MergeFrom(from._internal_field());
-  _this->_internal_mutable_nested_type()->MergeFrom(from._internal_nested_type());
-  _this->_internal_mutable_enum_type()->MergeFrom(from._internal_enum_type());
-  _this->_internal_mutable_extension_range()->MergeFrom(from._internal_extension_range());
-  _this->_internal_mutable_extension()->MergeFrom(from._internal_extension());
-  _this->_internal_mutable_oneof_decl()->MergeFrom(from._internal_oneof_decl());
-  _this->_internal_mutable_reserved_range()->MergeFrom(from._internal_reserved_range());
+  _this->_internal_mutable_field()->MergeFrom(
+      from._internal_field());
+  _this->_internal_mutable_nested_type()->MergeFrom(
+      from._internal_nested_type());
+  _this->_internal_mutable_enum_type()->MergeFrom(
+      from._internal_enum_type());
+  _this->_internal_mutable_extension_range()->MergeFrom(
+      from._internal_extension_range());
+  _this->_internal_mutable_extension()->MergeFrom(
+      from._internal_extension());
+  _this->_internal_mutable_oneof_decl()->MergeFrom(
+      from._internal_oneof_decl());
+  _this->_internal_mutable_reserved_range()->MergeFrom(
+      from._internal_reserved_range());
   _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -4236,6 +4213,7 @@ void ExtensionRangeOptions_Declaration::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ExtensionRangeOptions.Declaration)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -4569,13 +4547,14 @@ void ExtensionRangeOptions::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ExtensionRangeOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_declaration()->Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.declaration_.Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -4756,8 +4735,10 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::Message& to_msg, const
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_declaration()->MergeFrom(from._internal_declaration());
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_declaration()->MergeFrom(
+      from._internal_declaration());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -4985,6 +4966,7 @@ void FieldDescriptorProto::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -5493,6 +5475,7 @@ void OneofDescriptorProto::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.OneofDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -5722,6 +5705,7 @@ void EnumDescriptorProto_EnumReservedRange::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -5977,13 +5961,14 @@ void EnumDescriptorProto::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_value()->Clear();
-  _internal_mutable_reserved_range()->Clear();
-  _internal_mutable_reserved_name()->Clear();
+  _impl_.value_.Clear();
+  _impl_.reserved_range_.Clear();
+  _impl_.reserved_name_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -6183,8 +6168,10 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_value()->MergeFrom(from._internal_value());
-  _this->_internal_mutable_reserved_range()->MergeFrom(from._internal_reserved_range());
+  _this->_internal_mutable_value()->MergeFrom(
+      from._internal_value());
+  _this->_internal_mutable_reserved_range()->MergeFrom(
+      from._internal_reserved_range());
   _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -6317,6 +6304,7 @@ void EnumValueDescriptorProto::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValueDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -6607,11 +6595,12 @@ void ServiceDescriptorProto::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ServiceDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_method()->Clear();
+  _impl_.method_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -6767,7 +6756,8 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, cons
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_method()->MergeFrom(from._internal_method());
+  _this->_internal_mutable_method()->MergeFrom(
+      from._internal_method());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -6938,6 +6928,7 @@ void MethodDescriptorProto::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.MethodDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -7520,12 +7511,13 @@ void FileOptions::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void FileOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FileOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
@@ -8106,7 +8098,8 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
@@ -8340,12 +8333,13 @@ void MessageOptions::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void MessageOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.MessageOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -8571,7 +8565,8 @@ void MessageOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -8718,6 +8713,7 @@ void FieldOptions_EditionDefault::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions.EditionDefault)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -9017,14 +9013,15 @@ void FieldOptions::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void FieldOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_targets()->Clear();
-  _internal_mutable_edition_defaults()->Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.targets_.Clear();
+  _impl_.edition_defaults_.Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -9384,8 +9381,10 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
   (void) cached_has_bits;
 
   _this->_internal_mutable_targets()->MergeFrom(from._internal_targets());
-  _this->_internal_mutable_edition_defaults()->MergeFrom(from._internal_edition_defaults());
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_edition_defaults()->MergeFrom(
+      from._internal_edition_defaults());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
@@ -9536,12 +9535,13 @@ void OneofOptions::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void OneofOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.OneofOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -9675,7 +9675,8 @@ void OneofOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
         from._internal_features());
@@ -9803,12 +9804,13 @@ void EnumOptions::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void EnumOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -10000,7 +10002,8 @@ void EnumOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -10141,12 +10144,13 @@ void EnumValueOptions::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValueOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -10323,7 +10327,8 @@ void EnumValueOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::go
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
@@ -10454,12 +10459,13 @@ void ServiceOptions::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void ServiceOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ServiceOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -10614,7 +10620,8 @@ void ServiceOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -10749,12 +10756,13 @@ void MethodOptions::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void MethodOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.MethodOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
-  _internal_mutable_uninterpreted_option()->Clear();
+  _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(_impl_.features_ != nullptr);
@@ -10936,7 +10944,8 @@ void MethodOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::googl
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(from._internal_uninterpreted_option());
+  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      from._internal_uninterpreted_option());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
@@ -11066,6 +11075,7 @@ void UninterpretedOption_NamePart::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UninterpretedOption.NamePart)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -11358,11 +11368,12 @@ void UninterpretedOption::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UninterpretedOption)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_name()->Clear();
+  _impl_.name_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
@@ -11599,7 +11610,8 @@ void UninterpretedOption::MergeImpl(::google::protobuf::Message& to_msg, const :
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_name()->MergeFrom(from._internal_name());
+  _this->_internal_mutable_name()->MergeFrom(
+      from._internal_name());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
@@ -11672,32 +11684,22 @@ class FeatureSet::_Internal {
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._has_bits_);
   static void set_has_field_presence(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
+    (*has_bits)[0] |= 1u;
   }
   static void set_has_enum_type(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
+    (*has_bits)[0] |= 2u;
   }
   static void set_has_repeated_field_encoding(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static void set_has_string_field_validation(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
+    (*has_bits)[0] |= 4u;
   }
   static void set_has_message_encoding(HasBits* has_bits) {
-    (*has_bits)[0] |= 32u;
+    (*has_bits)[0] |= 8u;
   }
   static void set_has_json_format(HasBits* has_bits) {
-    (*has_bits)[0] |= 64u;
-  }
-  static const ::google::protobuf::FeatureSet& raw_features(const FeatureSet* msg);
-  static void set_has_raw_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
+    (*has_bits)[0] |= 16u;
   }
 };
 
-const ::google::protobuf::FeatureSet& FeatureSet::_Internal::raw_features(const FeatureSet* msg) {
-  return *msg->_impl_.raw_features_;
-}
 FeatureSet::FeatureSet(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -11710,11 +11712,9 @@ FeatureSet::FeatureSet(const FeatureSet& from) : ::google::protobuf::Message() {
       /*decltype(_impl_._extensions_)*/ {},
       decltype(_impl_._has_bits_){from._impl_._has_bits_},
       /*decltype(_impl_._cached_size_)*/ {},
-      decltype(_impl_.raw_features_){nullptr},
       decltype(_impl_.field_presence_){},
       decltype(_impl_.enum_type_){},
       decltype(_impl_.repeated_field_encoding_){},
-      decltype(_impl_.string_field_validation_){},
       decltype(_impl_.message_encoding_){},
       decltype(_impl_.json_format_){},
   };
@@ -11722,9 +11722,6 @@ FeatureSet::FeatureSet(const FeatureSet& from) : ::google::protobuf::Message() {
       from._internal_metadata_);
   _impl_._extensions_.MergeFrom(internal_default_instance(),
                          from._impl_._extensions_);
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_impl_.raw_features_ = new ::google::protobuf::FeatureSet(*from._impl_.raw_features_);
-  }
   ::memcpy(&_impl_.field_presence_, &from._impl_.field_presence_,
     static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.json_format_) -
     reinterpret_cast<char*>(&_impl_.field_presence_)) + sizeof(_impl_.json_format_));
@@ -11737,11 +11734,9 @@ inline void FeatureSet::SharedCtor(::_pb::Arena* arena) {
       /*decltype(_impl_._extensions_)*/ {::_pbi::ArenaInitialized(), arena},
       decltype(_impl_._has_bits_){},
       /*decltype(_impl_._cached_size_)*/ {},
-      decltype(_impl_.raw_features_){nullptr},
       decltype(_impl_.field_presence_){0},
       decltype(_impl_.enum_type_){0},
       decltype(_impl_.repeated_field_encoding_){0},
-      decltype(_impl_.string_field_validation_){0},
       decltype(_impl_.message_encoding_){0},
       decltype(_impl_.json_format_){0},
   };
@@ -11754,7 +11749,6 @@ FeatureSet::~FeatureSet() {
 inline void FeatureSet::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
-  if (this != internal_default_instance()) delete _impl_.raw_features_;
 }
 void FeatureSet::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
@@ -11762,17 +11756,14 @@ void FeatureSet::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void FeatureSet::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSet)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _impl_._extensions_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.raw_features_ != nullptr);
-    _impl_.raw_features_->Clear();
-  }
-  if (cached_has_bits & 0x0000007eu) {
+  if (cached_has_bits & 0x0000001fu) {
     ::memset(&_impl_.field_presence_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.json_format_) -
         reinterpret_cast<char*>(&_impl_.field_presence_)) + sizeof(_impl_.json_format_));
@@ -11788,16 +11779,16 @@ const char* FeatureSet::_InternalParse(
 }
 
 
-constexpr ::_pbi::TcParseTable<3, 7, 7, 0, 7> FeatureSet::_table_ = {
+constexpr ::_pbi::TcParseTable<3, 5, 5, 0, 2> FeatureSet::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._extensions_),
-    999, 56,  // max_field_number, fast_idx_mask
+    6, 56,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967232,  // skipmap
+    4294967240,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    7,  // num_field_entries
-    7,  // num_aux_entries
+    5,  // num_field_entries
+    5,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
     &_FeatureSet_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
@@ -11805,59 +11796,45 @@ constexpr ::_pbi::TcParseTable<3, 7, 7, 0, 7> FeatureSet::_table_ = {
     {::_pbi::TcParser::MiniParse, {}},
     // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::FastEr0S1,
-     {8, 1, 3, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.field_presence_)}},
+     {8, 0, 3, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.field_presence_)}},
     // optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::FastEr0S1,
-     {16, 2, 2, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.enum_type_)}},
+     {16, 1, 2, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.enum_type_)}},
     // optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::FastEr0S1,
-     {24, 3, 2, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.repeated_field_encoding_)}},
-    // optional .google.protobuf.FeatureSet.StringFieldValidation string_field_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {::_pbi::TcParser::FastEr0S1,
-     {32, 4, 3, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.string_field_validation_)}},
+     {24, 2, 2, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.repeated_field_encoding_)}},
+    {::_pbi::TcParser::MiniParse, {}},
     // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::FastEr0S1,
-     {40, 5, 2, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.message_encoding_)}},
+     {40, 3, 2, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.message_encoding_)}},
     // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::FastEr0S1,
-     {48, 6, 2, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.json_format_)}},
-    // optional .google.protobuf.FeatureSet raw_features = 999 [targets = TARGET_TYPE_UNKNOWN];
-    {::_pbi::TcParser::FastMtS2,
-     {16058, 0, 6, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.raw_features_)}},
+     {48, 4, 2, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.json_format_)}},
+    {::_pbi::TcParser::MiniParse, {}},
   }}, {{
-    999, 0, 1,
-    65534, 6,
     65535, 65535
   }}, {{
     // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.field_presence_), _Internal::kHasBitsOffset + 1, 0,
+    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.field_presence_), _Internal::kHasBitsOffset + 0, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.enum_type_), _Internal::kHasBitsOffset + 2, 1,
+    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.enum_type_), _Internal::kHasBitsOffset + 1, 1,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.repeated_field_encoding_), _Internal::kHasBitsOffset + 3, 2,
-    (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    // optional .google.protobuf.FeatureSet.StringFieldValidation string_field_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.string_field_validation_), _Internal::kHasBitsOffset + 4, 3,
+    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.repeated_field_encoding_), _Internal::kHasBitsOffset + 2, 2,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.message_encoding_), _Internal::kHasBitsOffset + 5, 4,
+    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.message_encoding_), _Internal::kHasBitsOffset + 3, 3,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.json_format_), _Internal::kHasBitsOffset + 6, 5,
+    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.json_format_), _Internal::kHasBitsOffset + 4, 4,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    // optional .google.protobuf.FeatureSet raw_features = 999 [targets = TARGET_TYPE_UNKNOWN];
-    {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.raw_features_), _Internal::kHasBitsOffset + 0, 6,
-    (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
     {0, 4},
     {0, 3},
     {0, 3},
-    {0, 4},
     {0, 3},
     {0, 3},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
   }}, {{
   }},
 };
@@ -11871,52 +11848,38 @@ constexpr ::_pbi::TcParseTable<3, 7, 7, 0, 7> FeatureSet::_table_ = {
 
   cached_has_bits = _impl_._has_bits_[0];
   // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000001u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         1, this->_internal_field_presence(), target);
   }
 
   // optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         2, this->_internal_enum_type(), target);
   }
 
   // optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000004u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         3, this->_internal_repeated_field_encoding(), target);
   }
 
-  // optional .google.protobuf.FeatureSet.StringFieldValidation string_field_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (cached_has_bits & 0x00000010u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        4, this->_internal_string_field_validation(), target);
-  }
-
   // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000008u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         5, this->_internal_message_encoding(), target);
   }
 
   // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000010u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         6, this->_internal_json_format(), target);
-  }
-
-  // optional .google.protobuf.FeatureSet raw_features = 999 [targets = TARGET_TYPE_UNKNOWN];
-  if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(999, _Internal::raw_features(this),
-        _Internal::raw_features(this).GetCachedSize(), target, stream);
   }
 
   // Extension range [1000, 10000)
@@ -11942,46 +11905,33 @@ constexpr ::_pbi::TcParseTable<3, 7, 7, 0, 7> FeatureSet::_table_ = {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000007fu) {
-    // optional .google.protobuf.FeatureSet raw_features = 999 [targets = TARGET_TYPE_UNKNOWN];
-    if (cached_has_bits & 0x00000001u) {
-      total_size += 2 +
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          *_impl_.raw_features_);
-    }
-
+  if (cached_has_bits & 0x0000001fu) {
     // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (cached_has_bits & 0x00000002u) {
+    if (cached_has_bits & 0x00000001u) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this->_internal_field_presence());
     }
 
     // optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (cached_has_bits & 0x00000004u) {
+    if (cached_has_bits & 0x00000002u) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this->_internal_enum_type());
     }
 
     // optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (cached_has_bits & 0x00000008u) {
+    if (cached_has_bits & 0x00000004u) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this->_internal_repeated_field_encoding());
     }
 
-    // optional .google.protobuf.FeatureSet.StringFieldValidation string_field_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (cached_has_bits & 0x00000010u) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this->_internal_string_field_validation());
-    }
-
     // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (cached_has_bits & 0x00000020u) {
+    if (cached_has_bits & 0x00000008u) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this->_internal_message_encoding());
     }
 
     // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (cached_has_bits & 0x00000040u) {
+    if (cached_has_bits & 0x00000010u) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this->_internal_json_format());
     }
@@ -12006,27 +11956,20 @@ void FeatureSet::MergeImpl(::google::protobuf::Message& to_msg, const ::google::
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000007fu) {
+  if (cached_has_bits & 0x0000001fu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_mutable_raw_features()->::google::protobuf::FeatureSet::MergeFrom(
-          from._internal_raw_features());
-    }
-    if (cached_has_bits & 0x00000002u) {
       _this->_impl_.field_presence_ = from._impl_.field_presence_;
     }
-    if (cached_has_bits & 0x00000004u) {
+    if (cached_has_bits & 0x00000002u) {
       _this->_impl_.enum_type_ = from._impl_.enum_type_;
     }
-    if (cached_has_bits & 0x00000008u) {
+    if (cached_has_bits & 0x00000004u) {
       _this->_impl_.repeated_field_encoding_ = from._impl_.repeated_field_encoding_;
     }
-    if (cached_has_bits & 0x00000010u) {
-      _this->_impl_.string_field_validation_ = from._impl_.string_field_validation_;
-    }
-    if (cached_has_bits & 0x00000020u) {
+    if (cached_has_bits & 0x00000008u) {
       _this->_impl_.message_encoding_ = from._impl_.message_encoding_;
     }
-    if (cached_has_bits & 0x00000040u) {
+    if (cached_has_bits & 0x00000010u) {
       _this->_impl_.json_format_ = from._impl_.json_format_;
     }
     _this->_impl_._has_bits_[0] |= cached_has_bits;
@@ -12046,9 +11989,6 @@ PROTOBUF_NOINLINE bool FeatureSet::IsInitialized() const {
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.raw_features_->IsInitialized()) return false;
-  }
   return true;
 }
 
@@ -12060,9 +12000,9 @@ void FeatureSet::InternalSwap(FeatureSet* other) {
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.json_format_)
       + sizeof(FeatureSet::_impl_.json_format_)
-      - PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.raw_features_)>(
-          reinterpret_cast<char*>(&_impl_.raw_features_),
-          reinterpret_cast<char*>(&other->_impl_.raw_features_));
+      - PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.field_presence_)>(
+          reinterpret_cast<char*>(&_impl_.field_presence_),
+          reinterpret_cast<char*>(&other->_impl_.field_presence_));
 }
 
 ::google::protobuf::Metadata FeatureSet::GetMetadata() const {
@@ -12164,13 +12104,14 @@ void SourceCodeInfo_Location::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceCodeInfo.Location)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_path()->Clear();
-  _internal_mutable_span()->Clear();
-  _internal_mutable_leading_detached_comments()->Clear();
+  _impl_.path_.Clear();
+  _impl_.span_.Clear();
+  _impl_.leading_detached_comments_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -12263,8 +12204,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
   {
     int byte_size = _impl_._path_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(1, _internal_path(),
-                                                 byte_size, target);
+      target = stream->WriteInt32Packed(
+          1, _internal_path(), byte_size, target);
     }
   }
 
@@ -12272,8 +12213,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
   {
     int byte_size = _impl_._span_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(2, _internal_span(),
-                                                 byte_size, target);
+      target = stream->WriteInt32Packed(
+          2, _internal_span(), byte_size, target);
     }
   }
 
@@ -12475,11 +12416,12 @@ void SourceCodeInfo::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceCodeInfo)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_location()->Clear();
+  _impl_.location_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -12575,7 +12517,8 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_location()->MergeFrom(from._internal_location());
+  _this->_internal_mutable_location()->MergeFrom(
+      from._internal_location());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -12688,11 +12631,12 @@ void GeneratedCodeInfo_Annotation::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.GeneratedCodeInfo.Annotation)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_path()->Clear();
+  _impl_.path_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     _impl_.source_file_.ClearNonDefaultToEmpty();
@@ -12783,8 +12727,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
   {
     int byte_size = _impl_._path_cached_byte_size_.Get();
     if (byte_size > 0) {
-      target = stream->WriteInt32Packed(1, _internal_path(),
-                                                 byte_size, target);
+      target = stream->WriteInt32Packed(
+          1, _internal_path(), byte_size, target);
     }
   }
 
@@ -12991,11 +12935,12 @@ void GeneratedCodeInfo::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.GeneratedCodeInfo)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_annotation()->Clear();
+  _impl_.annotation_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -13091,7 +13036,8 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::g
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_annotation()->MergeFrom(from._internal_annotation());
+  _this->_internal_mutable_annotation()->MergeFrom(
+      from._internal_annotation());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -13122,126 +13068,6 @@ void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::FileDescriptorSet*
-Arena::CreateMaybeMessage< ::google::protobuf::FileDescriptorSet >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FileDescriptorSet >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FileDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::FileDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FileDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::DescriptorProto_ExtensionRange*
-Arena::CreateMaybeMessage< ::google::protobuf::DescriptorProto_ExtensionRange >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::DescriptorProto_ExtensionRange >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::DescriptorProto_ReservedRange*
-Arena::CreateMaybeMessage< ::google::protobuf::DescriptorProto_ReservedRange >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::DescriptorProto_ReservedRange >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::DescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::DescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::DescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::ExtensionRangeOptions_Declaration*
-Arena::CreateMaybeMessage< ::google::protobuf::ExtensionRangeOptions_Declaration >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::ExtensionRangeOptions_Declaration >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::ExtensionRangeOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::ExtensionRangeOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::ExtensionRangeOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FieldDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::FieldDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FieldDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::OneofDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::OneofDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::OneofDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumDescriptorProto_EnumReservedRange*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumDescriptorProto_EnumReservedRange >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumDescriptorProto_EnumReservedRange >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumValueDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumValueDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumValueDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::ServiceDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::ServiceDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::ServiceDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::MethodDescriptorProto*
-Arena::CreateMaybeMessage< ::google::protobuf::MethodDescriptorProto >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::MethodDescriptorProto >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FileOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::FileOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FileOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::MessageOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::MessageOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::MessageOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FieldOptions_EditionDefault*
-Arena::CreateMaybeMessage< ::google::protobuf::FieldOptions_EditionDefault >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FieldOptions_EditionDefault >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FieldOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::FieldOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FieldOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::OneofOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::OneofOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::OneofOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumValueOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumValueOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumValueOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::ServiceOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::ServiceOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::ServiceOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::MethodOptions*
-Arena::CreateMaybeMessage< ::google::protobuf::MethodOptions >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::MethodOptions >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::UninterpretedOption_NamePart*
-Arena::CreateMaybeMessage< ::google::protobuf::UninterpretedOption_NamePart >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::UninterpretedOption_NamePart >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::UninterpretedOption*
-Arena::CreateMaybeMessage< ::google::protobuf::UninterpretedOption >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::UninterpretedOption >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::FeatureSet*
-Arena::CreateMaybeMessage< ::google::protobuf::FeatureSet >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::FeatureSet >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::SourceCodeInfo_Location*
-Arena::CreateMaybeMessage< ::google::protobuf::SourceCodeInfo_Location >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::SourceCodeInfo_Location >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::SourceCodeInfo*
-Arena::CreateMaybeMessage< ::google::protobuf::SourceCodeInfo >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::SourceCodeInfo >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::GeneratedCodeInfo_Annotation*
-Arena::CreateMaybeMessage< ::google::protobuf::GeneratedCodeInfo_Annotation >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::GeneratedCodeInfo_Annotation >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::GeneratedCodeInfo*
-Arena::CreateMaybeMessage< ::google::protobuf::GeneratedCodeInfo >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::GeneratedCodeInfo >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

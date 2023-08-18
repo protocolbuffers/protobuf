@@ -246,22 +246,26 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_EXTENSION_RANGE_CLASS 1
 
+// Used to lock down wrong ctype usages in proto file.
+// Owner: jieluo@
+#define PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE 1
+
 #endif
 
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 4023000
+#define PROTOBUF_VERSION 4024000
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
 #endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 4023000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 4024000
 
 #ifdef PROTOBUF_MIN_PROTOC_VERSION
 #error PROTOBUF_MIN_PROTOC_VERSION was previously defined
 #endif
-#define PROTOBUF_MIN_PROTOC_VERSION 4023000
+#define PROTOBUF_MIN_PROTOC_VERSION 4024000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
@@ -442,7 +446,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 4023000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 4024000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
@@ -1087,6 +1091,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 // This causes spurious warnings in GCC 13.
 #pragma GCC diagnostic ignored "-Wself-move"
+// Ignore warning: extra ';' [-Wpedantic]
+#pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 #if __GNUC__ == 12 && __GNUC_MINOR__ < 4
 // Wrong warning emitted when assigning a single char c-string to a std::string

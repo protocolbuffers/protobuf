@@ -54,16 +54,26 @@ class SingularBytes final : public AccessorGenerator {
             {"getter_thunk", Thunk(field, "get")},
             {"setter_thunk", Thunk(field, "set")},
             {"clearer_thunk", Thunk(field, "clear")},
+            {"getter_opt",
+             [&] {
+               if (!field.desc().is_optional()) return;
+               if (!field.desc().has_presence()) return;
+               field.Emit({}, R"rs(
+                  pub fn $field$_opt(&self) -> Option<&[u8]> {
+                    if !unsafe { $hazzer_thunk$(self.msg) } {
+                      return None;
+                    }
+                    unsafe {
+                      Some($getter_thunk$(self.msg).as_ref())
+                    }
+                  })rs");
+             }},
         },
         R"rs(
-          pub fn $field$(&self) -> Option<&[u8]> {
-            if !unsafe { $hazzer_thunk$(self.msg) } {
-              return None;
-            }
-            unsafe {
-              Some($getter_thunk$(self.msg).as_ref())
-            }
+          pub fn r#$field$(&self) -> &[u8] {
+            unsafe { $getter_thunk$(self.msg).as_ref() }
           }
+          $getter_opt$
           pub fn $field$_set(&mut self, val: Option<&[u8]>) {
             match val {
               Some(val) =>
@@ -79,45 +89,54 @@ class SingularBytes final : public AccessorGenerator {
   }
 
   void InExternC(Context<FieldDescriptor> field) const override {
-    field.Emit(
-        {
-            {"hazzer_thunk", Thunk(field, "has")},
-            {"getter_thunk", Thunk(field, "get")},
-            {"setter_thunk", Thunk(field, "set")},
-            {"clearer_thunk", Thunk(field, "clear")},
-        },
-        R"rs(
-          fn $hazzer_thunk$(raw_msg: $NonNull$<u8>) -> bool;
-          fn $getter_thunk$(raw_msg: $NonNull$<u8>) -> $pbi$::PtrAndLen;
-          fn $setter_thunk$(raw_msg: $NonNull$<u8>, val: *const u8, len: usize);
-          fn $clearer_thunk$(raw_msg: $NonNull$<u8>);
+    field.Emit({{"hazzer_thunk", Thunk(field, "has")},
+                {"getter_thunk", Thunk(field, "get")},
+                {"setter_thunk", Thunk(field, "set")},
+                {"clearer_thunk", Thunk(field, "clear")},
+                {"hazzer",
+                 [&] {
+                   if (field.desc().has_presence()) {
+                     field.Emit(R"rs(
+          fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
+        )rs");
+                   }
+                 }}},
+               R"rs(
+          $hazzer$
+          fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::PtrAndLen;
+          fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: *const u8, len: usize);
+          fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
         )rs");
   }
 
   void InThunkCc(Context<FieldDescriptor> field) const override {
-    field.Emit(
-        {
-            {"field", field.desc().name()},
-            {"QualifiedMsg",
-             cpp::QualifiedClassName(field.desc().containing_type())},
-            {"hazzer_thunk", Thunk(field, "has")},
-            {"getter_thunk", Thunk(field, "get")},
-            {"setter_thunk", Thunk(field, "set")},
-            {"clearer_thunk", Thunk(field, "clear")},
-        },
-        R"cc(
-          bool $hazzer_thunk$($QualifiedMsg$* msg) {
-            return msg->has_$field$();
-          }
-          ::google::protobuf::rust_internal::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
-            absl::string_view val = msg->$field$();
-            return google::protobuf::rust_internal::PtrAndLen(val.data(), val.size());
-          }
-          void $setter_thunk$($QualifiedMsg$* msg, const char* ptr, ::std::size_t size) {
-            msg->set_$field$(absl::string_view(ptr, size));
-          }
-          void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
-        )cc");
+    field.Emit({{"field", field.desc().name()},
+                {"QualifiedMsg",
+                 cpp::QualifiedClassName(field.desc().containing_type())},
+                {"hazzer_thunk", Thunk(field, "has")},
+                {"getter_thunk", Thunk(field, "get")},
+                {"setter_thunk", Thunk(field, "set")},
+                {"clearer_thunk", Thunk(field, "clear")},
+                {"hazzer",
+                 [&] {
+                   if (field.desc().has_presence()) {
+                     field.Emit(R"cc(
+                       bool $hazzer_thunk$($QualifiedMsg$* msg) {
+                         return msg->has_$field$();
+                       })cc");
+                   }
+                 }}},
+               R"cc(
+                 $hazzer$;
+                 ::google::protobuf::rust_internal::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
+                   absl::string_view val = msg->$field$();
+                   return google::protobuf::rust_internal::PtrAndLen(val.data(), val.size());
+                 }
+                 void $setter_thunk$($QualifiedMsg$* msg, const char* ptr, ::std::size_t size) {
+                   msg->set_$field$(absl::string_view(ptr, size));
+                 }
+                 void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
+               )cc");
   }
 };
 }  // namespace

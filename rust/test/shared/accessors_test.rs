@@ -34,14 +34,16 @@ use unittest_proto::proto2_unittest::TestAllTypes;
 #[test]
 fn test_default_accessors() {
     let msg = TestAllTypes::new();
-    assert_eq!(msg.default_fixed32(), 47);
-    assert_eq!(msg.default_fixed64(), 48);
     assert_eq!(msg.default_int32(), 41);
     assert_eq!(msg.default_int64(), 42);
-    assert_eq!(msg.default_sint32(), -45);
-    assert_eq!(msg.default_sint64(), 46);
     assert_eq!(msg.default_uint32(), 43);
     assert_eq!(msg.default_uint64(), 44);
+    assert_eq!(msg.default_sint32(), -45);
+    assert_eq!(msg.default_sint64(), 46);
+    assert_eq!(msg.default_fixed32(), 47);
+    assert_eq!(msg.default_fixed64(), 48);
+    assert_eq!(msg.default_sfixed32(), 49);
+    assert_eq!(msg.default_sfixed64(), -50);
     assert_eq!(msg.default_float(), 51.5);
     assert_eq!(msg.default_double(), 52000.0);
     assert_eq!(msg.default_bool(), true);
@@ -214,14 +216,22 @@ fn test_optional_bool_accessors() {
 #[test]
 fn test_optional_bytes_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_bytes(), None);
+    assert_eq!(msg.optional_bytes_opt(), None);
 
     msg.optional_bytes_set(Some(b"accessors_test"));
-    assert_eq!(msg.optional_bytes().unwrap(), b"accessors_test");
+    assert_eq!(msg.optional_bytes_opt().unwrap(), b"accessors_test");
 
     msg.optional_bytes_set(None);
-    assert_eq!(msg.optional_bytes(), None);
+    assert_eq!(msg.optional_bytes_opt(), None);
 
     msg.optional_bytes_set(Some(b""));
-    assert_eq!(msg.optional_bytes().unwrap(), b"");
+    assert_eq!(msg.optional_bytes_opt().unwrap(), b"");
+}
+
+#[test]
+fn test_singular_msg_field() {
+    let msg = TestAllTypes::new();
+    // TODO("b/285309454"): fetch the inner integer `bb`
+    // call should look like msg.optional_nested_message().bb()
+    let _msg: unittest_proto::proto2_unittest::TestAllTypesView = msg.optional_nested_message();
 }

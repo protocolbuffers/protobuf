@@ -327,7 +327,13 @@ public final class Timestamps {
     }
   }
 
-  /** Create a Timestamp using the best-available system clock. */
+  /**
+   * Create a {@link Timestamp} using the best-available (in terms of precision) system clock.
+   *
+   * <p><b>Note:</b> that while this API is convenient, it may harm the testability of your code, as
+   * you're unable to mock the current time. Instead, you may want to consider injecting a clock
+   * instance to read the current time.
+   */
   public static Timestamp now() {
     if (INSTANT_NOW != null) {
       try {

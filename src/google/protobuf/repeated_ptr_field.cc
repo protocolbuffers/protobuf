@@ -33,8 +33,12 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 
 #include "absl/log/absl_check.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/implicit_weak_message.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
@@ -52,45 +56,58 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   if (total_size_ >= new_size) {
     // N.B.: rep_ is non-nullptr because extend_amount is always > 0, hence
     // total_size must be non-zero since it is lower-bounded by new_size.
-    return &rep_->elements[current_size_];
+    return elements() + current_size_;
   }
-  Rep* old_rep = rep_;
+
   Arena* arena = GetOwningArena();
   new_size = internal::CalculateReserveSize<void*, kRepHeaderSize>(total_size_,
                                                                    new_size);
   ABSL_CHECK_LE(static_cast<int64_t>(new_size),
                 static_cast<int64_t>(
                     (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
-                    sizeof(old_rep->elements[0])))
+                    sizeof(rep()->elements[0])))
       << "Requested size is too large to fit into size_t.";
-  size_t bytes = kRepHeaderSize + sizeof(old_rep->elements[0]) * new_size;
+  size_t bytes = kRepHeaderSize + sizeof(rep()->elements[0]) * new_size;
+  Rep* new_rep;
+  void* old_tagged_ptr = tagged_rep_or_elem_;
   if (arena == nullptr) {
     internal::SizedPtr res = internal::AllocateAtLeast(bytes);
-    new_size = (res.n - kRepHeaderSize) / sizeof(old_rep->elements[0]);
-    rep_ = reinterpret_cast<Rep*>(res.p);
+    new_size =
+        static_cast<int>((res.n - kRepHeaderSize) / sizeof(rep()->elements[0]));
+    new_rep = reinterpret_cast<Rep*>(res.p);
   } else {
-    rep_ = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
+    new_rep = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
   }
-  const int old_total_size = total_size_;
-  total_size_ = new_size;
-  if (old_rep) {
-    if (old_rep->allocated_size > 0) {
-      memcpy(rep_->elements, old_rep->elements,
-             old_rep->allocated_size * sizeof(rep_->elements[0]));
-    }
-    rep_->allocated_size = old_rep->allocated_size;
 
-    const size_t old_size =
-        old_total_size * sizeof(rep_->elements[0]) + kRepHeaderSize;
-    if (arena == nullptr) {
-      internal::SizedDelete(old_rep, old_size);
-    } else {
-      arena_->ReturnArrayMemory(old_rep, old_size);
-    }
+  if (using_sso()) {
+    new_rep->elements[0] = old_tagged_ptr;
+    new_rep->allocated_size = old_tagged_ptr != nullptr ? 1 : 0;
   } else {
-    rep_->allocated_size = 0;
+    if (old_tagged_ptr) {
+      Rep* old_rep = reinterpret_cast<Rep*>(
+          reinterpret_cast<uintptr_t>(old_tagged_ptr) - 1);
+      if (old_rep->allocated_size > 0) {
+        memcpy(new_rep->elements, old_rep->elements,
+               old_rep->allocated_size * sizeof(rep()->elements[0]));
+      }
+      new_rep->allocated_size = old_rep->allocated_size;
+
+      const size_t old_size =
+          total_size_ * sizeof(rep()->elements[0]) + kRepHeaderSize;
+      if (arena == nullptr) {
+        internal::SizedDelete(old_rep, old_size);
+      } else {
+        arena_->ReturnArrayMemory(old_rep, old_size);
+      }
+    } else {
+      new_rep->allocated_size = 0;
+    }
   }
-  return &rep_->elements[current_size_];
+
+  tagged_rep_or_elem_ =
+      reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_rep) + 1);
+  total_size_ = new_size;
+  return &new_rep->elements[current_size_];
 }
 
 void RepeatedPtrFieldBase::Reserve(int new_size) {
@@ -100,49 +117,76 @@ void RepeatedPtrFieldBase::Reserve(int new_size) {
 }
 
 void RepeatedPtrFieldBase::DestroyProtos() {
-  ABSL_DCHECK(rep_);
+  ABSL_DCHECK(tagged_rep_or_elem_);
   ABSL_DCHECK(arena_ == nullptr);
-  int n = rep_->allocated_size;
-  void* const* elements = rep_->elements;
-  for (int i = 0; i < n; i++) {
-    delete static_cast<MessageLite*>(elements[i]);
+  if (using_sso()) {
+    delete static_cast<MessageLite*>(tagged_rep_or_elem_);
+
+  } else {
+    Rep* r = rep();
+    int n = r->allocated_size;
+    void* const* elements = r->elements;
+    for (int i = 0; i < n; i++) {
+      delete static_cast<MessageLite*>(elements[i]);
+    }
+    const size_t size = total_size_ * sizeof(elements[0]) + kRepHeaderSize;
+    internal::SizedDelete(r, size);
+    tagged_rep_or_elem_ = nullptr;
   }
-  const size_t size = total_size_ * sizeof(elements[0]) + kRepHeaderSize;
-  internal::SizedDelete(rep_, size);
-  rep_ = nullptr;
 }
 
 void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
-  if (!rep_ || rep_->allocated_size == total_size_) {
+  if (tagged_rep_or_elem_ == nullptr) {
+    ABSL_DCHECK_EQ(current_size_, 0);
+    ABSL_DCHECK(using_sso());
+    ABSL_DCHECK_EQ(allocated_size(), 0);
+    ExchangeCurrentSize(1);
+    tagged_rep_or_elem_ = obj;
+    return obj;
+  }
+  if (using_sso() || rep()->allocated_size == total_size_) {
     InternalExtend(1);  // Equivalent to "Reserve(total_size_ + 1)"
   }
-  ++rep_->allocated_size;
-  rep_->elements[ExchangeCurrentSize(current_size_ + 1)] = obj;
+  Rep* r = rep();
+  ++r->allocated_size;
+  r->elements[ExchangeCurrentSize(current_size_ + 1)] = obj;
   return obj;
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
-  if (rep_ == nullptr) return;
-  // Close up a gap of "num" elements starting at offset "start".
-  for (int i = start + num; i < rep_->allocated_size; ++i)
-    rep_->elements[i - num] = rep_->elements[i];
+  if (using_sso()) {
+    if (start == 0 && num == 1) {
+      tagged_rep_or_elem_ = nullptr;
+    }
+  } else {
+    // Close up a gap of "num" elements starting at offset "start".
+    Rep* r = rep();
+    for (int i = start + num; i < r->allocated_size; ++i)
+      r->elements[i - num] = r->elements[i];
+    r->allocated_size -= num;
+  }
   ExchangeCurrentSize(current_size_ - num);
-  rep_->allocated_size -= num;
 }
 
 MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
-  if (rep_ != nullptr && current_size_ < rep_->allocated_size) {
+  if (current_size_ < allocated_size()) {
     return reinterpret_cast<MessageLite*>(
-        rep_->elements[ExchangeCurrentSize(current_size_ + 1)]);
+        element_at(ExchangeCurrentSize(current_size_ + 1)));
   }
-  if (!rep_ || rep_->allocated_size == total_size_) {
+  if (allocated_size() == total_size_) {
     Reserve(total_size_ + 1);
   }
-  ++rep_->allocated_size;
   MessageLite* result = prototype
                             ? prototype->New(arena_)
                             : Arena::CreateMessage<ImplicitWeakMessage>(arena_);
-  rep_->elements[ExchangeCurrentSize(current_size_ + 1)] = result;
+  if (using_sso()) {
+    ExchangeCurrentSize(current_size_ + 1);
+    tagged_rep_or_elem_ = result;
+  } else {
+    Rep* r = rep();
+    ++r->allocated_size;
+    r->elements[ExchangeCurrentSize(current_size_ + 1)] = result;
+  }
   return result;
 }
 

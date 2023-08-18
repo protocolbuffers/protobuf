@@ -15,6 +15,15 @@ filegroup(
 )
 
 ruby_test(
+    name = "implementation",
+    srcs = ["implementation.rb"],
+    deps = [
+        "//ruby:protobuf",
+        "@protobuf_bundle//:test-unit",
+    ],
+)
+
+ruby_test(
     name = "basic",
     srcs = ["basic.rb"],
     deps = [

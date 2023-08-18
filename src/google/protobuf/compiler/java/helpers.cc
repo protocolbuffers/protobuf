@@ -1001,6 +1001,7 @@ const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor) {
   return message->map_value();
 }
 
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

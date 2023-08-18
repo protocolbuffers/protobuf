@@ -16,8 +16,10 @@ By default, CMake will use whatever C++ version is the system default.  Since
 protobuf requires C++14 or newer, sometimes you will need to explicitly override
 this.  For example, the following:
 
-    cmake . -DCMAKE_CXX_STANDARD=14
-    cmake --build
+```
+cmake . -DCMAKE_CXX_STANDARD=14
+cmake --build .
+```
 
 will build protobuf using C++14 (see [CXX_STANDARD](https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html#prop_tgt:CXX_STANDARD){.external} for all available options).
 

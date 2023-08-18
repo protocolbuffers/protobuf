@@ -2,6 +2,7 @@ require "rubygems"
 require "rubygems/package_task"
 require "rake/extensiontask" unless RUBY_PLATFORM == "java"
 require "rake/testtask"
+import 'lib/google/tasks/ffi.rake'
 
 spec = Gem::Specification.load("google-protobuf.gemspec")
 
@@ -68,6 +69,24 @@ unless ENV['IN_DOCKER'] == 'true' or ENV['BAZEL'] == 'true'
   end
 end
 
+task :copy_third_party do
+  unless File.exist? 'ext/google/protobuf_c/third_party/utf8_range'
+    FileUtils.mkdir_p 'ext/google/protobuf_c/third_party/utf8_range'
+    # We need utf8_range in-tree.
+    if  ENV['BAZEL'] == 'true'
+      utf8_root = '../external/utf8_range'
+    else
+      utf8_root = '../third_party/utf8_range'
+    end
+    %w[
+      utf8_range.h naive.c range2-neon.c range2-neon.c range2-sse.c LICENSE
+    ].each do |file|
+      FileUtils.cp File.join(utf8_root, file),
+                   "ext/google/protobuf_c/third_party/utf8_range"
+    end
+  end
+end
+
 if RUBY_PLATFORM == "java"
   task :clean => :require_mvn do
     system("mvn --batch-mode clean")
@@ -82,20 +101,6 @@ if RUBY_PLATFORM == "java"
   end
 
 else
-  unless ENV['IN_DOCKER'] == 'true'
-    # We need utf8_range in-tree.
-    if  ENV['BAZEL'] == 'true'
-      utf8_root = '../external/utf8_range'
-    else
-      utf8_root = '../third_party/utf8_range'
-    end
-    FileUtils.mkdir_p("ext/google/protobuf_c")
-    FileUtils.cp(utf8_root+"/utf8_range.h", "ext/google/protobuf_c")
-    FileUtils.cp(utf8_root+"/naive.c", "ext/google/protobuf_c")
-    FileUtils.cp(utf8_root+"/range2-neon.c", "ext/google/protobuf_c")
-    FileUtils.cp(utf8_root+"/range2-sse.c", "ext/google/protobuf_c")
-  end
-
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
     unless RUBY_PLATFORM =~ /darwin/
       # TODO: also set "no_native to true" for mac if possible. As is,
@@ -133,7 +138,7 @@ else
     ['x86-mingw32', 'x64-mingw32', 'x64-mingw-ucrt', 'x86_64-linux', 'x86-linux'].each do |plat|
       RakeCompilerDock.sh <<-"EOT", platform: plat
         bundle && \
-        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0:2.6.0
+        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0
       EOT
     end
   end
@@ -141,7 +146,7 @@ else
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0:2.6.0"
+      system "rake cross native gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0"
     end
   else
     task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']
@@ -152,6 +157,14 @@ task :genproto => genproto_output
 
 task :clean do
   sh "rm -f #{genproto_output.join(' ')}"
+  sh "rm -f google-protobuf-*gem"
+  sh "rm -f Gemfile.lock"
+  sh "rm -rf pkg"
+  sh "rm -rf tmp"
+  # Handles third_party and any platform specific directories built by FFI
+  Pathname('ext/google/protobuf_c').children.select(&:directory?).each do |dir|
+    sh "rm -rf #{dir}"
+  end
 end
 
 Gem::PackageTask.new(spec) do |pkg|
@@ -169,7 +182,8 @@ Rake::TestTask.new(:gc_test => ENV['BAZEL'] == 'true' ? [] : :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 
-task :build => [:clean, :genproto, :compile]
+task :build => [:clean, :genproto, :copy_third_party, :compile, :"ffi-protobuf:default"]
+Rake::Task[:gem].enhance [:copy_third_party, :genproto]
 task :default => [:build]
 
 # vim:sw=2:et

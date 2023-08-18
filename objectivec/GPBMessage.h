@@ -94,9 +94,6 @@ CF_EXTERN_C_END
 
 /**
  * The set of unknown fields for this message.
- *
- * Only messages from proto files declared with "proto2" syntax support unknown
- * fields.
  **/
 @property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields;
 

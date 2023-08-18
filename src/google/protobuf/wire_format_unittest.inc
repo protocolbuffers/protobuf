@@ -38,6 +38,7 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
@@ -63,6 +64,10 @@ namespace google {
 namespace protobuf {
 namespace internal {
 namespace {
+
+inline bool IsOptimizeForCodeSize(const Descriptor* descriptor) {
+  return descriptor->file()->options().optimize_for() == FileOptions::CODE_SIZE;
+}
 
 TEST(WireFormatTest, EnumsInSync) {
   // Verify that WireFormatLite::FieldType and WireFormatLite::CppType match

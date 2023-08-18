@@ -639,13 +639,13 @@ bool MessageDifferencer::Compare(const Message& message1,
     std::unique_ptr<Message> data1;
     std::unique_ptr<Message> data2;
     if (unpack_any_field_.UnpackAny(message1, &data1) &&
-        unpack_any_field_.UnpackAny(message2, &data2)) {
-      // Avoid DFATAL for different descriptors in google.protobuf.Any payloads.
-      if (data1->GetDescriptor() != data2->GetDescriptor()) {
-        return false;
-      }
+        unpack_any_field_.UnpackAny(message2, &data2) &&
+        data1->GetDescriptor() == data2->GetDescriptor()) {
       return Compare(*data1, *data2, unpacked_any + 1, parent_fields);
     }
+    // If the Any payload is unparsable, or the payload types are different
+    // between message1 and message2, fall through and treat Any as a regular
+    // proto.
   }
 
   bool unknown_compare_result = true;
@@ -879,12 +879,14 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       ++field_index1;
       continue;
     } else if (FieldBefore(field2, field1)) {
-      if (force_compare_no_presence_fields_.contains(field2)) {
+      const bool ignore_field =
+          IsIgnored(message1, message2, field2, *parent_fields);
+      if (!ignore_field && force_compare_no_presence_fields_.contains(field2)) {
         force_compare_failure_triggering_fields_.insert(field2->full_name());
       }
 
       // Field 2 is not in the field list for message 1.
-      if (IsIgnored(message1, message2, field2, *parent_fields)) {
+      if (ignore_field) {
         // We are ignoring field2. Report the ignore and move on to
         // the next field in message2_fields.
         if (reporter_ != NULL) {

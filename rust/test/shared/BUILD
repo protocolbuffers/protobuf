@@ -40,7 +40,7 @@ rust_test(
     deps = [
         "//rust/test:dots_in_package_cc_rust_proto",
         "//rust/test:no_package_cc_rust_proto",
-        "//rust/test:unittest_cc_rust_proto",
+        "//rust/test:package_cc_rust_proto",
     ],
 )
 
@@ -50,7 +50,7 @@ rust_test(
     deps = [
         "//rust/test:dots_in_package_upb_rust_proto",
         "//rust/test:no_package_upb_rust_proto",
-        "//rust/test:unittest_upb_rust_proto",
+        "//rust/test:package_upb_rust_proto",
     ],
 )
 
@@ -94,6 +94,18 @@ rust_test(
     name = "accessors_upb_test",
     srcs = ["accessors_test.rs"],
     deps = ["//rust/test:unittest_upb_rust_proto"],
+)
+
+rust_test(
+    name = "accessors_proto3_cpp_test",
+    srcs = ["accessors_proto3_test.rs"],
+    deps = ["//rust/test:unittest_proto3_cc_rust_proto"],
+)
+
+rust_test(
+    name = "accessors_proto3_upb_test",
+    srcs = ["accessors_proto3_test.rs"],
+    deps = ["//rust/test:unittest_proto3_upb_rust_proto"],
 )
 
 rust_test(

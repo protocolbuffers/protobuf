@@ -43,18 +43,19 @@ upb_DefPool *get_global_symtab();
 //
 // When compiling for earlier php versions, the return type is dropped.
 #if PHP_VERSION_ID < 80100
-#define ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
-        ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
+#define ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(       \
+    name, return_reference, required_num_args, type, allow_null) \
+  ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
 #endif
 
 ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_setter, 0, 0, 1)
-  ZEND_ARG_INFO(0, value)
+ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-#define PHP_PROTOBUF_VERSION "3.23.0"
+#define PHP_PROTOBUF_VERSION "3.24.0"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
@@ -82,8 +83,8 @@ void NameMap_AddMessage(const upb_MessageDef *m);
 void NameMap_AddEnum(const upb_EnumDef *m);
 const upb_MessageDef *NameMap_GetMessage(zend_class_entry *ce);
 const upb_EnumDef *NameMap_GetEnum(zend_class_entry *ce);
-void NameMap_EnterConstructor(zend_class_entry* ce);
-void NameMap_ExitConstructor(zend_class_entry* ce);
+void NameMap_EnterConstructor(zend_class_entry *ce);
+void NameMap_ExitConstructor(zend_class_entry *ce);
 
 // Add this descriptor object to the global list of descriptors that will be
 // kept alive for the duration of the request but destroyed when the request

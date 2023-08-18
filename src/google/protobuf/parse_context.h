@@ -158,7 +158,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       return *this;
     }
 
-    ~LimitToken() = default;
+    ~LimitToken() { PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_)); }
 
     int token() && {
       int t = token_;
@@ -480,6 +480,30 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     *start = InitFrom(std::forward<T>(args)...);
   }
 
+  struct Spawn {};
+  static constexpr Spawn kSpawn = {};
+
+  // Creates a new context from a given "ctx" to inherit a few attributes to
+  // emulate continued parsing. For example, recursion depth or descriptor pools
+  // must be passed down to a new "spawned" context to maintain the same parse
+  // context. Note that the spawned context always disables aliasing (different
+  // input).
+  template <typename... T>
+  ParseContext(Spawn, const ParseContext& ctx, const char** start, T&&... args)
+      : EpsCopyInputStream(false),
+        depth_(ctx.depth_),
+        data_(ctx.data_)
+  {
+    *start = InitFrom(std::forward<T>(args)...);
+  }
+
+  // Move constructor and assignment operator are not supported because "ptr"
+  // for parsing may have pointed to an inlined buffer (patch_buffer_) which can
+  // be invalid afterwards.
+  ParseContext(ParseContext&&) = delete;
+  ParseContext& operator=(ParseContext&&) = delete;
+  ParseContext& operator=(const ParseContext&) = delete;
+
   void TrackCorrectEnding() { group_depth_ = 0; }
 
   // Done should only be called when the parsing pointer is pointing to the
@@ -492,18 +516,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   const Data& data() const { return data_; }
 
   const char* ParseMessage(MessageLite* msg, const char* ptr);
-
-  // Spawns a child parsing context that inherits key properties. New context
-  // inherits the following:
-  // --depth_, data_, check_required_fields_, lazy_parse_mode_
-  // The spawned context always disables aliasing (different input).
-  template <typename... T>
-  ParseContext Spawn(const char** start, T&&... args) {
-    ParseContext spawned(depth_, false, start, std::forward<T>(args)...);
-    // Transfer key context states.
-    spawned.data_ = data_;
-    return spawned;
-  }
 
   // This overload supports those few cases where ParseMessage is called
   // on a class that is not actually a proto message.
@@ -598,17 +610,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   int group_depth_ = INT_MIN;
   Data data_;
 };
-
-template <uint32_t tag>
-bool ExpectTag(const char* ptr) {
-  if (tag < 128) {
-    return *ptr == static_cast<char>(tag);
-  } else {
-    static_assert(tag < 128 * 128, "We only expect tags for 1 or 2 bytes");
-    char buf[2] = {static_cast<char>(tag | 0x80), static_cast<char>(tag >> 7)};
-    return std::memcmp(ptr, buf, 2) == 0;
-  }
-}
 
 template <int>
 struct EndianHelper;

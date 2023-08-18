@@ -23,34 +23,26 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
         template <typename>
-PROTOBUF_CONSTEXPR Type::Type(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR Option::Option(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
       /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.fields_)*/ {},
-      /*decltype(_impl_.oneofs_)*/ {},
-      /*decltype(_impl_.options_)*/ {},
       /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.edition_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.source_context_)*/ nullptr,
-      /*decltype(_impl_.syntax_)*/ 0,
+      /*decltype(_impl_.value_)*/ nullptr,
     } {}
-struct TypeDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR TypeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~TypeDefaultTypeInternal() {}
+struct OptionDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR OptionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~OptionDefaultTypeInternal() {}
   union {
-    Type _instance;
+    Option _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TypeDefaultTypeInternal _Type_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OptionDefaultTypeInternal _Option_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR Field::Field(::_pbi::ConstantInitialized)
     : _impl_{
@@ -89,6 +81,56 @@ struct FieldDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDefaultTypeInternal _Field_default_instance_;
         template <typename>
+PROTOBUF_CONSTEXPR EnumValue::EnumValue(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.options_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.number_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
+    } {}
+struct EnumValueDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR EnumValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~EnumValueDefaultTypeInternal() {}
+  union {
+    EnumValue _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDefaultTypeInternal _EnumValue_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR Type::Type(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.fields_)*/ {},
+      /*decltype(_impl_.oneofs_)*/ {},
+      /*decltype(_impl_.options_)*/ {},
+      /*decltype(_impl_.name_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.edition_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.source_context_)*/ nullptr,
+      /*decltype(_impl_.syntax_)*/ 0,
+    } {}
+struct TypeDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR TypeDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~TypeDefaultTypeInternal() {}
+  union {
+    Type _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TypeDefaultTypeInternal _Type_default_instance_;
+        template <typename>
 PROTOBUF_CONSTEXPR Enum::Enum(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
@@ -116,48 +158,6 @@ struct EnumDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDefaultTypeInternal _Enum_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR EnumValue::EnumValue(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.options_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.number_)*/ 0,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
-struct EnumValueDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR EnumValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~EnumValueDefaultTypeInternal() {}
-  union {
-    EnumValue _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDefaultTypeInternal _EnumValue_default_instance_;
-        template <typename>
-PROTOBUF_CONSTEXPR Option::Option(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.value_)*/ nullptr,
-    } {}
-struct OptionDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR OptionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~OptionDefaultTypeInternal() {}
-  union {
-    Option _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OptionDefaultTypeInternal _Option_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2ftype_2eproto[5];
@@ -471,6 +471,7 @@ const ::google::protobuf::SourceContext& Type::_Internal::source_context(const T
   return *msg->_impl_.source_context_;
 }
 void Type::clear_source_context() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -558,13 +559,14 @@ void Type::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Type::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_fields()->Clear();
-  _internal_mutable_oneofs()->Clear();
-  _internal_mutable_options()->Clear();
+  _impl_.fields_.Clear();
+  _impl_.oneofs_.Clear();
+  _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.edition_.ClearToEmpty();
   cached_has_bits = _impl_._has_bits_[0];
@@ -799,9 +801,11 @@ void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_fields()->MergeFrom(from._internal_fields());
+  _this->_internal_mutable_fields()->MergeFrom(
+      from._internal_fields());
   _this->_internal_mutable_oneofs()->MergeFrom(from._internal_oneofs());
-  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
+  _this->_internal_mutable_options()->MergeFrom(
+      from._internal_options());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -969,11 +973,12 @@ void Field::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Field::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_options()->Clear();
+  _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.type_url_.ClearToEmpty();
   _impl_.json_name_.ClearToEmpty();
@@ -1263,7 +1268,8 @@ void Field::MergeImpl(::google::protobuf::Message& to_msg, const ::google::proto
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
+  _this->_internal_mutable_options()->MergeFrom(
+      from._internal_options());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -1349,6 +1355,7 @@ const ::google::protobuf::SourceContext& Enum::_Internal::source_context(const E
   return *msg->_impl_.source_context_;
 }
 void Enum::clear_source_context() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -1433,12 +1440,13 @@ void Enum::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Enum::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_enumvalue()->Clear();
-  _internal_mutable_options()->Clear();
+  _impl_.enumvalue_.Clear();
+  _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.edition_.ClearToEmpty();
   cached_has_bits = _impl_._has_bits_[0];
@@ -1653,8 +1661,10 @@ void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_enumvalue()->MergeFrom(from._internal_enumvalue());
-  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
+  _this->_internal_mutable_enumvalue()->MergeFrom(
+      from._internal_enumvalue());
+  _this->_internal_mutable_options()->MergeFrom(
+      from._internal_options());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -1769,11 +1779,12 @@ void EnumValue::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void EnumValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_options()->Clear();
+  _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.number_ = 0;
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -1915,7 +1926,8 @@ void EnumValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::p
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
+  _this->_internal_mutable_options()->MergeFrom(
+      from._internal_options());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -1969,6 +1981,7 @@ const ::google::protobuf::Any& Option::_Internal::value(const Option* msg) {
   return *msg->_impl_.value_;
 }
 void Option::clear_value() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.value_ != nullptr) _impl_.value_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -2030,6 +2043,7 @@ void Option::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Option::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -2204,26 +2218,6 @@ void Option::InternalSwap(Option* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::Type*
-Arena::CreateMaybeMessage< ::google::protobuf::Type >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Type >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Field*
-Arena::CreateMaybeMessage< ::google::protobuf::Field >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Field >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Enum*
-Arena::CreateMaybeMessage< ::google::protobuf::Enum >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Enum >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::EnumValue*
-Arena::CreateMaybeMessage< ::google::protobuf::EnumValue >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::EnumValue >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Option*
-Arena::CreateMaybeMessage< ::google::protobuf::Option >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Option >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

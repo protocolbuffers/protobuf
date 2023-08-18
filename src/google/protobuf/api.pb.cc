@@ -23,34 +23,28 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
         template <typename>
-PROTOBUF_CONSTEXPR Api::Api(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR Mixin::Mixin(::_pbi::ConstantInitialized)
     : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.methods_)*/ {},
-      /*decltype(_impl_.options_)*/ {},
-      /*decltype(_impl_.mixins_)*/ {},
       /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.version_)*/ {
+      /*decltype(_impl_.root_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.source_context_)*/ nullptr,
-      /*decltype(_impl_.syntax_)*/ 0,
+      /*decltype(_impl_._cached_size_)*/ {},
     } {}
-struct ApiDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR ApiDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~ApiDefaultTypeInternal() {}
+struct MixinDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR MixinDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~MixinDefaultTypeInternal() {}
   union {
-    Api _instance;
+    Mixin _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ApiDefaultTypeInternal _Api_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MixinDefaultTypeInternal _Mixin_default_instance_;
         template <typename>
 PROTOBUF_CONSTEXPR Method::Method(::_pbi::ConstantInitialized)
     : _impl_{
@@ -83,28 +77,34 @@ struct MethodDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDefaultTypeInternal _Method_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR Mixin::Mixin(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR Api::Api(::_pbi::ConstantInitialized)
     : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.methods_)*/ {},
+      /*decltype(_impl_.options_)*/ {},
+      /*decltype(_impl_.mixins_)*/ {},
       /*decltype(_impl_.name_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_.root_)*/ {
+      /*decltype(_impl_.version_)*/ {
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.source_context_)*/ nullptr,
+      /*decltype(_impl_.syntax_)*/ 0,
     } {}
-struct MixinDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR MixinDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~MixinDefaultTypeInternal() {}
+struct ApiDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR ApiDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~ApiDefaultTypeInternal() {}
   union {
-    Mixin _instance;
+    Api _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MixinDefaultTypeInternal _Mixin_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ApiDefaultTypeInternal _Api_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fapi_2eproto[3];
@@ -256,9 +256,11 @@ const ::google::protobuf::SourceContext& Api::_Internal::source_context(const Ap
   return *msg->_impl_.source_context_;
 }
 void Api::clear_options() {
-  _internal_mutable_options()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.options_.Clear();
 }
 void Api::clear_source_context() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -346,13 +348,14 @@ void Api::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Api::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_methods()->Clear();
-  _internal_mutable_options()->Clear();
-  _internal_mutable_mixins()->Clear();
+  _impl_.methods_.Clear();
+  _impl_.options_.Clear();
+  _impl_.mixins_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.version_.ClearToEmpty();
   cached_has_bits = _impl_._has_bits_[0];
@@ -587,9 +590,12 @@ void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobu
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_methods()->MergeFrom(from._internal_methods());
-  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
-  _this->_internal_mutable_mixins()->MergeFrom(from._internal_mixins());
+  _this->_internal_mutable_methods()->MergeFrom(
+      from._internal_methods());
+  _this->_internal_mutable_options()->MergeFrom(
+      from._internal_options());
+  _this->_internal_mutable_mixins()->MergeFrom(
+      from._internal_mixins());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -650,7 +656,8 @@ class Method::_Internal {
 };
 
 void Method::clear_options() {
-  _internal_mutable_options()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.options_.Clear();
 }
 Method::Method(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
@@ -742,11 +749,12 @@ void Method::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Method::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_options()->Clear();
+  _impl_.options_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.request_type_url_.ClearToEmpty();
   _impl_.response_type_url_.ClearToEmpty();
@@ -970,7 +978,8 @@ void Method::MergeImpl(::google::protobuf::Message& to_msg, const ::google::prot
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_options()->MergeFrom(from._internal_options());
+  _this->_internal_mutable_options()->MergeFrom(
+      from._internal_options());
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
@@ -1098,6 +1107,7 @@ void Mixin::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Mixin::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -1265,18 +1275,6 @@ void Mixin::InternalSwap(Mixin* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::Api*
-Arena::CreateMaybeMessage< ::google::protobuf::Api >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Api >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Method*
-Arena::CreateMaybeMessage< ::google::protobuf::Method >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Method >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::Mixin*
-Arena::CreateMaybeMessage< ::google::protobuf::Mixin >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Mixin >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

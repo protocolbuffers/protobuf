@@ -34,5 +34,6 @@ package com.google.protobuf;
 @ExperimentalApi
 public enum ProtoSyntax {
   PROTO2,
-  PROTO3;
+  PROTO3,
+  EDITIONS;
 }

@@ -9,6 +9,8 @@ package(
     default_visibility = ["//src/google/protobuf:__subpackages__"],
 )
 
+licenses(["notice"])
+
 # The current Rust Protobuf runtime for the build. Depending on the value of
 # `:rust_proto_library_kernel` build setting it forwards to the cpp or upb kernels. This is the
 # target that users are expected to depend on.
@@ -62,17 +64,16 @@ rust_library(
         "//src/google/protobuf:__subpackages__",
         "//rust:__subpackages__",
     ],
-    deps = ["//rust/upb_kernel:upb_c_api"],
+    deps = [
+        ":utf8",
+        "//rust/upb_kernel:upb_c_api",
+    ],
 )
 
 rust_test(
     name = "protobuf_upb_test",
     crate = ":protobuf_upb",
     rustc_flags = ["--cfg=upb_kernel"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
 )
 
 # The Rust Protobuf runtime using the cpp kernel.
@@ -98,16 +99,19 @@ rust_library(
         "//src/google/protobuf:__subpackages__",
         "//rust:__subpackages__",
     ],
+    deps = [":utf8"],
 )
 
 rust_test(
     name = "protobuf_cpp_test",
     crate = ":protobuf_cpp",
     rustc_flags = ["--cfg=cpp_kernel"],
-    tags = [
-        # TODO(b/270274576): Enable testing on arm once we have a Rust Arm toolchain.
-        "not_build:arm",
-    ],
+)
+
+rust_library(
+    name = "utf8",
+    srcs = ["utf8.rs"],
+    visibility = ["//visibility:private"],
 )
 
 proto_lang_toolchain(

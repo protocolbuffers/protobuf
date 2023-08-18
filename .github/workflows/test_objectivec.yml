@@ -39,13 +39,13 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@v2
         with:
           cache-prefix: objectivec_${{ matrix.platform }}_${{ matrix.xc_config }}
           support-modules: true
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bash@v1
+        uses: protocolbuffers/protobuf-ci/bash@v2
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
@@ -81,7 +81,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Pod lib lint
-        uses: protocolbuffers/protobuf-ci/bash@v1
+        uses: protocolbuffers/protobuf-ci/bash@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
@@ -122,7 +122,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: bazel ${{ matrix.config.bazel_action }}
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+        uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}

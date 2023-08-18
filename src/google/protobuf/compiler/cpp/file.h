@@ -57,11 +57,14 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/port.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-class FileGenerator {
+class PROTOC_EXPORT FileGenerator {
  public:
   FileGenerator(const FileDescriptor* file, const Options& options);
 
@@ -188,6 +191,10 @@ class FileGenerator {
     return false;
   }
 
+  // For testing only.  Returns the descriptors ordered topologically.
+  std::vector<const Descriptor*> MessagesInTopologicalOrder() const;
+  friend class FileGeneratorFriendForTesting;
+
   absl::flat_hash_set<const FileDescriptor*> weak_deps_;
 
   const FileDescriptor* file_;
@@ -200,9 +207,10 @@ class FileGenerator {
   // TODO(b/245791219)
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 
-  // Contains the post-order walk of all the messages (and child messages) in
-  // this file. If you need a pre-order walk just reverse iterate.
+  // Contains the post-order walk of all the messages (and nested messages)
+  // defined in this file. If you need a pre-order walk just reverse iterate.
   std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
+  std::vector<int> message_generators_topologically_ordered_;
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
   std::vector<std::unique_ptr<ServiceGenerator>> service_generators_;
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
@@ -212,5 +220,7 @@ class FileGenerator {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_FILE_H__

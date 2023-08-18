@@ -153,6 +153,7 @@ void Timestamp::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Timestamp::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -315,10 +316,6 @@ void Timestamp::InternalSwap(Timestamp* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::Timestamp*
-Arena::CreateMaybeMessage< ::google::protobuf::Timestamp >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Timestamp >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

@@ -81,6 +81,7 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/text_format.h"
@@ -352,7 +353,7 @@ class FlatAllocation {
   template <typename U>
   bool Destroy() {
     if (std::is_trivially_destructible<U>::value) return true;
-    for (U* it = Begin<U>(), *end = End<U>(); it != end; ++it) {
+    for (U *it = Begin<U>(), *end = End<U>(); it != end; ++it) {
       it->~U();
     }
     return true;
@@ -1116,10 +1117,11 @@ FeatureSet* CreateProto2DefaultFeatures() {
   features->set_field_presence(FeatureSet::EXPLICIT);
   features->set_enum_type(FeatureSet::CLOSED);
   features->set_repeated_field_encoding(FeatureSet::EXPANDED);
-  features->set_string_field_validation(FeatureSet::HINT);
   features->set_message_encoding(FeatureSet::LENGTH_PREFIXED);
   features->set_json_format(FeatureSet::LEGACY_BEST_EFFORT);
   features->MutableExtension(pb::cpp)->set_legacy_closed_enum(true);
+  features->MutableExtension(pb::cpp)->set_utf8_validation(
+      pb::CppFeatures::VERIFY_DLOG);
 
   return features;
 }
@@ -1144,9 +1146,11 @@ const FeatureSet& GetProto3Features() {
     features->set_field_presence(FeatureSet::IMPLICIT);
     features->set_enum_type(FeatureSet::OPEN);
     features->set_repeated_field_encoding(FeatureSet::PACKED);
-    features->set_string_field_validation(FeatureSet::MANDATORY);
     features->set_message_encoding(FeatureSet::LENGTH_PREFIXED);
     features->set_json_format(FeatureSet::ALLOW);
+    features->MutableExtension(pb::cpp)->set_legacy_closed_enum(false);
+    features->MutableExtension(pb::cpp)->set_utf8_validation(
+        pb::CppFeatures::VERIFY_PARSE);
     return features;
   }();
   return *kProto3Features;
@@ -2742,27 +2746,6 @@ FileDescriptor::FileDescriptor() {}
 
 // CopyTo methods ====================================================
 
-namespace internal {
-FileDescriptorProto InternalFeatureHelper::GetGeneratorProto(
-    const FileDescriptor& file) {
-  FileDescriptorProto file_proto;
-  file.CopyTo(&file_proto);
-
-  // Insert all the raw features back into the proto.
-  internal::VisitDescriptors(
-      file, file_proto, [](const auto& desc, auto& proto) {
-        const auto& features = GetFeatures(desc);
-        if (&features != &FeatureSet::default_instance() &&
-            !IsLegacyFeatureSet(features)) {
-          *proto.mutable_options()->mutable_features() = features;
-          *proto.mutable_options()->mutable_features()->mutable_raw_features() =
-              GetRawFeatures(desc);
-        }
-      });
-  return file_proto;
-}
-}  // namespace internal
-
 void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
   CopyHeadingTo(proto);
 
@@ -3816,7 +3799,8 @@ bool FieldDescriptor::is_packed() const {
 
 static bool IsStrictUtf8(const FieldDescriptor* field) {
   return internal::InternalFeatureHelper::GetFeatures(*field)
-             .string_field_validation() == FeatureSet::MANDATORY;
+             .GetExtension(pb::cpp)
+             .utf8_validation() == pb::CppFeatures::VERIFY_PARSE;
 }
 
 bool FieldDescriptor::requires_utf8_validation() const {
@@ -5249,11 +5233,9 @@ typename DescriptorT::OptionsType* DescriptorBuilder::AllocateOptionsImpl(
     return nullptr;
   }
 
-  // Avoid using MergeFrom()/CopyFrom() in this class to make it -fno-rtti
-  // friendly. Without RTTI, MergeFrom() and CopyFrom() will fallback to the
-  // reflection based method, which requires the Descriptor. However, we are in
-  // the middle of building the descriptors, thus the deadlock.
-  options->ParseFromString(orig_options.SerializeAsString());
+  const bool parse_success =
+      internal::ParseNoReflection(orig_options.SerializeAsString(), *options);
+  ABSL_DCHECK(parse_success);
 
   // Don't add to options_to_interpret_ unless there were uninterpreted
   // options.  This not only avoids unnecessary work, but prevents a
@@ -5312,14 +5294,7 @@ void DescriptorBuilder::ResolveFeaturesImpl(
     // internal details.
     FeatureSet* mutable_features = alloc.AllocateArray<FeatureSet>(1);
     descriptor->proto_features_ = mutable_features;
-    if (options->features().has_raw_features()) {
-      // If the raw features are specified, use those and recalculate the
-      // resolved features.
-      options->mutable_features()->mutable_raw_features()->Swap(
-          mutable_features);
-    } else {
-      options->mutable_features()->Swap(mutable_features);
-    }
+    options->mutable_features()->Swap(mutable_features);
     options->clear_features();
   } else if (!force_merge) {
     // Nothing to merge, and we aren't forcing it.
@@ -5748,6 +5723,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   }
   if (proto.has_edition()) {
     file_->edition_ = alloc.AllocateStrings(proto.edition());
+  } else {
+    file_->edition_ = nullptr;
   }
 
   result->name_ = alloc.AllocateStrings(proto.name());
@@ -6124,8 +6101,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
-    result->reserved_names_[i] =
-        alloc.AllocateStrings(proto.reserved_name(i));
+    result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
   // Copy options.
@@ -6675,6 +6651,10 @@ void DescriptorBuilder::BuildReservedRange(
     AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Reserved numbers must be positive integers.");
   }
+  if (result->start >= result->end) {
+    AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
+             "Reserved range end number must be greater than start number.");
+  }
 }
 
 void DescriptorBuilder::BuildReservedRange(
@@ -6823,8 +6803,7 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
-    result->reserved_names_[i] =
-        alloc.AllocateStrings(proto.reserved_name(i));
+    result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
   // Copy options.
@@ -7569,8 +7548,7 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
     std::vector<Range> used_ordinals;
     auto add_ordinal = [&](int ordinal) {
       if (ordinal <= 0 || ordinal > FieldDescriptor::kMaxNumber) return;
-      if (!used_ordinals.empty() &&
-          ordinal == used_ordinals.back().to) {
+      if (!used_ordinals.empty() && ordinal == used_ordinals.back().to) {
         used_ordinals.back().to = ordinal + 1;
       } else {
         used_ordinals.push_back({ordinal, ordinal + 1});
@@ -7836,17 +7814,6 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
 }
 
-static bool IsStringMapType(const FieldDescriptor* field) {
-  if (!field->is_map()) return false;
-  for (int i = 0; i < field->message_type()->field_count(); ++i) {
-    if (field->message_type()->field(i)->type() ==
-        FieldDescriptor::TYPE_STRING) {
-      return true;
-    }
-  }
-  return false;
-}
-
 void DescriptorBuilder::ValidateFieldFeatures(
     const FieldDescriptor* field, const FieldDescriptorProto& proto) {
   // Rely on our legacy validation for proto2/proto3 files.
@@ -7880,29 +7847,43 @@ void DescriptorBuilder::ValidateFieldFeatures(
   }
 
   // Validate explicitly specified features on the field proto.
-  if ((field->containing_oneof() != nullptr || field->is_repeated() ||
-       field->message_type() != nullptr) &&
-      field->proto_features_->field_presence() == FeatureSet::IMPLICIT) {
-    AddError(
-        field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-        "Only singular scalar fields can specify implicit field presence.");
-  }
-  if ((field->containing_oneof() != nullptr || field->is_repeated()) &&
-      field->proto_features_->field_presence() == FeatureSet::LEGACY_REQUIRED) {
-    AddError(
-        field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-        "Only singular scalar fields can specify required field presence.");
-  }
-  if (field->type() != FieldDescriptor::TYPE_STRING &&
-      !IsStringMapType(field) &&
-      field->proto_features_->has_string_field_validation()) {
-    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-             "Only string fields can specify `string_field_validation`.");
+  if (field->proto_features_->has_field_presence()) {
+    if (field->containing_oneof() != nullptr) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Oneof fields can't specify field presence.");
+    } else if (field->is_repeated()) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Repeated fields can't specify field presence.");
+    } else if (field->is_extension() &&
+               field->proto_features_->field_presence() !=
+                   FeatureSet::LEGACY_REQUIRED) {
+      // Note: required extensions will fail elsewhere, so we skip reporting a
+      // second error here.
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Extensions can't specify field presence.");
+    } else if (field->message_type() != nullptr &&
+               field->proto_features_->field_presence() ==
+                   FeatureSet::IMPLICIT) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Message fields can't specify implicit presence.");
+    }
   }
   if (!field->is_repeated() &&
       field->proto_features_->has_repeated_field_encoding()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-             "Only repeated fields can specify `repeated_field_encoding`.");
+             "Only repeated fields can specify repeated field encoding.");
+  }
+  if (!field->is_packable() &&
+      field->proto_features_->repeated_field_encoding() == FeatureSet::PACKED) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Only repeated primitive fields can specify PACKED repeated field "
+             "encoding.");
+  }
+  if ((field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE ||
+       field->is_map_message_type()) &&
+      field->proto_features_->has_message_encoding()) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Only message fields can specify message encoding.");
   }
 }
 
@@ -8783,23 +8764,24 @@ bool DescriptorBuilder::OptionInterpreter::ExamineIfOptionIsSet(
 namespace {
 // Helpers for method below
 
-template <typename T> std::string ValueOutOfRange(
-    absl::string_view type_name, absl::string_view option_name) {
-  return absl::StrFormat(
-    "Value out of range, %d to %d, for %s option \"%s\".", \
-    std::numeric_limits<T>::min(), std::numeric_limits<T>::max(),
-    type_name, option_name);
+template <typename T>
+std::string ValueOutOfRange(absl::string_view type_name,
+                            absl::string_view option_name) {
+  return absl::StrFormat("Value out of range, %d to %d, for %s option \"%s\".",
+                         std::numeric_limits<T>::min(),
+                         std::numeric_limits<T>::max(), type_name, option_name);
 }
 
-template <typename T> std::string ValueMustBeInt(
-    absl::string_view type_name, absl::string_view option_name) {
+template <typename T>
+std::string ValueMustBeInt(absl::string_view type_name,
+                           absl::string_view option_name) {
   return absl::StrFormat(
-    "Value must be integer, from %d to %d, for %s option \"%s\".", \
-    std::numeric_limits<T>::min(), std::numeric_limits<T>::max(),
-    type_name, option_name);
+      "Value must be integer, from %d to %d, for %s option \"%s\".",
+      std::numeric_limits<T>::min(), std::numeric_limits<T>::max(), type_name,
+      option_name);
 }
 
-} // namespace
+}  // namespace
 
 bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
     const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields) {
@@ -9420,6 +9402,16 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
           file->pool_->CrossLinkOnDemandHelper(lazy_name, false).descriptor();
     });
   }
+}
+
+bool ParseNoReflection(absl::string_view from, google::protobuf::MessageLite& to) {
+  to.Clear();
+  const char* ptr;
+  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                             false, &ptr, from);
+  ptr = to._InternalParse(ptr, &ctx);
+  if (ptr == nullptr || !ctx.EndedAtLimit()) return false;
+  return to.IsInitializedWithErrors();
 }
 
 namespace cpp {

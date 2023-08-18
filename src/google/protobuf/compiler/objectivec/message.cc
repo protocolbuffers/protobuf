@@ -223,7 +223,7 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
           GetOptionalDeprecatedAttribute(descriptor, descriptor->file())) {
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     oneof_generators_.push_back(
-        std::make_unique<OneofGenerator>(descriptor_->oneof_decl(i)));
+        std::make_unique<OneofGenerator>(descriptor_->real_oneof_decl(i)));
   }
 
   // Assign has bits:
@@ -253,11 +253,15 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
 }
 
 void MessageGenerator::AddExtensionGenerators(
-    std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators) {
+    std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
+    bool strip_custom_options) {
   for (int i = 0; i < descriptor_->extension_count(); i++) {
-    extension_generators->push_back(std::make_unique<ExtensionGenerator>(
-        class_name_, descriptor_->extension(i)));
-    extension_generators_.push_back(extension_generators->back().get());
+    const FieldDescriptor* extension = descriptor_->extension(i);
+    if (!strip_custom_options || !ExtensionIsCustomOption(extension)) {
+      extension_generators->push_back(
+          std::make_unique<ExtensionGenerator>(class_name_, extension));
+      extension_generators_.push_back(extension_generators->back().get());
+    }
   }
 }
 
@@ -379,7 +383,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
     printer->Emit("\n");
   }
 
-  if (descriptor_->extension_count() > 0) {
+  if (!extension_generators_.empty()) {
     printer->Emit({{"extension_info",
                     [&] {
                       for (const auto* generator : extension_generators_) {
@@ -482,7 +486,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
           // If the message scopes extensions, trigger the root class
           // +initialize/+extensionRegistry as that is where the
           // runtime support for extensions lives.
-          if (descriptor_->extension_count() > 0) {
+          if (!extension_generators_.empty()) {
             printer->Emit(R"objc(
               // Start up the root class to support the scoped extensions.
               __unused Class rootStartup = [$root_class_name$ class];

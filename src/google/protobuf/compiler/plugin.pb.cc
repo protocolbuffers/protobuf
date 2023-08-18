@@ -47,30 +47,6 @@ struct VersionDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VersionDefaultTypeInternal _Version_default_instance_;
         template <typename>
-PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.file_to_generate_)*/ {},
-      /*decltype(_impl_.proto_file_)*/ {},
-      /*decltype(_impl_.source_file_descriptors_)*/ {},
-      /*decltype(_impl_.parameter_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.compiler_version_)*/ nullptr,
-    } {}
-struct CodeGeneratorRequestDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR CodeGeneratorRequestDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~CodeGeneratorRequestDefaultTypeInternal() {}
-  union {
-    CodeGeneratorRequest _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
-        template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi::ConstantInitialized)
     : _impl_{
       /*decltype(_impl_._has_bits_)*/ {},
@@ -121,6 +97,30 @@ struct CodeGeneratorResponseDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
+        template <typename>
+PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_._has_bits_)*/ {},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_.file_to_generate_)*/ {},
+      /*decltype(_impl_.proto_file_)*/ {},
+      /*decltype(_impl_.source_file_descriptors_)*/ {},
+      /*decltype(_impl_.parameter_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.compiler_version_)*/ nullptr,
+    } {}
+struct CodeGeneratorRequestDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR CodeGeneratorRequestDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~CodeGeneratorRequestDefaultTypeInternal() {}
+  union {
+    CodeGeneratorRequest _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
@@ -386,6 +386,7 @@ void Version::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void Version::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -631,10 +632,12 @@ const ::google::protobuf::compiler::Version& CodeGeneratorRequest::_Internal::co
   return *msg->_impl_.compiler_version_;
 }
 void CodeGeneratorRequest::clear_proto_file() {
-  _internal_mutable_proto_file()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.proto_file_.Clear();
 }
 void CodeGeneratorRequest::clear_source_file_descriptors() {
-  _internal_mutable_source_file_descriptors()->Clear();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.source_file_descriptors_.Clear();
 }
 CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
@@ -703,13 +706,14 @@ void CodeGeneratorRequest::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_file_to_generate()->Clear();
-  _internal_mutable_proto_file()->Clear();
-  _internal_mutable_source_file_descriptors()->Clear();
+  _impl_.file_to_generate_.Clear();
+  _impl_.proto_file_.Clear();
+  _impl_.source_file_descriptors_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -909,8 +913,10 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const 
   (void) cached_has_bits;
 
   _this->_internal_mutable_file_to_generate()->MergeFrom(from._internal_file_to_generate());
-  _this->_internal_mutable_proto_file()->MergeFrom(from._internal_proto_file());
-  _this->_internal_mutable_source_file_descriptors()->MergeFrom(from._internal_source_file_descriptors());
+  _this->_internal_mutable_proto_file()->MergeFrom(
+      from._internal_proto_file());
+  _this->_internal_mutable_source_file_descriptors()->MergeFrom(
+      from._internal_source_file_descriptors());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -984,6 +990,7 @@ const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::_Intern
   return *msg->_impl_.generated_code_info_;
 }
 void CodeGeneratorResponse_File::clear_generated_code_info() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.generated_code_info_ != nullptr) _impl_.generated_code_info_->Clear();
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
@@ -1073,6 +1080,7 @@ void CodeGeneratorResponse_File::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -1382,11 +1390,12 @@ void CodeGeneratorResponse::SetCachedSize(int size) const {
 
 PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _internal_mutable_file()->Clear();
+  _impl_.file_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
     _impl_.error_.ClearNonDefaultToEmpty();
@@ -1536,7 +1545,8 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::Message& to_msg, const
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_internal_mutable_file()->MergeFrom(from._internal_file());
+  _this->_internal_mutable_file()->MergeFrom(
+      from._internal_file());
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
@@ -1584,22 +1594,6 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::Version*
-Arena::CreateMaybeMessage< ::google::protobuf::compiler::Version >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::compiler::Version >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorRequest*
-Arena::CreateMaybeMessage< ::google::protobuf::compiler::CodeGeneratorRequest >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorRequest >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorResponse_File*
-Arena::CreateMaybeMessage< ::google::protobuf::compiler::CodeGeneratorResponse_File >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorResponse_File >(arena);
-}
-template<> PROTOBUF_NOINLINE ::google::protobuf::compiler::CodeGeneratorResponse*
-Arena::CreateMaybeMessage< ::google::protobuf::compiler::CodeGeneratorResponse >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::compiler::CodeGeneratorResponse >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

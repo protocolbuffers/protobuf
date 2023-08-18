@@ -53,8 +53,12 @@ __author__ = 'robinson@google.com (Will Robinson)'
 from io import BytesIO
 import struct
 import sys
+import warnings
 import weakref
 
+from google.protobuf import descriptor as descriptor_mod
+from google.protobuf import message as message_mod
+from google.protobuf import text_format
 # We use "as" to avoid name collisions with variables.
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import containers
@@ -66,9 +70,6 @@ from google.protobuf.internal import message_listener as message_listener_mod
 from google.protobuf.internal import type_checkers
 from google.protobuf.internal import well_known_types
 from google.protobuf.internal import wire_format
-from google.protobuf import descriptor as descriptor_mod
-from google.protobuf import message as message_mod
-from google.protobuf import text_format
 
 _FieldDescriptor = descriptor_mod.FieldDescriptor
 _AnyFullTypeName = 'google.protobuf.Any'
@@ -1361,6 +1362,11 @@ def _Clear(self):
 
 
 def _UnknownFields(self):
+  warnings.warn(
+      'message.UnknownFields() is deprecated. Please use the add one '
+      'feature unknown_fields.UnknownFieldSet(message) in '
+      'unknown_fields.py instead.'
+  )
   if self._unknown_field_set is None:  # pylint: disable=protected-access
     # pylint: disable=protected-access
     self._unknown_field_set = containers.UnknownFieldSet()

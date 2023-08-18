@@ -58,6 +58,12 @@ class RawPtr {
   explicit constexpr RawPtr(const void* p) : p_(const_cast<void*>(p)) {}
 
   bool IsDefault() const { return p_ == kZeroBuffer; }
+  void DeleteIfNotDefault() {
+    if (!IsDefault()) delete Get();
+  }
+  void ClearIfNotDefault() {
+    if (!IsDefault()) Get()->Clear();
+  }
 
   void Set(const void* p) { p_ = const_cast<void*>(p); }
   T* Get() const { return reinterpret_cast<T*>(p_); }

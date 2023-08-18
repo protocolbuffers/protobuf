@@ -101,6 +101,17 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
   };
 }
 
+static bool IsStringMapType(const FieldDescriptor& field) {
+  if (!field.is_map()) return false;
+  for (int i = 0; i < field.message_type()->field_count(); ++i) {
+    if (field.message_type()->field(i)->type() ==
+        FieldDescriptor::TYPE_STRING) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 bool CppGenerator::Generate(const FileDescriptor* file,
@@ -189,20 +200,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
               .emplace(value.substr(pos, next_pos - pos));
         pos = next_pos + 1;
       } while (pos < value.size());
-    } else if (key == "unverified_lazy_message_sets") {
-      file_options.unverified_lazy_message_sets = true;
     } else if (key == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
-    } else if (key == "experimental_tail_call_table_mode") {
-      if (value == "never") {
-        file_options.tctable_mode = Options::kTCTableNever;
-      } else if (value == "always") {
-        file_options.tctable_mode = Options::kTCTableAlways;
-      } else {
-        *error = absl::StrCat(
-            "Unknown value for experimental_tail_call_table_mode: ", value);
-        return false;
-      }
     } else if (key == "experimental_strip_nonfunctional_codegen") {
       file_options.strip_nonfunctional_codegen = true;
     } else {
@@ -368,12 +367,6 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
     const FeatureSet& source_features = GetSourceFeatures(field);
     const FeatureSet& raw_features = GetSourceRawFeatures(field);
-    if (raw_features.GetExtension(::pb::cpp).has_legacy_closed_enum() &&
-        field.cpp_type() != FieldDescriptor::CPPTYPE_ENUM) {
-      status = absl::FailedPreconditionError(absl::StrCat(
-          "Field ", field.full_name(),
-          " specifies the legacy_closed_enum feature but has non-enum type."));
-    }
     if (field.enum_type() != nullptr &&
         source_features.GetExtension(::pb::cpp).legacy_closed_enum() &&
         source_features.field_presence() == FeatureSet::IMPLICIT) {
@@ -381,6 +374,53 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
           absl::StrCat("Field ", field.full_name(),
                        " has a closed enum type with implicit presence."));
     }
+    if (source_features.GetExtension(::pb::cpp).utf8_validation() ==
+        pb::CppFeatures::UTF8_VALIDATION_UNKNOWN) {
+      status = absl::FailedPreconditionError(absl::StrCat(
+          "Field ", field.full_name(),
+          " has an unknown value for the utf8_validation feature. ",
+          source_features.DebugString(), "\nRawFeatures: ", raw_features));
+    }
+
+    if (field.containing_type() == nullptr ||
+        !field.containing_type()->options().map_entry()) {
+      // Skip validation of explicit features on generated map fields.  These
+      // will be blindly propagated from the original map field, and may violate
+      // a lot of these conditions.  Note: we do still validate the
+      // user-specified map field.
+      if (raw_features.GetExtension(::pb::cpp).has_legacy_closed_enum() &&
+          field.cpp_type() != FieldDescriptor::CPPTYPE_ENUM) {
+        status = absl::FailedPreconditionError(
+            absl::StrCat("Field ", field.full_name(),
+                         " specifies the legacy_closed_enum feature but has "
+                         "non-enum type."));
+      }
+      if (field.type() != FieldDescriptor::TYPE_STRING &&
+          !IsStringMapType(field) &&
+          raw_features.GetExtension(::pb::cpp).has_utf8_validation()) {
+        status = absl::FailedPreconditionError(
+            absl::StrCat("Field ", field.full_name(),
+                         " specifies the utf8_validation feature but is not of "
+                         "string type."));
+      }
+    }
+
+#ifdef PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
+    if (field.options().has_ctype()) {
+      if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+        status = absl::FailedPreconditionError(absl::StrCat(
+            "Field ", field.full_name(),
+            " specifies ctype, but is not a string nor bytes field."));
+      }
+      if (field.options().ctype() == FieldOptions::CORD) {
+        if (field.is_extension()) {
+          status = absl::FailedPreconditionError(absl::StrCat(
+              "Extension ", field.full_name(),
+              " specifies ctype=CORD which is not supported for extensions."));
+        }
+      }
+    }
+#endif  // !PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
   });
   return status;
 }

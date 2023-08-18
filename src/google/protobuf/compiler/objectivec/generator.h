@@ -33,6 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_GENERATOR_H__
 
+#include <cstdint>
 #include <string>
 #include <vector>
 

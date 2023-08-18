@@ -571,6 +571,26 @@ void Parser::SkipRestOfBlock() {
 
 // ===================================================================
 
+bool Parser::ValidateMessage(const DescriptorProto* proto) {
+  for (int i = 0; i < proto->options().uninterpreted_option_size(); i++) {
+    const UninterpretedOption& option =
+        proto->options().uninterpreted_option(i);
+    if (option.name_size() > 0 && !option.name(0).is_extension() &&
+        option.name(0).name_part() == "map_entry") {
+      int line = -1, col = 0;  // indicates line and column not known
+      if (source_location_table_ != nullptr) {
+        source_location_table_->Find(
+            &option, DescriptorPool::ErrorCollector::OPTION_NAME, &line, &col);
+      }
+      RecordError(line, col,
+                  "map_entry should not be set explicitly. "
+                  "Use map<KeyType, ValueType> instead.");
+      return false;
+    }
+  }
+  return true;
+}
+
 bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   bool has_allow_alias = false;
   bool allow_alias = false;
@@ -661,9 +681,8 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
     root_location.RecordLegacyLocation(file,
                                        DescriptorPool::ErrorCollector::OTHER);
 
-    if (require_syntax_identifier_ || LookingAt("syntax")
-        || LookingAt("edition")
-    ) {
+    if (require_syntax_identifier_ || LookingAt("syntax") ||
+        LookingAt("edition")) {
       if (!ParseSyntaxIdentifier(file, root_location)) {
         // Don't attempt to parse the file if we didn't recognize the syntax
         // identifier.
@@ -867,6 +886,7 @@ bool IsMessageSetWireFormatMessage(const DescriptorProto& message) {
   for (int i = 0; i < options.uninterpreted_option_size(); ++i) {
     const UninterpretedOption& uninterpreted = options.uninterpreted_option(i);
     if (uninterpreted.name_size() == 1 &&
+        !uninterpreted.name(0).is_extension() &&
         uninterpreted.name(0).name_part() == "message_set_wire_format" &&
         uninterpreted.identifier_value() == "true") {
       return true;
@@ -931,6 +951,9 @@ bool Parser::ParseMessageBlock(DescriptorProto* message,
   if (message->reserved_range_size() > 0) {
     AdjustReservedRangesWithMaxEndNumber(message);
   }
+
+  DO(ValidateMessage(message));
+
   return true;
 }
 
@@ -1773,10 +1796,27 @@ bool Parser::ParseReserved(DescriptorProto* message,
   // Parse the declaration.
   DO(Consume("reserved"));
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+    if (syntax_identifier_ == "editions") {
+      RecordError(
+          "Reserved names must be identifiers in editions, not string "
+          "literals.");
+      return false;
+    }
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedNameFieldNumber);
     location.StartAt(start_token);
     return ParseReservedNames(message, location);
+  } else if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
+    if (syntax_identifier_ != "editions") {
+      RecordError(
+          "Reserved names must be string literals. (Only editions supports "
+          "identifiers.)");
+      return false;
+    }
+    LocationRecorder location(message_location,
+                              DescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
+    return ParseReservedIdentifiers(message, location);
   } else {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedRangeFieldNumber);
@@ -1805,7 +1845,25 @@ bool Parser::ParseReservedNames(DescriptorProto* message,
                                 const LocationRecorder& parent_location) {
   do {
     LocationRecorder location(parent_location, message->reserved_name_size());
-    DO(ParseReservedName(message->add_reserved_name(), "Expected field name."));
+    DO(ParseReservedName(message->add_reserved_name(),
+                         "Expected field name string literal."));
+  } while (TryConsume(","));
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifier(std::string* name,
+                                     absl::string_view error_message) {
+  DO(ConsumeIdentifier(name, error_message));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifiers(DescriptorProto* message,
+                                      const LocationRecorder& parent_location) {
+  do {
+    LocationRecorder location(parent_location, message->reserved_name_size());
+    DO(ParseReservedIdentifier(message->add_reserved_name(),
+                               "Expected field name identifier."));
   } while (TryConsume(","));
   DO(ConsumeEndOfDeclaration(";", &parent_location));
   return true;
@@ -1818,6 +1876,8 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
     LocationRecorder location(parent_location, message->reserved_range_size());
 
     DescriptorProto::ReservedRange* range = message->add_reserved_range();
+    location.RecordLegacyLocation(range,
+                                  DescriptorPool::ErrorCollector::NUMBER);
     int start, end;
     io::Tokenizer::Token start_token;
     {
@@ -1866,10 +1926,27 @@ bool Parser::ParseReserved(EnumDescriptorProto* proto,
   // Parse the declaration.
   DO(Consume("reserved"));
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+    if (syntax_identifier_ == "editions") {
+      RecordError(
+          "Reserved names must be identifiers in editions, not string "
+          "literals.");
+      return false;
+    }
     LocationRecorder location(enum_location,
                               EnumDescriptorProto::kReservedNameFieldNumber);
     location.StartAt(start_token);
     return ParseReservedNames(proto, location);
+  } else if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
+    if (syntax_identifier_ != "editions") {
+      RecordError(
+          "Reserved names must be string literals. (Only editions supports "
+          "identifiers.)");
+      return false;
+    }
+    LocationRecorder location(enum_location,
+                              EnumDescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
+    return ParseReservedIdentifiers(proto, location);
   } else {
     LocationRecorder location(enum_location,
                               EnumDescriptorProto::kReservedRangeFieldNumber);
@@ -1882,7 +1959,19 @@ bool Parser::ParseReservedNames(EnumDescriptorProto* proto,
                                 const LocationRecorder& parent_location) {
   do {
     LocationRecorder location(parent_location, proto->reserved_name_size());
-    DO(ParseReservedName(proto->add_reserved_name(), "Expected enum value."));
+    DO(ParseReservedName(proto->add_reserved_name(),
+                         "Expected enum value string literal."));
+  } while (TryConsume(","));
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifiers(EnumDescriptorProto* proto,
+                                      const LocationRecorder& parent_location) {
+  do {
+    LocationRecorder location(parent_location, proto->reserved_name_size());
+    DO(ParseReservedIdentifier(proto->add_reserved_name(),
+                               "Expected enum value identifier."));
   } while (TryConsume(","));
   DO(ConsumeEndOfDeclaration(";", &parent_location));
   return true;
@@ -1895,6 +1984,8 @@ bool Parser::ParseReservedNumbers(EnumDescriptorProto* proto,
     LocationRecorder location(parent_location, proto->reserved_range_size());
 
     EnumDescriptorProto::EnumReservedRange* range = proto->add_reserved_range();
+    location.RecordLegacyLocation(range,
+                                  DescriptorPool::ErrorCollector::NUMBER);
     int start, end;
     io::Tokenizer::Token start_token;
     {

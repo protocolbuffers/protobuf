@@ -936,19 +936,6 @@ message FeatureSet {
     edition_defaults = { edition: "2023", value: "PACKED" }
   ];
 
-  enum StringFieldValidation {
-    STRING_FIELD_VALIDATION_UNKNOWN = 0;
-    MANDATORY = 1;
-    HINT = 2;
-    NONE = 3;
-  }
-  optional StringFieldValidation string_field_validation = 4 [
-    retention = RETENTION_RUNTIME,
-    targets = TARGET_TYPE_FIELD,
-    targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: "2023", value: "MANDATORY" }
-  ];
-
   enum MessageEncoding {
     MESSAGE_ENCODING_UNKNOWN = 0;
     LENGTH_PREFIXED = 1;
@@ -974,7 +961,7 @@ message FeatureSet {
     edition_defaults = { edition: "2023", value: "ALLOW" }
   ];
 
-  optional FeatureSet raw_features = 999 [targets = TARGET_TYPE_UNKNOWN];
+  reserved 4, 999;
 
   extensions 1000;  // for Protobuf C++
   extensions 1001;  // for Protobuf Java

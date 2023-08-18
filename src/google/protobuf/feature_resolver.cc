@@ -44,6 +44,8 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -67,12 +69,6 @@ namespace {
 template <typename... Args>
 absl::Status Error(Args... args) {
   return absl::FailedPreconditionError(absl::StrCat(args...));
-}
-
-bool IsNonFeatureField(const FieldDescriptor& field) {
-  return field.containing_type() &&
-         field.containing_type()->full_name() == "google.protobuf.FeatureSet" &&
-         field.name() == "raw_features";
 }
 
 bool EditionsLessThan(absl::string_view a, absl::string_view b) {
@@ -99,7 +95,6 @@ absl::Status ValidateDescriptor(absl::string_view edition,
   }
   for (int i = 0; i < descriptor.field_count(); ++i) {
     const FieldDescriptor& field = *descriptor.field(i);
-    if (IsNonFeatureField(field)) continue;
 
     if (field.is_required()) {
       return Error("Feature field ", field.full_name(),
@@ -118,6 +113,29 @@ absl::Status ValidateDescriptor(absl::string_view edition,
   return absl::OkStatus();
 }
 
+absl::Status ValidateExtension(const FieldDescriptor& extension) {
+  if (extension.message_type() == nullptr) {
+    return Error("FeatureSet extension ", extension.full_name(),
+                 " is not of message type.  Feature extensions should "
+                 "always use messages to allow for evolution.");
+  }
+
+  if (extension.is_repeated()) {
+    return Error(
+        "Only singular features extensions are supported.  Found "
+        "repeated extension ",
+        extension.full_name());
+  }
+
+  if (extension.message_type()->extension_count() > 0 ||
+      extension.message_type()->extension_range_count() > 0) {
+    return Error("Nested extensions in feature extension ",
+                 extension.full_name(), " are not supported.");
+  }
+
+  return absl::OkStatus();
+}
+
 absl::Status FillDefaults(absl::string_view edition, Message& msg) {
   const Descriptor& descriptor = *msg.GetDescriptor();
 
@@ -130,7 +148,6 @@ absl::Status FillDefaults(absl::string_view edition, Message& msg) {
 
   for (int i = 0; i < descriptor.field_count(); ++i) {
     const FieldDescriptor& field = *descriptor.field(i);
-    if (IsNonFeatureField(field)) continue;
 
     msg.GetReflection()->ClearField(&msg, &field);
     ABSL_CHECK(!field.is_repeated());
@@ -189,10 +206,41 @@ absl::Status ValidateMergedFeatures(const Message& msg) {
   return absl::OkStatus();
 }
 
+// Forces calculation of the defaults for any features from the generated pool
+// that may be missed if the proto file doesn't import them, giving the final
+// resolved FeatureSet object maximal coverage.
+absl::StatusOr<FeatureSet> FillGeneratedDefaults(absl::string_view edition,
+                                                 const DescriptorPool* pool) {
+  const Descriptor* desc =
+      pool->FindMessageTypeByName(FeatureSet::descriptor()->full_name());
+  // If there's no FeatureSet, there's no extensions.
+  if (desc == nullptr) return FeatureSet();
+
+  DynamicMessageFactory message_factory;
+  auto defaults = absl::WrapUnique(message_factory.GetPrototype(desc)->New());
+  std::vector<const FieldDescriptor*> extensions;
+  pool->FindAllExtensions(desc, &extensions);
+  for (const auto* extension : extensions) {
+    RETURN_IF_ERROR(ValidateExtension(*extension));
+    Message* msg =
+        defaults->GetReflection()->MutableMessage(defaults.get(), extension);
+    ABSL_CHECK(msg != nullptr);
+    RETURN_IF_ERROR(FillDefaults(edition, *msg));
+  }
+
+  // Our defaults are reflectively built in a custom pool, while the
+  // returned object here is in the generated pool.  We parse/serialize to
+  // convert from the potentially skewed FeatureSet descriptors.
+  FeatureSet features;
+  ABSL_CHECK(features.MergeFromString(defaults->SerializeAsString()));
+  return features;
+}
+
 }  // namespace
 
 absl::StatusOr<FeatureResolver> FeatureResolver::Create(
-    absl::string_view edition, const Descriptor* descriptor) {
+    absl::string_view edition, const Descriptor* descriptor,
+    const DescriptorPool* generated_pool) {
   if (descriptor == nullptr) {
     return Error(
         "Unable to find definition of google.protobuf.FeatureSet in descriptor pool.");
@@ -206,8 +254,22 @@ absl::StatusOr<FeatureResolver> FeatureResolver::Create(
 
   RETURN_IF_ERROR(FillDefaults(edition, *defaults));
 
+  FeatureSet generated_defaults;
+  if (descriptor->file()->pool() == generated_pool) {
+    // If we're building the generated pool, the best we can do is load the C++
+    // language features, which should always be present for code using the C++
+    // runtime.
+    RETURN_IF_ERROR(
+        FillDefaults(edition, *generated_defaults.MutableExtension(pb::cpp)));
+  } else {
+    absl::StatusOr<FeatureSet> defaults =
+        FillGeneratedDefaults(edition, generated_pool);
+    RETURN_IF_ERROR(defaults.status());
+    generated_defaults = std::move(defaults).value();
+  }
+
   return FeatureResolver(edition, *descriptor, std::move(message_factory),
-                         std::move(defaults));
+                         std::move(defaults), std::move(generated_defaults));
 }
 
 absl::Status FeatureResolver::RegisterExtension(
@@ -221,24 +283,7 @@ absl::Status FeatureResolver::RegisterExtension(
 
   ABSL_CHECK(descriptor_.IsExtensionNumber(extension.number()));
 
-  if (extension.message_type() == nullptr) {
-    return Error("FeatureSet extension ", extension.full_name(),
-                 " is not of message type.  Feature extensions should "
-                 "always use messages to allow for evolution.");
-  }
-
-  if (extension.is_repeated()) {
-    return Error(
-        "Only singular features extensions are supported.  Found "
-        "repeated extension ",
-        extension.full_name());
-  }
-
-  if (extension.message_type()->extension_count() > 0 ||
-      extension.message_type()->extension_range_count() > 0) {
-    return Error("Nested extensions in feature extension ",
-                 extension.full_name(), " are not supported.");
-  }
+  RETURN_IF_ERROR(ValidateExtension(extension));
 
   RETURN_IF_ERROR(ValidateDescriptor(edition_, *extension.message_type()));
 
@@ -273,8 +318,12 @@ absl::Status FeatureResolver::RegisterExtensions(const Descriptor& message) {
 
 absl::StatusOr<FeatureSet> FeatureResolver::MergeFeatures(
     const FeatureSet& merged_parent, const FeatureSet& unmerged_child) const {
-  FeatureSet merged;
-  ABSL_CHECK(merged.ParseFromString(defaults_->SerializeAsString()));
+  FeatureSet merged = generated_defaults_;
+
+  // Our defaults are a dynamic message located in the build pool, while the
+  // returned object here is in the generated pool.  We parse/serialize to
+  // convert from the potentially skewed FeatureSet descriptors.
+  ABSL_CHECK(merged.MergeFromString(defaults_->SerializeAsString()));
   merged.MergeFrom(merged_parent);
   merged.MergeFrom(unmerged_child);
 

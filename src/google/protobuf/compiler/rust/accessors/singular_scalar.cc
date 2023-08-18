@@ -63,6 +63,7 @@ class SingularScalar final : public AccessorGenerator {
             {"getter_opt",
              [&] {
                if (!field.desc().is_optional()) return;
+               if (!field.desc().has_presence()) return;
                field.Emit({}, R"rs(
                   pub fn r#$field$_opt(&self) -> Option<$Scalar$> {
                     if !unsafe { $hazzer_thunk$(self.msg) } {
@@ -91,43 +92,53 @@ class SingularScalar final : public AccessorGenerator {
 
   void InExternC(Context<FieldDescriptor> field) const override {
     field.Emit(
-        {
-            {"Scalar", PrimitiveRsTypeName(field)},
-            {"hazzer_thunk", Thunk(field, "has")},
-            {"getter_thunk", Thunk(field, "get")},
-            {"setter_thunk", Thunk(field, "set")},
-            {"clearer_thunk", Thunk(field, "clear")},
-        },
+        {{"Scalar", PrimitiveRsTypeName(field)},
+         {"hazzer_thunk", Thunk(field, "has")},
+         {"getter_thunk", Thunk(field, "get")},
+         {"setter_thunk", Thunk(field, "set")},
+         {"clearer_thunk", Thunk(field, "clear")},
+         {"hazzer",
+          [&] {
+            if (field.desc().has_presence()) {
+              field.Emit(
+                  R"rs(fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;)rs");
+            }
+          }}},
         R"rs(
-          fn $hazzer_thunk$(raw_msg: $NonNull$<u8>) -> bool;
-          fn $getter_thunk$(raw_msg: $NonNull$<u8>) -> $Scalar$;
-          fn $setter_thunk$(raw_msg: $NonNull$<u8>, val: $Scalar$);
-          fn $clearer_thunk$(raw_msg: $NonNull$<u8>);
+          $hazzer$
+          fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $Scalar$;
+          fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $Scalar$);
+          fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
         )rs");
   }
 
   void InThunkCc(Context<FieldDescriptor> field) const override {
-    field.Emit(
-        {
-            {"field", cpp::FieldName(&field.desc())},
-            {"Scalar", cpp::PrimitiveTypeName(field.desc().cpp_type())},
-            {"QualifiedMsg",
-             cpp::QualifiedClassName(field.desc().containing_type())},
-            {"hazzer_thunk", Thunk(field, "has")},
-            {"getter_thunk", Thunk(field, "get")},
-            {"setter_thunk", Thunk(field, "set")},
-            {"clearer_thunk", Thunk(field, "clear")},
-        },
-        R"cc(
-          bool $hazzer_thunk$($QualifiedMsg$* msg) {
-            return msg->has_$field$();
-          }
-          $Scalar$ $getter_thunk$($QualifiedMsg$* msg) { return msg->$field$(); }
-          void $setter_thunk$($QualifiedMsg$* msg, $Scalar$ val) {
-            msg->set_$field$(val);
-          }
-          void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
-        )cc");
+    field.Emit({{"field", cpp::FieldName(&field.desc())},
+                {"Scalar", cpp::PrimitiveTypeName(field.desc().cpp_type())},
+                {"QualifiedMsg",
+                 cpp::QualifiedClassName(field.desc().containing_type())},
+                {"hazzer_thunk", Thunk(field, "has")},
+                {"getter_thunk", Thunk(field, "get")},
+                {"setter_thunk", Thunk(field, "set")},
+                {"clearer_thunk", Thunk(field, "clear")},
+                {"hazzer",
+                 [&] {
+                   if (field.desc().has_presence()) {
+                     field.Emit(R"cc(
+                       bool $hazzer_thunk$($QualifiedMsg$* msg) {
+                         return msg->has_$field$();
+                       }
+                     )cc");
+                   }
+                 }}},
+               R"cc(
+                 $hazzer$;
+                 $Scalar$ $getter_thunk$($QualifiedMsg$* msg) { return msg->$field$(); }
+                 void $setter_thunk$($QualifiedMsg$* msg, $Scalar$ val) {
+                   msg->set_$field$(val);
+                 }
+                 void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
+               )cc");
   }
 };
 }  // namespace

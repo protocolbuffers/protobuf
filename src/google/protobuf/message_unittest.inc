@@ -328,7 +328,7 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
       ->mutable_payload()
       ->set_optional_int32(-1);
   std::string serialized;
-  EXPECT_TRUE(original.SerializeToString(&serialized));
+  ASSERT_TRUE(original.SerializeToString(&serialized));
 
   // User annotated LazyField ([lazy = true]) is eagerly verified and should
   // catch the recursion limit violation.
@@ -340,6 +340,37 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
   // Lazy read results in parsing error which can be verified by not having
   // expected value.
   EXPECT_NE(parsed.lazy_child().child().payload().optional_int32(), -1);
+}
+
+TEST(MESSAGE_TEST_NAME, NestedLazyRecursionLimit) {
+  UNITTEST::NestedTestAllTypes original, parsed;
+  original.mutable_lazy_child()
+      ->mutable_lazy_child()
+      ->mutable_lazy_child()
+      ->mutable_payload()
+      ->set_optional_int32(-1);
+  std::string serialized;
+  ASSERT_TRUE(original.SerializeToString(&serialized));
+  ASSERT_TRUE(parsed.ParseFromString(serialized));
+
+  io::ArrayInputStream array_stream(serialized.data(), serialized.size());
+  io::CodedInputStream input_stream(&array_stream);
+  input_stream.SetRecursionLimit(2);
+  EXPECT_FALSE(parsed.ParseFromCodedStream(&input_stream));
+  EXPECT_TRUE(parsed.has_lazy_child());
+  EXPECT_TRUE(parsed.lazy_child().has_lazy_child());
+  EXPECT_TRUE(parsed.lazy_child().lazy_child().has_lazy_child());
+  EXPECT_FALSE(parsed.lazy_child().lazy_child().lazy_child().has_payload());
+}
+
+TEST(MESSAGE_TEST_NAME, UnparsedEmpty) {
+  // lazy_child, LEN=100 with no payload.
+  const char encoded[] = {'\042', 100};
+  UNITTEST::NestedTestAllTypes message;
+
+  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+  EXPECT_TRUE(message.has_lazy_child());
+  EXPECT_EQ(message.lazy_child().ByteSizeLong(), 0);
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroTag) {
@@ -731,6 +762,10 @@ TEST(MESSAGE_TEST_NAME, SupportDeepRecursionLimit) {
   EXPECT_TRUE(p.ParseFromCodedStream(&input));
 }
 
+inline bool IsOptimizeForCodeSize(const Descriptor* descriptor) {
+  return descriptor->file()->options().optimize_for() == FileOptions::CODE_SIZE;
+}
+
 TEST(MESSAGE_TEST_NAME, Swap) {
   UNITTEST::NestedTestAllTypes o;
   constexpr int kDepth = 5;
@@ -980,6 +1015,29 @@ TEST(MESSAGE_TEST_NAME, MessageIsStillValidAfterParseFails) {
     arena_message->Clear();
     EXPECT_EQ("", arena_message->optional_string());
   }
+}
+
+TEST(MESSAGE_TEST_NAME, NonCanonicalTag) {
+  UNITTEST::TestAllTypes message;
+  // optional_lazy_message (27) LEN(3) with non canonical tag: (1).
+  const char encoded[] = {'\332', 1, 3, '\210', 0, 0};
+  EXPECT_TRUE(message.ParseFromArray(encoded, sizeof(encoded)));
+}
+
+TEST(MESSAGE_TEST_NAME, Zero5BTag) {
+  UNITTEST::TestAllTypes message;
+  // optional_nested_message (18) LEN(6) with 5B but zero tag.
+  const char encoded[] = {'\222', 1,      6,      '\200', '\200',
+                          '\200', '\200', '\020', 0};
+  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+}
+
+TEST(MESSAGE_TEST_NAME, Zero5BTagLazy) {
+  UNITTEST::TestAllTypes message;
+  // optional_lazy_message (27) LEN(6) with 5B but zero tag.
+  const char encoded[] = {'\332', 1,      6,      '\200', '\200',
+                          '\200', '\200', '\020', 0};
+  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
 }
 
 

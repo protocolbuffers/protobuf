@@ -309,12 +309,14 @@ bool EnforceEditionsSupport(
     for (const auto fd : parsed_files) {
       if (FileDescriptorLegacy(fd).syntax() ==
           FileDescriptorLegacy::SYNTAX_EDITIONS) {
-        std::cerr << fd->name() << ": is an editions file, but code generator "
-                  << codegen_name
-                  << " hasn't been updated to support editions yet. Please ask "
-                     "the owner of this code generator to add support or "
-                     "switch back to proto2/proto3."
-                  << std::endl;
+        std::cerr
+            << fd->name() << ": is an editions file, but code generator "
+            << codegen_name
+            << " hasn't been updated to support editions yet.  Please ask "
+               "the owner of this code generator to add support or "
+               "switch back to proto2/proto3.\n\nSee "
+               "https://protobuf.dev/editions/overview/ for more information."
+            << std::endl;
         return false;
       }
     }
@@ -342,8 +344,7 @@ void CommandLineInterface::GetTransitiveDependencies(
 
   // Add this file.
   FileDescriptorProto* new_descriptor = output->Add();
-  *new_descriptor =
-      google::protobuf::internal::InternalFeatureHelper::GetGeneratorProto(*file);
+  file->CopyTo(new_descriptor);
   if (options.include_source_code_info) {
     file->CopySourceCodeInfoTo(new_descriptor);
   }
@@ -2630,8 +2631,7 @@ bool CommandLineInterface::GeneratePluginOutput(
     if (files_to_generate.contains(file_proto.name())) {
       const FileDescriptor* file = pool->FindFileByName(file_proto.name());
       *request.add_source_file_descriptors() = std::move(file_proto);
-      file_proto =
-          google::protobuf::internal::InternalFeatureHelper::GetGeneratorProto(*file);
+      file->CopyTo(&file_proto);
       file->CopySourceCodeInfoTo(&file_proto);
       file->CopyJsonNameTo(&file_proto);
       StripSourceRetentionOptions(*file->pool(), file_proto);

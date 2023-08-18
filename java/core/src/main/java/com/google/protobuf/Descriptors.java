@@ -167,7 +167,8 @@ public final class Descriptors {
     enum Syntax {
       UNKNOWN("unknown"),
       PROTO2("proto2"),
-      PROTO3("proto3");
+      PROTO3("proto3"),
+      EDITIONS("editions");
 
       Syntax(String name) {
         this.name = name;
@@ -182,14 +183,25 @@ public final class Descriptors {
     Syntax getSyntax() {
       if (Syntax.PROTO3.name.equals(proto.getSyntax())) {
         return Syntax.PROTO3;
+      } else if (Syntax.EDITIONS.name.equals(proto.getSyntax())) {
+        return Syntax.EDITIONS;
       }
       return Syntax.PROTO2;
+    }
+
+    /** Get the edition of the .proto file. */
+    public String getEdition() {
+      return proto.getEdition();
     }
 
     public void copyHeadingTo(FileDescriptorProto.Builder protoBuilder) {
       protoBuilder.setName(getName()).setSyntax(getSyntax().name);
       if (!getPackage().isEmpty()) {
         protoBuilder.setPackage(getPackage());
+      }
+
+      if (getSyntax().equals(Syntax.EDITIONS)) {
+        protoBuilder.setEdition(getEdition());
       }
 
       if (!getOptions().equals(FileOptions.getDefaultInstance())) {

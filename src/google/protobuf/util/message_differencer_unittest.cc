@@ -47,6 +47,7 @@
 #include <gtest/gtest.h>
 #include "absl/functional/bind_front.h"
 #include "absl/log/absl_check.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -271,6 +272,7 @@ TEST(MessageDifferencerTest,
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
   EXPECT_TRUE(default_differencer.NoPresenceFieldsCausingFailure().empty());
 }
+
 
 TEST(MessageDifferencerTest,
      PartialEqualityTestForceCompareWorksForRepeatedField) {
@@ -3979,6 +3981,26 @@ TEST(AnyTest, Simple) {
   message_differencer.ReportDifferencesToString(&difference_string);
   EXPECT_FALSE(message_differencer.Compare(m1, m2));
   EXPECT_EQ("modified: any_value.a: 20 -> 21\n", difference_string);
+}
+
+TEST(AnyTest, DifferentTypes) {
+  protobuf_unittest::TestField value1;
+  value1.set_a(20);
+  protobuf_unittest::ForeignMessage value2;
+  value2.set_c(30);
+
+  protobuf_unittest::TestAny m1, m2;
+  m1.mutable_any_value()->PackFrom(value1);
+  m2.mutable_any_value()->PackFrom(value2);
+  util::MessageDifferencer message_differencer;
+  std::string difference_string;
+  message_differencer.ReportDifferencesToString(&difference_string);
+  EXPECT_FALSE(message_differencer.Compare(m1, m2));
+  // Any should be treated as a regular proto when the payload types differ.
+  EXPECT_THAT(
+      difference_string,
+      testing::ContainsRegex(
+          R"(type_url: ".+/protobuf_unittest.TestField\" -> ".+/protobuf_unittest.ForeignMessage")"));
 }
 
 TEST(Anytest, TreatAsSet) {
