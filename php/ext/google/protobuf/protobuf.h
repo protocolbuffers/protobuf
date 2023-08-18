@@ -36,7 +36,7 @@
 
 #include "php-upb.h"
 
-upb_DefPool *get_global_symtab();
+upb_DefPool* get_global_symtab();
 
 #if PHP_VERSION_ID < 70300
 #define GC_ADDREF(h) ++GC_REFCOUNT(h)
@@ -49,7 +49,7 @@ upb_DefPool *get_global_symtab();
 #if PHP_VERSION_ID < 70400
 #define PROTO_RETURN_VAL void
 #else
-#define PROTO_RETURN_VAL zval *
+#define PROTO_RETURN_VAL zval*
 #endif
 
 // Since php 8.0, the Object Handlers API was changed to receive zend_object*
@@ -58,7 +58,7 @@ upb_DefPool *get_global_symtab();
 #if PHP_VERSION_ID < 80000
 #define PROTO_VAL zval
 #define PROTO_STR zval
-#define PROTO_VAL_P(obj) (void *)Z_OBJ_P(obj)
+#define PROTO_VAL_P(obj) (void*)Z_OBJ_P(obj)
 #define PROTO_STRVAL_P(obj) Z_STRVAL_P(obj)
 #define PROTO_STRLEN_P(obj) Z_STRLEN_P(obj)
 #define ZVAL_OBJ_COPY(z, o) \
@@ -85,7 +85,7 @@ upb_DefPool *get_global_symtab();
 #else
 #define PROTO_VAL zend_object
 #define PROTO_STR zend_string
-#define PROTO_VAL_P(obj) (void *)(obj)
+#define PROTO_VAL_P(obj) (void*)(obj)
 #define PROTO_STRVAL_P(obj) ZSTR_VAL(obj)
 #define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
 #endif
@@ -166,26 +166,26 @@ ZEND_END_ARG_INFO()
 // remove itself from the map when it is destroyed. This is how we ensure that
 // the map only contains live objects. The map is weak so it does not actually
 // take references to the cached objects.
-void ObjCache_Add(const void *key, zend_object *php_obj);
-void ObjCache_Delete(const void *key);
-bool ObjCache_Get(const void *key, zval *val);
+void ObjCache_Add(const void* key, zend_object* php_obj);
+void ObjCache_Delete(const void* key);
+bool ObjCache_Get(const void* key, zval* val);
 
 // PHP class name map. This is necessary because the pb_name->php_class_name
 // transformation is non-reversible, so when we need to look up a msgdef or
 // enumdef by PHP class, we can't turn the class name into a pb_name.
 //  * php_class_name -> upb_MessageDef*
 //  * php_class_name -> upb_EnumDef*
-void NameMap_AddMessage(const upb_MessageDef *m);
-void NameMap_AddEnum(const upb_EnumDef *m);
-const upb_MessageDef *NameMap_GetMessage(zend_class_entry *ce);
-const upb_EnumDef *NameMap_GetEnum(zend_class_entry *ce);
-void NameMap_EnterConstructor(zend_class_entry *ce);
-void NameMap_ExitConstructor(zend_class_entry *ce);
+void NameMap_AddMessage(const upb_MessageDef* m);
+void NameMap_AddEnum(const upb_EnumDef* m);
+const upb_MessageDef* NameMap_GetMessage(zend_class_entry* ce);
+const upb_EnumDef* NameMap_GetEnum(zend_class_entry* ce);
+void NameMap_EnterConstructor(zend_class_entry* ce);
+void NameMap_ExitConstructor(zend_class_entry* ce);
 
 // Add this descriptor object to the global list of descriptors that will be
 // kept alive for the duration of the request but destroyed when the request
 // is ending.
-void Descriptors_Add(zend_object *desc);
+void Descriptors_Add(zend_object* desc);
 
 // We need our own assert() because PHP takes control of NDEBUG in its headers.
 #ifdef PBPHP_ENABLE_ASSERTS
