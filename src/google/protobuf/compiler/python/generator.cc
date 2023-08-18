@@ -1199,8 +1199,8 @@ void PrintDescriptorOptionsFixingCode(absl::string_view descriptor,
   // Reset the _options to None thus DescriptorBase.GetOptions() can
   // parse _options again after extensions are registered.
   printer->Print(
-      "$descriptor$._options = None\n"
-      "$descriptor$._serialized_options = $serialized_value$\n",
+      "_globals['$descriptor$']._options = None\n"
+      "_globals['$descriptor$']._serialized_options = $serialized_value$\n",
       "descriptor", descriptor, "serialized_value", options);
 }
 }  // namespace
