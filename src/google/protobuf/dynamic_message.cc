@@ -223,9 +223,9 @@ class DynamicMessage final : public Message {
   // Instead, they keep the default instances in the FieldDescriptor objects.
   void CrossLinkPrototypes();
 
-  // implements Message ----------------------------------------------
-
-  Message* New(Arena* arena) const override;
+  DynamicMessage* New(Arena* arena = nullptr, NewOp op = kNew) const {
+    return InternalNew(arena, op);
+  }
 
   int GetCachedSize() const override;
   void SetCachedSize(int size) const override;
@@ -250,6 +250,8 @@ class DynamicMessage final : public Message {
                  Arena* arena);
 
   void SharedCtor(bool lock_factory);
+
+  DynamicMessage* InternalNew(Arena* arena, NewOp op) const override;
 
   // Needed to get the offset of the internal metadata member.
   friend class DynamicMessageFactory;
@@ -601,16 +603,22 @@ void DynamicMessage::CrossLinkPrototypes() {
   }
 }
 
-Message* DynamicMessage::New(Arena* arena) const {
+DynamicMessage* DynamicMessage::InternalNew(
+    Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  DynamicMessage* msg;
   if (arena != nullptr) {
     void* new_base = Arena::CreateArray<char>(arena, type_info_->size);
     memset(new_base, 0, type_info_->size);
-    return new (new_base) DynamicMessage(type_info_, arena);
+    msg = new (new_base) DynamicMessage(type_info_, arena);
   } else {
     void* new_base = operator new(type_info_->size);
     memset(new_base, 0, type_info_->size);
-    return new (new_base) DynamicMessage(type_info_);
+    msg = new (new_base) DynamicMessage(type_info_);
   }
+  if (op == ::google::protobuf::MessageLite::NewOp::kCopy) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 
 int DynamicMessage::GetCachedSize() const {

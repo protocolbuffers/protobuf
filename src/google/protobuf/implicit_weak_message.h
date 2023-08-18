@@ -81,8 +81,8 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   std::string GetTypeName() const override { return ""; }
 
-  MessageLite* New(Arena* arena) const override {
-    return Arena::CreateMessage<ImplicitWeakMessage>(arena);
+  ImplicitWeakMessage* New(Arena* arena, NewOp op = kNew) const {
+    return InternalNew(arena, op);
   }
 
   void Clear() override { data_->clear(); }
@@ -119,6 +119,14 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   typedef void InternalArenaConstructable_;
 
  private:
+  ImplicitWeakMessage* InternalNew(Arena* arena, NewOp op) const final {
+    ImplicitWeakMessage* msg = Arena::CreateMessage<ImplicitWeakMessage>(arena);
+    if (op == ::google::protobuf::MessageLite::NewOp::kCopy) {
+      msg->CheckTypeAndMergeFrom(*this);
+    }
+    return msg;
+  }
+
   // This std::string is allocated on the heap, but we use a raw pointer so that
   // the default instance can be constant-initialized. In the const methods, we
   // have to handle the possibility of data_ being null.

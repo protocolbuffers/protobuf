@@ -664,8 +664,7 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
       extension->message_value = message;
       arena_->Own(message);  // not nullptr because not equal to message_arena
     } else {
-      extension->message_value = message->New(arena_);
-      extension->message_value->CheckTypeAndMergeFrom(*message);
+      extension->message_value = message->New(arena_, MessageLite::kCopy);
     }
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
@@ -681,8 +680,7 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
         extension->message_value = message;
         arena_->Own(message);  // not nullptr because not equal to message_arena
       } else {
-        extension->message_value = message->New(arena_);
-        extension->message_value->CheckTypeAndMergeFrom(*message);
+        extension->message_value = message->New(arena_, MessageLite::kCopy);
       }
     }
   }
@@ -738,8 +736,7 @@ MessageLite* ExtensionSet::ReleaseMessage(int number,
       } else {
         // ReleaseMessage() always returns a heap-allocated message, and we are
         // on an arena, so we need to make a copy of this message to return.
-        ret = extension->message_value->New();
-        ret->CheckTypeAndMergeFrom(*extension->message_value);
+        ret = extension->message_value->New(nullptr, MessageLite::kCopy);
       }
     }
     Erase(number);
@@ -1077,10 +1074,8 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
                   *other_extension.lazymessage_value, arena_);
             } else {
               extension->is_lazy = false;
-              extension->message_value =
-                  other_extension.message_value->New(arena_);
-              extension->message_value->CheckTypeAndMergeFrom(
-                  *other_extension.message_value);
+              extension->message_value = other_extension.message_value->New(
+                  arena_, MessageLite::kCopy);
             }
           } else {
             ABSL_DCHECK_EQ(extension->type, other_extension.type);

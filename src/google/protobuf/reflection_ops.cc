@@ -452,8 +452,7 @@ void GenericSwap(Message* lhs, Message* rhs) {
 
   // Improve efficiency by placing the temporary on an arena so that messages
   // are copied twice rather than three times.
-  Message* tmp = rhs->New(arena);
-  tmp->CheckTypeAndMergeFrom(*lhs);
+  Message* tmp = lhs->New(arena, MessageLite::kCopy);
   lhs->Clear();
   lhs->CheckTypeAndMergeFrom(*rhs);
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP

@@ -232,9 +232,8 @@ class MapEntry : public Message {
     return ValueTypeHandler::IsInitialized(value_);
   }
 
-  Message* New(Arena* arena) const override {
-    Derived* entry = Arena::CreateMessage<Derived>(arena);
-    return entry;
+  Message* New(Arena* arena, NewOp op = kNew) const {
+    return InternalNew(arena, op);
   }
 
   void Clear() final {
@@ -242,6 +241,15 @@ class MapEntry : public Message {
     ValueTypeHandler::Clear(&value_, GetArenaForAllocation());
     clear_has_key();
     clear_has_value();
+  }
+
+ private:
+  Message* InternalNew(Arena* arena, NewOp op = kNew) const final {
+    Message* entry = Arena::CreateMessage<Derived>(arena);
+    if (op == ::google::protobuf::MessageLite::NewOp::kCopy) {
+      entry->MergeFrom(*this);
+    }
+    return entry;
   }
 
  protected:

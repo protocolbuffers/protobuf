@@ -707,8 +707,10 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
 
   // implements Message ----------------------------------------------
 
-  UninterpretedOption_NamePart* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<UninterpretedOption_NamePart>(arena);
+  UninterpretedOption_NamePart* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption_NamePart& from);
@@ -739,6 +741,8 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.UninterpretedOption.NamePart";
   }
+  UninterpretedOption_NamePart* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit UninterpretedOption_NamePart(::google::protobuf::Arena* arena);
   public:
@@ -895,8 +899,10 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
 
   // implements Message ----------------------------------------------
 
-  SourceCodeInfo_Location* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<SourceCodeInfo_Location>(arena);
+  SourceCodeInfo_Location* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo_Location& from);
@@ -927,6 +933,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.SourceCodeInfo.Location";
   }
+  SourceCodeInfo_Location* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit SourceCodeInfo_Location(::google::protobuf::Arena* arena);
   public:
@@ -1161,8 +1169,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
 
   // implements Message ----------------------------------------------
 
-  GeneratedCodeInfo_Annotation* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<GeneratedCodeInfo_Annotation>(arena);
+  GeneratedCodeInfo_Annotation* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo_Annotation& from);
@@ -1193,6 +1203,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.GeneratedCodeInfo.Annotation";
   }
+  GeneratedCodeInfo_Annotation* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena);
   public:
@@ -1417,8 +1429,10 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
 
   // implements Message ----------------------------------------------
 
-  FieldOptions_EditionDefault* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<FieldOptions_EditionDefault>(arena);
+  FieldOptions_EditionDefault* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldOptions_EditionDefault& from);
@@ -1449,6 +1463,8 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.FieldOptions.EditionDefault";
   }
+  FieldOptions_EditionDefault* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit FieldOptions_EditionDefault(::google::protobuf::Arena* arena);
   public:
@@ -1611,8 +1627,10 @@ class PROTOBUF_EXPORT FeatureSet final :
 
   // implements Message ----------------------------------------------
 
-  FeatureSet* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<FeatureSet>(arena);
+  FeatureSet* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FeatureSet& from);
@@ -1643,6 +1661,8 @@ class PROTOBUF_EXPORT FeatureSet final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.FeatureSet";
   }
+  FeatureSet* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit FeatureSet(::google::protobuf::Arena* arena);
   public:
@@ -2091,8 +2111,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
 
   // implements Message ----------------------------------------------
 
-  ExtensionRangeOptions_Declaration* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<ExtensionRangeOptions_Declaration>(arena);
+  ExtensionRangeOptions_Declaration* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions_Declaration& from);
@@ -2123,6 +2145,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.ExtensionRangeOptions.Declaration";
   }
+  ExtensionRangeOptions_Declaration* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena);
   public:
@@ -2324,8 +2348,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
 
   // implements Message ----------------------------------------------
 
-  EnumDescriptorProto_EnumReservedRange* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<EnumDescriptorProto_EnumReservedRange>(arena);
+  EnumDescriptorProto_EnumReservedRange* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto_EnumReservedRange& from);
@@ -2356,6 +2382,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.EnumDescriptorProto.EnumReservedRange";
   }
+  EnumDescriptorProto_EnumReservedRange* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena);
   public:
@@ -2506,8 +2534,10 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
 
   // implements Message ----------------------------------------------
 
-  DescriptorProto_ReservedRange* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<DescriptorProto_ReservedRange>(arena);
+  DescriptorProto_ReservedRange* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ReservedRange& from);
@@ -2538,6 +2568,8 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.DescriptorProto.ReservedRange";
   }
+  DescriptorProto_ReservedRange* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit DescriptorProto_ReservedRange(::google::protobuf::Arena* arena);
   public:
@@ -2688,8 +2720,10 @@ class PROTOBUF_EXPORT UninterpretedOption final :
 
   // implements Message ----------------------------------------------
 
-  UninterpretedOption* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<UninterpretedOption>(arena);
+  UninterpretedOption* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption& from);
@@ -2720,6 +2754,8 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.UninterpretedOption";
   }
+  UninterpretedOption* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit UninterpretedOption(::google::protobuf::Arena* arena);
   public:
@@ -2962,8 +2998,10 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
 
   // implements Message ----------------------------------------------
 
-  SourceCodeInfo* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<SourceCodeInfo>(arena);
+  SourceCodeInfo* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo& from);
@@ -2994,6 +3032,8 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.SourceCodeInfo";
   }
+  SourceCodeInfo* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit SourceCodeInfo(::google::protobuf::Arena* arena);
   public:
@@ -3139,8 +3179,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
 
   // implements Message ----------------------------------------------
 
-  GeneratedCodeInfo* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<GeneratedCodeInfo>(arena);
+  GeneratedCodeInfo* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo& from);
@@ -3171,6 +3213,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.GeneratedCodeInfo";
   }
+  GeneratedCodeInfo* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit GeneratedCodeInfo(::google::protobuf::Arena* arena);
   public:
@@ -3316,8 +3360,10 @@ class PROTOBUF_EXPORT ServiceOptions final :
 
   // implements Message ----------------------------------------------
 
-  ServiceOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<ServiceOptions>(arena);
+  ServiceOptions* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ServiceOptions& from);
@@ -3348,6 +3394,8 @@ class PROTOBUF_EXPORT ServiceOptions final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.ServiceOptions";
   }
+  ServiceOptions* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit ServiceOptions(::google::protobuf::Arena* arena);
   public:
@@ -3675,8 +3723,10 @@ class PROTOBUF_EXPORT OneofOptions final :
 
   // implements Message ----------------------------------------------
 
-  OneofOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<OneofOptions>(arena);
+  OneofOptions* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const OneofOptions& from);
@@ -3707,6 +3757,8 @@ class PROTOBUF_EXPORT OneofOptions final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.OneofOptions";
   }
+  OneofOptions* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit OneofOptions(::google::protobuf::Arena* arena);
   public:
@@ -4021,8 +4073,10 @@ class PROTOBUF_EXPORT MethodOptions final :
 
   // implements Message ----------------------------------------------
 
-  MethodOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<MethodOptions>(arena);
+  MethodOptions* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MethodOptions& from);
@@ -4053,6 +4107,8 @@ class PROTOBUF_EXPORT MethodOptions final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.MethodOptions";
   }
+  MethodOptions* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit MethodOptions(::google::protobuf::Arena* arena);
   public:
@@ -4414,8 +4470,10 @@ class PROTOBUF_EXPORT MessageOptions final :
 
   // implements Message ----------------------------------------------
 
-  MessageOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<MessageOptions>(arena);
+  MessageOptions* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MessageOptions& from);
@@ -4446,6 +4504,8 @@ class PROTOBUF_EXPORT MessageOptions final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.MessageOptions";
   }
+  MessageOptions* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit MessageOptions(::google::protobuf::Arena* arena);
   public:
@@ -4825,8 +4885,10 @@ class PROTOBUF_EXPORT FileOptions final :
 
   // implements Message ----------------------------------------------
 
-  FileOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<FileOptions>(arena);
+  FileOptions* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileOptions& from);
@@ -4857,6 +4919,8 @@ class PROTOBUF_EXPORT FileOptions final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.FileOptions";
   }
+  FileOptions* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit FileOptions(::google::protobuf::Arena* arena);
   public:
@@ -5512,8 +5576,10 @@ class PROTOBUF_EXPORT FieldOptions final :
 
   // implements Message ----------------------------------------------
 
-  FieldOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<FieldOptions>(arena);
+  FieldOptions* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldOptions& from);
@@ -5544,6 +5610,8 @@ class PROTOBUF_EXPORT FieldOptions final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.FieldOptions";
   }
+  FieldOptions* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit FieldOptions(::google::protobuf::Arena* arena);
   public:
@@ -6109,8 +6177,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
 
   // implements Message ----------------------------------------------
 
-  ExtensionRangeOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<ExtensionRangeOptions>(arena);
+  ExtensionRangeOptions* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions& from);
@@ -6141,6 +6211,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.ExtensionRangeOptions";
   }
+  ExtensionRangeOptions* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit ExtensionRangeOptions(::google::protobuf::Arena* arena);
   public:
@@ -6510,8 +6582,10 @@ class PROTOBUF_EXPORT EnumValueOptions final :
 
   // implements Message ----------------------------------------------
 
-  EnumValueOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<EnumValueOptions>(arena);
+  EnumValueOptions* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumValueOptions& from);
@@ -6542,6 +6616,8 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.EnumValueOptions";
   }
+  EnumValueOptions* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit EnumValueOptions(::google::protobuf::Arena* arena);
   public:
@@ -6882,8 +6958,10 @@ class PROTOBUF_EXPORT EnumOptions final :
 
   // implements Message ----------------------------------------------
 
-  EnumOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<EnumOptions>(arena);
+  EnumOptions* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumOptions& from);
@@ -6914,6 +6992,8 @@ class PROTOBUF_EXPORT EnumOptions final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.EnumOptions";
   }
+  EnumOptions* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit EnumOptions(::google::protobuf::Arena* arena);
   public:
@@ -7267,8 +7347,10 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  OneofDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<OneofDescriptorProto>(arena);
+  OneofDescriptorProto* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const OneofDescriptorProto& from);
@@ -7299,6 +7381,8 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.OneofDescriptorProto";
   }
+  OneofDescriptorProto* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit OneofDescriptorProto(::google::protobuf::Arena* arena);
   public:
@@ -7459,8 +7543,10 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  MethodDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<MethodDescriptorProto>(arena);
+  MethodDescriptorProto* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MethodDescriptorProto& from);
@@ -7491,6 +7577,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.MethodDescriptorProto";
   }
+  MethodDescriptorProto* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit MethodDescriptorProto(::google::protobuf::Arena* arena);
   public:
@@ -7715,8 +7803,10 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  FieldDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<FieldDescriptorProto>(arena);
+  FieldDescriptorProto* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldDescriptorProto& from);
@@ -7747,6 +7837,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.FieldDescriptorProto";
   }
+  FieldDescriptorProto* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit FieldDescriptorProto(::google::protobuf::Arena* arena);
   public:
@@ -8105,8 +8197,10 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  EnumValueDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<EnumValueDescriptorProto>(arena);
+  EnumValueDescriptorProto* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumValueDescriptorProto& from);
@@ -8137,6 +8231,8 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.EnumValueDescriptorProto";
   }
+  EnumValueDescriptorProto* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit EnumValueDescriptorProto(::google::protobuf::Arena* arena);
   public:
@@ -8310,8 +8406,10 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
 
   // implements Message ----------------------------------------------
 
-  DescriptorProto_ExtensionRange* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<DescriptorProto_ExtensionRange>(arena);
+  DescriptorProto_ExtensionRange* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ExtensionRange& from);
@@ -8342,6 +8440,8 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.DescriptorProto.ExtensionRange";
   }
+  DescriptorProto_ExtensionRange* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena);
   public:
@@ -8509,8 +8609,10 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  ServiceDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<ServiceDescriptorProto>(arena);
+  ServiceDescriptorProto* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ServiceDescriptorProto& from);
@@ -8541,6 +8643,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.ServiceDescriptorProto";
   }
+  ServiceDescriptorProto* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit ServiceDescriptorProto(::google::protobuf::Arena* arena);
   public:
@@ -8721,8 +8825,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  EnumDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<EnumDescriptorProto>(arena);
+  EnumDescriptorProto* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto& from);
@@ -8753,6 +8859,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.EnumDescriptorProto";
   }
+  EnumDescriptorProto* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit EnumDescriptorProto(::google::protobuf::Arena* arena);
   public:
@@ -8985,8 +9093,10 @@ class PROTOBUF_EXPORT DescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  DescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<DescriptorProto>(arena);
+  DescriptorProto* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto& from);
@@ -9017,6 +9127,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.DescriptorProto";
   }
+  DescriptorProto* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit DescriptorProto(::google::protobuf::Arena* arena);
   public:
@@ -9350,8 +9462,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  FileDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<FileDescriptorProto>(arena);
+  FileDescriptorProto* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileDescriptorProto& from);
@@ -9382,6 +9496,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.FileDescriptorProto";
   }
+  FileDescriptorProto* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit FileDescriptorProto(::google::protobuf::Arena* arena);
   public:
@@ -9766,8 +9882,10 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
 
   // implements Message ----------------------------------------------
 
-  FileDescriptorSet* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<FileDescriptorSet>(arena);
+  FileDescriptorSet* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileDescriptorSet& from);
@@ -9798,6 +9916,8 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.FileDescriptorSet";
   }
+  FileDescriptorSet* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit FileDescriptorSet(::google::protobuf::Arena* arena);
   public:

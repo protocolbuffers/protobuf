@@ -376,6 +376,18 @@ Version::~Version() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+Version* Version::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new Version(*this)
+               : new Version();
+  }
+  void* mem = arena->AllocateAligned(sizeof(Version));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) Version(arena, *this)
+             : new (mem) Version(arena);
+}
 inline void Version::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.suffix_.Destroy();
@@ -691,6 +703,18 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorRequest)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+CodeGeneratorRequest* CodeGeneratorRequest::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new CodeGeneratorRequest(*this)
+               : new CodeGeneratorRequest();
+  }
+  void* mem = arena->AllocateAligned(sizeof(CodeGeneratorRequest));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) CodeGeneratorRequest(arena, *this)
+             : new (mem) CodeGeneratorRequest(arena);
 }
 inline void CodeGeneratorRequest::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -1067,6 +1091,18 @@ CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+CodeGeneratorResponse_File* CodeGeneratorResponse_File::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new CodeGeneratorResponse_File(*this)
+               : new CodeGeneratorResponse_File();
+  }
+  void* mem = arena->AllocateAligned(sizeof(CodeGeneratorResponse_File));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) CodeGeneratorResponse_File(arena, *this)
+             : new (mem) CodeGeneratorResponse_File(arena);
+}
 inline void CodeGeneratorResponse_File::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
@@ -1378,6 +1414,18 @@ CodeGeneratorResponse::~CodeGeneratorResponse() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+CodeGeneratorResponse* CodeGeneratorResponse::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new CodeGeneratorResponse(*this)
+               : new CodeGeneratorResponse();
+  }
+  void* mem = arena->AllocateAligned(sizeof(CodeGeneratorResponse));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) CodeGeneratorResponse(arena, *this)
+             : new (mem) CodeGeneratorResponse(arena);
 }
 inline void CodeGeneratorResponse::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);

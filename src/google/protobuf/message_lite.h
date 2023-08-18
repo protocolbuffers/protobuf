@@ -170,6 +170,9 @@ PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT MessageLite {
  public:
+  // See comments for `New()` for documentation of New operations.
+  enum NewOp { kNew, kCopy };
+
   constexpr MessageLite() {}
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
@@ -180,13 +183,13 @@ class PROTOBUF_EXPORT MessageLite {
   // Get the name of this message type, e.g. "foo.bar.BazProto".
   virtual std::string GetTypeName() const = 0;
 
-  // Construct a new instance of the same type.  Ownership is passed to the
-  // caller.
-  MessageLite* New() const { return New(nullptr); }
-
-  // Construct a new instance on the arena. Ownership is passed to the caller
-  // if arena is a nullptr.
-  virtual MessageLite* New(Arena* arena) const = 0;
+  // Constructs a new instance on the specified arena or heap.
+  // Ownership is passed to the caller if `arena` is `nullptr`.
+  // If `op` is `kCopy`, then the new instance will be a deep copy of
+  // this instance, else the new instance will be an empty instance.
+  MessageLite* New(Arena* arena = nullptr, NewOp op = kNew) const {
+    return InternalNew(arena, op);
+  }
 
   Arena* GetArena() const { return _internal_metadata_.arena(); }
 
@@ -530,6 +533,8 @@ class PROTOBUF_EXPORT MessageLite {
   friend class Arena::InternalHelper;
   template <typename Type>
   friend class internal::GenericTypeHandler;
+
+  virtual MessageLite* InternalNew(Arena* arena, NewOp op) const = 0;
 
   void LogInitializationErrorMessage() const;
 

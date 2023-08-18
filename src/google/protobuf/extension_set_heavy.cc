@@ -186,8 +186,7 @@ MessageLite* ExtensionSet::ReleaseMessage(const FieldDescriptor* descriptor,
       }
     } else {
       if (arena_ != nullptr) {
-        ret = extension->message_value->New();
-        ret->CheckTypeAndMergeFrom(*extension->message_value);
+        ret = extension->message_value->New(nullptr, MessageLite::kCopy);
       } else {
         ret = extension->message_value;
       }

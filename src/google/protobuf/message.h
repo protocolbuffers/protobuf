@@ -260,14 +260,13 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Basic Operations ------------------------------------------------
 
-  // Construct a new instance of the same type.  Ownership is passed to the
-  // caller.  (This is also defined in MessageLite, but is defined again here
-  // for return-type covariance.)
-  Message* New() const { return New(nullptr); }
-
-  // Construct a new instance on the arena. Ownership is passed to the caller
-  // if arena is a nullptr.
-  Message* New(Arena* arena) const override = 0;
+  // Constructs a new instance on the specified arena or heap.
+  // Ownership is passed to the caller if `arena` is `nullptr`.
+  // If `op` is `kCopy`, then the new instance will be a deep copy of
+  // this instance, else the new instance will be an empty instance.
+  Message* New(Arena* arena = nullptr, NewOp op = kNew) const {
+    return InternalNew(arena, op);
+  }
 
   // Make this message into a copy of the given message.  The given message
   // must have the same descriptor, but need not necessarily be the same class.
@@ -376,6 +375,8 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // The method is private because subclasses should never call it; only
   // override it.  Yes, C++ lets you do that.  Crazy, huh?
   virtual void SetCachedSize(int size) const;
+
+  Message* InternalNew(Arena* arena, NewOp op) const override = 0;
 
  public:
   // Introspection ---------------------------------------------------

@@ -190,8 +190,10 @@ class PROTOBUF_EXPORT CppFeatures final :
 
   // implements Message ----------------------------------------------
 
-  CppFeatures* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<CppFeatures>(arena);
+  CppFeatures* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CppFeatures& from);
@@ -222,6 +224,8 @@ class PROTOBUF_EXPORT CppFeatures final :
   static ::absl::string_view FullMessageName() {
     return "pb.CppFeatures";
   }
+  CppFeatures* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit CppFeatures(::google::protobuf::Arena* arena);
   public:

@@ -206,8 +206,10 @@ class PROTOC_EXPORT Version final :
 
   // implements Message ----------------------------------------------
 
-  Version* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Version>(arena);
+  Version* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Version& from);
@@ -238,6 +240,8 @@ class PROTOC_EXPORT Version final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.compiler.Version";
   }
+  Version* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit Version(::google::protobuf::Arena* arena);
   public:
@@ -420,8 +424,10 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<CodeGeneratorResponse_File>(arena);
+  CodeGeneratorResponse_File* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse_File& from);
@@ -452,6 +458,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.compiler.CodeGeneratorResponse.File";
   }
+  CodeGeneratorResponse_File* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* arena);
   public:
@@ -650,8 +658,10 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<CodeGeneratorResponse>(arena);
+  CodeGeneratorResponse* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse& from);
@@ -682,6 +692,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.compiler.CodeGeneratorResponse";
   }
+  CodeGeneratorResponse* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit CodeGeneratorResponse(::google::protobuf::Arena* arena);
   public:
@@ -881,8 +893,10 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorRequest* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<CodeGeneratorRequest>(arena);
+  CodeGeneratorRequest* New(
+      ::google::protobuf::Arena* arena = nullptr,
+      ::google::protobuf::MessageLite::NewOp op = ::google::protobuf::MessageLite::kNew) const {
+    return InternalNew(arena, op);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorRequest& from);
@@ -913,6 +927,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   static ::absl::string_view FullMessageName() {
     return "google.protobuf.compiler.CodeGeneratorRequest";
   }
+  CodeGeneratorRequest* InternalNew(
+      ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const final;
   protected:
   explicit CodeGeneratorRequest(::google::protobuf::Arena* arena);
   public:

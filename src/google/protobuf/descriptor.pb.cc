@@ -2330,6 +2330,18 @@ FileDescriptorSet::~FileDescriptorSet() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+FileDescriptorSet* FileDescriptorSet::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new FileDescriptorSet(*this)
+               : new FileDescriptorSet();
+  }
+  void* mem = arena->AllocateAligned(sizeof(FileDescriptorSet));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) FileDescriptorSet(arena, *this)
+             : new (mem) FileDescriptorSet(arena);
+}
 inline void FileDescriptorSet::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_.~RepeatedPtrField();
@@ -2609,6 +2621,18 @@ FileDescriptorProto::~FileDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+FileDescriptorProto* FileDescriptorProto::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new FileDescriptorProto(*this)
+               : new FileDescriptorProto();
+  }
+  void* mem = arena->AllocateAligned(sizeof(FileDescriptorProto));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) FileDescriptorProto(arena, *this)
+             : new (mem) FileDescriptorProto(arena);
 }
 inline void FileDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -3184,6 +3208,18 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+DescriptorProto_ExtensionRange* DescriptorProto_ExtensionRange::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new DescriptorProto_ExtensionRange(*this)
+               : new DescriptorProto_ExtensionRange();
+  }
+  void* mem = arena->AllocateAligned(sizeof(DescriptorProto_ExtensionRange));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) DescriptorProto_ExtensionRange(arena, *this)
+             : new (mem) DescriptorProto_ExtensionRange(arena);
+}
 inline void DescriptorProto_ExtensionRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   if (this != internal_default_instance()) delete _impl_.options_;
@@ -3435,6 +3471,18 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ReservedRange)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+DescriptorProto_ReservedRange* DescriptorProto_ReservedRange::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new DescriptorProto_ReservedRange(*this)
+               : new DescriptorProto_ReservedRange();
+  }
+  void* mem = arena->AllocateAligned(sizeof(DescriptorProto_ReservedRange));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) DescriptorProto_ReservedRange(arena, *this)
+             : new (mem) DescriptorProto_ReservedRange(arena);
 }
 inline void DescriptorProto_ReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -3696,6 +3744,18 @@ DescriptorProto::~DescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+DescriptorProto* DescriptorProto::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new DescriptorProto(*this)
+               : new DescriptorProto();
+  }
+  void* mem = arena->AllocateAligned(sizeof(DescriptorProto));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) DescriptorProto(arena, *this)
+             : new (mem) DescriptorProto(arena);
 }
 inline void DescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -4202,6 +4262,18 @@ ExtensionRangeOptions_Declaration::~ExtensionRangeOptions_Declaration() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+ExtensionRangeOptions_Declaration* ExtensionRangeOptions_Declaration::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new ExtensionRangeOptions_Declaration(*this)
+               : new ExtensionRangeOptions_Declaration();
+  }
+  void* mem = arena->AllocateAligned(sizeof(ExtensionRangeOptions_Declaration));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) ExtensionRangeOptions_Declaration(arena, *this)
+             : new (mem) ExtensionRangeOptions_Declaration(arena);
+}
 inline void ExtensionRangeOptions_Declaration::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.full_name_.Destroy();
@@ -4533,6 +4605,18 @@ ExtensionRangeOptions::~ExtensionRangeOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.ExtensionRangeOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+ExtensionRangeOptions* ExtensionRangeOptions::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new ExtensionRangeOptions(*this)
+               : new ExtensionRangeOptions();
+  }
+  void* mem = arena->AllocateAligned(sizeof(ExtensionRangeOptions));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) ExtensionRangeOptions(arena, *this)
+             : new (mem) ExtensionRangeOptions(arena);
 }
 inline void ExtensionRangeOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -4950,6 +5034,18 @@ FieldDescriptorProto::~FieldDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+FieldDescriptorProto* FieldDescriptorProto::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new FieldDescriptorProto(*this)
+               : new FieldDescriptorProto();
+  }
+  void* mem = arena->AllocateAligned(sizeof(FieldDescriptorProto));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) FieldDescriptorProto(arena, *this)
+             : new (mem) FieldDescriptorProto(arena);
 }
 inline void FieldDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -5464,6 +5560,18 @@ OneofDescriptorProto::~OneofDescriptorProto() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+OneofDescriptorProto* OneofDescriptorProto::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new OneofDescriptorProto(*this)
+               : new OneofDescriptorProto();
+  }
+  void* mem = arena->AllocateAligned(sizeof(OneofDescriptorProto));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) OneofDescriptorProto(arena, *this)
+             : new (mem) OneofDescriptorProto(arena);
+}
 inline void OneofDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
@@ -5695,6 +5803,18 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+EnumDescriptorProto_EnumReservedRange* EnumDescriptorProto_EnumReservedRange::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new EnumDescriptorProto_EnumReservedRange(*this)
+               : new EnumDescriptorProto_EnumReservedRange();
+  }
+  void* mem = arena->AllocateAligned(sizeof(EnumDescriptorProto_EnumReservedRange));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) EnumDescriptorProto_EnumReservedRange(arena, *this)
+             : new (mem) EnumDescriptorProto_EnumReservedRange(arena);
 }
 inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -5946,6 +6066,18 @@ EnumDescriptorProto::~EnumDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+EnumDescriptorProto* EnumDescriptorProto::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new EnumDescriptorProto(*this)
+               : new EnumDescriptorProto();
+  }
+  void* mem = arena->AllocateAligned(sizeof(EnumDescriptorProto));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) EnumDescriptorProto(arena, *this)
+             : new (mem) EnumDescriptorProto(arena);
 }
 inline void EnumDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -6293,6 +6425,18 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+EnumValueDescriptorProto* EnumValueDescriptorProto::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new EnumValueDescriptorProto(*this)
+               : new EnumValueDescriptorProto();
+  }
+  void* mem = arena->AllocateAligned(sizeof(EnumValueDescriptorProto));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) EnumValueDescriptorProto(arena, *this)
+             : new (mem) EnumValueDescriptorProto(arena);
+}
 inline void EnumValueDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
@@ -6582,6 +6726,18 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.ServiceDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+ServiceDescriptorProto* ServiceDescriptorProto::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new ServiceDescriptorProto(*this)
+               : new ServiceDescriptorProto();
+  }
+  void* mem = arena->AllocateAligned(sizeof(ServiceDescriptorProto));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) ServiceDescriptorProto(arena, *this)
+             : new (mem) ServiceDescriptorProto(arena);
 }
 inline void ServiceDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -6914,6 +7070,18 @@ MethodDescriptorProto::~MethodDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+MethodDescriptorProto* MethodDescriptorProto::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new MethodDescriptorProto(*this)
+               : new MethodDescriptorProto();
+  }
+  void* mem = arena->AllocateAligned(sizeof(MethodDescriptorProto));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) MethodDescriptorProto(arena, *this)
+             : new (mem) MethodDescriptorProto(arena);
 }
 inline void MethodDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -7488,6 +7656,18 @@ FileOptions::~FileOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+FileOptions* FileOptions::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new FileOptions(*this)
+               : new FileOptions();
+  }
+  void* mem = arena->AllocateAligned(sizeof(FileOptions));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) FileOptions(arena, *this)
+             : new (mem) FileOptions(arena);
 }
 inline void FileOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -8321,6 +8501,18 @@ MessageOptions::~MessageOptions() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+MessageOptions* MessageOptions::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new MessageOptions(*this)
+               : new MessageOptions();
+  }
+  void* mem = arena->AllocateAligned(sizeof(MessageOptions));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) MessageOptions(arena, *this)
+             : new (mem) MessageOptions(arena);
+}
 inline void MessageOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
@@ -8702,6 +8894,18 @@ FieldOptions_EditionDefault::~FieldOptions_EditionDefault() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+FieldOptions_EditionDefault* FieldOptions_EditionDefault::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new FieldOptions_EditionDefault(*this)
+               : new FieldOptions_EditionDefault();
+  }
+  void* mem = arena->AllocateAligned(sizeof(FieldOptions_EditionDefault));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) FieldOptions_EditionDefault(arena, *this)
+             : new (mem) FieldOptions_EditionDefault(arena);
+}
 inline void FieldOptions_EditionDefault::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.edition_.Destroy();
@@ -8998,6 +9202,18 @@ FieldOptions::~FieldOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+FieldOptions* FieldOptions::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new FieldOptions(*this)
+               : new FieldOptions();
+  }
+  void* mem = arena->AllocateAligned(sizeof(FieldOptions));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) FieldOptions(arena, *this)
+             : new (mem) FieldOptions(arena);
 }
 inline void FieldOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -9523,6 +9739,18 @@ OneofOptions::~OneofOptions() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+OneofOptions* OneofOptions::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new OneofOptions(*this)
+               : new OneofOptions();
+  }
+  void* mem = arena->AllocateAligned(sizeof(OneofOptions));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) OneofOptions(arena, *this)
+             : new (mem) OneofOptions(arena);
+}
 inline void OneofOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
@@ -9791,6 +10019,18 @@ EnumOptions::~EnumOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+EnumOptions* EnumOptions::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new EnumOptions(*this)
+               : new EnumOptions();
+  }
+  void* mem = arena->AllocateAligned(sizeof(EnumOptions));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) EnumOptions(arena, *this)
+             : new (mem) EnumOptions(arena);
 }
 inline void EnumOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -10132,6 +10372,18 @@ EnumValueOptions::~EnumValueOptions() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+EnumValueOptions* EnumValueOptions::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new EnumValueOptions(*this)
+               : new EnumValueOptions();
+  }
+  void* mem = arena->AllocateAligned(sizeof(EnumValueOptions));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) EnumValueOptions(arena, *this)
+             : new (mem) EnumValueOptions(arena);
+}
 inline void EnumValueOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
@@ -10447,6 +10699,18 @@ ServiceOptions::~ServiceOptions() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+ServiceOptions* ServiceOptions::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new ServiceOptions(*this)
+               : new ServiceOptions();
+  }
+  void* mem = arena->AllocateAligned(sizeof(ServiceOptions));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) ServiceOptions(arena, *this)
+             : new (mem) ServiceOptions(arena);
+}
 inline void ServiceOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
@@ -10743,6 +11007,18 @@ MethodOptions::~MethodOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+MethodOptions* MethodOptions::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new MethodOptions(*this)
+               : new MethodOptions();
+  }
+  void* mem = arena->AllocateAligned(sizeof(MethodOptions));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) MethodOptions(arena, *this)
+             : new (mem) MethodOptions(arena);
 }
 inline void MethodOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -11065,6 +11341,18 @@ UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+UninterpretedOption_NamePart* UninterpretedOption_NamePart::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new UninterpretedOption_NamePart(*this)
+               : new UninterpretedOption_NamePart();
+  }
+  void* mem = arena->AllocateAligned(sizeof(UninterpretedOption_NamePart));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) UninterpretedOption_NamePart(arena, *this)
+             : new (mem) UninterpretedOption_NamePart(arena);
+}
 inline void UninterpretedOption_NamePart::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_part_.Destroy();
@@ -11354,6 +11642,18 @@ UninterpretedOption::~UninterpretedOption() {
   // @@protoc_insertion_point(destructor:google.protobuf.UninterpretedOption)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+UninterpretedOption* UninterpretedOption::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new UninterpretedOption(*this)
+               : new UninterpretedOption();
+  }
+  void* mem = arena->AllocateAligned(sizeof(UninterpretedOption));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) UninterpretedOption(arena, *this)
+             : new (mem) UninterpretedOption(arena);
 }
 inline void UninterpretedOption::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -11746,6 +12046,18 @@ FeatureSet::~FeatureSet() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+FeatureSet* FeatureSet::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new FeatureSet(*this)
+               : new FeatureSet();
+  }
+  void* mem = arena->AllocateAligned(sizeof(FeatureSet));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) FeatureSet(arena, *this)
+             : new (mem) FeatureSet(arena);
+}
 inline void FeatureSet::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
@@ -12090,6 +12402,18 @@ SourceCodeInfo_Location::~SourceCodeInfo_Location() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+SourceCodeInfo_Location* SourceCodeInfo_Location::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new SourceCodeInfo_Location(*this)
+               : new SourceCodeInfo_Location();
+  }
+  void* mem = arena->AllocateAligned(sizeof(SourceCodeInfo_Location));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) SourceCodeInfo_Location(arena, *this)
+             : new (mem) SourceCodeInfo_Location(arena);
+}
 inline void SourceCodeInfo_Location::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.path_.~RepeatedField();
@@ -12406,6 +12730,18 @@ SourceCodeInfo::~SourceCodeInfo() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+SourceCodeInfo* SourceCodeInfo::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new SourceCodeInfo(*this)
+               : new SourceCodeInfo();
+  }
+  void* mem = arena->AllocateAligned(sizeof(SourceCodeInfo));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) SourceCodeInfo(arena, *this)
+             : new (mem) SourceCodeInfo(arena);
+}
 inline void SourceCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.location_.~RepeatedPtrField();
@@ -12619,6 +12955,18 @@ GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo.Annotation)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+GeneratedCodeInfo_Annotation* GeneratedCodeInfo_Annotation::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new GeneratedCodeInfo_Annotation(*this)
+               : new GeneratedCodeInfo_Annotation();
+  }
+  void* mem = arena->AllocateAligned(sizeof(GeneratedCodeInfo_Annotation));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) GeneratedCodeInfo_Annotation(arena, *this)
+             : new (mem) GeneratedCodeInfo_Annotation(arena);
 }
 inline void GeneratedCodeInfo_Annotation::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -12924,6 +13272,18 @@ GeneratedCodeInfo::~GeneratedCodeInfo() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+GeneratedCodeInfo* GeneratedCodeInfo::InternalNew(
+    ::google::protobuf::Arena* arena, ::google::protobuf::MessageLite::NewOp op) const {
+  if (arena == nullptr) {
+    return op == ::google::protobuf::MessageLite::NewOp::kCopy
+               ? new GeneratedCodeInfo(*this)
+               : new GeneratedCodeInfo();
+  }
+  void* mem = arena->AllocateAligned(sizeof(GeneratedCodeInfo));
+  return op == ::google::protobuf::MessageLite::NewOp::kCopy
+             ? new (mem) GeneratedCodeInfo(arena, *this)
+             : new (mem) GeneratedCodeInfo(arena);
 }
 inline void GeneratedCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
