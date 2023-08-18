@@ -115,16 +115,6 @@ _Deprecated.count = 100
 _internal_create_key = object()
 
 
-def _IsDescriptorBootstrapProto(file):
-  """Checks if the file descriptor corresponds to our bootstrapped descriptor.proto"""
-  if file is None:
-    return False
-  return (
-      file.name == 'net/proto2/proto/descriptor.proto'
-      or file.name == 'google/protobuf/descriptor.proto'
-  )
-
-
 class DescriptorBase(metaclass=DescriptorMetaclass):
 
   """Descriptors base class.
@@ -154,9 +144,7 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
     self.file = file
     self._options = options
     self._options_class_name = options_class_name
-    self._serialized_options = (
-        serialized_options if not _IsDescriptorBootstrapProto(file) else None
-    )
+    self._serialized_options = serialized_options
 
     # Does this descriptor have non-default options?
     self.has_options = (self._options is not None) or (
@@ -192,14 +180,15 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
       raise RuntimeError('Unknown options class name %s!' %
                          (self._options_class_name))
 
-    with _lock:
-      if self._serialized_options is None:
+    if self._serialized_options is None:
+      with _lock:
         self._options = options_class()
-      else:
-        self._options = _ParseOptions(options_class(),
-                                      self._serialized_options)
+    else:
+      options = _ParseOptions(options_class(), self._serialized_options)
+      with _lock:
+        self._options = options
 
-      return self._options
+    return self._options
 
 
 class _NestedDescriptorBase(DescriptorBase):
@@ -299,6 +288,7 @@ class Descriptor(_NestedDescriptorBase):
       oneofs_by_name (dict(str, OneofDescriptor)): Same objects as in
           :attr:`oneofs`, but indexed by "name" attribute.
       file (FileDescriptor): Reference to file descriptor.
+      is_map_entry: If the message type is a map entry.
 
   """
 
@@ -324,6 +314,7 @@ class Descriptor(_NestedDescriptorBase):
         serialized_start=None,
         serialized_end=None,
         syntax=None,
+        is_map_entry=False,
         create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindMessageTypeByName(full_name)
@@ -336,7 +327,7 @@ class Descriptor(_NestedDescriptorBase):
                serialized_options=None,
                is_extendable=True, extension_ranges=None, oneofs=None,
                file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
-               syntax=None, create_key=None):
+               syntax=None, is_map_entry=False, create_key=None):
     """Arguments to __init__() are as described in the description
     of Descriptor fields above.
 
@@ -386,6 +377,7 @@ class Descriptor(_NestedDescriptorBase):
     for oneof in self.oneofs:
       oneof.containing_type = self
     self.syntax = syntax or "proto2"
+    self._is_map_entry = is_map_entry
 
   @property
   def fields_by_camelcase_name(self):

@@ -2053,11 +2053,6 @@ class Proto2ReflectionTest(unittest.TestCase):
       # dependency on the C++ logging code.
       self.assertIn('test_file_descriptor_errors.msg1', str(cm.exception))
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python',
-      'Options are not supported on descriptor.proto in pure python'
-      ' (b/296476238).',
-  )
   def testDescriptorProtoHasFileOptions(self):
     self.assertTrue(descriptor_pb2.DESCRIPTOR.has_options)
     self.assertEqual(
@@ -2065,11 +2060,6 @@ class Proto2ReflectionTest(unittest.TestCase):
         'com.google.protobuf',
     )
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python',
-      'Options are not supported on descriptor.proto in pure python'
-      ' (b/296476238).',
-  )
   def testDescriptorProtoHasFieldOptions(self):
     self.assertTrue(descriptor_pb2.DESCRIPTOR.has_options)
     self.assertEqual(
@@ -2084,11 +2074,6 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertTrue(packed_desc.has_options)
     self.assertTrue(packed_desc.GetOptions().packed)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python',
-      'Options are not supported on descriptor.proto in pure python'
-      ' (b/296476238).',
-  )
   def testDescriptorProtoHasFeatureOptions(self):
     self.assertTrue(descriptor_pb2.DESCRIPTOR.has_options)
     self.assertEqual(
