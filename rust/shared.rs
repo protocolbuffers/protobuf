@@ -36,9 +36,17 @@
 
 use std::fmt;
 
-pub use optional::{AbsentField, FieldEntry, Optional, PresentField};
-pub use proxied::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
-pub use string::{BytesMut, ProtoStr};
+/// Everything in `__public` is re-exported in `protobuf.rs`.
+/// These are the items protobuf users can access directly.
+#[doc(hidden)]
+pub mod __public {
+    pub use crate::optional::{AbsentField, FieldEntry, Optional, PresentField};
+    pub use crate::proxied::{
+        Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
+    };
+    pub use crate::string::{BytesMut, ProtoStr};
+}
+pub use __public::*;
 
 /// Everything in `__internal` is allowed to change without it being considered
 /// a breaking change for the protobuf library. Nothing in here should be
