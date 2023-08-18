@@ -88,6 +88,20 @@
 // - MSVC: https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-history
 //         https://docs.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes-history
 
+#ifndef PROTOBUF_INTERNAL_NEW
+#define PROTOBUF_INTERNAL_NEW
+#endif
+
+#ifndef PROTOBUF_INTERNAL_NEW
+#define PROTOBUF_NEW_OP_DEF
+#define PROTOBUF_NEW_OP_DECL
+#define PROTOBUF_NEW_OP_COPY false
+#else
+#define PROTOBUF_NEW_OP_DEF , ::google::protobuf::MessageLite::NewOp op
+#define PROTOBUF_NEW_OP_DECL PROTOBUF_NEW_OP_DEF = ::google::protobuf::MessageLite::kNew
+#define PROTOBUF_NEW_OP_COPY (op == ::google::protobuf::MessageLite::NewOp::kCopy)
+#endif
+
 // Portable fallbacks for C++20 feature test macros:
 // https://en.cppreference.com/w/cpp/feature_test
 #ifndef __has_cpp_attribute

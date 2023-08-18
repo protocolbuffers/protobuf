@@ -184,9 +184,8 @@ class PROTOBUF_EXPORT CppFeatures final :
 
   // implements Message ----------------------------------------------
 
-  CppFeatures* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<CppFeatures>(arena);
-  }
+  CppFeatures* New(
+      ::google::protobuf::Arena* arena = nullptr PROTOBUF_NEW_OP_DECL) const final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CppFeatures& from);
   using ::google::protobuf::Message::MergeFrom;

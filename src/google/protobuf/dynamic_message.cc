@@ -225,7 +225,7 @@ class DynamicMessage final : public Message {
 
   // implements Message ----------------------------------------------
 
-  Message* New(Arena* arena) const override;
+  Message* New(Arena* arena PROTOBUF_NEW_OP_DECL) const override;
 
   int GetCachedSize() const override;
   void SetCachedSize(int size) const override;
@@ -601,16 +601,21 @@ void DynamicMessage::CrossLinkPrototypes() {
   }
 }
 
-Message* DynamicMessage::New(Arena* arena) const {
+Message* DynamicMessage::New(Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  Message* msg;
   if (arena != nullptr) {
     void* new_base = Arena::CreateArray<char>(arena, type_info_->size);
     memset(new_base, 0, type_info_->size);
-    return new (new_base) DynamicMessage(type_info_, arena);
+    msg = new (new_base) DynamicMessage(type_info_, arena);
   } else {
     void* new_base = operator new(type_info_->size);
     memset(new_base, 0, type_info_->size);
-    return new (new_base) DynamicMessage(type_info_);
+    msg = new (new_base) DynamicMessage(type_info_);
   }
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 
 int DynamicMessage::GetCachedSize() const {

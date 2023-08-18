@@ -312,6 +312,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   void MergeFrom(const RepeatedPtrFieldBase& other) {
+    using T = typename TypeHandler::Type;
     // To avoid unnecessary code duplication and reduce binary size, we use a
     // layered approach to implementing MergeFrom(). The toplevel method is
     // templated, so we get a small thunk per concrete message type in the
@@ -320,6 +321,15 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // calls the object-allocate and merge handlers.
     ABSL_DCHECK_NE(&other, this);
     if (other.current_size_ == 0) return;
+
+#if defined(QQQ_PROTOBUF_EXPLICIT_CONSTRUCTORS) && defined(__cpp_if_constexpr)
+    if constexpr (std::is_base_of<::google::protobuf::Message, T>::value) {
+      if constexpr (!std::is_same<::google::protobuf::Message, T>::value) {
+        MergeFromMessage<T>(other);
+        return;
+      }
+    }
+#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS && __cpp_if_constexpr
     MergeFromInternal(other,
                       &RepeatedPtrFieldBase::MergeFromInnerLoop<TypeHandler>);
   }
@@ -764,6 +774,25 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       TypeHandler::Clear(cast<TypeHandler>(elems[i++]));
     } while (i < n);
     ExchangeCurrentSize(0);
+  }
+
+  template <typename T>
+  void MergeFromMessage(const RepeatedPtrFieldBase& from) {
+    int length = from.current_size_;
+    T** new_elements = reinterpret_cast<T**>(InternalExtend(length));
+    Arena* arena = GetOwningArena();
+    T* const* from_elements = reinterpret_cast<T* const*>(from.elements());
+    int length1 = std::min(allocated_size() - current_size_, length);
+    for (int i = 0; i < length1; ++i) {
+      new_elements[i]->MergeFrom(*from_elements[i]);
+    }
+    for (int i = length1; i < length; ++i) {
+      new_elements[i] = Arena::CreateMaybeMessage<T>(arena, *from_elements[i]);
+    }
+    ExchangeCurrentSize(current_size_ + length);
+    if (current_size_ > allocated_size()) {
+      rep()->allocated_size = current_size_;
+    }
   }
 
   // Non-templated inner function to avoid code duplication. Takes a function

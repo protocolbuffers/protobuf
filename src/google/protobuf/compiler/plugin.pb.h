@@ -200,9 +200,8 @@ class PROTOC_EXPORT Version final :
 
   // implements Message ----------------------------------------------
 
-  Version* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Version>(arena);
-  }
+  Version* New(
+      ::google::protobuf::Arena* arena = nullptr PROTOBUF_NEW_OP_DECL) const final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Version& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -408,9 +407,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<CodeGeneratorResponse_File>(arena);
-  }
+  CodeGeneratorResponse_File* New(
+      ::google::protobuf::Arena* arena = nullptr PROTOBUF_NEW_OP_DECL) const final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse_File& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -632,9 +630,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<CodeGeneratorResponse>(arena);
-  }
+  CodeGeneratorResponse* New(
+      ::google::protobuf::Arena* arena = nullptr PROTOBUF_NEW_OP_DECL) const final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -857,9 +854,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorRequest* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<CodeGeneratorRequest>(arena);
-  }
+  CodeGeneratorRequest* New(
+      ::google::protobuf::Arena* arena = nullptr PROTOBUF_NEW_OP_DECL) const final;
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorRequest& from);
   using ::google::protobuf::Message::MergeFrom;

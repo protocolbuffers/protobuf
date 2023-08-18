@@ -170,6 +170,10 @@ PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT MessageLite {
  public:
+#ifdef PROTOBUF_INTERNAL_NEW
+  enum NewOp { kNew, kCopy };
+#endif
+
   constexpr MessageLite() {}
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
@@ -180,6 +184,13 @@ class PROTOBUF_EXPORT MessageLite {
   // Get the name of this message type, e.g. "foo.bar.BazProto".
   virtual std::string GetTypeName() const = 0;
 
+#ifdef PROTOBUF_INTERNAL_NEW
+  // Constructs a new instance on the specified arena or heap.
+  // Ownership is passed to the caller if `arena` is `nullptr`.
+  // If `op` is `kCopy`, then the new instance will be a deep copy of
+  // this instance, else the new instance will be an empty instance.
+  virtual MessageLite* New(Arena* arena = nullptr, NewOp op = kNew) const = 0;
+#else
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
   MessageLite* New() const { return New(nullptr); }
@@ -187,6 +198,7 @@ class PROTOBUF_EXPORT MessageLite {
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
   virtual MessageLite* New(Arena* arena) const = 0;
+#endif
 
   Arena* GetArena() const { return _internal_metadata_.arena(); }
 
@@ -471,6 +483,13 @@ class PROTOBUF_EXPORT MessageLite {
   static T* CreateMaybeMessage(Arena* arena) {
     return Arena::CreateMaybeMessage<T>(arena);
   }
+
+#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
+  template <typename T>
+  static T* CreateMaybeMessage(Arena* arena, const T& from) {
+    return Arena::CreateMaybeMessage<T>(arena, from);
+  }
+#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
 
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 

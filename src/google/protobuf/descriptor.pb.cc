@@ -2330,6 +2330,14 @@ FileDescriptorSet::~FileDescriptorSet() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+FileDescriptorSet* FileDescriptorSet::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  FileDescriptorSet* msg = CreateMaybeMessage<FileDescriptorSet>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void FileDescriptorSet::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_.~RepeatedPtrField();
@@ -2609,6 +2617,14 @@ FileDescriptorProto::~FileDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+FileDescriptorProto* FileDescriptorProto::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  FileDescriptorProto* msg = CreateMaybeMessage<FileDescriptorProto>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void FileDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -3184,6 +3200,14 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+DescriptorProto_ExtensionRange* DescriptorProto_ExtensionRange::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  DescriptorProto_ExtensionRange* msg = CreateMaybeMessage<DescriptorProto_ExtensionRange>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void DescriptorProto_ExtensionRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   if (this != internal_default_instance()) delete _impl_.options_;
@@ -3435,6 +3459,14 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ReservedRange)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+DescriptorProto_ReservedRange* DescriptorProto_ReservedRange::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  DescriptorProto_ReservedRange* msg = CreateMaybeMessage<DescriptorProto_ReservedRange>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void DescriptorProto_ReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -3696,6 +3728,14 @@ DescriptorProto::~DescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+DescriptorProto* DescriptorProto::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  DescriptorProto* msg = CreateMaybeMessage<DescriptorProto>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void DescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -4202,6 +4242,14 @@ ExtensionRangeOptions_Declaration::~ExtensionRangeOptions_Declaration() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+ExtensionRangeOptions_Declaration* ExtensionRangeOptions_Declaration::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  ExtensionRangeOptions_Declaration* msg = CreateMaybeMessage<ExtensionRangeOptions_Declaration>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void ExtensionRangeOptions_Declaration::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.full_name_.Destroy();
@@ -4533,6 +4581,14 @@ ExtensionRangeOptions::~ExtensionRangeOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.ExtensionRangeOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+ExtensionRangeOptions* ExtensionRangeOptions::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  ExtensionRangeOptions* msg = CreateMaybeMessage<ExtensionRangeOptions>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void ExtensionRangeOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -4950,6 +5006,14 @@ FieldDescriptorProto::~FieldDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+FieldDescriptorProto* FieldDescriptorProto::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  FieldDescriptorProto* msg = CreateMaybeMessage<FieldDescriptorProto>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void FieldDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -5464,6 +5528,14 @@ OneofDescriptorProto::~OneofDescriptorProto() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+OneofDescriptorProto* OneofDescriptorProto::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  OneofDescriptorProto* msg = CreateMaybeMessage<OneofDescriptorProto>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void OneofDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
@@ -5695,6 +5767,14 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+EnumDescriptorProto_EnumReservedRange* EnumDescriptorProto_EnumReservedRange::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  EnumDescriptorProto_EnumReservedRange* msg = CreateMaybeMessage<EnumDescriptorProto_EnumReservedRange>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -5946,6 +6026,14 @@ EnumDescriptorProto::~EnumDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+EnumDescriptorProto* EnumDescriptorProto::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  EnumDescriptorProto* msg = CreateMaybeMessage<EnumDescriptorProto>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void EnumDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -6293,6 +6381,14 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+EnumValueDescriptorProto* EnumValueDescriptorProto::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  EnumValueDescriptorProto* msg = CreateMaybeMessage<EnumValueDescriptorProto>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void EnumValueDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
@@ -6582,6 +6678,14 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.ServiceDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+ServiceDescriptorProto* ServiceDescriptorProto::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  ServiceDescriptorProto* msg = CreateMaybeMessage<ServiceDescriptorProto>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void ServiceDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -6914,6 +7018,14 @@ MethodDescriptorProto::~MethodDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodDescriptorProto)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+MethodDescriptorProto* MethodDescriptorProto::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  MethodDescriptorProto* msg = CreateMaybeMessage<MethodDescriptorProto>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void MethodDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -7488,6 +7600,14 @@ FileOptions::~FileOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+FileOptions* FileOptions::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  FileOptions* msg = CreateMaybeMessage<FileOptions>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void FileOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -8321,6 +8441,14 @@ MessageOptions::~MessageOptions() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+MessageOptions* MessageOptions::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  MessageOptions* msg = CreateMaybeMessage<MessageOptions>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void MessageOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
@@ -8702,6 +8830,14 @@ FieldOptions_EditionDefault::~FieldOptions_EditionDefault() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+FieldOptions_EditionDefault* FieldOptions_EditionDefault::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  FieldOptions_EditionDefault* msg = CreateMaybeMessage<FieldOptions_EditionDefault>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void FieldOptions_EditionDefault::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.edition_.Destroy();
@@ -8998,6 +9134,14 @@ FieldOptions::~FieldOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+FieldOptions* FieldOptions::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  FieldOptions* msg = CreateMaybeMessage<FieldOptions>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void FieldOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -9523,6 +9667,14 @@ OneofOptions::~OneofOptions() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+OneofOptions* OneofOptions::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  OneofOptions* msg = CreateMaybeMessage<OneofOptions>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void OneofOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
@@ -9791,6 +9943,14 @@ EnumOptions::~EnumOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+EnumOptions* EnumOptions::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  EnumOptions* msg = CreateMaybeMessage<EnumOptions>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void EnumOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -10132,6 +10292,14 @@ EnumValueOptions::~EnumValueOptions() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+EnumValueOptions* EnumValueOptions::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  EnumValueOptions* msg = CreateMaybeMessage<EnumValueOptions>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void EnumValueOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
@@ -10447,6 +10615,14 @@ ServiceOptions::~ServiceOptions() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+ServiceOptions* ServiceOptions::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  ServiceOptions* msg = CreateMaybeMessage<ServiceOptions>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void ServiceOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
@@ -10743,6 +10919,14 @@ MethodOptions::~MethodOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodOptions)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+MethodOptions* MethodOptions::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  MethodOptions* msg = CreateMaybeMessage<MethodOptions>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void MethodOptions::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -11065,6 +11249,14 @@ UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+UninterpretedOption_NamePart* UninterpretedOption_NamePart::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  UninterpretedOption_NamePart* msg = CreateMaybeMessage<UninterpretedOption_NamePart>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void UninterpretedOption_NamePart::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_part_.Destroy();
@@ -11354,6 +11546,14 @@ UninterpretedOption::~UninterpretedOption() {
   // @@protoc_insertion_point(destructor:google.protobuf.UninterpretedOption)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+UninterpretedOption* UninterpretedOption::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  UninterpretedOption* msg = CreateMaybeMessage<UninterpretedOption>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void UninterpretedOption::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -11746,6 +11946,14 @@ FeatureSet::~FeatureSet() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+FeatureSet* FeatureSet::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  FeatureSet* msg = CreateMaybeMessage<FeatureSet>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void FeatureSet::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_._extensions_.~ExtensionSet();
@@ -12090,6 +12298,14 @@ SourceCodeInfo_Location::~SourceCodeInfo_Location() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+SourceCodeInfo_Location* SourceCodeInfo_Location::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  SourceCodeInfo_Location* msg = CreateMaybeMessage<SourceCodeInfo_Location>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void SourceCodeInfo_Location::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.path_.~RepeatedField();
@@ -12406,6 +12622,14 @@ SourceCodeInfo::~SourceCodeInfo() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+SourceCodeInfo* SourceCodeInfo::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  SourceCodeInfo* msg = CreateMaybeMessage<SourceCodeInfo>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void SourceCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.location_.~RepeatedPtrField();
@@ -12619,6 +12843,14 @@ GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo.Annotation)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+GeneratedCodeInfo_Annotation* GeneratedCodeInfo_Annotation::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  GeneratedCodeInfo_Annotation* msg = CreateMaybeMessage<GeneratedCodeInfo_Annotation>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void GeneratedCodeInfo_Annotation::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -12924,6 +13156,14 @@ GeneratedCodeInfo::~GeneratedCodeInfo() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+GeneratedCodeInfo* GeneratedCodeInfo::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  GeneratedCodeInfo* msg = CreateMaybeMessage<GeneratedCodeInfo>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void GeneratedCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);

@@ -260,6 +260,13 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Basic Operations ------------------------------------------------
 
+#ifdef PROTOBUF_INTERNAL_NEW
+  // Constructs a new instance on the specified arena or heap.
+  // Ownership is passed to the caller if `arena` is `nullptr`.
+  // If `op` is `kCopy`, then the new instance will be a deep copy of
+  // this instance, else the new instance will be an empty instance.
+  Message* New(Arena* arena = nullptr, NewOp op = kNew) const override = 0;
+#else
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.  (This is also defined in MessageLite, but is defined again here
   // for return-type covariance.)
@@ -268,6 +275,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
   Message* New(Arena* arena) const override = 0;
+#endif
 
   // Make this message into a copy of the given message.  The given message
   // must have the same descriptor, but need not necessarily be the same class.

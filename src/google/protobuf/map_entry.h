@@ -232,10 +232,20 @@ class MapEntry : public Message {
     return ValueTypeHandler::IsInitialized(value_);
   }
 
+#ifndef PROTOBUF_INTERNAL_NEW
   Message* New(Arena* arena) const override {
     Derived* entry = Arena::CreateMessage<Derived>(arena);
     return entry;
   }
+#else
+  Message* New(Arena* arena, MessageLite::NewOp op) const override {
+    Derived* entry = Arena::CreateMessage<Derived>(arena);
+    if (op == MessageLite::kCopy) {
+      entry->MergeFrom(*this);
+    }
+    return entry;
+  }
+#endif
 
   void Clear() final {
     KeyTypeHandler::Clear(&key_, GetArenaForAllocation());

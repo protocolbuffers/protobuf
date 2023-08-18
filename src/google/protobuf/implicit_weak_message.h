@@ -81,10 +81,19 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   std::string GetTypeName() const override { return ""; }
 
+#ifndef PROTOBUF_INTERNAL_NEW
   MessageLite* New(Arena* arena) const override {
     return Arena::CreateMessage<ImplicitWeakMessage>(arena);
   }
-
+#else
+  MessageLite* New(Arena* arena, MessageLite::NewOp op) const override {
+    MessageLite* msg = Arena::CreateMessage<ImplicitWeakMessage>(arena);
+    if (op == MessageLite::kCopy) {
+      msg->CheckTypeAndMergeFrom(*this);
+    }
+    return msg;
+  }
+#endif
   void Clear() override { data_->clear(); }
 
   bool IsInitialized() const override { return true; }

@@ -376,6 +376,14 @@ Version::~Version() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+Version* Version::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  Version* msg = CreateMaybeMessage<Version>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void Version::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.suffix_.Destroy();
@@ -691,6 +699,14 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorRequest)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+CodeGeneratorRequest* CodeGeneratorRequest::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  CodeGeneratorRequest* msg = CreateMaybeMessage<CodeGeneratorRequest>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void CodeGeneratorRequest::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
@@ -1067,6 +1083,14 @@ CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
+CodeGeneratorResponse_File* CodeGeneratorResponse_File::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  CodeGeneratorResponse_File* msg = CreateMaybeMessage<CodeGeneratorResponse_File>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
+}
 inline void CodeGeneratorResponse_File::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
@@ -1378,6 +1402,14 @@ CodeGeneratorResponse::~CodeGeneratorResponse() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse)
   _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
+}
+CodeGeneratorResponse* CodeGeneratorResponse::New(
+    ::google::protobuf::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+  CodeGeneratorResponse* msg = CreateMaybeMessage<CodeGeneratorResponse>(arena);
+  if (PROTOBUF_NEW_OP_COPY) {
+    msg->MergeFrom(*this);
+  }
+  return msg;
 }
 inline void CodeGeneratorResponse::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);

@@ -1470,9 +1470,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "\n"
       "// implements Message ----------------------------------------------\n"
       "\n"
-      "$classname$* New(::$proto_ns$::Arena* arena = nullptr) const final {\n"
-      "  return CreateMaybeMessage<$classname$>(arena);\n"
-      "}\n");
+      "$classname$* New(\n    ::$proto_ns$::Arena* arena = nullptr"
+      " PROTOBUF_NEW_OP_DECL) const final;\n");
 
   // For instances that derive from Message (rather than MessageLite), some
   // methods are virtual and should be marked as final.
@@ -2938,6 +2937,17 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
           }
         )cc");
   }
+
+  p->Emit(R"cc(
+    $classname$* $classname$::New(
+        ::$proto_ns$::Arena* arena PROTOBUF_NEW_OP_DEF) const {
+      $classname$* msg = CreateMaybeMessage<$classname$>(arena);
+      if (PROTOBUF_NEW_OP_COPY) {
+        msg->MergeFrom(*this);
+      }
+      return msg;
+    }
+  )cc");
 
   // Generate the shared destructor code.
   GenerateSharedDestructorCode(p);

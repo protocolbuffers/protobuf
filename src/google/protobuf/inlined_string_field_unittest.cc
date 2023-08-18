@@ -47,6 +47,9 @@
 #include "google/protobuf/message.h"
 
 
+// Must be included last
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 
