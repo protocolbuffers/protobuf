@@ -1309,11 +1309,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "\n");
 
   p->Emit(R"cc(
-    inline const $unknown_fields_type$& unknown_fields() const {
+    inline const $unknown_fields_type$& unknown_fields() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_unknown_fields$;
       return $unknown_fields$;
     }
-    inline $unknown_fields_type$* mutable_unknown_fields() {
+    inline $unknown_fields_type$* mutable_unknown_fields()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_mutable_unknown_fields$;
       return $mutable_unknown_fields$;
     }
