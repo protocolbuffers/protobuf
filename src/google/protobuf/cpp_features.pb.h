@@ -116,6 +116,10 @@ class PROTOBUF_EXPORT CppFeatures final :
     *this = ::std::move(from);
   }
 
+  inline CppFeatures(::google::protobuf::Arena* arena, const CppFeatures& from)
+    : CppFeatures(arena) {
+    MergeFrom(from);
+  }
   inline CppFeatures& operator=(const CppFeatures& from) {
     CopyFrom(from);
     return *this;
