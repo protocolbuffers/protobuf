@@ -342,7 +342,7 @@ PROTOBUF_NOINLINE bool CppFeatures::IsInitialized() const {
 ::_pbi::CachedSize* CppFeatures::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void CppFeatures::InternalSwap(CppFeatures* other) {
+void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);

@@ -322,7 +322,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
                       &RepeatedPtrFieldBase::MergeFromInnerLoop<TypeHandler>);
   }
 
-  inline void InternalSwap(RepeatedPtrFieldBase* rhs) {
+  inline void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
     ABSL_DCHECK(this != rhs);
 
     // Swap all fields at once.
@@ -1275,7 +1275,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // For internal use only.
   //
   // This is public due to it being called by generated code.
-  void InternalSwap(RepeatedPtrField* other) {
+  void InternalSwap(RepeatedPtrField* PROTOBUF_RESTRICT other) {
     internal::RepeatedPtrFieldBase::InternalSwap(other);
   }
 

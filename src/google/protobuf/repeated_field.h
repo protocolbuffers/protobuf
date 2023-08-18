@@ -839,7 +839,8 @@ inline const Element* RepeatedField<Element>::data() const
 }
 
 template <typename Element>
-inline void RepeatedField<Element>::InternalSwap(RepeatedField* other) {
+inline void RepeatedField<Element>::InternalSwap(
+    RepeatedField* PROTOBUF_RESTRICT other) {
   ABSL_DCHECK(this != other);
 
   // Swap all fields at once.
