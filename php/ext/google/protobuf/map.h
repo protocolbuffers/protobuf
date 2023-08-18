@@ -43,7 +43,7 @@ typedef struct {
   TypeInfo val_type;
 } MapField_Type;
 
-MapField_Type MapType_Get(const upb_FieldDef *f);
+MapField_Type MapType_Get(const upb_FieldDef* f);
 
 // Gets a upb_Map* for the PHP object |val|:
 //  * If |val| is a RepeatedField object, we first check its type and verify
@@ -55,16 +55,16 @@ MapField_Type MapType_Get(const upb_FieldDef *f);
 //    |arena| and add all of the PHP elements to it.
 //
 // If an error occurs, we raise a PHP error and return NULL.
-upb_Map *MapField_GetUpbMap(zval *val, MapField_Type type, upb_Arena *arena);
+upb_Map* MapField_GetUpbMap(zval* val, MapField_Type type, upb_Arena* arena);
 
 // Creates a PHP MapField object for the given upb_Map* and |f| and returns it
 // in |val|. The PHP object will keep a reference to this |arena| to ensure the
 // underlying array data stays alive.
 //
 // If |map| is NULL, this will return a PHP null object.
-void MapField_GetPhpWrapper(zval *val, upb_Map *arr, MapField_Type type,
-                            zval *arena);
+void MapField_GetPhpWrapper(zval* val, upb_Map* arr, MapField_Type type,
+                            zval* arena);
 
-bool MapEq(const upb_Map *m1, const upb_Map *m2, MapField_Type type);
+bool MapEq(const upb_Map* m1, const upb_Map* m2, MapField_Type type);
 
 #endif  // PHP_PROTOBUF_MAP_H_
