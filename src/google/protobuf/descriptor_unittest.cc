@@ -39,6 +39,7 @@
 #include <cstdlib>
 #include <limits>
 #include <memory>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -83,6 +84,7 @@
 
 using ::testing::AnyOf;
 using ::testing::ElementsAre;
+using ::testing::HasSubstr;
 using ::testing::NotNull;
 
 namespace google {
@@ -612,6 +614,13 @@ TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
     ASSERT_TRUE(descriptor != nullptr) << error_collector.last_error();
     EXPECT_EQ(content, descriptor->DebugString());
   }
+}
+
+TEST_F(FileDescriptorTest, AbslStringifyWorks) {
+  std::string s = absl::StrFormat(
+      "%v",
+      *protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file());
+  EXPECT_THAT(s, HasSubstr("TestMessageWithCustomOptions"));
 }
 
 // ===================================================================
@@ -1209,6 +1218,12 @@ TEST_F(DescriptorTest, FieldEnumType) {
   EXPECT_EQ(enum_, bar_->enum_type());
 }
 
+TEST_F(DescriptorTest, AbslStringifyWorks) {
+  EXPECT_THAT(absl::StrFormat("%v", *message_),
+              HasSubstr(message_->full_name()));
+  EXPECT_THAT(absl::StrFormat("%v", *foo_), HasSubstr(foo_->name()));
+}
+
 
 // ===================================================================
 
@@ -1300,6 +1315,10 @@ TEST_F(OneofDescriptorTest, FindByName) {
   EXPECT_EQ(oneof_, oneof_message_->FindOneofByName("foo"));
   EXPECT_EQ(oneof2_, oneof_message_->FindOneofByName("bar"));
   EXPECT_TRUE(oneof_message_->FindOneofByName("no_such_oneof") == nullptr);
+}
+
+TEST_F(OneofDescriptorTest, AbslStringifyWorks) {
+  EXPECT_THAT(absl::StrFormat("%v", *oneof_), HasSubstr(oneof_->name()));
 }
 
 // ===================================================================
@@ -1650,6 +1669,11 @@ TEST_F(EnumDescriptorTest, IsClosed) {
   EXPECT_FALSE(enum3->is_closed());
 }
 
+TEST_F(EnumDescriptorTest, AbslStringifyWorks) {
+  EXPECT_THAT(absl::StrFormat("%v", *enum_), HasSubstr(enum_->full_name()));
+  EXPECT_THAT(absl::StrFormat("%v", *foo_), HasSubstr(foo_->name()));
+}
+
 // ===================================================================
 
 // Test service descriptors.
@@ -1808,6 +1832,11 @@ TEST_F(ServiceDescriptorTest, MethodInputType) {
 TEST_F(ServiceDescriptorTest, MethodOutputType) {
   EXPECT_EQ(foo_response_, foo_->output_type());
   EXPECT_EQ(bar_response_, bar_->output_type());
+}
+
+TEST_F(ServiceDescriptorTest, AbslStringifyWorks) {
+  EXPECT_THAT(absl::StrFormat("%v", *service_), HasSubstr(service_->name()));
+  EXPECT_THAT(absl::StrFormat("%v", *foo_), HasSubstr(foo_->name()));
 }
 
 // ===================================================================

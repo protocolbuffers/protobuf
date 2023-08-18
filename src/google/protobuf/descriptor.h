@@ -69,6 +69,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
@@ -346,6 +347,12 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // Similar to DebugString(), but additionally takes options (e.g.,
   // include original user comments in output).
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
+
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const Descriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
 
   // Returns true if this is a placeholder for an unknown type. This will
   // only be the case if this descriptor comes from a DescriptorPool
@@ -981,6 +988,12 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
 
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const FieldDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
+
   // Helper method to get the CppType for a particular Type.
   static CppType TypeToCppType(Type type);
 
@@ -1186,6 +1199,12 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
 
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const OneofDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
+
   // Source Location ---------------------------------------------------
 
   // Updates |*out_location| to the source location of the complete
@@ -1306,6 +1325,12 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
+
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const EnumDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
 
   // Returns true if this is a placeholder for an unknown enum. This will
   // only be the case if this descriptor comes from a DescriptorPool
@@ -1500,6 +1525,12 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
 
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const EnumValueDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
+
   // Source Location ---------------------------------------------------
 
   // Updates |*out_location| to the source location of the complete
@@ -1596,6 +1627,12 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
 
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
+
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const ServiceDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
 
   // Source Location ---------------------------------------------------
 
@@ -1697,6 +1734,12 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
 
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
+
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const MethodDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
 
   // Source Location ---------------------------------------------------
 
@@ -1912,6 +1955,12 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
 
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
+
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const FileDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
 
   // Returns true if this is a placeholder for an unknown file. This will
   // only be the case if this descriptor comes from a DescriptorPool
