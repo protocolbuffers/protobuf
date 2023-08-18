@@ -42,7 +42,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@44e0cb5188a35da3521e817fa4231294ca5da326
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -58,7 +58,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run Linkage Monitor test
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@44e0cb5188a35da3521e817fa4231294ca5da326
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -89,7 +89,7 @@ jobs:
         mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
       working-directory: java
     - name: Generate pom.xml files from the template
-      uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+      uses: protocolbuffers/protobuf-ci/bazel-docker@44e0cb5188a35da3521e817fa4231294ca5da326
       with:
         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

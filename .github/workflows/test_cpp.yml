@@ -44,7 +44,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@44e0cb5188a35da3521e817fa4231294ca5da326
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -64,7 +64,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@44e0cb5188a35da3521e817fa4231294ca5da326
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.version }}-6.3.0-518b4fcd8d0ded2484c94f02e835526cacfdac2d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -327,7 +327,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@44e0cb5188a35da3521e817fa4231294ca5da326
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.bazel }}

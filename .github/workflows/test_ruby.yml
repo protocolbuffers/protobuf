@@ -31,7 +31,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@44e0cb5188a35da3521e817fa4231294ca5da326
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -127,7 +127,7 @@ jobs:
         run: ruby --version | grep ${{ matrix.version }} || (echo "Invalid Ruby version - $(ruby --version)" && exit 1)
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@44e0cb5188a35da3521e817fa4231294ca5da326
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_macos/${{ matrix.version }}
@@ -151,7 +151,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@44e0cb5188a35da3521e817fa4231294ca5da326
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
