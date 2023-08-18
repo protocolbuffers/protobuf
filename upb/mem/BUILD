@@ -43,16 +43,18 @@ cc_library(
     name = "internal",
     srcs = [
         "alloc.c",
+        "alloc.h",
         "arena.c",
+        "arena.h",
     ],
     hdrs = [
-        "alloc.h",
-        "arena.h",
         "internal/arena.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__pkg__"],
-    deps = ["//:port"],
+    deps = [
+        "//:port",
+    ],
 )
 
 cc_test(

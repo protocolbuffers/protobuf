@@ -132,6 +132,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":base",
+        ":collections",
         ":collections_internal",
         ":mem",
         ":message_accessors",
@@ -139,6 +140,7 @@ cc_library(
         ":message_internal",
         ":mini_descriptor",
         ":mini_table",
+        ":wire",
         ":wire_internal",
     ],
 )
@@ -288,7 +290,6 @@ bootstrap_cc_library(
         ":message",
         ":message_accessors",
         ":mini_descriptor",
-        ":mini_descriptor_encode_internal",
         ":mini_descriptor_internal",
         ":mini_table",
         ":port",
@@ -426,12 +427,6 @@ alias(
 )
 
 alias(
-    name = "mini_descriptor_encode_internal",
-    actual = "//upb/mini_descriptor:encode_internal",
-    visibility = ["//:__subpackages__"],
-)
-
-alias(
     name = "mini_descriptor_internal",
     actual = "//upb/mini_descriptor:internal",
     visibility = ["//:__subpackages__"],
@@ -562,7 +557,6 @@ upb_amalgamation(
         ":message_tagged_ptr",
         ":message_typedef",
         ":mini_descriptor",
-        ":mini_descriptor_encode_internal",
         ":mini_descriptor_internal",
         ":mini_table",
         ":mini_table_internal",
@@ -610,7 +604,6 @@ upb_amalgamation(
         ":message_tagged_ptr",
         ":message_typedef",
         ":mini_descriptor",
-        ":mini_descriptor_encode_internal",
         ":mini_descriptor_internal",
         ":mini_table",
         ":mini_table_internal",
@@ -659,7 +652,6 @@ upb_amalgamation(
         ":message_tagged_ptr",
         ":message_typedef",
         ":mini_descriptor",
-        ":mini_descriptor_encode_internal",
         ":mini_descriptor_internal",
         ":mini_table",
         ":mini_table_internal",

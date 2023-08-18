@@ -40,7 +40,6 @@
 #include "upb/reflection/message.h"
 #include "upb/text/encode.h"
 #include "upb/util/required_fields.h"
-#include "upb/wire/common.h"
 
 static const upb_MessageDef* PyUpb_MessageMeta_GetMsgdef(PyObject* cls);
 static PyObject* PyUpb_MessageMeta_GetAttr(PyObject* self, PyObject* name);
@@ -1104,7 +1103,7 @@ static PyObject* PyUpb_Message_CheckCalledFromGeneratedFile(
     PyObject* unused, PyObject* unused_arg) {
   PyErr_SetString(
       PyExc_TypeError,
-      "Descriptors cannot not be created directly.\n"
+      "Descriptors cannot be created directly.\n"
       "If this call came from a _pb2.py file, your generated code is out of "
       "date and must be regenerated with protoc >= 3.19.0.\n"
       "If you cannot immediately regenerate your protos, some other possible "

@@ -36,6 +36,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/extension_registry.h"
+#include "upb/wire/common.h"
 
 // Must be last.
 #include "upb/port/def.inc"

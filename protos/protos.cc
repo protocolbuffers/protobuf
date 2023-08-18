@@ -46,7 +46,6 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/message.h"
-#include "upb/wire/common.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 

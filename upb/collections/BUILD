@@ -45,15 +45,15 @@ cc_library(
     name = "internal",
     srcs = [
         "array.c",
+        "array.h",
         "map.c",
+        "map.h",
         "map_sorter.c",
     ],
     hdrs = [
-        "array.h",
         "internal/array.h",
         "internal/map.h",
         "internal/map_sorter.h",
-        "map.h",
         "map_gencode_util.h",
         "message_value.h",
     ],

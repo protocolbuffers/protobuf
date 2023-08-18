@@ -38,7 +38,6 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":internal",
         "//:port",
     ],
 )

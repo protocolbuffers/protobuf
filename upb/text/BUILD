@@ -36,6 +36,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        "//:collections",
         "//:collections_internal",
         "//:eps_copy_input_stream",
         "//:lex",

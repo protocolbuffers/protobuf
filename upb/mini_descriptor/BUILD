@@ -32,10 +32,13 @@ cc_library(
     name = "internal",
     srcs = [
         "internal/base92.c",
+        "internal/encode.c",
     ],
     hdrs = [
         "internal/base92.h",
         "internal/decoder.h",
+        "internal/encode.h",
+        "internal/encode.hpp",
         "internal/modifiers.h",
         "internal/wire_constants.h",
     ],
@@ -48,31 +51,11 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "encode_internal",
-    srcs = [
-        "internal/encode.c",
-    ],
-    hdrs = [
-        "internal/encode.h",
-        "internal/encode.hpp",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":internal",
-        "//:base",
-        "//:base_internal",
-        "//:port",
-    ],
-)
-
 cc_test(
     name = "encode_test",
     srcs = ["internal/encode_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
-        ":encode_internal",
         ":internal",
         ":mini_descriptor",
         "//:message_accessors_internal",

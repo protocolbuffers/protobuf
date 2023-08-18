@@ -27,7 +27,10 @@ load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
     name = "wire",
+    srcs = [
+    ],
     hdrs = [
+        "common.h",
         "decode.h",
         "encode.h",
     ],
@@ -45,15 +48,15 @@ cc_library(
 cc_library(
     name = "internal",
     srcs = [
+        "common.h",
         "decode.c",
+        "decode.h",
         "decode_fast.c",
         "encode.c",
+        "encode.h",
     ],
     hdrs = [
-        "common.h",
-        "decode.h",
         "decode_fast.h",
-        "encode.h",
         "internal/common.h",
         "internal/decode.h",
         "internal/swap.h",
@@ -66,6 +69,7 @@ cc_library(
         ":types",
         "//:base",
         "//:collections_internal",
+        "//:mem",
         "//:mem_internal",
         "//:message_accessors_internal",
         "//:message_internal",
