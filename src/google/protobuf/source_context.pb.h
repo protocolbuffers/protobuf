@@ -83,6 +83,10 @@ class PROTOBUF_EXPORT SourceContext final :
     *this = ::std::move(from);
   }
 
+  inline SourceContext(::google::protobuf::Arena* arena, const SourceContext& from)
+    : SourceContext(arena) {
+    MergeFrom(from);
+  }
   inline SourceContext& operator=(const SourceContext& from) {
     CopyFrom(from);
     return *this;

@@ -83,6 +83,10 @@ class PROTOBUF_EXPORT Duration final :
     *this = ::std::move(from);
   }
 
+  inline Duration(::google::protobuf::Arena* arena, const Duration& from)
+    : Duration(arena) {
+    MergeFrom(from);
+  }
   inline Duration& operator=(const Duration& from) {
     CopyFrom(from);
     return *this;

@@ -83,6 +83,10 @@ class PROTOBUF_EXPORT Any final :
     *this = ::std::move(from);
   }
 
+  inline Any(::google::protobuf::Arena* arena, const Any& from)
+    : Any(arena) {
+    MergeFrom(from);
+  }
   inline Any& operator=(const Any& from) {
     CopyFrom(from);
     return *this;

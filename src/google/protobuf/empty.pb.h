@@ -83,6 +83,10 @@ class PROTOBUF_EXPORT Empty final :
     *this = ::std::move(from);
   }
 
+  inline Empty(::google::protobuf::Arena* arena, const Empty& from)
+    : Empty(arena) {
+    MergeFrom(from);
+  }
   inline Empty& operator=(const Empty& from) {
     CopyFrom(from);
     return *this;

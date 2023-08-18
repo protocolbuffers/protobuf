@@ -127,6 +127,10 @@ class PROTOBUF_EXPORT ListValue final :
     *this = ::std::move(from);
   }
 
+  inline ListValue(::google::protobuf::Arena* arena, const ListValue& from)
+    : ListValue(arena) {
+    MergeFrom(from);
+  }
   inline ListValue& operator=(const ListValue& from) {
     CopyFrom(from);
     return *this;
@@ -296,6 +300,10 @@ class PROTOBUF_EXPORT Struct final :
     *this = ::std::move(from);
   }
 
+  inline Struct(::google::protobuf::Arena* arena, const Struct& from)
+    : Struct(arena) {
+    MergeFrom(from);
+  }
   inline Struct& operator=(const Struct& from) {
     CopyFrom(from);
     return *this;
@@ -492,6 +500,10 @@ class PROTOBUF_EXPORT Value final :
     *this = ::std::move(from);
   }
 
+  inline Value(::google::protobuf::Arena* arena, const Value& from)
+    : Value(arena) {
+    MergeFrom(from);
+  }
   inline Value& operator=(const Value& from) {
     CopyFrom(from);
     return *this;

@@ -107,6 +107,10 @@ class PROTOBUF_EXPORT UInt64Value final :
     *this = ::std::move(from);
   }
 
+  inline UInt64Value(::google::protobuf::Arena* arena, const UInt64Value& from)
+    : UInt64Value(arena) {
+    MergeFrom(from);
+  }
   inline UInt64Value& operator=(const UInt64Value& from) {
     CopyFrom(from);
     return *this;
@@ -268,6 +272,10 @@ class PROTOBUF_EXPORT UInt32Value final :
     *this = ::std::move(from);
   }
 
+  inline UInt32Value(::google::protobuf::Arena* arena, const UInt32Value& from)
+    : UInt32Value(arena) {
+    MergeFrom(from);
+  }
   inline UInt32Value& operator=(const UInt32Value& from) {
     CopyFrom(from);
     return *this;
@@ -429,6 +437,10 @@ class PROTOBUF_EXPORT StringValue final :
     *this = ::std::move(from);
   }
 
+  inline StringValue(::google::protobuf::Arena* arena, const StringValue& from)
+    : StringValue(arena) {
+    MergeFrom(from);
+  }
   inline StringValue& operator=(const StringValue& from) {
     CopyFrom(from);
     return *this;
@@ -596,6 +608,10 @@ class PROTOBUF_EXPORT Int64Value final :
     *this = ::std::move(from);
   }
 
+  inline Int64Value(::google::protobuf::Arena* arena, const Int64Value& from)
+    : Int64Value(arena) {
+    MergeFrom(from);
+  }
   inline Int64Value& operator=(const Int64Value& from) {
     CopyFrom(from);
     return *this;
@@ -757,6 +773,10 @@ class PROTOBUF_EXPORT Int32Value final :
     *this = ::std::move(from);
   }
 
+  inline Int32Value(::google::protobuf::Arena* arena, const Int32Value& from)
+    : Int32Value(arena) {
+    MergeFrom(from);
+  }
   inline Int32Value& operator=(const Int32Value& from) {
     CopyFrom(from);
     return *this;
@@ -918,6 +938,10 @@ class PROTOBUF_EXPORT FloatValue final :
     *this = ::std::move(from);
   }
 
+  inline FloatValue(::google::protobuf::Arena* arena, const FloatValue& from)
+    : FloatValue(arena) {
+    MergeFrom(from);
+  }
   inline FloatValue& operator=(const FloatValue& from) {
     CopyFrom(from);
     return *this;
@@ -1079,6 +1103,10 @@ class PROTOBUF_EXPORT DoubleValue final :
     *this = ::std::move(from);
   }
 
+  inline DoubleValue(::google::protobuf::Arena* arena, const DoubleValue& from)
+    : DoubleValue(arena) {
+    MergeFrom(from);
+  }
   inline DoubleValue& operator=(const DoubleValue& from) {
     CopyFrom(from);
     return *this;
@@ -1240,6 +1268,10 @@ class PROTOBUF_EXPORT BytesValue final :
     *this = ::std::move(from);
   }
 
+  inline BytesValue(::google::protobuf::Arena* arena, const BytesValue& from)
+    : BytesValue(arena) {
+    MergeFrom(from);
+  }
   inline BytesValue& operator=(const BytesValue& from) {
     CopyFrom(from);
     return *this;
@@ -1407,6 +1439,10 @@ class PROTOBUF_EXPORT BoolValue final :
     *this = ::std::move(from);
   }
 
+  inline BoolValue(::google::protobuf::Arena* arena, const BoolValue& from)
+    : BoolValue(arena) {
+    MergeFrom(from);
+  }
   inline BoolValue& operator=(const BoolValue& from) {
     CopyFrom(from);
     return *this;

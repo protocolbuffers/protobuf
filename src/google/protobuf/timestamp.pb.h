@@ -83,6 +83,10 @@ class PROTOBUF_EXPORT Timestamp final :
     *this = ::std::move(from);
   }
 
+  inline Timestamp(::google::protobuf::Arena* arena, const Timestamp& from)
+    : Timestamp(arena) {
+    MergeFrom(from);
+  }
   inline Timestamp& operator=(const Timestamp& from) {
     CopyFrom(from);
     return *this;

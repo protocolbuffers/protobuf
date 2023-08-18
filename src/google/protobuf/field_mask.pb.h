@@ -83,6 +83,10 @@ class PROTOBUF_EXPORT FieldMask final :
     *this = ::std::move(from);
   }
 
+  inline FieldMask(::google::protobuf::Arena* arena, const FieldMask& from)
+    : FieldMask(arena) {
+    MergeFrom(from);
+  }
   inline FieldMask& operator=(const FieldMask& from) {
     CopyFrom(from);
     return *this;

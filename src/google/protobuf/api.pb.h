@@ -91,6 +91,10 @@ class PROTOBUF_EXPORT Mixin final :
     *this = ::std::move(from);
   }
 
+  inline Mixin(::google::protobuf::Arena* arena, const Mixin& from)
+    : Mixin(arena) {
+    MergeFrom(from);
+  }
   inline Mixin& operator=(const Mixin& from) {
     CopyFrom(from);
     return *this;
@@ -276,6 +280,10 @@ class PROTOBUF_EXPORT Method final :
     *this = ::std::move(from);
   }
 
+  inline Method(::google::protobuf::Arena* arena, const Method& from)
+    : Method(arena) {
+    MergeFrom(from);
+  }
   inline Method& operator=(const Method& from) {
     CopyFrom(from);
     return *this;
@@ -535,6 +543,10 @@ class PROTOBUF_EXPORT Api final :
     *this = ::std::move(from);
   }
 
+  inline Api(::google::protobuf::Arena* arena, const Api& from)
+    : Api(arena) {
+    MergeFrom(from);
+  }
   inline Api& operator=(const Api& from) {
     CopyFrom(from);
     return *this;

@@ -214,6 +214,10 @@ class PROTOBUF_EXPORT Option final :
     *this = ::std::move(from);
   }
 
+  inline Option(::google::protobuf::Arena* arena, const Option& from)
+    : Option(arena) {
+    MergeFrom(from);
+  }
   inline Option& operator=(const Option& from) {
     CopyFrom(from);
     return *this;
@@ -399,6 +403,10 @@ class PROTOBUF_EXPORT Field final :
     *this = ::std::move(from);
   }
 
+  inline Field(::google::protobuf::Arena* arena, const Field& from)
+    : Field(arena) {
+    MergeFrom(from);
+  }
   inline Field& operator=(const Field& from) {
     CopyFrom(from);
     return *this;
@@ -759,6 +767,10 @@ class PROTOBUF_EXPORT EnumValue final :
     *this = ::std::move(from);
   }
 
+  inline EnumValue(::google::protobuf::Arena* arena, const EnumValue& from)
+    : EnumValue(arena) {
+    MergeFrom(from);
+  }
   inline EnumValue& operator=(const EnumValue& from) {
     CopyFrom(from);
     return *this;
@@ -958,6 +970,10 @@ class PROTOBUF_EXPORT Type final :
     *this = ::std::move(from);
   }
 
+  inline Type(::google::protobuf::Arena* arena, const Type& from)
+    : Type(arena) {
+    MergeFrom(from);
+  }
   inline Type& operator=(const Type& from) {
     CopyFrom(from);
     return *this;
@@ -1243,6 +1259,10 @@ class PROTOBUF_EXPORT Enum final :
     *this = ::std::move(from);
   }
 
+  inline Enum(::google::protobuf::Arena* arena, const Enum& from)
+    : Enum(arena) {
+    MergeFrom(from);
+  }
   inline Enum& operator=(const Enum& from) {
     CopyFrom(from);
     return *this;
