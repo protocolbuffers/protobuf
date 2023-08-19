@@ -33,7 +33,6 @@
 
 # pylint:disable=missing-module-docstring
 # pylint:disable=g-bad-import-order
-from distutils import util
 import fnmatch
 import glob
 import os
@@ -50,8 +49,8 @@ import sysconfig
 # namespace_packages option for the "google" package.
 from setuptools import setup, Extension, find_packages
 
-from distutils.command.build_ext import build_ext as _build_ext
-from distutils.command.build_py import build_py as _build_py
+from setuptools.command.build_ext import build_ext as _build_ext
+from setuptools.command.build_py import build_py as _build_py
 from distutils.command.clean import clean as _clean
 from distutils.spawn import find_executable
 
@@ -386,7 +385,7 @@ if __name__ == '__main__':
         os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
         os.environ['_PYTHON_HOST_PLATFORM'] = re.sub(
             r'macosx-[0-9]+\.[0-9]+-(.+)', r'macosx-10.9-\1',
-            util.get_platform())
+            sysconfig.get_platform())
 
     # https://github.com/Theano/Theano/issues/4926
     if sys.platform == 'win32':
@@ -433,32 +432,6 @@ if __name__ == '__main__':
   install_requires = []
 
   setup(
-      name='protobuf',
-      version=GetVersion(),
-      description='Protocol Buffers',
-      download_url='https://github.com/protocolbuffers/protobuf/releases',
-      long_description="Protocol Buffers are Google's data interchange format",
-      url='https://developers.google.com/protocol-buffers/',
-      project_urls={
-          'Source': 'https://github.com/protocolbuffers/protobuf',
-      },
-      maintainer='protobuf@googlegroups.com',
-      maintainer_email='protobuf@googlegroups.com',
-      license='BSD-3-Clause',
-      classifiers=[
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.7',
-          'Programming Language :: Python :: 3.8',
-          'Programming Language :: Python :: 3.9',
-          'Programming Language :: Python :: 3.10',
-      ],
-      namespace_packages=['google'],
-      packages=find_packages(
-          exclude=[
-              'import_test_package',
-              'protobuf_distutils',
-          ],),
       test_suite='google.protobuf.internal',
       cmdclass={
           'clean': CleanCmd,
@@ -468,5 +441,4 @@ if __name__ == '__main__':
       },
       install_requires=install_requires,
       ext_modules=ext_module_list,
-      python_requires='>=3.7',
   )
