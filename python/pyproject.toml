@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "protobuf"
+description = "Protocol Buffers are Google's data interchange format"
+readme = "README.md"
+requires-python='>=3.7'
+maintainers= [
+  { email = "protobuf@googlegroups.com" }
+]
+license = { text = "BSD-3-Clause" }
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10"
+]
+dynamic = ["version"]
+
+[project.urls]
+homepage = "https://developers.google.com/protocol-buffers/"
+repository = "https://github.com/protocolbuffers/protobuf"
+download = "https://github.com/protocolbuffers/protobuf/releases"
+
+[tool.setuptools.dynamic]
+version = { attr = "protobuf.google.__init__.__version__" }
+
+[tool.setuptools.packages.find]
+exclude = [
+    "import_test_package",
+    "protobuf_distutils",
+]
