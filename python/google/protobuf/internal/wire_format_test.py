@@ -38,7 +38,7 @@ from google.protobuf import message
 from google.protobuf.internal import wire_format
 
 
-class WireFormatTest:
+class TestWireFormat:
     def test_pack_tag(self):
         field_number = 0xabc
         tag_type = 2
