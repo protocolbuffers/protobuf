@@ -30,7 +30,7 @@ download = "https://github.com/protocolbuffers/protobuf/releases"
 version = { attr = "google.protobuf.__init__.__version__" }
 
 [tool.setuptools.packages.find]
-include = ["google.*"]
+include = ["../src/google/protobuf.*"]
 exclude = [
     "import_test_package",
     "protobuf_distutils"
