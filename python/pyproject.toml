@@ -34,3 +34,4 @@ exclude = [
     "import_test_package",
     "protobuf_distutils",
 ]
+namespaces = false
