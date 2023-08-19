@@ -30,74 +30,67 @@
 
 """Tests for google.protobuf.internal.keywords."""
 
-import unittest
-
+import pytest
 
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf import descriptor_pool
 
 
-class KeywordsConflictTest(unittest.TestCase):
+@pytest.fixture
+def pool():
+    return descriptor_pool.Default()
 
-  def setUp(self):
-    super(KeywordsConflictTest, self).setUp()
-    self.pool = descriptor_pool.Default()
-
-  def testMessage(self):
+def test_message(pool):
     message = getattr(more_messages_pb2, 'class')()
     message.int_field = 123
-    self.assertEqual(message.int_field, 123)
-    des = self.pool.FindMessageTypeByName('google.protobuf.internal.class')
-    self.assertEqual(des.name, 'class')
+    assert message.int_field == 123
+    des = pool.FindMessageTypeByName('google.protobuf.internal.class')
+    assert des.name == 'class'
 
-  def testNestedMessage(self):
+def test_nested_message(pool):
     message = getattr(more_messages_pb2, 'class')()
     message.nested_message.field = 234
-    self.assertEqual(message.nested_message.field, 234)
-    des = self.pool.FindMessageTypeByName('google.protobuf.internal.class.try')
-    self.assertEqual(des.name, 'try')
+    assert message.nested_message.field == 234
+    des = pool.FindMessageTypeByName('google.protobuf.internal.class.try')
+    assert des.name == 'try'
 
-  def testField(self):
+def test_field():
     message = getattr(more_messages_pb2, 'class')()
     setattr(message, 'if', 123)
     setattr(message, 'as', 1)
-    self.assertEqual(getattr(message, 'if'), 123)
-    self.assertEqual(getattr(message, 'as'), 1)
+    assert getattr(message, 'if') == 123
+    assert getattr(message, 'as') == 1
 
-  def testEnum(self):
+def test_enum():
     class_ = getattr(more_messages_pb2, 'class')
     message = class_()
     # Normal enum value.
     message.enum_field = more_messages_pb2.default
-    self.assertEqual(message.enum_field, more_messages_pb2.default)
+    assert message.enum_field == more_messages_pb2.default
     # Top level enum value.
     message.enum_field = getattr(more_messages_pb2, 'else')
-    self.assertEqual(message.enum_field, 1)
+    assert message.enum_field == 1
     # Nested enum value
     message.nested_enum_field = getattr(class_, 'True')
-    self.assertEqual(message.nested_enum_field, 1)
+    assert message.nested_enum_field == 1
 
-  def testExtension(self):
+def test_extension():
     message = getattr(more_messages_pb2, 'class')()
     # Top level extension
     extension1 = getattr(more_messages_pb2, 'continue')
     message.Extensions[extension1] = 456
-    self.assertEqual(message.Extensions[extension1], 456)
+    assert message.Extensions[extension1] == 456
     # None top level extension
     extension2 = getattr(more_messages_pb2.ExtendClass, 'return')
     message.Extensions[extension2] = 789
-    self.assertEqual(message.Extensions[extension2], 789)
+    assert message.Extensions[extension2] == 789
 
-  def testExtensionForNestedMessage(self):
+def test_extension_for_nested_message():
     message = getattr(more_messages_pb2, 'class')()
     extension = getattr(more_messages_pb2, 'with')
     message.nested_message.Extensions[extension] = 999
-    self.assertEqual(message.nested_message.Extensions[extension], 999)
+    assert message.nested_message.Extensions[extension] == 999
 
-  def TestFullKeywordUsed(self):
+def test_full_keyword_used():
     message = more_messages_pb2.TestFullKeyword()
     message.field2.int_field = 123
-
-
-if __name__ == '__main__':
-  unittest.main()
