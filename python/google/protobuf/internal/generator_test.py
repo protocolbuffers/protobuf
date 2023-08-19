@@ -58,7 +58,7 @@ from google.protobuf import unittest_no_generic_services_pb2
 MAX_EXTENSION = 536870912
 
 
-class GeneratorTest:
+class TestGenerator:
     def test_nested_message_descriptor(self):
         field_name = 'optional_nested_message'
         proto_type = unittest_pb2.TestAllTypes
@@ -326,7 +326,7 @@ class GeneratorTest:
         assert 'BAR1' == unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.BAR2)
 
 
-class SymbolDatabaseRegistrationTest:
+class TestSymbolDatabaseRegistration:
     """Checks that messages, enums and files are correctly registered."""
 
     def test_get_symbol(self):
