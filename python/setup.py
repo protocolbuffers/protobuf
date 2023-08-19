@@ -38,6 +38,7 @@ import glob
 import os
 import pkg_resources
 import re
+import shutil
 import subprocess
 import sys
 import sysconfig
@@ -52,7 +53,6 @@ from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.build_py import build_py as _build_py
 from distutils.command.clean import clean as _clean
-from distutils.spawn import find_executable
 
 # Find the Protocol Compiler.
 if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
@@ -70,7 +70,7 @@ elif os.path.exists('../vsprojects/Debug/protoc.exe'):
 elif os.path.exists('../vsprojects/Release/protoc.exe'):
   protoc = '../vsprojects/Release/protoc.exe'
 else:
-  protoc = find_executable('protoc')
+  protoc = shutil.which('protoc')
 
 
 def GetVersion():

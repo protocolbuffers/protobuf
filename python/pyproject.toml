@@ -27,7 +27,7 @@ repository = "https://github.com/protocolbuffers/protobuf"
 download = "https://github.com/protocolbuffers/protobuf/releases"
 
 [tool.setuptools.dynamic]
-version = { attr = "protobuf.google.__init__.__version__" }
+version = { attr = "google.protobuf.__init__.__version__" }
 
 [tool.setuptools.packages.find]
 exclude = [
