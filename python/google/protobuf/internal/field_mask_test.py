@@ -40,7 +40,7 @@ from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
 
 
-class FieldMaskTest:
+class TestFieldMask:
     def test_string_format(self):
         mask = field_mask_pb2.FieldMask()
         assert '' == mask.ToJsonString()
@@ -340,12 +340,8 @@ class FieldMaskTest:
         mask = field_mask_pb2.FieldMask()
         test_util.SetAllFields(src)
         mask.FromJsonString('optionalInt32.field')
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match='Error: Field optional_int32 in message protobuf_unittest.TestAllTypes is not a singular message field and cannot have sub-fields.') as e:
             mask.MergeMessage(src, dst)
-        assert ('Error: Field optional_int32 in message '
-                'protobuf_unittest.TestAllTypes is not a singular '
-                'message field and cannot have sub-fields.'
-                == str(e.exception))
 
     def test_snake_case_to_camel_case(self):
         assert 'fooBar' == field_mask._SnakeCaseToCamelCase('foo_bar')
@@ -353,42 +349,23 @@ class FieldMaskTest:
         assert 'foo3Bar' == field_mask._SnakeCaseToCamelCase('foo3_bar')
 
         # No uppercase letter is allowed.
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match='Fail to print FieldMask to Json string: Path name Foo must not contain uppercase letters.'):
             field_mask._SnakeCaseToCamelCase('Foo')
-        assert (
-            'Fail to print FieldMask to Json string: Path name Foo must '
-            'not contain uppercase letters.'
-            == e)
             
         # Any character after a "_" must be a lowercase letter.
         #   1. "_" cannot be followed by another "_".
         #   2. "_" cannot be followed by a digit.
         #   3. "_" cannot appear as the last character.
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match='Fail to print FieldMask to Json string: The character after a "_" must be a lowercase letter in path name foo__bar.'):
             field_mask._SnakeCaseToCamelCase('foo__bar')
-        assert (
-            'Fail to print FieldMask to Json string: The character after a '
-            '"_" must be a lowercase letter in path name foo__bar.'
-            == e)
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match='Fail to print FieldMask to Json string: The character after a "_" must be a lowercase letter in path name foo_3bar.'):
             field_mask._SnakeCaseToCamelCase('foo_3bar')
-        assert (
-            'Fail to print FieldMask to Json string: The character after a '
-            '"_" must be a lowercase letter in path name foo_3bar.'
-            == e)
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match='Fail to print FieldMask to Json string: Trailing "_" in path name foo_bar_.'):
             field_mask._SnakeCaseToCamelCase('foo_bar_')
-        assert (
-            'Fail to print FieldMask to Json string: Trailing "_" in path '
-            'name foo_bar_.'
-            == e)
 
     def test_camel_case_to_snake_case(self):
         assert 'foo_bar' == field_mask._CamelCaseToSnakeCase('fooBar')
         assert '_foo_bar' == field_mask._CamelCaseToSnakeCase('FooBar')
         assert 'foo3_bar' == field_mask._CamelCaseToSnakeCase('foo3Bar')
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match='Fail to parse FieldMask: Path name foo_bar must not contain "_"s.'):
             field_mask._CamelCaseToSnakeCase('foo_bar')
-        assert (
-            'Fail to parse FieldMask: Path name foo_bar must not contain "_"s.'
-            == e)
