@@ -69,21 +69,6 @@ else:
   protoc = shutil.which('protoc')
 
 
-def GetVersion():
-  """Reads and returns the version from google/protobuf/__init__.py.
-
-  Do not import google.protobuf.__init__ directly, because an installed
-  protobuf library may be loaded instead.
-
-  Returns:
-      The version.
-  """
-
-  with open(os.path.join('google', 'protobuf', '__init__.py')) as version_file:
-    exec(version_file.read(), globals())  # pylint:disable=exec-used
-    return __version__  # pylint:disable=undefined-variable
-
-
 def GenProto(source, require=True):
   """Generates a _pb2.py from the given .proto file.
 
