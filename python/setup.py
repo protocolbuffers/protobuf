@@ -45,13 +45,9 @@ import sysconfig
 # pylint:disable=g-importing-member
 # pylint:disable=g-multiple-import
 
-# We must use setuptools, not distutils, because we need to use the
-# namespace_packages option for the "google" package.
-from setuptools import setup, Extension, find_packages
-
+from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.build_py import build_py as _build_py
-from distutils.command.clean import clean as _clean
 from packaging import version
 
 # Find the Protocol Compiler.
@@ -164,21 +160,6 @@ def GenerateUnittestProtos():
   GenProto('google/protobuf/internal/test_bad_identifiers.proto', False)
   GenProto('google/protobuf/internal/test_proto3_optional.proto', False)
   GenProto('google/protobuf/pyext/python.proto', False)
-
-
-class CleanCmd(_clean):
-  """Custom clean command for building the protobuf extension."""
-
-  def run(self):
-    # Delete generated files in the code tree.
-    for (dirpath, unused_dirnames, filenames) in os.walk('.'):
-      for filename in filenames:
-        filepath = os.path.join(dirpath, filename)
-        if (filepath.endswith('_pb2.py') or filepath.endswith('.pyc') or
-            filepath.endswith('.so') or filepath.endswith('.o')):
-          os.remove(filepath)
-    # _clean is an old-style class, so super() doesn't work.
-    _clean.run(self)
 
 
 class BuildPyCmd(_build_py):
@@ -430,7 +411,6 @@ if __name__ == '__main__':
   setup(
       test_suite='google.protobuf.internal',
       cmdclass={
-          'clean': CleanCmd,
           'build_py': BuildPyCmd,
           'build_ext': BuildExtCmd,
           'test_conformance': TestConformanceCmd,
