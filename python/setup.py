@@ -36,7 +36,6 @@
 import fnmatch
 import glob
 import os
-import pkg_resources
 import re
 import shutil
 import subprocess
@@ -53,6 +52,7 @@ from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.build_py import build_py as _build_py
 from distutils.command.clean import clean as _clean
+from packaging import version
 
 # Find the Protocol Compiler.
 if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
@@ -380,8 +380,7 @@ if __name__ == '__main__':
     # deployment target of macOS 10.9 or later, or iOS 7 or later.
     if sys.platform == 'darwin':
       mac_target = str(sysconfig.get_config_var('MACOSX_DEPLOYMENT_TARGET'))
-      if mac_target and (pkg_resources.parse_version(mac_target) <
-                         pkg_resources.parse_version('10.9.0')):
+      if mac_target and (version.parse(mac_target) < version.parse('10.9.0')):
         os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
         os.environ['_PYTHON_HOST_PLATFORM'] = re.sub(
             r'macosx-[0-9]+\.[0-9]+-(.+)', r'macosx-10.9-\1',
