@@ -31,19 +31,12 @@
 
 """Unittest for nested public imports."""
 
-import unittest
-
 from google.protobuf.internal.import_test_package import outer_pb2
 
 
-class ImportTest(unittest.TestCase):
+class ImportTest:
+    def test_package_initialization_import(self):
+        """Test that we can import nested import public messages."""
 
-  def testPackageInitializationImport(self):
-    """Test that we can import nested import public messages."""
-
-    msg = outer_pb2.Outer()
-    self.assertEqual(58, msg.import_public_nested.value)
-
-
-if __name__ == '__main__':
-  unittest.main()
+        msg = outer_pb2.Outer()
+        assert 58 == msg.import_public_nested.value
