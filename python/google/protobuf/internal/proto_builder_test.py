@@ -31,7 +31,8 @@
 """Tests for google.protobuf.proto_builder."""
 
 import collections
-import unittest
+
+import pytest
 
 from google.protobuf import descriptor
 from google.protobuf import descriptor_pb2
@@ -40,53 +41,47 @@ from google.protobuf import proto_builder
 from google.protobuf import text_format
 
 
-class ProtoBuilderTest(unittest.TestCase):
-
-  def setUp(self):
-    super().setUp()
-
-    self.ordered_fields = collections.OrderedDict([
+@pytest.fixture
+def ordered_fields():
+    return collections.OrderedDict([
         ('foo', descriptor_pb2.FieldDescriptorProto.TYPE_INT64),
         ('bar', descriptor_pb2.FieldDescriptorProto.TYPE_STRING),
-        ])
-    self._fields = dict(self.ordered_fields)
+    ])
 
-  def testMakeSimpleProtoClass(self):
+def test_make_simple_proto_class(ordered_fields):
     """Test that we can create a proto class."""
     proto_cls = proto_builder.MakeSimpleProtoClass(
-        self._fields,
+        dict(ordered_fields),
         full_name='net.proto2.python.public.proto_builder_test.Test')
     proto = proto_cls()
     proto.foo = 12345
     proto.bar = 'asdf'
-    self.assertMultiLineEqual(
-        'bar: "asdf"\nfoo: 12345\n', text_format.MessageToString(proto))
+    assert 'bar: "asdf"\nfoo: 12345\n' == text_format.MessageToString(proto)
 
-  def testOrderedFields(self):
+def test_ordered_fields(self):
     """Test that the field order is maintained when given an OrderedDict."""
     proto_cls = proto_builder.MakeSimpleProtoClass(
-        self.ordered_fields,
+        ordered_fields,
         full_name='net.proto2.python.public.proto_builder_test.OrderedTest')
     proto = proto_cls()
     proto.foo = 12345
     proto.bar = 'asdf'
-    self.assertMultiLineEqual(
-        'foo: 12345\nbar: "asdf"\n', text_format.MessageToString(proto))
+    assert 'foo: 12345\nbar: "asdf"\n' == text_format.MessageToString(proto)
 
-  def testMakeSameProtoClassTwice(self):
+def test_make_same_proto_class_twice(ordered_fields):
     """Test that the DescriptorPool is used."""
     pool = descriptor_pool.DescriptorPool()
     proto_cls1 = proto_builder.MakeSimpleProtoClass(
-        self._fields,
+        dict(ordered_fields),
         full_name='net.proto2.python.public.proto_builder_test.Test',
         pool=pool)
     proto_cls2 = proto_builder.MakeSimpleProtoClass(
-        self._fields,
+        dict(ordered_fields),
         full_name='net.proto2.python.public.proto_builder_test.Test',
         pool=pool)
-    self.assertIs(proto_cls1.DESCRIPTOR, proto_cls2.DESCRIPTOR)
+    assert proto_cls1.DESCRIPTOR is proto_cls2.DESCRIPTOR
 
-  def testMakeLargeProtoClass(self):
+def test_make_large_proto_class():
     """Test that large created protos don't use reserved field numbers."""
     num_fields = 123456
     fields = {
@@ -101,8 +96,4 @@ class ProtoBuilderTest(unittest.TestCase):
         range(descriptor.FieldDescriptor.FIRST_RESERVED_FIELD_NUMBER,
               descriptor.FieldDescriptor.LAST_RESERVED_FIELD_NUMBER + 1))
     proto_field_numbers = set(proto_cls.DESCRIPTOR.fields_by_number)
-    self.assertFalse(reserved_field_numbers.intersection(proto_field_numbers))
-
-
-if __name__ == '__main__':
-  unittest.main()
+    assert not reserved_field_numbers.intersection(proto_field_numbers)
