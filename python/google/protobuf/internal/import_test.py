@@ -34,7 +34,7 @@
 from google.protobuf.internal.import_test_package import outer_pb2
 
 
-class ImportTest:
+class TestImport:
     def test_package_initialization_import(self):
         """Test that we can import nested import public messages."""
 
