@@ -8,7 +8,7 @@ description = "Protocol Buffers are Google's data interchange format"
 readme = "README.md"
 requires-python='>=3.7'
 maintainers= [
-  { email = "protobuf@googlegroups.com" }
+    { email = "protobuf@googlegroups.com" }
 ]
 license = { text = "BSD-3-Clause" }
 classifiers = [
@@ -30,8 +30,8 @@ download = "https://github.com/protocolbuffers/protobuf/releases"
 version = { attr = "google.protobuf.__init__.__version__" }
 
 [tool.setuptools.packages.find]
+include = ["google.*"]
 exclude = [
     "import_test_package",
-    "protobuf_distutils",
+    "protobuf_distutils"
 ]
-namespaces = false

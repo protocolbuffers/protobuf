@@ -427,9 +427,6 @@ if __name__ == '__main__':
     ])
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 
-  # Keep this list of dependencies in sync with tox.ini.
-  install_requires = []
-
   setup(
       test_suite='google.protobuf.internal',
       cmdclass={
@@ -438,6 +435,5 @@ if __name__ == '__main__':
           'build_ext': BuildExtCmd,
           'test_conformance': TestConformanceCmd,
       },
-      install_requires=install_requires,
       ext_modules=ext_module_list,
   )
