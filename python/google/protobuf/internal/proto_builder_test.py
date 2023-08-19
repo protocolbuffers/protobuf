@@ -58,7 +58,7 @@ def test_make_simple_proto_class(ordered_fields):
     proto.bar = 'asdf'
     assert 'bar: "asdf"\nfoo: 12345\n' == text_format.MessageToString(proto)
 
-def test_ordered_fields(self):
+def test_ordered_fields(ordered_fields):
     """Test that the field order is maintained when given an OrderedDict."""
     proto_cls = proto_builder.MakeSimpleProtoClass(
         ordered_fields,
