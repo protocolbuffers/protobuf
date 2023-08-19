@@ -30,8 +30,6 @@
 
 """Tests for google.protobuf.text_encoding."""
 
-import unittest
-
 from google.protobuf import text_encoding
 
 TEST_VALUES = [
@@ -49,19 +47,12 @@ TEST_VALUES = [
      b"\010\011\012\013\014\015")]
 
 
-class TextEncodingTestCase(unittest.TestCase):
-  def testCEscape(self):
+def test_c_escape():
     for escaped, escaped_utf8, unescaped in TEST_VALUES:
-      self.assertEqual(escaped,
-                        text_encoding.CEscape(unescaped, as_utf8=False))
-      self.assertEqual(escaped_utf8,
-                        text_encoding.CEscape(unescaped, as_utf8=True))
+        assert escaped == text_encoding.CEscape(unescaped, as_utf8=False)
+        assert escaped_utf8 == text_encoding.CEscape(unescaped, as_utf8=True)
 
-  def testCUnescape(self):
+def test_c_unescape():
     for escaped, escaped_utf8, unescaped in TEST_VALUES:
-      self.assertEqual(unescaped, text_encoding.CUnescape(escaped))
-      self.assertEqual(unescaped, text_encoding.CUnescape(escaped_utf8))
-
-
-if __name__ == "__main__":
-  unittest.main()
+        assert unescaped == text_encoding.CUnescape(escaped)
+        assert unescaped == text_encoding.CUnescape(escaped_utf8)
