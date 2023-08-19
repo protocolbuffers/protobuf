@@ -38,6 +38,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CODE_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_CODE_GENERATOR_H__
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -131,19 +132,27 @@ class PROTOC_EXPORT CodeGenerator {
   virtual bool HasGenerateAll() const { return true; }
 
  protected:
-  // Retrieves the resolved source features for a given descriptor.  These
-  // should be used to make any feature-based decisions during code generation.
+  // Retrieves the resolved source features for a given descriptor.  All the
+  // features that are imported (from the proto file) and linked in (from the
+  // callers binary) will be fully resolved. These should be used to make any
+  // feature-based decisions during code generation.
   template <typename DescriptorT>
-  static const FeatureSet& GetSourceFeatures(const DescriptorT& desc) {
+  static const FeatureSet& GetResolvedSourceFeatures(const DescriptorT& desc) {
     return ::google::protobuf::internal::InternalFeatureHelper::GetFeatures(desc);
   }
 
-  // Retrieves the raw source features for a given descriptor.  These should be
-  // used to validate the original .proto file and make any decisions about it
-  // during code generation.
-  template <typename DescriptorT>
-  static const FeatureSet& GetSourceRawFeatures(const DescriptorT& desc) {
-    return ::google::protobuf::internal::InternalFeatureHelper::GetRawFeatures(desc);
+  // Retrieves the unresolved source features for a given descriptor.  These
+  // should be used to validate the original .proto file.  These represent the
+  // original proto files from generated code, but should be stripped of
+  // source-retention features before sending to a runtime.
+  template <typename DescriptorT, typename TypeTraitsT, uint8_t field_type,
+            bool is_packed>
+  static typename TypeTraitsT::ConstType GetUnresolvedSourceFeatures(
+      const DescriptorT& descriptor,
+      const google::protobuf::internal::ExtensionIdentifier<
+          FeatureSet, TypeTraitsT, field_type, is_packed>& extension) {
+    return ::google::protobuf::internal::InternalFeatureHelper::GetUnresolvedFeatures(
+        descriptor, extension);
   }
 };
 

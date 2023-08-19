@@ -365,21 +365,23 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   absl::Status status = absl::OkStatus();
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
-    const FeatureSet& source_features = GetSourceFeatures(field);
-    const FeatureSet& raw_features = GetSourceRawFeatures(field);
+    const FeatureSet& resolved_features = GetResolvedSourceFeatures(field);
+    const pb::CppFeatures& unresolved_features =
+        GetUnresolvedSourceFeatures(field, pb::cpp);
     if (field.enum_type() != nullptr &&
-        source_features.GetExtension(::pb::cpp).legacy_closed_enum() &&
-        source_features.field_presence() == FeatureSet::IMPLICIT) {
+        resolved_features.GetExtension(::pb::cpp).legacy_closed_enum() &&
+        resolved_features.field_presence() == FeatureSet::IMPLICIT) {
       status = absl::FailedPreconditionError(
           absl::StrCat("Field ", field.full_name(),
                        " has a closed enum type with implicit presence."));
     }
-    if (source_features.GetExtension(::pb::cpp).utf8_validation() ==
+    if (resolved_features.GetExtension(::pb::cpp).utf8_validation() ==
         pb::CppFeatures::UTF8_VALIDATION_UNKNOWN) {
       status = absl::FailedPreconditionError(absl::StrCat(
           "Field ", field.full_name(),
           " has an unknown value for the utf8_validation feature. ",
-          source_features.DebugString(), "\nRawFeatures: ", raw_features));
+          resolved_features.DebugString(),
+          "\nRawFeatures: ", unresolved_features));
     }
 
     if (field.containing_type() == nullptr ||
@@ -388,7 +390,7 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
       // will be blindly propagated from the original map field, and may violate
       // a lot of these conditions.  Note: we do still validate the
       // user-specified map field.
-      if (raw_features.GetExtension(::pb::cpp).has_legacy_closed_enum() &&
+      if (unresolved_features.has_legacy_closed_enum() &&
           field.cpp_type() != FieldDescriptor::CPPTYPE_ENUM) {
         status = absl::FailedPreconditionError(
             absl::StrCat("Field ", field.full_name(),
@@ -397,7 +399,7 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
       }
       if (field.type() != FieldDescriptor::TYPE_STRING &&
           !IsStringMapType(field) &&
-          raw_features.GetExtension(::pb::cpp).has_utf8_validation()) {
+          unresolved_features.has_utf8_validation()) {
         status = absl::FailedPreconditionError(
             absl::StrCat("Field ", field.full_name(),
                          " specifies the utf8_validation feature but is not of "

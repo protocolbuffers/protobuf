@@ -61,8 +61,8 @@ class TestGenerator : public CodeGenerator {
   }
 
   // Expose the protected methods for testing.
-  using CodeGenerator::GetSourceFeatures;
-  using CodeGenerator::GetSourceRawFeatures;
+  using CodeGenerator::GetResolvedSourceFeatures;
+  using CodeGenerator::GetUnresolvedSourceFeatures;
 };
 
 class SimpleErrorCollector : public io::ErrorCollector {
@@ -101,7 +101,7 @@ class CodeGeneratorTest : public ::testing::Test {
   DescriptorPool pool_;
 };
 
-TEST_F(CodeGeneratorTest, GetSourceRawFeaturesRoot) {
+TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesRoot) {
   auto file = BuildFile(R"schema(
     edition = "2023";
     package protobuf_unittest;
@@ -115,15 +115,14 @@ TEST_F(CodeGeneratorTest, GetSourceRawFeaturesRoot) {
   )schema");
   ASSERT_THAT(file, NotNull());
 
-  EXPECT_THAT(TestGenerator::GetSourceRawFeatures(*file),
+  EXPECT_THAT(TestGenerator::GetUnresolvedSourceFeatures(*file, pb::test),
               google::protobuf::EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: CLOSED
-                [pb.test] { int_file_feature: 8 string_source_feature: "file" }
+                int_file_feature: 8
+                string_source_feature: "file"
               )pb"));
 }
 
-TEST_F(CodeGeneratorTest, GetSourceRawFeaturesInherited) {
+TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesInherited) {
   auto file = BuildFile(R"schema(
     edition = "2023";
     package protobuf_unittest;
@@ -149,14 +148,14 @@ TEST_F(CodeGeneratorTest, GetSourceRawFeaturesInherited) {
       file->FindMessageTypeByName("EditionsMessage")->FindFieldByName("field");
   ASSERT_THAT(field, NotNull());
 
-  EXPECT_THAT(
-      TestGenerator::GetSourceRawFeatures(*field), google::protobuf::EqualsProto(R"pb(
-        field_presence: EXPLICIT
-        [pb.test] { int_multiple_feature: 9 string_source_feature: "field" }
-      )pb"));
+  EXPECT_THAT(TestGenerator::GetUnresolvedSourceFeatures(*field, pb::test),
+              google::protobuf::EqualsProto(R"pb(
+                int_multiple_feature: 9
+                string_source_feature: "field"
+              )pb"));
 }
 
-TEST_F(CodeGeneratorTest, GetSourceFeaturesRoot) {
+TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
   auto file = BuildFile(R"schema(
     edition = "2023";
     package protobuf_unittest;
@@ -170,7 +169,7 @@ TEST_F(CodeGeneratorTest, GetSourceFeaturesRoot) {
   )schema");
   ASSERT_THAT(file, NotNull());
 
-  const FeatureSet& features = TestGenerator::GetSourceFeatures(*file);
+  const FeatureSet& features = TestGenerator::GetResolvedSourceFeatures(*file);
   const pb::TestFeatures& ext = features.GetExtension(pb::test);
 
   EXPECT_TRUE(features.has_repeated_field_encoding());
@@ -183,7 +182,7 @@ TEST_F(CodeGeneratorTest, GetSourceFeaturesRoot) {
   EXPECT_EQ(ext.string_source_feature(), "file");
 }
 
-TEST_F(CodeGeneratorTest, GetSourceFeaturesInherited) {
+TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
   auto file = BuildFile(R"schema(
     edition = "2023";
     package protobuf_unittest;
@@ -210,7 +209,7 @@ TEST_F(CodeGeneratorTest, GetSourceFeaturesInherited) {
   const FieldDescriptor* field =
       file->FindMessageTypeByName("EditionsMessage")->FindFieldByName("field");
   ASSERT_THAT(field, NotNull());
-  const FeatureSet& features = TestGenerator::GetSourceFeatures(*field);
+  const FeatureSet& features = TestGenerator::GetResolvedSourceFeatures(*field);
   const pb::TestFeatures& ext = features.GetExtension(pb::test);
 
   EXPECT_EQ(features.enum_type(), FeatureSet::CLOSED);

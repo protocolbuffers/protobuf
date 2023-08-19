@@ -72,6 +72,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/extension_set.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -261,9 +262,10 @@ class PROTOBUF_EXPORT SymbolBase {
 template <int N>
 class PROTOBUF_EXPORT SymbolBaseN : public SymbolBase {};
 
-// This class is for internal use only and provides access to the FeatureSets
-// defined on descriptors.  These features are not designed to be stable, and
-// depending directly on them (vs the public descriptor APIs) is not safe.
+// This class is for internal use only and provides access to the resolved
+// runtime FeatureSets of any descriptor.  These features are not designed
+// to be stable, and depending directly on them (vs the public descriptor APIs)
+// is not safe.
 class PROTOBUF_EXPORT InternalFeatureHelper {
  public:
   template <typename DescriptorT>
@@ -275,14 +277,18 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
   friend class ::google::protobuf::compiler::CodeGenerator;
   friend class ::google::protobuf::compiler::CommandLineInterface;
 
-  // Provides a restricted view exclusively to code generators.  Raw features
-  // haven't been resolved, and are virtually meaningless to everyone else. Code
-  // generators will need them to validate their own features, and runtimes may
-  // need them internally to be able to properly represent the original proto
-  // files from generated code.
-  template <typename DescriptorT>
-  static const FeatureSet& GetRawFeatures(const DescriptorT& desc) {
-    return *desc.proto_features_;
+  // Provides a restricted view exclusively to code generators to query their
+  // own unresolved features.  Unresolved features are virtually meaningless to
+  // everyone else. Code generators will need them to validate their own
+  // features, and runtimes may need them internally to be able to properly
+  // represent the original proto files from generated code.
+  template <typename DescriptorT, typename TypeTraitsT, uint8_t field_type,
+            bool is_packed>
+  static typename TypeTraitsT::ConstType GetUnresolvedFeatures(
+      const DescriptorT& descriptor,
+      const google::protobuf::internal::ExtensionIdentifier<
+          FeatureSet, TypeTraitsT, field_type, is_packed>& extension) {
+    return descriptor.proto_features_->GetExtension(extension);
   }
 };
 
