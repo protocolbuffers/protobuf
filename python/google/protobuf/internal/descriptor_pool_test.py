@@ -448,7 +448,7 @@ class DescriptorPoolTestBase:
             _check_value_and_type(msg.optional_float, 0, (float, int))
             _check_value_and_type(msg.optional_double, 0, (float, int))
             _check_value_and_type(msg.optional_bool, False, bool)
-            _check_value_and_type(msg.optional_string, u'', unicode_type)
+            _check_value_and_type(msg.optional_string, '', unicode_type)
             _check_value_and_type(msg.optional_bytes, b'', bytes)
             _check_value_and_type(msg.optional_nested_enum, msg.FOO, int)
         # First for the generated message
