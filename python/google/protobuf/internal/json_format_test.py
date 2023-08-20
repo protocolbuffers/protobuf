@@ -232,7 +232,7 @@ class TestJsonFormat(JsonFormatBase):
                 },
                 '[protobuf_unittest.'
                 'TestMessageSetExtension2.message_set_extension]': {
-                    'str': u'foo',
+                    'str': 'foo',
                 },
             },
         }
@@ -252,7 +252,7 @@ class TestJsonFormat(JsonFormatBase):
         )
         expected_dict = {
             '[protobuf_unittest.TestExtension.ext]': {
-                'value': u'stuff',
+                'value': 'stuff',
             },
         }
         assert expected_dict == message_dict
