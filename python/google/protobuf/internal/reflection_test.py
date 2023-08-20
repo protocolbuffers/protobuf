@@ -794,16 +794,16 @@ class TestReflection:
         # Try to assign a 'bytes' object which contains non-UTF-8.
         pytest.raises(ValueError, setattr, proto, 'optional_string', b'a\x80a')
         # No exception: Assign already encoded UTF-8 bytes to a string field.
-        utf8_bytes = u'Тест'.encode('utf-8')
+        utf8_bytes = 'Тест'.encode('utf-8')
         proto.optional_string = utf8_bytes
         # No exception: Assign the a non-ascii unicode object.
-        proto.optional_string = u'Тест'
+        proto.optional_string = 'Тест'
         # No exception thrown (normal str assignment containing ASCII).
         proto.optional_string = 'abc'
 
     def test_bytes_in_text_format(self, message_module):
         proto = message_module.TestAllTypes(optional_bytes=b'\x00\x7f\x80\xff')
-        assert u'optional_bytes: "\\000\\177\\200\\377"\n' == str(proto)
+        assert 'optional_bytes: "\\000\\177\\200\\377"\n' == str(proto)
 
     def test_empty_nested_message(self, message_module):
         proto = message_module.TestAllTypes()
@@ -1087,7 +1087,7 @@ class TestProto2Reflection:
         assert unittest_import_pb2.IMPORT_BAR == proto.default_import_enum
 
         proto = unittest_pb2.TestExtremeDefaultValues()
-        assert u'\u1234' == proto.utf8_string
+        assert '\u1234' == proto.utf8_string
 
     def test_has_field_with_unknown_field_name(self):
         proto = unittest_pb2.TestAllTypes()
@@ -1951,7 +1951,7 @@ class TestProto2Reflection:
         extension_message = message_set_extensions_pb2.TestMessageSetExtension2
         extension = extension_message.message_set_extension
 
-        test_utf8 = u'Тест'
+        test_utf8 = 'Тест'
         test_utf8_bytes = test_utf8.encode('utf-8')
 
         # 'Test' in another language, using UTF-8 charset.
