@@ -2517,61 +2517,60 @@ class ValidTypeNamesTest(unittest.TestCase):
 
 
 @testing_refleaks.TestCase
-class PackedFieldTest(unittest.TestCase):
+class TestPackedField:
+    def set_message(self, message):
+        message.repeated_int32.append(1)
+        message.repeated_int64.append(1)
+        message.repeated_uint32.append(1)
+        message.repeated_uint64.append(1)
+        message.repeated_sint32.append(1)
+        message.repeated_sint64.append(1)
+        message.repeated_fixed32.append(1)
+        message.repeated_fixed64.append(1)
+        message.repeated_sfixed32.append(1)
+        message.repeated_sfixed64.append(1)
+        message.repeated_float.append(1.0)
+        message.repeated_double.append(1.0)
+        message.repeated_bool.append(True)
+        message.repeated_nested_enum.append(1)
 
-  def setMessage(self, message):
-    message.repeated_int32.append(1)
-    message.repeated_int64.append(1)
-    message.repeated_uint32.append(1)
-    message.repeated_uint64.append(1)
-    message.repeated_sint32.append(1)
-    message.repeated_sint64.append(1)
-    message.repeated_fixed32.append(1)
-    message.repeated_fixed64.append(1)
-    message.repeated_sfixed32.append(1)
-    message.repeated_sfixed64.append(1)
-    message.repeated_float.append(1.0)
-    message.repeated_double.append(1.0)
-    message.repeated_bool.append(True)
-    message.repeated_nested_enum.append(1)
+    def test_packed_fields(self):
+        message = packed_field_test_pb2.TestPackedTypes()
+        self.set_message(message)
+        golden_data = (b'\x0A\x01\x01'
+                      b'\x12\x01\x01'
+                      b'\x1A\x01\x01'
+                      b'\x22\x01\x01'
+                      b'\x2A\x01\x02'
+                      b'\x32\x01\x02'
+                      b'\x3A\x04\x01\x00\x00\x00'
+                      b'\x42\x08\x01\x00\x00\x00\x00\x00\x00\x00'
+                      b'\x4A\x04\x01\x00\x00\x00'
+                      b'\x52\x08\x01\x00\x00\x00\x00\x00\x00\x00'
+                      b'\x5A\x04\x00\x00\x80\x3f'
+                      b'\x62\x08\x00\x00\x00\x00\x00\x00\xf0\x3f'
+                      b'\x6A\x01\x01'
+                      b'\x72\x01\x01')
+        assert golden_data == message.SerializeToString()
 
-  def testPackedFields(self):
-    message = packed_field_test_pb2.TestPackedTypes()
-    self.setMessage(message)
-    golden_data = (b'\x0A\x01\x01'
-                   b'\x12\x01\x01'
-                   b'\x1A\x01\x01'
-                   b'\x22\x01\x01'
-                   b'\x2A\x01\x02'
-                   b'\x32\x01\x02'
-                   b'\x3A\x04\x01\x00\x00\x00'
-                   b'\x42\x08\x01\x00\x00\x00\x00\x00\x00\x00'
-                   b'\x4A\x04\x01\x00\x00\x00'
-                   b'\x52\x08\x01\x00\x00\x00\x00\x00\x00\x00'
-                   b'\x5A\x04\x00\x00\x80\x3f'
-                   b'\x62\x08\x00\x00\x00\x00\x00\x00\xf0\x3f'
-                   b'\x6A\x01\x01'
-                   b'\x72\x01\x01')
-    assert golden_data == message.SerializeToString()
-
-  def testUnpackedFields(self):
-    message = packed_field_test_pb2.TestUnpackedTypes()
-    self.setMessage(message)
-    golden_data = (b'\x08\x01'
-                   b'\x10\x01'
-                   b'\x18\x01'
-                   b'\x20\x01'
-                   b'\x28\x02'
-                   b'\x30\x02'
-                   b'\x3D\x01\x00\x00\x00'
-                   b'\x41\x01\x00\x00\x00\x00\x00\x00\x00'
-                   b'\x4D\x01\x00\x00\x00'
-                   b'\x51\x01\x00\x00\x00\x00\x00\x00\x00'
-                   b'\x5D\x00\x00\x80\x3f'
-                   b'\x61\x00\x00\x00\x00\x00\x00\xf0\x3f'
-                   b'\x68\x01'
-                   b'\x70\x01')
-    assert golden_data == message.SerializeToString()
+    def test_unpacked_fields(self):
+        message = packed_field_test_pb2.TestUnpackedTypes()
+        self.set_message(message)
+        golden_data = (b'\x08\x01'
+                      b'\x10\x01'
+                      b'\x18\x01'
+                      b'\x20\x01'
+                      b'\x28\x02'
+                      b'\x30\x02'
+                      b'\x3D\x01\x00\x00\x00'
+                      b'\x41\x01\x00\x00\x00\x00\x00\x00\x00'
+                      b'\x4D\x01\x00\x00\x00'
+                      b'\x51\x01\x00\x00\x00\x00\x00\x00\x00'
+                      b'\x5D\x00\x00\x80\x3f'
+                      b'\x61\x00\x00\x00\x00\x00\x00\xf0\x3f'
+                      b'\x68\x01'
+                      b'\x70\x01')
+        assert golden_data == message.SerializeToString()
 
 
 @pytest.mark.skipif(api_implementation.Type() == 'python',
