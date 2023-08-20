@@ -45,8 +45,6 @@ import operator
 import pickle
 import pydoc
 import sys
-import unittest
-import warnings
 
 import pytest
 
@@ -68,8 +66,6 @@ from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 
 UCS2_MAXUNICODE = 65535
-
-warnings.simplefilter('error', DeprecationWarning)
 
 
 @pytest.mark.parametrize(
@@ -2100,7 +2096,7 @@ class TestProto3:
         msg = map_unittest_pb2.TestMap()
         with pytest.raises(
               TypeError,
-              match='Parameter to [A-Za-z]*From\(\) must be instance of same class: '
+              match=r'Parameter to [A-Za-z]*From\(\) must be instance of same class: '
               r'expected .+TestMap got int\.'):
           msg.CopyFrom(1)
 
@@ -2494,26 +2490,25 @@ class TestProto3:
 
 
 @testing_refleaks.TestCase
-class ValidTypeNamesTest(unittest.TestCase):
+class TestValidTypeNames:
+    def assert_import_from_name(self, msg, base_name):
+        # Parse <type 'module.class_name'> to extra 'some.name' as a string.
+        tp_name = str(type(msg)).split("'")[1]
+        valid_names = ('Repeated%sContainer' % base_name,
+                      'Repeated%sFieldContainer' % base_name)
+        assert any(tp_name.endswith(v) for v in valid_names), (
+            '%r does end with any of %r' % (tp_name, valid_names))
 
-  def assertImportFromName(self, msg, base_name):
-    # Parse <type 'module.class_name'> to extra 'some.name' as a string.
-    tp_name = str(type(msg)).split("'")[1]
-    valid_names = ('Repeated%sContainer' % base_name,
-                   'Repeated%sFieldContainer' % base_name)
-    assert any(tp_name.endswith(v) for v in valid_names), (
-        '%r does end with any of %r' % (tp_name, valid_names))
+        parts = tp_name.split('.')
+        class_name = parts[-1]
+        module_name = '.'.join(parts[:-1])
+        __import__(module_name, fromlist=[class_name])
 
-    parts = tp_name.split('.')
-    class_name = parts[-1]
-    module_name = '.'.join(parts[:-1])
-    __import__(module_name, fromlist=[class_name])
-
-  def testTypeNamesCanBeImported(self):
-    # If import doesn't work, pickling won't work either.
-    pb = unittest_pb2.TestAllTypes()
-    self.assertImportFromName(pb.repeated_int32, 'Scalar')
-    self.assertImportFromName(pb.repeated_nested_message, 'Composite')
+    def test_type_names_can_be_imported(self):
+        # If import doesn't work, pickling won't work either.
+        pb = unittest_pb2.TestAllTypes()
+        self.assert_import_from_name(pb.repeated_int32, 'Scalar')
+        self.assert_import_from_name(pb.repeated_nested_message, 'Composite')
 
 
 @testing_refleaks.TestCase
