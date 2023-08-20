@@ -1030,287 +1030,286 @@ class TestTextFormatMerge(TextFormatBase):
 # the moment because of differences between the proto2 and proto3 test schemas.
 # Ideally the schemas would be made more similar so these tests could pass.
 class TestOnlyWorksWithProto2RightNow(TextFormatBase):
+    def test_print_all_fields_pointy(self):
+        message = unittest_pb2.TestAllTypes()
+        test_util.SetAllFields(message)
+        self.compare_to_golden_file(
+            self.remove_redundant_zeros(text_format.MessageToString(
+                message, pointy_brackets=True)),
+            'text_format_unittest_data_pointy_oneof.txt')
 
-  def test_print_all_fields_pointy(self):
-    message = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(message)
-    self.compare_to_golden_file(
-        self.remove_redundant_zeros(text_format.MessageToString(
-            message, pointy_brackets=True)),
-        'text_format_unittest_data_pointy_oneof.txt')
+    def test_parse_golden(self):
+        golden_text = '\n'.join(self.read_golden(
+            'text_format_unittest_data_oneof_implemented.txt'))
+        parsed_message = unittest_pb2.TestAllTypes()
+        r = text_format.Parse(golden_text, parsed_message)
+        assert r == parsed_message
 
-  def test_parse_golden(self):
-    golden_text = '\n'.join(self.read_golden(
-        'text_format_unittest_data_oneof_implemented.txt'))
-    parsed_message = unittest_pb2.TestAllTypes()
-    r = text_format.Parse(golden_text, parsed_message)
-    assert r == parsed_message
+        message = unittest_pb2.TestAllTypes()
+        test_util.SetAllFields(message)
+        assert message == parsed_message
 
-    message = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(message)
-    assert message == parsed_message
+    def test_print_all_fields(self):
+        message = unittest_pb2.TestAllTypes()
+        test_util.SetAllFields(message)
+        self.compare_to_golden_file(
+            self.remove_redundant_zeros(text_format.MessageToString(message)),
+            'text_format_unittest_data_oneof_implemented.txt')
 
-  def test_print_all_fields(self):
-    message = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(message)
-    self.compare_to_golden_file(
-        self.remove_redundant_zeros(text_format.MessageToString(message)),
-        'text_format_unittest_data_oneof_implemented.txt')
+    def test_print_unknown_fields(self):
+        message = unittest_pb2.TestAllTypes()
+        message.optional_int32 = 101
+        message.optional_double = 102.0
+        message.optional_string = u'hello'
+        message.optional_bytes = b'103'
+        message.optionalgroup.a = 104
+        message.optional_nested_message.bb = 105
+        all_data = message.SerializeToString()
+        empty_message = unittest_pb2.TestEmptyMessage()
+        empty_message.ParseFromString(all_data)
+        assert ('  1: 101\n'
+                '  12: 4636878028842991616\n'
+                '  14: "hello"\n'
+                '  15: "103"\n'
+                '  16 {\n'
+                '    17: 104\n'
+                '  }\n'
+                '  18 {\n'
+                '    1: 105\n'
+                '  }\n'
+                == text_format.MessageToString(empty_message,
+                                            indent=2,
+                                            print_unknown_fields=True))
+        assert ('1: 101 '
+                '12: 4636878028842991616 '
+                '14: "hello" '
+                '15: "103" '
+                '16 { 17: 104 } '
+                '18 { 1: 105 }'
+                == text_format.MessageToString(empty_message,
+                                            print_unknown_fields=True,
+                                            as_one_line=True))
 
-  def test_print_unknown_fields(self):
-    message = unittest_pb2.TestAllTypes()
-    message.optional_int32 = 101
-    message.optional_double = 102.0
-    message.optional_string = u'hello'
-    message.optional_bytes = b'103'
-    message.optionalgroup.a = 104
-    message.optional_nested_message.bb = 105
-    all_data = message.SerializeToString()
-    empty_message = unittest_pb2.TestEmptyMessage()
-    empty_message.ParseFromString(all_data)
-    assert ('  1: 101\n'
-            '  12: 4636878028842991616\n'
-            '  14: "hello"\n'
-            '  15: "103"\n'
-            '  16 {\n'
-            '    17: 104\n'
+    def test_print_in_index_order(self):
+        message = unittest_pb2.TestFieldOrderings()
+        # Fields are listed in index order instead of field number.
+        message.my_string = 'str'
+        message.my_int = 101
+        message.my_float = 111
+        message.optional_nested_message.oo = 0
+        message.optional_nested_message.bb = 1
+        message.Extensions[unittest_pb2.my_extension_string] = 'ext_str0'
+        # Extensions are listed based on the order of extension number.
+        # Extension number 12.
+        message.Extensions[unittest_pb2.TestExtensionOrderings2.
+                          test_ext_orderings2].my_string = 'ext_str2'
+        # Extension number 13.
+        message.Extensions[unittest_pb2.TestExtensionOrderings1.
+                          test_ext_orderings1].my_string = 'ext_str1'
+        # Extension number 14.
+        message.Extensions[
+            unittest_pb2.TestExtensionOrderings2.TestExtensionOrderings3.
+            test_ext_orderings3].my_string = 'ext_str3'
+
+        # Print in index order.
+        self.compare_to_golden_text(
+            self.remove_redundant_zeros(
+                text_format.MessageToString(message, use_index_order=True)),
+            'my_string: "str"\n'
+            'my_int: 101\n'
+            'my_float: 111\n'
+            'optional_nested_message {\n'
+            '  oo: 0\n'
+            '  bb: 1\n'
+            '}\n'
+            '[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
+            '  my_string: "ext_str2"\n'
+            '}\n'
+            '[protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
+            '  my_string: "ext_str1"\n'
+            '}\n'
+            '[protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
+            '.test_ext_orderings3] {\n'
+            '  my_string: "ext_str3"\n'
+            '}\n'
+            '[protobuf_unittest.my_extension_string]: "ext_str0"\n')
+        # By default, print in field number order.
+        self.compare_to_golden_text(
+            self.remove_redundant_zeros(text_format.MessageToString(message)),
+            'my_int: 101\n'
+            'my_string: "str"\n'
+            '[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
+            '  my_string: "ext_str2"\n'
+            '}\n'
+            '[protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
+            '  my_string: "ext_str1"\n'
+            '}\n'
+            '[protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
+            '.test_ext_orderings3] {\n'
+            '  my_string: "ext_str3"\n'
+            '}\n'
+            '[protobuf_unittest.my_extension_string]: "ext_str0"\n'
+            'my_float: 111\n'
+            'optional_nested_message {\n'
+            '  bb: 1\n'
+            '  oo: 0\n'
+            '}\n')
+
+    def test_merge_lines_golden(self):
+        opened = self.read_golden('text_format_unittest_data_oneof_implemented.txt')
+        parsed_message = unittest_pb2.TestAllTypes()
+        r = text_format.MergeLines(opened, parsed_message)
+        assert r == parsed_message
+
+        message = unittest_pb2.TestAllTypes()
+        test_util.SetAllFields(message)
+        assert message == parsed_message
+
+    def test_parse_lines_golden(self):
+        opened = self.read_golden('text_format_unittest_data_oneof_implemented.txt')
+        parsed_message = unittest_pb2.TestAllTypes()
+        r = text_format.ParseLines(opened, parsed_message)
+        assert r == parsed_message
+
+        message = unittest_pb2.TestAllTypes()
+        test_util.SetAllFields(message)
+        assert message == parsed_message
+
+    def test_print_map(self):
+        message = map_unittest_pb2.TestMap()
+
+        message.map_int32_int32[-123] = -456
+        message.map_int64_int64[-2**33] = -2**34
+        message.map_uint32_uint32[123] = 456
+        message.map_uint64_uint64[2**33] = 2**34
+        message.map_string_string['abc'] = '123'
+        message.map_int32_foreign_message[111].c = 5
+
+        # Maps are serialized to text format using their underlying repeated
+        # representation.
+        self.compare_to_golden_text(
+            text_format.MessageToString(message), 'map_int32_int32 {\n'
+            '  key: -123\n'
+            '  value: -456\n'
+            '}\n'
+            'map_int64_int64 {\n'
+            '  key: -8589934592\n'
+            '  value: -17179869184\n'
+            '}\n'
+            'map_uint32_uint32 {\n'
+            '  key: 123\n'
+            '  value: 456\n'
+            '}\n'
+            'map_uint64_uint64 {\n'
+            '  key: 8589934592\n'
+            '  value: 17179869184\n'
+            '}\n'
+            'map_string_string {\n'
+            '  key: "abc"\n'
+            '  value: "123"\n'
+            '}\n'
+            'map_int32_foreign_message {\n'
+            '  key: 111\n'
+            '  value {\n'
+            '    c: 5\n'
             '  }\n'
-            '  18 {\n'
-            '    1: 105\n'
+            '}\n')
+
+    def test_duplicate_map_key(self):
+        message = map_unittest_pb2.TestMap()
+        text = (
+            'map_uint64_uint64 {\n'
+            '  key: 123\n'
+            '  value: 17179869184\n'
+            '}\n'
+            'map_string_string {\n'
+            '  key: "abc"\n'
+            '  value: "first"\n'
+            '}\n'
+            'map_int32_foreign_message {\n'
+            '  key: 111\n'
+            '  value {\n'
+            '    c: 5\n'
             '  }\n'
-            == text_format.MessageToString(empty_message,
-                                        indent=2,
-                                        print_unknown_fields=True))
-    assert ('1: 101 '
-            '12: 4636878028842991616 '
-            '14: "hello" '
-            '15: "103" '
-            '16 { 17: 104 } '
-            '18 { 1: 105 }'
-            == text_format.MessageToString(empty_message,
-                                        print_unknown_fields=True,
-                                        as_one_line=True))
+            '}\n'
+            'map_uint64_uint64 {\n'
+            '  key: 123\n'
+            '  value: 321\n'
+            '}\n'
+            'map_string_string {\n'
+            '  key: "abc"\n'
+            '  value: "second"\n'
+            '}\n'
+            'map_int32_foreign_message {\n'
+            '  key: 111\n'
+            '  value {\n'
+            '    d: 5\n'
+            '  }\n'
+            '}\n')
+        text_format.Parse(text, message)
+        self.compare_to_golden_text(
+            text_format.MessageToString(message), 'map_uint64_uint64 {\n'
+            '  key: 123\n'
+            '  value: 321\n'
+            '}\n'
+            'map_string_string {\n'
+            '  key: "abc"\n'
+            '  value: "second"\n'
+            '}\n'
+            'map_int32_foreign_message {\n'
+            '  key: 111\n'
+            '  value {\n'
+            '    d: 5\n'
+            '  }\n'
+            '}\n')
 
-  def test_print_in_index_order(self):
-    message = unittest_pb2.TestFieldOrderings()
-    # Fields are listed in index order instead of field number.
-    message.my_string = 'str'
-    message.my_int = 101
-    message.my_float = 111
-    message.optional_nested_message.oo = 0
-    message.optional_nested_message.bb = 1
-    message.Extensions[unittest_pb2.my_extension_string] = 'ext_str0'
-    # Extensions are listed based on the order of extension number.
-    # Extension number 12.
-    message.Extensions[unittest_pb2.TestExtensionOrderings2.
-                       test_ext_orderings2].my_string = 'ext_str2'
-    # Extension number 13.
-    message.Extensions[unittest_pb2.TestExtensionOrderings1.
-                       test_ext_orderings1].my_string = 'ext_str1'
-    # Extension number 14.
-    message.Extensions[
-        unittest_pb2.TestExtensionOrderings2.TestExtensionOrderings3.
-        test_ext_orderings3].my_string = 'ext_str3'
+    # In cpp implementation, __str__ calls the cpp implementation of text format.
+    def test_print_map_using_cpp_implementation(self):
+        message = map_unittest_pb2.TestMap()
+        inner_msg = message.map_int32_foreign_message[111]
+        inner_msg.c = 1
+        assert (
+            str(message) ==
+            'map_int32_foreign_message {\n'
+            '  key: 111\n'
+            '  value {\n'
+            '    c: 1\n'
+            '  }\n'
+            '}\n')
+        inner_msg.c = 2
+        assert (
+            str(message) ==
+            'map_int32_foreign_message {\n'
+            '  key: 111\n'
+            '  value {\n'
+            '    c: 2\n'
+            '  }\n'
+            '}\n')
 
-    # Print in index order.
-    self.compare_to_golden_text(
-        self.remove_redundant_zeros(
-            text_format.MessageToString(message, use_index_order=True)),
-        'my_string: "str"\n'
-        'my_int: 101\n'
-        'my_float: 111\n'
-        'optional_nested_message {\n'
-        '  oo: 0\n'
-        '  bb: 1\n'
-        '}\n'
-        '[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
-        '  my_string: "ext_str2"\n'
-        '}\n'
-        '[protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
-        '  my_string: "ext_str1"\n'
-        '}\n'
-        '[protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
-        '.test_ext_orderings3] {\n'
-        '  my_string: "ext_str3"\n'
-        '}\n'
-        '[protobuf_unittest.my_extension_string]: "ext_str0"\n')
-    # By default, print in field number order.
-    self.compare_to_golden_text(
-        self.remove_redundant_zeros(text_format.MessageToString(message)),
-        'my_int: 101\n'
-        'my_string: "str"\n'
-        '[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
-        '  my_string: "ext_str2"\n'
-        '}\n'
-        '[protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
-        '  my_string: "ext_str1"\n'
-        '}\n'
-        '[protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
-        '.test_ext_orderings3] {\n'
-        '  my_string: "ext_str3"\n'
-        '}\n'
-        '[protobuf_unittest.my_extension_string]: "ext_str0"\n'
-        'my_float: 111\n'
-        'optional_nested_message {\n'
-        '  bb: 1\n'
-        '  oo: 0\n'
-        '}\n')
+    def test_map_order_enforcement(self):
+        message = map_unittest_pb2.TestMap()
+        for letter in string.ascii_uppercase[13:26]:
+            message.map_string_string[letter] = 'dummy'
+        for letter in reversed(string.ascii_uppercase[0:13]):
+            message.map_string_string[letter] = 'dummy'
+        golden = ''.join(('map_string_string {\n  key: "%c"\n  value: "dummy"\n}\n'
+                          % (letter,) for letter in string.ascii_uppercase))
+        self.compare_to_golden_text(text_format.MessageToString(message), golden)
 
-  def test_merge_lines_golden(self):
-    opened = self.read_golden('text_format_unittest_data_oneof_implemented.txt')
-    parsed_message = unittest_pb2.TestAllTypes()
-    r = text_format.MergeLines(opened, parsed_message)
-    assert r == parsed_message
+      # TODO(teboring): In c/137553523, not serializing default value for map entry
+      # message has been fixed. This test needs to be disabled in order to submit
+      # that cl. Add this back when c/137553523 has been submitted.
+      # def testMapOrderSemantics(self):
+      #   golden_lines = self.read_golden('map_test_data.txt')
 
-    message = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(message)
-    assert message == parsed_message
-
-  def test_parse_lines_golden(self):
-    opened = self.read_golden('text_format_unittest_data_oneof_implemented.txt')
-    parsed_message = unittest_pb2.TestAllTypes()
-    r = text_format.ParseLines(opened, parsed_message)
-    assert r == parsed_message
-
-    message = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(message)
-    assert message == parsed_message
-
-  def test_print_map(self):
-    message = map_unittest_pb2.TestMap()
-
-    message.map_int32_int32[-123] = -456
-    message.map_int64_int64[-2**33] = -2**34
-    message.map_uint32_uint32[123] = 456
-    message.map_uint64_uint64[2**33] = 2**34
-    message.map_string_string['abc'] = '123'
-    message.map_int32_foreign_message[111].c = 5
-
-    # Maps are serialized to text format using their underlying repeated
-    # representation.
-    self.compare_to_golden_text(
-        text_format.MessageToString(message), 'map_int32_int32 {\n'
-        '  key: -123\n'
-        '  value: -456\n'
-        '}\n'
-        'map_int64_int64 {\n'
-        '  key: -8589934592\n'
-        '  value: -17179869184\n'
-        '}\n'
-        'map_uint32_uint32 {\n'
-        '  key: 123\n'
-        '  value: 456\n'
-        '}\n'
-        'map_uint64_uint64 {\n'
-        '  key: 8589934592\n'
-        '  value: 17179869184\n'
-        '}\n'
-        'map_string_string {\n'
-        '  key: "abc"\n'
-        '  value: "123"\n'
-        '}\n'
-        'map_int32_foreign_message {\n'
-        '  key: 111\n'
-        '  value {\n'
-        '    c: 5\n'
-        '  }\n'
-        '}\n')
-
-  def test_duplicate_map_key(self):
-    message = map_unittest_pb2.TestMap()
-    text = (
-        'map_uint64_uint64 {\n'
-        '  key: 123\n'
-        '  value: 17179869184\n'
-        '}\n'
-        'map_string_string {\n'
-        '  key: "abc"\n'
-        '  value: "first"\n'
-        '}\n'
-        'map_int32_foreign_message {\n'
-        '  key: 111\n'
-        '  value {\n'
-        '    c: 5\n'
-        '  }\n'
-        '}\n'
-        'map_uint64_uint64 {\n'
-        '  key: 123\n'
-        '  value: 321\n'
-        '}\n'
-        'map_string_string {\n'
-        '  key: "abc"\n'
-        '  value: "second"\n'
-        '}\n'
-        'map_int32_foreign_message {\n'
-        '  key: 111\n'
-        '  value {\n'
-        '    d: 5\n'
-        '  }\n'
-        '}\n')
-    text_format.Parse(text, message)
-    self.compare_to_golden_text(
-        text_format.MessageToString(message), 'map_uint64_uint64 {\n'
-        '  key: 123\n'
-        '  value: 321\n'
-        '}\n'
-        'map_string_string {\n'
-        '  key: "abc"\n'
-        '  value: "second"\n'
-        '}\n'
-        'map_int32_foreign_message {\n'
-        '  key: 111\n'
-        '  value {\n'
-        '    d: 5\n'
-        '  }\n'
-        '}\n')
-
-  # In cpp implementation, __str__ calls the cpp implementation of text format.
-  def test_print_map_using_cpp_implementation(self):
-    message = map_unittest_pb2.TestMap()
-    inner_msg = message.map_int32_foreign_message[111]
-    inner_msg.c = 1
-    assert (
-        str(message) ==
-        'map_int32_foreign_message {\n'
-        '  key: 111\n'
-        '  value {\n'
-        '    c: 1\n'
-        '  }\n'
-        '}\n')
-    inner_msg.c = 2
-    assert (
-        str(message) ==
-        'map_int32_foreign_message {\n'
-        '  key: 111\n'
-        '  value {\n'
-        '    c: 2\n'
-        '  }\n'
-        '}\n')
-
-  def test_map_order_enforcement(self):
-    message = map_unittest_pb2.TestMap()
-    for letter in string.ascii_uppercase[13:26]:
-      message.map_string_string[letter] = 'dummy'
-    for letter in reversed(string.ascii_uppercase[0:13]):
-      message.map_string_string[letter] = 'dummy'
-    golden = ''.join(('map_string_string {\n  key: "%c"\n  value: "dummy"\n}\n'
-                      % (letter,) for letter in string.ascii_uppercase))
-    self.compare_to_golden_text(text_format.MessageToString(message), golden)
-
-  # TODO(teboring): In c/137553523, not serializing default value for map entry
-  # message has been fixed. This test needs to be disabled in order to submit
-  # that cl. Add this back when c/137553523 has been submitted.
-  # def testMapOrderSemantics(self):
-  #   golden_lines = self.read_golden('map_test_data.txt')
-
-  #   message = map_unittest_pb2.TestMap()
-  #   text_format.ParseLines(golden_lines, message)
-  #   candidate = text_format.MessageToString(message)
-  #   # The Python implementation emits "1.0" for the double value that the C++
-  #   # implementation emits as "1".
-  #   candidate = candidate.replace('1.0', '1', 2)
-  #   candidate = candidate.replace('0.0', '0', 2)
-  #   self.assertMultiLineEqual(candidate, ''.join(golden_lines))
+      #   message = map_unittest_pb2.TestMap()
+      #   text_format.ParseLines(golden_lines, message)
+      #   candidate = text_format.MessageToString(message)
+      #   # The Python implementation emits "1.0" for the double value that the C++
+      #   # implementation emits as "1".
+      #   candidate = candidate.replace('1.0', '1', 2)
+      #   candidate = candidate.replace('0.0', '0', 2)
+      #   self.assertMultiLineEqual(candidate, ''.join(golden_lines))
 
 
 # Tests of proto2-only features (MessageSet, extensions, etc.).
