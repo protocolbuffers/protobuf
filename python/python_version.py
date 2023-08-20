@@ -31,22 +31,15 @@
 
 import os
 import sys
-import unittest
 
 
-class PythonVersionTest(unittest.TestCase):
+class TestPythonVersion:
+    def test_python3(self):
+        """Test that we can import nested import public messages."""
 
-  def testPython3(self):
-    """Test that we can import nested import public messages."""
-
-    exp = os.getenv('KOKORO_PYTHON_VERSION', '')
-    if not exp:
-      print('No kokoro python version found, skipping check', file=sys.stderr)
-      return
-    self.assertTrue(
-        sys.version.startswith(exp),
-        'Expected Python %s but found Python %s' % (exp, sys.version))
-
-
-if __name__ == '__main__':
-  unittest.main()
+        exp = os.getenv('KOKORO_PYTHON_VERSION', '')
+        if not exp:
+            print('No kokoro python version found, skipping check', file=sys.stderr)
+            return
+        assert sys.version.startswith(exp), (
+            'Expected Python %s but found Python %s' % (exp, sys.version))
