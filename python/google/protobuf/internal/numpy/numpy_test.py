@@ -30,7 +30,7 @@
 
 """Test use of numpy types with repeated and non-repeated scalar fields."""
 
-import unittest
+import pytest
 
 import numpy as np
 
@@ -64,152 +64,145 @@ np_22_bool_array = np.zeros(shape=(2, 2), dtype=np.bool_)
 
 
 @testing_refleaks.TestCase
-class NumpyIntProtoTest(unittest.TestCase):
+class TestNumpyIntProto:
+    # Assigning dim 1 ndarray of ints to repeated field should pass
+    def test_numpy_dim1_int_array_to_repeated_is_valid(self):
+        message.repeated_int64[:] = np_1_int_array
+        message.repeated_int64[:] = np_2_int_array
 
-  # Assigning dim 1 ndarray of ints to repeated field should pass
-  def testNumpyDim1IntArrayToRepeated_IsValid(self):
-    message.repeated_int64[:] = np_1_int_array
-    message.repeated_int64[:] = np_2_int_array
+        message.repeated_uint64[:] = np_1_uint_array
+        message.repeated_uint64[:] = np_2_uint_array
 
-    message.repeated_uint64[:] = np_1_uint_array
-    message.repeated_uint64[:] = np_2_uint_array
+    # Assigning dim 2 ndarray of ints to repeated field should fail
+    def test_numpy_dim2_int_array_to_repeated_raises_type_error(self):
+        with pytest.raises(TypeError):
+            message.repeated_int64[:] = np_11_int_array
+        with pytest.raises(TypeError):
+            message.repeated_int64[:] = np_22_int_array
 
-  # Assigning dim 2 ndarray of ints to repeated field should fail
-  def testNumpyDim2IntArrayToRepeated_RaisesTypeError(self):
-    with self.assertRaises(TypeError):
-      message.repeated_int64[:] = np_11_int_array
-    with self.assertRaises(TypeError):
-      message.repeated_int64[:] = np_22_int_array
+        with pytest.raises(TypeError):
+            message.repeated_uint64[:] = np_11_uint_array
+        with pytest.raises(TypeError):
+            message.repeated_uint64[:] = np_22_uint_array
 
-    with self.assertRaises(TypeError):
-      message.repeated_uint64[:] = np_11_uint_array
-    with self.assertRaises(TypeError):
-      message.repeated_uint64[:] = np_22_uint_array
+    # Assigning any ndarray of floats to repeated int field should fail
+    def test_numpy_float_array_to_repeated_raises_type_error(self):
+        with pytest.raises(TypeError):
+            message.repeated_int64[:] = np_1_float_array
+        with pytest.raises(TypeError):
+            message.repeated_int64[:] = np_11_float_array
+        with pytest.raises(TypeError):
+            message.repeated_int64[:] = np_22_float_array
 
-  # Assigning any ndarray of floats to repeated int field should fail
-  def testNumpyFloatArrayToRepeated_RaisesTypeError(self):
-    with self.assertRaises(TypeError):
-      message.repeated_int64[:] = np_1_float_array
-    with self.assertRaises(TypeError):
-      message.repeated_int64[:] = np_11_float_array
-    with self.assertRaises(TypeError):
-      message.repeated_int64[:] = np_22_float_array
+    # Assigning any np int to scalar field should pass
+    def test_numpy_int_scalar_to_scalar_is_valid(self):
+        message.optional_int64 = np_int_scalar
+        message.optional_uint64 = np_uint_scalar
 
-  # Assigning any np int to scalar field should pass
-  def testNumpyIntScalarToScalar_IsValid(self):
-    message.optional_int64 = np_int_scalar
-    message.optional_uint64 = np_uint_scalar
+    # Assigning any ndarray of ints to scalar field should fail
+    def test_numpy_int_array_to_scalar_raises_type_error(self):
+        with pytest.raises(TypeError):
+            message.optional_int64 = np_1_int_array
+        with pytest.raises(TypeError):
+            message.optional_int64 = np_11_int_array
+        with pytest.raises(TypeError):
+            message.optional_int64 = np_22_int_array
 
-  # Assigning any ndarray of ints to scalar field should fail
-  def testNumpyIntArrayToScalar_RaisesTypeError(self):
-    with self.assertRaises(TypeError):
-      message.optional_int64 = np_1_int_array
-    with self.assertRaises(TypeError):
-      message.optional_int64 = np_11_int_array
-    with self.assertRaises(TypeError):
-      message.optional_int64 = np_22_int_array
+        with pytest.raises(TypeError):
+            message.optional_uint64 = np_1_uint_array
+        with pytest.raises(TypeError):
+            message.optional_uint64 = np_11_uint_array
+        with pytest.raises(TypeError):
+            message.optional_uint64 = np_22_uint_array
 
-    with self.assertRaises(TypeError):
-      message.optional_uint64 = np_1_uint_array
-    with self.assertRaises(TypeError):
-      message.optional_uint64 = np_11_uint_array
-    with self.assertRaises(TypeError):
-      message.optional_uint64 = np_22_uint_array
-
-  # Assigning any ndarray of floats to scalar field should fail
-  def testNumpyFloatArrayToScalar_RaisesTypeError(self):
-    with self.assertRaises(TypeError):
-      message.optional_int64 = np_1_float_array
-    with self.assertRaises(TypeError):
-      message.optional_int64 = np_11_float_array
-    with self.assertRaises(TypeError):
-      message.optional_int64 = np_22_float_array
-
-
-@testing_refleaks.TestCase
-class NumpyFloatProtoTest(unittest.TestCase):
-
-  # Assigning dim 1 ndarray of floats to repeated field should pass
-  def testNumpyDim1FloatArrayToRepeated_IsValid(self):
-    message.repeated_float[:] = np_1_float_array
-    message.repeated_float[:] = np_2_float_array
-
-  # Assigning dim 2 ndarray of floats to repeated field should fail
-  def testNumpyDim2FloatArrayToRepeated_RaisesTypeError(self):
-    with self.assertRaises(TypeError):
-      message.repeated_float[:] = np_11_float_array
-    with self.assertRaises(TypeError):
-      message.repeated_float[:] = np_22_float_array
-
-  # Assigning any np float to scalar field should pass
-  def testNumpyFloatScalarToScalar_IsValid(self):
-    message.optional_float = np_float_scalar
-
-  # Assigning any ndarray of float to scalar field should fail
-  def testNumpyFloatArrayToScalar_RaisesTypeError(self):
-    with self.assertRaises(TypeError):
-      message.optional_float = np_1_float_array
-    with self.assertRaises(TypeError):
-      message.optional_float = np_11_float_array
-    with self.assertRaises(TypeError):
-      message.optional_float = np_22_float_array
+    # Assigning any ndarray of floats to scalar field should fail
+    def test_numpy_float_array_to_scalar_raises_type_error(self):
+        with pytest.raises(TypeError):
+            message.optional_int64 = np_1_float_array
+        with pytest.raises(TypeError):
+            message.optional_int64 = np_11_float_array
+        with pytest.raises(TypeError):
+            message.optional_int64 = np_22_float_array
 
 
 @testing_refleaks.TestCase
-class NumpyBoolProtoTest(unittest.TestCase):
+class TestNumpyFloatProto:
+    # Assigning dim 1 ndarray of floats to repeated field should pass
+    def test_numpy_dim1_float_array_to_repeated_is_valid(self):
+        message.repeated_float[:] = np_1_float_array
+        message.repeated_float[:] = np_2_float_array
 
-  # Assigning dim 1 ndarray of bool to repeated field should pass
-  def testNumpyDim1BoolArrayToRepeated_IsValid(self):
-    message.repeated_bool[:] = np_1_bool_array
-    message.repeated_bool[:] = np_2_bool_array
+    # Assigning dim 2 ndarray of floats to repeated field should fail
+    def test_numpy_dim2_float_array_to_repeated_raises_type_error(self):
+        with pytest.raises(TypeError):
+            message.repeated_float[:] = np_11_float_array
+        with pytest.raises(TypeError):
+            message.repeated_float[:] = np_22_float_array
 
-  # Assigning dim 2 ndarray of bool to repeated field should fail
-  def testNumpyDim2BoolArrayToRepeated_RaisesTypeError(self):
-    with self.assertRaises(TypeError):
-      message.repeated_bool[:] = np_11_bool_array
-    with self.assertRaises(TypeError):
-      message.repeated_bool[:] = np_22_bool_array
+    # Assigning any np float to scalar field should pass
+    def test_numpy_float_scalar_to_scalar_is_valid(self):
+        message.optional_float = np_float_scalar
 
-  # Assigning any np bool to scalar field should pass
-  def testNumpyBoolScalarToScalar_IsValid(self):
-    message.optional_bool = np_bool_scalar
-
-  # Assigning any ndarray of bool to scalar field should fail
-  def testNumpyBoolArrayToScalar_RaisesTypeError(self):
-    with self.assertRaises(TypeError):
-      message.optional_bool = np_1_bool_array
-    with self.assertRaises(TypeError):
-      message.optional_bool = np_11_bool_array
-    with self.assertRaises(TypeError):
-      message.optional_bool = np_22_bool_array
+    # Assigning any ndarray of float to scalar field should fail
+    def test_numpy_float_array_to_scalar_raises_type_error(self):
+        with pytest.raises(TypeError):
+            message.optional_float = np_1_float_array
+        with pytest.raises(TypeError):
+            message.optional_float = np_11_float_array
+        with pytest.raises(TypeError):
+            message.optional_float = np_22_float_array
 
 
 @testing_refleaks.TestCase
-class NumpyProtoIndexingTest(unittest.TestCase):
+class TestNumpyBoolProto:
+    # Assigning dim 1 ndarray of bool to repeated field should pass
+    def test_numpy_dim1_bool_array_to_repeated_is_valid(self):
+        message.repeated_bool[:] = np_1_bool_array
+        message.repeated_bool[:] = np_2_bool_array
 
-  def testNumpyIntScalarIndexing_Passes(self):
-    data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
-    self.assertEqual(0, data.repeated_int64[np.int64(0)])
+    # Assigning dim 2 ndarray of bool to repeated field should fail
+    def test_numpy_dim2_bool_array_to_repeated_raises_type_error(self):
+        with pytest.raises(TypeError):
+            message.repeated_bool[:] = np_11_bool_array
+        with pytest.raises(TypeError):
+            message.repeated_bool[:] = np_22_bool_array
 
-  def testNumpyNegative1IntScalarIndexing_Passes(self):
-    data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
-    self.assertEqual(2, data.repeated_int64[np.int64(-1)])
+    # Assigning any np bool to scalar field should pass
+    def test_numpy_bool_scalar_to_scalar_is_valid(self):
+        message.optional_bool = np_bool_scalar
 
-  def testNumpyFloatScalarIndexing_Fails(self):
-    data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
-    with self.assertRaises(TypeError):
-      _ = data.repeated_int64[np.float64(0.0)]
+    # Assigning any ndarray of bool to scalar field should fail
+    def test_numpy_bool_array_to_scalar_raises_type_error(self):
+        with pytest.raises(TypeError):
+            message.optional_bool = np_1_bool_array
+        with pytest.raises(TypeError):
+            message.optional_bool = np_11_bool_array
+        with pytest.raises(TypeError):
+            message.optional_bool = np_22_bool_array
 
-  def testNumpyIntArrayIndexing_Fails(self):
-    data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
-    with self.assertRaises(TypeError):
-      _ = data.repeated_int64[np.array([0])]
-    with self.assertRaises(TypeError):
-      _ = data.repeated_int64[np.ndarray((1,), buffer=np.array([0]), dtype=int)]
-    with self.assertRaises(TypeError):
-      _ = data.repeated_int64[np.ndarray((1, 1),
-                                         buffer=np.array([0]),
-                                         dtype=int)]
 
-if __name__ == '__main__':
-  unittest.main()
+@testing_refleaks.TestCase
+class TestNumpyProtoIndexing:
+    def test_numpy_int_scalar_indexing_passes(self):
+        data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
+        assert 0 == data.repeated_int64[np.int64(0)]
+
+    def test_numpy_negative1_int_scalar_indexing_passes(self):
+        data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
+        assert 2 == data.repeated_int64[np.int64(-1)]
+
+    def test_numpy_float_scalar_indexing_fails(self):
+      data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
+      with pytest.raises(TypeError):
+          _ = data.repeated_int64[np.float64(0.0)]
+
+    def test_numpy_int_array_indexing_fails(self):
+        data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
+        with pytest.raises(TypeError):
+            _ = data.repeated_int64[np.array([0])]
+        with pytest.raises(TypeError):
+            _ = data.repeated_int64[np.ndarray((1,), buffer=np.array([0]), dtype=int)]
+        with pytest.raises(TypeError):
+            _ = data.repeated_int64[np.ndarray((1, 1),
+                                               buffer=np.array([0]),
+                                               dtype=int)]
