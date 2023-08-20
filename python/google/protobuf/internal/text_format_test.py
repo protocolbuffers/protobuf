@@ -987,44 +987,43 @@ class TestTextFormatParser(TextFormatBase):
     [unittest_pb2, unittest_proto3_arena_pb2],
     ids=['_proto2', '_proto3'],
 )
-class TextFormatMergeTests(TextFormatBase):
+class TestTextFormatMerge(TextFormatBase):
+    def test_merge_duplicate_scalars_in_text(self, message_module):
+        message = message_module.TestAllTypes()
+        text = ('optional_int32: 42 ' 'optional_int32: 67')
+        r = text_format.Merge(text, message)
+        assert r == message
+        assert 67 == message.optional_int32
 
-  def testMergeDuplicateScalarsInText(self, message_module):
-    message = message_module.TestAllTypes()
-    text = ('optional_int32: 42 ' 'optional_int32: 67')
-    r = text_format.Merge(text, message)
-    assert r == message
-    assert 67 == message.optional_int32
+    def test_merge_duplicate_nested_message_scalars(self, message_module):
+        message = message_module.TestAllTypes()
+        text = ('optional_nested_message { bb: 1 } '
+                'optional_nested_message { bb: 2 }')
+        r = text_format.Merge(text, message)
+        assert r is message
+        assert 2 == message.optional_nested_message.bb
 
-  def testMergeDuplicateNestedMessageScalars(self, message_module):
-    message = message_module.TestAllTypes()
-    text = ('optional_nested_message { bb: 1 } '
-            'optional_nested_message { bb: 2 }')
-    r = text_format.Merge(text, message)
-    assert r is message
-    assert 2 == message.optional_nested_message.bb
+    def test_replace_scalar_in_message(self, message_module):
+        message = message_module.TestAllTypes(optional_int32=42)
+        text = 'optional_int32: 67'
+        r = text_format.Merge(text, message)
+        assert r == message
+        assert 67 == message.optional_int32
 
-  def testReplaceScalarInMessage(self, message_module):
-    message = message_module.TestAllTypes(optional_int32=42)
-    text = 'optional_int32: 67'
-    r = text_format.Merge(text, message)
-    assert r == message
-    assert 67 == message.optional_int32
+    def test_replace_message_in_message(self, message_module):
+        message = message_module.TestAllTypes(
+            optional_int32=42, optional_nested_message=dict())
+        assert message.HasField('optional_nested_message')
+        text = 'optional_nested_message{ bb: 3 }'
+        r = text_format.Merge(text, message)
+        assert r == message
+        assert 3 == message.optional_nested_message.bb
 
-  def testReplaceMessageInMessage(self, message_module):
-    message = message_module.TestAllTypes(
-        optional_int32=42, optional_nested_message=dict())
-    assert message.HasField('optional_nested_message')
-    text = 'optional_nested_message{ bb: 3 }'
-    r = text_format.Merge(text, message)
-    assert r == message
-    assert 3 == message.optional_nested_message.bb
-
-  def test_merge_multiple_oneof(self, message_module):
-    m_string = '\n'.join(['oneof_uint32: 11', 'oneof_string: "foo"'])
-    m2 = message_module.TestAllTypes()
-    text_format.Merge(m_string, m2)
-    assert 'oneof_string' == m2.WhichOneof('oneof_field')
+    def test_merge_multiple_oneof(self, message_module):
+        m_string = '\n'.join(['oneof_uint32: 11', 'oneof_string: "foo"'])
+        m2 = message_module.TestAllTypes()
+        text_format.Merge(m_string, m2)
+        assert 'oneof_string' == m2.WhichOneof('oneof_field')
 
 
 # These are tests that aren't fundamentally specific to proto2, but are at
