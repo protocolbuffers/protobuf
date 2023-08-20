@@ -2000,7 +2000,7 @@ class TestProto3:
         assert msg == parsed_msg
 
     def test_proto3_optional(self):
-        msg = test_proto3_optional_pb2.TestProto3Optional()
+        msg = test_proto3_optional_pb2.MockProto3Optional()
         assert text_format.MessageToString(msg) == ''
         msg.optional_int32 = 0
         msg.optional_float = 0.0
@@ -2013,7 +2013,7 @@ class TestProto3:
                 '  bb: 0\n'
                 '}\n')
         assert text_format.MessageToString(msg) == text
-        msg2 = test_proto3_optional_pb2.TestProto3Optional()
+        msg2 = test_proto3_optional_pb2.MockProto3Optional()
         text_format.Parse(text, msg2)
         assert text_format.MessageToString(msg2) == text
 

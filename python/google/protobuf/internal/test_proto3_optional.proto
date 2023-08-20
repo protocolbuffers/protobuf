@@ -32,7 +32,7 @@ syntax = "proto3";
 
 package google.protobuf.python.internal;
 
-message TestProto3Optional {
+message MockProto3Optional {
   message NestedMessage {
     // The field name "b" fails to compile in proto1 because it conflicts with
     // a local variable named "b" in one of the generated methods.  Doh.

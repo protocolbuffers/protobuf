@@ -295,7 +295,7 @@ class TestGenerator:
 
     def test_bad_identifiers(self):
         # We're just testing that the code was imported without problems.
-        message = test_bad_identifiers_pb2.TestBadIdentifiers()
+        message = test_bad_identifiers_pb2.MockBadIdentifiers()
         assert message.Extensions[test_bad_identifiers_pb2.message] == "foo"
         assert message.Extensions[test_bad_identifiers_pb2.descriptor] == "bar"
         assert message.Extensions[test_bad_identifiers_pb2.reflection] == "baz"

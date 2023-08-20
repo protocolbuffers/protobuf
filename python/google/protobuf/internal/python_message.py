@@ -932,6 +932,8 @@ def _InternalUnpackAny(msg):
   # parent message.
   # pylint: disable=g-import-not-at-top
   from google.protobuf import symbol_database
+  from google.protobuf import message_factory
+
   factory = symbol_database.Default()
 
   type_url = msg.type_url
@@ -947,7 +949,7 @@ def _InternalUnpackAny(msg):
   if descriptor is None:
     return None
 
-  message_class = factory.GetPrototype(descriptor)
+  message_class = message_factory.GetMessageClass(descriptor)
   message = message_class()
 
   message.ParseFromString(msg.value)

@@ -1628,7 +1628,7 @@ class TestProto3:
         assert len(message_proto3.ListFields()) == 0
 
     def test_proto3_optional(self):
-        msg = test_proto3_optional_pb2.TestProto3Optional()
+        msg = test_proto3_optional_pb2.MockProto3Optional()
         assert not msg.HasField('optional_int32')
         assert not msg.HasField('optional_float')
         assert not msg.HasField('optional_string')
@@ -1657,7 +1657,7 @@ class TestProto3:
         assert msg.optional_nested_message.HasField('bb')
 
         # Test serialize
-        msg2 = test_proto3_optional_pb2.TestProto3Optional()
+        msg2 = test_proto3_optional_pb2.MockProto3Optional()
         msg2.ParseFromString(msg.SerializeToString())
         assert msg2.HasField('optional_int32')
         assert msg2.HasField('optional_float')
@@ -1681,7 +1681,7 @@ class TestProto3:
         assert msg.WhichOneof('_optional_int32') == None
 
         # Test has presence:
-        for field in test_proto3_optional_pb2.TestProto3Optional.DESCRIPTOR.fields:
+        for field in test_proto3_optional_pb2.MockProto3Optional.DESCRIPTOR.fields:
             assert field.has_presence
         for field in unittest_pb2.TestAllTypes.DESCRIPTOR.fields:
             if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:

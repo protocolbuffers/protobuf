@@ -327,7 +327,7 @@ class TestJsonFormat(JsonFormatBase):
         self.check_parse_back(message, parsed_message)
 
     def test_proto3_optional(self):
-        message = test_proto3_optional_pb2.TestProto3Optional()
+        message = test_proto3_optional_pb2.MockProto3Optional()
         assert (
             json.loads(
                 json_format.MessageToJson(

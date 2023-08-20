@@ -36,13 +36,13 @@ package protobuf_unittest;
 
 option py_generic_services = true;
 
-message TestBadIdentifiers {
+message MockBadIdentifiers {
   extensions 100 to max;
 }
 
 // Make sure these reasonable extension names don't conflict with internal
 // variables.
-extend TestBadIdentifiers {
+extend MockBadIdentifiers {
   optional string message = 100 [default = "foo"];
   optional string descriptor = 101 [default = "bar"];
   optional string reflection = 102 [default = "baz"];

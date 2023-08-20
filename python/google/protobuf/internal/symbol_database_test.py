@@ -34,6 +34,7 @@ import pytest
 
 from google.protobuf import descriptor
 from google.protobuf import descriptor_pool
+from google.protobuf import message_factory
 from google.protobuf import symbol_database
 from google.protobuf import unittest_pb2
 
@@ -57,7 +58,7 @@ def database():
     return db
 
 def test_get_prototype(database):
-    instance = database.GetPrototype(unittest_pb2.TestAllTypes.DESCRIPTOR)
+    instance = message_factory.GetMessageClass(unittest_pb2.TestAllTypes.DESCRIPTOR)
     assert instance is unittest_pb2.TestAllTypes
 
 def test_get_messages(database):
