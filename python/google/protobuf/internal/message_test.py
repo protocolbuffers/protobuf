@@ -1243,318 +1243,310 @@ class TestMessage:
 
 # Class to test proto2-only features (required, extensions, etc.)
 @testing_refleaks.TestCase
-class Proto2Test(unittest.TestCase):
+class TestProto2:
+    def test_field_presence(self):
+        message = unittest_pb2.TestAllTypes()
 
-  def testFieldPresence(self):
-    message = unittest_pb2.TestAllTypes()
+        assert not message.HasField('optional_int32')
+        assert not message.HasField('optional_bool')
+        assert not message.HasField('optional_nested_message')
 
-    assert not message.HasField('optional_int32')
-    assert not message.HasField('optional_bool')
-    assert not message.HasField('optional_nested_message')
+        with pytest.raises(ValueError):
+            message.HasField('field_doesnt_exist')
 
-    with pytest.raises(ValueError):
-      message.HasField('field_doesnt_exist')
+        with pytest.raises(ValueError):
+            message.HasField('repeated_int32')
+        with pytest.raises(ValueError):
+            message.HasField('repeated_nested_message')
 
-    with pytest.raises(ValueError):
-      message.HasField('repeated_int32')
-    with pytest.raises(ValueError):
-      message.HasField('repeated_nested_message')
+        assert 0 == message.optional_int32
+        assert False == message.optional_bool
+        assert 0 == message.optional_nested_message.bb
 
-    assert 0 == message.optional_int32
-    assert False == message.optional_bool
-    assert 0 == message.optional_nested_message.bb
+        # Fields are set even when setting the values to default values.
+        message.optional_int32 = 0
+        message.optional_bool = False
+        message.optional_nested_message.bb = 0
+        assert message.HasField('optional_int32')
+        assert message.HasField('optional_bool')
+        assert message.HasField('optional_nested_message')
 
-    # Fields are set even when setting the values to default values.
-    message.optional_int32 = 0
-    message.optional_bool = False
-    message.optional_nested_message.bb = 0
-    assert message.HasField('optional_int32')
-    assert message.HasField('optional_bool')
-    assert message.HasField('optional_nested_message')
+        # Set the fields to non-default values.
+        message.optional_int32 = 5
+        message.optional_bool = True
+        message.optional_nested_message.bb = 15
 
-    # Set the fields to non-default values.
-    message.optional_int32 = 5
-    message.optional_bool = True
-    message.optional_nested_message.bb = 15
+        assert message.HasField(u'optional_int32')
+        assert message.HasField('optional_bool')
+        assert message.HasField('optional_nested_message')
 
-    assert message.HasField(u'optional_int32')
-    assert message.HasField('optional_bool')
-    assert message.HasField('optional_nested_message')
+        # Clearing the fields unsets them and resets their value to default.
+        message.ClearField('optional_int32')
+        message.ClearField(u'optional_bool')
+        message.ClearField('optional_nested_message')
 
-    # Clearing the fields unsets them and resets their value to default.
-    message.ClearField('optional_int32')
-    message.ClearField(u'optional_bool')
-    message.ClearField('optional_nested_message')
+        assert not message.HasField('optional_int32')
+        assert not message.HasField('optional_bool')
+        assert not message.HasField('optional_nested_message')
+        assert 0 == message.optional_int32
+        assert message.optional_bool is False
+        assert 0 == message.optional_nested_message.bb
 
-    assert not message.HasField('optional_int32')
-    assert not message.HasField('optional_bool')
-    assert not message.HasField('optional_nested_message')
-    assert 0 == message.optional_int32
-    assert False == message.optional_bool
-    assert 0 == message.optional_nested_message.bb
+    def test_assign_invalid_enum(self):
+        """Assigning an invalid enum number is not allowed in proto2."""
+        m = unittest_pb2.TestAllTypes()
 
-  def testAssignInvalidEnum(self):
-    """Assigning an invalid enum number is not allowed in proto2."""
-    m = unittest_pb2.TestAllTypes()
+        # Proto2 can not assign unknown enum.
+        with pytest.raises(ValueError):
+            m.optional_nested_enum = 1234567
+        pytest.raises(ValueError, m.repeated_nested_enum.append, 1234567)
+        # Assignment is a different code path than append for the C++ impl.
+        m.repeated_nested_enum.append(2)
+        m.repeated_nested_enum[0] = 2
+        with pytest.raises(ValueError):
+          m.repeated_nested_enum[0] = 123456
 
-    # Proto2 can not assign unknown enum.
-    with pytest.raises(ValueError):
-      m.optional_nested_enum = 1234567
-    pytest.raises(ValueError, m.repeated_nested_enum.append, 1234567)
-    # Assignment is a different code path than append for the C++ impl.
-    m.repeated_nested_enum.append(2)
-    m.repeated_nested_enum[0] = 2
-    with pytest.raises(ValueError):
-      m.repeated_nested_enum[0] = 123456
+        # Unknown enum value can be parsed but is ignored.
+        m2 = unittest_proto3_arena_pb2.TestAllTypes()
+        m2.optional_nested_enum = 1234567
+        m2.repeated_nested_enum.append(7654321)
+        serialized = m2.SerializeToString()
 
-    # Unknown enum value can be parsed but is ignored.
-    m2 = unittest_proto3_arena_pb2.TestAllTypes()
-    m2.optional_nested_enum = 1234567
-    m2.repeated_nested_enum.append(7654321)
-    serialized = m2.SerializeToString()
+        m3 = unittest_pb2.TestAllTypes()
+        m3.ParseFromString(serialized)
+        assert not m3.HasField('optional_nested_enum')
+        # 1 is the default value for optional_nested_enum.
+        assert 1 == m3.optional_nested_enum
+        assert 0 == len(m3.repeated_nested_enum)
+        m2.Clear()
+        m2.ParseFromString(m3.SerializeToString())
+        assert 1234567 == m2.optional_nested_enum
+        assert 7654321 == m2.repeated_nested_enum[0]
 
-    m3 = unittest_pb2.TestAllTypes()
-    m3.ParseFromString(serialized)
-    assert not m3.HasField('optional_nested_enum')
-    # 1 is the default value for optional_nested_enum.
-    assert 1 == m3.optional_nested_enum
-    assert 0 == len(m3.repeated_nested_enum)
-    m2.Clear()
-    m2.ParseFromString(m3.SerializeToString())
-    assert 1234567 == m2.optional_nested_enum
-    assert 7654321 == m2.repeated_nested_enum[0]
+    def test_unknown_enum_map(self):
+        m = map_proto2_unittest_pb2.TestEnumMap()
+        m.known_map_field[123] = 0
+        with pytest.raises(ValueError):
+            m.unknown_map_field[1] = 123
 
-  def testUnknownEnumMap(self):
-    m = map_proto2_unittest_pb2.TestEnumMap()
-    m.known_map_field[123] = 0
-    with pytest.raises(ValueError):
-      m.unknown_map_field[1] = 123
+    def test_extensions_errors(self):
+        msg = unittest_pb2.TestAllTypes()
+        pytest.raises(AttributeError, getattr, msg, 'Extensions')
 
-  def testExtensionsErrors(self):
-    msg = unittest_pb2.TestAllTypes()
-    pytest.raises(AttributeError, getattr, msg, 'Extensions')
+    def test_merge_from_extensions(self):
+        msg1 = more_extensions_pb2.TopLevelMessage()
+        msg2 = more_extensions_pb2.TopLevelMessage()
+        # Cpp extension will lazily create a sub message which is immutable.
+        assert (
+            0 ==
+            msg1.submessage.Extensions[more_extensions_pb2.optional_int_extension])
+        assert not msg1.HasField('submessage')
+        msg2.submessage.Extensions[more_extensions_pb2.optional_int_extension] = 123
+        # Make sure cmessage and extensions pointing to a mutable message
+        # after merge instead of the lazily created message.
+        msg1.MergeFrom(msg2)
+        assert (
+            123 ==
+            msg1.submessage.Extensions[more_extensions_pb2.optional_int_extension])
 
-  def testMergeFromExtensions(self):
-    msg1 = more_extensions_pb2.TopLevelMessage()
-    msg2 = more_extensions_pb2.TopLevelMessage()
-    # Cpp extension will lazily create a sub message which is immutable.
-    self.assertEqual(
-        0,
-        msg1.submessage.Extensions[more_extensions_pb2.optional_int_extension])
-    assert not msg1.HasField('submessage')
-    msg2.submessage.Extensions[more_extensions_pb2.optional_int_extension] = 123
-    # Make sure cmessage and extensions pointing to a mutable message
-    # after merge instead of the lazily created message.
-    msg1.MergeFrom(msg2)
-    self.assertEqual(
-        123,
-        msg1.submessage.Extensions[more_extensions_pb2.optional_int_extension])
+    def test_copy_from_all(self):
+        message = unittest_pb2.TestAllTypes()
+        test_util.SetAllFields(message)
+        copy = unittest_pb2.TestAllTypes()
+        copy.CopyFrom(message)
+        assert message == copy
+        message.repeated_nested_message.add().bb = 123
+        assert message != copy
 
-  def testCopyFromAll(self):
-    message = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(message)
-    copy = unittest_pb2.TestAllTypes()
-    copy.CopyFrom(message)
-    assert message == copy
-    message.repeated_nested_message.add().bb = 123
-    self.assertNotEqual(message, copy)
+    def test_copy_from_all_extensions(self):
+        all_set = unittest_pb2.TestAllExtensions()
+        test_util.SetAllExtensions(all_set)
+        copy =  unittest_pb2.TestAllExtensions()
+        copy.CopyFrom(all_set)
+        assert all_set == copy
+        all_set.Extensions[unittest_pb2.repeatedgroup_extension].add().a = 321
+        assert all_set != copy
 
-  def testCopyFromAllExtensions(self):
-    all_set = unittest_pb2.TestAllExtensions()
-    test_util.SetAllExtensions(all_set)
-    copy =  unittest_pb2.TestAllExtensions()
-    copy.CopyFrom(all_set)
-    assert all_set == copy
-    all_set.Extensions[unittest_pb2.repeatedgroup_extension].add().a = 321
-    self.assertNotEqual(all_set, copy)
+    def test_copy_from_all_packed_extensions(self):
+        all_set = unittest_pb2.TestPackedExtensions()
+        test_util.SetAllPackedExtensions(all_set)
+        copy =  unittest_pb2.TestPackedExtensions()
+        copy.CopyFrom(all_set)
+        assert all_set == copy
+        all_set.Extensions[unittest_pb2.packed_float_extension].extend([61.0, 71.0])
+        assert all_set != copy
 
-  def testCopyFromAllPackedExtensions(self):
-    all_set = unittest_pb2.TestPackedExtensions()
-    test_util.SetAllPackedExtensions(all_set)
-    copy =  unittest_pb2.TestPackedExtensions()
-    copy.CopyFrom(all_set)
-    assert all_set == copy
-    all_set.Extensions[unittest_pb2.packed_float_extension].extend([61.0, 71.0])
-    self.assertNotEqual(all_set, copy)
+    def test_golden_extensions(self):
+        golden_data = test_util.GoldenFileData('golden_message')
+        golden_message = unittest_pb2.TestAllExtensions()
+        golden_message.ParseFromString(golden_data)
+        all_set = unittest_pb2.TestAllExtensions()
+        test_util.SetAllExtensions(all_set)
+        assert all_set == golden_message
+        assert golden_data == golden_message.SerializeToString()
+        golden_copy = copy.deepcopy(golden_message)
+        assert golden_message == golden_copy
+        # Depend on a specific serialization order for extensions is not
+        # reasonable to guarantee.
+        if api_implementation.Type() != 'upb':
+            assert golden_data == golden_copy.SerializeToString()
 
-  def testGoldenExtensions(self):
-    golden_data = test_util.GoldenFileData('golden_message')
-    golden_message = unittest_pb2.TestAllExtensions()
-    golden_message.ParseFromString(golden_data)
-    all_set = unittest_pb2.TestAllExtensions()
-    test_util.SetAllExtensions(all_set)
-    assert all_set == golden_message
-    assert golden_data == golden_message.SerializeToString()
-    golden_copy = copy.deepcopy(golden_message)
-    assert golden_message == golden_copy
-    # Depend on a specific serialization order for extensions is not
-    # reasonable to guarantee.
-    if api_implementation.Type() != 'upb':
-      assert golden_data == golden_copy.SerializeToString()
+    def test_golden_packed_extensions(self):
+        golden_data = test_util.GoldenFileData('golden_packed_fields_message')
+        golden_message = unittest_pb2.TestPackedExtensions()
+        golden_message.ParseFromString(golden_data)
+        all_set = unittest_pb2.TestPackedExtensions()
+        test_util.SetAllPackedExtensions(all_set)
+        assert all_set == golden_message
+        assert golden_data == all_set.SerializeToString()
+        golden_copy = copy.deepcopy(golden_message)
+        assert golden_message == golden_copy
+        # Depend on a specific serialization order for extensions is not
+        # reasonable to guarantee.
+        if api_implementation.Type() != 'upb':
+            assert golden_data == golden_copy.SerializeToString()
 
-  def testGoldenPackedExtensions(self):
-    golden_data = test_util.GoldenFileData('golden_packed_fields_message')
-    golden_message = unittest_pb2.TestPackedExtensions()
-    golden_message.ParseFromString(golden_data)
-    all_set = unittest_pb2.TestPackedExtensions()
-    test_util.SetAllPackedExtensions(all_set)
-    assert all_set == golden_message
-    assert golden_data == all_set.SerializeToString()
-    golden_copy = copy.deepcopy(golden_message)
-    assert golden_message == golden_copy
-    # Depend on a specific serialization order for extensions is not
-    # reasonable to guarantee.
-    if api_implementation.Type() != 'upb':
-      assert golden_data == golden_copy.SerializeToString()
+    def test_pickle_incomplete_proto(self):
+        golden_message = unittest_pb2.TestRequired(a=1)
+        pickled_message = pickle.dumps(golden_message)
 
-  def testPickleIncompleteProto(self):
-    golden_message = unittest_pb2.TestRequired(a=1)
-    pickled_message = pickle.dumps(golden_message)
+        unpickled_message = pickle.loads(pickled_message)
+        assert unpickled_message == golden_message
+        assert unpickled_message.a == 1
+        # This is still an incomplete proto - so serializing should fail
+        pytest.raises(message.EncodeError, unpickled_message.SerializeToString)
 
-    unpickled_message = pickle.loads(pickled_message)
-    assert unpickled_message == golden_message
-    assert unpickled_message.a == 1
-    # This is still an incomplete proto - so serializing should fail
-    pytest.raises(message.EncodeError, unpickled_message.SerializeToString)
+    # TODO(haberman): this isn't really a proto2-specific test except that this
+    # message has a required field in it.  Should probably be factored out so
+    # that we can test the other parts with proto3.
+    def test_parsing_merge(self):
+        """Check the merge behavior when a required or optional field appears
 
-  # TODO(haberman): this isn't really a proto2-specific test except that this
-  # message has a required field in it.  Should probably be factored out so
-  # that we can test the other parts with proto3.
-  def testParsingMerge(self):
-    """Check the merge behavior when a required or optional field appears
+        multiple times in the input.
+        """
+        messages = [
+            unittest_pb2.TestAllTypes(),
+            unittest_pb2.TestAllTypes(),
+            unittest_pb2.TestAllTypes()
+        ]
+        messages[0].optional_int32 = 1
+        messages[1].optional_int64 = 2
+        messages[2].optional_int32 = 3
+        messages[2].optional_string = 'hello'
 
-    multiple times in the input.
-    """
-    messages = [
-        unittest_pb2.TestAllTypes(),
-        unittest_pb2.TestAllTypes(),
-        unittest_pb2.TestAllTypes()
-    ]
-    messages[0].optional_int32 = 1
-    messages[1].optional_int64 = 2
-    messages[2].optional_int32 = 3
-    messages[2].optional_string = 'hello'
+        merged_message = unittest_pb2.TestAllTypes()
+        merged_message.optional_int32 = 3
+        merged_message.optional_int64 = 2
+        merged_message.optional_string = 'hello'
 
-    merged_message = unittest_pb2.TestAllTypes()
-    merged_message.optional_int32 = 3
-    merged_message.optional_int64 = 2
-    merged_message.optional_string = 'hello'
+        generator = unittest_pb2.TestParsingMerge.RepeatedFieldsGenerator()
+        generator.field1.extend(messages)
+        generator.field2.extend(messages)
+        generator.field3.extend(messages)
+        generator.ext1.extend(messages)
+        generator.ext2.extend(messages)
+        generator.group1.add().field1.MergeFrom(messages[0])
+        generator.group1.add().field1.MergeFrom(messages[1])
+        generator.group1.add().field1.MergeFrom(messages[2])
+        generator.group2.add().field1.MergeFrom(messages[0])
+        generator.group2.add().field1.MergeFrom(messages[1])
+        generator.group2.add().field1.MergeFrom(messages[2])
 
-    generator = unittest_pb2.TestParsingMerge.RepeatedFieldsGenerator()
-    generator.field1.extend(messages)
-    generator.field2.extend(messages)
-    generator.field3.extend(messages)
-    generator.ext1.extend(messages)
-    generator.ext2.extend(messages)
-    generator.group1.add().field1.MergeFrom(messages[0])
-    generator.group1.add().field1.MergeFrom(messages[1])
-    generator.group1.add().field1.MergeFrom(messages[2])
-    generator.group2.add().field1.MergeFrom(messages[0])
-    generator.group2.add().field1.MergeFrom(messages[1])
-    generator.group2.add().field1.MergeFrom(messages[2])
+        data = generator.SerializeToString()
+        parsing_merge = unittest_pb2.TestParsingMerge()
+        parsing_merge.ParseFromString(data)
 
-    data = generator.SerializeToString()
-    parsing_merge = unittest_pb2.TestParsingMerge()
-    parsing_merge.ParseFromString(data)
+        # Required and optional fields should be merged.
+        assert parsing_merge.required_all_types == merged_message
+        assert parsing_merge.optional_all_types == merged_message
+        assert (parsing_merge.optionalgroup.optional_group_all_types
+                == merged_message)
+        assert (
+            parsing_merge.Extensions[unittest_pb2.TestParsingMerge.optional_ext] == merged_message)
 
-    # Required and optional fields should be merged.
-    assert parsing_merge.required_all_types == merged_message
-    assert parsing_merge.optional_all_types == merged_message
-    self.assertEqual(parsing_merge.optionalgroup.optional_group_all_types,
-                     merged_message)
-    self.assertEqual(
-        parsing_merge.Extensions[unittest_pb2.TestParsingMerge.optional_ext],
-        merged_message)
+        # Repeated fields should not be merged.
+        assert len(parsing_merge.repeated_all_types) == 3
+        assert len(parsing_merge.repeatedgroup) == 3
+        assert (
+            len(parsing_merge.Extensions[unittest_pb2.TestParsingMerge.repeated_ext]) == 3)
 
-    # Repeated fields should not be merged.
-    assert len(parsing_merge.repeated_all_types) == 3
-    assert len(parsing_merge.repeatedgroup) == 3
-    self.assertEqual(
-        len(parsing_merge.Extensions[
-            unittest_pb2.TestParsingMerge.repeated_ext]), 3)
-
-  def testPythonicInit(self):
-    message = unittest_pb2.TestAllTypes(
-        optional_int32=100,
-        optional_fixed32=200,
-        optional_float=300.5,
-        optional_bytes=b'x',
-        optionalgroup={'a': 400},
-        optional_nested_message={'bb': 500},
-        optional_foreign_message={},
-        optional_nested_enum='BAZ',
-        repeatedgroup=[{
-            'a': 600
-        }, {
-            'a': 700
-        }],
-        repeated_nested_enum=['FOO', unittest_pb2.TestAllTypes.BAR],
-        default_int32=800,
-        oneof_string='y')
-    assert isinstance(message, unittest_pb2.TestAllTypes)
-    assert 100 == message.optional_int32
-    assert 200 == message.optional_fixed32
-    assert 300.5 == message.optional_float
-    assert b'x' == message.optional_bytes
-    assert 400 == message.optionalgroup.a
-    self.assertIsInstance(message.optional_nested_message,
+    def test_pythonic_init(self):
+        message = unittest_pb2.TestAllTypes(
+            optional_int32=100,
+            optional_fixed32=200,
+            optional_float=300.5,
+            optional_bytes=b'x',
+            optionalgroup={'a': 400},
+            optional_nested_message={'bb': 500},
+            optional_foreign_message={},
+            optional_nested_enum='BAZ',
+            repeatedgroup=[{
+                'a': 600
+            }, {
+                'a': 700
+            }],
+            repeated_nested_enum=['FOO', unittest_pb2.TestAllTypes.BAR],
+            default_int32=800,
+            oneof_string='y')
+        assert isinstance(message, unittest_pb2.TestAllTypes)
+        assert 100 == message.optional_int32
+        assert 200 == message.optional_fixed32
+        assert 300.5 == message.optional_float
+        assert b'x' == message.optional_bytes
+        assert 400 == message.optionalgroup.a
+        assert isinstance(message.optional_nested_message,
                           unittest_pb2.TestAllTypes.NestedMessage)
-    assert 500 == message.optional_nested_message.bb
-    assert message.HasField('optional_foreign_message')
-    self.assertEqual(message.optional_foreign_message,
-                     unittest_pb2.ForeignMessage())
-    self.assertEqual(unittest_pb2.TestAllTypes.BAZ,
-                     message.optional_nested_enum)
-    assert 2 == len(message.repeatedgroup)
-    assert 600 == message.repeatedgroup[0].a
-    assert 700 == message.repeatedgroup[1].a
-    assert 2 == len(message.repeated_nested_enum)
-    self.assertEqual(unittest_pb2.TestAllTypes.FOO,
-                     message.repeated_nested_enum[0])
-    self.assertEqual(unittest_pb2.TestAllTypes.BAR,
-                     message.repeated_nested_enum[1])
-    assert 800 == message.default_int32
-    assert 'y' == message.oneof_string
-    assert not message.HasField('optional_int64')
-    assert 0 == len(message.repeated_float)
-    assert 42 == message.default_int64
+        assert 500 == message.optional_nested_message.bb
+        assert message.HasField('optional_foreign_message')
+        assert message.optional_foreign_message == unittest_pb2.ForeignMessage()
+        assert unittest_pb2.TestAllTypes.BAZ == message.optional_nested_enum
+        assert 2 == len(message.repeatedgroup)
+        assert 600 == message.repeatedgroup[0].a
+        assert 700 == message.repeatedgroup[1].a
+        assert 2 == len(message.repeated_nested_enum)
+        assert unittest_pb2.TestAllTypes.FOO == message.repeated_nested_enum[0]
+        assert unittest_pb2.TestAllTypes.BAR == message.repeated_nested_enum[1]
+        assert 800 == message.default_int32
+        assert 'y' == message.oneof_string
+        assert not message.HasField('optional_int64')
+        assert 0 == len(message.repeated_float)
+        assert 42 == message.default_int64
 
-    message = unittest_pb2.TestAllTypes(optional_nested_enum=u'BAZ')
-    self.assertEqual(unittest_pb2.TestAllTypes.BAZ,
-                     message.optional_nested_enum)
+        message = unittest_pb2.TestAllTypes(optional_nested_enum=u'BAZ')
+        assert unittest_pb2.TestAllTypes.BAZ == message.optional_nested_enum
 
-    with pytest.raises(ValueError):
-      unittest_pb2.TestAllTypes(
-          optional_nested_message={'INVALID_NESTED_FIELD': 17})
+        with pytest.raises(ValueError):
+          unittest_pb2.TestAllTypes(
+              optional_nested_message={'INVALID_NESTED_FIELD': 17})
 
-    with pytest.raises(TypeError):
-      unittest_pb2.TestAllTypes(
-          optional_nested_message={'bb': 'INVALID_VALUE_TYPE'})
+        with pytest.raises(TypeError):
+          unittest_pb2.TestAllTypes(
+              optional_nested_message={'bb': 'INVALID_VALUE_TYPE'})
 
-    with pytest.raises(ValueError):
-      unittest_pb2.TestAllTypes(optional_nested_enum='INVALID_LABEL')
+        with pytest.raises(ValueError):
+          unittest_pb2.TestAllTypes(optional_nested_enum='INVALID_LABEL')
 
-    with pytest.raises(ValueError):
-      unittest_pb2.TestAllTypes(repeated_nested_enum='FOO')
+        with pytest.raises(ValueError):
+          unittest_pb2.TestAllTypes(repeated_nested_enum='FOO')
 
-  def testPythonicInitWithDict(self):
-    # Both string/unicode field name keys should work.
-    kwargs = {
-        'optional_int32': 100,
-        u'optional_fixed32': 200,
-    }
-    msg = unittest_pb2.TestAllTypes(**kwargs)
-    assert 100 == msg.optional_int32
-    assert 200 == msg.optional_fixed32
+    def test_pythonic_init_with_dict(self):
+        # Both string/unicode field name keys should work.
+        kwargs = {
+            'optional_int32': 100,
+            u'optional_fixed32': 200,
+        }
+        msg = unittest_pb2.TestAllTypes(**kwargs)
+        assert 100 == msg.optional_int32
+        assert 200 == msg.optional_fixed32
 
-  def test_documentation(self):
-    # Also used by the interactive help() function.
-    doc = pydoc.html.document(unittest_pb2.TestAllTypes, 'message')
-    assert 'class TestAllTypes' in doc
-    assert 'SerializePartialToString' in doc
-    assert 'repeated_float' in doc
-    base = unittest_pb2.TestAllTypes.__bases__[0]
-    pytest.raises(AttributeError, getattr, base, '_extensions_by_name')
+    def test_documentation(self):
+        # Also used by the interactive help() function.
+        doc = pydoc.html.document(unittest_pb2.TestAllTypes, 'message')
+        assert 'class TestAllTypes' in doc
+        assert 'SerializePartialToString' in doc
+        assert 'repeated_float' in doc
+        base = unittest_pb2.TestAllTypes.__bases__[0]
+        pytest.raises(AttributeError, getattr, base, '_extensions_by_name')
 
 
 # Class to test proto3-only features/behavior (updated field presence & enums)
@@ -2090,7 +2082,7 @@ class Proto3Test(unittest.TestCase):
     msg2.map_int32_foreign_message[222].d = 20
     msg.MergeFromString(msg2.SerializeToString())
     assert msg.map_int32_foreign_message[222].d == 20
-    self.assertNotEqual(msg.map_int32_foreign_message[222].c, 123)
+    assert msg.map_int32_foreign_message[222].c != 123
 
     # Merge a dict to map field is not accepted
     with pytest.raises(AttributeError):
@@ -2438,8 +2430,8 @@ class Proto3Test(unittest.TestCase):
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_int32[-123] = -456
     assert msg.map_int32_int32 == msg.map_int32_int32
-    self.assertEqual(msg.map_int32_foreign_message, msg.map_int32_foreign_message)
-    self.assertNotEqual(msg.map_int32_int32, 0)
+    assert msg.map_int32_foreign_message == msg.map_int32_foreign_message
+    assert msg.map_int32_int32 != 0
 
   def testMapFindInitializationErrorsSmokeTest(self):
     msg = map_unittest_pb2.TestMap()
@@ -2611,7 +2603,3 @@ class OversizeProtosTest(unittest.TestCase):
     api_implementation._c_module.SetAllowOversizeProtos(True)
     msg = unittest_pb2.TestRecursiveMessage()
     msg.ParseFromString(self.GenerateNestedProto(101))
-
-
-if __name__ == '__main__':
-  unittest.main()
