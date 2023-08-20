@@ -1059,7 +1059,7 @@ class TestMessage:
         m.repeated_string.extend('abc')
         assert ['a', 'b', 'c'] == m.repeated_string
 
-    class TestIterable:
+    class MockIterable:
         """This iterable object mimics the behavior of numpy.array.
 
         __nonzero__ fails for length > 1, and returns bool(item[0]) for length == 1.
@@ -1087,42 +1087,42 @@ class TestMessage:
         """Test extending repeated int32 fields with iterable."""
         m = message_module.TestAllTypes()
         assert [] == m.repeated_int32
-        m.repeated_int32.extend(TestMessage.TestIterable([]))
+        m.repeated_int32.extend(TestMessage.MockIterable([]))
         assert [] == m.repeated_int32
-        m.repeated_int32.extend(TestMessage.TestIterable([0]))
+        m.repeated_int32.extend(TestMessage.MockIterable([0]))
         assert [0] == m.repeated_int32
-        m.repeated_int32.extend(TestMessage.TestIterable([1, 2]))
+        m.repeated_int32.extend(TestMessage.MockIterable([1, 2]))
         assert [0, 1, 2] == m.repeated_int32
-        m.repeated_int32.extend(TestMessage.TestIterable([3, 4]))
+        m.repeated_int32.extend(TestMessage.MockIterable([3, 4]))
         assert [0, 1, 2, 3, 4] == m.repeated_int32
 
     def test_extend_float_with_iterable(self, message_module):
         """Test extending repeated float fields with iterable."""
         m = message_module.TestAllTypes()
         assert [] == m.repeated_float
-        m.repeated_float.extend(TestMessage.TestIterable([]))
+        m.repeated_float.extend(TestMessage.MockIterable([]))
         assert [] == m.repeated_float
-        m.repeated_float.extend(TestMessage.TestIterable([0.0]))
+        m.repeated_float.extend(TestMessage.MockIterable([0.0]))
         assert [0.0] == m.repeated_float
-        m.repeated_float.extend(TestMessage.TestIterable([1.0, 2.0]))
+        m.repeated_float.extend(TestMessage.MockIterable([1.0, 2.0]))
         assert [0.0, 1.0, 2.0] == m.repeated_float
-        m.repeated_float.extend(TestMessage.TestIterable([3.0, 4.0]))
+        m.repeated_float.extend(TestMessage.MockIterable([3.0, 4.0]))
         assert [0.0, 1.0, 2.0, 3.0, 4.0] == m.repeated_float
 
     def test_extend_string_with_iterable(self, message_module):
         """Test extending repeated string fields with iterable."""
         m = message_module.TestAllTypes()
         assert [] == m.repeated_string
-        m.repeated_string.extend(TestMessage.TestIterable([]))
+        m.repeated_string.extend(TestMessage.MockIterable([]))
         assert [] == m.repeated_string
-        m.repeated_string.extend(TestMessage.TestIterable(['']))
+        m.repeated_string.extend(TestMessage.MockIterable(['']))
         assert [''] == m.repeated_string
-        m.repeated_string.extend(TestMessage.TestIterable(['1', '2']))
+        m.repeated_string.extend(TestMessage.MockIterable(['1', '2']))
         assert ['', '1', '2'] == m.repeated_string
-        m.repeated_string.extend(TestMessage.TestIterable(['3', '4']))
+        m.repeated_string.extend(TestMessage.MockIterable(['3', '4']))
         assert ['', '1', '2', '3', '4'] == m.repeated_string
 
-    class TestIndex:
+    class MockIndex:
         """This index object mimics the behavior of numpy.int64 and other types."""
 
         def __init__(self, value=None):
@@ -1134,12 +1134,12 @@ class TestMessage:
     def test_repeated_indexing_with_int_index(self, message_module):
         msg = message_module.TestAllTypes()
         msg.repeated_int32.extend([1, 2, 3])
-        assert 1 == msg.repeated_int32[TestMessage.TestIndex(0)]
+        assert 1 == msg.repeated_int32[TestMessage.MockIndex(0)]
 
     def test_repeated_indexing_with_negative1_int_index(self, message_module):
         msg = message_module.TestAllTypes()
         msg.repeated_int32.extend([1, 2, 3])
-        assert 3 == msg.repeated_int32[TestMessage.TestIndex(-1)]
+        assert 3 == msg.repeated_int32[TestMessage.MockIndex(-1)]
 
     def test_repeated_indexing_with_negative1_int(self, message_module):
         msg = message_module.TestAllTypes()
