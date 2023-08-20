@@ -410,212 +410,200 @@ def ExpectAllFieldsAndExtensionsInOrder(serialized):
 
 def ExpectAllFieldsSet(test_case, message):
   """Check all fields for correct values have after Set*Fields() is called."""
-  test_case.assertTrue(message.HasField('optional_int32'))
-  test_case.assertTrue(message.HasField('optional_int64'))
-  test_case.assertTrue(message.HasField('optional_uint32'))
-  test_case.assertTrue(message.HasField('optional_uint64'))
-  test_case.assertTrue(message.HasField('optional_sint32'))
-  test_case.assertTrue(message.HasField('optional_sint64'))
-  test_case.assertTrue(message.HasField('optional_fixed32'))
-  test_case.assertTrue(message.HasField('optional_fixed64'))
-  test_case.assertTrue(message.HasField('optional_sfixed32'))
-  test_case.assertTrue(message.HasField('optional_sfixed64'))
-  test_case.assertTrue(message.HasField('optional_float'))
-  test_case.assertTrue(message.HasField('optional_double'))
-  test_case.assertTrue(message.HasField('optional_bool'))
-  test_case.assertTrue(message.HasField('optional_string'))
-  test_case.assertTrue(message.HasField('optional_bytes'))
+  assert message.HasField('optional_int32')
+  assert message.HasField('optional_int64')
+  assert message.HasField('optional_uint32')
+  assert message.HasField('optional_uint64')
+  assert message.HasField('optional_sint32')
+  assert message.HasField('optional_sint64')
+  assert message.HasField('optional_fixed32')
+  assert message.HasField('optional_fixed64')
+  assert message.HasField('optional_sfixed32')
+  assert message.HasField('optional_sfixed64')
+  assert message.HasField('optional_float')
+  assert message.HasField('optional_double')
+  assert message.HasField('optional_bool')
+  assert message.HasField('optional_string')
+  assert message.HasField('optional_bytes')
 
   if IsProto2(message):
-    test_case.assertTrue(message.HasField('optionalgroup'))
-  test_case.assertTrue(message.HasField('optional_nested_message'))
-  test_case.assertTrue(message.HasField('optional_foreign_message'))
-  test_case.assertTrue(message.HasField('optional_import_message'))
+    assert message.HasField('optionalgroup')
+  assert message.HasField('optional_nested_message')
+  assert message.HasField('optional_foreign_message')
+  assert message.HasField('optional_import_message')
 
-  test_case.assertTrue(message.optionalgroup.HasField('a'))
-  test_case.assertTrue(message.optional_nested_message.HasField('bb'))
-  test_case.assertTrue(message.optional_foreign_message.HasField('c'))
-  test_case.assertTrue(message.optional_import_message.HasField('d'))
+  assert message.optionalgroup.HasField('a')
+  assert message.optional_nested_message.HasField('bb')
+  assert message.optional_foreign_message.HasField('c')
+  assert message.optional_import_message.HasField('d')
 
-  test_case.assertTrue(message.HasField('optional_nested_enum'))
-  test_case.assertTrue(message.HasField('optional_foreign_enum'))
+  assert message.HasField('optional_nested_enum')
+  assert message.HasField('optional_foreign_enum')
   if IsProto2(message):
-    test_case.assertTrue(message.HasField('optional_import_enum'))
+    assert message.HasField('optional_import_enum')
 
-  test_case.assertTrue(message.HasField('optional_string_piece'))
-  test_case.assertTrue(message.HasField('optional_cord'))
+  assert message.HasField('optional_string_piece')
+  assert message.HasField('optional_cord')
 
-  test_case.assertEqual(101, message.optional_int32)
-  test_case.assertEqual(102, message.optional_int64)
-  test_case.assertEqual(103, message.optional_uint32)
-  test_case.assertEqual(104, message.optional_uint64)
-  test_case.assertEqual(105, message.optional_sint32)
-  test_case.assertEqual(106, message.optional_sint64)
-  test_case.assertEqual(107, message.optional_fixed32)
-  test_case.assertEqual(108, message.optional_fixed64)
-  test_case.assertEqual(109, message.optional_sfixed32)
-  test_case.assertEqual(110, message.optional_sfixed64)
-  test_case.assertEqual(111, message.optional_float)
-  test_case.assertEqual(112, message.optional_double)
-  test_case.assertEqual(True, message.optional_bool)
-  test_case.assertEqual('115', message.optional_string)
-  test_case.assertEqual(b'116', message.optional_bytes)
+  assert 101 == message.optional_int32
+  assert 102 == message.optional_int64
+  assert 103 == message.optional_uint32
+  assert 104 == message.optional_uint64
+  assert 105 == message.optional_sint32
+  assert 106 == message.optional_sint64
+  assert 107 == message.optional_fixed32
+  assert 108 == message.optional_fixed64
+  assert 109 == message.optional_sfixed32
+  assert 110 == message.optional_sfixed64
+  assert 111 == message.optional_float
+  assert 112 == message.optional_double
+  assert True == message.optional_bool
+  assert '115' == message.optional_string
+  assert b'116' == message.optional_bytes
 
   if IsProto2(message):
-    test_case.assertEqual(117, message.optionalgroup.a)
-  test_case.assertEqual(118, message.optional_nested_message.bb)
-  test_case.assertEqual(119, message.optional_foreign_message.c)
-  test_case.assertEqual(120, message.optional_import_message.d)
-  test_case.assertEqual(126, message.optional_public_import_message.e)
-  test_case.assertEqual(127, message.optional_lazy_message.bb)
-  test_case.assertEqual(128, message.optional_unverified_lazy_message.bb)
+    assert 117 == message.optionalgroup.a
+  assert 118 == message.optional_nested_message.bb
+  assert 119 == message.optional_foreign_message.c
+  assert 120 == message.optional_import_message.d
+  assert 126 == message.optional_public_import_message.e
+  assert 127 == message.optional_lazy_message.bb
+  assert 128 == message.optional_unverified_lazy_message.bb
 
-  test_case.assertEqual(unittest_pb2.TestAllTypes.BAZ,
-                        message.optional_nested_enum)
-  test_case.assertEqual(unittest_pb2.FOREIGN_BAZ,
-                        message.optional_foreign_enum)
+  assert unittest_pb2.TestAllTypes.BAZ == message.optional_nested_enum
+  assert unittest_pb2.FOREIGN_BAZ == message.optional_foreign_enum
   if IsProto2(message):
-    test_case.assertEqual(unittest_import_pb2.IMPORT_BAZ,
-                          message.optional_import_enum)
+    assert unittest_import_pb2.IMPORT_BAZ == message.optional_import_enum
 
   # -----------------------------------------------------------------
 
-  test_case.assertEqual(2, len(message.repeated_int32))
-  test_case.assertEqual(2, len(message.repeated_int64))
-  test_case.assertEqual(2, len(message.repeated_uint32))
-  test_case.assertEqual(2, len(message.repeated_uint64))
-  test_case.assertEqual(2, len(message.repeated_sint32))
-  test_case.assertEqual(2, len(message.repeated_sint64))
-  test_case.assertEqual(2, len(message.repeated_fixed32))
-  test_case.assertEqual(2, len(message.repeated_fixed64))
-  test_case.assertEqual(2, len(message.repeated_sfixed32))
-  test_case.assertEqual(2, len(message.repeated_sfixed64))
-  test_case.assertEqual(2, len(message.repeated_float))
-  test_case.assertEqual(2, len(message.repeated_double))
-  test_case.assertEqual(2, len(message.repeated_bool))
-  test_case.assertEqual(2, len(message.repeated_string))
-  test_case.assertEqual(2, len(message.repeated_bytes))
+  assert 2 == len(message.repeated_int32)
+  assert 2 == len(message.repeated_int64)
+  assert 2 == len(message.repeated_uint32)
+  assert 2 == len(message.repeated_uint64)
+  assert 2 == len(message.repeated_sint32)
+  assert 2 == len(message.repeated_sint64)
+  assert 2 == len(message.repeated_fixed32)
+  assert 2 == len(message.repeated_fixed64)
+  assert 2 == len(message.repeated_sfixed32)
+  assert 2 == len(message.repeated_sfixed64)
+  assert 2 == len(message.repeated_float)
+  assert 2 == len(message.repeated_double)
+  assert 2 == len(message.repeated_bool)
+  assert 2 == len(message.repeated_string)
+  assert 2 == len(message.repeated_bytes)
 
   if IsProto2(message):
-    test_case.assertEqual(2, len(message.repeatedgroup))
-  test_case.assertEqual(2, len(message.repeated_nested_message))
-  test_case.assertEqual(2, len(message.repeated_foreign_message))
-  test_case.assertEqual(2, len(message.repeated_import_message))
-  test_case.assertEqual(2, len(message.repeated_nested_enum))
-  test_case.assertEqual(2, len(message.repeated_foreign_enum))
+    assert 2 == len(message.repeatedgroup)
+  assert 2 == len(message.repeated_nested_message)
+  assert 2 == len(message.repeated_foreign_message)
+  assert 2 == len(message.repeated_import_message)
+  assert 2 == len(message.repeated_nested_enum)
+  assert 2 == len(message.repeated_foreign_enum)
   if IsProto2(message):
-    test_case.assertEqual(2, len(message.repeated_import_enum))
+    assert 2 == len(message.repeated_import_enum)
 
-  test_case.assertEqual(2, len(message.repeated_string_piece))
-  test_case.assertEqual(2, len(message.repeated_cord))
+  assert 2 == len(message.repeated_string_piece)
+  assert 2 == len(message.repeated_cord)
 
-  test_case.assertEqual(201, message.repeated_int32[0])
-  test_case.assertEqual(202, message.repeated_int64[0])
-  test_case.assertEqual(203, message.repeated_uint32[0])
-  test_case.assertEqual(204, message.repeated_uint64[0])
-  test_case.assertEqual(205, message.repeated_sint32[0])
-  test_case.assertEqual(206, message.repeated_sint64[0])
-  test_case.assertEqual(207, message.repeated_fixed32[0])
-  test_case.assertEqual(208, message.repeated_fixed64[0])
-  test_case.assertEqual(209, message.repeated_sfixed32[0])
-  test_case.assertEqual(210, message.repeated_sfixed64[0])
-  test_case.assertEqual(211, message.repeated_float[0])
-  test_case.assertEqual(212, message.repeated_double[0])
-  test_case.assertEqual(True, message.repeated_bool[0])
-  test_case.assertEqual('215', message.repeated_string[0])
-  test_case.assertEqual(b'216', message.repeated_bytes[0])
-
-  if IsProto2(message):
-    test_case.assertEqual(217, message.repeatedgroup[0].a)
-  test_case.assertEqual(218, message.repeated_nested_message[0].bb)
-  test_case.assertEqual(219, message.repeated_foreign_message[0].c)
-  test_case.assertEqual(220, message.repeated_import_message[0].d)
-  test_case.assertEqual(227, message.repeated_lazy_message[0].bb)
-
-  test_case.assertEqual(unittest_pb2.TestAllTypes.BAR,
-                        message.repeated_nested_enum[0])
-  test_case.assertEqual(unittest_pb2.FOREIGN_BAR,
-                        message.repeated_foreign_enum[0])
-  if IsProto2(message):
-    test_case.assertEqual(unittest_import_pb2.IMPORT_BAR,
-                          message.repeated_import_enum[0])
-
-  test_case.assertEqual(301, message.repeated_int32[1])
-  test_case.assertEqual(302, message.repeated_int64[1])
-  test_case.assertEqual(303, message.repeated_uint32[1])
-  test_case.assertEqual(304, message.repeated_uint64[1])
-  test_case.assertEqual(305, message.repeated_sint32[1])
-  test_case.assertEqual(306, message.repeated_sint64[1])
-  test_case.assertEqual(307, message.repeated_fixed32[1])
-  test_case.assertEqual(308, message.repeated_fixed64[1])
-  test_case.assertEqual(309, message.repeated_sfixed32[1])
-  test_case.assertEqual(310, message.repeated_sfixed64[1])
-  test_case.assertEqual(311, message.repeated_float[1])
-  test_case.assertEqual(312, message.repeated_double[1])
-  test_case.assertEqual(False, message.repeated_bool[1])
-  test_case.assertEqual('315', message.repeated_string[1])
-  test_case.assertEqual(b'316', message.repeated_bytes[1])
+  assert 201 == message.repeated_int32[0]
+  assert 202 == message.repeated_int64[0]
+  assert 203 == message.repeated_uint32[0]
+  assert 204 == message.repeated_uint64[0]
+  assert 205 == message.repeated_sint32[0]
+  assert 206 == message.repeated_sint64[0]
+  assert 207 == message.repeated_fixed32[0]
+  assert 208 == message.repeated_fixed64[0]
+  assert 209 == message.repeated_sfixed32[0]
+  assert 210 == message.repeated_sfixed64[0]
+  assert 211 == message.repeated_float[0]
+  assert 212 == message.repeated_double[0]
+  assert True == message.repeated_bool[0]
+  assert '215' == message.repeated_string[0]
+  assert b'216' == message.repeated_bytes[0]
 
   if IsProto2(message):
-    test_case.assertEqual(317, message.repeatedgroup[1].a)
-  test_case.assertEqual(318, message.repeated_nested_message[1].bb)
-  test_case.assertEqual(319, message.repeated_foreign_message[1].c)
-  test_case.assertEqual(320, message.repeated_import_message[1].d)
-  test_case.assertEqual(327, message.repeated_lazy_message[1].bb)
+    assert 217 == message.repeatedgroup[0].a
+  assert 218 == message.repeated_nested_message[0].bb
+  assert 219 == message.repeated_foreign_message[0].c
+  assert 220 == message.repeated_import_message[0].d
+  assert 227 == message.repeated_lazy_message[0].bb
 
-  test_case.assertEqual(unittest_pb2.TestAllTypes.BAZ,
-                        message.repeated_nested_enum[1])
-  test_case.assertEqual(unittest_pb2.FOREIGN_BAZ,
-                        message.repeated_foreign_enum[1])
+  assert unittest_pb2.TestAllTypes.BAR == message.repeated_nested_enum[0]
+  assert unittest_pb2.FOREIGN_BAR == message.repeated_foreign_enum[0]
   if IsProto2(message):
-    test_case.assertEqual(unittest_import_pb2.IMPORT_BAZ,
-                          message.repeated_import_enum[1])
+    assert unittest_import_pb2.IMPORT_BAR == message.repeated_import_enum[0]
+
+  assert 301 == message.repeated_int32[1]
+  assert 302 == message.repeated_int64[1]
+  assert 303 == message.repeated_uint32[1]
+  assert 304 == message.repeated_uint64[1]
+  assert 305 == message.repeated_sint32[1]
+  assert 306 == message.repeated_sint64[1]
+  assert 307 == message.repeated_fixed32[1]
+  assert 308 == message.repeated_fixed64[1]
+  assert 309 == message.repeated_sfixed32[1]
+  assert 310 == message.repeated_sfixed64[1]
+  assert 311 == message.repeated_float[1]
+  assert 312 == message.repeated_double[1]
+  assert False == message.repeated_bool[1]
+  assert '315' == message.repeated_string[1]
+  assert b'316' == message.repeated_bytes[1]
+
+  if IsProto2(message):
+    assert 317 == message.repeatedgroup[1].a
+  assert 318 == message.repeated_nested_message[1].bb
+  assert 319 == message.repeated_foreign_message[1].c
+  assert 320 == message.repeated_import_message[1].d
+  assert 327 == message.repeated_lazy_message[1].bb
+
+  assert unittest_pb2.TestAllTypes.BAZ == message.repeated_nested_enum[1]
+  assert unittest_pb2.FOREIGN_BAZ == message.repeated_foreign_enum[1]
+  if IsProto2(message):
+    assert unittest_import_pb2.IMPORT_BAZ == message.repeated_import_enum[1]
 
   # -----------------------------------------------------------------
 
   if IsProto2(message):
-    test_case.assertTrue(message.HasField('default_int32'))
-    test_case.assertTrue(message.HasField('default_int64'))
-    test_case.assertTrue(message.HasField('default_uint32'))
-    test_case.assertTrue(message.HasField('default_uint64'))
-    test_case.assertTrue(message.HasField('default_sint32'))
-    test_case.assertTrue(message.HasField('default_sint64'))
-    test_case.assertTrue(message.HasField('default_fixed32'))
-    test_case.assertTrue(message.HasField('default_fixed64'))
-    test_case.assertTrue(message.HasField('default_sfixed32'))
-    test_case.assertTrue(message.HasField('default_sfixed64'))
-    test_case.assertTrue(message.HasField('default_float'))
-    test_case.assertTrue(message.HasField('default_double'))
-    test_case.assertTrue(message.HasField('default_bool'))
-    test_case.assertTrue(message.HasField('default_string'))
-    test_case.assertTrue(message.HasField('default_bytes'))
+    assert message.HasField('default_int32')
+    assert message.HasField('default_int64')
+    assert message.HasField('default_uint32')
+    assert message.HasField('default_uint64')
+    assert message.HasField('default_sint32')
+    assert message.HasField('default_sint64')
+    assert message.HasField('default_fixed32')
+    assert message.HasField('default_fixed64')
+    assert message.HasField('default_sfixed32')
+    assert message.HasField('default_sfixed64')
+    assert message.HasField('default_float')
+    assert message.HasField('default_double')
+    assert message.HasField('default_bool')
+    assert message.HasField('default_string')
+    assert message.HasField('default_bytes')
 
-    test_case.assertTrue(message.HasField('default_nested_enum'))
-    test_case.assertTrue(message.HasField('default_foreign_enum'))
-    test_case.assertTrue(message.HasField('default_import_enum'))
+    assert message.HasField('default_nested_enum')
+    assert message.HasField('default_foreign_enum')
+    assert message.HasField('default_import_enum')
 
-    test_case.assertEqual(401, message.default_int32)
-    test_case.assertEqual(402, message.default_int64)
-    test_case.assertEqual(403, message.default_uint32)
-    test_case.assertEqual(404, message.default_uint64)
-    test_case.assertEqual(405, message.default_sint32)
-    test_case.assertEqual(406, message.default_sint64)
-    test_case.assertEqual(407, message.default_fixed32)
-    test_case.assertEqual(408, message.default_fixed64)
-    test_case.assertEqual(409, message.default_sfixed32)
-    test_case.assertEqual(410, message.default_sfixed64)
-    test_case.assertEqual(411, message.default_float)
-    test_case.assertEqual(412, message.default_double)
-    test_case.assertEqual(False, message.default_bool)
-    test_case.assertEqual('415', message.default_string)
-    test_case.assertEqual(b'416', message.default_bytes)
+    assert 401 == message.default_int32
+    assert 402 == message.default_int64
+    assert 403 == message.default_uint32
+    assert 404 == message.default_uint64
+    assert 405 == message.default_sint32
+    assert 406 == message.default_sint64
+    assert 407 == message.default_fixed32
+    assert 408 == message.default_fixed64
+    assert 409 == message.default_sfixed32
+    assert 410 == message.default_sfixed64
+    assert 411 == message.default_float
+    assert 412 == message.default_double
+    assert False == message.default_bool
+    assert '415' == message.default_string
+    assert b'416' == message.default_bytes
 
-    test_case.assertEqual(unittest_pb2.TestAllTypes.FOO,
-                          message.default_nested_enum)
-    test_case.assertEqual(unittest_pb2.FOREIGN_FOO,
-                          message.default_foreign_enum)
-    test_case.assertEqual(unittest_import_pb2.IMPORT_FOO,
-                          message.default_import_enum)
+    assert unittest_pb2.TestAllTypes.FOO == message.default_nested_enum
+    assert unittest_pb2.FOREIGN_FOO == message.default_foreign_enum
+    assert unittest_import_pb2.IMPORT_FOO == message.default_import_enum
 
 
 def GoldenFile(filename):
