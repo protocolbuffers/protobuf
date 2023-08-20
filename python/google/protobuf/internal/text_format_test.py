@@ -37,7 +37,6 @@ import re
 import string
 import textwrap
 
-import unittest
 import pytest
 
 from google.protobuf import any_pb2
@@ -50,7 +49,6 @@ from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
 from google.protobuf import descriptor_pool
 from google.protobuf import text_format
-from google.protobuf.internal import _parameterized
 from google.protobuf import any_test_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
@@ -110,7 +108,7 @@ class TestTextFormatMessageToString(TextFormatBase):
         message.repeated_double.append(1.23e22)
         message.repeated_double.append(1.23e-18)
         message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
-        message.repeated_string.append(u'\u00fc\ua71f')
+        message.repeated_string.append('\u00fc\ua71f')
         self.compare_to_golden_text(
             self.remove_redundant_zeros(text_format.MessageToString(message)),
             'repeated_int64: -9223372036854775808\n'
@@ -228,7 +226,7 @@ class TestTextFormatMessageToString(TextFormatBase):
             pass
 
         message = message_module.TestAllTypes()
-        message.repeated_string.append(UnicodeSub(u'\u00fc\ua71f'))
+        message.repeated_string.append(UnicodeSub('\u00fc\ua71f'))
         self.compare_to_golden_text(
             text_format.MessageToString(message),
             'repeated_string: "\\303\\274\\352\\234\\237"\n')
@@ -305,7 +303,7 @@ class TestTextFormatMessageToString(TextFormatBase):
         message.repeated_double.append(1.23e22)
         message.repeated_double.append(1.23e-18)
         message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
-        message.repeated_string.append(u'\u00fc\ua71f')
+        message.repeated_string.append('\u00fc\ua71f')
         self.compare_to_golden_text(
             self.remove_redundant_zeros(text_format.MessageToString(
                 message, as_one_line=True)),
@@ -326,7 +324,7 @@ class TestTextFormatMessageToString(TextFormatBase):
         message.repeated_double.append(1.23e22)
         message.repeated_double.append(1.23e-18)
         message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
-        message.repeated_string.append(u'\u00fc\ua71f')
+        message.repeated_string.append('\u00fc\ua71f')
 
         # Test as_utf8 = False.
         wire_text = text_format.MessageToString(message,
@@ -348,9 +346,9 @@ class TestTextFormatMessageToString(TextFormatBase):
 
     def test_print_raw_utf8_string(self, message_module):
         message = message_module.TestAllTypes()
-        message.repeated_string.append(u'\u00fc\t\ua71f')
+        message.repeated_string.append('\u00fc\t\ua71f')
         text = text_format.MessageToString(message, as_utf8=True)
-        golden_unicode = u'repeated_string: "\u00fc\\t\ua71f"\n'
+        golden_unicode = 'repeated_string: "\u00fc\\t\ua71f"\n'
         golden_text = golden_unicode
         # MessageToString always returns a native str.
         self.compare_to_golden_text(text, golden_text)
@@ -454,7 +452,7 @@ class TestTextFormatMessageToString(TextFormatBase):
         self.compare_to_golden_text(text, golden_message)
 
     def test_message_to_string_ascii(self, message_module):
-        golden_unicode = u'Á short desçription and a 🍌.'
+        golden_unicode = 'Á short desçription and a 🍌.'
         golden_bytes = golden_unicode.encode('utf-8')
         message = message_module.TestAllTypes()
         message.optional_string = golden_unicode
@@ -499,90 +497,90 @@ class TestTextFormatMessageToString(TextFormatBase):
         assert '0.0' == out.getvalue()
         out.close()
 
-    def testCustomOptions(self, message_module):
-      message_descriptor = (unittest_custom_options_pb2.
-                            TestMessageWithCustomOptions.DESCRIPTOR)
-      message_proto = descriptor_pb2.DescriptorProto()
-      message_descriptor.CopyToProto(message_proto)
-      expected_text = (
-          'name: "TestMessageWithCustomOptions"\n'
-          'field {\n'
-          '  name: "field1"\n'
-          '  number: 1\n'
-          '  label: LABEL_OPTIONAL\n'
-          '  type: TYPE_STRING\n'
-          '  options {\n'
-          '    ctype: CORD\n'
-          '    [protobuf_unittest.field_opt1]: 8765432109\n'
-          '  }\n'
-          '}\n'
-          'field {\n'
-          '  name: "oneof_field"\n'
-          '  number: 2\n'
-          '  label: LABEL_OPTIONAL\n'
-          '  type: TYPE_INT32\n'
-          '  oneof_index: 0\n'
-          '}\n'
-          'field {\n'
-          '  name: "map_field"\n'
-          '  number: 3\n'
-          '  label: LABEL_REPEATED\n'
-          '  type: TYPE_MESSAGE\n'
-          '  type_name: ".protobuf_unittest.TestMessageWithCustomOptions.'
-          'MapFieldEntry"\n'
-          '  options {\n'
-          '    [protobuf_unittest.field_opt1]: 12345\n'
-          '  }\n'
-          '}\n'
-          'nested_type {\n'
-          '  name: "MapFieldEntry"\n'
-          '  field {\n'
-          '    name: "key"\n'
-          '    number: 1\n'
-          '    label: LABEL_OPTIONAL\n'
-          '    type: TYPE_STRING\n'
-          '  }\n'
-          '  field {\n'
-          '    name: "value"\n'
-          '    number: 2\n'
-          '    label: LABEL_OPTIONAL\n'
-          '    type: TYPE_STRING\n'
-          '  }\n'
-          '  options {\n'
-          '    map_entry: true\n'
-          '  }\n'
-          '}\n'
-          'enum_type {\n'
-          '  name: "AnEnum"\n'
-          '  value {\n'
-          '    name: "ANENUM_VAL1"\n'
-          '    number: 1\n'
-          '  }\n'
-          '  value {\n'
-          '    name: "ANENUM_VAL2"\n'
-          '    number: 2\n'
-          '    options {\n'
-          '      [protobuf_unittest.enum_value_opt1]: 123\n'
-          '    }\n'
-          '  }\n'
-          '  options {\n'
-          '    [protobuf_unittest.enum_opt1]: -789\n'
-          '  }\n'
-          '}\n'
-          'options {\n'
-          '  message_set_wire_format: false\n'
-          '  [protobuf_unittest.message_opt1]: -56\n'
-          '}\n'
-          'oneof_decl {\n'
-          '  name: "AnOneof"\n'
-          '  options {\n'
-          '    [protobuf_unittest.oneof_opt1]: -99\n'
-          '  }\n'
-          '}\n')
-      assert expected_text == text_format.MessageToString(message_proto)
-      parsed_proto = descriptor_pb2.DescriptorProto()
-      text_format.Parse(expected_text, parsed_proto)
-      assert message_proto == parsed_proto
+    def test_custom_options(self, message_module):
+        message_descriptor = (unittest_custom_options_pb2.
+                              TestMessageWithCustomOptions.DESCRIPTOR)
+        message_proto = descriptor_pb2.DescriptorProto()
+        message_descriptor.CopyToProto(message_proto)
+        expected_text = textwrap.dedent("""\
+        name: "TestMessageWithCustomOptions"
+        field {
+          name: "field1"
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_STRING
+          options {
+            ctype: CORD
+            [protobuf_unittest.field_opt1]: 8765432109
+          }
+        }
+        field {
+          name: "oneof_field"
+          number: 2
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          oneof_index: 0
+        }
+        field {
+          name: "map_field"
+          number: 3
+          label: LABEL_REPEATED
+          type: TYPE_MESSAGE
+          type_name: ".protobuf_unittest.TestMessageWithCustomOptions.MapFieldEntry"
+          options {
+            [protobuf_unittest.field_opt1]: 12345
+          }
+        }
+        nested_type {
+          name: "MapFieldEntry"
+          field {
+            name: "key"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+          }
+          field {
+            name: "value"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+          }
+          options {
+            map_entry: true
+          }
+        }
+        enum_type {
+          name: "AnEnum"
+          value {
+            name: "ANENUM_VAL1"
+            number: 1
+          }
+          value {
+            name: "ANENUM_VAL2"
+            number: 2
+            options {
+              [protobuf_unittest.enum_value_opt1]: 123
+            }
+          }
+          options {
+            [protobuf_unittest.enum_opt1]: -789
+          }
+        }
+        options {
+          message_set_wire_format: false
+          [protobuf_unittest.message_opt1]: -56
+        }
+        oneof_decl {
+          name: "AnOneof"
+          options {
+            [protobuf_unittest.oneof_opt1]: -99
+          }
+        }
+        """)
+        assert expected_text == text_format.MessageToString(message_proto)
+        parsed_proto = descriptor_pb2.DescriptorProto()
+        text_format.Parse(expected_text, parsed_proto)
+        assert message_proto == parsed_proto
 
     @pytest.mark.skipif(
         api_implementation.Type() == 'upb',
@@ -592,7 +590,7 @@ class TestTextFormatMessageToString(TextFormatBase):
         inner_msg = message_module.TestAllTypes()
         inner_msg.optional_int32 = 101
         inner_msg.optional_double = 102.0
-        inner_msg.optional_string = u'hello'
+        inner_msg.optional_string = 'hello'
         inner_msg.optional_bytes = b'103'
         inner_msg.optional_nested_message.bb = 105
         inner_data = inner_msg.SerializeToString()
@@ -642,7 +640,7 @@ class TestTextFormatMessageToTextBytes(TextFormatBase):
 
     def test_raw_utf8_round_trip(self, message_module):
         message = message_module.TestAllTypes()
-        message.repeated_string.append(u'\u00fc\t\ua71f')
+        message.repeated_string.append('\u00fc\t\ua71f')
         utf8_text = text_format.MessageToBytes(message, as_utf8=True)
         golden_bytes = b'repeated_string: "\xc3\xbc\\t\xea\x9c\x9f"\n'
         self.compare_to_golden_text(utf8_text, golden_bytes)
@@ -655,7 +653,7 @@ class TestTextFormatMessageToTextBytes(TextFormatBase):
 
     def test_escaped_utf8ascii_round_trip(self, message_module):
         message = message_module.TestAllTypes()
-        message.repeated_string.append(u'\u00fc\t\ua71f')
+        message.repeated_string.append('\u00fc\t\ua71f')
         ascii_text = text_format.MessageToBytes(message)  # as_utf8=False default
         golden_bytes = b'repeated_string: "\\303\\274\\t\\352\\234\\237"\n'
         self.compare_to_golden_text(ascii_text, golden_bytes)
@@ -703,13 +701,13 @@ class TestTextFormatParser(TextFormatBase):
           test_util.ExpectAllFieldsSet(self, message)
 
         msg2 = message_module.TestAllTypes()
-        text = (u'optional_string: "café"')
+        text = ('optional_string: "café"')
         text_format.Merge(text, msg2)
-        assert msg2.optional_string == u'café'
+        assert msg2.optional_string == 'café'
         msg2.Clear()
-        assert msg2.optional_string == u''
+        assert msg2.optional_string == ''
         text_format.Parse(text, msg2)
-        assert msg2.optional_string == u'café'
+        assert msg2.optional_string == 'café'
 
     def test_parse_double_to_float(self, message_module):
         message = message_module.TestAllTypes()
@@ -741,8 +739,8 @@ class TestTextFormatParser(TextFormatBase):
         assert 1.23e-18 == message.repeated_double[2]
         assert '\000\001\a\b\f\n\r\t\v\\\'"' == message.repeated_string[0]
         assert 'foocorgegrault' == message.repeated_string[1]
-        assert u'\u00fc\ua71f' == message.repeated_string[2]
-        assert u'\u00fc' == message.repeated_string[3]
+        assert '\u00fc\ua71f' == message.repeated_string[2]
+        assert '\u00fc' == message.repeated_string[3]
 
     def test_parse_trailing_commas(self, message_module):
         message = message_module.TestAllTypes()
@@ -756,8 +754,8 @@ class TestTextFormatParser(TextFormatBase):
         assert 100 == message.repeated_int64[0]
         assert 200 == message.repeated_int64[1]
         assert 300 == message.repeated_int64[2]
-        assert u'one' == message.repeated_string[0]
-        assert u'two' == message.repeated_string[1]
+        assert 'one' == message.repeated_string[0]
+        assert 'two' == message.repeated_string[1]
 
     def test_parse_repeated_scalar_short_format(self, message_module):
         message = message_module.TestAllTypes()
@@ -948,7 +946,7 @@ class TestTextFormatParser(TextFormatBase):
 
     def test_from_unicode_lines(self, message_module):
         m = message_module.TestAllTypes()
-        text_format.ParseLines(self._UNICODE_SAMPLE.split(u'\n'), m)
+        text_format.ParseLines(self._UNICODE_SAMPLE.split('\n'), m)
         assert m.optional_bytes == self._GOLDEN_BYTES
         assert m.optional_string == self._GOLDEN_UNICODE
         assert m.repeated_bytes[0] == self._GOLDEN_BYTES
@@ -1060,7 +1058,7 @@ class TestOnlyWorksWithProto2RightNow(TextFormatBase):
         message = unittest_pb2.TestAllTypes()
         message.optional_int32 = 101
         message.optional_double = 102.0
-        message.optional_string = u'hello'
+        message.optional_string = 'hello'
         message.optional_bytes = b'103'
         message.optionalgroup.a = 104
         message.optional_nested_message.bb = 105
@@ -1217,51 +1215,55 @@ class TestOnlyWorksWithProto2RightNow(TextFormatBase):
 
     def test_duplicate_map_key(self):
         message = map_unittest_pb2.TestMap()
-        text = (
-            'map_uint64_uint64 {\n'
-            '  key: 123\n'
-            '  value: 17179869184\n'
-            '}\n'
-            'map_string_string {\n'
-            '  key: "abc"\n'
-            '  value: "first"\n'
-            '}\n'
-            'map_int32_foreign_message {\n'
-            '  key: 111\n'
-            '  value {\n'
-            '    c: 5\n'
-            '  }\n'
-            '}\n'
-            'map_uint64_uint64 {\n'
-            '  key: 123\n'
-            '  value: 321\n'
-            '}\n'
-            'map_string_string {\n'
-            '  key: "abc"\n'
-            '  value: "second"\n'
-            '}\n'
-            'map_int32_foreign_message {\n'
-            '  key: 111\n'
-            '  value {\n'
-            '    d: 5\n'
-            '  }\n'
-            '}\n')
+        text = textwrap.dedent("""\
+        map_uint64_uint64 {
+          key: 123
+          value: 17179869184
+        }
+        map_string_string {
+          key: "abc"
+          value: "first"
+        }
+        map_int32_foreign_message {
+          key: 111
+          value {
+            c: 5
+          }
+        }
+        map_uint64_uint64 {
+          key: 123
+          value: 321
+        }
+        map_string_string {
+          key: "abc"
+          value: "second"
+        }
+        map_int32_foreign_message {
+          key: 111
+          value {
+            d: 5
+          }
+        }
+        """)
         text_format.Parse(text, message)
         self.compare_to_golden_text(
-            text_format.MessageToString(message), 'map_uint64_uint64 {\n'
-            '  key: 123\n'
-            '  value: 321\n'
-            '}\n'
-            'map_string_string {\n'
-            '  key: "abc"\n'
-            '  value: "second"\n'
-            '}\n'
-            'map_int32_foreign_message {\n'
-            '  key: 111\n'
-            '  value {\n'
-            '    d: 5\n'
-            '  }\n'
-            '}\n')
+            text_format.MessageToString(message),
+            textwrap.dedent("""\
+            map_uint64_uint64 {
+              key: 123
+              value: 321
+            }
+            map_string_string {
+              key: "abc"
+              value: "second"
+            }
+            map_int32_foreign_message {
+              key: 111
+              value {
+                d: 5
+              }
+            }
+            """))
 
     # In cpp implementation, __str__ calls the cpp implementation of text format.
     def test_print_map_using_cpp_implementation(self):
@@ -1487,39 +1489,41 @@ class TestProto2(TextFormatBase):
     def test_parse_allowed_unknown_extension(self):
         # Skip over unknown extension correctly.
         message = unittest_mset_pb2.TestMessageSetContainer()
-        text = ('message_set {\n'
-                '  [unknown_extension] {\n'
-                '    i: 23\n'
-                '    repeated_i: []\n'
-                '    bin: "\xe0"\n'
-                '    [nested_unknown_ext]: {\n'
-                '      i: 23\n'
-                '      repeated_i: [1, 2]\n'
-                '      x: x\n'
-                '      test: "test_string"\n'
-                '      floaty_float: -0.315\n'
-                '      num: -inf\n'
-                '      multiline_str: "abc"\n'
-                '          "def"\n'
-                '          "xyz."\n'
-                '      [nested_unknown_ext.ext]: <\n'
-                '        i: 23\n'
-                '        i: 24\n'
-                '        pointfloat: .3\n'
-                '        test: "test_string"\n'
-                '        repeated_test: ["test_string1", "test_string2"]\n'
-                '        floaty_float: -0.315\n'
-                '        num: -inf\n'
-                '        long_string: "test" "test2" \n'
-                '      >\n'
-                '    }\n'
-                '  }\n'
-                '  [unknown_extension]: 5\n'
-                '  [unknown_extension_with_number_field] {\n'
-                '    1: "some_field"\n'
-                '    2: -0.451\n'
-                '  }\n'
-                '}\n')
+        text = """\
+        message_set {
+          [unknown_extension] {
+            i: 23
+            repeated_i: []
+            bin: "à"
+            [nested_unknown_ext]: {
+              i: 23
+              repeated_i: [1, 2]
+              x: x
+              test: "test_string"
+              floaty_float: -0.315
+              num: -inf
+              multiline_str: "abc"
+                  "def"
+                  "xyz."
+              [nested_unknown_ext.ext]: <
+                i: 23
+                i: 24
+                pointfloat: .3
+                test: "test_string"
+                repeated_test: ["test_string1", "test_string2"]
+                floaty_float: -0.315
+                num: -inf
+                long_string: "test" "test2" 
+              >
+            }
+          }
+          [unknown_extension]: 5
+          [unknown_extension_with_number_field] {
+            1: "some_field"
+            2: -0.451
+          }
+        }
+        """
         text_format.Parse(text, message, allow_unknown_extension=True)
         golden = 'message_set {\n}\n'
         self.compare_to_golden_text(text_format.MessageToString(message), golden)
@@ -1579,14 +1583,16 @@ class TestProto2(TextFormatBase):
 
         # Parse known extension correctly.
         message = unittest_mset_pb2.TestMessageSetContainer()
-        text = ('message_set {\n'
-                '  [protobuf_unittest.TestMessageSetExtension1] {\n'
-                '    i: 23\n'
-                '  }\n'
-                '  [protobuf_unittest.TestMessageSetExtension2] {\n'
-                '    str: \"foo\"\n'
-                '  }\n'
-                '}\n')
+        text = """\
+        message_set {
+          [protobuf_unittest.TestMessageSetExtension1] {
+            i: 23
+          }
+          [protobuf_unittest.TestMessageSetExtension2] {
+            str: "foo"
+          }
+        }
+        """
         text_format.Parse(text, message, allow_unknown_extension=True)
         ext1 = unittest_mset_pb2.TestMessageSetExtension1.message_set_extension
         ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
@@ -1595,37 +1601,41 @@ class TestProto2(TextFormatBase):
 
         # Handle Any messages inside unknown extensions.
         message = any_test_pb2.TestAny()
-        text = ('any_value {\n'
-                '  [type.googleapis.com/google.protobuf.internal.TestAny] {\n'
-                '    [unknown_extension] {\n'
-                '      str: "string"\n'
-                '      any_value {\n'
-                '        [type.googleapis.com/protobuf_unittest.OneString] {\n'
-                '          data: "string"\n'
-                '        }\n'
-                '      }\n'
-                '    }\n'
-                '  }\n'
-                '}\n'
-                'int32_value: 123')
+        text = """\
+        any_value {
+          [type.googleapis.com/google.protobuf.internal.TestAny] {
+            [unknown_extension] {
+              str: "string"
+              any_value {
+                [type.googleapis.com/protobuf_unittest.OneString] {
+                  data: "string"
+                }
+              }
+            }
+          }
+        }
+        int32_value: 123
+        """
         text_format.Parse(text, message, allow_unknown_extension=True)
         assert 123 == message.int32_value
 
         # Fail if invalid Any message type url inside unknown extensions.
         message = any_test_pb2.TestAny()
-        text = ('any_value {\n'
-                '  [type.googleapis.com.invalid/google.protobuf.internal.TestAny] {\n'
-                '    [unknown_extension] {\n'
-                '      str: "string"\n'
-                '      any_value {\n'
-                '        [type.googleapis.com/protobuf_unittest.OneString] {\n'
-                '          data: "string"\n'
-                '        }\n'
-                '      }\n'
-                '    }\n'
-                '  }\n'
-                '}\n'
-                'int32_value: 123')
+        text = """\
+        any_value {
+          [type.googleapis.com.invalid/google.protobuf.internal.TestAny] {
+            [unknown_extension] {
+              str: "string"
+              any_value {
+                [type.googleapis.com/protobuf_unittest.OneString] {
+                  data: "string"
+                }
+              }
+            }
+          }
+        }
+        int32_value: 123
+        """
         with pytest.raises(
             text_format.ParseError,
             match='[type.googleapis.com.invalid/google.protobuf.internal.TestAny]'):
@@ -1720,7 +1730,7 @@ class TestProto2(TextFormatBase):
     # Maps aren't really proto2-only, but our test schema only has maps for
     # proto2.
     def test_parse_map(self):
-        text = """
+        text = """\
         map_int32_int32 {
           key: -123
           value: -456
