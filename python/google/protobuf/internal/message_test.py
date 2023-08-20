@@ -154,7 +154,7 @@ class TestMessage:
         class BadArgError(Exception):
             pass
 
-        class BadArg(object):
+        class BadArg:
             def __nonzero__(self):
                 raise BadArgError()
 
@@ -1059,7 +1059,7 @@ class TestMessage:
         m.repeated_string.extend('abc')
         assert ['a', 'b', 'c'] == m.repeated_string
 
-    class TestIterable(object):
+    class TestIterable:
         """This iterable object mimics the behavior of numpy.array.
 
         __nonzero__ fails for length > 1, and returns bool(item[0]) for length == 1.
@@ -1122,7 +1122,7 @@ class TestMessage:
         m.repeated_string.extend(TestMessage.TestIterable(['3', '4']))
         assert ['', '1', '2', '3', '4'] == m.repeated_string
 
-    class TestIndex(object):
+    class TestIndex:
         """This index object mimics the behavior of numpy.int64 and other types."""
 
         def __init__(self, value=None):

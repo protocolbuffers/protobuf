@@ -702,7 +702,7 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase):
             assert str(exc.exception) == '\'Couldn\\\'t build file for oneof collector.ErrorMessage.MyOneof\\n' + error_msg
 
 
-class ProtoFile(object):
+class ProtoFile:
     def __init__(self, name, package, messages, dependencies=None,
                 public_dependencies=None):
         self.name = name
@@ -723,7 +723,7 @@ class ProtoFile(object):
             msg_type.CheckType(test, None, name, file_desc)
 
 
-class EnumType(object):
+class EnumType:
     def __init__(self, values):
         self.values = values
 
@@ -743,7 +743,7 @@ class EnumType(object):
             assert value in msg_desc.enum_values_by_name
 
 
-class MessageType(object):
+class MessageType:
     def __init__(self, type_dict, field_list, is_extendable=False,
                 extensions=None):
         self.type_dict = type_dict
@@ -774,7 +774,7 @@ class MessageType(object):
             field.CheckField(test, desc, name, index, file_desc)
 
 
-class EnumField(object):
+class EnumField:
     def __init__(self, number, type_name, default_value):
         self.number = number
         self.type_name = type_name
@@ -798,7 +798,7 @@ class EnumField(object):
         assert file_desc == enum_desc.file
 
 
-class MessageField(object):
+class MessageField:
     def __init__(self, number, type_name):
         self.number = number
         self.type_name = type_name
@@ -820,7 +820,7 @@ class MessageField(object):
         assert field_desc.default_value == None
 
 
-class StringField(object):
+class StringField:
     def __init__(self, number, default_value):
         self.number = number
         self.default_value = default_value
@@ -839,7 +839,7 @@ class StringField(object):
         assert file_desc == field_desc.file
 
 
-class ExtensionField(object):
+class ExtensionField:
     def __init__(self, number, extended_type):
         self.number = number
         self.extended_type = extended_type

@@ -1108,7 +1108,7 @@ class TestJsonFormat(JsonFormatBase):
             '1234 at TestListValue.value.'):
             json_format.Parse(text, message)
 
-        class UnknownClass(object):
+        class UnknownClass:
             def __str__(self):
                 return 'v'
         with pytest.raises(
@@ -1244,7 +1244,7 @@ class TestJsonFormat(JsonFormatBase):
         )
 
     def test_parse_dict_unknown_value_type(self):
-        class UnknownClass(object):
+        class UnknownClass:
               def __repr__(self):
                 return 'v'
         message = json_format_proto3_pb2.TestValue()

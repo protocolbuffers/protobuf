@@ -210,7 +210,7 @@ class TestWireFormat:
         assert (10 == wire_format.StringByteSize(
             5, b'\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82'.decode('utf-8')))
 
-        class MockMessage(object):
+        class MockMessage:
             def __init__(self, byte_size):
                 self.byte_size = byte_size
             def ByteSize(self):

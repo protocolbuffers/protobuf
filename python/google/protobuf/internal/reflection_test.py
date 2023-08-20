@@ -60,7 +60,7 @@ from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 
 
-class _MiniDecoder(object):
+class _MiniDecoder:
     """Decodes a stream of values from a string.
 
     Once upon a time we actually had a class called decoder.Decoder.  Then we
