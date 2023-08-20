@@ -2574,31 +2574,30 @@ class PackedFieldTest(unittest.TestCase):
     assert golden_data == message.SerializeToString()
 
 
-@unittest.skipIf(api_implementation.Type() == 'python',
-                 'explicit tests of the C++ implementation')
+@pytest.mark.skipif(api_implementation.Type() == 'python',
+                    reason='explicit tests of the C++ implementation')
 @testing_refleaks.TestCase
-class OversizeProtosTest(unittest.TestCase):
+class TestOversizeProtos:
+    def generate_nested_proto(self, n):
+        msg = unittest_pb2.TestRecursiveMessage()
+        sub = msg
+        for _ in range(n):
+            sub = sub.a
+        sub.i = 0
+        return msg.SerializeToString()
 
-  def GenerateNestedProto(self, n):
-    msg = unittest_pb2.TestRecursiveMessage()
-    sub = msg
-    for _ in range(n):
-      sub = sub.a
-    sub.i = 0
-    return msg.SerializeToString()
+    def test_succeed_ok_sized_proto(self):
+        msg = unittest_pb2.TestRecursiveMessage()
+        msg.ParseFromString(self.GenerateNestedProto(100))
 
-  def testSucceedOkSizedProto(self):
-    msg = unittest_pb2.TestRecursiveMessage()
-    msg.ParseFromString(self.GenerateNestedProto(100))
+    def test_assert_oversize_proto(self):
+        api_implementation._c_module.SetAllowOversizeProtos(False)
+        msg = unittest_pb2.TestRecursiveMessage()
+        with pytest.raises(message.DecodeError) as context:
+            msg.ParseFromString(self.GenerateNestedProto(101))
+        assert 'Error parsing message' in str(context.value)
 
-  def testAssertOversizeProto(self):
-    api_implementation._c_module.SetAllowOversizeProtos(False)
-    msg = unittest_pb2.TestRecursiveMessage()
-    with pytest.raises(message.DecodeError) as context:
-      msg.ParseFromString(self.GenerateNestedProto(101))
-    assert 'Error parsing message' in str(context.value)
-
-  def testSucceedOversizeProto(self):
-    api_implementation._c_module.SetAllowOversizeProtos(True)
-    msg = unittest_pb2.TestRecursiveMessage()
-    msg.ParseFromString(self.GenerateNestedProto(101))
+    def test_succeed_oversize_proto(self):
+        api_implementation._c_module.SetAllowOversizeProtos(True)
+        msg = unittest_pb2.TestRecursiveMessage()
+        msg.ParseFromString(self.GenerateNestedProto(101))
