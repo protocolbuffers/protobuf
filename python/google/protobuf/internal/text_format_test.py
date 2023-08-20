@@ -975,7 +975,7 @@ class TestTextFormatParser(TextFormatBase):
         text = 'optional_int32: 67'
         with pytest.raises(
             text_format.ParseError,
-            match='Message type "\w+.TestAllTypes" should not '
+            match=r'Message type "\w+.TestAllTypes" should not '
                   r'have multiple "optional_int32" fields.'):
             text_format.Parse(text, message)
 
