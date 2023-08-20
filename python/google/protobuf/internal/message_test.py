@@ -571,7 +571,7 @@ class TestMessage:
         assert message.repeated_string[0] == 'a'
         assert message.repeated_string[1] == 'b'
         assert message.repeated_string[2] == 'c'
-        assert str(message.repeated_string), str([u'a', u'b' == u'c'])
+        assert str(message.repeated_string), str(['a', 'b' == 'c'])
 
         message.repeated_bytes.append(b'a')
         message.repeated_bytes.append(b'c')
@@ -824,7 +824,7 @@ class TestMessage:
         assert 'oneof_uint32' == m.WhichOneof('oneof_field')
         assert m.HasField('oneof_uint32')
 
-        m.oneof_string = u'foo'
+        m.oneof_string = 'foo'
         assert 'oneof_string' == m.WhichOneof('oneof_field')
         assert not m.HasField('oneof_uint32')
         assert m.HasField('oneof_string')
@@ -990,7 +990,7 @@ class TestMessage:
             m.repeated_nested_enum.extend(a for i in range(10))  # pylint: disable=undefined-variable
 
     FALSY_VALUES = [None, False, 0, 0.0]
-    EMPTY_VALUES = [b'', u'', bytearray(), [], {}, set()]
+    EMPTY_VALUES = [b'', '', bytearray(), [], {}, set()]
 
     def test_extend_int32_with_nothing(self, message_module):
         """Test no-ops extending repeated int32 fields."""
@@ -1272,13 +1272,13 @@ class TestProto2:
         message.optional_bool = True
         message.optional_nested_message.bb = 15
 
-        assert message.HasField(u'optional_int32')
+        assert message.HasField('optional_int32')
         assert message.HasField('optional_bool')
         assert message.HasField('optional_nested_message')
 
         # Clearing the fields unsets them and resets their value to default.
         message.ClearField('optional_int32')
-        message.ClearField(u'optional_bool')
+        message.ClearField('optional_bool')
         message.ClearField('optional_nested_message')
 
         assert not message.HasField('optional_int32')
@@ -1508,7 +1508,7 @@ class TestProto2:
         assert 0 == len(message.repeated_float)
         assert 42 == message.default_int64
 
-        message = unittest_pb2.TestAllTypes(optional_nested_enum=u'BAZ')
+        message = unittest_pb2.TestAllTypes(optional_nested_enum='BAZ')
         assert unittest_pb2.TestAllTypes.BAZ == message.optional_nested_enum
 
         with pytest.raises(ValueError):
@@ -1529,7 +1529,7 @@ class TestProto2:
         # Both string/unicode field name keys should work.
         kwargs = {
             'optional_int32': 100,
-            u'optional_fixed32': 200,
+            'optional_fixed32': 200,
         }
         msg = unittest_pb2.TestAllTypes(**kwargs)
         assert 100 == msg.optional_int32
@@ -1878,7 +1878,7 @@ class TestProto3:
     def test_string_unicode_conversion_in_map(self):
         msg = map_unittest_pb2.TestMap()
 
-        unicode_obj = u'\u1234'
+        unicode_obj = '\u1234'
         bytes_obj = unicode_obj.encode('utf8')
 
         msg.map_string_string[bytes_obj] = bytes_obj
@@ -2437,7 +2437,7 @@ class TestProto3:
 
     @pytest.mark.skipif(sys.maxunicode == UCS2_MAXUNICODE, reason='Skip for ucs2')
     def test_strict_utf8_check(self):
-        # Test u'\ud801' is rejected at parser in both python2 and python3.
+        # Test '\ud801' is rejected at parser in both python2 and python3.
         serialized = (b'r\x03\xed\xa0\x81')
         msg = unittest_proto3_arena_pb2.TestAllTypes()
         with pytest.raises(Exception) as context:
@@ -2454,7 +2454,7 @@ class TestProto3:
         msg2.MergeFromString(serialized)
         assert msg2.optional_string == '😍'
 
-        msg = unittest_proto3_arena_pb2.TestAllTypes(optional_string=u'\ud001')
+        msg = unittest_proto3_arena_pb2.TestAllTypes(optional_string='\ud001')
         assert msg.optional_string == '\ud001'
 
     def test_surrogates_in_python3(self):
