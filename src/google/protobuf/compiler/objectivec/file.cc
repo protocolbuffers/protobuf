@@ -68,6 +68,10 @@ const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30007;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
+bool IsMapEntryMessage(const Descriptor* descriptor) {
+  return descriptor->options().map_entry();
+}
+
 // Checks if a message contains extension definitions (on the message or
 // a nested message under it). `include_custom_options` decides if custom
 // options count as extensions.
@@ -143,12 +147,18 @@ void MakeDescriptors(
         std::make_unique<EnumGenerator>(descriptor->enum_type(i)));
   }
   for (int i = 0; i < descriptor->nested_type_count(); i++) {
+    const Descriptor* message_type = descriptor->nested_type(i);
+    if (IsMapEntryMessage(message_type)) {
+      // Map entries can't have extensions, or sub messages, they are an
+      // implementation detail of how map<> works.
+      continue;
+    }
     message_generators->emplace_back(std::make_unique<MessageGenerator>(
-        file_description_name, descriptor->nested_type(i)));
+        file_description_name, message_type));
     message_generators->back()->AddExtensionGenerators(extension_generators,
                                                        strip_custom_options);
-    MakeDescriptors(descriptor->nested_type(i), file_description_name,
-                    enum_generators, extension_generators, message_generators,
+    MakeDescriptors(message_type, file_description_name, enum_generators,
+                    extension_generators, message_generators,
                     strip_custom_options);
   }
 }
@@ -278,13 +288,18 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
   }
   file_scoped_extension_count_ = extension_generators_.size();
   for (int i = 0; i < file_->message_type_count(); i++) {
+    const Descriptor* message_type = file_->message_type(i);
+    if (IsMapEntryMessage(message_type)) {
+      // Map entries can't have extensions, or sub messages, they are an
+      // implementation detail of how map<> works.
+      continue;
+    }
     message_generators_.emplace_back(std::make_unique<MessageGenerator>(
-        file_description_name_, file_->message_type(i)));
+        file_description_name_, message_type));
     message_generators_.back()->AddExtensionGenerators(
         &extension_generators_, generation_options.strip_custom_options);
-    MakeDescriptors(file_->message_type(i), file_description_name_,
-                    &enum_generators_, &extension_generators_,
-                    &message_generators_,
+    MakeDescriptors(message_type, file_description_name_, &enum_generators_,
+                    &extension_generators_, &message_generators_,
                     generation_options.strip_custom_options);
   }
 }
