@@ -289,8 +289,7 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
   for (int i = 0; i < file.desc().message_type_count(); ++i) {
     auto msg = file.WithDesc(file.desc().message_type(i));
 
-    MessageGenerator gen(msg);
-    gen.GenerateRs(msg);
+    GenerateRs(msg);
     msg.printer().PrintRaw("\n");
 
     if (file.is_cpp()) {
@@ -299,7 +298,7 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
       thunks_msg.Emit({{"Msg", msg.desc().full_name()}}, R"cc(
         // $Msg$
       )cc");
-      gen.GenerateThunksCc(thunks_msg);
+      GenerateThunksCc(thunks_msg);
       thunks_msg.printer().PrintRaw("\n");
     }
   }

@@ -43,19 +43,11 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-class MessageGenerator final {
- public:
-  explicit MessageGenerator(Context<Descriptor> msg);
+// Generates code for a particular message in `.pb.rs`.
+void GenerateRs(Context<Descriptor> msg);
 
-  // Generates code for a particular message in `.pb.rs`.
-  void GenerateRs(Context<Descriptor> msg);
-
-  // Generates code for a particular message in `.pb.thunk.cc`.
-  void GenerateThunksCc(Context<Descriptor> msg);
-
- private:
-  std::vector<std::unique_ptr<AccessorGenerator>> accessors_;
-};
+// Generates code for a particular message in `.pb.thunk.cc`.
+void GenerateThunksCc(Context<Descriptor> msg);
 
 }  // namespace rust
 }  // namespace compiler

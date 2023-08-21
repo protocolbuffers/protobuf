@@ -28,9 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSORS_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSORS_H__
-
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 
@@ -39,13 +38,14 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void GenerateAccessorMsgImpl(Context<FieldDescriptor> field);
-void GenerateAccessorExternC(Context<FieldDescriptor> field);
-void GenerateAccessorThunkCc(Context<FieldDescriptor> field);
+void UnsupportedField::InMsgImpl(Context<FieldDescriptor> field) const {
+  field.Emit(R"rs(
+    // Unsupported! :(
+    )rs");
+  field.printer().PrintRaw("\n");
+}
 
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSORS_H__

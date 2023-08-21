@@ -205,18 +205,7 @@ void MessageDrop(Context<Descriptor> msg) {
 }
 }  // namespace
 
-MessageGenerator::MessageGenerator(Context<Descriptor> msg) {
-  accessors_.resize(msg.desc().field_count());
-  for (int i = 0; i < msg.desc().field_count(); ++i) {
-    auto field = msg.WithDesc(msg.desc().field(i));
-    accessors_[i] = AccessorGenerator::For(field);
-    if (accessors_[i] == nullptr) {
-      ABSL_LOG(WARNING) << "unsupported field: " << field.desc().full_name();
-    }
-  }
-}
-
-void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
+void GenerateRs(Context<Descriptor> msg) {
   if (msg.desc().map_key() != nullptr) {
     ABSL_LOG(WARNING) << "unsupported map field: " << msg.desc().full_name();
     return;
@@ -233,31 +222,19 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
           {"accessor_fns",
            [&] {
              for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto& gen = accessors_[i];
                auto field = msg.WithDesc(*msg.desc().field(i));
                msg.Emit({{"comment", FieldInfoComment(field)}}, R"rs(
                  // $comment$
                )rs");
 
-               if (gen == nullptr) {
-                 msg.Emit({{"field", field.desc().full_name()}}, R"rs(
-                  // Unsupported! :(
-                 )rs");
-                 msg.printer().PrintRaw("\n");
-                 continue;
-               }
-
-               gen->GenerateMsgImpl(field);
+               GenerateAccessorMsgImpl(field);
                msg.printer().PrintRaw("\n");
              }
            }},
           {"accessor_externs",
            [&] {
              for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto& gen = accessors_[i];
-               if (gen == nullptr) continue;
-
-               gen->GenerateExternC(msg.WithDesc(*msg.desc().field(i)));
+               GenerateAccessorExternC(msg.WithDesc(*msg.desc().field(i)));
                msg.printer().PrintRaw("\n");
              }
            }},
@@ -273,8 +250,7 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
                                ++i) {
                             auto nested_msg =
                                 msg.WithDesc(msg.desc().nested_type(i));
-                            MessageGenerator gen(nested_msg);
-                            gen.GenerateRs(nested_msg);
+                            GenerateRs(nested_msg);
                           }
                         }}},
                       R"rs(
@@ -398,7 +374,7 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
 }
 
 // Generates code for a particular message in `.pb.thunk.cc`.
-void MessageGenerator::GenerateThunksCc(Context<Descriptor> msg) {
+void GenerateThunksCc(Context<Descriptor> msg) {
   ABSL_CHECK(msg.is_cpp());
   if (msg.desc().map_key() != nullptr) {
     ABSL_LOG(WARNING) << "unsupported map field: " << msg.desc().full_name();
@@ -419,17 +395,13 @@ void MessageGenerator::GenerateThunksCc(Context<Descriptor> msg) {
              for (int i = 0; i < msg.desc().nested_type_count(); ++i) {
                Context<Descriptor> nested_msg =
                    msg.WithDesc(msg.desc().nested_type(i));
-               MessageGenerator gen(nested_msg);
-               gen.GenerateThunksCc(nested_msg);
+               GenerateThunksCc(nested_msg);
              }
            }},
           {"accessor_thunks",
            [&] {
              for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto& gen = accessors_[i];
-               if (gen == nullptr) continue;
-
-               gen->GenerateThunkCc(msg.WithDesc(*msg.desc().field(i)));
+               GenerateAccessorThunkCc(msg.WithDesc(*msg.desc().field(i)));
              }
            }},
       },
