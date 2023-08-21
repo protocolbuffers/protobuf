@@ -103,6 +103,8 @@ class MessageGenerator {
   const Descriptor* descriptor() const { return descriptor_; }
 
  private:
+  enum class InitType { kConstexpr, kArena, kArenaCopy };
+
   // Generate declarations and definitions of accessors for fields.
   void GenerateFieldAccessorDeclarations(io::Printer* p);
   void GenerateFieldAccessorDefinitions(io::Printer* p);
@@ -110,12 +112,22 @@ class MessageGenerator {
   // Generate constructors and destructor.
   void GenerateStructors(io::Printer* p);
 
+#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
+  void GenerateZeroInitFields(io::Printer* p) const;
+  void GenerateCopyInitFields(io::Printer* p) const;
+
+  void GenerateImplMemberInit(io::Printer* p, InitType init_type);
+
+  void GenerateArenaEnabledCopyConstructor(io::Printer* p);
+#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
+
   // The compiler typically generates multiple copies of each constructor and
   // destructor: http://gcc.gnu.org/bugs.html#nonbugs_cxx
   // Placing common code in a separate method reduces the generated code size.
   //
   // Generate the shared constructor code.
   void GenerateSharedConstructorCode(io::Printer* p);
+
   // Generate the shared destructor code.
   void GenerateSharedDestructorCode(io::Printer* p);
   // Generate the arena-specific destructor code.
