@@ -166,7 +166,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Pointer to a linked list of SerialArenaChunk.
   std::atomic<SerialArenaChunk*> head_{nullptr};
 
-  void* first_owner_;
+  std::atomic<void*> first_owner_{nullptr};
   // Must be declared after alloc_policy_; otherwise, it may lose info on
   // user-provided initial block.
   SerialArena first_arena_;
@@ -229,10 +229,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // deleting.
   SizedPtr Free(size_t* space_allocated);
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4324)
-#endif
-  struct alignas(kCacheAlignment) ThreadCache {
+  struct ThreadCache {
     // Number of per-thread lifecycle IDs to reserve. Must be power of two.
     // To reduce contention on a global atomic, each thread reserves a batch of
     // IDs.  The following number is calculated based on a stress test with
@@ -265,7 +262,14 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // can wrap them in static functions.
   static ThreadCache& thread_cache();
 #else
-  PROTOBUF_CONSTINIT static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_;
+  PROTOBUF_CONSTINIT static PROTOBUF_THREAD_LOCAL
+#ifndef PROTO2_OPENSOURCE
+      // This attribute makes accesses to the TLS variable faster,
+      // but it's incompatible with dlopen'ing the code (may or may not work).
+      // dlopen'ing of google3 is not supported, so we can use it.
+      ABSL_ATTRIBUTE_INITIAL_EXEC
+#endif
+          ThreadCache thread_cache_;
   static ThreadCache& thread_cache() { return thread_cache_; }
 #endif
 
