@@ -49,6 +49,8 @@ struct GenerationOptions {
   // TODO(thomasvl): Removing this so there is one less path to validate in
   // code generation.
   bool strip_custom_options = true;
+  // TODO(thomasvl): Eventually flip this default to true.
+  bool generate_minimal_imports = false;
   bool experimental_multi_source_generation = false;
 };
 

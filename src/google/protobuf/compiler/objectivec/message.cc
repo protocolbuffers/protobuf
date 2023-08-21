@@ -36,10 +36,14 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
+#include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/oneof.h"
@@ -275,6 +279,17 @@ void MessageGenerator::DetermineForwardDeclarations(
     const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
     field_generators_.get(fieldDescriptor)
         .DetermineForwardDeclarations(fwd_decls, include_external_types);
+  }
+}
+
+void MessageGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  if (IsMapEntryMessage(descriptor_)) {
+    return;
+  }
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
+    field_generators_.get(fieldDescriptor).DetermineNeededFiles(deps);
   }
 }
 

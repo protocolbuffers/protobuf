@@ -34,7 +34,9 @@
 #include <string>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -56,6 +58,8 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
                                     bool include_external_types) const override;
   void DetermineObjectiveCClassDefinitions(
       absl::btree_set<std::string>* fwd_decls) const override;
+  void DetermineNeededFiles(
+      absl::flat_hash_set<const FileDescriptor*>* deps) const override;
 };
 
 class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
@@ -74,6 +78,8 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
                                     bool include_external_types) const override;
   void DetermineObjectiveCClassDefinitions(
       absl::btree_set<std::string>* fwd_decls) const override;
+  void DetermineNeededFiles(
+      absl::flat_hash_set<const FileDescriptor*>* deps) const override;
 };
 
 }  // namespace objectivec

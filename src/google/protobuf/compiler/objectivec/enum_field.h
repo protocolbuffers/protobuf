@@ -34,7 +34,9 @@
 #include <string>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -52,6 +54,8 @@ class EnumFieldGenerator : public SingleFieldGenerator {
   void GenerateCFunctionImplementations(io::Printer* printer) const override;
   void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
                                     bool include_external_types) const override;
+  void DetermineNeededFiles(
+      absl::flat_hash_set<const FileDescriptor*>* deps) const override;
 
  protected:
   explicit EnumFieldGenerator(const FieldDescriptor* descriptor);
@@ -63,6 +67,8 @@ class RepeatedEnumFieldGenerator : public RepeatedFieldGenerator {
 
  public:
   void EmitArrayComment(io::Printer* printer) const override;
+  void DetermineNeededFiles(
+      absl::flat_hash_set<const FileDescriptor*>* deps) const override;
 
  protected:
   explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor);

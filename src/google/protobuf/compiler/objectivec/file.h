@@ -121,6 +121,10 @@ class FileGenerator {
       const std::vector<const FileDescriptor*>& deps_with_extensions) const;
   void EmitFileDescription(io::Printer* p) const;
 
+  enum class PublicDepsHandling : int { kAsUsed, kForceInclude, kExclude };
+  void DetermineNeededDeps(absl::flat_hash_set<const FileDescriptor*>* deps,
+                           PublicDepsHandling public_deps_handling) const;
+
   bool HeadersUseForwardDeclarations() const {
     // The bundled protos (WKTs) don't make use of forward declarations.
     return !is_bundled_proto_ &&
