@@ -138,7 +138,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64:0cc100b6e03d14c1e8f71ae794dc162ed122fe31@sha256:77b70feba68dced1f0fd21b52a08d3d2e0c5c797bfe68435a0038ce87ecfd310
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
           platform: linux/arm64
           skip-staleness-check: true
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

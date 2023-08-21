@@ -118,8 +118,8 @@ static int RepeatedField_compare_objects(zval* rf1, zval* rf2) {
  *
  *   $rf2 = clone $rf1;
  */
-static zend_object* RepeatedField_clone_obj(PROTO_VAL* object) {
-  RepeatedField* intern = PROTO_VAL_P(object);
+static zend_object* RepeatedField_clone_obj(zend_object* object) {
+  RepeatedField* intern = (RepeatedField*)object;
   upb_Arena* arena = Arena_Get(&intern->arena);
   upb_Array* clone = upb_Array_New(arena, intern->type.type);
   size_t n = upb_Array_Size(intern->array);
@@ -135,12 +135,12 @@ static zend_object* RepeatedField_clone_obj(PROTO_VAL* object) {
   return Z_OBJ_P(&ret);
 }
 
-static HashTable* RepeatedField_GetProperties(PROTO_VAL* object) {
+static HashTable* RepeatedField_GetProperties(zend_object* object) {
   return NULL;  // We do not have a properties table.
 }
 
-static zval* RepeatedField_GetPropertyPtrPtr(PROTO_VAL* object,
-                                             PROTO_STR* member, int type,
+static zval* RepeatedField_GetPropertyPtrPtr(zend_object* object,
+                                             zend_string* member, int type,
                                              void** cache_slot) {
   return NULL;  // We don't offer direct references to our properties.
 }
@@ -459,7 +459,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_append, 0, 0, 1)
   ZEND_ARG_INFO(0, newval)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetExists, 0, 0, _IS_BOOL, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetExists, 0, 0, _IS_BOOL, 0)
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
 
@@ -467,16 +467,16 @@ ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_offsetGet, 0, 0, IS_MI
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetSet, 0, 2, IS_VOID, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetSet, 0, 2, IS_VOID, 0)
   ZEND_ARG_INFO(0, index)
   ZEND_ARG_INFO(0, newval)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetUnset, 0, 0, IS_VOID, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetUnset, 0, 0, IS_VOID, 0)
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_count, 0, 0, IS_LONG, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_count, 0, 0, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_getIterator, 0, 0, Traversable, 0)
@@ -628,6 +628,7 @@ PHP_METHOD(RepeatedFieldIter, valid) {
   RETURN_BOOL(intern->position < upb_Array_Size(field->array));
 }
 
+// clang-format: off
 ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_current, 0, 0,
                                                   IS_MIXED, 0)
 ZEND_END_ARG_INFO()
@@ -636,13 +637,13 @@ ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_key, 0, 0, IS_MIXED,
                                                   0)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_next, 0, 0, IS_VOID, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_next, 0, 0, IS_VOID, 0)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_valid, 0, 0, _IS_BOOL, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_valid, 0, 0, _IS_BOOL, 0)
 ZEND_END_ARG_INFO()
 
-PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_rewind, 0, 0, IS_VOID, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_rewind, 0, 0, IS_VOID, 0)
 ZEND_END_ARG_INFO()
 
 static zend_function_entry repeated_field_iter_methods[] = {
@@ -652,6 +653,7 @@ static zend_function_entry repeated_field_iter_methods[] = {
                 RepeatedFieldIter, next, arginfo_next, ZEND_ACC_PUBLIC)
                 PHP_ME(RepeatedFieldIter, valid, arginfo_valid, ZEND_ACC_PUBLIC)
                     ZEND_FE_END};
+// clang-format: on
 
 // -----------------------------------------------------------------------------
 // Module init.
@@ -679,11 +681,7 @@ void Array_ModuleInit() {
   h = &RepeatedField_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = RepeatedField_destructor;
-#if PHP_VERSION_ID < 80000
-  h->compare_objects = RepeatedField_compare_objects;
-#else
   h->compare = RepeatedField_compare_objects;
-#endif
   h->clone_obj = RepeatedField_clone_obj;
   h->get_properties = RepeatedField_GetProperties;
   h->get_property_ptr_ptr = RepeatedField_GetPropertyPtrPtr;
