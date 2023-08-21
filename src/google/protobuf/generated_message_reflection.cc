@@ -637,7 +637,7 @@ void SwapFieldHelper::SwapRepeatedStringField(const Reflection* r, Message* lhs,
       if (unsafe_shallow_swap) {
         lhs_string->InternalSwap(rhs_string);
       } else {
-        lhs_string->Swap<GenericTypeHandler<std::string>>(rhs_string);
+        lhs_string->Swap<StringTypeHandler>(rhs_string);
       }
       break;
     }
