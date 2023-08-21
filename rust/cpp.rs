@@ -138,7 +138,9 @@ impl Deref for SerializedData {
     fn deref(&self) -> &Self::Target {
         // SAFETY: `data` is valid for `len` bytes until deallocated as promised by
         // `from_raw_parts`.
+        // CHANGES TO FILES WITH UNSAFE
         unsafe { &*self.as_ptr() }
+        // SHOULD TRIGGER PRESUBMIT
     }
 }
 
