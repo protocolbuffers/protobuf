@@ -302,6 +302,16 @@ bool ObjectiveCGenerator::GenerateAll(
             options[i].second);
         return false;
       }
+    } else if (options[i].first == "experimental_strip_nonfunctional_codegen") {
+      if (!StringToBool(
+              options[i].second,
+              &generation_options.experimental_strip_nonfunctional_codegen)) {
+        *error = absl::StrCat(
+            "error: Unknown value for "
+            "experimental_strip_nonfunctional_codegen: ",
+            options[i].second);
+        return false;
+      }
     } else {
       *error =
           absl::StrCat("error: Unknown generator option: ", options[i].first);
@@ -313,6 +323,9 @@ bool ObjectiveCGenerator::GenerateAll(
   // imports.
   if (generation_options.experimental_multi_source_generation) {
     generation_options.headers_use_forward_declarations = false;
+  }
+  if (generation_options.experimental_strip_nonfunctional_codegen) {
+    generation_options.generate_minimal_imports = true;
   }
 
   // -----------------------------------------------------------------

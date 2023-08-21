@@ -734,19 +734,25 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
 
   const std::string objc_prefix(FileClassPrefix(file_));
   std::string syntax;
-  switch (FileDescriptorLegacy(file_).syntax()) {
-    case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
-      syntax = "GPBFileSyntaxUnknown";
-      break;
-    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
-      syntax = "GPBFileSyntaxProto2";
-      break;
-    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
-      syntax = "GPBFileSyntaxProto3";
-      break;
-    case FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS:
-      syntax = "GPBFileSyntaxProtoEditions";
-      break;
+  if (generation_options_.experimental_strip_nonfunctional_codegen) {
+    // Doesn't matter for current sources, use Unknown as a marker for this
+    // mode.
+    syntax = "GPBFileSyntaxUnknown";
+  } else {
+    switch (FileDescriptorLegacy(file_).syntax()) {
+      case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
+        syntax = "GPBFileSyntaxUnknown";
+        break;
+      case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
+        syntax = "GPBFileSyntaxProto2";
+        break;
+      case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
+        syntax = "GPBFileSyntaxProto3";
+        break;
+      case FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS:
+        syntax = "GPBFileSyntaxProtoEditions";
+        break;
+    }
   }
 
   p->Emit({{"file_description_name", file_description_name_},
