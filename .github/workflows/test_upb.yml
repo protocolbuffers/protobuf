@@ -27,6 +27,10 @@ jobs:
           # Set defaults
           - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
           - targets: "@upb//..."
+
+          # Override with custom image
+          - config: { name: "GCC Optimized" flags: "-s -c opt" }
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-518b4fcd8d0ded2484c94f02e835526cacfdac2d"
     name: ${{ matrix.config.name }}
     runs-on: ubuntu-latest
 
