@@ -319,10 +319,12 @@ bool ObjectiveCGenerator::GenerateAll(
     }
   }
 
-  // Multi source generation forces off the use of fwd decls in favor of
-  // imports.
+  // Multi source generation forces:
+  // - off the use of fwd decls in favor of imports
+  // - on the minimal imports support
   if (generation_options.experimental_multi_source_generation) {
     generation_options.headers_use_forward_declarations = false;
+    generation_options.generate_minimal_imports = true;
   }
   if (generation_options.experimental_strip_nonfunctional_codegen) {
     generation_options.generate_minimal_imports = true;
