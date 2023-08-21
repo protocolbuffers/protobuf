@@ -274,6 +274,18 @@ bool ObjectiveCGenerator::GenerateAll(
                               options[i].second);
         return false;
       }
+    } else if (options[i].first == "generate_minimal_imports") {
+      // Controls if minimal imports should be generated from a files imports.
+      // Since custom options require imports, they current cause generated
+      // imports even though there is nothing captured in the generated code,
+      // this provides smaller imports only for the things referenced.
+      if (!StringToBool(options[i].second,
+                        &generation_options.generate_minimal_imports)) {
+        *error =
+            absl::StrCat("error: Unknown value for generate_minimal_imports: ",
+                         options[i].second);
+        return false;
+      }
     } else if (options[i].first == "experimental_multi_source_generation") {
       // This is an experimental option, and could be removed or change at any
       // time; it is not documented in the README.md for that reason.

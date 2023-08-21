@@ -486,6 +486,7 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       /* for_bundled_proto = */ is_bundled_proto_);
   const std::string header_extension(kHeaderExtension);
 
+  absl::flat_hash_set<const FileDescriptor*> file_imports;
   switch (file_type) {
     case GeneratedFileType::kHeader:
       // Generated files bundled with the library get minimal imports,
@@ -500,11 +501,13 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       if (HeadersUseForwardDeclarations()) {
         // #import any headers for "public imports" in the proto file.
         for (int i = 0; i < file_->public_dependency_count(); i++) {
-          import_writer.AddFile(file_->public_dependency(i), header_extension);
+          file_imports.insert(file_->public_dependency(i));
         }
+      } else if (generation_options_.generate_minimal_imports) {
+        DetermineNeededDeps(&file_imports, PublicDepsHandling::kForceInclude);
       } else {
         for (int i = 0; i < file_->dependency_count(); i++) {
-          import_writer.AddFile(file_->dependency(i), header_extension);
+          file_imports.insert(file_->dependency(i));
         }
       }
       break;
@@ -512,21 +515,34 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       import_writer.AddRuntimeImport("GPBProtocolBuffers_RuntimeSupport.h");
       import_writer.AddFile(file_, header_extension);
       if (HeadersUseForwardDeclarations()) {
-        // #import the headers for anything that a plain dependency of this
-        // proto file (that means they were just an include, not a "public"
-        // include).
-        absl::flat_hash_set<std::string> public_import_names;
-        for (int i = 0; i < file_->public_dependency_count(); i++) {
-          public_import_names.insert(file_->public_dependency(i)->name());
-        }
-        for (int i = 0; i < file_->dependency_count(); i++) {
-          const FileDescriptor* dep = file_->dependency(i);
-          if (!public_import_names.contains(dep->name())) {
-            import_writer.AddFile(dep, header_extension);
+        if (generation_options_.generate_minimal_imports) {
+          DetermineNeededDeps(&file_imports, PublicDepsHandling::kExclude);
+        } else {
+          // #import the headers for anything that a plain dependency of this
+          // proto file (that means they were just an include, not a "public"
+          // include).
+          absl::flat_hash_set<std::string> public_import_names;
+          for (int i = 0; i < file_->public_dependency_count(); i++) {
+            public_import_names.insert(file_->public_dependency(i)->name());
+          }
+          for (int i = 0; i < file_->dependency_count(); i++) {
+            const FileDescriptor* dep = file_->dependency(i);
+            if (!public_import_names.contains(dep->name())) {
+              file_imports.insert(dep);
+            }
           }
         }
       }
       break;
+  }
+
+  if (!file_imports.empty()) {
+    for (int i = 0; i < file_->dependency_count(); i++) {
+      const FileDescriptor* dep = file_->dependency(i);
+      if (file_imports.contains(dep)) {
+        import_writer.AddFile(file_->dependency(i), header_extension);
+      }
+    }
   }
 
   for (const auto& dep : file_options.extra_files_to_import) {
@@ -750,6 +766,34 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
             };
           )objc");
   p->Emit("\n");
+}
+
+void FileGenerator::DetermineNeededDeps(
+    absl::flat_hash_set<const FileDescriptor*>* deps,
+    PublicDepsHandling public_deps_handling) const {
+  // This logic captures the deps that are needed for types thus removing the
+  // ones that are only deps because they provide the definitions for custom
+  // options. If protoc gets something like "import options" then this logic can
+  // go away as the non "import options" deps would be the ones needed.
+
+  if (public_deps_handling == PublicDepsHandling::kForceInclude) {
+    for (int i = 0; i < file_->public_dependency_count(); i++) {
+      deps->insert(file_->public_dependency(i));
+    }
+  }
+
+  for (const auto& generator : message_generators_) {
+    generator->DetermineNeededFiles(deps);
+  }
+  for (const auto& generator : extension_generators_) {
+    generator->DetermineNeededFiles(deps);
+  }
+
+  if (public_deps_handling == PublicDepsHandling::kExclude) {
+    for (int i = 0; i < file_->public_dependency_count(); i++) {
+      deps->erase(file_);
+    }
+  }
 }
 
 }  // namespace objectivec
