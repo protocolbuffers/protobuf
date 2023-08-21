@@ -14,6 +14,7 @@
 #include <gtest/gtest.h>
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 
@@ -38,7 +39,8 @@ namespace {
 TEST(FileTest, TopologicallyOrderedDescriptors) {
   const FileDescriptor* fdesc =
       protobuf_unittest::TestAllTypes::descriptor()->file();
-  FileGenerator fgen(fdesc, /*options=*/{});
+  MessageSCCAnalyzer scc_analyzer(/*options=*/{});
+  FileGenerator fgen(fdesc, /*options=*/{}, &scc_analyzer);
   static constexpr absl::string_view kExpectedDescriptorOrder[] = {
       "Uint64Message",
       "Uint32Message",

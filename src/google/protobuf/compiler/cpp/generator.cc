@@ -199,6 +199,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   };
   // Suppress maybe unused warning.
   (void)generate_reserved_static_reflection_header;
+  MessageSCCAnalyzer scc_analyzer(file_options);
 
   if (MaybeBootstrap(file_options, generator_context, file_options.bootstrap,
                      &basename)) {
@@ -211,7 +212,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     return false;
   }
 
-  FileGenerator file_generator(file, file_options);
+  FileGenerator file_generator(file, file_options, &scc_analyzer);
 
   // Generate header(s).
   if (file_options.proto_h) {

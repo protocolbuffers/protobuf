@@ -39,7 +39,8 @@ namespace compiler {
 namespace cpp {
 class PROTOC_EXPORT FileGenerator {
  public:
-  FileGenerator(const FileDescriptor* file, const Options& options);
+  FileGenerator(const FileDescriptor* file, const Options& options,
+                MessageSCCAnalyzer* scc_analyzer);
 
   FileGenerator(const FileGenerator&) = delete;
   FileGenerator& operator=(const FileGenerator&) = delete;
@@ -173,7 +174,7 @@ class PROTOC_EXPORT FileGenerator {
   const FileDescriptor* file_;
   Options options_;
 
-  MessageSCCAnalyzer scc_analyzer_;
+  MessageSCCAnalyzer* scc_analyzer_;
 
   // This member is unused and should be deleted once all old-style variable
   // maps are gone.
