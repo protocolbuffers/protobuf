@@ -3490,16 +3490,18 @@ TEST(CustomOptions, OptionsFromOtherFile) {
   // Test that to use a custom option, we only need to import the file
   // defining the option; we do not also have to import descriptor.proto.
   DescriptorPool pool;
-
+  {
+    FileDescriptorProto file_proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+  }
+  {
+    // We have to import the Any dependency.
+    FileDescriptorProto any_proto;
+    google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+    ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
+  }
   FileDescriptorProto file_proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
-  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
-
-  // We have to import the Any dependency.
-  FileDescriptorProto any_proto;
-  google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
-  ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
-
   protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
@@ -3554,14 +3556,17 @@ TEST(CustomOptions, MessageOptionThreeFieldsSet) {
   // you want to know more.
   DescriptorPool pool;
 
+  {
+    FileDescriptorProto file_proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+  }
+  {
+    FileDescriptorProto any_proto;
+    google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+    ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
+  }
   FileDescriptorProto file_proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
-  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
-
-  FileDescriptorProto any_proto;
-  google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
-  ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
-
   protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
@@ -3635,14 +3640,17 @@ TEST(CustomOptions, MessageOptionRepeatedLeafFieldSet) {
   // when they are merged into the final option value.
   DescriptorPool pool;
 
+  {
+    FileDescriptorProto file_proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+  }
+  {
+    FileDescriptorProto any_proto;
+    google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+    ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
+  }
   FileDescriptorProto file_proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
-  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
-
-  FileDescriptorProto any_proto;
-  google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
-  ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
-
   protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
@@ -3719,14 +3727,17 @@ TEST(CustomOptions, MessageOptionRepeatedMsgFieldSet) {
   // when they are merged into the final option value.
   DescriptorPool pool;
 
+  {
+    FileDescriptorProto file_proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+  }
+  {
+    FileDescriptorProto any_proto;
+    google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+    ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
+  }
   FileDescriptorProto file_proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
-  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
-
-  FileDescriptorProto any_proto;
-  google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
-  ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
-
   protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
@@ -3849,14 +3860,17 @@ TEST(CustomOptions, AggregateOptions) {
 TEST(CustomOptions, UnusedImportError) {
   DescriptorPool pool;
 
+  {
+    FileDescriptorProto file_proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+    ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+  }
+  {
+    FileDescriptorProto any_proto;
+    google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+    ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
+  }
   FileDescriptorProto file_proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
-  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
-
-  FileDescriptorProto any_proto;
-  google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
-  ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
-
   protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
