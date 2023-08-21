@@ -6814,7 +6814,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   ::google::protobuf::FeatureSet* _internal_mutable_features();
 
   public:
-  // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED];
+  // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED, retention = RETENTION_SOURCE];
   bool has_verification() const;
   void clear_verification() ;
   ::google::protobuf::ExtensionRangeOptions_VerificationState verification() const;
@@ -12620,7 +12620,7 @@ inline void ExtensionRangeOptions::set_allocated_features(::google::protobuf::Fe
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.features)
 }
 
-// optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED];
+// optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED, retention = RETENTION_SOURCE];
 inline bool ExtensionRangeOptions::has_verification() const {
   bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
   return value;
