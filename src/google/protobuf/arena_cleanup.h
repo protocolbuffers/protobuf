@@ -199,26 +199,6 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE Tag Type(void (*destructor)(void*)) {
   return Tag::kDynamic;
 }
 
-// Returns the `tag` identifying the type of object stored at memory location
-// `elem`, which represents the first uintptr_t value in the node.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE Tag Type(void* raw) {
-  if (!EnableSpecializedTags()) return Tag::kDynamic;
-
-  uintptr_t elem;
-  memcpy(&elem, raw, sizeof(elem));
-  switch (static_cast<Tag>(elem & 0x7ULL)) {
-    case Tag::kDynamic:
-      return Tag::kDynamic;
-    case Tag::kString:
-      return Tag::kString;
-    case Tag::kCord:
-      return Tag::kCord;
-    default:
-      ABSL_LOG(FATAL) << "Corrupted cleanup tag: " << (elem & 0x7ULL);
-      return Tag::kDynamic;
-  }
-}
-
 // Returns the required size in bytes off the node type identified by `tag`.
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size(Tag tag) {
   if (!EnableSpecializedTags()) return sizeof(DynamicNode);
@@ -231,7 +211,7 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size(Tag tag) {
     case Tag::kCord:
       return sizeof(TaggedNode);
     default:
-      ABSL_LOG(FATAL) << "Corrupted cleanup tag: " << static_cast<int>(tag);
+      ABSL_DCHECK(false) << "Corrupted cleanup tag: " << static_cast<int>(tag);
       return sizeof(DynamicNode);
   }
 }
