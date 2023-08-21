@@ -627,16 +627,14 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR UninterpretedOption_NamePart(::google::protobuf::internal::ConstantInitialized);
 
-  UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from);
+  UninterpretedOption_NamePart(::google::protobuf::Arena* arena, const UninterpretedOption_NamePart& from);
+  inline UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from)
+      : UninterpretedOption_NamePart(nullptr, from) {}
   UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
     : UninterpretedOption_NamePart() {
     *this = ::std::move(from);
   }
 
-  inline UninterpretedOption_NamePart(::google::protobuf::Arena* arena, const UninterpretedOption_NamePart& from)
-    : UninterpretedOption_NamePart(arena) {
-    MergeFrom(from);
-  }
   inline UninterpretedOption_NamePart& operator=(const UninterpretedOption_NamePart& from) {
     CopyFrom(from);
     return *this;
@@ -793,10 +791,19 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
       1, 2, 0,
       62, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_part_;
@@ -815,16 +822,14 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR SourceCodeInfo_Location(::google::protobuf::internal::ConstantInitialized);
 
-  SourceCodeInfo_Location(const SourceCodeInfo_Location& from);
+  SourceCodeInfo_Location(::google::protobuf::Arena* arena, const SourceCodeInfo_Location& from);
+  inline SourceCodeInfo_Location(const SourceCodeInfo_Location& from)
+      : SourceCodeInfo_Location(nullptr, from) {}
   SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
     : SourceCodeInfo_Location() {
     *this = ::std::move(from);
   }
 
-  inline SourceCodeInfo_Location(::google::protobuf::Arena* arena, const SourceCodeInfo_Location& from)
-    : SourceCodeInfo_Location(arena) {
-    MergeFrom(from);
-  }
   inline SourceCodeInfo_Location& operator=(const SourceCodeInfo_Location& from) {
     CopyFrom(from);
     return *this;
@@ -1054,10 +1059,19 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
       3, 5, 0,
       106, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
@@ -1081,16 +1095,14 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation(::google::protobuf::internal::ConstantInitialized);
 
-  GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from);
+  GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena, const GeneratedCodeInfo_Annotation& from);
+  inline GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from)
+      : GeneratedCodeInfo_Annotation(nullptr, from) {}
   GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
     : GeneratedCodeInfo_Annotation() {
     *this = ::std::move(from);
   }
 
-  inline GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena, const GeneratedCodeInfo_Annotation& from)
-    : GeneratedCodeInfo_Annotation(arena) {
-    MergeFrom(from);
-  }
   inline GeneratedCodeInfo_Annotation& operator=(const GeneratedCodeInfo_Annotation& from) {
     CopyFrom(from);
     return *this;
@@ -1311,10 +1323,19 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
       3, 5, 1,
       64, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
@@ -1337,16 +1358,14 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FieldOptions_EditionDefault(::google::protobuf::internal::ConstantInitialized);
 
-  FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from);
+  FieldOptions_EditionDefault(::google::protobuf::Arena* arena, const FieldOptions_EditionDefault& from);
+  inline FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from)
+      : FieldOptions_EditionDefault(nullptr, from) {}
   FieldOptions_EditionDefault(FieldOptions_EditionDefault&& from) noexcept
     : FieldOptions_EditionDefault() {
     *this = ::std::move(from);
   }
 
-  inline FieldOptions_EditionDefault(::google::protobuf::Arena* arena, const FieldOptions_EditionDefault& from)
-    : FieldOptions_EditionDefault(arena) {
-    MergeFrom(from);
-  }
   inline FieldOptions_EditionDefault& operator=(const FieldOptions_EditionDefault& from) {
     CopyFrom(from);
     return *this;
@@ -1509,10 +1528,19 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
       1, 2, 0,
       64, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr edition_;
@@ -1531,16 +1559,14 @@ class PROTOBUF_EXPORT FeatureSet final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FeatureSet(::google::protobuf::internal::ConstantInitialized);
 
-  FeatureSet(const FeatureSet& from);
+  FeatureSet(::google::protobuf::Arena* arena, const FeatureSet& from);
+  inline FeatureSet(const FeatureSet& from)
+      : FeatureSet(nullptr, from) {}
   FeatureSet(FeatureSet&& from) noexcept
     : FeatureSet() {
     *this = ::std::move(from);
   }
 
-  inline FeatureSet(::google::protobuf::Arena* arena, const FeatureSet& from)
-    : FeatureSet(arena) {
-    MergeFrom(from);
-  }
   inline FeatureSet& operator=(const FeatureSet& from) {
     CopyFrom(from);
     return *this;
@@ -1984,10 +2010,19 @@ class PROTOBUF_EXPORT FeatureSet final :
       3, 5, 5,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2011,16 +2046,14 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration(::google::protobuf::internal::ConstantInitialized);
 
-  ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from);
+  ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena, const ExtensionRangeOptions_Declaration& from);
+  inline ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from)
+      : ExtensionRangeOptions_Declaration(nullptr, from) {}
   ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept
     : ExtensionRangeOptions_Declaration() {
     *this = ::std::move(from);
   }
 
-  inline ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena, const ExtensionRangeOptions_Declaration& from)
-    : ExtensionRangeOptions_Declaration(arena) {
-    MergeFrom(from);
-  }
   inline ExtensionRangeOptions_Declaration& operator=(const ExtensionRangeOptions_Declaration& from) {
     CopyFrom(from);
     return *this;
@@ -2219,10 +2252,19 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
       3, 5, 0,
       71, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr full_name_;
@@ -2244,16 +2286,14 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange(::google::protobuf::internal::ConstantInitialized);
 
-  EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from);
+  EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena, const EnumDescriptorProto_EnumReservedRange& from);
+  inline EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from)
+      : EnumDescriptorProto_EnumReservedRange(nullptr, from) {}
   EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept
     : EnumDescriptorProto_EnumReservedRange() {
     *this = ::std::move(from);
   }
 
-  inline EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena, const EnumDescriptorProto_EnumReservedRange& from)
-    : EnumDescriptorProto_EnumReservedRange(arena) {
-    MergeFrom(from);
-  }
   inline EnumDescriptorProto_EnumReservedRange& operator=(const EnumDescriptorProto_EnumReservedRange& from) {
     CopyFrom(from);
     return *this;
@@ -2404,10 +2444,19 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
       1, 2, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
@@ -2426,16 +2475,14 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange(::google::protobuf::internal::ConstantInitialized);
 
-  DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from);
+  DescriptorProto_ReservedRange(::google::protobuf::Arena* arena, const DescriptorProto_ReservedRange& from);
+  inline DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from)
+      : DescriptorProto_ReservedRange(nullptr, from) {}
   DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
     : DescriptorProto_ReservedRange() {
     *this = ::std::move(from);
   }
 
-  inline DescriptorProto_ReservedRange(::google::protobuf::Arena* arena, const DescriptorProto_ReservedRange& from)
-    : DescriptorProto_ReservedRange(arena) {
-    MergeFrom(from);
-  }
   inline DescriptorProto_ReservedRange& operator=(const DescriptorProto_ReservedRange& from) {
     CopyFrom(from);
     return *this;
@@ -2586,10 +2633,19 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
       1, 2, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
@@ -2608,16 +2664,14 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR UninterpretedOption(::google::protobuf::internal::ConstantInitialized);
 
-  UninterpretedOption(const UninterpretedOption& from);
+  UninterpretedOption(::google::protobuf::Arena* arena, const UninterpretedOption& from);
+  inline UninterpretedOption(const UninterpretedOption& from)
+      : UninterpretedOption(nullptr, from) {}
   UninterpretedOption(UninterpretedOption&& from) noexcept
     : UninterpretedOption() {
     *this = ::std::move(from);
   }
 
-  inline UninterpretedOption(::google::protobuf::Arena* arena, const UninterpretedOption& from)
-    : UninterpretedOption(arena) {
-    MergeFrom(from);
-  }
   inline UninterpretedOption& operator=(const UninterpretedOption& from) {
     CopyFrom(from);
     return *this;
@@ -2855,10 +2909,19 @@ class PROTOBUF_EXPORT UninterpretedOption final :
       3, 7, 1,
       75, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart > name_;
@@ -2882,16 +2945,14 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR SourceCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
-  SourceCodeInfo(const SourceCodeInfo& from);
+  SourceCodeInfo(::google::protobuf::Arena* arena, const SourceCodeInfo& from);
+  inline SourceCodeInfo(const SourceCodeInfo& from)
+      : SourceCodeInfo(nullptr, from) {}
   SourceCodeInfo(SourceCodeInfo&& from) noexcept
     : SourceCodeInfo() {
     *this = ::std::move(from);
   }
 
-  inline SourceCodeInfo(::google::protobuf::Arena* arena, const SourceCodeInfo& from)
-    : SourceCodeInfo(arena) {
-    MergeFrom(from);
-  }
   inline SourceCodeInfo& operator=(const SourceCodeInfo& from) {
     CopyFrom(from);
     return *this;
@@ -3039,10 +3100,19 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
       0, 1, 1,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
@@ -3059,16 +3129,14 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
-  GeneratedCodeInfo(const GeneratedCodeInfo& from);
+  GeneratedCodeInfo(::google::protobuf::Arena* arena, const GeneratedCodeInfo& from);
+  inline GeneratedCodeInfo(const GeneratedCodeInfo& from)
+      : GeneratedCodeInfo(nullptr, from) {}
   GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept
     : GeneratedCodeInfo() {
     *this = ::std::move(from);
   }
 
-  inline GeneratedCodeInfo(::google::protobuf::Arena* arena, const GeneratedCodeInfo& from)
-    : GeneratedCodeInfo(arena) {
-    MergeFrom(from);
-  }
   inline GeneratedCodeInfo& operator=(const GeneratedCodeInfo& from) {
     CopyFrom(from);
     return *this;
@@ -3216,10 +3284,19 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
       0, 1, 1,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
@@ -3236,16 +3313,14 @@ class PROTOBUF_EXPORT ServiceOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR ServiceOptions(::google::protobuf::internal::ConstantInitialized);
 
-  ServiceOptions(const ServiceOptions& from);
+  ServiceOptions(::google::protobuf::Arena* arena, const ServiceOptions& from);
+  inline ServiceOptions(const ServiceOptions& from)
+      : ServiceOptions(nullptr, from) {}
   ServiceOptions(ServiceOptions&& from) noexcept
     : ServiceOptions() {
     *this = ::std::move(from);
   }
 
-  inline ServiceOptions(::google::protobuf::Arena* arena, const ServiceOptions& from)
-    : ServiceOptions(arena) {
-    MergeFrom(from);
-  }
   inline ServiceOptions& operator=(const ServiceOptions& from) {
     CopyFrom(from);
     return *this;
@@ -3570,10 +3645,19 @@ class PROTOBUF_EXPORT ServiceOptions final :
       2, 3, 2,
       0, 12>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -3595,16 +3679,14 @@ class PROTOBUF_EXPORT OneofOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR OneofOptions(::google::protobuf::internal::ConstantInitialized);
 
-  OneofOptions(const OneofOptions& from);
+  OneofOptions(::google::protobuf::Arena* arena, const OneofOptions& from);
+  inline OneofOptions(const OneofOptions& from)
+      : OneofOptions(nullptr, from) {}
   OneofOptions(OneofOptions&& from) noexcept
     : OneofOptions() {
     *this = ::std::move(from);
   }
 
-  inline OneofOptions(::google::protobuf::Arena* arena, const OneofOptions& from)
-    : OneofOptions(arena) {
-    MergeFrom(from);
-  }
   inline OneofOptions& operator=(const OneofOptions& from) {
     CopyFrom(from);
     return *this;
@@ -3917,10 +3999,19 @@ class PROTOBUF_EXPORT OneofOptions final :
       2, 2, 2,
       0, 7>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -3941,16 +4032,14 @@ class PROTOBUF_EXPORT MethodOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR MethodOptions(::google::protobuf::internal::ConstantInitialized);
 
-  MethodOptions(const MethodOptions& from);
+  MethodOptions(::google::protobuf::Arena* arena, const MethodOptions& from);
+  inline MethodOptions(const MethodOptions& from)
+      : MethodOptions(nullptr, from) {}
   MethodOptions(MethodOptions&& from) noexcept
     : MethodOptions() {
     *this = ::std::move(from);
   }
 
-  inline MethodOptions(::google::protobuf::Arena* arena, const MethodOptions& from)
-    : MethodOptions(arena) {
-    MergeFrom(from);
-  }
   inline MethodOptions& operator=(const MethodOptions& from) {
     CopyFrom(from);
     return *this;
@@ -4308,10 +4397,19 @@ class PROTOBUF_EXPORT MethodOptions final :
       3, 4, 3,
       0, 12>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -4334,16 +4432,14 @@ class PROTOBUF_EXPORT MessageOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR MessageOptions(::google::protobuf::internal::ConstantInitialized);
 
-  MessageOptions(const MessageOptions& from);
+  MessageOptions(::google::protobuf::Arena* arena, const MessageOptions& from);
+  inline MessageOptions(const MessageOptions& from)
+      : MessageOptions(nullptr, from) {}
   MessageOptions(MessageOptions&& from) noexcept
     : MessageOptions() {
     *this = ::std::move(from);
   }
 
-  inline MessageOptions(::google::protobuf::Arena* arena, const MessageOptions& from)
-    : MessageOptions(arena) {
-    MergeFrom(from);
-  }
   inline MessageOptions& operator=(const MessageOptions& from) {
     CopyFrom(from);
     return *this;
@@ -4716,10 +4812,19 @@ class PROTOBUF_EXPORT MessageOptions final :
       3, 7, 2,
       0, 7>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -4745,16 +4850,14 @@ class PROTOBUF_EXPORT FileOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FileOptions(::google::protobuf::internal::ConstantInitialized);
 
-  FileOptions(const FileOptions& from);
+  FileOptions(::google::protobuf::Arena* arena, const FileOptions& from);
+  inline FileOptions(const FileOptions& from)
+      : FileOptions(nullptr, from) {}
   FileOptions(FileOptions&& from) noexcept
     : FileOptions() {
     *this = ::std::move(from);
   }
 
-  inline FileOptions(::google::protobuf::Arena* arena, const FileOptions& from)
-    : FileOptions(arena) {
-    MergeFrom(from);
-  }
   inline FileOptions& operator=(const FileOptions& from) {
     CopyFrom(from);
     return *this;
@@ -5388,10 +5491,19 @@ class PROTOBUF_EXPORT FileOptions final :
       5, 22, 3,
       202, 12>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -5432,16 +5544,14 @@ class PROTOBUF_EXPORT FieldOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FieldOptions(::google::protobuf::internal::ConstantInitialized);
 
-  FieldOptions(const FieldOptions& from);
+  FieldOptions(::google::protobuf::Arena* arena, const FieldOptions& from);
+  inline FieldOptions(const FieldOptions& from)
+      : FieldOptions(nullptr, from) {}
   FieldOptions(FieldOptions&& from) noexcept
     : FieldOptions() {
     *this = ::std::move(from);
   }
 
-  inline FieldOptions(::google::protobuf::Arena* arena, const FieldOptions& from)
-    : FieldOptions(arena) {
-    MergeFrom(from);
-  }
   inline FieldOptions& operator=(const FieldOptions& from) {
     CopyFrom(from);
     return *this;
@@ -5994,10 +6104,19 @@ class PROTOBUF_EXPORT FieldOptions final :
       4, 13, 7,
       0, 7>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -6029,16 +6148,14 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions(::google::protobuf::internal::ConstantInitialized);
 
-  ExtensionRangeOptions(const ExtensionRangeOptions& from);
+  ExtensionRangeOptions(::google::protobuf::Arena* arena, const ExtensionRangeOptions& from);
+  inline ExtensionRangeOptions(const ExtensionRangeOptions& from)
+      : ExtensionRangeOptions(nullptr, from) {}
   ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
     : ExtensionRangeOptions() {
     *this = ::std::move(from);
   }
 
-  inline ExtensionRangeOptions(::google::protobuf::Arena* arena, const ExtensionRangeOptions& from)
-    : ExtensionRangeOptions(arena) {
-    MergeFrom(from);
-  }
   inline ExtensionRangeOptions& operator=(const ExtensionRangeOptions& from) {
     CopyFrom(from);
     return *this;
@@ -6404,10 +6521,19 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
       3, 4, 4,
       0, 12>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -6430,16 +6556,14 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumValueOptions(::google::protobuf::internal::ConstantInitialized);
 
-  EnumValueOptions(const EnumValueOptions& from);
+  EnumValueOptions(::google::protobuf::Arena* arena, const EnumValueOptions& from);
+  inline EnumValueOptions(const EnumValueOptions& from)
+      : EnumValueOptions(nullptr, from) {}
   EnumValueOptions(EnumValueOptions&& from) noexcept
     : EnumValueOptions() {
     *this = ::std::move(from);
   }
 
-  inline EnumValueOptions(::google::protobuf::Arena* arena, const EnumValueOptions& from)
-    : EnumValueOptions(arena) {
-    MergeFrom(from);
-  }
   inline EnumValueOptions& operator=(const EnumValueOptions& from) {
     CopyFrom(from);
     return *this;
@@ -6776,10 +6900,19 @@ class PROTOBUF_EXPORT EnumValueOptions final :
       3, 4, 2,
       0, 7>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -6802,16 +6935,14 @@ class PROTOBUF_EXPORT EnumOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumOptions(::google::protobuf::internal::ConstantInitialized);
 
-  EnumOptions(const EnumOptions& from);
+  EnumOptions(::google::protobuf::Arena* arena, const EnumOptions& from);
+  inline EnumOptions(const EnumOptions& from)
+      : EnumOptions(nullptr, from) {}
   EnumOptions(EnumOptions&& from) noexcept
     : EnumOptions() {
     *this = ::std::move(from);
   }
 
-  inline EnumOptions(::google::protobuf::Arena* arena, const EnumOptions& from)
-    : EnumOptions(arena) {
-    MergeFrom(from);
-  }
   inline EnumOptions& operator=(const EnumOptions& from) {
     CopyFrom(from);
     return *this;
@@ -7160,10 +7291,19 @@ class PROTOBUF_EXPORT EnumOptions final :
       3, 5, 2,
       0, 7>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -7187,16 +7327,14 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR OneofDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  OneofDescriptorProto(const OneofDescriptorProto& from);
+  OneofDescriptorProto(::google::protobuf::Arena* arena, const OneofDescriptorProto& from);
+  inline OneofDescriptorProto(const OneofDescriptorProto& from)
+      : OneofDescriptorProto(nullptr, from) {}
   OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
     : OneofDescriptorProto() {
     *this = ::std::move(from);
   }
 
-  inline OneofDescriptorProto(::google::protobuf::Arena* arena, const OneofDescriptorProto& from)
-    : OneofDescriptorProto(arena) {
-    MergeFrom(from);
-  }
   inline OneofDescriptorProto& operator=(const OneofDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -7357,10 +7495,19 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
       1, 2, 1,
       49, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -7379,16 +7526,14 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR MethodDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  MethodDescriptorProto(const MethodDescriptorProto& from);
+  MethodDescriptorProto(::google::protobuf::Arena* arena, const MethodDescriptorProto& from);
+  inline MethodDescriptorProto(const MethodDescriptorProto& from)
+      : MethodDescriptorProto(nullptr, from) {}
   MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
     : MethodDescriptorProto() {
     *this = ::std::move(from);
   }
 
-  inline MethodDescriptorProto(::google::protobuf::Arena* arena, const MethodDescriptorProto& from)
-    : MethodDescriptorProto(arena) {
-    MergeFrom(from);
-  }
   inline MethodDescriptorProto& operator=(const MethodDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -7609,10 +7754,19 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
       3, 6, 1,
       71, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -7635,16 +7789,14 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FieldDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  FieldDescriptorProto(const FieldDescriptorProto& from);
+  FieldDescriptorProto(::google::protobuf::Arena* arena, const FieldDescriptorProto& from);
+  inline FieldDescriptorProto(const FieldDescriptorProto& from)
+      : FieldDescriptorProto(nullptr, from) {}
   FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
     : FieldDescriptorProto() {
     *this = ::std::move(from);
   }
 
-  inline FieldDescriptorProto(::google::protobuf::Arena* arena, const FieldDescriptorProto& from)
-    : FieldDescriptorProto(arena) {
-    MergeFrom(from);
-  }
   inline FieldDescriptorProto& operator=(const FieldDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -7994,10 +8146,19 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
       4, 11, 3,
       96, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -8025,16 +8186,14 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumValueDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  EnumValueDescriptorProto(const EnumValueDescriptorProto& from);
+  EnumValueDescriptorProto(::google::protobuf::Arena* arena, const EnumValueDescriptorProto& from);
+  inline EnumValueDescriptorProto(const EnumValueDescriptorProto& from)
+      : EnumValueDescriptorProto(nullptr, from) {}
   EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
     : EnumValueDescriptorProto() {
     *this = ::std::move(from);
   }
 
-  inline EnumValueDescriptorProto(::google::protobuf::Arena* arena, const EnumValueDescriptorProto& from)
-    : EnumValueDescriptorProto(arena) {
-    MergeFrom(from);
-  }
   inline EnumValueDescriptorProto& operator=(const EnumValueDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -8207,10 +8366,19 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
       2, 3, 1,
       53, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -8230,16 +8398,14 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange(::google::protobuf::internal::ConstantInitialized);
 
-  DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from);
+  DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena, const DescriptorProto_ExtensionRange& from);
+  inline DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from)
+      : DescriptorProto_ExtensionRange(nullptr, from) {}
   DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
     : DescriptorProto_ExtensionRange() {
     *this = ::std::move(from);
   }
 
-  inline DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena, const DescriptorProto_ExtensionRange& from)
-    : DescriptorProto_ExtensionRange(arena) {
-    MergeFrom(from);
-  }
   inline DescriptorProto_ExtensionRange& operator=(const DescriptorProto_ExtensionRange& from) {
     CopyFrom(from);
     return *this;
@@ -8406,10 +8572,19 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
       2, 3, 1,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::ExtensionRangeOptions* options_;
@@ -8429,16 +8604,14 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR ServiceDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  ServiceDescriptorProto(const ServiceDescriptorProto& from);
+  ServiceDescriptorProto(::google::protobuf::Arena* arena, const ServiceDescriptorProto& from);
+  inline ServiceDescriptorProto(const ServiceDescriptorProto& from)
+      : ServiceDescriptorProto(nullptr, from) {}
   ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
     : ServiceDescriptorProto() {
     *this = ::std::move(from);
   }
 
-  inline ServiceDescriptorProto(::google::protobuf::Arena* arena, const ServiceDescriptorProto& from)
-    : ServiceDescriptorProto(arena) {
-    MergeFrom(from);
-  }
   inline ServiceDescriptorProto& operator=(const ServiceDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -8618,10 +8791,19 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
       2, 3, 2,
       51, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
@@ -8641,16 +8823,14 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  EnumDescriptorProto(const EnumDescriptorProto& from);
+  EnumDescriptorProto(::google::protobuf::Arena* arena, const EnumDescriptorProto& from);
+  inline EnumDescriptorProto(const EnumDescriptorProto& from)
+      : EnumDescriptorProto(nullptr, from) {}
   EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
     : EnumDescriptorProto() {
     *this = ::std::move(from);
   }
 
-  inline EnumDescriptorProto(::google::protobuf::Arena* arena, const EnumDescriptorProto& from)
-    : EnumDescriptorProto(arena) {
-    MergeFrom(from);
-  }
   inline EnumDescriptorProto& operator=(const EnumDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -8880,10 +9060,19 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
       3, 5, 3,
       61, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
@@ -8905,16 +9094,14 @@ class PROTOBUF_EXPORT DescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR DescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  DescriptorProto(const DescriptorProto& from);
+  DescriptorProto(::google::protobuf::Arena* arena, const DescriptorProto& from);
+  inline DescriptorProto(const DescriptorProto& from)
+      : DescriptorProto(nullptr, from) {}
   DescriptorProto(DescriptorProto&& from) noexcept
     : DescriptorProto() {
     *this = ::std::move(from);
   }
 
-  inline DescriptorProto(::google::protobuf::Arena* arena, const DescriptorProto& from)
-    : DescriptorProto(arena) {
-    MergeFrom(from);
-  }
   inline DescriptorProto& operator=(const DescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -9240,10 +9427,19 @@ class PROTOBUF_EXPORT DescriptorProto final :
       4, 10, 8,
       65, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > field_;
@@ -9270,16 +9466,14 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FileDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  FileDescriptorProto(const FileDescriptorProto& from);
+  FileDescriptorProto(::google::protobuf::Arena* arena, const FileDescriptorProto& from);
+  inline FileDescriptorProto(const FileDescriptorProto& from)
+      : FileDescriptorProto(nullptr, from) {}
   FileDescriptorProto(FileDescriptorProto&& from) noexcept
     : FileDescriptorProto() {
     *this = ::std::move(from);
   }
 
-  inline FileDescriptorProto(::google::protobuf::Arena* arena, const FileDescriptorProto& from)
-    : FileDescriptorProto(arena) {
-    MergeFrom(from);
-  }
   inline FileDescriptorProto& operator=(const FileDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -9653,10 +9847,19 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
       4, 13, 6,
       86, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField<std::string> dependency_;
@@ -9686,16 +9889,14 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FileDescriptorSet(::google::protobuf::internal::ConstantInitialized);
 
-  FileDescriptorSet(const FileDescriptorSet& from);
+  FileDescriptorSet(::google::protobuf::Arena* arena, const FileDescriptorSet& from);
+  inline FileDescriptorSet(const FileDescriptorSet& from)
+      : FileDescriptorSet(nullptr, from) {}
   FileDescriptorSet(FileDescriptorSet&& from) noexcept
     : FileDescriptorSet() {
     *this = ::std::move(from);
   }
 
-  inline FileDescriptorSet(::google::protobuf::Arena* arena, const FileDescriptorSet& from)
-    : FileDescriptorSet(arena) {
-    MergeFrom(from);
-  }
   inline FileDescriptorSet& operator=(const FileDescriptorSet& from) {
     CopyFrom(from);
     return *this;
@@ -9841,10 +10042,19 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
       0, 1, 1,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
