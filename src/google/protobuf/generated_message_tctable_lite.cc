@@ -584,7 +584,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularFixed(
   }
   ptr += sizeof(TagType);  // Consume tag
   hasbits |= (uint64_t{1} << data.hasbit_idx());
-  RefAt<LayoutType>(msg, data.offset()) = UnalignedLoad<LayoutType>(ptr);
+  WriteAt<LayoutType>(msg, data.offset(), UnalignedLoad<LayoutType>(ptr));
   ptr += sizeof(LayoutType);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
@@ -823,8 +823,9 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularVarint(
         PROTOBUF_TC_PARAM_PASS);
   }
 
-  RefAt<FieldType>(msg, data.offset()) =
-      ZigZagDecodeHelper<FieldType, zigzag>(static_cast<uint8_t>(*ptr++));
+  WriteAt<FieldType>(
+      msg, data.offset(),
+      ZigZagDecodeHelper<FieldType, zigzag>(static_cast<uint8_t>(*ptr++)));
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
@@ -862,8 +863,8 @@ PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
-  RefAt<FieldType>(msg, data.offset()) =
-      ZigZagDecodeHelper<FieldType, zigzag>(tmp);
+  WriteAt<FieldType>(msg, data.offset(),
+                     ZigZagDecodeHelper<FieldType, zigzag>(tmp));
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
@@ -880,7 +881,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::FastVarintS1(
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
   hasbits |= (uint64_t{1} << data.hasbit_idx());
-  RefAt<FieldType>(msg, data.offset()) = res;
+  WriteAt<FieldType>(msg, data.offset(), res);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
@@ -1824,10 +1825,10 @@ PROTOBUF_NOINLINE const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   // Copy the value:
   if (rep == field_layout::kRep64Bits) {
-    RefAt<uint64_t>(base, entry.offset) = UnalignedLoad<uint64_t>(ptr);
+    WriteAt<uint64_t>(base, entry.offset, UnalignedLoad<uint64_t>(ptr));
     ptr += sizeof(uint64_t);
   } else {
-    RefAt<uint32_t>(base, entry.offset) = UnalignedLoad<uint32_t>(ptr);
+    WriteAt<uint32_t>(base, entry.offset, UnalignedLoad<uint32_t>(ptr));
     ptr += sizeof(uint32_t);
   }
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1976,12 +1977,12 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
 
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   if (rep == field_layout::kRep64Bits) {
-    RefAt<uint64_t>(base, entry.offset) = tmp;
+    WriteAt<uint64_t>(base, entry.offset, tmp);
   } else if (rep == field_layout::kRep32Bits) {
-    RefAt<uint32_t>(base, entry.offset) = static_cast<uint32_t>(tmp);
+    WriteAt<uint32_t>(base, entry.offset, static_cast<uint32_t>(tmp));
   } else {
     ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
-    RefAt<bool>(base, entry.offset) = static_cast<bool>(tmp);
+    WriteAt<bool>(base, entry.offset, static_cast<bool>(tmp));
   }
 
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
