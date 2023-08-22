@@ -54,7 +54,6 @@
 #include <utility>
 
 #include "google/protobuf/arena.h"
-#include "google/protobuf/port.h"
 #include "absl/base/attributes.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/base/optimization.h"

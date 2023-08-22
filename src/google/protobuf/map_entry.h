@@ -35,12 +35,12 @@
 #include <cstdint>
 #include <string>
 
-#include "google/protobuf/port.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"

@@ -117,7 +117,6 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/port.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
