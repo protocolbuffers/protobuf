@@ -662,30 +662,55 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Gets the Arena on which this RepeatedPtrField stores its elements.
   inline Arena* GetArena() const { return GetOwningArena(); }
 
- protected:
   inline Arena* GetOwningArena() const { return arena_; }
 
  private:
-  template <typename T> friend class Arena::InternalHelper;
-
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
+  template <typename T>
+  friend class Arena::InternalHelper;
+
+  // ExtensionSet stores repeated message extensions as
+  // RepeatedPtrField<MessageLite>, but non-lite ExtensionSets need to implement
+  // SpaceUsedLong(), and thus need to call SpaceUsedExcludingSelfLong()
+  // reinterpreting MessageLite as Message.  ExtensionSet also needs to make use
+  // of AddFromCleared(), which is not part of the public interface.
+  friend class ExtensionSet;
+
+  // The MapFieldBase implementation needs to call protected methods directly,
+  // reinterpreting pointers as being to Message instead of a specific Message
+  // subclass.
+  friend class MapFieldBase;
+  friend class MapFieldBaseStub;
+
+  // The table-driven MergePartialFromCodedStream implementation needs to
+  // operate on RepeatedPtrField<MessageLite>.
+  friend class MergePartialFromCodedStreamHelper;
+
+  friend class AccessorHelper;
+
+  template <typename T>
+  friend struct google::protobuf::WeakRepeatedPtrField;
+
+  friend class internal::TcParser;  // TODO(jorg): Remove this friend.
+
+  // The reflection implementation needs to call protected methods directly,
+  // reinterpreting pointers as being to Message instead of a specific Message
+  // subclass.
+  friend class google::protobuf::Reflection;
+  friend class internal::SwapFieldHelper;
+
+  struct Rep {
+    int allocated_size;
+    // Here we declare a huge array as a way of approximating C's "flexible
+    // array member" feature without relying on undefined behavior.
+    void* elements[(std::numeric_limits<int>::max() - 2 * sizeof(int)) /
+                   sizeof(void*)];
+  };
+
   static constexpr int kInitialSize = 0;
-  // A few notes on internal representation:
-  //
-  // We use an indirected approach, with struct Rep, to keep
-  // sizeof(RepeatedPtrFieldBase) equivalent to what it was before arena support
-  // was added; namely, 3 8-byte machine words on x86-64. An instance of Rep is
-  // allocated only when the repeated field is non-empty, and it is a
-  // dynamically-sized struct (the header is directly followed by elements[]).
-  // We place arena_ and current_size_ directly in the object to avoid cache
-  // misses due to the indirection, because these fields are checked frequently.
-  // Placing all fields directly in the RepeatedPtrFieldBase instance would cost
-  // significant performance for memory-sensitive workloads.
-  Arena* arena_;
-  int current_size_;
-  int total_size_;
+  static constexpr size_t kRepHeaderSize = offsetof(Rep, elements);
 
   // Replaces current_size_ with new_size and returns the previous value of
   // current_size_. This function is intended to be the only place where
@@ -696,14 +721,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return prev_size;
   }
 
-  struct Rep {
-    int allocated_size;
-    // Here we declare a huge array as a way of approximating C's "flexible
-    // array member" feature without relying on undefined behavior.
-    void* elements[(std::numeric_limits<int>::max() - 2 * sizeof(int)) /
-                   sizeof(void*)];
-  };
-  static constexpr size_t kRepHeaderSize = offsetof(Rep, elements);
   void* const* elements() const {
     return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
   }
@@ -738,7 +755,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   bool using_sso() const {
     return (reinterpret_cast<uintptr_t>(tagged_rep_or_elem_) & 1) == 0;
   }
-  void* tagged_rep_or_elem_;
 
   template <typename TypeHandler>
   static inline typename TypeHandler::Type* cast(void* element) {
@@ -823,32 +839,21 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // needed
   void* AddOutOfLineHelper(void* obj);
 
-  // The reflection implementation needs to call protected methods directly,
-  // reinterpreting pointers as being to Message instead of a specific Message
-  // subclass.
-  friend class google::protobuf::Reflection;
-  friend class internal::SwapFieldHelper;
-
-  // ExtensionSet stores repeated message extensions as
-  // RepeatedPtrField<MessageLite>, but non-lite ExtensionSets need to implement
-  // SpaceUsedLong(), and thus need to call SpaceUsedExcludingSelfLong()
-  // reinterpreting MessageLite as Message.  ExtensionSet also needs to make use
-  // of AddFromCleared(), which is not part of the public interface.
-  friend class ExtensionSet;
-
-  // The MapFieldBase implementation needs to call protected methods directly,
-  // reinterpreting pointers as being to Message instead of a specific Message
-  // subclass.
-  friend class MapFieldBase;
-  friend class MapFieldBaseStub;
-
-  // The table-driven MergePartialFromCodedStream implementation needs to
-  // operate on RepeatedPtrField<MessageLite>.
-  friend class MergePartialFromCodedStreamHelper;
-  friend class AccessorHelper;
-  template <typename T>
-  friend struct google::protobuf::WeakRepeatedPtrField;
-  friend class internal::TcParser;  // TODO(jorg): Remove this friend.
+  // A few notes on internal representation:
+  //
+  // We use an indirected approach, with struct Rep, to keep
+  // sizeof(RepeatedPtrFieldBase) equivalent to what it was before arena support
+  // was added; namely, 3 8-byte machine words on x86-64. An instance of Rep is
+  // allocated only when the repeated field is non-empty, and it is a
+  // dynamically-sized struct (the header is directly followed by elements[]).
+  // We place arena_ and current_size_ directly in the object to avoid cache
+  // misses due to the indirection, because these fields are checked frequently.
+  // Placing all fields directly in the RepeatedPtrFieldBase instance would cost
+  // significant performance for memory-sensitive workloads.
+  Arena* arena_;
+  int current_size_;
+  int total_size_;
+  void* tagged_rep_or_elem_;
 };
 
 template <typename GenericType>
@@ -979,9 +984,26 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   }
 
  public:
+  using value_type = Element;
+  using size_type = int;
+  using difference_type = ptrdiff_t;
+  using reference = Element&;
+  using const_reference = const Element&;
+  using pointer = Element*;
+  using const_pointer = const Element*;
+  using iterator = internal::RepeatedPtrIterator<Element>;
+  using const_iterator = internal::RepeatedPtrIterator<const Element>;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+  // Custom STL-like iterator that iterates over and returns the underlying
+  // pointers to Element rather than Element itself.
+  using pointer_iterator =
+      internal::RepeatedPtrOverPtrsIterator<Element*, void*>;
+  using const_pointer_iterator =
+      internal::RepeatedPtrOverPtrsIterator<const Element* const,
+                                            const void* const>;
+
   constexpr RepeatedPtrField();
-  RepeatedPtrField(const RepeatedPtrField& other)
-      : RepeatedPtrField(nullptr, other) {}
 
   // Arena enabled constructors: for internal use only.
   RepeatedPtrField(internal::InternalVisibility, Arena* arena)
@@ -998,8 +1020,8 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
                 Element, decltype(*std::declval<Iter>())>::value>::type>
   RepeatedPtrField(Iter begin, Iter end);
 
-  ~RepeatedPtrField();
-
+  RepeatedPtrField(const RepeatedPtrField& other)
+      : RepeatedPtrField(nullptr, other) {}
   RepeatedPtrField& operator=(const RepeatedPtrField& other)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
@@ -1007,17 +1029,19 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   RepeatedPtrField& operator=(RepeatedPtrField&& other) noexcept
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
+  ~RepeatedPtrField();
+
   bool empty() const;
   int size() const;
 
-  const Element& Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  Element* Mutable(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_reference Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  pointer Mutable(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Unlike std::vector, adding an element to a RepeatedPtrField doesn't always
   // make a new element; it might re-use an element left over from when the
   // field was Clear()'d or reize()'d smaller.  For this reason, Add() is the
   // fastest API for adding a new element.
-  Element* Add() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  pointer Add() ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // `Add(std::move(value));` is equivalent to `*Add() = std::move(value);`
   // It will either move-construct to the end of this field, or swap value
@@ -1039,15 +1063,15 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   template <typename Iter>
   void Add(Iter begin, Iter end);
 
-  const Element& operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  const_reference operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return Get(index);
   }
-  Element& operator[](int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  reference operator[](int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return *Mutable(index);
   }
 
-  const Element& at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  Element& at(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_reference at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  reference at(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Removes the last element in the array.
   // Ownership of the element is retained by the array.
@@ -1092,17 +1116,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // Swaps two elements.
   void SwapElements(int index1, int index2);
 
-  // STL-like iterator support
-  typedef internal::RepeatedPtrIterator<Element> iterator;
-  typedef internal::RepeatedPtrIterator<const Element> const_iterator;
-  typedef Element value_type;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
-  typedef value_type* pointer;
-  typedef const value_type* const_pointer;
-  typedef int size_type;
-  typedef ptrdiff_t difference_type;
-
   iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   const_iterator begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   const_iterator cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
@@ -1110,9 +1123,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   const_iterator end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   const_iterator cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  // Reverse iterator support
-  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-  typedef std::reverse_iterator<iterator> reverse_iterator;
   reverse_iterator rbegin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return reverse_iterator(end());
   }
@@ -1126,13 +1136,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
     return const_reverse_iterator(begin());
   }
 
-  // Custom STL-like iterator that iterates over and returns the underlying
-  // pointers to Element rather than Element itself.
-  typedef internal::RepeatedPtrOverPtrsIterator<Element*, void*>
-      pointer_iterator;
-  typedef internal::RepeatedPtrOverPtrsIterator<const Element* const,
-                                                const void* const>
-      const_pointer_iterator;
   pointer_iterator pointer_begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   const_pointer_iterator pointer_begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   pointer_iterator pointer_end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
@@ -1189,7 +1192,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // pointer is always to the original object.  This may be in an arena, in
   // which case it would have the arena's lifetime.
   // Requires: current_size_ > 0
-  Element* UnsafeArenaReleaseLast();
+  pointer UnsafeArenaReleaseLast();
 
   // Extracts elements with indices in the range "[start .. start+num-1]".
   // The caller assumes ownership of the extracted elements and is responsible
@@ -1244,7 +1247,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // so will trigger a ABSL_DCHECK-failure.
   PROTOBUF_NODISCARD
   ABSL_DEPRECATED("This will be removed in a future release")
-  Element* ReleaseCleared();
+  pointer ReleaseCleared();
 #endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
 
   // Removes the element referenced by position.
@@ -1278,11 +1281,22 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
     internal::RepeatedPtrFieldBase::InternalSwap(other);
   }
 
+
  private:
-  RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+
+  friend class Arena;
+
+  friend class internal::TcParser;
+
+  template <typename T>
+  friend struct WeakRepeatedPtrField;
 
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   class TypeHandler;
+
+  RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
 
   // Internal version of GetArena().
   inline Arena* GetOwningArena() const;
@@ -1299,16 +1313,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   void AddAllocatedForParse(Element* p) {
     return RepeatedPtrFieldBase::AddAllocatedForParse<TypeHandler>(p);
   }
-
-  friend class Arena;
-  friend class internal::TcParser;
-
-  template <typename T>
-  friend struct WeakRepeatedPtrField;
-
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-
 };
 
 // -------------------------------------------------------------------
