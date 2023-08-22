@@ -44,7 +44,6 @@
 #include "protos_generator/tests/child_model.upb.proto.h"
 #include "protos_generator/tests/no_package.upb.proto.h"
 #include "protos_generator/tests/test_model.upb.proto.h"
-#include "upb/upb.hpp"
 
 using ::protos_generator::test::protos::ChildModel1;
 using ::protos_generator::test::protos::other_ext;

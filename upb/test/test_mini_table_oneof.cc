@@ -34,7 +34,6 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/test/test.upb.h"
-#include "upb/upb.hpp"
 
 // Must be last.
 #include "upb/port/def.inc"

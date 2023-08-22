@@ -46,10 +46,10 @@
 // end:github_only
 
 #include "absl/container/flat_hash_map.h"
+#include "upb/base/status.hpp"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
-#include "upb/upb.hpp"
 
 // Must be last
 #include "upb/port/def.inc"

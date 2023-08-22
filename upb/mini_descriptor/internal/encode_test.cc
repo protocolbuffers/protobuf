@@ -37,12 +37,13 @@
 #include "gtest/gtest.h"
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/descriptor.h"
+#include "upb/base/status.hpp"
+#include "upb/mem/arena.hpp"
 #include "upb/message/internal/accessors.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_table/enum.h"
-#include "upb/upb.hpp"
 #include "upb/wire/decode.h"
 
 // begin:google_only
@@ -57,7 +58,7 @@ TEST_P(MiniTableTest, Empty) {
   upb::Arena arena;
   upb::Status status;
   upb_MiniTable* table =
-      _upb_MiniTable_Build(NULL, 0, GetParam(), arena.ptr(), status.ptr());
+      _upb_MiniTable_Build(nullptr, 0, GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(0, table->field_count);
   EXPECT_EQ(0, table->required_count);

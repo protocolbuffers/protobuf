@@ -117,7 +117,7 @@ cc_test(
     srcs = ["eps_copy_input_stream_test.cc"],
     deps = [
         ":eps_copy_input_stream",
-        "//:upb",
+        "//:mem",
         "@com_google_googletest//:gtest_main",
     ],
 )

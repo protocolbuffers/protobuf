@@ -35,7 +35,7 @@
 #include <string>
 
 #include "gtest/gtest.h"
-#include "upb/upb.hpp"
+#include "upb/mem/arena.hpp"
 // begin:google_only
 // #include "testing/fuzzing/fuzztest.h"
 // end:google_only

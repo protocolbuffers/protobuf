@@ -58,9 +58,10 @@ cc_test(
     deps = [
         ":internal",
         ":mini_descriptor",
+        "//:base",
+        "//:mem",
         "//:message_accessors_internal",
         "//:mini_table",
-        "//:upb",
         "//:wire",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",

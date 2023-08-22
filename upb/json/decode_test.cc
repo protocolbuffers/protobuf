@@ -34,8 +34,8 @@
 #include "gtest/gtest.h"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
+#include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
-#include "upb/upb.hpp"
 
 static upb_test_Box* JsonDecode(const char* json, upb_Arena* a) {
   upb::Status status;

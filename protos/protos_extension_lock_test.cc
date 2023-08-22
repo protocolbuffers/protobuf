@@ -12,7 +12,7 @@
 #include "absl/log/absl_check.h"
 #include "protos/protos.h"
 #include "protos_generator/tests/test_model.upb.proto.h"
-#include "upb/upb.hpp"
+#include "upb/mem/arena.hpp"
 
 #ifndef ASSERT_OK
 #define ASSERT_OK(x) ASSERT_TRUE(x.ok())

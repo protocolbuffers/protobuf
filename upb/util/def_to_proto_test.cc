@@ -39,9 +39,9 @@
 #include "gtest/gtest.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/util/message_differencer.h"
+#include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
 #include "upb/test/parse_text_proto.h"
-#include "upb/upb.hpp"
 #include "upb/util/def_to_proto_test.h"
 #include "upb/util/def_to_proto_test.upbdefs.h"
 

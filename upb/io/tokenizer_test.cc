@@ -36,7 +36,7 @@
 #include "upb/io/chunked_input_stream.h"
 #include "upb/io/string.h"
 #include "upb/lex/unicode.h"
-#include "upb/upb.hpp"
+#include "upb/mem/arena.hpp"
 
 // Must be last.
 #include "upb/port/def.inc"

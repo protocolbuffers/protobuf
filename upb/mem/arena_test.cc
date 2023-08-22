@@ -40,7 +40,6 @@
 #include "absl/random/distributions.h"
 #include "absl/random/random.h"
 #include "absl/synchronization/notification.h"
-#include "upb/upb.hpp"
 
 // Must be last.
 #include "upb/port/def.inc"

@@ -33,9 +33,10 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/strings/string_view.h"
+#include "upb/base/status.hpp"
 #include "upb/json/decode.h"
+#include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
-#include "upb/upb.hpp"
 #include "upb/util/required_fields_test.upb.h"
 #include "upb/util/required_fields_test.upbdefs.h"
 

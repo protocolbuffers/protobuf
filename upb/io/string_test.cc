@@ -33,7 +33,7 @@
 #include <string.h>
 
 #include "gtest/gtest.h"
-#include "upb/upb.hpp"
+#include "upb/mem/arena.hpp"
 
 TEST(StringTest, Append) {
   upb::Arena arena;

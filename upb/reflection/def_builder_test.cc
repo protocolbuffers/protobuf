@@ -32,7 +32,7 @@
 
 #include "gtest/gtest.h"
 #include "absl/strings/string_view.h"
-#include "upb/upb.hpp"
+#include "upb/mem/arena.hpp"
 
 // Must be last.
 #include "upb/port/def.inc"

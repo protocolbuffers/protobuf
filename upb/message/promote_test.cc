@@ -43,12 +43,12 @@
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/string_view.h"
 #include "upb/collections/array.h"
+#include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/copy.h"
 #include "upb/mini_descriptor/internal/encode.hpp"
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/test/test.upb.h"
-#include "upb/upb.hpp"
 #include "upb/wire/decode.h"
 
 // Must be last

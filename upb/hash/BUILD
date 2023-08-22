@@ -50,8 +50,9 @@ cc_test(
     srcs = ["test.cc"],
     deps = [
         ":hash",
+        "//:mem",
         "//:port",
-        "//:upb",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_googletest//:gtest_main",
     ],
 )

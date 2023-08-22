@@ -52,7 +52,6 @@ cc_library(
         "//:message",
         "//:reflection",
         "//:text",
-        "//:upb",
         "@lua//:liblua",
     ],
 )

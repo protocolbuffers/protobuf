@@ -100,22 +100,6 @@ package_group(
     packages = ["//..."],
 )
 
-# Public C/C++ libraries #######################################################
-
-cc_library(
-    name = "upb",
-    hdrs = [
-        "upb/upb.hpp",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":mem",
-        ":port",
-    ],
-)
-
 # Common support routines used by generated code.  This library has no
 # implementation, but depends on :upb and exposes a few more hdrs.
 #
@@ -148,22 +132,11 @@ cc_library(
 # Common support code for C++ generated code.
 cc_library(
     name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-    hdrs = ["upb/upb.hpp"],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
         "//upb/port:inc",
     ],
     visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":collections_internal",
-        ":hash",
-        ":mem",
-        ":message_copy",
-        ":message_typedef",
-        ":mini_table",
-        ":upb",
-    ],
 )
 
 cc_library(
@@ -220,8 +193,8 @@ bootstrap_cc_library(
     deps = [
         ":base",
         ":collections",
+        ":mem",
         ":port",
-        ":upb",
     ],
 )
 
@@ -293,7 +266,6 @@ bootstrap_cc_library(
         ":mini_descriptor_internal",
         ":mini_table",
         ":port",
-        ":upb",
     ],
 )
 
@@ -499,10 +471,10 @@ cc_test(
     deps = [
         ":descriptor_upb_proto",
         ":hash",
+        ":mem",
         ":port",
         ":reflection",
         ":reflection_internal",
-        ":upb",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
@@ -563,7 +535,6 @@ upb_amalgamation(
         ":port",
         ":reflection_internal",
         ":reflection",
-        ":upb",
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
@@ -610,7 +581,6 @@ upb_amalgamation(
         ":port",
         ":reflection_internal",
         ":reflection",
-        ":upb",
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
@@ -658,7 +628,6 @@ upb_amalgamation(
         ":port",
         ":reflection_internal",
         ":reflection",
-        ":upb",
         ":wire_internal",
         ":wire_reader",
         ":wire_types",

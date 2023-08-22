@@ -30,6 +30,7 @@ cc_library(
     hdrs = [
         "alloc.h",
         "arena.h",
+        "arena.hpp",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -63,7 +64,6 @@ cc_test(
     deps = [
         "//:mem",
         "//:port",
-        "//:upb",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/random:distributions",
         "@com_google_absl//absl/synchronization",
@@ -78,6 +78,7 @@ filegroup(
         [
             "**/*.c",
             "**/*.h",
+            "**/*.hpp",
         ],
     ),
     visibility = [

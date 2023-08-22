@@ -37,13 +37,13 @@
 #include <map>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "gtest/gtest.h"
+#include "absl/container/flat_hash_map.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
-#include "upb/upb.hpp"
+#include "upb/mem/arena.hpp"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -146,7 +146,7 @@ TEST_P(IntTableTest, TestIntTable) {
   upb_inttable_init(&t, arena.ptr());
   uint32_t largest_key = 0;
   std::map<uint32_t, uint32_t> m;
-  std::unordered_map<uint32_t, uint32_t> hm;
+  absl::flat_hash_map<uint32_t, uint32_t> hm;
   for (const auto& key : keys_) {
     largest_key = UPB_MAX((int32_t)largest_key, key);
     upb_value val = upb_value_uint32(key * 2);
@@ -240,15 +240,15 @@ TEST(Table, Delete) {
   upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr());
   upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr());
   upb_inttable_compact(&t, arena.ptr());
-  upb_inttable_remove(&t, 0, NULL);
-  upb_inttable_remove(&t, 2, NULL);
-  upb_inttable_remove(&t, 4, NULL);
+  upb_inttable_remove(&t, 0, nullptr);
+  upb_inttable_remove(&t, 2, nullptr);
+  upb_inttable_remove(&t, 4, nullptr);
 
   intptr_t iter = UPB_INTTABLE_BEGIN;
   uintptr_t key;
   upb_value val;
   while (upb_inttable_next(&t, &key, &val, &iter)) {
-    ASSERT_TRUE(false);
+    FAIL();
   }
 }
 

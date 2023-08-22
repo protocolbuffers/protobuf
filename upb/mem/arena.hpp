@@ -28,39 +28,50 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/collections/array.h"
+#ifndef UPB_MEM_ARENA_HPP_
+#define UPB_MEM_ARENA_HPP_
 
-#include "gtest/gtest.h"
-#include "upb/base/status.hpp"
-#include "upb/mem/arena.hpp"
+#include <memory>
 
-TEST(ArrayTest, Resize) {
-  upb::Arena arena;
-  upb::Status status;
+#include "upb/mem/arena.h"
 
-  upb_Array* array = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
-  EXPECT_TRUE(array);
+namespace upb {
 
-  for (int i = 0; i < 10; i++) {
-    upb_MessageValue mv;
-    mv.int32_val = 3 * i;
+class Arena {
+ public:
+  // A simple arena with no initial memory block and the default allocator.
+  Arena() : ptr_(upb_Arena_New(), upb_Arena_Free) {}
+  Arena(char* initial_block, size_t size)
+      : ptr_(upb_Arena_Init(initial_block, size, &upb_alloc_global),
+             upb_Arena_Free) {}
 
-    upb_Array_Append(array, mv, arena.ptr());
-    EXPECT_EQ(upb_Array_Size(array), i + 1);
-    EXPECT_EQ(upb_Array_Get(array, i).int32_val, 3 * i);
+  upb_Arena* ptr() const { return ptr_.get(); }
+
+  void Fuse(Arena& other) { upb_Arena_Fuse(ptr(), other.ptr()); }
+
+ protected:
+  std::unique_ptr<upb_Arena, decltype(&upb_Arena_Free)> ptr_;
+};
+
+// InlinedArena seeds the arenas with a predefined amount of memory.  No
+// heap memory will be allocated until the initial block is exceeded.
+template <int N>
+class InlinedArena : public Arena {
+ public:
+  InlinedArena() : Arena(initial_block_, N) {}
+  ~InlinedArena() {
+    // Explicitly destroy the arena now so that it does not outlive
+    // initial_block_.
+    ptr_.reset();
   }
 
-  upb_Array_Resize(array, 12, arena.ptr());
-  EXPECT_EQ(upb_Array_Get(array, 10).int32_val, 0);
-  EXPECT_EQ(upb_Array_Get(array, 11).int32_val, 0);
+ private:
+  InlinedArena(const InlinedArena*) = delete;
+  InlinedArena& operator=(const InlinedArena*) = delete;
 
-  upb_Array_Resize(array, 4, arena.ptr());
-  EXPECT_EQ(upb_Array_Size(array), 4);
+  char initial_block_[N];
+};
 
-  upb_Array_Resize(array, 6, arena.ptr());
-  EXPECT_EQ(upb_Array_Size(array), 6);
+}  // namespace upb
 
-  EXPECT_EQ(upb_Array_Get(array, 3).int32_val, 9);
-  EXPECT_EQ(upb_Array_Get(array, 4).int32_val, 0);
-  EXPECT_EQ(upb_Array_Get(array, 5).int32_val, 0);
-}
+#endif  // UPB_MEM_ARENA_HPP_

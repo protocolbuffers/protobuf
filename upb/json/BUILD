@@ -36,8 +36,8 @@ cc_test(
         ":struct_upb_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
+        "//:mem",
         "//:reflection",
-        "//:upb",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -50,8 +50,9 @@ cc_test(
         ":struct_upb_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
+        "//:base",
+        "//:mem",
         "//:reflection",
-        "//:upb",
         "@com_google_googletest//:gtest_main",
     ],
 )

@@ -33,6 +33,7 @@ cc_library(
     hdrs = [
         "descriptor_constants.h",
         "status.h",
+        "status.hpp",
         "string_view.h",
     ],
     copts = UPB_DEFAULT_COPTS,
@@ -59,6 +60,7 @@ filegroup(
         [
             "**/*.c",
             "**/*.h",
+            "**/*.hpp",
         ],
     ),
     visibility = [

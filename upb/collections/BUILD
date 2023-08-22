@@ -91,7 +91,7 @@ cc_test(
     deps = [
         ":collections",
         "//:base",
-        "//:upb",
+        "//:mem",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -102,7 +102,7 @@ cc_test(
     deps = [
         ":collections",
         "//:base",
-        "//:upb",
+        "//:mem",
         "@com_google_googletest//:gtest_main",
     ],
 )

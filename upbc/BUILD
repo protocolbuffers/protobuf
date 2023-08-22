@@ -130,11 +130,11 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//protos_generator:__pkg__"],
     deps = [
+        "//:base",
         "//:mini_descriptor",
         "//:mini_table",
         "//:mini_table_internal",
         "//:port",
-        "//:upb",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
     ],
