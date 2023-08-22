@@ -271,11 +271,11 @@ enum FieldType : uint16_t {
 
 #ifndef NDEBUG
 PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 4>,
-                               std::uintptr_t address);
+                               std::uintptr_t address, const char* func);
 PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 8>,
-                               std::uintptr_t address);
-inline void AlignFail(std::integral_constant<size_t, 1>,
-                      std::uintptr_t address) {}
+                               std::uintptr_t address, const char* func);
+inline void AlignFail(std::integral_constant<size_t, 1>, std::uintptr_t address,
+                      const char*) {}
 #endif
 
 #define PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(fn) \
@@ -587,7 +587,15 @@ class PROTOBUF_EXPORT TcParser final {
     if (PROTOBUF_PREDICT_FALSE(
             reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
-                reinterpret_cast<uintptr_t>(target));
+                reinterpret_cast<uintptr_t>(target),
+#if defined(_MSC_VER)
+                __FUNCSIG__
+#elif defined(__GNUC__)
+                __PRETTY_FUNCTION__
+#else
+                ""
+#endif
+      );
       // Explicit abort to let compilers know this code-path does not return
       abort();
     }
@@ -603,7 +611,15 @@ class PROTOBUF_EXPORT TcParser final {
     if (PROTOBUF_PREDICT_FALSE(
             reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
-                reinterpret_cast<uintptr_t>(target));
+                reinterpret_cast<uintptr_t>(target),
+#if defined(_MSC_VER)
+                __FUNCSIG__
+#elif defined(__GNUC__)
+                __PRETTY_FUNCTION__
+#else
+                ""
+#endif
+      );
       // Explicit abort to let compilers know this code-path does not return
       abort();
     }
