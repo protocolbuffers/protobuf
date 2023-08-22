@@ -83,6 +83,7 @@ target_link_libraries(generated_code_support__only_for_generated_code_do_not_use
   collections
   collections_internal
   mem
+  message
   message_accessors
   message_accessors_internal
   message_internal
