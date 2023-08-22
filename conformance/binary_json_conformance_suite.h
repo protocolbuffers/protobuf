@@ -31,9 +31,9 @@
 #ifndef CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H
 #define CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H
 
-#include "google/protobuf/descriptor.h"
 #include "json/json.h"
 #include "conformance_test.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {

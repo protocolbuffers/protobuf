@@ -41,13 +41,13 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {

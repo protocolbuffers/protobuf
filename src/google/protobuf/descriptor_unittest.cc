@@ -49,9 +49,6 @@
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_database.h"
-#include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/text_format.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
@@ -66,10 +63,13 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_textproto.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_features.pb.h"

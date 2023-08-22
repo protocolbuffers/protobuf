@@ -45,9 +45,9 @@
 #include <memory>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_no_field_presence.pb.h"
