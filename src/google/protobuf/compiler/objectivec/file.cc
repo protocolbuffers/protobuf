@@ -376,16 +376,7 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
   std::vector<const FileDescriptor*> deps_with_extensions =
       common_state_->CollectMinimalFileDepsContainingExtensions(file_);
   GeneratedFileOptions file_options;
-
-  // If any indirect dependency provided extensions, it needs to be directly
-  // imported so it can get merged into the root's extensions registry.
-  // See the Note by CollectMinimalFileDepsContainingExtensions before
-  // changing this.
-  for (auto& dep : deps_with_extensions) {
-    if (!IsDirectDependency(dep, file_)) {
-      file_options.extra_files_to_import.push_back(dep);
-    }
-  }
+  file_options.forced_files_to_import = deps_with_extensions;
 
   absl::btree_set<std::string> fwd_decls;
   for (const auto& generator : message_generators_) {
@@ -432,16 +423,7 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
   std::vector<const FileDescriptor*> deps_with_extensions =
       common_state_->CollectMinimalFileDepsContainingExtensions(file_);
   GeneratedFileOptions file_options;
-
-  // If any indirect dependency provided extensions, it needs to be directly
-  // imported so it can get merged into the root's extensions registry.
-  // See the Note by CollectMinimalFileDepsContainingExtensions before
-  // changing this.
-  for (auto& dep : deps_with_extensions) {
-    if (!IsDirectDependency(dep, file_)) {
-      file_options.extra_files_to_import.push_back(dep);
-    }
-  }
+  file_options.forced_files_to_import = deps_with_extensions;
 
   absl::btree_set<std::string> fwd_decls;
   for (const auto& generator : extension_generators_) {
@@ -551,7 +533,18 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       break;
   }
 
+  // If a forced file was a direct dep, move it into the file_imports.
+  std::vector<const FileDescriptor*> extra_files_to_import;
+  for (const auto& dep : file_options.forced_files_to_import) {
+    if (IsDirectDependency(dep, file_)) {
+      file_imports.insert(dep);
+    } else {
+      extra_files_to_import.push_back(dep);
+    }
+  }
+
   if (!file_imports.empty()) {
+    // Output the file_imports in the order they were listed as dependencies.
     for (int i = 0; i < file_->dependency_count(); i++) {
       const FileDescriptor* dep = file_->dependency(i);
       if (file_imports.contains(dep)) {
@@ -560,7 +553,7 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
     }
   }
 
-  for (const auto& dep : file_options.extra_files_to_import) {
+  for (const auto& dep : extra_files_to_import) {
     import_writer.AddFile(dep, header_extension);
   }
 

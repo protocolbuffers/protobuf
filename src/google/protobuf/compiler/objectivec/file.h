@@ -100,7 +100,7 @@ class FileGenerator {
   enum class GeneratedFileType : int { kHeader, kSource };
   struct GeneratedFileOptions {
     std::vector<std::string> ignored_warnings;
-    std::vector<const FileDescriptor*> extra_files_to_import;
+    std::vector<const FileDescriptor*> forced_files_to_import;
     std::vector<std::string> extra_system_headers;
   };
 
