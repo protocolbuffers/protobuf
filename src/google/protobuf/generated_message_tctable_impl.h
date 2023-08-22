@@ -581,7 +581,17 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* FastMlS2(PROTOBUF_TC_PARAM_DECL);
 
   template <typename T>
+  static inline void WriteAt(void* x, size_t offset,
+                             std::enable_if_t<true, T> value) {
+    x = static_cast<char*>(x) + offset;
+    memcpy(x, &value, sizeof(T));
+  }
+
+  template <typename T>
   static inline T& RefAt(void* x, size_t offset) {
+    static_assert(
+        !std::is_same<T, uint64_t>::value && !std::is_floating_point<T>::value,
+        "Should use WriteAt to make it portable");
     T* target = reinterpret_cast<T*>(static_cast<char*>(x) + offset);
 #ifndef NDEBUG
     if (PROTOBUF_PREDICT_FALSE(
@@ -597,6 +607,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   template <typename T>
   static inline const T& RefAt(const void* x, size_t offset) {
+    static_assert(!std::is_arithmetic<T>::value, "");
     const T* target =
         reinterpret_cast<const T*>(static_cast<const char*>(x) + offset);
 #ifndef NDEBUG

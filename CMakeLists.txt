@@ -237,24 +237,6 @@ if (MSVC)
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
   string(REPLACE "." ","  protobuf_RC_FILEVERSION "${protobuf_VERSION}")
 
-  if (protobuf_ALLOW_CCACHE)
-    # In order to support ccache, we need to remove the /Zi option because it
-    # puts debug symbols into separate pdb files (which in incompatible with
-    # ccache).  This can be replaced with /Z7 to preserve debug symbols, which
-    # embeds debug symbols into the object files instead of creating a separate
-    # pdb file, which isn't currently supported by ccache.  However, this bloats
-    # the ccache size by about a factor of 2x, making it very expensive in CI.
-    # Instead, we strip debug symbols to reduce this overhead.
-    foreach(v
-        CMAKE_C_FLAGS_DEBUG
-        CMAKE_CXX_FLAGS_DEBUG
-        CMAKE_C_FLAGS_RELWITHDEBINFO
-        CMAKE_CXX_FLAGS_RELWITHDEBINFO
-        )
-      string(REGEX REPLACE "[-/]Z[iI7]" "/DEBUG:NONE" ${v} "${${v}}")
-    endforeach()
-  endif()
-
   # Suppress linker warnings about files with no symbols defined.
   string(APPEND CMAKE_STATIC_LINKER_FLAGS " /ignore:4221")
 
