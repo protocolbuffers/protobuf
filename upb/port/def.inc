@@ -68,8 +68,6 @@
 #include <assert.h>
 #include <setjmp.h>
 #include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 
 #if UINTPTR_MAX == 0xffffffff

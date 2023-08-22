@@ -31,6 +31,8 @@
 #ifndef UPB_LEX_ATOI_H_
 #define UPB_LEX_ATOI_H_
 
+#include <stdint.h>
+
 // Must be last.
 #include "upb/port/def.inc"
 

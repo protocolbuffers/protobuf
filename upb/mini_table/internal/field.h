@@ -31,6 +31,8 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_FIELD_H_
 #define UPB_MINI_TABLE_INTERNAL_FIELD_H_
 
+#include <stdint.h>
+
 #include "upb/base/descriptor_constants.h"
 
 // Must be last.

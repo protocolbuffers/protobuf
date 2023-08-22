@@ -31,6 +31,8 @@
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
 
+#include <stdint.h>
+
 #include "upb/base/internal/log2.h"
 
 // Must be last.

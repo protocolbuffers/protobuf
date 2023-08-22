@@ -43,6 +43,8 @@
 #ifndef UPB_MEM_ARENA_H_
 #define UPB_MEM_ARENA_H_
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "upb/mem/alloc.h"

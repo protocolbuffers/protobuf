@@ -31,6 +31,8 @@
 #ifndef UPB_WIRE_INTERNAL_SWAP_H_
 #define UPB_WIRE_INTERNAL_SWAP_H_
 
+#include <stdint.h>
+
 // Must be last.
 #include "upb/port/def.inc"
 

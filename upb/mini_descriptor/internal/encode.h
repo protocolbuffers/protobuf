@@ -31,6 +31,8 @@
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
 
+#include <stdint.h>
+
 #include "upb/base/descriptor_constants.h"
 
 // Must be last.

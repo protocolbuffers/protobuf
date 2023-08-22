@@ -31,6 +31,8 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_ENUM_H_
 #define UPB_MINI_TABLE_INTERNAL_ENUM_H_
 
+#include <stdint.h>
+
 // Must be last.
 #include "upb/port/def.inc"
 
