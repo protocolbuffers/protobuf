@@ -108,6 +108,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":internal_types",
         ":types",
         "//:base",
         "//:base_internal",
@@ -115,6 +116,17 @@ cc_library(
         "//:mem",
         "//:mini_table",
         "//:port",
+    ],
+)
+
+cc_library(
+    name = "internal_types",
+    hdrs = [
+        "internal/types.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
     ],
 )
 
@@ -160,19 +172,6 @@ cc_library(
         "//:port",
         "//:wire",
         "//:wire_reader",
-    ],
-)
-
-cc_library(
-    name = "rep_internal",
-    hdrs = [
-        "internal/map_entry.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        "//:base",
-        "//:hash",
     ],
 )
 

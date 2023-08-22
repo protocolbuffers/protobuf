@@ -43,6 +43,7 @@
 
 #include "upb/hash/common.h"
 #include "upb/message/internal/extension.h"
+#include "upb/message/internal/types.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
@@ -64,7 +65,7 @@ extern const double kUpb_NaN;
  * these before the user's data.  The user's upb_Message* points after the
  * upb_Message_Internal. */
 
-typedef struct {
+struct upb_Message_InternalData {
   /* Total size of this structure, including the data that follows.
    * Must be aligned to 8, which is alignof(upb_Message_Extension) */
   uint32_t size;
@@ -86,20 +87,7 @@ typedef struct {
   uint32_t ext_begin;
   /* Data follows, as if there were an array:
    *   char data[size - sizeof(upb_Message_InternalData)]; */
-} upb_Message_InternalData;
-
-typedef struct {
-  // LINT.IfChange(internal_layout)
-  union {
-    upb_Message_InternalData* internal;
-
-    // Force 8-byte alignment, since the data members may contain members that
-    // require 8-byte alignment.
-    double d;
-  };
-  // LINT.ThenChange(//depot/google3/third_party/upb/upb/message/internal/map_entry.h:internal_layout)
-  /* Message data follows. */
-} upb_Message_Internal;
+};
 
 /* Maps upb_CType -> memory size. */
 extern char _upb_CTypeo_size[12];

@@ -28,13 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPB_MINI_TABLE_INTERNAL_MAP_ENTRY_DATA_H_
-#define UPB_MINI_TABLE_INTERNAL_MAP_ENTRY_DATA_H_
-
-#include <stdint.h>
+#ifndef UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
+#define UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
 
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
+#include "upb/message/internal/types.h"
 
 // Map entries aren't actually stored for map fields, they are only used during
 // parsing. For parsing, it helps a lot if all map entry messages have the same
@@ -44,7 +43,7 @@
 // Note that users can and do create map entries directly, which will also use
 // this layout.
 //
-// NOTE: sync with mini_table/decode.c.
+// NOTE: sync with wire/decode.c.
 typedef struct {
   // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
   // and the uint64_t helps make this clear.
@@ -60,16 +59,8 @@ typedef struct {
 } upb_MapEntryData;
 
 typedef struct {
-  // LINT.IfChange(internal_layout)
-  union {
-    void* internal_data;
-
-    // Force 8-byte alignment, since the data members may contain members that
-    // require 8-byte alignment.
-    double d;
-  };
-  // LINT.ThenChange(//depot/google3/third_party/upb/upb/message/internal/message.h:internal_layout)
+  upb_Message_Internal internal;
   upb_MapEntryData data;
 } upb_MapEntry;
 
-#endif  // UPB_MINI_TABLE_INTERNAL_MAP_ENTRY_DATA_H_
+#endif  // UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_

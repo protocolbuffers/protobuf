@@ -53,6 +53,7 @@ cc_library(
     hdrs = [
         "internal/array.h",
         "internal/map.h",
+        "internal/map_entry.h",
         "internal/map_sorter.h",
         "map_gencode_util.h",
         "message_value.h",
@@ -65,7 +66,7 @@ cc_library(
         "//:hash",
         "//:mem",
         "//:message_internal",
-        "//:message_rep_internal",
+        "//:message_internal_types",
         "//:message_tagged_ptr",
         "//:mini_table",
         "//:port",
