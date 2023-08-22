@@ -38,6 +38,7 @@
 
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -58,10 +59,6 @@ namespace compiler {
 namespace objectivec {
 
 namespace {
-
-bool IsMapEntryMessage(const Descriptor* descriptor) {
-  return descriptor->options().map_entry();
-}
 
 struct FieldOrderingByNumber {
   inline bool operator()(const FieldDescriptor* a,
@@ -225,6 +222,8 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
       class_name_(ClassName(descriptor_)),
       deprecated_attribute_(
           GetOptionalDeprecatedAttribute(descriptor, descriptor->file())) {
+  ABSL_DCHECK(!descriptor->options().map_entry())
+      << "error: MessageGenerator create of a map<>!";
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     oneof_generators_.push_back(
         std::make_unique<OneofGenerator>(descriptor_->real_oneof_decl(i)));
@@ -272,9 +271,6 @@ void MessageGenerator::AddExtensionGenerators(
 void MessageGenerator::DetermineForwardDeclarations(
     absl::btree_set<std::string>* fwd_decls,
     bool include_external_types) const {
-  if (IsMapEntryMessage(descriptor_)) {
-    return;
-  }
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
     field_generators_.get(fieldDescriptor)
@@ -284,9 +280,6 @@ void MessageGenerator::DetermineForwardDeclarations(
 
 void MessageGenerator::DetermineNeededFiles(
     absl::flat_hash_set<const FileDescriptor*>* deps) const {
-  if (IsMapEntryMessage(descriptor_)) {
-    return;
-  }
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
     field_generators_.get(fieldDescriptor).DetermineNeededFiles(deps);
@@ -295,16 +288,14 @@ void MessageGenerator::DetermineNeededFiles(
 
 void MessageGenerator::DetermineObjectiveCClassDefinitions(
     absl::btree_set<std::string>* fwd_decls) const {
-  if (!IsMapEntryMessage(descriptor_)) {
-    // Forward declare this class, as a linker symbol, so the symbol can be used
-    // to reference the class instead of calling +class later.
-    fwd_decls->insert(ObjCClassDeclaration(class_name_));
+  // Forward declare this class, as a linker symbol, so the symbol can be used
+  // to reference the class instead of calling +class later.
+  fwd_decls->insert(ObjCClassDeclaration(class_name_));
 
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-      const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
-      field_generators_.get(fieldDescriptor)
-          .DetermineObjectiveCClassDefinitions(fwd_decls);
-    }
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
+    field_generators_.get(fieldDescriptor)
+        .DetermineObjectiveCClassDefinitions(fwd_decls);
   }
 
   const Descriptor* containing_descriptor = descriptor_->containing_type();
@@ -315,13 +306,7 @@ void MessageGenerator::DetermineObjectiveCClassDefinitions(
 }
 
 void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
-  // This a a map entry message, do nothing.
-  if (IsMapEntryMessage(descriptor_)) {
-    return;
-  }
-
   auto vars = printer->WithVars({{"classname", class_name_}});
-
   printer->Emit(
       {io::Printer::Sub("deprecated_attribute", deprecated_attribute_)
            .WithSuffix(";"),
@@ -416,10 +401,6 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
 }
 
 void MessageGenerator::GenerateSource(io::Printer* printer) const {
-  if (IsMapEntryMessage(descriptor_)) {
-    return;
-  }
-
   std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
       SortFieldsByNumber(descriptor_));
   std::unique_ptr<const FieldDescriptor*[]> size_order_fields(
