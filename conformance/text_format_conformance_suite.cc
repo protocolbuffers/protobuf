@@ -31,12 +31,12 @@
 #include "text_format_conformance_suite.h"
 
 #include "google/protobuf/any.pb.h"
-#include "google/protobuf/text_format.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "conformance_test.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
+#include "google/protobuf/text_format.h"
 
 namespace proto2_messages = protobuf_test_messages::proto2;
 

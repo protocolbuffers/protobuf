@@ -42,11 +42,11 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
 #include "conformance/conformance.pb.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/wire_format_lite.h"
 
 namespace conformance {
