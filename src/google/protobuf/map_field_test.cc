@@ -30,7 +30,6 @@
 
 #include <memory>
 
-#include "google/protobuf/arena.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -39,6 +38,7 @@
 #include "absl/synchronization/barrier.h"
 #include "absl/synchronization/blocking_counter.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field_inl.h"

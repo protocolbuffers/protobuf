@@ -35,12 +35,12 @@
 #include "google/protobuf/extension_set.h"
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/arena.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
