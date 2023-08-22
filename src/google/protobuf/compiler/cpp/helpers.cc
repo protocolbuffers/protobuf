@@ -36,15 +36,12 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <functional>
 #include <limits>
 #include <memory>
-#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/compiler/scc.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -54,11 +51,11 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
