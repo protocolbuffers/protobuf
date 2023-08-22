@@ -45,7 +45,6 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/port.h"
 #include "absl/base/call_once.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"

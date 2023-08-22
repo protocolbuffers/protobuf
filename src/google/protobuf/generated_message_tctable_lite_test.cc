@@ -30,10 +30,10 @@
 
 #include <cstddef>
 
-#include "google/protobuf/generated_message_tctable_impl.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/types/optional.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
 

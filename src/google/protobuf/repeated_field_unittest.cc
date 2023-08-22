@@ -52,7 +52,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/arena.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
@@ -65,7 +64,6 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/parse_context.h"
-#include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
 
