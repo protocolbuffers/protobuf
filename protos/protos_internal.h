@@ -32,7 +32,7 @@
 #define UPB_PROTOS_PROTOS_INTERNAL_H_
 
 #include "upb/mem/arena.h"
-#include "upb/message/typedef.h"
+#include "upb/message/message.h"
 
 namespace protos::internal {
 

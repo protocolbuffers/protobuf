@@ -31,7 +31,7 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 #define UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 
-#include "upb/message/typedef.h"
+#include "upb/message/types.h"
 #include "upb/mini_table/internal/field.h"
 
 // Must be last.

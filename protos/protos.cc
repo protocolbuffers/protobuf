@@ -42,7 +42,6 @@
 #include "upb/message/copy.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/promote.h"
-#include "upb/message/typedef.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/message.h"

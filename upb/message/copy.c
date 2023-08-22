@@ -39,7 +39,6 @@
 #include "upb/message/accessors.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
-#include "upb/message/typedef.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 

@@ -79,7 +79,6 @@ cc_library(
         "//:message_copy",
         "//:message_internal",
         "//:message_promote",
-        "//:message_typedef",
         "//:mini_table",
         "//:wire",
         "@com_google_absl//absl/base:core_headers",
@@ -108,7 +107,7 @@ cc_library(
     deps = [
         ":protos",
         "//:mem",
-        "//:message_typedef",
+        "//:message",
         "//:mini_table",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
@@ -123,7 +122,7 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//:message_typedef",
+        "//:message",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/synchronization",
     ],
@@ -142,7 +141,7 @@ cc_library(
         ":protos_internal",
         ":repeated_field",
         "//:mem",
-        "//:message_typedef",
+        "//:message",
     ],
 )
 

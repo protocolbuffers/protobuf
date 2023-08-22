@@ -50,7 +50,7 @@ cc_library(
         "//:base",
         "//:hash",
         "//:mem",
-        "//:message_typedef",
+        "//:message_types",
         "//:port",
     ],
 )
@@ -71,7 +71,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:base",
-        "//:message_typedef",
+        "//:message_types",
         "//:port",
     ],
 )

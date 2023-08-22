@@ -39,7 +39,7 @@ cc_library(
     deps = [
         ":internal",
         "//:mem",
-        "//:message_internal",
+        "//:message",
         "//:mini_table",
         "//:port",
     ],
@@ -71,6 +71,7 @@ cc_library(
         "//:collections_internal",
         "//:mem",
         "//:mem_internal",
+        "//:message",
         "//:message_accessors_internal",
         "//:message_internal",
         "//:message_rep_internal",

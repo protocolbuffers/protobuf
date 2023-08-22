@@ -33,7 +33,7 @@
 
 #include <stdint.h>
 
-#include "upb/message/typedef.h"
+#include "upb/message/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"

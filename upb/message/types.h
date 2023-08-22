@@ -28,11 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPB_MESSAGE_TYPEDEF_H_
-#define UPB_MESSAGE_TYPEDEF_H_
+#ifndef UPB_MESSAGE_TYPES_H_
+#define UPB_MESSAGE_TYPES_H_
 
-// This typedef needs its own header to resolve a circular dependency between
+// This typedef is in a leaf header to resolve a circular dependency between
 // messages and mini tables.
 typedef void upb_Message;
 
-#endif /* UPB_MESSAGE_TYPEDEF_H_ */
+#endif /* UPB_MESSAGE_TYPES_H_ */

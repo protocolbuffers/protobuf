@@ -43,6 +43,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        ":message",
         "//:base",
         "//:collections",
         "//:collections_internal",
@@ -83,7 +84,8 @@ cc_library(
     deps = [
         ":accessors",
         ":internal",
-        ":typedef",
+        ":message",
+        ":types",
         "//:base",
         "//:collections_internal",
         "//:mem",
@@ -97,15 +99,16 @@ cc_library(
     name = "internal",
     srcs = [
         "message.c",
+        "message.h",
     ],
     hdrs = [
         "internal/extension.h",
         "internal/message.h",
-        "message.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":types",
         "//:base",
         "//:base_internal",
         "//:hash",
@@ -124,6 +127,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        ":types",
         "//:base",
         "//:mem",
         "//:mini_table",
@@ -144,7 +148,8 @@ cc_library(
     deps = [
         ":accessors",
         ":internal",
-        ":typedef",
+        ":message",
+        ":types",
         "//:base",
         "//:collections",
         "//:collections_internal",
@@ -190,15 +195,15 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":typedef",
+        ":types",
         "//:port",
     ],
 )
 
 cc_library(
-    name = "typedef",
+    name = "types",
     hdrs = [
-        "typedef.h",
+        "types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -254,6 +259,7 @@ cc_test(
         ":accessors",
         ":copy",
         ":internal",
+        ":message",
         "//:base",
         "//:collections",
         "//:mem",
