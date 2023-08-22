@@ -56,26 +56,6 @@
 
 namespace {
 
-// Proto2 test messages field numbers used for reflective access.
-const uint32_t kFieldOptionalInt32 = 1;
-const uint32_t kFieldOptionalUInt32 = 3;
-const uint32_t kFieldOptionalBool = 13;
-const uint32_t kFieldOptionalString = 14;
-const uint32_t kFieldOptionalNestedMessage = 18;
-const uint32_t kFieldOptionalRepeatedInt32 = 31;
-const uint32_t kFieldOptionalNestedMessageA = 1;
-const uint32_t kFieldOptionalOneOfUInt32 = 111;
-const uint32_t kFieldOptionalOneOfString = 113;
-
-const uint32_t kFieldProto3OptionalInt64 = 2;
-const uint32_t kFieldProto3OptionalUInt64 = 4;
-
-const char kTestStr1[] = "Hello1";
-const char kTestStr2[] = "Hello2";
-const int32_t kTestInt32 = 567;
-const int32_t kTestUInt32 = 0xF1234567;
-const uint64_t kTestUInt64 = 0xFEDCBAFF87654321;
-
 TEST(GeneratedCode, FindUnknown) {
   upb_Arena* arena = upb_Arena_New();
   upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);

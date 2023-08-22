@@ -28,20 +28,54 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPB_WIRE_COMMON_H_
-#define UPB_WIRE_COMMON_H_
+#include "upb/mini_table/compat.h"
+
+#include "upb/base/descriptor_constants.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static bool upb_deep_check(const upb_MiniTable* src, const upb_MiniTable* dst,
+                           bool eq) {
+  if (src->field_count != dst->field_count) return false;
 
-#define kUpb_WireFormat_DefaultDepthLimit 100
+  for (int i = 0; i < src->field_count; i++) {
+    const upb_MiniTableField* src_field = &src->fields[i];
+    const upb_MiniTableField* dst_field =
+        upb_MiniTable_FindFieldByNumber(dst, src_field->number);
 
-#ifdef __cplusplus
+    if (upb_MiniTableField_CType(src_field) !=
+        upb_MiniTableField_CType(dst_field)) return false;
+    if (src_field->mode != dst_field->mode) return false;
+    if (src_field->offset != dst_field->offset) return false;
+    if (src_field->presence != dst_field->presence) return false;
+    if (src_field->UPB_PRIVATE(submsg_index) !=
+        dst_field->UPB_PRIVATE(submsg_index)) return false;
+
+    // Go no further if we are only checking for compatibility.
+    if (!eq) continue;
+
+    if (upb_MiniTableField_CType(src_field) == kUpb_CType_Message) {
+      const upb_MiniTable* sub_src =
+          upb_MiniTable_GetSubMessageTable(src, src_field);
+      const upb_MiniTable* sub_dst =
+          upb_MiniTable_GetSubMessageTable(dst, dst_field);
+      if (sub_src != NULL && !upb_MiniTable_Equals(sub_src, sub_dst)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
-#endif
 
-#endif  // UPB_WIRE_COMMON_H_
+bool upb_MiniTable_Compatible(const upb_MiniTable* src,
+                              const upb_MiniTable* dst) {
+  return upb_deep_check(src, dst, false);
+}
+
+bool upb_MiniTable_Equals(const upb_MiniTable* src, const upb_MiniTable* dst) {
+  return upb_deep_check(src, dst, true);
+}

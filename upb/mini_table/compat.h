@@ -28,39 +28,29 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPBC_UPBDEV_H_
-#define UPBC_UPBDEV_H_
+#ifndef UPB_MINI_TABLE_COMPAT_H_
+#define UPB_MINI_TABLE_COMPAT_H_
 
-#include "upb/base/status.h"
-#include "upb/base/string_view.h"
-#include "upb/mem/arena.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+
+// upb does not support mixing minitables from different sources but these
+// functions are still used by some existing users so for now we make them
+// available here. This may or may not change in the future so do not add
+// them to new code.
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Consume |buf|, deserialize it to a Code_Generator_Request proto, construct a
-// upbc_Code_Generator_Request, and return it as a JSON-encoded string.
-UPB_API upb_StringView upbdev_ProcessInput(const char* buf, size_t size,
-                                           upb_Arena* arena,
-                                           upb_Status* status);
+// Checks if memory layout of src is compatible with dst.
+bool upb_MiniTable_Compatible(const upb_MiniTable* src,
+                              const upb_MiniTable* dst);
 
-// Decode |buf| from JSON, serialize to wire format, and return it.
-UPB_API upb_StringView upbdev_ProcessOutput(const char* buf, size_t size,
-                                            upb_Arena* arena,
-                                            upb_Status* status);
-
-// Decode |buf| from JSON, serialize to wire format, and write it to stdout.
-UPB_API void upbdev_ProcessStdout(const char* buf, size_t size,
-                                  upb_Arena* arena, upb_Status* status);
-
-// The following wrappers allow the protoc plugins to call the above functions
-// without pulling in the entire pb_runtime library.
-UPB_API upb_Arena* upbdev_Arena_New(void);
-UPB_API void upbdev_Status_Clear(upb_Status* status);
+// Checks equality of mini tables originating from different language runtimes.
+bool upb_MiniTable_Equals(const upb_MiniTable* src, const upb_MiniTable* dst);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -68,4 +58,4 @@ UPB_API void upbdev_Status_Clear(upb_Status* status);
 
 #include "upb/port/undef.inc"
 
-#endif  // UPBC_UPBDEV_H_
+#endif /* UPB_MINI_TABLE_COMPAT_H_ */

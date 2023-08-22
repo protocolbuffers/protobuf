@@ -39,10 +39,8 @@
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/extension.h"
 #include "upb/mini_table/sub.h"
-#include "upb/wire/common.h"
 #include "upb/wire/internal/common.h"
 #include "upb/wire/internal/swap.h"
-#include "upb/wire/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"

@@ -411,6 +411,15 @@ alias(
     visibility = ["//:friends"],
 )
 
+# begin:google_only
+# alias(
+#     name = "mini_table_compat",
+#     actual = "//upb/mini_table:compat",
+#     compatible_with = ["//buildenv/target:non_prod"],
+#     visibility = ["//:friends"],
+# )
+# end:google_only
+
 alias(
     name = "mini_table_internal",
     actual = "//upb/mini_table:internal",
@@ -535,8 +544,9 @@ upb_amalgamation(
         ":mini_table",
         ":mini_table_internal",
         ":port",
-        ":reflection_internal",
         ":reflection",
+        ":reflection_internal",
+        ":wire",
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
@@ -582,8 +592,9 @@ upb_amalgamation(
         ":mini_table",
         ":mini_table_internal",
         ":port",
-        ":reflection_internal",
         ":reflection",
+        ":reflection_internal",
+        ":wire",
         ":wire_internal",
         ":wire_reader",
         ":wire_types",
@@ -630,8 +641,9 @@ upb_amalgamation(
         ":mini_table",
         ":mini_table_internal",
         ":port",
-        ":reflection_internal",
         ":reflection",
+        ":reflection_internal",
+        ":wire",
         ":wire_internal",
         ":wire_reader",
         ":wire_types",

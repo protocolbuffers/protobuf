@@ -34,7 +34,7 @@
 #define UPB_WIRE_ENCODE_H_
 
 #include "upb/message/message.h"
-#include "upb/wire/common.h"
+#include "upb/wire/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"

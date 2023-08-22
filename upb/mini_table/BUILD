@@ -28,6 +28,26 @@ load(
     "UPB_DEFAULT_COPTS",
 )
 
+# begin:google_only
+# cc_library(
+#     name = "compat",
+#     srcs = [
+#         "compat.c",
+#     ],
+#     hdrs = [
+#         "compat.h",
+#     ],
+#     compatible_with = ["//buildenv/target:non_prod"],
+#     copts = UPB_DEFAULT_COPTS,
+#     visibility = ["//:__pkg__"],
+#     deps = [
+#         ":mini_table",
+#         "//:base",
+#         "//:port",
+#     ],
+# )
+# end:google_only
+
 cc_library(
     name = "mini_table",
     srcs = [

@@ -243,7 +243,6 @@ py_extension(
         "//:port",
         "//:reflection",
         "//:text",
-        "//:wire",
         "//:wire_reader",
         "//:wire_types",
         "//upb/util:compare",

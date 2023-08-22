@@ -30,7 +30,6 @@ cc_library(
     srcs = [
     ],
     hdrs = [
-        "common.h",
         "decode.h",
         "encode.h",
     ],
@@ -38,6 +37,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        ":types",
         "//:mem",
         "//:message",
         "//:mini_table",
@@ -48,7 +48,6 @@ cc_library(
 cc_library(
     name = "internal",
     srcs = [
-        "common.h",
         "decode.c",
         "decode.h",
         "decode_fast.c",
