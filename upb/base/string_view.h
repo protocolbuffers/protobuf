@@ -47,7 +47,10 @@ typedef struct {
   const char* data;
   size_t size;
 } upb_StringView;
-// LINT.ThenChange(GoogleInternalName0)
+// LINT.ThenChange(
+//  GoogleInternalName0,
+//  //depot/google3/third_party/upb/bits/golang/accessor.go:map_go_string
+// )
 
 #ifdef __cplusplus
 extern "C" {
