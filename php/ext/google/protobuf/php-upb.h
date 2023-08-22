@@ -40,9 +40,12 @@
 #include <assert.h>
 #include <setjmp.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+
+#ifndef UINTPTR_MAX
+Error, UINTPTR_MAX is undefined
+#endif
 
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32
@@ -266,7 +269,7 @@
 #define UPB_ASAN 1
 #define UPB_ASAN_GUARD_SIZE 32
 #ifdef __cplusplus
-extern "C" {
+    extern "C" {
 #endif
 void __asan_poison_memory_region(void const volatile *addr, size_t size);
 void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
@@ -468,7 +471,10 @@ typedef struct {
   const char* data;
   size_t size;
 } upb_StringView;
-// LINT.ThenChange(GoogleInternalName0)
+// LINT.ThenChange(
+//  GoogleInternalName0,
+//  //depot/google3/third_party/upb/bits/golang/accessor.go:map_go_string
+// )
 
 #ifdef __cplusplus
 extern "C" {
@@ -503,14 +509,14 @@ UPB_INLINE bool upb_StringView_IsEqual(upb_StringView a, upb_StringView b) {
 #include <stdint.h>
 
 
-#ifndef UPB_MESSAGE_TYPEDEF_H_
-#define UPB_MESSAGE_TYPEDEF_H_
+#ifndef UPB_MESSAGE_TYPES_H_
+#define UPB_MESSAGE_TYPES_H_
 
-// This typedef needs its own header to resolve a circular dependency between
+// This typedef is in a leaf header to resolve a circular dependency between
 // messages and mini tables.
 typedef void upb_Message;
 
-#endif /* UPB_MESSAGE_TYPEDEF_H_ */
+#endif /* UPB_MESSAGE_TYPES_H_ */
 
 // Must be last.
 
@@ -576,6 +582,8 @@ UPB_INLINE upb_Message* _upb_TaggedMessagePtr_GetEmptyMessage(
 
 #ifndef UPB_MINI_TABLE_INTERNAL_ENUM_H_
 #define UPB_MINI_TABLE_INTERNAL_ENUM_H_
+
+#include <stdint.h>
 
 // Must be last.
 
@@ -645,6 +653,8 @@ UPB_INLINE bool upb_MiniTableEnum_CheckValue(const struct upb_MiniTableEnum* e,
 
 #ifndef UPB_MINI_TABLE_INTERNAL_FIELD_H_
 #define UPB_MINI_TABLE_INTERNAL_FIELD_H_
+
+#include <stdint.h>
 
 
 // Must be last.
@@ -1037,6 +1047,8 @@ typedef union {
 #ifndef UPB_MEM_ARENA_H_
 #define UPB_MEM_ARENA_H_
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 
@@ -2776,6 +2788,7 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
 
 UPB_INLINE void _upb_Message_AssertMapIsUntagged(
     const upb_Message* msg, const upb_MiniTableField* field) {
+  UPB_UNUSED(msg);
   _upb_MiniTableField_CheckIsMap(field);
 #ifndef NDEBUG
   upb_TaggedMessagePtr default_val = 0;
@@ -3417,6 +3430,23 @@ typedef struct upb_MiniTableFile upb_MiniTableFile;
 #ifndef UPB_WIRE_DECODE_H_
 #define UPB_WIRE_DECODE_H_
 
+
+#ifndef UPB_WIRE_TYPES_H_
+#define UPB_WIRE_TYPES_H_
+
+#define kUpb_WireFormat_DefaultDepthLimit 100
+
+// A list of types as they are encoded on the wire.
+typedef enum {
+  kUpb_WireType_Varint = 0,
+  kUpb_WireType_64Bit = 1,
+  kUpb_WireType_Delimited = 2,
+  kUpb_WireType_StartGroup = 3,
+  kUpb_WireType_EndGroup = 4,
+  kUpb_WireType_32Bit = 5
+} upb_WireType;
+
+#endif /* UPB_WIRE_TYPES_H_ */
 
 // Must be last.
 
@@ -11459,6 +11489,8 @@ UPB_API bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
 #ifndef UPB_LEX_ATOI_H_
 #define UPB_LEX_ATOI_H_
 
+#include <stdint.h>
+
 // Must be last.
 
 #ifdef __cplusplus
@@ -11483,6 +11515,8 @@ const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
 
 #ifndef UPB_LEX_UNICODE_H_
 #define UPB_LEX_UNICODE_H_
+
+#include <stdint.h>
 
 // Must be last.
 
@@ -11870,29 +11904,14 @@ UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
 
 #endif  // UPB_PORT_ATOMIC_H_
 
-#ifndef UPB_WIRE_COMMON_H_
-#define UPB_WIRE_COMMON_H_
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define kUpb_WireFormat_DefaultDepthLimit 100
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif  // UPB_WIRE_COMMON_H_
-
 #ifndef UPB_WIRE_READER_H_
 #define UPB_WIRE_READER_H_
 
 
 #ifndef UPB_WIRE_INTERNAL_SWAP_H_
 #define UPB_WIRE_INTERNAL_SWAP_H_
+
+#include <stdint.h>
 
 // Must be last.
 
@@ -11925,21 +11944,6 @@ UPB_INLINE uint64_t _upb_BigEndian_Swap64(uint64_t val) {
 
 
 #endif /* UPB_WIRE_INTERNAL_SWAP_H_ */
-
-#ifndef UPB_WIRE_TYPES_H_
-#define UPB_WIRE_TYPES_H_
-
-// A list of types as they are encoded on the wire.
-typedef enum {
-  kUpb_WireType_Varint = 0,
-  kUpb_WireType_64Bit = 1,
-  kUpb_WireType_Delimited = 2,
-  kUpb_WireType_StartGroup = 3,
-  kUpb_WireType_EndGroup = 4,
-  kUpb_WireType_32Bit = 5
-} upb_WireType;
-
-#endif /* UPB_WIRE_TYPES_H_ */
 
 // Must be last.
 
@@ -12140,6 +12144,8 @@ UPB_INLINE const char* upb_WireReader_SkipValue(
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
 
+#include <stdint.h>
+
 
 // Must be last.
 
@@ -12314,6 +12320,8 @@ typedef enum {
 
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
+
+#include <stdint.h>
 
 
 // Must be last.
