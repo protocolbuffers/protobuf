@@ -52,6 +52,8 @@ struct GenerationOptions {
   // TODO(thomasvl): Eventually flip this default to true.
   bool generate_minimal_imports = false;
   bool experimental_multi_source_generation = false;
+  // This is used by some of the protobuf infrastructure.
+  bool experimental_strip_nonfunctional_codegen = false;
 };
 
 }  // namespace objectivec
