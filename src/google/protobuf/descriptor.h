@@ -2289,6 +2289,13 @@ class PROTOBUF_EXPORT DescriptorPool {
   // DescriptorPool will report a import not found error.
   void EnforceWeakDependencies(bool enforce) { enforce_weak_ = enforce; }
 
+  // Toggles enforcement of extension declarations.
+  // This enforcement is disabled by default because it requires full
+  // descriptors with source-retention options, which are generally not
+  // available at runtime.
+  void EnforceExtensionDeclarations(bool enforce) {
+    enforce_extension_declarations_ = enforce;
+  }
   // Internal stuff --------------------------------------------------
   // These methods MUST NOT be called from outside the proto2 library.
   // These methods may contain hidden pitfalls and may be removed in a
@@ -2466,6 +2473,9 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Set of files to track for unused imports. The bool value when true means
   // unused imports are treated as errors (and as warnings when false).
   absl::flat_hash_map<std::string, bool> unused_import_track_files_;
+
+  // Returns true if the field extends an option message of descriptor.proto.
+  bool IsExtendingDescriptor(const FieldDescriptor& field) const;
 
 };
 

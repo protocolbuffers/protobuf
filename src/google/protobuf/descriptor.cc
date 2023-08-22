@@ -2069,6 +2069,22 @@ void DescriptorPool::AddUnusedImportTrackFile(absl::string_view file_name,
   unused_import_track_files_[file_name] = is_error;
 }
 
+bool DescriptorPool::IsExtendingDescriptor(const FieldDescriptor& field) const {
+  static const auto& kDescriptorTypes = *new absl::flat_hash_set<std::string>({
+      "google.protobuf.EnumOptions",
+      "google.protobuf.EnumValueOptions",
+      "google.protobuf.ExtensionRangeOptions",
+      "google.protobuf.FieldOptions",
+      "google.protobuf.FileOptions",
+      "google.protobuf.MessageOptions",
+      "google.protobuf.MethodOptions",
+      "google.protobuf.OneofOptions",
+      "google.protobuf.ServiceOptions",
+      "google.protobuf.StreamOptions",
+  });
+  return kDescriptorTypes.contains(field.containing_type()->full_name());
+}
+
 
 void DescriptorPool::ClearUnusedImportTrackFiles() {
   unused_import_track_files_.clear();
@@ -4334,6 +4350,12 @@ class DescriptorBuilder {
                                  absl::string_view declared_full_name,
                                  absl::string_view declared_type_name,
                                  bool is_repeated);
+  // Checks that the extension field type matches the declared type. It also
+  // handles message types that look like non-message types such as "fixed64" vs
+  // ".fixed64".
+  void CheckExtensionDeclarationFieldType(const FieldDescriptor& field,
+                                          const FieldDescriptorProto& proto,
+                                          absl::string_view type);
 
   // A helper class for interpreting options.
   class OptionInterpreter {
@@ -7135,12 +7157,44 @@ void DescriptorBuilder::CrossLinkExtensionRange(
   }
 }
 
+void DescriptorBuilder::CheckExtensionDeclarationFieldType(
+    const FieldDescriptor& field, const FieldDescriptorProto& proto,
+    absl::string_view type) {
+  if (had_errors_) return;
+  std::string actual_type = field.type_name();
+  std::string expected_type(type);
+  if (field.message_type() || field.enum_type()) {
+    // Field message type descriptor can be in a partial state which will cause
+    // segmentation fault if it is being accessed.
+    if (had_errors_) return;
+    absl::string_view full_name = field.message_type() != nullptr
+                                      ? field.message_type()->full_name()
+                                      : field.enum_type()->full_name();
+    actual_type = absl::StrCat(".", full_name);
+  }
+  if (!IsNonMessageType(type) && !absl::StartsWith(type, ".")) {
+    expected_type = absl::StrCat(".", type);
+  }
+  if (expected_type != actual_type) {
+    AddError(field.full_name(), proto, DescriptorPool::ErrorCollector::EXTENDEE,
+             [&] {
+               return absl::Substitute(
+                   "\"$0\" extension field $1 is expected to be type "
+                   "\"$2\", not \"$3\".",
+                   field.containing_type()->full_name(), field.number(),
+                   expected_type, actual_type);
+             });
+  }
+}
+
 
 void DescriptorBuilder::CheckExtensionDeclaration(
     const FieldDescriptor& field, const FieldDescriptorProto& proto,
     absl::string_view declared_full_name, absl::string_view declared_type_name,
     bool is_repeated) {
-
+  if (!declared_type_name.empty()) {
+    CheckExtensionDeclarationFieldType(field, proto, declared_type_name);
+  }
   if (!declared_full_name.empty()) {
     std::string actual_full_name = absl::StrCat(".", field.full_name());
     if (declared_full_name != actual_full_name) {
@@ -7812,6 +7866,62 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
              "json_name cannot have embedded null characters.");
   }
 
+
+  // If this is a declared extension, validate that the actual name and type
+  // match the declaration.
+  if (field->is_extension()) {
+    if (pool_->IsExtendingDescriptor(*field)) return;
+    const Descriptor::ExtensionRange* extension_range =
+        field->containing_type()->FindExtensionRangeContainingNumber(
+            field->number());
+
+    if (extension_range->options_ == nullptr) {
+      return;
+    }
+
+    if (pool_->enforce_extension_declarations_) {
+      for (const auto& declaration : extension_range->options_->declaration()) {
+        if (declaration.number() != field->number()) continue;
+        if (declaration.reserved()) {
+          AddError(
+              field->full_name(), proto,
+              DescriptorPool::ErrorCollector::EXTENDEE, [&] {
+                return absl::Substitute(
+                    "Cannot use number $0 for extension field $1, as it is "
+                    "reserved in the extension declarations for message $2.",
+                    field->number(), field->full_name(),
+                    field->containing_type()->full_name());
+              });
+          return;
+        }
+        CheckExtensionDeclaration(*field, proto, declaration.full_name(),
+                                  declaration.type(), declaration.repeated());
+        return;
+      }
+
+      // Either no declarations, or there are but no matches. If there are no
+      // declarations, we check its verification state. If there are other
+      // non-matching declarations, we enforce that this extension must also be
+      // declared.
+      if (!extension_range->options_->declaration().empty() ||
+          (extension_range->options_->verification() ==
+           ExtensionRangeOptions::DECLARATION)) {
+        AddError(
+            field->full_name(), proto, DescriptorPool::ErrorCollector::EXTENDEE,
+            [&] {
+              return absl::Substitute(
+                  "Missing extension declaration for field $0 with number $1 "
+                  "in extendee message $2. An extension range must declare for "
+                  "all extension fields if its verification state is "
+                  "DECLARATION or there's any declaration in the range "
+                  "already. Otherwise, consider splitting up the range.",
+                  field->full_name(), field->number(),
+                  field->containing_type()->full_name());
+            });
+        return;
+      }
+    }
+  }
 }
 
 void DescriptorBuilder::ValidateFieldFeatures(
