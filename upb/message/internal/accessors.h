@@ -350,6 +350,7 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
 
 UPB_INLINE void _upb_Message_AssertMapIsUntagged(
     const upb_Message* msg, const upb_MiniTableField* field) {
+  UPB_UNUSED(msg);
   _upb_MiniTableField_CheckIsMap(field);
 #ifndef NDEBUG
   upb_TaggedMessagePtr default_val = 0;
