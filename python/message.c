@@ -772,6 +772,10 @@ static PyObject* PyUpb_Message_RichCompare(PyObject* _self, PyObject* other,
     Py_INCREF(Py_NotImplemented);
     return Py_NotImplemented;
   }
+  if (!PyObject_TypeCheck(other, Py_TYPE(self))) {
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  }
   bool ret = PyUpb_Message_IsEqual(self, other);
   if (opid == Py_NE) ret = !ret;
   return PyBool_FromLong(ret);
