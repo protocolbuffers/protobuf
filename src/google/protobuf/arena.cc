@@ -188,7 +188,7 @@ void SerialArena::Init(ArenaBlock* b, size_t offset) {
   space_allocated_.store(b->size, std::memory_order_relaxed);
   cached_block_length_ = 0;
   cached_blocks_ = nullptr;
-  string_block_ = nullptr;
+  string_block_.store(nullptr, std::memory_order_relaxed);
   string_block_unused_.store(0, std::memory_order_relaxed);
 }
 
@@ -216,29 +216,35 @@ SizedPtr SerialArena::Free(Deallocator deallocator) {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedFallback(size_t n) {
   AllocateNewBlock(n);
-  return AllocateFromExisting(n);
+  void* ret;
+  bool res = MaybeAllocateAligned(n, &ret);
+  ABSL_DCHECK(res);
+  return ret;
 }
 
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateFromStringBlockFallback() {
   ABSL_DCHECK_EQ(string_block_unused_.load(std::memory_order_relaxed), 0U);
-  if (string_block_) {
-    AddSpaceUsed(string_block_->effective_size());
+  StringBlock* sb = string_block_.load(std::memory_order_relaxed);
+  if (sb) {
+    AddSpaceUsed(sb->effective_size());
   }
 
   void* ptr;
-  size_t size = StringBlock::NextSize(string_block_);
+  StringBlock* new_sb;
+  size_t size = StringBlock::NextSize(sb);
   if (MaybeAllocateAligned(size, &ptr)) {
     // Correct space_used_ to avoid double counting
     AddSpaceUsed(-size);
-    string_block_ = StringBlock::Emplace(ptr, size, string_block_);
+    new_sb = StringBlock::Emplace(ptr, size, sb);
   } else {
-    string_block_ = StringBlock::New(string_block_);
-    AddSpaceAllocated(string_block_->allocated_size());
+    new_sb = StringBlock::New(sb);
+    AddSpaceAllocated(new_sb->allocated_size());
   }
-  size_t unused = string_block_->effective_size() - sizeof(std::string);
+  string_block_.store(new_sb, std::memory_order_release);
+  size_t unused = new_sb->effective_size() - sizeof(std::string);
   string_block_unused_.store(unused, std::memory_order_relaxed);
-  return string_block_->AtOffset(unused);
+  return new_sb->AtOffset(unused);
 }
 
 PROTOBUF_NOINLINE
@@ -246,7 +252,7 @@ void* SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
   size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
   AllocateNewBlock(required);
-  return AllocateFromExistingWithCleanupFallback(n, align, destructor);
+  return AllocateAlignedWithCleanup(n, align, destructor);
 }
 
 PROTOBUF_NOINLINE
@@ -266,7 +272,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
 
     // Record how much used in this block.
     used = static_cast<size_t>(ptr() - old_head->Pointer(kBlockHeaderSize));
-    wasted = old_head->size - used;
+    wasted = old_head->size - used - kBlockHeaderSize;
     AddSpaceUsed(used);
   }
 
@@ -286,6 +292,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
   auto* new_head = new (mem.p) ArenaBlock{old_head, mem.n};
   set_ptr(new_head->Pointer(kBlockHeaderSize));
   limit_ = new_head->Limit();
+
   // Previous writes must take effect before writing new head.
   head_.store(new_head, std::memory_order_release);
 
@@ -304,9 +311,10 @@ uint64_t SerialArena::SpaceUsed() const {
   // performance hit on ARM (see cl/455186837).
 
   uint64_t space_used = 0;
-  if (string_block_) {
+  StringBlock* sb = string_block_.load(std::memory_order_acquire);
+  if (sb) {
     size_t unused = string_block_unused_.load(std::memory_order_relaxed);
-    space_used += string_block_->effective_size() - unused;
+    space_used += sb->effective_size() - unused;
   }
   const ArenaBlock* h = head_.load(std::memory_order_acquire);
   if (h->IsSentry()) return space_used;
