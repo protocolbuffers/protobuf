@@ -969,6 +969,30 @@ message FeatureSet {
   extensions 9995 to 9999;  // For internal testing
 }
 
+// A compiled specification for the defaults of a set of features.  These
+// messages are generated from FeatureSet extensions and can be used to seed
+// feature resolution. The resolution with this object becomes a simple search
+// for the closest matching edition, followed by proto merges.
+message FeatureSetDefaults {
+  // A map from every known edition with a unique set of defaults to its
+  // defaults. Not all editions may be contained here.  For a given edition,
+  // the defaults at the closest matching edition ordered at or before it should
+  // be used.  This field must be in strict ascending order by edition.
+  message FeatureSetEditionDefault {
+    optional string edition = 1;
+    optional FeatureSet features = 2;
+  }
+  repeated FeatureSetEditionDefault defaults = 1;
+
+  // The minimum supported edition (inclusive) when this was constructed.
+  // Editions before this will not have defaults.
+  optional string minimum_edition = 2;
+
+  // The maximum known edition (inclusive) when this was constructed. Editions
+  // after this will not have reliable defaults.
+  optional string maximum_edition = 3;
+}
+
 // ===================================================================
 // Optional source code info
 

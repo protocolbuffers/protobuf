@@ -89,6 +89,12 @@ PROTOBUF_EXPORT extern ExtensionRangeOptions_DeclarationDefaultTypeInternal _Ext
 class FeatureSet;
 struct FeatureSetDefaultTypeInternal;
 PROTOBUF_EXPORT extern FeatureSetDefaultTypeInternal _FeatureSet_default_instance_;
+class FeatureSetDefaults;
+struct FeatureSetDefaultsDefaultTypeInternal;
+PROTOBUF_EXPORT extern FeatureSetDefaultsDefaultTypeInternal _FeatureSetDefaults_default_instance_;
+class FeatureSetDefaults_FeatureSetEditionDefault;
+struct FeatureSetDefaults_FeatureSetEditionDefaultDefaultTypeInternal;
+PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultDefaultTypeInternal _FeatureSetDefaults_FeatureSetEditionDefault_default_instance_;
 class FieldDescriptorProto;
 struct FieldDescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
@@ -869,7 +875,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
                &_SourceCodeInfo_Location_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    26;
+    28;
 
   friend void swap(SourceCodeInfo_Location& a, SourceCodeInfo_Location& b) {
     a.Swap(&b);
@@ -1135,7 +1141,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
                &_GeneratedCodeInfo_Annotation_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    28;
+    30;
 
   friend void swap(GeneratedCodeInfo_Annotation& a, GeneratedCodeInfo_Annotation& b) {
     a.Swap(&b);
@@ -2936,7 +2942,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
                &_SourceCodeInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    27;
+    29;
 
   friend void swap(SourceCodeInfo& a, SourceCodeInfo& b) {
     a.Swap(&b);
@@ -3113,7 +3119,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
                &_GeneratedCodeInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    29;
+    31;
 
   friend void swap(GeneratedCodeInfo& a, GeneratedCodeInfo& b) {
     a.Swap(&b);
@@ -3222,6 +3228,198 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   struct Impl_ {
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
+};// -------------------------------------------------------------------
+
+class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault) */ {
+ public:
+  inline FeatureSetDefaults_FeatureSetEditionDefault() : FeatureSetDefaults_FeatureSetEditionDefault(nullptr) {}
+  ~FeatureSetDefaults_FeatureSetEditionDefault() override;
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::internal::ConstantInitialized);
+
+  FeatureSetDefaults_FeatureSetEditionDefault(const FeatureSetDefaults_FeatureSetEditionDefault& from);
+  FeatureSetDefaults_FeatureSetEditionDefault(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
+    : FeatureSetDefaults_FeatureSetEditionDefault() {
+    *this = ::std::move(from);
+  }
+
+  inline FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena, const FeatureSetDefaults_FeatureSetEditionDefault& from)
+    : FeatureSetDefaults_FeatureSetEditionDefault(arena) {
+    MergeFrom(from);
+  }
+  inline FeatureSetDefaults_FeatureSetEditionDefault& operator=(const FeatureSetDefaults_FeatureSetEditionDefault& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline FeatureSetDefaults_FeatureSetEditionDefault& operator=(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const FeatureSetDefaults_FeatureSetEditionDefault& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const FeatureSetDefaults_FeatureSetEditionDefault* internal_default_instance() {
+    return reinterpret_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(
+               &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    26;
+
+  friend void swap(FeatureSetDefaults_FeatureSetEditionDefault& a, FeatureSetDefaults_FeatureSetEditionDefault& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(FeatureSetDefaults_FeatureSetEditionDefault* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(FeatureSetDefaults_FeatureSetEditionDefault* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  FeatureSetDefaults_FeatureSetEditionDefault* New(::google::protobuf::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<FeatureSetDefaults_FeatureSetEditionDefault>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom( const FeatureSetDefaults_FeatureSetEditionDefault& from) {
+    FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  ::size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* other);
+
+  private:
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::absl::string_view FullMessageName() {
+    return "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault";
+  }
+  protected:
+  explicit FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena);
+  public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kEditionFieldNumber = 1,
+    kFeaturesFieldNumber = 2,
+  };
+  // optional string edition = 1;
+  bool has_edition() const;
+  void clear_edition() ;
+  const std::string& edition() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_edition(Arg_&& arg, Args_... args);
+  std::string* mutable_edition();
+  PROTOBUF_NODISCARD std::string* release_edition();
+  void set_allocated_edition(std::string* ptr);
+
+  private:
+  const std::string& _internal_edition() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition(
+      const std::string& value);
+  std::string* _internal_mutable_edition();
+
+  public:
+  // optional .google.protobuf.FeatureSet features = 2;
+  bool has_features() const;
+  void clear_features() ;
+  const ::google::protobuf::FeatureSet& features() const;
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  ::google::protobuf::FeatureSet* mutable_features();
+  void set_allocated_features(::google::protobuf::FeatureSet* value);
+  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
+  ::google::protobuf::FeatureSet* unsafe_arena_release_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* _internal_mutable_features();
+
+  public:
+  // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
+ private:
+  class _Internal;
+
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 1,
+      75, 2>
+      _table_;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
+    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::ArenaStringPtr edition_;
+    ::google::protobuf::FeatureSet* features_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
@@ -6015,6 +6213,222 @@ class PROTOBUF_EXPORT FieldOptions final :
     bool weak_;
     bool debug_redact_;
     int retention_;
+    PROTOBUF_TSAN_DECLARE_MEMBER;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
+};// -------------------------------------------------------------------
+
+class PROTOBUF_EXPORT FeatureSetDefaults final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults) */ {
+ public:
+  inline FeatureSetDefaults() : FeatureSetDefaults(nullptr) {}
+  ~FeatureSetDefaults() override;
+  template<typename = void>
+  explicit PROTOBUF_CONSTEXPR FeatureSetDefaults(::google::protobuf::internal::ConstantInitialized);
+
+  FeatureSetDefaults(const FeatureSetDefaults& from);
+  FeatureSetDefaults(FeatureSetDefaults&& from) noexcept
+    : FeatureSetDefaults() {
+    *this = ::std::move(from);
+  }
+
+  inline FeatureSetDefaults(::google::protobuf::Arena* arena, const FeatureSetDefaults& from)
+    : FeatureSetDefaults(arena) {
+    MergeFrom(from);
+  }
+  inline FeatureSetDefaults& operator=(const FeatureSetDefaults& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline FeatureSetDefaults& operator=(FeatureSetDefaults&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const FeatureSetDefaults& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const FeatureSetDefaults* internal_default_instance() {
+    return reinterpret_cast<const FeatureSetDefaults*>(
+               &_FeatureSetDefaults_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    27;
+
+  friend void swap(FeatureSetDefaults& a, FeatureSetDefaults& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(FeatureSetDefaults* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(FeatureSetDefaults* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  FeatureSetDefaults* New(::google::protobuf::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<FeatureSetDefaults>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const FeatureSetDefaults& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom( const FeatureSetDefaults& from) {
+    FeatureSetDefaults::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  ::size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(FeatureSetDefaults* other);
+
+  private:
+  friend class ::google::protobuf::internal::AnyMetadata;
+  static ::absl::string_view FullMessageName() {
+    return "google.protobuf.FeatureSetDefaults";
+  }
+  protected:
+  explicit FeatureSetDefaults(::google::protobuf::Arena* arena);
+  public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  typedef FeatureSetDefaults_FeatureSetEditionDefault FeatureSetEditionDefault;
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kDefaultsFieldNumber = 1,
+    kMinimumEditionFieldNumber = 2,
+    kMaximumEditionFieldNumber = 3,
+  };
+  // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
+  int defaults_size() const;
+  private:
+  int _internal_defaults_size() const;
+
+  public:
+  void clear_defaults() ;
+  ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* mutable_defaults(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault >*
+      mutable_defaults();
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& _internal_defaults() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* _internal_mutable_defaults();
+  public:
+  const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& defaults(int index) const;
+  ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* add_defaults();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault >&
+      defaults() const;
+  // optional string minimum_edition = 2;
+  bool has_minimum_edition() const;
+  void clear_minimum_edition() ;
+  const std::string& minimum_edition() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_minimum_edition(Arg_&& arg, Args_... args);
+  std::string* mutable_minimum_edition();
+  PROTOBUF_NODISCARD std::string* release_minimum_edition();
+  void set_allocated_minimum_edition(std::string* ptr);
+
+  private:
+  const std::string& _internal_minimum_edition() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_minimum_edition(
+      const std::string& value);
+  std::string* _internal_mutable_minimum_edition();
+
+  public:
+  // optional string maximum_edition = 3;
+  bool has_maximum_edition() const;
+  void clear_maximum_edition() ;
+  const std::string& maximum_edition() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_maximum_edition(Arg_&& arg, Args_... args);
+  std::string* mutable_maximum_edition();
+  PROTOBUF_NODISCARD std::string* release_maximum_edition();
+  void set_allocated_maximum_edition(std::string* ptr);
+
+  private:
+  const std::string& _internal_maximum_edition() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_maximum_edition(
+      const std::string& value);
+  std::string* _internal_mutable_maximum_edition();
+
+  public:
+  // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSetDefaults)
+ private:
+  class _Internal;
+
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      2, 3, 1,
+      73, 2>
+      _table_;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
+    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault > defaults_;
+    ::google::protobuf::internal::ArenaStringPtr minimum_edition_;
+    ::google::protobuf::internal::ArenaStringPtr maximum_edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER;
   };
   union { Impl_ _impl_; };
@@ -17669,6 +18083,370 @@ inline void FeatureSet::_internal_set_json_format(::google::protobuf::FeatureSet
   assert(::google::protobuf::FeatureSet_JsonFormat_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.json_format_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// FeatureSetDefaults_FeatureSetEditionDefault
+
+// optional string edition = 1;
+inline bool FeatureSetDefaults_FeatureSetEditionDefault::has_edition() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.edition_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& FeatureSetDefaults_FeatureSetEditionDefault::edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
+  return _internal_edition();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void FeatureSetDefaults_FeatureSetEditionDefault::set_edition(Arg_&& arg,
+                                                     Args_... args) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
+}
+inline std::string* FeatureSetDefaults_FeatureSetEditionDefault::mutable_edition() {
+  std::string* _s = _internal_mutable_edition();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
+  return _s;
+}
+inline const std::string& FeatureSetDefaults_FeatureSetEditionDefault::_internal_edition() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  return _impl_.edition_.Get();
+}
+inline void FeatureSetDefaults_FeatureSetEditionDefault::_internal_set_edition(const std::string& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.edition_.Set(value, GetArenaForAllocation());
+}
+inline std::string* FeatureSetDefaults_FeatureSetEditionDefault::_internal_mutable_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000001u;
+  return _impl_.edition_.Mutable( GetArenaForAllocation());
+}
+inline std::string* FeatureSetDefaults_FeatureSetEditionDefault::release_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
+  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* released = _impl_.edition_.Release();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.edition_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return released;
+}
+inline void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_edition(std::string* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
+  _impl_.edition_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.edition_.IsDefault()) {
+          _impl_.edition_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
+}
+
+// optional .google.protobuf.FeatureSet features = 2;
+inline bool FeatureSetDefaults_FeatureSetEditionDefault::has_features() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.features_ != nullptr);
+  return value;
+}
+inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (_impl_.features_ != nullptr) _impl_.features_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::_internal_features() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  const ::google::protobuf::FeatureSet* p = _impl_.features_;
+  return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
+}
+inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::features() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.features)
+  return _internal_features();
+}
+inline void FeatureSetDefaults_FeatureSetEditionDefault::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
+  }
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.features)
+}
+inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefault::release_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* released = _impl_.features_;
+  _impl_.features_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  if (GetArenaForAllocation() == nullptr) {
+    delete old;
+  }
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return released;
+}
+inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefault::unsafe_arena_release_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.features)
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::google::protobuf::FeatureSet* temp = _impl_.features_;
+  _impl_.features_ = nullptr;
+  return temp;
+}
+inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefault::_internal_mutable_features() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  if (_impl_.features_ == nullptr) {
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+  }
+  return _impl_.features_;
+}
+inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefault::mutable_features() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ::google::protobuf::FeatureSet* _msg = _internal_mutable_features();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.features)
+  return _msg;
+}
+inline void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_features(::google::protobuf::FeatureSet* value) {
+  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena =
+        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+
+  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.features)
+}
+
+// -------------------------------------------------------------------
+
+// FeatureSetDefaults
+
+// repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
+inline int FeatureSetDefaults::_internal_defaults_size() const {
+  return _internal_defaults().size();
+}
+inline int FeatureSetDefaults::defaults_size() const {
+  return _internal_defaults_size();
+}
+inline void FeatureSetDefaults::clear_defaults() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.defaults_.Clear();
+}
+inline ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* FeatureSetDefaults::mutable_defaults(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.defaults)
+  return _internal_mutable_defaults()->Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* FeatureSetDefaults::mutable_defaults()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.FeatureSetDefaults.defaults)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  return _internal_mutable_defaults();
+}
+inline const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& FeatureSetDefaults::defaults(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.defaults)
+  return _internal_defaults().Get(index);
+}
+inline ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* FeatureSetDefaults::add_defaults() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* _add = _internal_mutable_defaults()->Add();
+  // @@protoc_insertion_point(field_add:google.protobuf.FeatureSetDefaults.defaults)
+  return _add;
+}
+inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& FeatureSetDefaults::defaults() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_list:google.protobuf.FeatureSetDefaults.defaults)
+  return _internal_defaults();
+}
+inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>&
+FeatureSetDefaults::_internal_defaults() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  return _impl_.defaults_;
+}
+inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>*
+FeatureSetDefaults::_internal_mutable_defaults() {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  return &_impl_.defaults_;
+}
+
+// optional string minimum_edition = 2;
+inline bool FeatureSetDefaults::has_minimum_edition() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline void FeatureSetDefaults::clear_minimum_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.minimum_edition_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& FeatureSetDefaults::minimum_edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.minimum_edition)
+  return _internal_minimum_edition();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void FeatureSetDefaults::set_minimum_edition(Arg_&& arg,
+                                                     Args_... args) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.minimum_edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.minimum_edition)
+}
+inline std::string* FeatureSetDefaults::mutable_minimum_edition() {
+  std::string* _s = _internal_mutable_minimum_edition();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.minimum_edition)
+  return _s;
+}
+inline const std::string& FeatureSetDefaults::_internal_minimum_edition() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  return _impl_.minimum_edition_.Get();
+}
+inline void FeatureSetDefaults::_internal_set_minimum_edition(const std::string& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.minimum_edition_.Set(value, GetArenaForAllocation());
+}
+inline std::string* FeatureSetDefaults::_internal_mutable_minimum_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000001u;
+  return _impl_.minimum_edition_.Mutable( GetArenaForAllocation());
+}
+inline std::string* FeatureSetDefaults::release_minimum_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSetDefaults.minimum_edition)
+  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* released = _impl_.minimum_edition_.Release();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.minimum_edition_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return released;
+}
+inline void FeatureSetDefaults::set_allocated_minimum_edition(std::string* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
+  _impl_.minimum_edition_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.minimum_edition_.IsDefault()) {
+          _impl_.minimum_edition_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.minimum_edition)
+}
+
+// optional string maximum_edition = 3;
+inline bool FeatureSetDefaults::has_maximum_edition() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline void FeatureSetDefaults::clear_maximum_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.maximum_edition_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const std::string& FeatureSetDefaults::maximum_edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.maximum_edition)
+  return _internal_maximum_edition();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void FeatureSetDefaults::set_maximum_edition(Arg_&& arg,
+                                                     Args_... args) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_.maximum_edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.maximum_edition)
+}
+inline std::string* FeatureSetDefaults::mutable_maximum_edition() {
+  std::string* _s = _internal_mutable_maximum_edition();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.maximum_edition)
+  return _s;
+}
+inline const std::string& FeatureSetDefaults::_internal_maximum_edition() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  return _impl_.maximum_edition_.Get();
+}
+inline void FeatureSetDefaults::_internal_set_maximum_edition(const std::string& value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_.maximum_edition_.Set(value, GetArenaForAllocation());
+}
+inline std::string* FeatureSetDefaults::_internal_mutable_maximum_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  return _impl_.maximum_edition_.Mutable( GetArenaForAllocation());
+}
+inline std::string* FeatureSetDefaults::release_maximum_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSetDefaults.maximum_edition)
+  if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  auto* released = _impl_.maximum_edition_.Release();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.maximum_edition_.Set("", GetArenaForAllocation());
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return released;
+}
+inline void FeatureSetDefaults::set_allocated_maximum_edition(std::string* value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  _impl_.maximum_edition_.SetAllocated(value, GetArenaForAllocation());
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+        if (_impl_.maximum_edition_.IsDefault()) {
+          _impl_.maximum_edition_.Set("", GetArenaForAllocation());
+        }
+  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.maximum_edition)
 }
 
 // -------------------------------------------------------------------
