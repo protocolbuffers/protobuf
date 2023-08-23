@@ -34,6 +34,20 @@ use Google\Protobuf\GPBEmpty;
 
 class DebugInfoTest extends TestBase
 {
+    public function testVarDumpOutput()
+    {
+        $m = new DoubleValue();
+        $m->setValue(1.5);
+        var_dump($m);
+        $this->expectOutputString(<<<EOL
+object(Google\Protobuf\DoubleValue)#12 (1) {
+  ["value"]=>
+  float(1.5)
+}
+
+EOL);
+    }
+
     public function testTopLevelDoubleValue()
     {
         $m = new DoubleValue();
