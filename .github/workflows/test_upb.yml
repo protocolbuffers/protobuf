@@ -119,3 +119,27 @@ jobs:
             mv `which python3` /tmp &&
             ! which python3 &&
             bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 @upb//python/... -- -@upb//python/dist:source_wheel
+
+  build_python_wheels:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: Build Python Wheels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Configure Docker
+        run: gcloud auth configure-docker -q us-docker.pkg.dev
+      - name: Build wheels
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "upb-bazel-python-wheels"
+          bazel: build --crosstool_top=@com_google_protobuf//toolchain:clang_suite --@com_google_protobuf//toolchain:release=true --symlink_prefix=/ -c dbg @upb//python/dist @upb//python/dist:test_wheel @upb//python/dist:source_wheel
+      - name: Check working dir
+        run: pwd; ls -l; ls -l /workspace
+      - name: Move Wheels
+        run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
