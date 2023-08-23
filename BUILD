@@ -100,6 +100,21 @@ package_group(
     packages = ["//..."],
 )
 
+# This is a stub library to keep gRPC happy. Do not use it for any reason,
+# use the smaller targets below instead.
+cc_library(
+    name = "upb",
+    hdrs = [
+        "upb/upb.hpp",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":base",
+        ":mem",
+    ],
+)
+
 # Common support routines used by generated code.  This library has no
 # implementation, but depends on :upb and exposes a few more hdrs.
 #
