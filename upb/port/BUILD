@@ -50,7 +50,6 @@ filegroup(
     name = "source_files",
     srcs = glob(
         [
-            "**/*.c",
             "**/*.h",
             "**/*.inc",
         ],

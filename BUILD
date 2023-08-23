@@ -691,7 +691,6 @@ filegroup(
             "upb/**/*.c",
             "upb/**/*.h",
             "upb/**/*.hpp",
-            "upb/**/*.inc",
        ],
         exclude = [
             "upb/**/conformance_upb.c",

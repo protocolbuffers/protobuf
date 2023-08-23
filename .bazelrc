@@ -5,6 +5,9 @@ build --features=-debug_prefix_map_pwd_is_dot
 build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 build:cpp17_msvc --cxxopt=/std:c++17 --host_cxxopt=/std:c++17
 
+# Disallow empty globs
+build: --incompatible_disallow_empty_glob
+
 # Use our custom-configured c++ toolchain.
 
 build:m32 --copt=-m32 --linkopt=-m32
