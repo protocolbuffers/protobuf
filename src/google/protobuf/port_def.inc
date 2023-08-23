@@ -838,16 +838,17 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #ifdef PROTOBUF_TSAN
 // TODO(b/285620714): it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
-#define PROTOBUF_TSAN_READ(addr)                                               \
-  do {                                                                         \
-    volatile char protobuf_tsan_dummy = *reinterpret_cast<const char *>(addr); \
-    (void)protobuf_tsan_dummy;                                                 \
+#define PROTOBUF_TSAN_READ(addr)                                      \
+  do {                                                                \
+    char protobuf_tsan_dummy = *reinterpret_cast<const char *>(addr); \
+    asm volatile("" : "+r"(protobuf_tsan_dummy));                     \
   } while (0)
-#define PROTOBUF_TSAN_WRITE(addr)                          \
-  do {                                                     \
-    char protobuf_tsan_zero = 0;                           \
-    asm volatile("" : "+m"(protobuf_tsan_zero));           \
-    *reinterpret_cast<char *>(addr) += protobuf_tsan_zero; \
+// We currently use a dedicated member for TSan checking so the value of this
+// member is not important. We can unconditionally write to it without affecting
+// correctness of the rest of the class.
+#define PROTOBUF_TSAN_WRITE(addr)        \
+  do {                                   \
+    *reinterpret_cast<char *>(addr) = 0; \
   } while (0)
 #else  // PROTOBUF_TSAN
 #define PROTOBUF_TSAN_READ(addr)
