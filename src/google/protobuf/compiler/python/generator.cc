@@ -1032,7 +1032,7 @@ void Generator::PrintEnumValueDescriptor(
 // Returns a CEscaped string of serialized_options.
 std::string Generator::OptionsValue(
     absl::string_view serialized_options) const {
-  if (serialized_options.length() == 0 || GeneratingDescriptorProto()) {
+  if (serialized_options.length() == 0) {
     return "None";
   } else {
     return absl::StrCat("b'", absl::CEscape(serialized_options), "'");
