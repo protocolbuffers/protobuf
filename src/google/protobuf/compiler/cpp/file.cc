@@ -34,22 +34,22 @@
 
 #include "google/protobuf/compiler/cpp/file.h"
 
+#include <algorithm>
 #include <functional>
-#include <iostream>
 #include <memory>
+#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/compiler/scc.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/cpp/enum.h"
@@ -59,6 +59,7 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/service.h"
 #include "google/protobuf/compiler/retention.h"
+#include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -72,6 +73,7 @@ namespace compiler {
 namespace cpp {
 namespace {
 using Sub = ::google::protobuf::io::Printer::Sub;
+using ::google::protobuf::internal::cpp::IsLazilyInitializedFile;
 
 absl::flat_hash_map<absl::string_view, std::string> FileVars(
     const FileDescriptor* file, const Options& options) {
@@ -107,17 +109,197 @@ void UnmuteWuninitialized(io::Printer* p) {
     #endif  // __llvm__
   )");
 }
+
+// TopologicalSortMessagesInFile topologically sorts and returns a vector of
+// proto descriptors defined in the file provided as input.  The underlying
+// graph is defined using dependency relationship between protos.  For example,
+// if proto A contains proto B as a member, then proto B would be ordered before
+// proto A in a topological ordering, assuming there is no mutual dependence
+// between the two protos.  The topological order is used to emit proto
+// declarations so that a proto is declared after all the protos it is dependent
+// on have been declared (again assuming no mutual dependence).  This is needed
+// in cases where we may declare proto B as a member of proto A using an object,
+// instead of a pointer.
+//
+// The proto dependencey graph can have cycles.  So instead of directly working
+// with protos, we compute strong connected components (SCCs) composed of protos
+// with mutual dependence.  The dependency graph on SCCs is a directed acyclic
+// graph (DAG) and therefore a topological order can be computed for it i.e. an
+// order where an SCC is ordered after all other SCCs it is dependent on have
+// been ordered.
+//
+// The function below first constructs the SCC graph and then computes a
+// deterministic topological order for the graph.
+//
+// For computing the SCC graph, we follow the following steps:
+// 1. Collect the descriptors for the messages in the file.
+// 2. Construct a map for descriptor to SCC mapping.
+// 3. Construct a map for dependence between SCCs, referred to as
+// child_to_parent_scc_map below.  This map constructed by running a BFS on the
+// SCCs.
+//
+// For computing a deterministic topological order on the graph computed in step
+// 3 above, we do the following:
+// 1. Since the graph on SCCs is a DAG, therefore there will be at least one SCC
+// that does not depend on other SCCs.  We first construct a list of all such
+// SCCs.
+// 2. Next we run a BFS starting with the list of SCCs computed in step 1.  For
+// each SCC, we track the number of the SCC it is dependent on and the number of
+// those SCC that have been ordered.  Once all the SCCs an SCC is dependent on
+// have been ordered, this SCC is added to list of SCCs that are to be ordered
+// next.
+// 3. Within an SCC, the descriptors are ordered on the basis of the full_name()
+// of the descriptors.
+std::vector<const Descriptor*> TopologicalSortMessagesInFile(
+    const FileDescriptor* file, MessageSCCAnalyzer& scc_analyzer) {
+  // Collect the messages defined in this file.
+  std::vector<const Descriptor*> messages_in_file = FlattenMessagesInFile(file);
+  if (messages_in_file.empty()) return {};
+  // Populate the map from the descriptor to the SCC to which the descriptor
+  // belongs.
+  absl::flat_hash_map<const Descriptor*, const SCC*> descriptor_to_scc_map;
+  descriptor_to_scc_map.reserve(messages_in_file.size());
+  for (const Descriptor* d : messages_in_file) {
+    descriptor_to_scc_map.emplace(d, scc_analyzer.GetSCC(d));
+  }
+  ABSL_DCHECK(messages_in_file.size() == descriptor_to_scc_map.size())
+      << "messages_in_file has duplicate messages!";
+  // Each parent SCC has information about the child SCCs i.e. SCCs for fields
+  // that are contained in the protos that belong to the parent SCC.  Use this
+  // information to construct the inverse map from child SCC to parent SCC.
+  absl::flat_hash_map<const SCC*, absl::flat_hash_set<const SCC*>>
+      child_to_parent_scc_map;
+  // For recording the number of edges from each SCC to other SCCs in the
+  // forward map.
+  absl::flat_hash_map<const SCC*, int> scc_to_outgoing_edges_map;
+  std::queue<const SCC*> sccs_to_process;
+  for (const auto& p : descriptor_to_scc_map) {
+    sccs_to_process.push(p.second);
+  }
+  // Run a BFS to fill the two data structures: child_to_parent_scc_map and
+  // scc_to_outgoing_edges_map.
+  while (!sccs_to_process.empty()) {
+    const SCC* scc = sccs_to_process.front();
+    sccs_to_process.pop();
+    auto& count = scc_to_outgoing_edges_map[scc];
+    for (const auto& child : scc->children) {
+      // Test whether this child has been seen thus far.  We do not know if the
+      // children SCC vector contains unique children SCC.
+      auto& parent_set = child_to_parent_scc_map[child];
+      if (parent_set.empty()) {
+        // Just added.
+        sccs_to_process.push(child);
+      }
+      auto ret = parent_set.insert(scc);
+      if (ret.second) {
+        ++count;
+      }
+    }
+  }
+  std::vector<const SCC*> next_scc_q;
+  // Find out the SCCs that do not have an outgoing edge i.e. the protos in this
+  // SCC do not depend on protos other than the ones in this SCC.
+  for (const auto& p : scc_to_outgoing_edges_map) {
+    if (p.second == 0) {
+      next_scc_q.push_back(p.first);
+    }
+  }
+  ABSL_DCHECK(!next_scc_q.empty()) << "No independent components!";
+  // Topologically sort the SCCs.
+  // If an SCC no longer has an outgoing edge i.e. all the SCCs it depends on
+  // have been ordered, then this SCC is now a candidate for ordering.
+  std::vector<const Descriptor*> sorted_messages;
+  while (!next_scc_q.empty()) {
+    std::vector<const SCC*> current_scc_q;
+    current_scc_q.swap(next_scc_q);
+    // SCCs present in the current_scc_q are topologically equivalent to each
+    // other.  Therefore they can be added to the output in any order.  We sort
+    // these SCCs by the full_name() of the first descriptor that belongs to the
+    // SCC.  This works well since the descriptors in each SCC are sorted by
+    // full_name() and also that a descriptor can be part of only one SCC.
+    std::sort(current_scc_q.begin(), current_scc_q.end(),
+              [](const SCC* a, const SCC* b) {
+                ABSL_DCHECK(!a->descriptors.empty()) << "No descriptors!";
+                ABSL_DCHECK(!b->descriptors.empty()) << "No descriptors!";
+                const Descriptor* ad = a->descriptors[0];
+                const Descriptor* bd = b->descriptors[0];
+                return ad->full_name() < bd->full_name();
+              });
+    while (!current_scc_q.empty()) {
+      const SCC* scc = current_scc_q.back();
+      current_scc_q.pop_back();
+      // Messages in an SCC are already sorted on full_name().  So we can emit
+      // them right away.
+      for (const Descriptor* d : scc->descriptors) {
+        // Only push messages that are defined in the file.
+        if (descriptor_to_scc_map.contains(d)) {
+          sorted_messages.push_back(d);
+        }
+      }
+      // Find all the SCCs that are dependent on the current SCC.
+      const auto& parents = child_to_parent_scc_map.find(scc);
+      if (parents == child_to_parent_scc_map.end()) continue;
+      for (const SCC* parent : parents->second) {
+        auto it = scc_to_outgoing_edges_map.find(parent);
+        ABSL_CHECK(it != scc_to_outgoing_edges_map.end());
+        ABSL_CHECK(it->second > 0);
+        // Reduce the dependency count for the SCC.  In case the dependency
+        // count reaches 0, add the SCC to the list of SCCs to be ordered next.
+        it->second--;
+        if (it->second == 0) {
+          next_scc_q.push_back(parent);
+        }
+      }
+    }
+  }
+  for (const auto& p : scc_to_outgoing_edges_map) {
+    ABSL_DCHECK(p.second == 0) << "SCC left behind!";
+  }
+  return sorted_messages;
+}
 }  // namespace
+
+bool FileGenerator::ShouldSkipDependencyImports(
+    const FileDescriptor* dep) const {
+  // Do not import weak deps.
+  if (!options_.opensource_runtime && IsDepWeak(dep)) {
+    return true;
+  }
+
+  // Skip feature imports, which are a visible (but non-functional) deviation
+  // between editions and legacy syntax.
+  if (options_.strip_nonfunctional_codegen &&
+      dep->name() == "third_party/protobuf/cpp_features.proto") {
+    return true;
+  }
+
+  return false;
+}
 
 FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
     : file_(file), options_(options), scc_analyzer_(options) {
   std::vector<const Descriptor*> msgs = FlattenMessagesInFile(file);
+  std::vector<const Descriptor*> msgs_topologically_ordered =
+      TopologicalSortMessagesInFile(file, scc_analyzer_);
+  ABSL_CHECK(msgs_topologically_ordered.size() == msgs.size())
+      << "Size mismatch";
 
   for (int i = 0; i < msgs.size(); ++i) {
     message_generators_.push_back(std::make_unique<MessageGenerator>(
         msgs[i], variables_, i, options, &scc_analyzer_));
     message_generators_.back()->AddGenerators(&enum_generators_,
                                               &extension_generators_);
+  }
+  absl::flat_hash_map<const Descriptor*, int> msg_to_index;
+  for (size_t i = 0; i < msgs.size(); ++i) {
+    msg_to_index[msgs[i]] = i;
+  }
+  // Populate the topological order.
+  for (size_t i = 0; i < msgs.size(); ++i) {
+    auto it = msg_to_index.find(msgs_topologically_ordered[i]);
+    ABSL_DCHECK(it != msg_to_index.end())
+        << "Topological order has a message not present in the file!";
+    message_generators_topologically_ordered_.push_back(it->second);
   }
 
   for (int i = 0; i < file->enum_type_count(); ++i) {
@@ -130,7 +312,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
         file->service(i), variables_, options));
   }
   if (HasGenericServices(file_, options_)) {
-    for (int i = 0; i < service_generators_.size(); ++i) {
+    for (size_t i = 0; i < service_generators_.size(); ++i) {
       service_generators_[i]->index_in_metadata_ = i;
     }
   }
@@ -170,7 +352,7 @@ void FileGenerator::GenerateMacroUndefs(io::Printer* p) {
   // Only do this for protobuf's own types. There are some google3 protos using
   // macros as field names and the generated code compiles after the macro
   // expansion. Undefing these macros actually breaks such code.
-  if (file_->name() != "net/proto2/compiler/proto/plugin.proto" &&
+  if (file_->name() != "third_party/protobuf/compiler/plugin.proto" &&
       file_->name() != "google/protobuf/compiler/plugin.proto") {
     return;
   }
@@ -471,8 +653,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/wire_format.h", p);
   }
 
-  if (HasGeneratedMethods(file_, options_) &&
-      options_.tctable_mode != Options::kTCTableNever) {
+  if (HasGeneratedMethods(file_, options_)) {
     IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
   }
 
@@ -481,10 +662,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
     for (int i = 0; i < file_->dependency_count(); ++i) {
       const FileDescriptor* dep = file_->dependency(i);
 
-      if (!options_.opensource_runtime &&
-          IsDepWeak(dep)) {  // Do not import weak deps.
-        continue;
-      }
+      if (ShouldSkipDependencyImports(dep)) continue;
 
       std::string basename = StripProto(dep->name());
       if (IsBootstrapProto(options_, file_)) {
@@ -521,8 +699,7 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
     namespace _pbi = ::$proto_ns$::internal;
   )cc");
 
-  if (HasGeneratedMethods(file_, options_) &&
-      options_.tctable_mode != Options::kTCTableNever) {
+  if (HasGeneratedMethods(file_, options_)) {
     p->Emit(R"cc(
       namespace _fl = ::$proto_ns$::internal::field_layout;
     )cc");
@@ -531,6 +708,8 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
 
 void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
   MessageGenerator* generator = message_generators_[idx].get();
+
+  if (!ShouldGenerateClass(generator->descriptor(), options_)) return;
 
   // Generate the split instance first because it's needed in the constexpr
   // constructor.
@@ -562,31 +741,57 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
             };
           };
 
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $type$ $name$;
         )cc");
   }
 
   generator->GenerateConstexprConstructor(p);
 
-  p->Emit(
-      {
-          {"type", DefaultInstanceType(generator->descriptor(), options_)},
-          {"name", DefaultInstanceName(generator->descriptor(), options_)},
-          {"class", ClassName(generator->descriptor())},
-      },
-      R"cc(
-        struct $type$ {
-          PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
-          ~$type$() {}
-          union {
-            $class$ _instance;
+  if (IsFileDescriptorProto(file_, options_)) {
+    p->Emit(
+        {
+            {"type", DefaultInstanceType(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"class", ClassName(generator->descriptor())},
+        },
+        R"cc(
+          struct $type$ {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            constexpr $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            $type$() {}
+            void Init() { ::new (&_instance) $class$(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            ~$type$() {}
+            union {
+              $class$ _instance;
+            };
           };
-        };
 
-        PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
-      )cc");
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
+  } else {
+    p->Emit(
+        {
+            {"type", DefaultInstanceType(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"class", ClassName(generator->descriptor())},
+        },
+        R"cc(
+          struct $type$ {
+            PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            ~$type$() {}
+            union {
+              $class$ _instance;
+            };
+          };
+
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
+  }
 
   for (int i = 0; i < generator->descriptor()->field_count(); ++i) {
     const FieldDescriptor* field = generator->descriptor()->field(i);
@@ -672,10 +877,10 @@ void FileGenerator::GetCrossFileReferencesForFile(const FileDescriptor* file,
   for (int i = 0; i < file->dependency_count(); ++i) {
     const FileDescriptor* dep = file->dependency(i);
 
-    if (IsDepWeak(dep)) {
-      refs->weak_reflection_files.insert(dep);
-    } else {
+    if (!ShouldSkipDependencyImports(file->dependency(i))) {
       refs->strong_reflection_files.insert(dep);
+    } else if (IsDepWeak(dep)) {
+      refs->weak_reflection_files.insert(dep);
     }
   }
 }
@@ -803,7 +1008,8 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   {
     NamespaceOpener ns(Namespace(file_, options_), p);
     for (int i = 0; i < message_generators_.size(); ++i) {
-      GenerateSourceDefaultInstance(i, p);
+      GenerateSourceDefaultInstance(
+          message_generators_topologically_ordered_[i], p);
     }
   }
 
@@ -977,6 +1183,11 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
       {{"desc_name", desc_name},
        {"encoded_file_proto",
         [&] {
+          if (options_.strip_nonfunctional_codegen) {
+            p->Emit(R"cc("")cc");
+            return;
+          }
+
           absl::string_view data = file_data;
           if (data.size() <= 65535) {
             static constexpr size_t kBytesPerLine = 40;
@@ -1058,7 +1269,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   p->Emit(
       {
           {"eager", eager ? "true" : "false"},
-          {"file_proto_len", file_data.size()},
+          {"file_proto_len",
+           options_.strip_nonfunctional_codegen ? 0 : file_data.size()},
           {"proto_name", desc_name},
           {"deps_ptr", num_deps == 0
                            ? "nullptr"
@@ -1105,19 +1317,47 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
         }
       )cc");
 
-  // For descriptor.proto we want to avoid doing any dynamic initialization,
-  // because in some situations that would otherwise pull in a lot of
-  // unnecessary code that can't be stripped by --gc-sections. Descriptor
-  // initialization will still be performed lazily when it's needed.
-  if (file_->name() == "net/proto2/proto/descriptor.proto") {
-    return;
+  // For descriptor.proto and cpp_features.proto we want to avoid doing any
+  // dynamic initialization, because in some situations that would otherwise
+  // pull in a lot of unnecessary code that can't be stripped by --gc-sections.
+  // Descriptor initialization will still be performed lazily when it's needed.
+  if (!IsLazilyInitializedFile(file_->name())) {
+    p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}},
+            R"cc(
+              // Force running AddDescriptors() at dynamic initialization time.
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+              static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
+            )cc");
   }
 
-  p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}}, R"cc(
-    // Force running AddDescriptors() at dynamic initialization time.
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-    static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
-  )cc");
+  // However, we must provide a way to force initialize the default instances
+  // of FileDescriptorProto which will be used during registration of other
+  // files.
+  if (IsFileDescriptorProto(file_, options_)) {
+    NamespaceOpener ns(p);
+    ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
+    p->Emit(
+        {{"dummy", UniqueName("dynamic_init_dummy", file_, options_)},
+         {"initializers", absl::StrJoin(message_generators_, "\n",
+                                        [&](std::string* out, const auto& gen) {
+                                          absl::StrAppend(
+                                              out,
+                                              DefaultInstanceName(
+                                                  gen->descriptor(), options_),
+                                              ".Init();");
+                                        })}},
+        R"cc(
+          //~ Emit wants an indented line, so give it a comment to strip.
+#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+          PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow() {
+            $initializers$;
+          }
+          PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+          static std::true_type $dummy${
+              (InitializeFileDescriptorDefaultInstances(), std::true_type{})};
+#endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+        )cc");
+  }
 }
 
 class FileGenerator::ForwardDeclarations {
@@ -1166,11 +1406,28 @@ class FileGenerator::ForwardDeclarations {
   }
 
   void PrintTopLevelDecl(io::Printer* p, const Options& options) const {
-    for (const auto& c : classes_) {
-      p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
-        template <>
-        $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(Arena*);
-      )cc");
+    if (ShouldGenerateExternSpecializations(options)) {
+      for (const auto& c : classes_) {
+        if (!ShouldGenerateClass(c.second, options)) continue;
+        // To reduce total linker input size in large binaries we make these
+        // functions extern and define then in the pb.cc file. This avoids bloat
+        // in callers by having duplicate definitions of the template.
+        // However, it increases the size of the pb.cc translation units so it
+        // is a tradeoff.
+        p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
+          template <>
+          $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(Arena*);
+        )cc");
+#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
+        if (!IsMapEntryMessage(c.second)) {
+          p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
+            template <>
+            $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(
+                Arena*, const $class$& from);
+          )cc");
+        }
+#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
+      }
     }
   }
 
@@ -1216,11 +1473,12 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
 
   absl::btree_map<std::string, ForwardDeclarations> decls;
   for (const auto* d : classes) {
-    if (d != nullptr && !public_set.count(d->file()))
+    if (d != nullptr && !public_set.contains(d->file()) &&
+        ShouldGenerateClass(d, options_))
       decls[Namespace(d, options_)].AddMessage(d);
   }
   for (const auto* e : enums) {
-    if (e != nullptr && !public_set.count(e->file()))
+    if (e != nullptr && !public_set.contains(e->file()))
       decls[Namespace(e, options_)].AddEnum(e);
   }
   for (const auto& mg : message_generators_) {
@@ -1239,6 +1497,16 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
   ns.ChangeTo(ProtobufNamespace(options_));
   for (const auto& decl : decls) {
     decl.second.PrintTopLevelDecl(p, options_);
+  }
+
+  if (IsFileDescriptorProto(file_, options_)) {
+    ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
+    p->Emit(R"cc(
+      //~ Emit wants an indented line, so give it a comment to strip.
+#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+      PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();
+#endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+    )cc");
   }
 }
 
@@ -1294,8 +1562,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (HasSimpleBaseClasses(file_, options_)) {
     IncludeFile("third_party/protobuf/generated_message_bases.h", p);
   }
-  if (HasGeneratedMethods(file_, options_) &&
-      options_.tctable_mode != Options::kTCTableNever) {
+  if (HasGeneratedMethods(file_, options_)) {
     IncludeFile("third_party/protobuf/generated_message_tctable_decl.h", p);
   }
   IncludeFile("third_party/protobuf/generated_message_util.h", p);
@@ -1339,7 +1606,6 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
       IncludeFile("third_party/protobuf/map_entry.h", p);
       IncludeFile("third_party/protobuf/map_field_inl.h", p);
     } else {
-      IncludeFile("third_party/protobuf/map_entry_lite.h", p);
       IncludeFile("third_party/protobuf/map_field_lite.h", p);
     }
   }
@@ -1385,8 +1651,7 @@ void FileGenerator::GenerateDependencyIncludes(io::Printer* p) {
   for (int i = 0; i < file_->dependency_count(); ++i) {
     const FileDescriptor* dep = file_->dependency(i);
 
-    // Do not import weak deps.
-    if (IsDepWeak(dep)) {
+    if (ShouldSkipDependencyImports(dep)) {
       continue;
     }
 
@@ -1431,7 +1696,8 @@ void FileGenerator::GenerateMessageDefinitions(io::Printer* p) {
     p->Emit(R"cc(
       $hrule_thin$
     )cc");
-    message_generators_[i]->GenerateClassDefinition(p);
+    message_generators_[message_generators_topologically_ordered_[i]]
+        ->GenerateClassDefinition(p);
   }
 }
 
@@ -1506,6 +1772,18 @@ void FileGenerator::GenerateProto2NamespaceEnumSpecializations(io::Printer* p) {
     gen->GenerateGetEnumDescriptorSpecializations(p);
   }
   p->PrintRaw("\n");
+}
+
+std::vector<const Descriptor*> FileGenerator::MessagesInTopologicalOrder()
+    const {
+  std::vector<const Descriptor*> descs;
+  descs.reserve(message_generators_.size());
+  for (int i = 0; i < message_generators_.size(); ++i) {
+    descs.push_back(
+        message_generators_[message_generators_topologically_ordered_[i]]
+            ->descriptor());
+  }
+  return descs;
 }
 }  // namespace cpp
 }  // namespace compiler

@@ -79,6 +79,7 @@ class PROTOBUF_EXPORT FileDescriptorLegacy {
     SYNTAX_UNKNOWN = FileDescriptor::SYNTAX_UNKNOWN,
     SYNTAX_PROTO2 = FileDescriptor::SYNTAX_PROTO2,
     SYNTAX_PROTO3 = FileDescriptor::SYNTAX_PROTO3,
+    SYNTAX_EDITIONS = FileDescriptor::SYNTAX_EDITIONS,
   };
   Syntax syntax() const { return static_cast<Syntax>(desc_->syntax()); }
   static absl::string_view SyntaxName(Syntax syntax) {

@@ -304,7 +304,8 @@ class PROTOBUF_EXPORT Parser {
   // Parses the "syntax = \"proto2\";" line at the top of the file.  Returns
   // false if it failed to parse or if the syntax identifier was not
   // recognized.
-  bool ParseSyntaxIdentifier(const LocationRecorder& parent);
+  bool ParseSyntaxIdentifier(const FileDescriptorProto* file,
+                             const LocationRecorder& parent);
 
   // These methods parse various individual bits of code.  They return
   // false if they completely fail to parse the construct.  In this case,
@@ -402,12 +403,18 @@ class PROTOBUF_EXPORT Parser {
   bool ParseReservedNames(DescriptorProto* message,
                           const LocationRecorder& parent_location);
   bool ParseReservedName(std::string* name, absl::string_view error_message);
+  bool ParseReservedIdentifiers(DescriptorProto* message,
+                                const LocationRecorder& parent_location);
+  bool ParseReservedIdentifier(std::string* name,
+                               absl::string_view error_message);
   bool ParseReservedNumbers(DescriptorProto* message,
                             const LocationRecorder& parent_location);
   bool ParseReserved(EnumDescriptorProto* message,
                      const LocationRecorder& message_location);
   bool ParseReservedNames(EnumDescriptorProto* message,
                           const LocationRecorder& parent_location);
+  bool ParseReservedIdentifiers(EnumDescriptorProto* message,
+                                const LocationRecorder& parent_location);
   bool ParseReservedNumbers(EnumDescriptorProto* message,
                             const LocationRecorder& parent_location);
 
@@ -529,9 +536,11 @@ class PROTOBUF_EXPORT Parser {
 
   // Whether fields without label default to optional fields.
   bool DefaultToOptionalFields() const {
+    if (syntax_identifier_ == "editions") return true;
     return syntax_identifier_ == "proto3";
   }
 
+  bool ValidateMessage(const DescriptorProto* proto);
   bool ValidateEnum(const EnumDescriptorProto* proto);
 
   // =================================================================
@@ -544,6 +553,7 @@ class PROTOBUF_EXPORT Parser {
   bool require_syntax_identifier_;
   bool stop_after_syntax_identifier_;
   std::string syntax_identifier_;
+  std::string edition_;
 
   // Leading doc comments for the next declaration.  These are not complete
   // yet; use ConsumeEndOfDeclaration() to get the complete comments.

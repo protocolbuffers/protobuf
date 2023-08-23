@@ -47,6 +47,7 @@
 #include <gtest/gtest.h>
 #include "absl/functional/bind_front.h"
 #include "absl/log/absl_check.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -258,12 +259,20 @@ TEST(MessageDifferencerTest,
   // Clearing a no presence field inside a repeated field in a nested message.
   msg1.mutable_no_presence_repeated_nested(0)->clear_no_presence_bool();
   EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_THAT(force_compare_differencer.NoPresenceFieldsCausingFailure(),
+              testing::UnorderedElementsAre(
+                  "proto3_unittest.TestNoPresenceField.no_presence_bool"));
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.NoPresenceFieldsCausingFailure().empty());
   force_compare_differencer.ReportDifferencesTo(nullptr);
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(default_differencer.NoPresenceFieldsCausingFailure().empty());
 }
+
 
 TEST(MessageDifferencerTest,
      PartialEqualityTestForceCompareWorksForRepeatedField) {
@@ -284,7 +293,10 @@ TEST(MessageDifferencerTest,
 
   msg1.clear_no_presence_repeated_nested();
   EXPECT_TRUE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.NoPresenceFieldsCausingFailure().empty());
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
@@ -308,9 +320,14 @@ TEST(MessageDifferencerTest,
 
   msg1.mutable_no_presence_nested()->clear_no_presence_bool();
   EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_THAT(force_compare_differencer.NoPresenceFieldsCausingFailure(),
+              testing::UnorderedElementsAre(
+                  "proto3_unittest.TestNoPresenceField.no_presence_bool"));
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
 }
 
@@ -332,18 +349,27 @@ TEST(MessageDifferencerTest,
 
   msg1.clear_no_presence_nested();
   EXPECT_TRUE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
 
   // Creating an instance of the nested field will cause the comparison to fail
   // since it contains a no presence singualr field.
   msg1.mutable_no_presence_nested();
   EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_THAT(force_compare_differencer.NoPresenceFieldsCausingFailure(),
+              testing::UnorderedElementsAre(
+                  "proto3_unittest.TestNoPresenceField.no_presence_bool"));
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
 }
 
@@ -365,9 +391,13 @@ TEST(MessageDifferencerTest,
 
   msg1.clear_no_presence_bool();
   EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(
+      !force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
 
   EXPECT_FALSE(force_compare_differencer.Compare(msg2, msg1));
+  EXPECT_TRUE(
+      force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
 }
 
@@ -392,6 +422,8 @@ TEST(MessageDifferencerTest,
 
     msg1.mutable_no_presence_repeated_nested(0)->clear_no_presence_bool();
     EXPECT_FALSE(force_compare_differencer.Compare(msg1, msg2));
+    EXPECT_TRUE(
+        !force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   }
   EXPECT_EQ(output,
             "added: no_presence_repeated_nested[0].no_presence_bool (added for "
@@ -3949,6 +3981,26 @@ TEST(AnyTest, Simple) {
   message_differencer.ReportDifferencesToString(&difference_string);
   EXPECT_FALSE(message_differencer.Compare(m1, m2));
   EXPECT_EQ("modified: any_value.a: 20 -> 21\n", difference_string);
+}
+
+TEST(AnyTest, DifferentTypes) {
+  protobuf_unittest::TestField value1;
+  value1.set_a(20);
+  protobuf_unittest::ForeignMessage value2;
+  value2.set_c(30);
+
+  protobuf_unittest::TestAny m1, m2;
+  m1.mutable_any_value()->PackFrom(value1);
+  m2.mutable_any_value()->PackFrom(value2);
+  util::MessageDifferencer message_differencer;
+  std::string difference_string;
+  message_differencer.ReportDifferencesToString(&difference_string);
+  EXPECT_FALSE(message_differencer.Compare(m1, m2));
+  // Any should be treated as a regular proto when the payload types differ.
+  EXPECT_THAT(
+      difference_string,
+      testing::ContainsRegex(
+          R"(type_url: ".+/protobuf_unittest.TestField\" -> ".+/protobuf_unittest.ForeignMessage")"));
 }
 
 TEST(Anytest, TreatAsSet) {

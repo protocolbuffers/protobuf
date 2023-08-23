@@ -209,6 +209,21 @@ static_assert(PROTOBUF_MSC_VER_MIN(1910), "Protobuf only supports MSVC 2017 and 
 #endif
 static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and newer.");
 
+// Check minimum Abseil version.
+#if defined(ABSL_LTS_RELEASE_VERSION) && defined(ABSL_LTS_RELEASE_PATCH_LEVEL)
+#define PROTOBUF_ABSL_MIN(x, y)      \
+  (ABSL_LTS_RELEASE_VERSION > (x) || \
+   (ABSL_LTS_RELEASE_VERSION == (x) && ABSL_LTS_RELEASE_PATCH_LEVEL >= (y)))
+#else
+// If we can't find an Abseil version, it's either not installed at all (which
+// should trigger cmake errors), using a non-LTS release, or just isn't used in
+// this file.
+#define PROTOBUF_ABSL_MIN(x, y) 1
+#endif
+
+static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
+              "Protobuf only supports Abseil version 20230125.3 and newer.");
+
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.
@@ -227,26 +242,30 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // Owner: ezb@
 #define PROTOBUF_FUTURE_REMOVE_CONST_REPEATEDFIELD_GETARENA_API 1
 
-// Used to remove Protobuf editions feature.
+// Used to make ExtensionRange into a fully-fledged descriptor class.
 // Owner: mkruskal@
-#define PROTOBUF_FUTURE_EDITIONS 1
+#define PROTOBUF_FUTURE_EXTENSION_RANGE_CLASS 1
+
+// Used to lock down wrong ctype usages in proto file.
+// Owner: jieluo@
+#define PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE 1
 
 #endif
 
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 4022003
+#define PROTOBUF_VERSION 4024000
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
 #endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3021000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 4024000
 
 #ifdef PROTOBUF_MIN_PROTOC_VERSION
 #error PROTOBUF_MIN_PROTOC_VERSION was previously defined
 #endif
-#define PROTOBUF_MIN_PROTOC_VERSION 3021000
+#define PROTOBUF_MIN_PROTOC_VERSION 4024000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
@@ -427,7 +446,7 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3021000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 4024000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
@@ -672,23 +691,28 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #  define PROTOBUF_CONSTINIT
 #  define PROTOBUF_CONSTEXPR constexpr
 # endif
+#elif defined(__GNUC__) && !defined(__clang__)
+// GCC doesn't support constinit aggregate initialization of absl::Cord.
+# if PROTOBUF_GNUC_MIN(12, 2)
+#  define PROTOBUF_CONSTINIT
+#  define PROTOBUF_CONSTEXPR constexpr
+# endif
 #else
 # if defined(__cpp_constinit) && !defined(__CYGWIN__)
 #  define PROTOBUF_CONSTINIT constinit
 #  define PROTOBUF_CONSTEXPR constexpr
+#  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
-# elif !defined(__CYGWIN__) && \
+# elif !defined(__CYGWIN__) && !defined(__MINGW32__) && \
     __has_cpp_attribute(clang::require_constant_initialization) && \
         ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||             \
      (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
 #  define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #  define PROTOBUF_CONSTEXPR constexpr
-# elif PROTOBUF_GNUC_MIN(12, 2)
-#  define PROTOBUF_CONSTINIT __constinit
-#  define PROTOBUF_CONSTEXPR constexpr
+#  define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 # endif
 #endif
 
@@ -805,6 +829,37 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #  endif
 #endif
 
+#ifdef PROTOBUF_TSAN_READ
+#error PROTOBUF_TSAN_READ was previously defined
+#endif
+#ifdef PROTOBUF_TSAN_WRITE
+#error PROTOBUF_TSAN_WRITE was previously defined
+#endif
+#ifdef PROTOBUF_TSAN
+// TODO(b/285620714): it would be preferable to use __tsan_external_read/
+// __tsan_external_write, but they can cause dlopen issues.
+#define PROTOBUF_TSAN_READ(addr)                                               \
+  do {                                                                         \
+    volatile char protobuf_tsan_dummy = *reinterpret_cast<const char *>(addr); \
+    (void)protobuf_tsan_dummy;                                                 \
+  } while (0)
+#define PROTOBUF_TSAN_WRITE(addr)                          \
+  do {                                                     \
+    char protobuf_tsan_zero = 0;                           \
+    asm volatile("" : "+m"(protobuf_tsan_zero));           \
+    *reinterpret_cast<char *>(addr) += protobuf_tsan_zero; \
+  } while (0)
+#else  // PROTOBUF_TSAN
+#define PROTOBUF_TSAN_READ(addr)
+#define PROTOBUF_TSAN_WRITE(addr)
+#endif  // PROTOBUF_TSAN
+
+#ifdef PROTOBUF_TSAN
+#define PROTOBUF_TSAN_DECLARE_MEMBER ::uint32_t _tsan_detect_race = 0
+#else
+#define PROTOBUF_TSAN_DECLARE_MEMBER
+#endif
+
 #ifdef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
 #error PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION was previously defined
 #endif
@@ -863,18 +918,18 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #undef PACKAGE
 #endif
 
-// autoheader defines this in some circumstances
-#ifdef PACKAGE
-#define PROTOBUF_DID_UNDEF_PACKAGE
-#pragma push_macro("PACKAGE")
-#undef PACKAGE
-#endif
-
 // a few common headers define this
 #ifdef PACKED
 #define PROTOBUF_DID_UNDEF_PACKED
 #pragma push_macro("PACKED")
 #undef PACKED
+#endif
+
+// This is a macro on Windows, macOS, and some variants of GCC.
+#ifdef DOMAIN
+#define PROTOBUF_DID_UNDEF_DOMAIN
+#pragma push_macro("DOMAIN")
+#undef DOMAIN
 #endif
 
 // linux is a legacy MACRO defined in most popular C++ standards.
@@ -887,12 +942,12 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
 #ifdef _WIN32
+#pragma push_macro("CompareString")
+#undef CompareString
 #pragma push_macro("CREATE_NEW")
 #undef CREATE_NEW
 #pragma push_macro("DELETE")
 #undef DELETE
-#pragma push_macro("DOMAIN")
-#undef DOMAIN
 #pragma push_macro("DOUBLE_CLICK")
 #undef DOUBLE_CLICK
 #pragma push_macro("ERROR")
@@ -950,9 +1005,6 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #endif  // _WIN32
 
 #ifdef __APPLE__
-// Inconvenient macro names from usr/include/math.h in some macOS SDKs.
-#pragma push_macro("DOMAIN")
-#undef DOMAIN
 // Inconvenient macro names from /usr/include/mach/boolean.h in some macOS SDKs.
 #pragma push_macro("TRUE")
 #undef TRUE
@@ -967,6 +1019,19 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 #pragma push_macro("TYPE_BOOL")
 #undef TYPE_BOOL
 #endif  // __APPLE__
+
+#ifdef __FreeBSD__
+// Inconvenient macro names from /usr/include/sys/param.h.
+#pragma push_macro("TRUE")
+#undef TRUE
+#pragma push_macro("FALSE")
+#undef FALSE
+// Inconvenient macro names from /usr/include/sys/limits.h.
+#pragma push_macro("UID_MAX")
+#undef UID_MAX
+#pragma push_macro("GID_MAX")
+#undef GID_MAX
+#endif  // __FreeBSD__
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 // Don't let Objective-C Macros interfere with proto identifiers with the same
@@ -990,6 +1055,10 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // This error has been generally flaky, but we need to disable it specifically
 // to fix https://github.com/protocolbuffers/protobuf/issues/12313
 #pragma clang diagnostic ignored "-Wunused-parameter"
+// -Wshadow means that declaration shadows a variable.
+// for (int i = 0; i < file_->public_dependency_count(); ++i)
+//   for (int i = 0; i < public_dep->message_type_count(); ++i)
+#pragma clang diagnostic ignored "-Wshadow"
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -1013,11 +1082,17 @@ static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and
 // This error has been generally flaky, but we need to disable it specifically
 // to fix https://github.com/protocolbuffers/protobuf/issues/12313
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+// -Wshadow means that declaration shadows a variable.
+// for (int i = 0; i < file_->public_dependency_count(); ++i)
+//   for (int i = 0; i < public_dep->message_type_count(); ++i)
+#pragma GCC diagnostic ignored "-Wshadow"
 #ifndef __clang__
 // This causes spurious warnings in GCC 13.
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 // This causes spurious warnings in GCC 13.
 #pragma GCC diagnostic ignored "-Wself-move"
+// Ignore warning: extra ';' [-Wpedantic]
+#pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 #if __GNUC__ == 12 && __GNUC_MINOR__ < 4
 // Wrong warning emitted when assigning a single char c-string to a std::string

@@ -55,6 +55,7 @@ namespace java {
 
 using internal::WireFormat;
 using internal::WireFormatLite;
+using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 namespace {
 
@@ -340,13 +341,13 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   // The default value is not a simple literal so we want to avoid executing
   // it multiple times.  Instead, get the default out of the default instance.
   printer->Print(variables_,
@@ -364,7 +365,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
       "$deprecation$public Builder ${$set$capitalized_name$Bytes$}$(\n"
       "    com.google.protobuf.ByteString value) {\n"
       "  $null_check$\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }
@@ -655,7 +656,7 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
   printer->Print(
@@ -668,7 +669,7 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
       "  }\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
                                           /* builder */ true);
@@ -677,7 +678,7 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
       "$deprecation$public Builder ${$set$capitalized_name$Bytes$}$(\n"
       "    com.google.protobuf.ByteString value) {\n"
       "  $null_check$\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }
@@ -894,7 +895,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                /* builder */ true);
   printer->Print(variables_,
@@ -907,7 +908,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                /* builder */ true);
   printer->Print(variables_,
@@ -920,7 +921,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
   printer->Print(
@@ -932,7 +933,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
       "  $on_changed$\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                           /* builder */ true);
@@ -941,7 +942,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
       "$deprecation$public Builder ${$add$capitalized_name$Bytes$}$(\n"
       "    com.google.protobuf.ByteString value) {\n"
       "  $null_check$\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }

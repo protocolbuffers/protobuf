@@ -36,8 +36,11 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
@@ -46,6 +49,10 @@ namespace objectivec {
 
 // Escape C++ trigraphs by escaping question marks to "\?".
 std::string EscapeTrigraphs(absl::string_view to_escape);
+
+// Returns true if the extension field is a custom option.
+// https://protobuf.dev/programming-guides/proto2/#customoptions
+bool ExtensionIsCustomOption(const FieldDescriptor* extension_field);
 
 enum ObjectiveCType {
   OBJECTIVECTYPE_INT32,
@@ -108,19 +115,35 @@ std::string BuildFlagsString(FlagType type,
 std::string ObjCClass(absl::string_view class_name);
 
 // Declares an Objective-C class without initializing the class so that it can
-// be refrerred to by ObjCClass.
+// be referred to by ObjCClass.
 std::string ObjCClassDeclaration(absl::string_view class_name);
 
-// Builds HeaderDoc/appledoc style comments out of the comments in the .proto
+// Flag to control the behavior of `EmitCommentsString`.
+enum CommentStringFlags : unsigned int {
+  kNone = 0,
+  kAddLeadingNewline = 1 << 1,  // Add a newline before the comment.
+  kForceMultiline = 1 << 2,  // Force a multiline comment even if only 1 line.
+};
+
+// Emits HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
-std::string BuildCommentsString(const SourceLocation& location,
-                                bool prefer_single_line);
+void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
+                        CommentStringFlags flags = kNone);
+
+// Emits HeaderDoc/appledoc style comments out of the comments in the .proto
+// file.
+template <class TDescriptor>
+void EmitCommentsString(io::Printer* printer, const TDescriptor* descriptor,
+                        CommentStringFlags flags = kNone) {
+  SourceLocation location;
+  if (descriptor->GetSourceLocation(&location)) {
+    EmitCommentsString(printer, location, flags);
+  }
+}
 
 template <class TDescriptor>
-std::string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor,
-                                           const FileDescriptor* file = nullptr,
-                                           bool preSpace = true,
-                                           bool postNewline = false) {
+std::string GetOptionalDeprecatedAttribute(
+    const TDescriptor* descriptor, const FileDescriptor* file = nullptr) {
   bool isDeprecated = descriptor->options().deprecated();
   // The file is only passed when checking Messages & Enums, so those types
   // get tagged. At the moment, it doesn't seem to make sense to tag every
@@ -140,8 +163,7 @@ std::string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor,
                              sourceFile->name(), ").");
     }
 
-    return absl::StrCat(preSpace ? " " : "", "GPB_DEPRECATED_MSG(\"", message,
-                        "\")", postNewline ? "\n" : "");
+    return absl::StrCat("GPB_DEPRECATED_MSG(\"", message, "\")");
   } else {
     return "";
   }

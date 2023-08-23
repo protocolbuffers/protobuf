@@ -992,8 +992,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   static GPBDescriptor *descriptor = NULL;
   static GPBFileDescriptor *fileDescriptor = NULL;
   if (!descriptor) {
-    // Use a dummy file that marks it as proto2 syntax so when used generically
-    // it supports unknowns/etc.
     fileDescriptor = [[GPBFileDescriptor alloc] initWithPackage:@"internal"
                                                          syntax:GPBFileSyntaxProto2];
 

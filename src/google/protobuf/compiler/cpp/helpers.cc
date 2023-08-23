@@ -36,18 +36,12 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <functional>
 #include <limits>
 #include <memory>
-#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/compiler/scc.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -57,12 +51,14 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/wire_format.h"
@@ -322,6 +318,11 @@ const char kThinSeparator[] =
 bool CanInitializeByZeroing(const FieldDescriptor* field,
                             const Options& options,
                             MessageSCCAnalyzer* scc_analyzer) {
+  static_assert(
+      std::numeric_limits<float>::is_iec559 &&
+          std::numeric_limits<double>::is_iec559,
+      "proto / abseil requires iec559, which has zero initialized floats.");
+
   if (field->is_repeated() || field->is_extension()) return false;
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -593,6 +594,40 @@ int EstimateAlignmentSize(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_STRING:
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return 8;
+  }
+  ABSL_LOG(FATAL) << "Can't get here.";
+  return -1;  // Make compiler happy.
+}
+
+int EstimateSize(const FieldDescriptor* field) {
+  if (field == nullptr) return 0;
+  if (field->is_repeated()) {
+    if (field->is_map()) {
+      return sizeof(google::protobuf::Map<int32_t, int32_t>);
+    }
+    return field->cpp_type() < FieldDescriptor::CPPTYPE_STRING || IsCord(field)
+               ? sizeof(RepeatedField<int32_t>)
+               : sizeof(internal::RepeatedPtrFieldBase);
+  }
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return 1;
+
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return 4;
+
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return 8;
+
+    case FieldDescriptor::CPPTYPE_STRING:
+      if (IsCord(field)) return sizeof(absl::Cord);
+      return sizeof(internal::ArenaStringPtr);
   }
   ABSL_LOG(FATAL) << "Can't get here.";
   return -1;  // Make compiler happy.
@@ -888,11 +923,21 @@ std::string SafeFunctionName(const Descriptor* descriptor,
 }
 
 bool IsProfileDriven(const Options& options) {
-  return options.access_info_map != nullptr;
+  return !options.bootstrap && !options.opensource_runtime &&
+         options.access_info_map != nullptr;
 }
-bool IsStringInlined(const FieldDescriptor* descriptor,
-                     const Options& options) {
-  (void)descriptor;
+
+bool IsRarelyPresent(const FieldDescriptor* field, const Options& options) {
+  return false;
+}
+
+float GetPresenceProbability(const FieldDescriptor* field,
+                             const Options& options) {
+  return 1.f;
+}
+
+bool IsStringInlined(const FieldDescriptor* field, const Options& options) {
+  (void)field;
   (void)options;
   return false;
 }
@@ -934,6 +979,32 @@ bool HasLazyFields(const FileDescriptor* file, const Options& options,
   return false;
 }
 
+bool ShouldVerify(const Descriptor* descriptor, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer) {
+  (void)descriptor;
+  (void)options;
+  (void)scc_analyzer;
+  return false;
+}
+
+bool ShouldVerify(const FileDescriptor* file, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer) {
+  (void)file;
+  (void)options;
+  (void)scc_analyzer;
+  return false;
+}
+
+bool ShouldVerifyRecursively(const FieldDescriptor* field) {
+  (void)field;
+  return false;
+}
+
+VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
+  (void)descriptor;
+  return VerifySimpleType::kCustom;
+}
+
 bool ShouldSplit(const Descriptor*, const Options&) { return false; }
 bool ShouldSplit(const FieldDescriptor*, const Options&) { return false; }
 
@@ -942,6 +1013,13 @@ bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
   (void)desc;
   (void)options;
   return false;
+}
+
+bool IsPresentMessage(const Descriptor* descriptor, const Options& options) {
+  (void)descriptor;
+  (void)options;
+  // Assume that the message is present if there is no profile.
+  return true;
 }
 
 static bool HasRepeatedFields(const Descriptor* descriptor) {
@@ -1065,28 +1143,6 @@ bool HasEnumDefinitions(const FileDescriptor* file) {
   return false;
 }
 
-bool ShouldVerify(const Descriptor* descriptor, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer) {
-  (void)descriptor;
-  (void)options;
-  (void)scc_analyzer;
-  return false;
-}
-
-bool ShouldVerify(const FileDescriptor* file, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer) {
-  (void)file;
-  (void)options;
-  (void)scc_analyzer;
-  return false;
-}
-
-
-VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
-  (void)descriptor;
-  return VerifySimpleType::kCustom;
-}
-
 bool IsStringOrMessage(const FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
@@ -1134,7 +1190,8 @@ bool IsWellKnownMessage(const FileDescriptor* file) {
   return well_known_files->find(file->name()) != well_known_files->end();
 }
 
-void NamespaceOpener::ChangeTo(absl::string_view name) {
+void NamespaceOpener::ChangeTo(absl::string_view name,
+                               io::Printer::SourceLocation loc) {
   std::vector<std::string> new_stack =
       absl::StrSplit(name, "::", absl::SkipEmpty());
   size_t len = std::min(name_stack_.size(), new_stack.size());
@@ -1149,12 +1206,14 @@ void NamespaceOpener::ChangeTo(absl::string_view name) {
   for (size_t i = name_stack_.size(); i > common_idx; i--) {
     p_->Emit({{"ns", name_stack_[i - 1]}}, R"(
       }  // namespace $ns$
-    )");
+    )",
+             loc);
   }
   for (size_t i = common_idx; i < new_stack.size(); ++i) {
     p_->Emit({{"ns", new_stack[i]}}, R"(
       namespace $ns$ {
-    )");
+    )",
+             loc);
   }
 
   name_stack_ = std::move(new_stack);
@@ -1396,8 +1455,10 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
       new absl::flat_hash_map<absl::string_view, std::string>{
           {"net/proto2/proto/descriptor",
            "third_party/protobuf/descriptor"},
-          {"net/proto2/compiler/proto/plugin",
-           "net/proto2/compiler/proto/plugin"},
+          {"third_party/protobuf/cpp_features",
+           "third_party/protobuf/cpp_features"},
+          {"third_party/protobuf/compiler/plugin",
+           "third_party/protobuf/compiler/plugin"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
       };
@@ -1532,13 +1593,13 @@ static bool HasExtensionFromFile(const Message& msg, const FileDescriptor* file,
 static bool HasBootstrapProblem(const FileDescriptor* file,
                                 const Options& options,
                                 bool* has_opt_codesize_extension) {
-  struct BoostrapGlobals {
+  struct BootstrapGlobals {
     absl::Mutex mutex;
     absl::flat_hash_set<const FileDescriptor*> cached ABSL_GUARDED_BY(mutex);
     absl::flat_hash_set<const FileDescriptor*> non_cached
         ABSL_GUARDED_BY(mutex);
   };
-  static auto& bootstrap_cache = *new BoostrapGlobals();
+  static auto& bootstrap_cache = *new BootstrapGlobals();
 
   absl::MutexLock lock(&bootstrap_cache.mutex);
   if (bootstrap_cache.cached.contains(file)) return true;
@@ -1646,6 +1707,22 @@ std::vector<io::Printer::Sub> AnnotatedAccessors(
   }
 
   return vars;
+}
+
+bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options) {
+  if (Namespace(file, options) !=
+      absl::StrCat("::", ProtobufNamespace(options))) {
+    return false;
+  }
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    if (file->message_type(i)->name() == "FileDescriptorProto") return true;
+  }
+  return false;
+}
+
+bool ShouldGenerateClass(const Descriptor* descriptor, const Options& options) {
+  return !IsMapEntryMessage(descriptor) ||
+         HasDescriptorMethods(descriptor->file(), options);
 }
 
 }  // namespace cpp

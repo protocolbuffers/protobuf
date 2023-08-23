@@ -37,6 +37,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
@@ -44,6 +45,8 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+
+using ::google::protobuf::internal::cpp::IsLazilyInitializedFile;
 
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
                                        const Options& options,
@@ -86,6 +89,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["field_type"] =
       absl::StrCat(static_cast<int>(descriptor_->type()));
   variables_["packed"] = descriptor_->is_packed() ? "true" : "false";
+  variables_["dllexport_decl"] = options.dllexport_decl;
 
   std::string scope;
   if (IsScoped()) {
@@ -172,12 +176,21 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
         "#endif\n");
   }
 
-  format(
-      "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
-      "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
-      "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$>\n"
-      "  $scoped_name$($constant_name$, $1$, $verify_fn$);\n",
-      default_str);
+  if (IsLazilyInitializedFile(descriptor_->file()->name())) {
+    format(
+        "PROTOBUF_CONSTINIT$ dllexport_decl$ "
+        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2\n"
+        "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
+        "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$>\n"
+        "  $scoped_name$($constant_name$);\n");
+  } else {
+    format(
+        "$dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
+        "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
+        "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$>\n"
+        "  $scoped_name$($constant_name$, $1$, $verify_fn$);\n",
+        default_str);
+  }
 }
 
 }  // namespace cpp

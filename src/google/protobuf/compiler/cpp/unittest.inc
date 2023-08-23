@@ -34,7 +34,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // To test the code generator, we actually use it to generate code for
-// third_party/protobuf/unittest.proto, then test that.  This means that we
+// google/protobuf/unittest.proto, then test that.  This means that we
 // are actually testing the parser and other parts of the system at the same
 // time, and that problems in the generator may show up as compile-time errors
 // rather than unittest failures, which may be surprising.  However, testing
@@ -124,7 +124,7 @@ TEST(GENERATED_DESCRIPTOR_TEST_NAME, IdenticalDescriptors) {
 
   // Import (parse) unittest.proto.
   const FileDescriptor* parsed_descriptor =
-      importer.Import(TestUtil::MaybeTranslatePath(UNITTEST_PROTO_PATH));
+      importer.Import(UNITTEST_PROTO_PATH);
   EXPECT_EQ("", error_collector.text_);
   ASSERT_TRUE(parsed_descriptor != nullptr);
 
@@ -2217,7 +2217,7 @@ TEST(DESCRIPTOR_INIT_TEST_NAME, Initialized) {
 
   EXPECT_EQ(should_have_descriptors,
             DescriptorPool::generated_pool()->InternalIsFileLoaded(
-                TestUtil::MaybeTranslatePath(UNITTEST_PROTO_PATH)));
+                UNITTEST_PROTO_PATH));
 }
 
 }  // namespace cpp_unittest

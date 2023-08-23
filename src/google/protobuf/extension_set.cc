@@ -40,9 +40,9 @@
 #include <utility>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/arena.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/extension_set_inl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
@@ -179,14 +179,6 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
 
 // ===================================================================
 // Constructors and basic methods.
-
-ExtensionSet::ExtensionSet(Arena* arena)
-    : arena_(arena),
-      flat_capacity_(0),
-      flat_size_(0),
-      map_{flat_capacity_ == 0
-               ? nullptr
-               : Arena::CreateArray<KeyValue>(arena_, flat_capacity_)} {}
 
 ExtensionSet::~ExtensionSet() {
   // Deletes all allocated extensions.
@@ -1474,8 +1466,8 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
 #undef HANDLE_TYPE
       case WireFormatLite::TYPE_MESSAGE: {
         if (is_lazy) {
-          size_t size = lazymessage_value->ByteSizeLong();
-          result += io::CodedOutputStream::VarintSize32(size) + size;
+          // LazyField::ByteSizeLong includes sizeof(length).
+          result += lazymessage_value->ByteSizeLong();
         } else {
           result += WireFormatLite::MessageSize(*message_value);
         }
@@ -1939,15 +1931,11 @@ size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
   our_size += io::CodedOutputStream::VarintSize32(number);
 
   // message
-  size_t message_size = 0;
   if (is_lazy) {
-    message_size = lazymessage_value->ByteSizeLong();
+    our_size += lazymessage_value->ByteSizeLong();
   } else {
-    message_size = message_value->ByteSizeLong();
+    our_size += WireFormatLite::MessageSize(*message_value);
   }
-
-  our_size += io::CodedOutputStream::VarintSize32(message_size);
-  our_size += message_size;
 
   return our_size;
 }

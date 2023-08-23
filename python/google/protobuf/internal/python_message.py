@@ -53,8 +53,12 @@ __author__ = 'robinson@google.com (Will Robinson)'
 from io import BytesIO
 import struct
 import sys
+import warnings
 import weakref
 
+from google.protobuf import descriptor as descriptor_mod
+from google.protobuf import message as message_mod
+from google.protobuf import text_format
 # We use "as" to avoid name collisions with variables.
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import containers
@@ -66,9 +70,6 @@ from google.protobuf.internal import message_listener as message_listener_mod
 from google.protobuf.internal import type_checkers
 from google.protobuf.internal import well_known_types
 from google.protobuf.internal import wire_format
-from google.protobuf import descriptor as descriptor_mod
-from google.protobuf import message as message_mod
-from google.protobuf import text_format
 
 _FieldDescriptor = descriptor_mod.FieldDescriptor
 _AnyFullTypeName = 'google.protobuf.Any'
@@ -191,6 +192,11 @@ class GeneratedProtocolMessageType(type):
     # Attach stuff to each FieldDescriptor for quick lookup later on.
     for field in descriptor.fields:
       _AttachFieldHelpers(cls, field)
+
+    if descriptor.is_extendable and hasattr(descriptor.file, 'pool'):
+      extensions = descriptor.file.pool.FindAllExtensions(descriptor)
+      for ext in extensions:
+        _AttachFieldHelpers(cls, ext)
 
     descriptor._concrete_class = cls  # pylint: disable=protected-access
     _AddEnumValues(descriptor, cls)
@@ -429,12 +435,12 @@ def _DefaultValueConstructorForField(field):
       return MakeRepeatedScalarDefault
 
   if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
-    # _concrete_class may not yet be initialized.
     message_type = field.message_type
     def MakeSubMessageDefault(message):
-      assert getattr(message_type, '_concrete_class', None), (
-          'Uninitialized concrete class found for field %r (message type %r)'
-          % (field.full_name, message_type.full_name))
+      # _concrete_class may not yet be initialized.
+      if not hasattr(message_type, '_concrete_class'):
+        from google.protobuf import message_factory
+        message_factory.GetMessageClass(message_type)
       result = message_type._concrete_class()
       result._SetListener(
           _OneofListener(message, field)
@@ -764,8 +770,6 @@ def _AddPropertiesForExtensions(descriptor, cls):
   if descriptor.file is not None:
     # TODO(amauryfa): Use cls.MESSAGE_FACTORY.pool when available.
     pool = descriptor.file.pool
-    cls._extensions_by_number = pool._extensions_by_number[descriptor]
-    cls._extensions_by_name = pool._extensions_by_name[descriptor]
 
 def _AddStaticMethods(cls):
   # TODO(robinson): This probably needs to be thread-safe(?)
@@ -1358,6 +1362,11 @@ def _Clear(self):
 
 
 def _UnknownFields(self):
+  warnings.warn(
+      'message.UnknownFields() is deprecated. Please use the add one '
+      'feature unknown_fields.UnknownFieldSet(message) in '
+      'unknown_fields.py instead.'
+  )
   if self._unknown_field_set is None:  # pylint: disable=protected-access
     # pylint: disable=protected-access
     self._unknown_field_set = containers.UnknownFieldSet()

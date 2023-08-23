@@ -67,7 +67,6 @@ struct Options {
   std::string annotation_guard_name;
   FieldListenerOptions field_listener_options;
   EnforceOptimizeMode enforce_mode = EnforceOptimizeMode::kNoEnforcement;
-  enum { kTCTableNever, kTCTableAlways } tctable_mode = kTCTableNever;
   int num_cc_files = 0;
   bool safe_boundary_check = false;
   bool proto_h = false;
@@ -77,10 +76,8 @@ struct Options {
   bool bootstrap = false;
   bool opensource_runtime = false;
   bool annotate_accessor = false;
-  bool unverified_lazy_message_sets = false;
   bool profile_driven_inline_string = true;
   bool force_split = false;
-  bool profile_driven_split = true;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = true;
   bool force_inline_string = true;
@@ -88,6 +85,7 @@ struct Options {
   bool force_eagerly_verified_lazy = false;
   bool force_inline_string = false;
 #endif  // !PROTOBUF_STABLE_EXPERIMENTS
+  bool strip_nonfunctional_codegen = false;
 };
 
 }  // namespace cpp

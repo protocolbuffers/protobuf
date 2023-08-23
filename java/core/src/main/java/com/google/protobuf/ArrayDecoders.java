@@ -286,9 +286,8 @@ final class ArrayDecoders {
     // A group field must has a MessageSchema (the only other subclass of Schema is MessageSetSchema
     // and it can't be used in group fields).
     final MessageSchema messageSchema = (MessageSchema) schema;
-    // It's OK to directly use parseProto2Message since proto3 doesn't have group.
     final int endPosition =
-        messageSchema.parseProto2Message(msg, data, position, limit, endGroup, registers);
+        messageSchema.parseMessage(msg, data, position, limit, endGroup, registers);
     registers.object1 = msg;
     return endPosition;
   }

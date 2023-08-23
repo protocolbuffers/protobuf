@@ -49,6 +49,9 @@ on:
 
   # manual
   workflow_dispatch:
+  
+permissions:
+  contents: read
 
 jobs:
   check-tag:
@@ -90,9 +93,12 @@ jobs:
     needs: [check-tag]
     if: github.event.action == 'labeled'
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions-ecosystem/action-remove-labels@2ce5d41b4b6aa8503e285553f75ed56e0a40bae0 # v1.3.0
         with:
+          fail_on_error: true
           labels: ':a: safe for tests'
 
   # Note: this pattern of passing the head sha is vulnerable to PWN requests for
@@ -166,6 +172,24 @@ jobs:
     name: Rust
     needs: [check-tag]
     uses: ./.github/workflows/test_rust.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  upb:
+    name: μpb
+    needs: [check-tag]
+    uses: ./.github/workflows/test_upb.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  staleness:
+    name: Staleness
+    needs: [check-tag]
+    uses: ./.github/workflows/staleness_check.yml
+    # Staleness tests have scheduled runs during off-hours to avoid race conditions.
+    if: ${{ github.event_name != 'schedule' }}
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit

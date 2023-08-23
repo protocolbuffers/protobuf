@@ -41,6 +41,7 @@
 #include <utility>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/status/status.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -88,12 +89,14 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
                 std::string* error) const override;
 
   uint64_t GetSupportedFeatures() const override {
-    return FEATURE_PROTO3_OPTIONAL;
+    return FEATURE_PROTO3_OPTIONAL | FEATURE_SUPPORTS_EDITIONS;
   }
 
  private:
   bool opensource_runtime_ = PROTO2_IS_OSS;
   std::string runtime_include_base_;
+
+  absl::Status ValidateFeatures(const FileDescriptor* file) const;
 };
 }  // namespace cpp
 }  // namespace compiler

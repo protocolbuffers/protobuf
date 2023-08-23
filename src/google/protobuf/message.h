@@ -116,14 +116,13 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/arena.h"
-#include "google/protobuf/port.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/functional/function_ref.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -131,6 +130,7 @@
 #include "google/protobuf/map.h"  // TODO(b/211442718): cleanup
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/reflection.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -161,6 +161,7 @@ namespace internal {
 struct FuzzPeer;
 struct DescriptorTable;
 class MapFieldBase;
+class MessageUtil;
 class SwapFieldHelper;
 class CachedSize;
 struct TailCallTableInfo;
@@ -182,10 +183,13 @@ class CelMapReflectionFriend;  // field_backed_map_impl.cc
 
 namespace internal {
 class MapFieldPrinterHelper;  // text_format.cc
-PROTOBUF_EXPORT void PerformAbslStringify(
-    const Message& message,
-    absl::FunctionRef<void(absl::string_view)> append);  // text_format.cc
+PROTOBUF_EXPORT std::string StringifyMessage(
+    const Message& message);  // text_format.cc
 }  // namespace internal
+PROTOBUF_EXPORT std::string ShortFormat(
+    const Message& message);  // text_format.cc
+PROTOBUF_EXPORT std::string Utf8Format(
+    const Message& message);  // text_format.cc
 namespace util {
 class MessageDifferencer;
 }
@@ -340,8 +344,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Do not rely on exact format.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const google::protobuf::Message& message) {
-    internal::PerformAbslStringify(
-        message, [&](absl::string_view content) { sink.Append(content); });
+    sink.Append(internal::StringifyMessage(message));
   }
 
   // Reflection-based methods ----------------------------------------
@@ -434,14 +437,6 @@ void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
 // These are protobuf internals that users shouldn't care about.
 class RepeatedFieldAccessor;
 }  // namespace internal
-
-// Forward-declare RepeatedFieldRef templates. The second type parameter is
-// used for SFINAE tricks. Users should ignore it.
-template <typename T, typename Enable = void>
-class RepeatedFieldRef;
-
-template <typename T, typename Enable = void>
-class MutableRepeatedFieldRef;
 
 // This interface contains methods that can be used to dynamically access
 // and modify the fields of a protocol message.  Their semantics are
@@ -1028,8 +1023,11 @@ class PROTOBUF_EXPORT Reflection final {
   // "message_type" should be set to its descriptor. Otherwise "message_type"
   // should be set to nullptr. Implementations of this method should check
   // whether "cpp_type"/"message_type" is consistent with the actual type of the
-  // field. We use 1 routine rather than 2 (const vs mutable) because it is
-  // protected and it doesn't change the message.
+  // field.
+  const void* RepeatedFieldData(const Message& message,
+                                const FieldDescriptor* field,
+                                FieldDescriptor::CppType cpp_type,
+                                const Descriptor* message_type) const;
   void* RepeatedFieldData(Message* message, const FieldDescriptor* field,
                           FieldDescriptor::CppType cpp_type,
                           const Descriptor* message_type) const;
@@ -1117,6 +1115,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class expr::CelMapReflectionFriend;
   friend class internal::MapFieldReflectionTest;
   friend class internal::MapKeySorter;
+  friend class internal::MessageUtil;
   friend class internal::WireFormat;
   friend class internal::ReflectionOps;
   friend class internal::SwapFieldHelper;
@@ -1132,8 +1131,9 @@ class PROTOBUF_EXPORT Reflection final {
   // call MutableRawRepeatedField directly here because we don't have access to
   // FieldOptions::* which are defined in descriptor.pb.h.  Including that
   // file here is not possible because it would cause a circular include cycle.
-  // We use 1 routine rather than 2 (const vs mutable) because it is private
-  // and mutable a repeated string field doesn't change the message.
+  const void* GetRawRepeatedString(const Message& message,
+                                   const FieldDescriptor* field,
+                                   bool is_string) const;
   void* MutableRawRepeatedString(Message* message, const FieldDescriptor* field,
                                  bool is_string) const;
 
@@ -1489,8 +1489,8 @@ template <>
 inline const RepeatedPtrField<std::string>&
 Reflection::GetRepeatedPtrFieldInternal<std::string>(
     const Message& message, const FieldDescriptor* field) const {
-  return *static_cast<RepeatedPtrField<std::string>*>(
-      MutableRawRepeatedString(const_cast<Message*>(&message), field, true));
+  return *static_cast<const RepeatedPtrField<std::string>*>(
+      GetRawRepeatedString(message, field, true));
 }
 
 template <>
@@ -1556,17 +1556,44 @@ void** Reflection::MutableSplitField(Message* message) const {
   return internal::GetPointerAtOffset<void*>(message, schema_.SplitOffset());
 }
 
+namespace internal {
+
+template <typename T>
+bool SplitFieldHasExtraIndirectionStatic(const FieldDescriptor* field) {
+  const bool ret = std::is_base_of<RepeatedFieldBase, T>() ||
+                   std::is_base_of<RepeatedPtrFieldBase, T>();
+  ABSL_DCHECK_EQ(SplitFieldHasExtraIndirection(field), ret);
+  return ret;
+}
+
+}  // namespace internal
+
 template <typename Type>
 const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
   ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
       << "Field = " << field->full_name();
-  if (schema_.IsSplit(field)) {
-    return *internal::GetConstPointerAtOffset<Type>(
-        GetSplitField(&message), schema_.GetFieldOffset(field));
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
+  if (!schema_.IsSplit(field)) {
+    return internal::GetConstRefAtOffset<Type>(message, field_offset);
   }
-  return internal::GetConstRefAtOffset<Type>(message,
-                                             schema_.GetFieldOffset(field));
+  const void* split = GetSplitField(&message);
+  if (internal::SplitFieldHasExtraIndirectionStatic<Type>(field)) {
+    return **internal::GetConstPointerAtOffset<Type*>(split, field_offset);
+  }
+  return *internal::GetConstPointerAtOffset<Type>(split, field_offset);
+}
+
+template <typename T>
+RepeatedFieldRef<T> Reflection::GetRepeatedFieldRef(
+    const Message& message, const FieldDescriptor* field) const {
+  return RepeatedFieldRef<T>(message, field);
+}
+
+template <typename T>
+MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
+    Message* message, const FieldDescriptor* field) const {
+  return MutableRepeatedFieldRef<T>(message, field);
 }
 }  // namespace protobuf
 }  // namespace google

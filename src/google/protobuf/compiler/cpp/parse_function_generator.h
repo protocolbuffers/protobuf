@@ -34,10 +34,10 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -79,39 +79,11 @@ class ParseFunctionGenerator {
   // Generates a tail-calling `_InternalParse` function.
   void GenerateTailcallParseFunction(Formatter& format);
 
-  // Generates a looping `_InternalParse` function.
-  void GenerateLoopingParseFunction(Formatter& format);
-
   // Generates the tail-call table definition.
-  void GenerateTailCallTable(Formatter& format);
+  void GenerateTailCallTable(io::Printer* printer);
   void GenerateFastFieldEntries(Formatter& format);
   void GenerateFieldEntries(Formatter& format);
   void GenerateFieldNames(Formatter& format);
-
-  // Generates parsing code for an `ArenaString` field.
-  void GenerateArenaString(Formatter& format, const FieldDescriptor* field);
-
-  // Generates parsing code for a string-typed field.
-  void GenerateStrings(Formatter& format, const FieldDescriptor* field,
-                       bool check_utf8);
-
-  // Generates parsing code for a length-delimited field (strings, messages,
-  // etc.).
-  void GenerateLengthDelim(Formatter& format, const FieldDescriptor* field);
-
-  // Generates the parsing code for a known field.
-  void GenerateFieldBody(Formatter& format,
-                         google::protobuf::internal::WireFormatLite::WireType wiretype,
-                         const FieldDescriptor* field);
-
-  // Generates code to parse the next field from the input stream.
-  void GenerateParseIterationBody(
-      Formatter& format, const Descriptor* descriptor,
-      const std::vector<const FieldDescriptor*>& fields);
-
-  // Generates a `switch` statement to parse each of `fields`.
-  void GenerateFieldSwitch(Formatter& format,
-                           const std::vector<const FieldDescriptor*>& fields);
 
   const Descriptor* descriptor_;
   MessageSCCAnalyzer* scc_analyzer_;

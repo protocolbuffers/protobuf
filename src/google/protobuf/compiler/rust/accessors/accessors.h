@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2023 Google Inc.  All rights reserved.
+// Copyright 2023 Google LLC.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -31,9 +31,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSORS_H__
 #define GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSORS_H__
 
-#include <memory>
-
-#include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 
@@ -42,58 +39,9 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-class AccessorGenerator {
- public:
-  AccessorGenerator() = default;
-
-  AccessorGenerator(const AccessorGenerator &) = delete;
-  AccessorGenerator(AccessorGenerator &&) = delete;
-  AccessorGenerator &operator=(const AccessorGenerator &) = delete;
-  AccessorGenerator &operator=(AccessorGenerator &&) = delete;
-
-  virtual ~AccessorGenerator();
-
-  // Constructs a generator for the given field.
-  //
-  // Returns `nullptr` if there is no known generator for this field.
-  static std::unique_ptr<AccessorGenerator> For(Context<FieldDescriptor> field);
-
-  void GenerateMsgImpl(Context<FieldDescriptor> field) const {
-    InMsgImpl(field);
-  }
-  void GenerateExternC(Context<FieldDescriptor> field) const {
-    InExternC(field);
-  }
-  void GenerateThunkCc(Context<FieldDescriptor> field) const {
-    ABSL_CHECK(field.is_cpp());
-    InThunkCc(field);
-  }
-
- private:
-  // Note: the virtual functions are duplicated as non-virtual public functions,
-  // so that we can customize prologue and epilogue behavior for these
-  // functions. For example, consider calling `field.printer.WithVars()` as a
-  // prologue to inject variables automatically.
-
-  // Called inside the main inherent `impl Msg {}` block.
-  virtual void InMsgImpl(Context<FieldDescriptor> field) const {}
-
-  // Called inside of a message's `extern "C" {}` block.
-  virtual void InExternC(Context<FieldDescriptor> field) const {}
-
-  // Called inside of an `extern "C" {}` block in the  `.thunk.cc` file, if such
-  // a file is being generated.
-  virtual void InThunkCc(Context<FieldDescriptor> field) const {}
-
-  // These static factories are defined in the corresponding implementation
-  // files for each implementation of AccessorGenerator.
-  static std::unique_ptr<AccessorGenerator> ForSingularScalar(
-      Context<FieldDescriptor> field);
-  static std::unique_ptr<AccessorGenerator> ForSingularBytes(
-      Context<FieldDescriptor> field);
-};
-
-inline AccessorGenerator::~AccessorGenerator() = default;
+void GenerateAccessorMsgImpl(Context<FieldDescriptor> field);
+void GenerateAccessorExternC(Context<FieldDescriptor> field);
+void GenerateAccessorThunkCc(Context<FieldDescriptor> field);
 
 }  // namespace rust
 }  // namespace compiler

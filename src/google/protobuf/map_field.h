@@ -35,16 +35,17 @@
 #include <functional>
 #include <type_traits>
 
-#include "google/protobuf/arena.h"
-#include "google/protobuf/port.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/map_entry.h"
 #include "google/protobuf/map_field_lite.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 
@@ -246,6 +247,7 @@ class PROTOBUF_EXPORT MapKey {
  private:
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
+  friend class internal::MapFieldBase;
   friend class MapIterator;
   friend class internal::DynamicMapField;
 
@@ -276,8 +278,15 @@ class PROTOBUF_EXPORT MapKey {
 };
 
 namespace internal {
+
 template <>
 struct is_internal_map_key_type<MapKey> : std::true_type {};
+
+template <>
+struct RealKeyToVariantKey<MapKey> {
+  VariantKey operator()(const MapKey& value) const;
+};
+
 }  // namespace internal
 
 }  // namespace protobuf
@@ -286,37 +295,8 @@ namespace std {
 template <>
 struct hash<google::protobuf::MapKey> {
   size_t operator()(const google::protobuf::MapKey& map_key) const {
-    switch (map_key.type()) {
-      case google::protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
-      case google::protobuf::FieldDescriptor::CPPTYPE_FLOAT:
-      case google::protobuf::FieldDescriptor::CPPTYPE_ENUM:
-      case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
-        ABSL_LOG(FATAL) << "Unsupported";
-        break;
-      case google::protobuf::FieldDescriptor::CPPTYPE_STRING:
-        return hash<std::string>()(map_key.GetStringValue());
-      case google::protobuf::FieldDescriptor::CPPTYPE_INT64: {
-        auto value = map_key.GetInt64Value();
-        return hash<decltype(value)>()(value);
-      }
-      case google::protobuf::FieldDescriptor::CPPTYPE_INT32: {
-        auto value = map_key.GetInt32Value();
-        return hash<decltype(value)>()(map_key.GetInt32Value());
-      }
-      case google::protobuf::FieldDescriptor::CPPTYPE_UINT64: {
-        auto value = map_key.GetUInt64Value();
-        return hash<decltype(value)>()(map_key.GetUInt64Value());
-      }
-      case google::protobuf::FieldDescriptor::CPPTYPE_UINT32: {
-        auto value = map_key.GetUInt32Value();
-        return hash<decltype(value)>()(map_key.GetUInt32Value());
-      }
-      case google::protobuf::FieldDescriptor::CPPTYPE_BOOL: {
-        return hash<bool>()(map_key.GetBoolValue());
-      }
-    }
-    ABSL_LOG(FATAL) << "Can't get here.";
-    return 0;
+    return ::google::protobuf::internal::RealKeyToVariantKey<::google::protobuf::MapKey>{}(map_key)
+        .Hash();
   }
   bool operator()(const google::protobuf::MapKey& map_key1,
                   const google::protobuf::MapKey& map_key2) const {
@@ -358,27 +338,29 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   // Pure virtual map APIs for Map Reflection.
   virtual bool ContainsMapKey(const MapKey& map_key) const = 0;
-  virtual bool InsertOrLookupMapValue(const MapKey& map_key,
-                                      MapValueRef* val) = 0;
   virtual bool LookupMapValue(const MapKey& map_key,
                               MapValueConstRef* val) const = 0;
   bool LookupMapValue(const MapKey&, MapValueRef*) const = delete;
+
+  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val);
 
   // Returns whether changes to the map are reflected in the repeated field.
   bool IsRepeatedFieldValid() const;
   // Insures operations after won't get executed before calling this.
   bool IsMapValid() const;
   virtual bool DeleteMapValue(const MapKey& map_key) = 0;
-  virtual bool EqualIterator(const MapIterator& a,
-                             const MapIterator& b) const = 0;
-  virtual void MapBegin(MapIterator* map_iter) const = 0;
-  virtual void MapEnd(MapIterator* map_iter) const = 0;
   virtual void MergeFrom(const MapFieldBase& other) = 0;
   virtual void Swap(MapFieldBase* other);
   virtual void UnsafeShallowSwap(MapFieldBase* other);
   // Sync Map with repeated field and returns the size of map.
-  virtual int size() const = 0;
-  virtual void Clear() = 0;
+  int size() const;
+  void Clear();
+  virtual void SetMapIteratorValue(MapIterator* map_iter) const = 0;
+
+  void MapBegin(MapIterator* map_iter) const;
+  void MapEnd(MapIterator* map_iter) const;
+  bool EqualIterator(const MapIterator& a, const MapIterator& b) const;
+  const UntypedMapBase& GetMapImpl(bool is_mutable) const final;
 
   // Returns the number of bytes used by the repeated field, excluding
   // sizeof(*this)
@@ -392,15 +374,18 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   // Gets the size of space used by map field.
   virtual size_t SpaceUsedExcludingSelfNoLock() const;
 
+  virtual const Message* GetPrototype() const = 0;
+  virtual void ClearMapNoSync() = 0;
+
   // Synchronizes the content in Map to RepeatedPtrField if there is any change
   // to Map after last synchronization.
   void SyncRepeatedFieldWithMap() const;
-  virtual void SyncRepeatedFieldWithMapNoLock() const = 0;
+  void SyncRepeatedFieldWithMapNoLock();
 
   // Synchronizes the content in RepeatedPtrField to Map if there is any change
   // to RepeatedPtrField after last synchronization.
   void SyncMapWithRepeatedField() const;
-  virtual void SyncMapWithRepeatedFieldNoLock() const = 0;
+  void SyncMapWithRepeatedFieldNoLock();
 
   // Tells MapFieldBase that there is new change to Map.
   void SetMapDirty();
@@ -410,6 +395,9 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   // Provides derived class the access to repeated field.
   void* MutableRepeatedPtrField() const;
+
+  virtual bool InsertOrLookupMapValueNoSync(const MapKey& map_key,
+                                            MapValueRef* val) = 0;
 
   void InternalSwap(MapFieldBase* other);
 
@@ -481,26 +469,27 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   friend class google::protobuf::Reflection;
   friend class google::protobuf::DynamicMessage;
 
+  // See assertion in TypeDefinedMapFieldBase::TypeDefinedMapFieldBase()
+  const UntypedMapBase& GetMapRaw() const {
+    return *reinterpret_cast<const UntypedMapBase*>(this + 1);
+  }
+  UntypedMapBase& GetMapRaw() {
+    return *reinterpret_cast<UntypedMapBase*>(this + 1);
+  }
+
   // Virtual helper methods for MapIterator. MapIterator doesn't have the
   // type helper for key and value. Call these help methods to deal with
   // different types. Real helper methods are implemented in
   // TypeDefinedMapFieldBase.
   friend class google::protobuf::MapIterator;
-  // Allocate map<...>::iterator for MapIterator.
-  virtual void InitializeIterator(MapIterator* map_iter) const = 0;
-
-  // DeleteIterator() is called by the destructor of MapIterator only.
-  // It deletes map<...>::iterator for MapIterator.
-  virtual void DeleteIterator(MapIterator* map_iter) const = 0;
 
   // Copy the map<...>::iterator from other_iterator to
   // this_iterator.
-  virtual void CopyIterator(MapIterator* this_iterator,
-                            const MapIterator& other_iterator) const = 0;
+  void CopyIterator(MapIterator* this_iter, const MapIterator& that_iter) const;
 
   // IncreaseIterator() is called by operator++() of MapIterator only.
   // It implements the ++ operator of MapIterator.
-  virtual void IncreaseIterator(MapIterator* map_iter) const = 0;
+  void IncreaseIterator(MapIterator* map_iter) const;
 
   enum class TaggedPtr : uintptr_t {};
   static constexpr uintptr_t kHasPayloadBit = 1;
@@ -535,39 +524,67 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 template <typename Key, typename T>
 class TypeDefinedMapFieldBase : public MapFieldBase {
  public:
-  constexpr TypeDefinedMapFieldBase() {}
+  constexpr TypeDefinedMapFieldBase() : map_() {
+    // This invariant is required by MapFieldBase to easily access the map
+    // member without paying for dynamic dispatch. It reduces code size.
+    static_assert(PROTOBUF_FIELD_OFFSET(TypeDefinedMapFieldBase, map_) ==
+                      sizeof(MapFieldBase),
+                  "");
+  }
   TypeDefinedMapFieldBase(const TypeDefinedMapFieldBase&) = delete;
   TypeDefinedMapFieldBase& operator=(const TypeDefinedMapFieldBase&) = delete;
 
-  explicit TypeDefinedMapFieldBase(Arena* arena) : MapFieldBase(arena) {}
+  explicit TypeDefinedMapFieldBase(Arena* arena)
+      : MapFieldBase(arena), map_(arena) {}
   TypeDefinedMapFieldBase(ArenaInitialized, Arena* arena)
       : TypeDefinedMapFieldBase(arena) {}
 
  protected:
-  ~TypeDefinedMapFieldBase() {}
+  ~TypeDefinedMapFieldBase() { map_.~Map(); }
+
+  // Not all overrides are marked `final` here because DynamicMapField overrides
+  // them. DynamicMapField does extra memory management for the elements and
+  // needs to override the functions that create or destroy elements.
 
  public:
-  void MapBegin(MapIterator* map_iter) const final;
-  void MapEnd(MapIterator* map_iter) const final;
-  bool EqualIterator(const MapIterator& a, const MapIterator& b) const final;
+  const Map<Key, T>& GetMap() const {
+    SyncMapWithRepeatedField();
+    return map_;
+  }
 
-  virtual const Map<Key, T>& GetMap() const = 0;
-  // This overrides the base's method to specialize the signature via
-  // covariance, but we do not yet provide an implementation here, so `= 0`.
-  Map<Key, T>* MutableMap() override = 0;
+  Map<Key, T>* MutableMap() {
+    SyncMapWithRepeatedField();
+    SetMapDirty();
+    return &map_;
+  }
+
+  void ClearMapNoSync() override { map_.clear(); }
+
+  void InternalSwap(TypeDefinedMapFieldBase* other);
+
+  void Swap(MapFieldBase* other) final;
+
+  void UnsafeShallowSwap(MapFieldBase* other) override;
+  size_t SpaceUsedExcludingSelfNoLock() const override;
+  void MergeFrom(const MapFieldBase& other) override;
 
  protected:
-  typename Map<Key, T>::const_iterator& InternalGetIterator(
-      const MapIterator* map_iter) const;
+  using Iter = typename Map<Key, T>::const_iterator;
+
+  // map_ is inside an anonymous union so we can explicitly control its
+  // destruction
+  union {
+    Map<Key, T> map_;
+  };
 
  private:
-  void InitializeIterator(MapIterator* map_iter) const final;
-  void DeleteIterator(MapIterator* map_iter) const final;
-  void CopyIterator(MapIterator* this_iteratorm,
-                    const MapIterator& that_iterator) const final;
-  void IncreaseIterator(MapIterator* map_iter) const final;
-
-  virtual void SetMapIteratorValue(MapIterator* map_iter) const = 0;
+  void SetMapIteratorValue(MapIterator* map_iter) const final;
+  bool ContainsMapKey(const MapKey& map_key) const final;
+  bool LookupMapValue(const MapKey& map_key, MapValueConstRef* val) const final;
+  bool LookupMapValue(const MapKey&, MapValueRef*) const = delete;
+  bool DeleteMapValue(const MapKey& map_key) final;
+  bool InsertOrLookupMapValueNoSync(const MapKey& map_key,
+                                    MapValueRef* val) override;
 };
 
 // This class provides access to map field using generated api. It is used for
@@ -585,85 +602,38 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   // Define message type for internal repeated field.
   typedef Derived EntryType;
 
-  // Define abbreviation for parent MapFieldLite
-  typedef MapFieldLite<Derived, Key, T, kKeyFieldType_, kValueFieldType_>
-      MapFieldLiteType;
-
-  // Enum needs to be handled differently from other types because it has
-  // different exposed type in Map's api and repeated field's api. For
-  // details see the comment in the implementation of
-  // SyncMapWithRepeatedFieldNoLock.
-  static constexpr bool kIsValueEnum = ValueTypeHandler::kIsEnum;
-  typedef typename MapIf<kIsValueEnum, T, const T&>::type CastValueType;
-
  public:
   typedef Map<Key, T> MapType;
   static constexpr WireFormatLite::FieldType kKeyFieldType = kKeyFieldType_;
   static constexpr WireFormatLite::FieldType kValueFieldType = kValueFieldType_;
 
-  constexpr MapField() : impl_() {}
+  constexpr MapField() {}
   MapField(const MapField&) = delete;
   MapField& operator=(const MapField&) = delete;
   ~MapField() {}
 
-  explicit MapField(Arena* arena)
-      : TypeDefinedMapFieldBase<Key, T>(arena), impl_(arena) {}
+  explicit MapField(Arena* arena) : TypeDefinedMapFieldBase<Key, T>(arena) {}
   MapField(ArenaInitialized, Arena* arena) : MapField(arena) {}
 
-  // TODO(sbenza): Move these up to TypeDefinedMapFieldBase where possible.
-  // Implement MapFieldBase
-  bool ContainsMapKey(const MapKey& map_key) const final;
-  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) final;
-  bool LookupMapValue(const MapKey& map_key, MapValueConstRef* val) const final;
-  bool LookupMapValue(const MapKey&, MapValueRef*) const = delete;
-  bool DeleteMapValue(const MapKey& map_key) final;
-
-  const Map<Key, T>& GetMap() const final {
-    MapFieldBase::SyncMapWithRepeatedField();
-    return impl_.GetMap();
+  MapField(InternalVisibility, Arena* arena)
+      : TypeDefinedMapFieldBase<Key, T>(arena) {}
+  MapField(InternalVisibility, Arena* arena, const MapField& from)
+      : TypeDefinedMapFieldBase<Key, T>(arena) {
+    TypeDefinedMapFieldBase<Key, T>::MergeFrom(from);
   }
-
-  Map<Key, T>* MutableMap() final {
-    MapFieldBase::SyncMapWithRepeatedField();
-    Map<Key, T>* result = impl_.MutableMap();
-    MapFieldBase::SetMapDirty();
-    return result;
-  }
-
-  int size() const final;
-  void Clear() final;
-  void MergeFrom(const MapFieldBase& other) final;
-  void Swap(MapFieldBase* other) final;
-  void UnsafeShallowSwap(MapFieldBase* other) final;
-  void InternalSwap(MapField* other);
 
   // Used in the implementation of parsing. Caller should take the ownership iff
   // arena_ is nullptr.
-  EntryType* NewEntry() const { return impl_.NewEntry(); }
-
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-    return impl_._InternalParse(ptr, ctx);
-  }
-  template <typename UnknownType>
-  const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
-                                      bool (*is_valid)(int), uint32_t field_num,
-                                      InternalMetadata* metadata) {
-    return impl_.template ParseWithEnumValidation<UnknownType>(
-        ptr, ctx, is_valid, field_num, metadata);
+  EntryType* NewEntry() const {
+    return Arena::CreateMessage<EntryType>(this->arena());
   }
 
  private:
-  MapFieldLiteType impl_;
-
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
 
   // Implements MapFieldBase
-  void SyncRepeatedFieldWithMapNoLock() const final;
-  void SyncMapWithRepeatedFieldNoLock() const final;
-  size_t SpaceUsedExcludingSelfNoLock() const final;
-
-  void SetMapIteratorValue(MapIterator* map_iter) const final;
+  const Message* GetPrototype() const final;
 
   friend class google::protobuf::Arena;
   friend class MapFieldStateTest;  // For testing, it needs raw access to impl_
@@ -695,32 +665,21 @@ class PROTOBUF_EXPORT DynamicMapField final
   virtual ~DynamicMapField();
 
   // Implement MapFieldBase
-  bool ContainsMapKey(const MapKey& map_key) const final;
-  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) final;
-  bool LookupMapValue(const MapKey& map_key, MapValueConstRef* val) const final;
-  bool LookupMapValue(const MapKey&, MapValueRef*) const = delete;
-  bool DeleteMapValue(const MapKey& map_key) final;
+  bool InsertOrLookupMapValueNoSync(const MapKey& map_key,
+                                    MapValueRef* val) final;
   void MergeFrom(const MapFieldBase& other) final;
-  void Swap(MapFieldBase* other) final;
   void UnsafeShallowSwap(MapFieldBase* other) final { Swap(other); }
 
-  const Map<MapKey, MapValueRef>& GetMap() const final;
-  Map<MapKey, MapValueRef>* MutableMap() final;
-
-  int size() const final;
-  void Clear() final;
+  void ClearMapNoSync() final;
 
  private:
-  Map<MapKey, MapValueRef> map_;
   const Message* default_entry_;
 
   void AllocateMapValue(MapValueRef* map_val);
 
   // Implements MapFieldBase
-  void SyncRepeatedFieldWithMapNoLock() const final;
-  void SyncMapWithRepeatedFieldNoLock() const final;
+  const Message* GetPrototype() const final;
   size_t SpaceUsedExcludingSelfNoLock() const final;
-  void SetMapIteratorValue(MapIterator* map_iter) const final;
 };
 
 }  // namespace internal
@@ -808,6 +767,10 @@ class PROTOBUF_EXPORT MapValueConstRef {
   friend class google::protobuf::MapIterator;
   friend class Reflection;
   friend class internal::DynamicMapField;
+  friend class internal::MapFieldBase;
+
+  void SetValueOrCopy(const void* val) { SetValue(val); }
+  void SetValueOrCopy(const MapValueConstRef* val) { CopyFrom(*val); }
 
   void SetType(FieldDescriptor::CppType type) { type_ = type; }
   void SetValue(const void* val) { data_ = const_cast<void*>(val); }
@@ -902,14 +865,8 @@ class PROTOBUF_EXPORT MapIterator {
     map_ = reflection->MutableMapData(message, field);
     key_.SetType(field->message_type()->map_key()->cpp_type());
     value_.SetType(field->message_type()->map_value()->cpp_type());
-    map_->InitializeIterator(this);
   }
-  MapIterator(const MapIterator& other) {
-    map_ = other.map_;
-    map_->InitializeIterator(this);
-    map_->CopyIterator(this, other);
-  }
-  ~MapIterator() { map_->DeleteIterator(this); }
+  MapIterator(const MapIterator& other) { *this = other; }
   MapIterator& operator=(const MapIterator& other) {
     map_ = other.map_;
     map_->CopyIterator(this, other);
@@ -947,12 +904,15 @@ class PROTOBUF_EXPORT MapIterator {
             internal::WireFormatLite::FieldType kKeyFieldType,
             internal::WireFormatLite::FieldType kValueFieldType>
   friend class internal::MapField;
+  friend class internal::MapFieldBase;
 
-  // reinterpret_cast from heap-allocated Map<...>::iterator*. MapIterator owns
-  // the iterator. It is allocated by MapField<...>::InitializeIterator() called
-  // in constructor and deleted by MapField<...>::DeleteIterator() called in
-  // destructor.
-  void* iter_;
+  MapIterator(internal::MapFieldBase* map, const Descriptor* descriptor) {
+    map_ = map;
+    key_.SetType(descriptor->map_key()->cpp_type());
+    value_.SetType(descriptor->map_value()->cpp_type());
+  }
+
+  internal::UntypedMapIterator iter_;
   // Point to a MapField to call helper methods implemented in MapField.
   // MapIterator does not own this object.
   internal::MapFieldBase* map_;

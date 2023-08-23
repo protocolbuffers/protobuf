@@ -37,6 +37,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/match.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
@@ -46,6 +47,15 @@ namespace protobuf {
 namespace compiler {
 
 namespace {
+
+bool IsOptionsProto(const Message& m) {
+  const Descriptor* descriptor = m.GetDescriptor();
+  return descriptor->file()->name() ==
+             DescriptorProto::descriptor()->file()->name() &&
+         absl::EndsWith(descriptor->name(), "Options");
+}
+
+bool IsEmpty(const Message& m) { return m.ByteSizeLong() == 0; }
 
 // Recursively strips any options with source retention from the message. If
 // stripped_paths is not null, then this function will populate it with the
@@ -74,8 +84,18 @@ void StripMessage(Message& m, std::vector<int>& path,
           path.pop_back();
         }
       } else {
-        StripMessage(*reflection->MutableMessage(&m, field), path,
-                     stripped_paths);
+        Message* child = reflection->MutableMessage(&m, field);
+        bool was_nonempty_options_proto =
+            IsOptionsProto(*child) && !IsEmpty(*child);
+        StripMessage(*child, path, stripped_paths);
+        // If this is an options message that became empty due to retention
+        // stripping, remove it.
+        if (was_nonempty_options_proto && IsEmpty(*child)) {
+          reflection->ClearField(&m, field);
+          if (stripped_paths != nullptr) {
+            stripped_paths->push_back(path);
+          }
+        }
       }
     }
     path.pop_back();
@@ -213,7 +233,7 @@ void StripSourceCodeInfo(std::vector<std::vector<int>>& stripped_paths,
   old_locations.resize(locations->size());
   locations->ExtractSubrange(0, locations->size(), old_locations.data());
   locations->Reserve(old_locations.size() - indices_to_delete.size());
-  for (int i = 0; i < old_locations.size(); ++i) {
+  for (size_t i = 0; i < old_locations.size(); ++i) {
     if (indices_to_delete.contains(i)) {
       delete old_locations[i];
     } else {
@@ -228,14 +248,20 @@ FileDescriptorProto StripSourceRetentionOptions(const FileDescriptor& file,
                                                 bool include_source_code_info) {
   FileDescriptorProto file_proto;
   file.CopyTo(&file_proto);
-  std::vector<std::vector<int>> stripped_paths;
-  ConvertToDynamicMessageAndStripOptions(file_proto, *file.pool(),
-                                         &stripped_paths);
   if (include_source_code_info) {
     file.CopySourceCodeInfoTo(&file_proto);
+  }
+  StripSourceRetentionOptions(*file.pool(), file_proto);
+  return file_proto;
+}
+
+void StripSourceRetentionOptions(const DescriptorPool& pool,
+                                 FileDescriptorProto& file_proto) {
+  std::vector<std::vector<int>> stripped_paths;
+  ConvertToDynamicMessageAndStripOptions(file_proto, pool, &stripped_paths);
+  if (file_proto.has_source_code_info()) {
     StripSourceCodeInfo(stripped_paths, *file_proto.mutable_source_code_info());
   }
-  return file_proto;
 }
 
 DescriptorProto StripSourceRetentionOptions(const Descriptor& message) {
@@ -299,8 +325,7 @@ MessageOptions StripLocalSourceRetentionOptions(const Descriptor& descriptor) {
 
 ExtensionRangeOptions StripLocalSourceRetentionOptions(
     const Descriptor& descriptor, const Descriptor::ExtensionRange& range) {
-  if (range.options_ == nullptr) return ExtensionRangeOptions{};
-  ExtensionRangeOptions options = *range.options_;
+  ExtensionRangeOptions options = range.options();
   ConvertToDynamicMessageAndStripOptions(options, GetPool(descriptor));
   return options;
 }

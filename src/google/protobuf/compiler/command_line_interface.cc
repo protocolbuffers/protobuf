@@ -40,6 +40,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/allowlists/allowlists.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/descriptor_visitor.h"
 
 #include "google/protobuf/stubs/platform_macros.h"
 
@@ -79,7 +80,6 @@
 #include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "google/protobuf/compiler/plugin.pb.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
@@ -89,6 +89,7 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/importer.h"
+#include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/compiler/zip_writer.h"
@@ -301,27 +302,35 @@ std::string PluginName(absl::string_view plugin_prefix,
 }
 
 
-// Get all transitive dependencies of the given file (including the file
-// itself), adding them to the given list of FileDescriptorProtos.  The
-// protos will be ordered such that every file is listed before any file that
-// depends on it, so that you can call DescriptorPool::BuildFile() on them
-// in order.  Any files in *already_seen will not be added, and each file
-// added will be inserted into *already_seen.  If include_source_code_info is
-// true then include the source code information in the FileDescriptorProtos.
-// If include_json_name is true, populate the json_name field of
-// FieldDescriptorProto for all fields.
-struct TransitiveDependencyOptions {
-  bool include_json_name = false;
-  bool include_source_code_info = false;
-  bool retain_options = false;
-};
+bool EnforceEditionsSupport(
+    const std::string& codegen_name, uint64_t supported_features,
+    const std::vector<const FileDescriptor*>& parsed_files) {
+  if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
+    for (const auto fd : parsed_files) {
+      if (FileDescriptorLegacy(fd).syntax() ==
+          FileDescriptorLegacy::SYNTAX_EDITIONS) {
+        std::cerr
+            << fd->name() << ": is an editions file, but code generator "
+            << codegen_name
+            << " hasn't been updated to support editions yet.  Please ask "
+               "the owner of this code generator to add support or "
+               "switch back to proto2/proto3.\n\nSee "
+               "https://protobuf.dev/editions/overview/ for more information."
+            << std::endl;
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
-void GetTransitiveDependencies(
+}  // namespace
+
+void CommandLineInterface::GetTransitiveDependencies(
     const FileDescriptor* file,
     absl::flat_hash_set<const FileDescriptor*>* already_seen,
     RepeatedPtrField<FileDescriptorProto>* output,
-    const TransitiveDependencyOptions& options =
-        TransitiveDependencyOptions()) {
+    const TransitiveDependencyOptions& options) {
   if (!already_seen->insert(file).second) {
     // Already saw this file.  Skip.
     return;
@@ -335,21 +344,17 @@ void GetTransitiveDependencies(
 
   // Add this file.
   FileDescriptorProto* new_descriptor = output->Add();
-  if (options.retain_options) {
-    file->CopyTo(new_descriptor);
-    if (options.include_source_code_info) {
-      file->CopySourceCodeInfoTo(new_descriptor);
-    }
-  } else {
-    *new_descriptor =
-        StripSourceRetentionOptions(*file, options.include_source_code_info);
+  file->CopyTo(new_descriptor);
+  if (options.include_source_code_info) {
+    file->CopySourceCodeInfoTo(new_descriptor);
+  }
+  if (!options.retain_options) {
+    StripSourceRetentionOptions(*file->pool(), *new_descriptor);
   }
   if (options.include_json_name) {
     file->CopyJsonNameTo(new_descriptor);
   }
 }
-
-}  // namespace
 
 // A MultiFileErrorCollector that prints errors to stderr.
 class CommandLineInterface::ErrorPrinter
@@ -1025,100 +1030,6 @@ bool ContainsProto3Optional(const FileDescriptor* file) {
   return false;
 }
 
-template <typename Visitor>
-struct VisitImpl {
-  Visitor visitor;
-  void Visit(const FieldDescriptor* descriptor) { visitor(descriptor); }
-
-  void Visit(const EnumValueDescriptor* descriptor) { visitor(descriptor); }
-
-  void Visit(const EnumDescriptor* descriptor) {
-    visitor(descriptor);
-    for (int i = 0; i < descriptor->value_count(); i++) {
-      Visit(descriptor->value(i));
-    }
-  }
-
-  void Visit(const Descriptor::ExtensionRange* descriptor) {
-    visitor(descriptor);
-  }
-
-  void Visit(const OneofDescriptor* descriptor) { visitor(descriptor); }
-
-  void Visit(const Descriptor* descriptor) {
-    visitor(descriptor);
-
-    for (int i = 0; i < descriptor->enum_type_count(); i++) {
-      Visit(descriptor->enum_type(i));
-    }
-
-    for (int i = 0; i < descriptor->field_count(); i++) {
-      Visit(descriptor->field(i));
-    }
-
-    for (int i = 0; i < descriptor->nested_type_count(); i++) {
-      Visit(descriptor->nested_type(i));
-    }
-
-    for (int i = 0; i < descriptor->extension_count(); i++) {
-      Visit(descriptor->extension(i));
-    }
-
-    for (int i = 0; i < descriptor->extension_range_count(); i++) {
-      Visit(descriptor->extension_range(i));
-    }
-
-    for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
-      Visit(descriptor->oneof_decl(i));
-    }
-  }
-
-  void Visit(const MethodDescriptor* method) { visitor(method); }
-
-  void Visit(const ServiceDescriptor* descriptor) {
-    visitor(descriptor);
-    for (int i = 0; i < descriptor->method_count(); i++) {
-      Visit(descriptor->method(i));
-    }
-  }
-
-  void Visit(absl::Span<const FileDescriptor*> descriptors) {
-    for (const FileDescriptor* descriptor : descriptors) {
-      visitor(descriptor);
-      for (int i = 0; i < descriptor->message_type_count(); i++) {
-        Visit(descriptor->message_type(i));
-      }
-      for (int i = 0; i < descriptor->enum_type_count(); i++) {
-        Visit(descriptor->enum_type(i));
-      }
-      for (int i = 0; i < descriptor->extension_count(); i++) {
-        Visit(descriptor->extension(i));
-      }
-      for (int i = 0; i < descriptor->service_count(); i++) {
-        Visit(descriptor->service(i));
-      }
-    }
-  }
-};
-
-// Visit every node in the descriptors calling `visitor(node)`.
-// The visitor does not need to handle all possible node types. Types that are
-// not visitable via `visitor` will be ignored.
-template <typename Visitor>
-void VisitDescriptors(absl::Span<const FileDescriptor*> descriptors,
-                      Visitor visitor) {
-  // Provide a fallback to ignore all the nodes that are not interesting to the
-  // input visitor.
-  struct VisitorImpl : Visitor {
-    explicit VisitorImpl(Visitor visitor) : Visitor(visitor) {}
-    using Visitor::operator();
-    // Honeypot to ignore all inputs that Visitor does not take.
-    void operator()(const void*) const {}
-  };
-
-  VisitImpl<VisitorImpl>{VisitorImpl(visitor)}.Visit(descriptors);
-}
-
 bool HasReservedFieldNumber(const FieldDescriptor* field) {
   if (field->number() >= FieldDescriptor::kFirstReservedNumber &&
       field->number() <= FieldDescriptor::kLastReservedNumber) {
@@ -1358,6 +1269,12 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
+
+  // Enforce extension declarations only when compiling. We want to skip this
+  // enforcement when protoc is just being invoked to encode or decode protos.
+  if (mode_ == MODE_COMPILE) {
+    descriptor_pool->EnforceExtensionDeclarations(true);
+  }
   if (!ParseInputFiles(descriptor_pool.get(), disk_source_tree.get(),
                        &parsed_files)) {
     return 1;
@@ -1365,46 +1282,47 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
   bool validation_error = false;  // Defer exiting so we log more warnings.
 
-  VisitDescriptors(
-      absl::Span<const FileDescriptor*>(parsed_files.data(),
-                                        parsed_files.size()),
-      [&](const FieldDescriptor* field) {
-        if (HasReservedFieldNumber(field)) {
-          const char* error_link = nullptr;
-          validation_error = true;
-          std::string error;
-          if (field->number() >= FieldDescriptor::kFirstReservedNumber &&
-              field->number() <= FieldDescriptor::kLastReservedNumber) {
-            error = absl::Substitute(
-                "Field numbers $0 through $1 are reserved "
-                "for the protocol buffer library implementation.",
-                FieldDescriptor::kFirstReservedNumber,
-                FieldDescriptor::kLastReservedNumber);
-          } else {
-            error = absl::Substitute(
-                "Field number $0 is reserved for specific purposes.",
-                field->number());
+  for (auto& file : parsed_files) {
+    google::protobuf::internal::VisitDescriptors(
+        *file, [&](const FieldDescriptor& field) {
+          if (HasReservedFieldNumber(&field)) {
+            const char* error_link = nullptr;
+            validation_error = true;
+            std::string error;
+            if (field.number() >= FieldDescriptor::kFirstReservedNumber &&
+                field.number() <= FieldDescriptor::kLastReservedNumber) {
+              error = absl::Substitute(
+                  "Field numbers $0 through $1 are reserved "
+                  "for the protocol buffer library implementation.",
+                  FieldDescriptor::kFirstReservedNumber,
+                  FieldDescriptor::kLastReservedNumber);
+            } else {
+              error = absl::Substitute(
+                  "Field number $0 is reserved for specific purposes.",
+                  field.number());
+            }
+            if (error_link) {
+              absl::StrAppend(&error, "(See ", error_link, ")");
+            }
+            static_cast<DescriptorPool::ErrorCollector*>(error_collector.get())
+                ->RecordError(field.file()->name(), field.full_name(), nullptr,
+                              DescriptorPool::ErrorCollector::NUMBER, error);
           }
-          if (error_link) {
-            absl::StrAppend(&error, "(See ", error_link, ")");
-          }
-          static_cast<DescriptorPool::ErrorCollector*>(error_collector.get())
-              ->RecordError(field->file()->name(), field->full_name(), nullptr,
-                            DescriptorPool::ErrorCollector::NUMBER, error);
-        }
-      });
+        });
+  }
 
   // We visit one file at a time because we need to provide the file name for
   // error messages. Usually we can get the file name from any descriptor with
   // something like descriptor->file()->name(), but ExtensionRange does not
   // support this.
   for (const google::protobuf::FileDescriptor* file : parsed_files) {
-    VisitDescriptors(
-        absl::Span<const FileDescriptor*>(&file, 1),
-        [&](const auto* descriptor) {
-          if (!ValidateTargetConstraints(
-                  descriptor->options(), *descriptor_pool, *error_collector,
-                  file->name(), GetTargetType(descriptor))) {
+    FileDescriptorProto proto;
+    file->CopyTo(&proto);
+    google::protobuf::internal::VisitDescriptors(
+        *file, proto, [&](const auto& descriptor, const auto& proto) {
+          if (!ValidateTargetConstraints(proto.options(), *descriptor_pool,
+                                         *error_collector, file->name(),
+                                         GetTargetType(&descriptor))) {
             validation_error = true;
           }
         });
@@ -1643,6 +1561,19 @@ bool CommandLineInterface::ParseInputFiles(
     }
     parsed_files->push_back(parsed_file);
 
+    if (!experimental_editions_ && !IsEarlyEditionsFile(parsed_file->name())) {
+      if (FileDescriptorLegacy(parsed_file).syntax() ==
+          FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
+        std::cerr
+            << parsed_file->name()
+            << ": This file uses editions, but --experimental_editions has not "
+               "been enabled. This syntax is experimental and should be "
+               "avoided."
+            << std::endl;
+        result = false;
+        break;
+      }
+    }
 
     // Enforce --disallow_services.
     if (disallow_services_ && parsed_file->service_count() > 0) {
@@ -1693,6 +1624,7 @@ void CommandLineInterface::Clear() {
   descriptor_set_out_name_.clear();
   dependency_out_name_.clear();
 
+  experimental_editions_ = false;
 
   mode_ = MODE_COMPILE;
   print_mode_ = PRINT_NONE;
@@ -2011,6 +1943,7 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--include_imports" || *name == "--include_source_info" ||
       *name == "--retain_options" || *name == "--version" ||
       *name == "--decode_raw" ||
+      *name == "--experimental_editions" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
       *name == "--deterministic_output" || *name == "--fatal_warnings") {
@@ -2337,6 +2270,12 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 #else
     ::setenv(io::Printer::kProtocCodegenTrace.data(), "yes", 0);
 #endif
+  } else if (name == "--experimental_editions") {
+    // If you're reading this, you're probably wondering what
+    // --experimental_editions is for and thinking of turning it on. This is an
+    // experimental, undocumented, unsupported flag. Enable it at your own risk
+    // (or, just don't!).
+    experimental_editions_ = true;
   } else {
     // Some other flag.  Look it up in the generators list.
     const GeneratorInfo* generator_info = FindGeneratorByFlag(name);
@@ -2570,6 +2509,12 @@ bool CommandLineInterface::GenerateOutput(
       return false;
     }
 
+    if (!EnforceEditionsSupport(
+            output_directive.name,
+            output_directive.generator->GetSupportedFeatures(), parsed_files)) {
+      return false;
+    }
+
     if (!output_directive.generator->GenerateAll(parsed_files, parameters,
                                                  generator_context, &error)) {
       // Generator returned an error.
@@ -2612,6 +2557,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     output_filenames.push_back(descriptor_set_out_name_);
   }
 
+  // Create the depfile, even if it will be empty.
   int fd;
   do {
     fd = open(dependency_out_name_.c_str(),
@@ -2623,30 +2569,34 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     return false;
   }
 
-  io::FileOutputStream out(fd);
-  io::Printer printer(&out, '$');
+  // Only write to the depfile if there is at least one output_filename.
+  // Otherwise, the depfile will be malformed.
+  if (!output_filenames.empty()) {
+    io::FileOutputStream out(fd);
+    io::Printer printer(&out, '$');
 
-  for (int i = 0; i < output_filenames.size(); i++) {
-    printer.Print(output_filenames[i]);
-    if (i == output_filenames.size() - 1) {
-      printer.Print(":");
-    } else {
-      printer.Print(" \\\n");
+    for (size_t i = 0; i < output_filenames.size(); i++) {
+      printer.Print(output_filenames[i]);
+      if (i == output_filenames.size() - 1) {
+        printer.Print(":");
+      } else {
+        printer.Print(" \\\n");
+      }
     }
-  }
 
-  for (int i = 0; i < file_set.file_size(); i++) {
-    const FileDescriptorProto& file = file_set.file(i);
-    const std::string& virtual_file = file.name();
-    std::string disk_file;
-    if (source_tree &&
-        source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
-      printer.Print(" $disk_file$", "disk_file", disk_file);
-      if (i < file_set.file_size() - 1) printer.Print("\\\n");
-    } else {
-      std::cerr << "Unable to identify path for file " << virtual_file
-                << std::endl;
-      return false;
+    for (int i = 0; i < file_set.file_size(); i++) {
+      const FileDescriptorProto& file = file_set.file(i);
+      const std::string& virtual_file = file.name();
+      std::string disk_file;
+      if (source_tree &&
+          source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
+        printer.Print(" $disk_file$", "disk_file", disk_file);
+        if (i < file_set.file_size() - 1) printer.Print("\\\n");
+      } else {
+        std::cerr << "Unable to identify path for file " << virtual_file
+                  << std::endl;
+        return false;
+      }
     }
   }
 
@@ -2669,13 +2619,29 @@ bool CommandLineInterface::GeneratePluginOutput(
 
 
   absl::flat_hash_set<const FileDescriptor*> already_seen;
-  for (int i = 0; i < parsed_files.size(); i++) {
-    request.add_file_to_generate(parsed_files[i]->name());
-    GetTransitiveDependencies(parsed_files[i], &already_seen,
-                              request.mutable_proto_file(),
+  for (const FileDescriptor* file : parsed_files) {
+    request.add_file_to_generate(file->name());
+    GetTransitiveDependencies(file, &already_seen, request.mutable_proto_file(),
                               {/*.include_json_name =*/true,
                                /*.include_source_code_info =*/true,
                                /*.retain_options =*/true});
+  }
+
+  // Populate source_file_descriptors and remove source-retention options from
+  // proto_file.
+  ABSL_CHECK(!parsed_files.empty());
+  const DescriptorPool* pool = parsed_files[0]->pool();
+  absl::flat_hash_set<std::string> files_to_generate(input_files_.begin(),
+                                                     input_files_.end());
+  for (FileDescriptorProto& file_proto : *request.mutable_proto_file()) {
+    if (files_to_generate.contains(file_proto.name())) {
+      const FileDescriptor* file = pool->FindFileByName(file_proto.name());
+      *request.add_source_file_descriptors() = std::move(file_proto);
+      file->CopyTo(&file_proto);
+      file->CopySourceCodeInfoTo(&file_proto);
+      file->CopyJsonNameTo(&file_proto);
+      StripSourceRetentionOptions(*file->pool(), file_proto);
+    }
   }
 
   google::protobuf::compiler::Version* version =
@@ -2743,6 +2709,9 @@ bool CommandLineInterface::GeneratePluginOutput(
     return false;
   } else if (!EnforceProto3OptionalSupport(
                  plugin_name, response.supported_features(), parsed_files)) {
+    return false;
+  } else if (!EnforceEditionsSupport(plugin_name, response.supported_features(),
+                                     parsed_files)) {
     return false;
   }
 
@@ -2937,8 +2906,8 @@ void GatherOccupiedFieldRanges(
     ranges->insert(FieldRange(fd->number(), fd->number() + 1));
   }
   for (int i = 0; i < descriptor->extension_range_count(); ++i) {
-    ranges->insert(FieldRange(descriptor->extension_range(i)->start,
-                              descriptor->extension_range(i)->end));
+    ranges->insert(FieldRange(descriptor->extension_range(i)->start_number(),
+                              descriptor->extension_range(i)->end_number()));
   }
   for (int i = 0; i < descriptor->reserved_range_count(); ++i) {
     ranges->insert(FieldRange(descriptor->reserved_range(i)->start,

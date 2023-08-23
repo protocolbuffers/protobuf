@@ -37,7 +37,9 @@
 
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -73,6 +75,8 @@ class FieldGenerator {
       bool include_external_types) const;
   virtual void DetermineObjectiveCClassDefinitions(
       absl::btree_set<std::string>* fwd_decls) const;
+  virtual void DetermineNeededFiles(
+      absl::flat_hash_set<const FileDescriptor*>* deps) const;
 
   // Used during generation, not intended to be extended by subclasses.
   void GenerateFieldDescription(io::Printer* printer,
@@ -155,6 +159,8 @@ class RepeatedFieldGenerator : public ObjCObjFieldGenerator {
 
   bool RuntimeUsesHasBit() const override;
 
+  virtual void EmitArrayComment(io::Printer* printer) const;
+
  protected:
   explicit RepeatedFieldGenerator(const FieldDescriptor* descriptor);
   void FinishInitialization() override;
@@ -170,7 +176,6 @@ class FieldGeneratorMap {
   FieldGeneratorMap& operator=(const FieldGeneratorMap&) = delete;
 
   const FieldGenerator& get(const FieldDescriptor* field) const;
-  const FieldGenerator& get_extension(int index) const;
 
   // Assigns the has bits and returns the number of bits needed.
   int CalculateHasBits();
@@ -183,7 +188,6 @@ class FieldGeneratorMap {
  private:
   const Descriptor* descriptor_;
   std::vector<std::unique_ptr<FieldGenerator>> field_generators_;
-  std::vector<std::unique_ptr<FieldGenerator>> extension_generators_;
 };
 
 }  // namespace objectivec

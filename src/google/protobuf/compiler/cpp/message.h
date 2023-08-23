@@ -103,6 +103,8 @@ class MessageGenerator {
   const Descriptor* descriptor() const { return descriptor_; }
 
  private:
+  enum class InitType { kConstexpr, kArena, kArenaCopy };
+
   // Generate declarations and definitions of accessors for fields.
   void GenerateFieldAccessorDeclarations(io::Printer* p);
   void GenerateFieldAccessorDefinitions(io::Printer* p);
@@ -110,12 +112,22 @@ class MessageGenerator {
   // Generate constructors and destructor.
   void GenerateStructors(io::Printer* p);
 
+#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
+  void GenerateZeroInitFields(io::Printer* p) const;
+  void GenerateCopyInitFields(io::Printer* p) const;
+
+  void GenerateImplMemberInit(io::Printer* p, InitType init_type);
+
+  void GenerateArenaEnabledCopyConstructor(io::Printer* p);
+#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
+
   // The compiler typically generates multiple copies of each constructor and
   // destructor: http://gcc.gnu.org/bugs.html#nonbugs_cxx
   // Placing common code in a separate method reduces the generated code size.
   //
   // Generate the shared constructor code.
   void GenerateSharedConstructorCode(io::Printer* p);
+
   // Generate the shared destructor code.
   void GenerateSharedDestructorCode(io::Printer* p);
   // Generate the arena-specific destructor code.
@@ -147,8 +159,7 @@ class MessageGenerator {
   // Or, if fields.size() == 1, just call GenerateSerializeOneField().
   void GenerateSerializeOneofFields(
       io::Printer* p, const std::vector<const FieldDescriptor*>& fields);
-  void GenerateSerializeOneExtensionRange(
-      io::Printer* p, const Descriptor::ExtensionRange* range);
+  void GenerateSerializeOneExtensionRange(io::Printer* p, int start, int end);
 
   // Generates has_foo() functions and variables for singular field has-bits.
   void GenerateSingularFieldHasBits(const FieldDescriptor* field,
@@ -161,8 +172,13 @@ class MessageGenerator {
   void GenerateFieldClear(const FieldDescriptor* field, bool is_inline,
                           io::Printer* p);
 
+  // Returns whether impl_ has a copy ctor.
+  bool ImplHasCopyCtor() const;
+
   // Generates the body of the message's copy constructor.
   void GenerateCopyConstructorBody(io::Printer* p) const;
+  void GenerateCopyConstructorBodyImpl(io::Printer* p) const;
+  void GenerateCopyConstructorBodyOneofs(io::Printer* p) const;
 
   // Returns the level that this message needs ArenaDtor. If the message has
   // a field that is not arena-exclusive, it needs an ArenaDtor
@@ -178,6 +194,8 @@ class MessageGenerator {
 
   size_t HasBitsSize() const;
   size_t InlinedStringDonatedSize() const;
+  absl::flat_hash_map<absl::string_view, std::string> HasBitVars(
+      const FieldDescriptor* field) const;
   int HasBitIndex(const FieldDescriptor* field) const;
   int HasByteIndex(const FieldDescriptor* field) const;
   int HasWordIndex(const FieldDescriptor* field) const;

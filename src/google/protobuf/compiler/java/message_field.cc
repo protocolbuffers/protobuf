@@ -56,6 +56,7 @@ namespace java {
 
 
 namespace {
+using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 void SetMessageVariables(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
@@ -230,9 +231,10 @@ void ImmutableMessageFieldGenerator::PrintNestedBuilderCondition(
 void ImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
     io::Printer* printer, const char* method_prototype,
     const char* regular_case, const char* nested_builder_case,
-    const char* trailing_code) const {
+    const char* trailing_code,
+    absl::optional<io::AnnotationCollector::Semantic> semantic) const {
   printer->Print(variables_, method_prototype);
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, semantic);
   printer->Print(" {\n");
   printer->Indent();
   PrintNestedBuilderCondition(printer, regular_case, nested_builder_case);
@@ -290,7 +292,8 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$set_has_field_bit_builder$\n"
       "$on_changed$\n"
-      "return this;\n");
+      "return this;\n",
+      Semantic::kSet);
 
   // Field.Builder setField(Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_);
@@ -305,7 +308,8 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$set_has_field_bit_builder$\n"
       "$on_changed$\n"
-      "return this;\n");
+      "return this;\n",
+      Semantic::kSet);
 
   // Message.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_);
@@ -322,9 +326,12 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.mergeFrom(value);\n",
 
-      "$set_has_field_bit_builder$\n"
-      "$on_changed$\n"
-      "return this;\n");
+      "if ($name$_ != null) {\n"
+      "  $set_has_field_bit_builder$\n"
+      "  $on_changed$\n"
+      "}\n"
+      "return this;\n",
+      Semantic::kSet);
 
   // Message.Builder clearField()
   WriteFieldDocComment(printer, descriptor_);
@@ -340,7 +347,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "  $on_changed$\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // Field.Builder getFieldBuilder()
   WriteFieldDocComment(printer, descriptor_);
@@ -625,7 +632,8 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "$name$Builder_.setMessage(value);\n",
 
       "$set_oneof_case_message$;\n"
-      "return this;\n");
+      "return this;\n",
+      Semantic::kSet);
 
   // Field.Builder setField(Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_);
@@ -640,7 +648,8 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "$name$Builder_.setMessage(builderForValue.build());\n",
 
       "$set_oneof_case_message$;\n"
-      "return this;\n");
+      "return this;\n",
+      Semantic::kSet);
 
   // Field.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_);
@@ -664,7 +673,8 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "}\n",
 
       "$set_oneof_case_message$;\n"
-      "return this;\n");
+      "return this;\n",
+      Semantic::kSet);
 
   // Field.Builder clearField()
   WriteFieldDocComment(printer, descriptor_);
@@ -683,7 +693,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "}\n"
       "$name$Builder_.clear();\n",
 
-      "return this;\n");
+      "return this;\n", Semantic::kSet);
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
@@ -913,9 +923,10 @@ void RepeatedImmutableMessageFieldGenerator::PrintNestedBuilderCondition(
 void RepeatedImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
     io::Printer* printer, const char* method_prototype,
     const char* regular_case, const char* nested_builder_case,
-    const char* trailing_code) const {
+    const char* trailing_code,
+    absl::optional<io::AnnotationCollector::Semantic> semantic) const {
   printer->Print(variables_, method_prototype);
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, semantic);
   printer->Print(" {\n");
   printer->Indent();
   PrintNestedBuilderCondition(printer, regular_case, nested_builder_case);
@@ -1011,7 +1022,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "ensure$capitalized_name$IsMutable();\n"
       "$name$_.set(index, value);\n"
       "$on_changed$\n",
-      "$name$Builder_.setMessage(index, value);\n", "return this;\n");
+      "$name$Builder_.setMessage(index, value);\n", "return this;\n",
+      Semantic::kSet);
 
   // Builder setRepeatedField(int index, Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_);
@@ -1026,7 +1038,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.setMessage(index, builderForValue.build());\n",
 
-      "return this;\n");
+      "return this;\n", Semantic::kSet);
 
   // Builder addRepeatedField(Field value)
   WriteFieldDocComment(printer, descriptor_);
@@ -1044,7 +1056,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.addMessage(value);\n",
 
-      "return this;\n");
+      "return this;\n", Semantic::kSet);
 
   // Builder addRepeatedField(int index, Field value)
   WriteFieldDocComment(printer, descriptor_);
@@ -1062,7 +1074,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.addMessage(index, value);\n",
 
-      "return this;\n");
+      "return this;\n", Semantic::kSet);
 
   // Builder addRepeatedField(Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_);
@@ -1077,7 +1089,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.addMessage(builderForValue.build());\n",
 
-      "return this;\n");
+      "return this;\n", Semantic::kSet);
 
   // Builder addRepeatedField(int index, Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_);
@@ -1092,7 +1104,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.addMessage(index, builderForValue.build());\n",
 
-      "return this;\n");
+      "return this;\n", Semantic::kSet);
 
   // Builder addAllRepeatedField(Iterable<Field> values)
   WriteFieldDocComment(printer, descriptor_);
@@ -1108,7 +1120,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.addAllMessages(values);\n",
 
-      "return this;\n");
+      "return this;\n", Semantic::kSet);
 
   // Builder clearRepeatedField()
   WriteFieldDocComment(printer, descriptor_);
@@ -1121,7 +1133,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.clear();\n",
 
-      "return this;\n");
+      "return this;\n", Semantic::kSet);
 
   // Builder removeRepeatedField(int index)
   WriteFieldDocComment(printer, descriptor_);
@@ -1135,7 +1147,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.remove(index);\n",
 
-      "return this;\n");
+      "return this;\n", Semantic::kSet);
 
   // Field.Builder getRepeatedFieldBuilder(int index)
   WriteFieldDocComment(printer, descriptor_);
@@ -1183,7 +1195,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "  return get$capitalized_name$FieldBuilder().addBuilder(\n"
                  "      $type$.getDefaultInstance());\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // Field.Builder addRepeatedFieldBuilder(int index)
   WriteFieldDocComment(printer, descriptor_);
@@ -1194,7 +1206,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "  return get$capitalized_name$FieldBuilder().addBuilder(\n"
       "      index, $type$.getDefaultInstance());\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // List<Field.Builder> getRepeatedFieldBuilderList()
   WriteFieldDocComment(printer, descriptor_);

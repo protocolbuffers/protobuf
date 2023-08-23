@@ -33,6 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_GENERATOR_H__
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -68,7 +69,7 @@ class PROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
                    std::string* error) const override;
 
   uint64_t GetSupportedFeatures() const override {
-    return FEATURE_PROTO3_OPTIONAL;
+    return (FEATURE_PROTO3_OPTIONAL | FEATURE_SUPPORTS_EDITIONS);
   }
 };
 

@@ -41,13 +41,15 @@
 #include <algorithm>
 #include <cassert>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
+#include "absl/base/call_once.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
-#include "google/protobuf/port.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/parse_context.h"
@@ -74,13 +76,16 @@ class Message;          // message.h
 class MessageFactory;   // message.h
 class Reflection;       // message.h
 class UnknownFieldSet;  // unknown_field_set.h
+class FeatureSet;
 namespace internal {
 class FieldSkipper;  // wire_format_lite.h
 class WireFormat;
-enum class LazyVerifyOption;
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+namespace pb {
+class CppFeatures;
+}  // namespace pb
 
 namespace google {
 namespace protobuf {
@@ -184,10 +189,18 @@ class PROTOBUF_EXPORT GeneratedExtensionFinder {
 // off to the ExtensionSet for parsing.  Etc.
 class PROTOBUF_EXPORT ExtensionSet {
  public:
-  constexpr ExtensionSet();
-  explicit ExtensionSet(Arena* arena);
+  constexpr ExtensionSet() : ExtensionSet(nullptr) {}
+  ExtensionSet(const ExtensionSet& rhs) = delete;
+
+  // Arena enabled constructors: for internal use only.
+  ExtensionSet(internal::InternalVisibility, Arena* arena)
+      : ExtensionSet(arena) {}
+
+  // TODO(b/290091828): make constructor private, and migrate `ArenaInitialized`
+  // to `InternalVisibility` overloaded constructor(s).
+  explicit constexpr ExtensionSet(Arena* arena);
   ExtensionSet(ArenaInitialized, Arena* arena) : ExtensionSet(arena) {}
-  ExtensionSet(const ExtensionSet&) = delete;
+
   ExtensionSet& operator=(const ExtensionSet&) = delete;
   ~ExtensionSet();
 
@@ -579,8 +592,8 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual void Clear() = 0;
 
     virtual const char* _InternalParse(const MessageLite& prototype,
-                                       Arena* arena, LazyVerifyOption option,
-                                       const char* ptr, ParseContext* ctx) = 0;
+                                       Arena* arena, const char* ptr,
+                                       ParseContext* ctx) = 0;
     virtual uint8_t* WriteMessageToArray(
         const MessageLite* prototype, int number, uint8_t* target,
         io::EpsCopyOutputStream* stream) const = 0;
@@ -922,8 +935,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   static void DeleteFlatMap(const KeyValue* flat, uint16_t flat_capacity);
 };
 
-constexpr ExtensionSet::ExtensionSet()
-    : arena_(nullptr), flat_capacity_(0), flat_size_(0), map_{nullptr} {}
+constexpr ExtensionSet::ExtensionSet(Arena* arena)
+    : arena_(arena), flat_capacity_(0), flat_size_(0), map_{nullptr} {}
 
 // These are just for convenience...
 inline void ExtensionSet::SetString(int number, FieldType type,
@@ -1534,6 +1547,38 @@ class ExtensionIdentifier {
 // Used to retrieve a lazy extension, may return nullptr in some environments.
 extern PROTOBUF_ATTRIBUTE_WEAK ExtensionSet::LazyMessageExtension*
 MaybeCreateLazyExtension(Arena* arena);
+
+// Define a specialization of ExtensionIdentifier for bootstrapped extensions
+// that we need to register lazily.
+template <>
+class ExtensionIdentifier<FeatureSet, MessageTypeTraits<::pb::CppFeatures>, 11,
+                          false> {
+ public:
+  explicit constexpr ExtensionIdentifier(int number) : number_(number) {}
+
+  int number() const { return number_; }
+  const ::pb::CppFeatures& default_value() const { return *default_value_; }
+
+  template <typename MessageType = ::pb::CppFeatures,
+            typename ExtendeeType = FeatureSet>
+  void LazyRegister(
+      const MessageType& default_instance = MessageType::default_instance(),
+      LazyEagerVerifyFnType verify_func = nullptr) const {
+    absl::call_once(once_, [&] {
+      default_value_ = &default_instance;
+      MessageTypeTraits<MessageType>::template Register<ExtendeeType>(
+          number_, 11, false, verify_func);
+    });
+  }
+
+  const ::pb::CppFeatures& default_value_ref() const { return *default_value_; }
+
+ private:
+  const int number_;
+  mutable const ::pb::CppFeatures* default_value_ = nullptr;
+  mutable absl::once_flag once_;
+};
+
 
 }  // namespace internal
 

@@ -45,32 +45,12 @@ namespace google {
 namespace protobuf {
 namespace TestUtil {
 
-// Translate net/proto2/* or third_party/protobuf/* to google/protobuf/*.
-inline std::string TranslatePathToOpensource(absl::string_view google3_path) {
-  constexpr absl::string_view net_proto2 = "net/proto2/";
-  constexpr absl::string_view third_party_protobuf = "third_party/protobuf/";
-  if (!absl::ConsumePrefix(&google3_path, net_proto2)) {
-    ABSL_CHECK(absl::ConsumePrefix(&google3_path, third_party_protobuf))
-        << google3_path;
-  }
-
-  absl::ConsumePrefix(&google3_path, "internal/");
-  absl::ConsumePrefix(&google3_path, "proto/");
-  absl::ConsumeSuffix(&google3_path, "public/");
-  return absl::StrCat("google/protobuf/", google3_path);
-}
-
-inline std::string MaybeTranslatePath(absl::string_view google3_path) {
-  return TranslatePathToOpensource(google3_path);
-  return std::string(google3_path);
-}
-
 inline std::string TestSourceDir() {
   return google::protobuf::TestSourceDir();
 }
 
-inline std::string GetTestDataPath(absl::string_view google3_path) {
-  return absl::StrCat(TestSourceDir(), "/", MaybeTranslatePath(google3_path));
+inline std::string GetTestDataPath(absl::string_view path) {
+  return absl::StrCat(TestSourceDir(), "/", path);
 }
 
 // Checks the equality of "message" and serialized proto of type "ProtoType".

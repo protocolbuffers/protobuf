@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -76,11 +77,28 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   };
 }
 
+void EmitFuncs(const FieldDescriptor* field, io::Printer* p) {
+  const auto* key = field->message_type()->map_key();
+  const auto* val = field->message_type()->map_value();
+  p->Emit(
+      {
+          {"key_wire_type",
+           absl::StrCat("TYPE_", absl::AsciiStrToUpper(
+                                     DeclaredTypeMethodName(key->type())))},
+          {"val_wire_type",
+           absl::StrCat("TYPE_", absl::AsciiStrToUpper(
+                                     DeclaredTypeMethodName(val->type())))},
+      },
+      R"cc(_pbi::MapEntryFuncs<$Key$, $Val$,
+                               _pbi::WireFormatLite::$key_wire_type$,
+                               _pbi::WireFormatLite::$val_wire_type$>)cc");
+}
+
 class Map : public FieldGeneratorBase {
  public:
   Map(const FieldDescriptor* field, const Options& opts,
       MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts),
+      : FieldGeneratorBase(field, opts, scc),
         field_(field),
         key_(field->message_type()->map_key()),
         val_(field->message_type()->map_value()),
@@ -127,43 +145,48 @@ class Map : public FieldGeneratorBase {
   }
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(/* decltype($field_$) */ {})cc");
+    p->Emit(R"cc(
+      /* decltype($field_$) */ {},
+    )cc");
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     // MapField has no move constructor, which prevents explicit aggregate
     // initialization pre-C++17.
-    p->Emit(R"cc(/* decltype($field_$) */ {})cc");
+    p->Emit(R"cc(
+      /* decltype($field_$) */ {},
+    )cc");
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
-    if (ShouldSplit(field_, *opts_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         /* decltype($Msg$::Split::$name$_) */ {
-          $pbi$::ArenaInitialized(), arena
-        }
+            $pbi$::ArenaInitialized(),
+            arena,
+        },
       )cc");
-      return;
+    } else {
+      p->Emit(R"cc(
+        /* decltype($field_$) */ {$pbi$::ArenaInitialized(), arena},
+      )cc");
     }
-
-    p->Emit(R"cc(
-      /* decltype($field_$) */ { $pbi$::ArenaInitialized(), arena }
-    )cc");
   }
 
   void GenerateConstructorCode(io::Printer* p) const override {}
 
   void GenerateDestructorCode(io::Printer* p) const override {
-    if (ShouldSplit(field_, *opts_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         $cached_split_ptr$->$name$_.~$MapField$();
       )cc");
       return;
     }
-
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
     p->Emit(R"cc(
       $field_$.~$MapField$();
     )cc");
+#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;
@@ -182,16 +205,23 @@ class Map : public FieldGeneratorBase {
 };
 
 void Map::GeneratePrivateMembers(io::Printer* p) const {
-  p->Emit({{"kKeyType",
-            absl::AsciiStrToUpper(DeclaredTypeMethodName(key_->type()))},
-           {"kValType",
-            absl::AsciiStrToUpper(DeclaredTypeMethodName(val_->type()))}},
-          R"cc(
-            $pbi$::$MapField$<$Entry$, $Key$, $Val$,
-                              $pbi$::WireFormatLite::TYPE_$kKeyType$,
-                              $pbi$::WireFormatLite::TYPE_$kValType$>
-                $name$_;
-          )cc");
+  if (lite_) {
+    p->Emit(
+        R"cc(
+          $pbi$::MapFieldLite<$Key$, $Val$> $name$_;
+        )cc");
+  } else {
+    p->Emit({{"kKeyType",
+              absl::AsciiStrToUpper(DeclaredTypeMethodName(key_->type()))},
+             {"kValType",
+              absl::AsciiStrToUpper(DeclaredTypeMethodName(val_->type()))}},
+            R"cc(
+              $pbi$::$MapField$<$Entry$, $Key$, $Val$,
+                                $pbi$::WireFormatLite::TYPE_$kKeyType$,
+                                $pbi$::WireFormatLite::TYPE_$kValType$>
+                  $name$_;
+            )cc");
+  }
 }
 
 void Map::GenerateAccessorDeclarations(io::Printer* p) const {
@@ -214,6 +244,7 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
 void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
     inline const $Map$& $Msg$::_internal_$name$() const {
+      $TsanDetectConcurrentRead$;
       return $field_$.GetMap();
     }
     inline const $Map$& $Msg$::$name$() const {
@@ -223,6 +254,7 @@ void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
     inline $Map$* $Msg$::_internal_mutable_$name$() {
       $PrepareSplitMessageForWrite$;
+      $TsanDetectConcurrentMutation$;
       return $field_$.MutableMap();
     }
     inline $Map$* $Msg$::mutable_$name$() {
@@ -240,26 +272,33 @@ void Map::GenerateSerializeWithCachedSizesToArray(io::Printer* p) const {
   p->Emit(
       {
           {"Sorter", string_key ? "MapSorterPtr" : "MapSorterFlat"},
-          {"CheckUtf8",
+          {
+              "CheckUtf8",
+              [&] {
+                if (string_key) {
+                  GenerateUtf8CheckCodeForString(
+                      p, key_, *opts_, /*for_parse=*/false,
+                      "entry.first.data(), "
+                      "static_cast<int>(entry.first.length()),\n");
+                }
+                if (string_val) {
+                  GenerateUtf8CheckCodeForString(
+                      p, val_, *opts_, /*for_parse=*/false,
+                      "entry.second.data(), "
+                      "static_cast<int>(entry.second.length()),\n");
+                }
+              },
+          },
+          {"Funcs",
            [&] {
-             if (string_key) {
-               GenerateUtf8CheckCodeForString(
-                   p, key_, *opts_, /*for_parse=*/false,
-                   "entry.first.data(), "
-                   "static_cast<int>(entry.first.length()),\n");
-             }
-             if (string_val) {
-               GenerateUtf8CheckCodeForString(
-                   p, val_, *opts_, /*for_parse=*/false,
-                   "entry.second.data(), "
-                   "static_cast<int>(entry.second.length()),\n");
-             }
+             EmitFuncs(field_, p);
+             p->Emit(";");
            }},
       },
       R"cc(
         if (!_internal_$name$().empty()) {
           using MapType = $Map$;
-          using WireHelper = $Entry$::Funcs;
+          using WireHelper = $Funcs$;
           const auto& field = _internal_$name$();
 
           if (stream->IsSerializationDeterministic() && field.size() > 1) {
@@ -280,12 +319,16 @@ void Map::GenerateSerializeWithCachedSizesToArray(io::Printer* p) const {
 }
 
 void Map::GenerateByteSize(io::Printer* p) const {
-  p->Emit(R"cc(
-    total_size += $kTagBytes$ * $pbi$::FromIntSize(_internal_$name$_size());
-    for (const auto& entry : _internal_$name$()) {
-      total_size += $Entry$::Funcs::ByteSizeLong(entry.first, entry.second);
-    }
-  )cc");
+  p->Emit(
+      {
+          {"Funcs", [&] { EmitFuncs(field_, p); }},
+      },
+      R"cc(
+        total_size += $kTagBytes$ * $pbi$::FromIntSize(_internal_$name$_size());
+        for (const auto& entry : _internal_$name$()) {
+          total_size += $Funcs$::ByteSizeLong(entry.first, entry.second);
+        }
+      )cc");
 }
 }  // namespace
 

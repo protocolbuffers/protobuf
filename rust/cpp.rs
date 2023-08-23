@@ -1,0 +1,178 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google LLC. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// Rust Protobuf runtime using the C++ kernel.
+
+use crate::__internal::RawArena;
+use std::alloc::Layout;
+use std::cell::UnsafeCell;
+use std::fmt;
+use std::marker::PhantomData;
+use std::mem::MaybeUninit;
+use std::ops::Deref;
+use std::ptr::{self, NonNull};
+
+/// A wrapper over a `proto2::Arena`.
+///
+/// This is not a safe wrapper per se, because the allocation functions still
+/// have sharp edges (see their safety docs for more info).
+///
+/// This is an owning type and will automatically free the arena when
+/// dropped.
+///
+/// Note that this type is neither `Sync` nor `Send`.
+#[derive(Debug)]
+pub struct Arena {
+    #[allow(dead_code)]
+    ptr: RawArena,
+    _not_sync: PhantomData<UnsafeCell<()>>,
+}
+
+impl Arena {
+    /// Allocates a fresh arena.
+    #[inline]
+    pub fn new() -> Self {
+        Self { ptr: NonNull::dangling(), _not_sync: PhantomData }
+    }
+
+    /// Returns the raw, C++-managed pointer to the arena.
+    #[inline]
+    pub fn raw(&self) -> ! {
+        unimplemented!()
+    }
+
+    /// Allocates some memory on the arena.
+    ///
+    /// # Safety
+    ///
+    /// TODO alignment requirement for layout
+    #[inline]
+    pub unsafe fn alloc(&self, _layout: Layout) -> &mut [MaybeUninit<u8>] {
+        unimplemented!()
+    }
+
+    /// Resizes some memory on the arena.
+    ///
+    /// # Safety
+    ///
+    /// After calling this function, `ptr` is essentially zapped. `old` must
+    /// be the layout `ptr` was allocated with via [`Arena::alloc()`].
+    /// TODO alignment for layout
+    #[inline]
+    pub unsafe fn resize(&self, _ptr: *mut u8, _old: Layout, _new: Layout) -> &[MaybeUninit<u8>] {
+        unimplemented!()
+    }
+}
+
+impl Drop for Arena {
+    #[inline]
+    fn drop(&mut self) {
+        // unimplemented
+    }
+}
+
+/// Serialized Protobuf wire format data. It's typically produced by
+/// `<Message>.serialize()`.
+///
+/// This struct is ABI-compatible with the equivalent struct on the C++ side. It
+/// owns (and drops) its data.
+#[repr(C)]
+pub struct SerializedData {
+    /// Owns the memory.
+    data: NonNull<u8>,
+    len: usize,
+}
+
+impl SerializedData {
+    /// Constructs owned serialized data from raw components.
+    ///
+    /// # Safety
+    /// - `data` must be readable for `len` bytes.
+    /// - `data` must be an owned pointer and valid until deallocated.
+    /// - `data` must have been allocated by the Rust global allocator with a
+    ///   size of `len` and align of 1.
+    pub unsafe fn from_raw_parts(data: NonNull<u8>, len: usize) -> Self {
+        Self { data, len }
+    }
+
+    /// Gets a raw slice pointer.
+    pub fn as_ptr(&self) -> *const [u8] {
+        ptr::slice_from_raw_parts(self.data.as_ptr(), self.len)
+    }
+
+    /// Gets a mutable raw slice pointer.
+    fn as_mut_ptr(&mut self) -> *mut [u8] {
+        ptr::slice_from_raw_parts_mut(self.data.as_ptr(), self.len)
+    }
+}
+
+impl Deref for SerializedData {
+    type Target = [u8];
+    fn deref(&self) -> &Self::Target {
+        // SAFETY: `data` is valid for `len` bytes until deallocated as promised by
+        // `from_raw_parts`.
+        unsafe { &*self.as_ptr() }
+    }
+}
+
+impl Drop for SerializedData {
+    fn drop(&mut self) {
+        // SAFETY: `data` was allocated by the Rust global allocator with a
+        // size of `len` and align of 1 as promised by `from_raw_parts`.
+        unsafe { drop(Box::from_raw(self.as_mut_ptr())) }
+    }
+}
+
+impl fmt::Debug for SerializedData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Debug::fmt(self.deref(), f)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::boxed::Box;
+
+    // We need to allocate the byte array so SerializedData can own it and
+    // deallocate it in its drop. This function makes it easier to do so for our
+    // tests.
+    fn allocate_byte_array(content: &'static [u8]) -> (*mut u8, usize) {
+        let content: &mut [u8] = Box::leak(content.into());
+        (content.as_mut_ptr(), content.len())
+    }
+
+    #[test]
+    fn test_serialized_data_roundtrip() {
+        let (ptr, len) = allocate_byte_array(b"Hello world");
+        let serialized_data = SerializedData { data: NonNull::new(ptr).unwrap(), len: len };
+        assert_eq!(&*serialized_data, b"Hello world");
+    }
+}

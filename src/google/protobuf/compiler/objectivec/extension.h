@@ -34,6 +34,8 @@
 #include <string>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -44,7 +46,7 @@ namespace objectivec {
 
 class ExtensionGenerator {
  public:
-  ExtensionGenerator(absl::string_view root_class_name,
+  ExtensionGenerator(absl::string_view root_or_message_class_name,
                      const FieldDescriptor* descriptor);
   ~ExtensionGenerator() = default;
 
@@ -56,10 +58,12 @@ class ExtensionGenerator {
   void GenerateRegistrationSource(io::Printer* printer) const;
   void DetermineObjectiveCClassDefinitions(
       absl::btree_set<std::string>* fwd_decls) const;
+  void DetermineNeededFiles(
+      absl::flat_hash_set<const FileDescriptor*>* deps) const;
 
  private:
   std::string method_name_;
-  std::string root_class_and_method_name_;
+  std::string full_method_name_;
   const FieldDescriptor* descriptor_;
 };
 

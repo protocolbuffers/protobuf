@@ -37,6 +37,7 @@
 
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -324,6 +325,7 @@ bool ExtensionSet::FindExtension(int wire_type, uint32_t field,
   }
   return true;
 }
+
 
 const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
                                      const Message* extendee,

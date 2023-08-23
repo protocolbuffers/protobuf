@@ -35,7 +35,9 @@
 #include <string>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -46,7 +48,7 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  public:
-  void FinishInitialization() override;
+  void EmitArrayComment(io::Printer* printer) const override;
 
   MapFieldGenerator(const MapFieldGenerator&) = delete;
   MapFieldGenerator& operator=(const MapFieldGenerator&) = delete;
@@ -59,6 +61,8 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
       absl::btree_set<std::string>* fwd_decls) const override;
   void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
                                     bool include_external_types) const override;
+  void DetermineNeededFiles(
+      absl::flat_hash_set<const FileDescriptor*>* deps) const override;
 
  private:
   std::unique_ptr<FieldGenerator> value_field_generator_;

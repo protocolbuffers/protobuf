@@ -38,11 +38,14 @@
 #include <limits>
 #include <string>
 
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/message.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/util/message_differencer.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -245,3 +248,5 @@ FieldComparator::ComparisonResult SimpleFieldComparator::ResultFromBoolean(
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

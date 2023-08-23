@@ -42,7 +42,7 @@ namespace java {
 void GenerateSerializeExtensionRange(io::Printer* printer,
                                      const Descriptor::ExtensionRange* range) {
   printer->Print("extensionWriter.writeUntil($end$, output);\n", "end",
-                 absl::StrCat(range->end));
+                 absl::StrCat(range->end_number()));
 }
 
 }  // namespace java

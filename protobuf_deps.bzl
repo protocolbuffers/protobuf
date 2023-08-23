@@ -7,9 +7,9 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.8.9",
     "com.google.errorprone:error_prone_annotations:2.5.1",
-    "com.google.j2objc:j2objc-annotations:1.3",
-    "com.google.guava:guava:31.1-jre",
-    "com.google.guava:guava-testlib:31.1-jre",
+    "com.google.j2objc:j2objc-annotations:2.8",
+    "com.google.guava:guava:32.0.1-jre",
+    "com.google.guava:guava-testlib:32.0.1-jre",
     "com.google.truth:truth:1.1.2",
     "junit:junit:4.13.2",
     "org.mockito:mockito-core:4.3.1",
@@ -42,8 +42,8 @@ def protobuf_deps():
         _github_archive(
             name = "com_google_absl",
             repo = "https://github.com/abseil/abseil-cpp",
-            commit = "c2435f8342c2d0ed8101cb43adfd605fdc52dca2",  # Abseil LTS 20230125.3
-            sha256 = "ea1d31db00eb37e607bfda17ffac09064670ddf05da067944c4766f517876390",
+            commit = "29bf8085f3bf17b84d30e34b3d7ff8248fda404e",  # Abseil LTS 20230802
+            sha256 = "f4871f2982e29496f4ddd598ccd5a87fea42f23c49b5e5eb459d57eab91df9d9",
         )
 
     if not native.existing_rule("zlib"):
@@ -71,8 +71,8 @@ def protobuf_deps():
         _github_archive(
             name = "utf8_range",
             repo = "https://github.com/protocolbuffers/utf8_range",
-            commit = "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f",
-            sha256 = "5da960e5e5d92394c809629a03af3c7709d2d3d0ca731dacb3a9fb4bf28f7702",
+            commit = "d863bc33e15cba6d873c878dcca9e6fe52b2f8cb",
+            sha256 = "568988b5f7261ca181468dba38849fabf59dd9200fb2ed4b2823da187ef84d8c",
         )
 
     if not native.existing_rule("rules_cc"):
@@ -84,11 +84,10 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_java"):
-        _github_archive(
+        http_archive(
             name = "rules_java",
-            repo = "https://github.com/bazelbuild/rules_java",
-            commit = "981f06c3d2bd10225e85209904090eb7b5fb26bd",
-            sha256 = "7979ece89e82546b0dcd1dff7538c34b5a6ebc9148971106f0e3705444f00665",
+            url = "https://github.com/bazelbuild/rules_java/releases/download/6.0.0/rules_java-6.0.0.tar.gz",
+            sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
         )
 
     if not native.existing_rule("rules_proto"):
@@ -103,16 +102,16 @@ def protobuf_deps():
         _github_archive(
             name = "rules_python",
             repo = "https://github.com/bazelbuild/rules_python",
-            commit = "912a5051f51581784fd64094f6bdabf93f6d698f",  # 0.14.0
-            sha256 = "a3e4b4ade7c4a52e757b16a16e94d0b2640333062180cba577d81fac087a501d",
+            commit = "02b521fce3c7b36b05813aa986d72777cc3ee328",  # 0.24.0
+            sha256 = "f9e4f6acf82449324d56669bda4bdb28b48688ad2990d8b39fa5b93ed39c9ad1",
         )
 
     if not native.existing_rule("rules_ruby"):
         _github_archive(
             name = "rules_ruby",
             repo = "https://github.com/protocolbuffers/rules_ruby",
-            commit = "5cf6ff74161d7f985b9bf86bb3c5fb16cef6337b",
-            sha256 = "c88dd69eb50fcfd7fbc5d7db79adc6631ef0e1d80b3c94efe33ac5ee3ccc37f7",
+            commit = "b7f3e9756f3c45527be27bc38840d5a1ba690436",
+            sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -151,7 +150,6 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "7a04b4027d737828c9c5b8be56c838d5db0db80f",
-            sha256 = "2444c0ce7a869ce320a57fc13d96900364ddac8b8da779e1315b5d83fc38bbc1",
-            patches = ["@com_google_protobuf//build_defs:upb.patch"],
+            commit = "cd176a0cd1913ea8c643680d206c8ca278815c2c",
+            sha256 = "661b2d63dff82c6868cd1dea5e7be2ca1a6467746a146c293834f18aaa709077",
         )

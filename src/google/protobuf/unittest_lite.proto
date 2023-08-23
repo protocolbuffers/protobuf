@@ -243,7 +243,9 @@ extend TestAllExtensionsLite {
 
   optional string optional_string_piece_extension_lite = 24
       [ctype = STRING_PIECE];
-  optional string optional_cord_extension_lite = 25 [ctype = CORD];
+  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // ctype=CORD option back after it is supported.
+  optional string optional_cord_extension_lite = 25;
 
   optional protobuf_unittest_import.PublicImportMessageLite
       optional_public_import_message_extension_lite = 26;
@@ -288,7 +290,9 @@ extend TestAllExtensionsLite {
 
   repeated string repeated_string_piece_extension_lite = 54
       [ctype = STRING_PIECE];
-  repeated string repeated_cord_extension_lite = 55 [ctype = CORD];
+  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // ctype=CORD option back after it is supported.
+  repeated string repeated_cord_extension_lite = 55;
 
   repeated TestAllTypesLite.NestedMessage repeated_lazy_message_extension_lite =
       57 [lazy = true];
@@ -319,8 +323,9 @@ extend TestAllExtensionsLite {
 
   optional string default_string_piece_extension_lite = 84
       [ctype = STRING_PIECE, default = "abc"];
-  optional string default_cord_extension_lite = 85
-      [ctype = CORD, default = "123"];
+  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // ctype=CORD option back after it is supported.
+  optional string default_cord_extension_lite = 85 [default = "123"];
 
   // For oneof test
   optional uint32 oneof_uint32_extension_lite = 111;

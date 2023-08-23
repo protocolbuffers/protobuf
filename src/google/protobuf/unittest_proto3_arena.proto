@@ -206,6 +206,7 @@ message NestedTestAllTypes {
   NestedTestAllTypes child = 1;
   TestAllTypes payload = 2;
   repeated NestedTestAllTypes repeated_child = 3;
+  TestAllTypes lazy_payload = 4 [lazy = true];
 }
 
 // Define these after TestAllTypes to make sure the compiler can handle

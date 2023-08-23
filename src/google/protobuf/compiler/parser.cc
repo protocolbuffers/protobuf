@@ -571,6 +571,26 @@ void Parser::SkipRestOfBlock() {
 
 // ===================================================================
 
+bool Parser::ValidateMessage(const DescriptorProto* proto) {
+  for (int i = 0; i < proto->options().uninterpreted_option_size(); i++) {
+    const UninterpretedOption& option =
+        proto->options().uninterpreted_option(i);
+    if (option.name_size() > 0 && !option.name(0).is_extension() &&
+        option.name(0).name_part() == "map_entry") {
+      int line = -1, col = 0;  // indicates line and column not known
+      if (source_location_table_ != nullptr) {
+        source_location_table_->Find(
+            &option, DescriptorPool::ErrorCollector::OPTION_NAME, &line, &col);
+      }
+      RecordError(line, col,
+                  "map_entry should not be set explicitly. "
+                  "Use map<KeyType, ValueType> instead.");
+      return false;
+    }
+  }
+  return true;
+}
+
 bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   bool has_allow_alias = false;
   bool allow_alias = false;
@@ -661,9 +681,9 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
     root_location.RecordLegacyLocation(file,
                                        DescriptorPool::ErrorCollector::OTHER);
 
-    if (require_syntax_identifier_ || LookingAt("syntax")
-    ) {
-      if (!ParseSyntaxIdentifier(root_location)) {
+    if (require_syntax_identifier_ || LookingAt("syntax") ||
+        LookingAt("edition")) {
+      if (!ParseSyntaxIdentifier(file, root_location)) {
         // Don't attempt to parse the file if we didn't recognize the syntax
         // identifier.
         return false;
@@ -671,6 +691,9 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       // Store the syntax into the file.
       if (file != nullptr) {
         file->set_syntax(syntax_identifier_);
+        if (syntax_identifier_ == "editions") {
+          file->set_edition(edition_);
+        }
       }
     } else if (!stop_after_syntax_identifier_) {
       ABSL_LOG(WARNING) << "No syntax specified for the proto file: "
@@ -706,12 +729,20 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
   return !had_errors_;
 }
 
-bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
+bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
+                                   const LocationRecorder& parent) {
   LocationRecorder syntax_location(parent,
                                    FileDescriptorProto::kSyntaxFieldNumber);
+  syntax_location.RecordLegacyLocation(
+      file, DescriptorPool::ErrorCollector::EDITIONS);
+  bool has_edition = false;
+  if (TryConsume("edition")) {
+    has_edition = true;
+  } else {
     DO(Consume("syntax",
                "File must begin with a syntax statement, e.g. 'syntax = "
                "\"proto2\";'."));
+  }
 
   DO(Consume("="));
   io::Tokenizer::Token syntax_token = input_->current();
@@ -719,6 +750,17 @@ bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
   DO(ConsumeString(&syntax, "Expected syntax identifier."));
   DO(ConsumeEndOfDeclaration(";", &syntax_location));
 
+  (has_edition ? edition_ : syntax_identifier_) = syntax;
+  if (has_edition) {
+    if (syntax.empty()) {
+      RecordError(syntax_token.line, syntax_token.column,
+                  "A file's edition must be a nonempty string.");
+      return false;
+    }
+    edition_ = syntax;
+    syntax_identifier_ = "editions";
+    return true;
+  }
   syntax_identifier_ = syntax;
   if (syntax != "proto2" && syntax != "proto3" &&
       !stop_after_syntax_identifier_) {
@@ -844,6 +886,7 @@ bool IsMessageSetWireFormatMessage(const DescriptorProto& message) {
   for (int i = 0; i < options.uninterpreted_option_size(); ++i) {
     const UninterpretedOption& uninterpreted = options.uninterpreted_option(i);
     if (uninterpreted.name_size() == 1 &&
+        !uninterpreted.name(0).is_extension() &&
         uninterpreted.name(0).name_part() == "message_set_wire_format" &&
         uninterpreted.identifier_value() == "true") {
       return true;
@@ -908,6 +951,9 @@ bool Parser::ParseMessageBlock(DescriptorProto* message,
   if (message->reserved_range_size() > 0) {
     AdjustReservedRangesWithMaxEndNumber(message);
   }
+
+  DO(ValidateMessage(message));
+
   return true;
 }
 
@@ -1189,40 +1235,44 @@ void Parser::GenerateMapEntry(const MapField& map_field,
   } else {
     value_field->set_type_name(map_field.value_type_name);
   }
-  // Propagate the "enforce_utf8" option to key and value fields if they
-  // are strings. This helps simplify the implementation of code generators
-  // and also reflection-based parsing code.
+  // Propagate all features to the generated key and value fields. This helps
+  // simplify the implementation of code generators and also reflection-based
+  // parsing code. Instead of having to implement complex inheritance rules
+  // special-casing maps, we can just copy them at generation time.
   //
   // The following definition:
   //   message Foo {
-  //     map<string, string> value = 1 [enforce_utf8 = false];
+  //     map<string, string> value = 1 [features.some_feature = VALUE];
   //   }
   // will be interpreted as:
   //   message Foo {
   //     message ValueEntry {
   //       option map_entry = true;
-  //       string key = 1 [enforce_utf8 = false];
-  //       string value = 2 [enforce_utf8 = false];
+  //       string key = 1 [features.some_feature = VALUE];
+  //       string value = 2 [features.some_feature = VALUE];
   //     }
-  //     repeated ValueEntry value = 1 [enforce_utf8 = false];
+  //     repeated ValueEntry value = 1 [features.some_feature = VALUE];
   //  }
-  //
-  // TODO(xiaofeng): Remove this when the "enforce_utf8" option is removed
-  // from protocol compiler.
   for (int i = 0; i < field->options().uninterpreted_option_size(); ++i) {
     const UninterpretedOption& option =
         field->options().uninterpreted_option(i);
+    // Legacy handling for the `enforce_utf8` option, which bears a striking
+    // similarity to features in many respects.
+    // TODO(b/289755572) Delete this once proto2/proto3 have been turned down.
     if (option.name_size() == 1 &&
         option.name(0).name_part() == "enforce_utf8" &&
         !option.name(0).is_extension()) {
       if (key_field->type() == FieldDescriptorProto::TYPE_STRING) {
-        key_field->mutable_options()->add_uninterpreted_option()->CopyFrom(
-            option);
+        *key_field->mutable_options()->add_uninterpreted_option() = option;
       }
       if (value_field->type() == FieldDescriptorProto::TYPE_STRING) {
-        value_field->mutable_options()->add_uninterpreted_option()->CopyFrom(
-            option);
+        *value_field->mutable_options()->add_uninterpreted_option() = option;
       }
+    }
+    if (option.name(0).name_part() == "features" &&
+        !option.name(0).is_extension()) {
+      *key_field->mutable_options()->add_uninterpreted_option() = option;
+      *value_field->mutable_options()->add_uninterpreted_option() = option;
     }
   }
 }
@@ -1746,10 +1796,27 @@ bool Parser::ParseReserved(DescriptorProto* message,
   // Parse the declaration.
   DO(Consume("reserved"));
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+    if (syntax_identifier_ == "editions") {
+      RecordError(
+          "Reserved names must be identifiers in editions, not string "
+          "literals.");
+      return false;
+    }
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedNameFieldNumber);
     location.StartAt(start_token);
     return ParseReservedNames(message, location);
+  } else if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
+    if (syntax_identifier_ != "editions") {
+      RecordError(
+          "Reserved names must be string literals. (Only editions supports "
+          "identifiers.)");
+      return false;
+    }
+    LocationRecorder location(message_location,
+                              DescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
+    return ParseReservedIdentifiers(message, location);
   } else {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedRangeFieldNumber);
@@ -1778,7 +1845,25 @@ bool Parser::ParseReservedNames(DescriptorProto* message,
                                 const LocationRecorder& parent_location) {
   do {
     LocationRecorder location(parent_location, message->reserved_name_size());
-    DO(ParseReservedName(message->add_reserved_name(), "Expected field name."));
+    DO(ParseReservedName(message->add_reserved_name(),
+                         "Expected field name string literal."));
+  } while (TryConsume(","));
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifier(std::string* name,
+                                     absl::string_view error_message) {
+  DO(ConsumeIdentifier(name, error_message));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifiers(DescriptorProto* message,
+                                      const LocationRecorder& parent_location) {
+  do {
+    LocationRecorder location(parent_location, message->reserved_name_size());
+    DO(ParseReservedIdentifier(message->add_reserved_name(),
+                               "Expected field name identifier."));
   } while (TryConsume(","));
   DO(ConsumeEndOfDeclaration(";", &parent_location));
   return true;
@@ -1791,6 +1876,8 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
     LocationRecorder location(parent_location, message->reserved_range_size());
 
     DescriptorProto::ReservedRange* range = message->add_reserved_range();
+    location.RecordLegacyLocation(range,
+                                  DescriptorPool::ErrorCollector::NUMBER);
     int start, end;
     io::Tokenizer::Token start_token;
     {
@@ -1839,10 +1926,27 @@ bool Parser::ParseReserved(EnumDescriptorProto* proto,
   // Parse the declaration.
   DO(Consume("reserved"));
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+    if (syntax_identifier_ == "editions") {
+      RecordError(
+          "Reserved names must be identifiers in editions, not string "
+          "literals.");
+      return false;
+    }
     LocationRecorder location(enum_location,
                               EnumDescriptorProto::kReservedNameFieldNumber);
     location.StartAt(start_token);
     return ParseReservedNames(proto, location);
+  } else if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
+    if (syntax_identifier_ != "editions") {
+      RecordError(
+          "Reserved names must be string literals. (Only editions supports "
+          "identifiers.)");
+      return false;
+    }
+    LocationRecorder location(enum_location,
+                              EnumDescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
+    return ParseReservedIdentifiers(proto, location);
   } else {
     LocationRecorder location(enum_location,
                               EnumDescriptorProto::kReservedRangeFieldNumber);
@@ -1855,7 +1959,19 @@ bool Parser::ParseReservedNames(EnumDescriptorProto* proto,
                                 const LocationRecorder& parent_location) {
   do {
     LocationRecorder location(parent_location, proto->reserved_name_size());
-    DO(ParseReservedName(proto->add_reserved_name(), "Expected enum value."));
+    DO(ParseReservedName(proto->add_reserved_name(),
+                         "Expected enum value string literal."));
+  } while (TryConsume(","));
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifiers(EnumDescriptorProto* proto,
+                                      const LocationRecorder& parent_location) {
+  do {
+    LocationRecorder location(parent_location, proto->reserved_name_size());
+    DO(ParseReservedIdentifier(proto->add_reserved_name(),
+                               "Expected enum value identifier."));
   } while (TryConsume(","));
   DO(ConsumeEndOfDeclaration(";", &parent_location));
   return true;
@@ -1868,6 +1984,8 @@ bool Parser::ParseReservedNumbers(EnumDescriptorProto* proto,
     LocationRecorder location(parent_location, proto->reserved_range_size());
 
     EnumDescriptorProto::EnumReservedRange* range = proto->add_reserved_range();
+    location.RecordLegacyLocation(range,
+                                  DescriptorPool::ErrorCollector::NUMBER);
     int start, end;
     io::Tokenizer::Token start_token;
     {
@@ -2306,6 +2424,16 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
       !LookingAt("required")) {
     return false;
   }
+  if (LookingAt("optional") && syntax_identifier_ == "editions") {
+    RecordError(
+        "Label \"optional\" is not supported in editions.  By default, all "
+        "singular fields have presence unless features.field_presence is set.");
+  }
+  if (LookingAt("required") && syntax_identifier_ == "editions") {
+    RecordError(
+        "Label \"required\" is not supported in editions, use "
+        "features.field_presence = LEGACY_REQUIRED.");
+  }
 
   LocationRecorder location(field_location,
                             FieldDescriptorProto::kLabelFieldNumber);
@@ -2325,6 +2453,13 @@ bool Parser::ParseType(FieldDescriptorProto::Type* type,
   const auto& type_names_table = GetTypeNameTable();
   auto iter = type_names_table.find(input_->current().text);
   if (iter != type_names_table.end()) {
+    if (syntax_identifier_ == "editions" &&
+        iter->second == FieldDescriptorProto::TYPE_GROUP) {
+      RecordError(
+          "Group syntax is no longer supported in editions. To get group "
+          "behavior you can specify features.message_encoding = DELIMITED on a "
+          "message field.");
+    }
     *type = iter->second;
     input_->Next();
   } else {

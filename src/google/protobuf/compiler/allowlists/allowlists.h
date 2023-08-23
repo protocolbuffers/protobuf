@@ -52,6 +52,9 @@ bool IsOpenEnumMessage(absl::string_view msg);
 // Returns whether a file can contain an unused import.
 bool IsUnusedImportFile(absl::string_view file);
 
+// Returns whether a file has early access to editions.
+bool IsEarlyEditionsFile(absl::string_view file);
+
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

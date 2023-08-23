@@ -141,11 +141,6 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const DescriptorT& descriptor,
       const Descriptor* containing_descriptor) const;
 
-  void FixForeignFieldsInExtensions() const;
-  void FixForeignFieldsInExtension(
-      const FieldDescriptor& extension_field) const;
-  void FixForeignFieldsInNestedExtensions(const Descriptor& descriptor) const;
-
   void PrintTopBoilerplate() const;
   void PrintServices() const;
   void PrintServiceDescriptors() const;

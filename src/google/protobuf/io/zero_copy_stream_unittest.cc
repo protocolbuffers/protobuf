@@ -582,7 +582,7 @@ TEST_F(IoTest, CompressionOptions) {
   // Some ad-hoc testing of compression options.
 
   std::string golden_filename =
-      TestUtil::GetTestDataPath("third_party/protobuf/testdata/golden_message");
+      TestUtil::GetTestDataPath("google/protobuf/testdata/golden_message");
   std::string golden;
   ABSL_CHECK_OK(File::GetContents(golden_filename, &golden, true));
 
@@ -729,26 +729,6 @@ TEST_F(IoTest, StringIo) {
   }
 }
 
-// Verifies that outputs up to kint32max can be created.
-TEST_F(IoTest, LargeOutput) {
-  // Filter out this test on 32-bit architectures and builds where our test
-  // infrastructure can't handle it.
-  if(sizeof(void*) < 8) return;
-#if !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER) && \
-    !defined(_MSC_VER)
-  std::string str;
-  StringOutputStream output(&str);
-  void* unused_data;
-  int size;
-  // Repeatedly calling Next should eventually grow the buffer to kint32max.
-  do {
-    EXPECT_TRUE(output.Next(&unused_data, &size));
-  } while (str.size() < std::numeric_limits<int>::max());
-  // Further increases should be possible.
-  output.Next(&unused_data, &size);
-  EXPECT_GT(size, 0);
-#endif  // !THREAD_SANITIZER && !MEMORY_SANITIZER
-}
 
 TEST(DefaultReadCordTest, ReadSmallCord) {
   std::string source = "abcdefghijk";

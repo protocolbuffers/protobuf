@@ -37,6 +37,7 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -75,11 +76,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 
 class SingularEnum : public FieldGeneratorBase {
  public:
-  SingularEnum(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
-        field_(field),
-        opts_(&opts),
-        is_oneof_(field->real_containing_oneof() != nullptr) {}
+  SingularEnum(const FieldDescriptor* field, const Options& opts,
+               MessageSCCAnalyzer* scc)
+      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
   ~SingularEnum() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -103,7 +102,7 @@ class SingularEnum : public FieldGeneratorBase {
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
-    if (is_oneof_) return;
+    if (is_oneof()) return;
 
     p->Emit(R"cc(
       swap($field_$, other->$field_$);
@@ -111,7 +110,7 @@ class SingularEnum : public FieldGeneratorBase {
   }
 
   void GenerateConstructorCode(io::Printer* p) const override {
-    if (!is_oneof_) return;
+    if (!is_oneof()) return;
     p->Emit(R"cc(
       $ns$::_$Msg$_default_instance_.$field_$ = $kDefault$;
     )cc");
@@ -140,26 +139,25 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      /*decltype($field_$)*/ $kDefault$
+      /*decltype($field_$)*/ $kDefault$,
     )cc");
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
-    if (ShouldSplit(descriptor_, options_)) {
+    if (should_split()) {
       p->Emit(R"cc(
-        decltype(Impl_::Split::$name$_) { $kDefault$ }
+        decltype(Impl_::Split::$name$_){$kDefault$},
       )cc");
-      return;
+    } else {
+      p->Emit(R"cc(
+        decltype($field_$){$kDefault$},
+      )cc");
     }
-
-    p->Emit(R"cc(
-      decltype($field_$) { $kDefault$ }
-    )cc");
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      decltype($field_$) {}
+      decltype($field_$){},
     )cc");
   }
 
@@ -169,7 +167,6 @@ class SingularEnum : public FieldGeneratorBase {
  private:
   const FieldDescriptor* field_;
   const Options* opts_;
-  bool is_oneof_;
 };
 
 void SingularEnum::GenerateAccessorDeclarations(io::Printer* p) const {
@@ -196,13 +193,14 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_$name$();
     }
     inline void $Msg$::set_$name$($Enum$ value) {
-      $PrepareSplitMessageForWrite$ _internal_set_$name$(value);
+      $PrepareSplitMessageForWrite$;
+      _internal_set_$name$(value);
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
   )cc");
 
-  if (is_oneof_) {
+  if (is_oneof()) {
     p->Emit(R"cc(
       inline $Enum$ $Msg$::_internal_$name$() const {
         if ($has_field$) {
@@ -222,9 +220,11 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   } else {
     p->Emit(R"cc(
       inline $Enum$ $Msg$::_internal_$name$() const {
+        $TsanDetectConcurrentRead$;
         return static_cast<$Enum$>($field_$);
       }
       inline void $Msg$::_internal_set_$name$($Enum$ value) {
+        $TsanDetectConcurrentMutation$;
         $assert_valid$;
         $set_hasbit$;
         $field_$ = value;
@@ -235,20 +235,28 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 class RepeatedEnum : public FieldGeneratorBase {
  public:
-  RepeatedEnum(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  RepeatedEnum(const FieldDescriptor* field, const Options& opts,
+               MessageSCCAnalyzer* scc)
+      : FieldGeneratorBase(field, opts, scc),
         field_(field),
         opts_(&opts),
         has_cached_size_(field_->is_packed() &&
-                         HasGeneratedMethods(field_->file(), opts)) {}
+                         HasGeneratedMethods(field_->file(), opts) &&
+                         !should_split()) {}
   ~RepeatedEnum() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
-    p->Emit(R"cc(
-      $pb$::RepeatedField<int> $name$_;
-    )cc");
+    if (should_split()) {
+      p->Emit(R"cc(
+        $pbi$::RawPtr<$pb$::RepeatedField<int>> $name$_;
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        $pb$::RepeatedField<int> $name$_;
+      )cc");
+    }
 
     if (has_cached_size_) {
       p->Emit(R"cc(
@@ -258,67 +266,122 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateClearingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      _internal_mutable_$name$()->Clear();
-    )cc");
+    if (should_split()) {
+      p->Emit("$field_$.ClearIfNotDefault();\n");
+    } else {
+      p->Emit("$field_$.Clear();\n");
+    }
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
-    )cc");
+    // TODO(b/239716377): experiment with simplifying this to be
+    // `if (!from.empty()) { body(); }` for both split and non-split cases.
+    auto body = [&] {
+      p->Emit(R"cc(
+        _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
+      )cc");
+    };
+    if (!should_split()) {
+      body();
+    } else {
+      p->Emit({{"body", body}}, R"cc(
+        if (!from.$field_$.IsDefault()) {
+          $body$;
+        }
+      )cc");
+    }
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
+    ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      _internal_mutable_$name$()->InternalSwap(
-          other->_internal_mutable_$name$());
+      $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      _internal_mutable_$name$()->~RepeatedField();
-    )cc");
+    if (should_split()) {
+      p->Emit(R"cc(
+        $field_$.DeleteIfNotDefault();
+      )cc");
+    } else {
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
+      p->Emit(R"cc(
+        _internal_mutable_$name$()->~RepeatedField();
+      )cc");
+#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
+    }
   }
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      /*decltype($field_$)*/ {}
+      /*decltype($field_$)*/ {},
     )cc");
     if (has_cached_size_) {
       p->Emit(R"cc(
-        , /*decltype($cached_size_$)*/ { 0 }
+        /*decltype($cached_size_$)*/ {0},
       )cc");
     }
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      decltype($field_$) { arena }
+      decltype($field_$){arena},
     )cc");
     if (has_cached_size_) {
       // std::atomic has no copy constructor, which prevents explicit aggregate
       // initialization pre-C++17.
       p->Emit(R"cc(
-        , /*decltype($cached_size_$)*/ { 0 }
+        /*decltype($cached_size_$)*/ {0},
       )cc");
     }
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
-      decltype($field_$) { from._internal_$name$() })cc");
+      decltype($field_$){from._internal_$name$()},
+    )cc");
     if (has_cached_size_) {
       // std::atomic has no copy constructor.
       p->Emit(R"cc(
-        , /*decltype($cached_size_$)*/ { 0 }
+        /*decltype($cached_size_$)*/ {0},
       )cc");
     }
   }
 
+  void GenerateMemberConstexprConstructor(io::Printer* p) const override {
+    p->Emit("$name$_{}");
+    if (has_cached_size_) {
+      p->Emit(",\n_$name$_cached_byte_size_{0}");
+    }
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const override {
+    p->Emit("$name$_{visibility, arena}");
+    if (has_cached_size_) {
+      p->Emit(",\n_$name$_cached_byte_size_{0}");
+    }
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const override {
+    p->Emit("$name$_{visibility, arena, from.$name$_}");
+    if (has_cached_size_) {
+      p->Emit(",\n_$name$_cached_byte_size_{0}");
+    }
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const override {
+    ABSL_LOG(FATAL) << "Not supported";
+  }
+
   void GenerateCopyConstructorCode(io::Printer* p) const override {
-    ABSL_CHECK(!ShouldSplit(field_, *opts_));
+    if (should_split()) {
+      p->Emit(R"cc(
+        if (!from._internal_$name$().empty()) {
+          _internal_mutable_$name$()->MergeFrom(from._internal_$name$());
+        }
+      )cc");
+    }
   }
 
   void GenerateConstructorCode(io::Printer* p) const override {}
@@ -373,6 +436,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
     inline void $Msg$::add_$name$($Enum$ value) {
       $assert_valid$;
+      $TsanDetectConcurrentMutation$;
       _internal_mutable_$name$()->Add(value);
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
@@ -385,29 +449,72 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline $pb$::RepeatedField<int>* $Msg$::mutable_$name$() {
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+      $TsanDetectConcurrentMutation$;
       return _internal_mutable_$name$();
     }
-    inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name$() const {
-      return $field_$;
-    }
-    inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name$() {
-      return &$field_$;
-    }
   )cc");
+  if (should_split()) {
+    p->Emit(R"cc(
+      inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name$() const {
+        $TsanDetectConcurrentRead$;
+        return *$field_$;
+      }
+      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name$() {
+        $TsanDetectConcurrentRead$;
+        $PrepareSplitMessageForWrite$;
+        if ($field_$.IsDefault()) {
+          $field_$.Set($pb$::Arena::CreateMessage<$pb$::RepeatedField<int>>(
+              GetArenaForAllocation()));
+        }
+        return $field_$.Get();
+      }
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name$() const {
+        $TsanDetectConcurrentRead$;
+        return $field_$;
+      }
+      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name$() {
+        $TsanDetectConcurrentRead$;
+        return &$field_$;
+      }
+    )cc");
+  }
 }
 
 void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (field_->is_packed()) {
-    p->Emit(R"cc(
-      {
-        int byte_size = $cached_size_$.Get();
-        if (byte_size > 0) {
-          target = stream->WriteEnumPacked($number$, _internal_$name$(),
-                                           byte_size, target);
-        }
-      }
-    )cc");
+    p->Emit(
+        {
+            {"byte_size",
+             [&] {
+               if (has_cached_size_) {
+                 p->Emit(
+                     R"cc(std::size_t byte_size = $cached_size_$.Get();)cc");
+               } else {
+                 p->Emit(R"cc(
+                   std::size_t byte_size = 0;
+                   auto count = static_cast<std::size_t>(this->_internal_$name$_size());
+
+                   for (std::size_t i = 0; i < count; ++i) {
+                     byte_size += ::_pbi::WireFormatLite::EnumSize(
+                         this->_internal_$name$().Get(static_cast<int>(i)));
+                   }
+                 )cc");
+               }
+             }},
+        },
+        R"cc(
+          {
+            $byte_size$;
+            if (byte_size > 0) {
+              target = stream->WriteEnumPacked($number$, _internal_$name$(),
+                                               byte_size, target);
+            }
+          }
+        )cc");
     return;
   }
   p->Emit(R"cc(
@@ -438,8 +545,12 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
                  total_size += ::_pbi::WireFormatLite::Int32Size(
                      static_cast<int32_t>(data_size));
                }
-               $cached_size_$.Set(::_pbi::ToCachedSize(data_size));
              )cc");
+             if (has_cached_size_) {
+               p->Emit(R"cc(
+                 $cached_size_$.Set(::_pbi::ToCachedSize(data_size));
+               )cc");
+             }
            }},
       },
       R"cc(
@@ -461,13 +572,13 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
 std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularEnum>(desc, options);
+  return absl::make_unique<SingularEnum>(desc, options, scc);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedEnum>(desc, options);
+  return absl::make_unique<RepeatedEnum>(desc, options, scc);
 }
 
 }  // namespace cpp

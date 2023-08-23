@@ -30,20 +30,24 @@
 
 #include "google/protobuf/compiler/objectivec/generator.h"
 
+#include <cstddef>
+#include <cstdlib>
 #include <fstream>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/objectivec/file.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -258,6 +262,30 @@ bool ObjectiveCGenerator::GenerateAll(
             options[i].second);
         return false;
       }
+    } else if (options[i].first == "strip_custom_options") {
+      // Controls if extensions that define custom options are included the
+      // generated code. Since ObjC protos does not capture these descriptor
+      // options, there normally isn't a need for these extensions. Docs on
+      // custom options:
+      //   https://protobuf.dev/programming-guides/proto2/#customoptions
+      if (!StringToBool(options[i].second,
+                        &generation_options.strip_custom_options)) {
+        *error = absl::StrCat("error: Unknown value for strip_custom_options: ",
+                              options[i].second);
+        return false;
+      }
+    } else if (options[i].first == "generate_minimal_imports") {
+      // Controls if minimal imports should be generated from a files imports.
+      // Since custom options require imports, they current cause generated
+      // imports even though there is nothing captured in the generated code,
+      // this provides smaller imports only for the things referenced.
+      if (!StringToBool(options[i].second,
+                        &generation_options.generate_minimal_imports)) {
+        *error =
+            absl::StrCat("error: Unknown value for generate_minimal_imports: ",
+                         options[i].second);
+        return false;
+      }
     } else if (options[i].first == "experimental_multi_source_generation") {
       // This is an experimental option, and could be removed or change at any
       // time; it is not documented in the README.md for that reason.
@@ -274,6 +302,16 @@ bool ObjectiveCGenerator::GenerateAll(
             options[i].second);
         return false;
       }
+    } else if (options[i].first == "experimental_strip_nonfunctional_codegen") {
+      if (!StringToBool(
+              options[i].second,
+              &generation_options.experimental_strip_nonfunctional_codegen)) {
+        *error = absl::StrCat(
+            "error: Unknown value for "
+            "experimental_strip_nonfunctional_codegen: ",
+            options[i].second);
+        return false;
+      }
     } else {
       *error =
           absl::StrCat("error: Unknown generator option: ", options[i].first);
@@ -285,6 +323,9 @@ bool ObjectiveCGenerator::GenerateAll(
   // imports.
   if (generation_options.experimental_multi_source_generation) {
     generation_options.headers_use_forward_declarations = false;
+  }
+  if (generation_options.experimental_strip_nonfunctional_codegen) {
+    generation_options.generate_minimal_imports = true;
   }
 
   // -----------------------------------------------------------------
@@ -314,7 +355,7 @@ bool ObjectiveCGenerator::GenerateAll(
     return false;
   }
 
-  FileGenerator::CommonState state;
+  FileGenerator::CommonState state(!generation_options.strip_custom_options);
   for (const auto& file : files) {
     const FileGenerator file_generator(file, generation_options, state);
     std::string filepath = FilePath(file);

@@ -33,12 +33,16 @@
 
 #include <cstddef>
 #include <cstring>
+#include <type_traits>
 
 #include "absl/algorithm/container.h"
 #include "google/protobuf/stubs/common.h"
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -49,6 +53,16 @@ enum AllowlistFlags : unsigned int {
   kMatchPrefix = 1 << 1,
   kAllowAllInOss = 1 << 2,
 };
+
+#if !defined(__GNUC__) || defined(__clang__) || PROTOBUF_GNUC_MIN(9, 1)
+using maybe_string_view = absl::string_view;
+#else
+// In GCC versions before 9.1, template substitution fails because of the
+// implicit conversion between `const char*` and absl::string_view.  In these
+// cases we can just use a raw string and convert later.  See
+// https://godbolt.org/z/r57fx37d1 for an example of the failure.
+using maybe_string_view = const char*;
+#endif
 
 // An allowlist of things (messages, files, targets) that are allowed to violate
 // some constraint.
@@ -63,7 +77,7 @@ template <size_t n>
 class Allowlist final {
  public:
   template <size_t m = n, typename = std::enable_if_t<m != 0>>
-  constexpr Allowlist(const absl::string_view (&list)[n], AllowlistFlags flags)
+  constexpr Allowlist(const maybe_string_view (&list)[n], AllowlistFlags flags)
       : flags_(flags) {
     for (size_t i = 0; i < n; ++i) {
       list_[i] = list[i];
@@ -135,7 +149,7 @@ constexpr Allowlist<0> MakeAllowlist(
 
 template <size_t n>
 constexpr Allowlist<n> MakeAllowlist(
-    const absl::string_view (&list)[n],
+    const maybe_string_view (&list)[n],
     AllowlistFlags flags = AllowlistFlags::kNone) {
   return Allowlist<n>(list, flags);
 }
@@ -144,5 +158,7 @@ constexpr Allowlist<n> MakeAllowlist(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_ALLOWLISTS_ALLOWLIST_H__

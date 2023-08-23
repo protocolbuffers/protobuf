@@ -87,7 +87,6 @@ VALUE RepeatedField_GetRubyWrapper(upb_Array* array, TypeInfo type_info,
   if (val == Qnil) {
     val = RepeatedField_alloc(cRepeatedField);
     RepeatedField* self;
-    ObjectCache_Add(array, val);
     TypedData_Get_Struct(val, RepeatedField, &RepeatedField_type, self);
     self->array = array;
     self->arena = arena;
@@ -95,11 +94,14 @@ VALUE RepeatedField_GetRubyWrapper(upb_Array* array, TypeInfo type_info,
     if (self->type_info.type == kUpb_CType_Message) {
       self->type_class = Descriptor_DefToClass(type_info.def.msgdef);
     }
+    val = ObjectCache_TryAdd(array, val);
   }
 
   PBRUBY_ASSERT(ruby_to_RepeatedField(val)->type_info.type == type_info.type);
   PBRUBY_ASSERT(ruby_to_RepeatedField(val)->type_info.def.msgdef ==
                 type_info.def.msgdef);
+  PBRUBY_ASSERT(ruby_to_RepeatedField(val)->array == array);
+
   return val;
 }
 
@@ -613,7 +615,8 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
 
   self->type_info = TypeInfo_FromClass(argc, argv, 0, &self->type_class, &ary);
   self->array = upb_Array_New(arena, self->type_info.type);
-  ObjectCache_Add(self->array, _self);
+  VALUE stored_val = ObjectCache_TryAdd(self->array, _self);
+  PBRUBY_ASSERT(stored_val == _self);
 
   if (ary != Qnil) {
     if (!RB_TYPE_P(ary, T_ARRAY)) {

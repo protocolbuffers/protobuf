@@ -54,6 +54,7 @@ namespace java {
 
 using internal::WireFormat;
 using internal::WireFormatLite;
+using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 namespace {
 
@@ -199,10 +200,7 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
     printer->Print(
         variables_,
         "@com.google.protobuf.ProtoField(\n"
-        "  fieldNumber=$number$,\n"
-        "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
-        "  isRequired=$required$,\n"
-        "  isEnforceUtf8=$enforce_utf8$)\n");
+        "  isRequired=$required$)\n");
     if (HasHasbit(descriptor_)) {
       printer->Print(variables_,
                      "@com.google.protobuf.ProtoPresenceCheckedField(\n"
@@ -313,7 +311,7 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.set$capitalized_name$(value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
   printer->Print(
@@ -323,7 +321,7 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.clear$capitalized_name$();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
                                           /* builder */ true);
@@ -335,7 +333,7 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.set$capitalized_name$Bytes(value);\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void ImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
@@ -447,7 +445,7 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
                  "  $set_oneof_case_message$;\n"
                  "  $oneof_name$_ = value;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER);
   printer->Print(variables_,
                  "private void ${$clear$capitalized_name$$}$() {\n"
@@ -456,13 +454,13 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
                  "    $oneof_name$_ = null;\n"
                  "  }\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER);
   printer->Print(variables_,
                  "private void ${$set$capitalized_name$Bytes$}$(\n"
                  "    com.google.protobuf.ByteString value) {\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }
@@ -518,7 +516,7 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.set$capitalized_name$(value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
   printer->Print(
@@ -528,7 +526,7 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.clear$capitalized_name$();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
                                           /* builder */ true);
@@ -540,7 +538,7 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.set$capitalized_name$Bytes(value);\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 // ===================================================================
@@ -549,9 +547,7 @@ RepeatedImmutableStringFieldLiteGenerator::
     RepeatedImmutableStringFieldLiteGenerator(const FieldDescriptor* descriptor,
                                               int messageBitIndex,
                                               Context* context)
-    : descriptor_(descriptor),
-      name_resolver_(context->GetNameResolver()),
-      context_(context) {
+    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetPrimitiveVariables(descriptor, messageBitIndex, 0,
                         context->GetFieldGeneratorInfo(descriptor),
                         name_resolver_, &variables_, context);
@@ -589,14 +585,6 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
-  if (!context_->options().opensource_runtime) {
-    printer->Print(
-        variables_,
-        "@com.google.protobuf.ProtoField(\n"
-        "  fieldNumber=$number$,\n"
-        "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
-        "  isEnforceUtf8=$enforce_utf8$)\n");
-  }
   printer->Print(
       variables_,
       "private com.google.protobuf.Internal.ProtobufList<java.lang.String> "
@@ -737,7 +725,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.set$capitalized_name$(index, value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                /* builder */ true);
   printer->Print(variables_,
@@ -747,7 +735,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.add$capitalized_name$(value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                /* builder */ true);
   printer->Print(variables_,
@@ -757,7 +745,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.addAll$capitalized_name$(values);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
   printer->Print(
@@ -767,7 +755,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.clear$capitalized_name$();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                           /* builder */ true);
@@ -779,7 +767,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.add$capitalized_name$Bytes(value);\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(

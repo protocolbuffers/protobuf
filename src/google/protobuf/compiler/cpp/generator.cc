@@ -40,12 +40,16 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_visitor.h"
+
 
 namespace google {
 namespace protobuf {
@@ -96,6 +100,18 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
        "K"},
   };
 }
+
+static bool IsStringMapType(const FieldDescriptor& field) {
+  if (!field.is_map()) return false;
+  for (int i = 0; i < field.message_type()->field_count(); ++i) {
+    if (field.message_type()->field(i)->type() ==
+        FieldDescriptor::TYPE_STRING) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 bool CppGenerator::Generate(const FileDescriptor* file,
@@ -184,20 +200,10 @@ bool CppGenerator::Generate(const FileDescriptor* file,
               .emplace(value.substr(pos, next_pos - pos));
         pos = next_pos + 1;
       } while (pos < value.size());
-    } else if (key == "unverified_lazy_message_sets") {
-      file_options.unverified_lazy_message_sets = true;
     } else if (key == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
-    } else if (key == "experimental_tail_call_table_mode") {
-      if (value == "never") {
-        file_options.tctable_mode = Options::kTCTableNever;
-      } else if (value == "always") {
-        file_options.tctable_mode = Options::kTCTableAlways;
-      } else {
-        *error = absl::StrCat(
-            "Unknown value for experimental_tail_call_table_mode: ", value);
-        return false;
-      }
+    } else if (key == "experimental_strip_nonfunctional_codegen") {
+      file_options.strip_nonfunctional_codegen = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", key);
       return false;
@@ -231,6 +237,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   if (MaybeBootstrap(file_options, generator_context, file_options.bootstrap,
                      &basename)) {
     return true;
+  }
+
+  absl::Status validation_result = ValidateFeatures(file);
+  if (!validation_result.ok()) {
+    *error = std::string(validation_result.message());
+    return false;
   }
 
   FileGenerator file_generator(file, file_options);
@@ -349,6 +361,72 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
   return true;
 }
+
+absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
+  absl::Status status = absl::OkStatus();
+  google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
+    const FeatureSet& resolved_features = GetResolvedSourceFeatures(field);
+    const pb::CppFeatures& unresolved_features =
+        GetUnresolvedSourceFeatures(field, pb::cpp);
+    if (field.enum_type() != nullptr &&
+        resolved_features.GetExtension(::pb::cpp).legacy_closed_enum() &&
+        resolved_features.field_presence() == FeatureSet::IMPLICIT) {
+      status = absl::FailedPreconditionError(
+          absl::StrCat("Field ", field.full_name(),
+                       " has a closed enum type with implicit presence."));
+    }
+    if (resolved_features.GetExtension(::pb::cpp).utf8_validation() ==
+        pb::CppFeatures::UTF8_VALIDATION_UNKNOWN) {
+      status = absl::FailedPreconditionError(absl::StrCat(
+          "Field ", field.full_name(),
+          " has an unknown value for the utf8_validation feature. ",
+          resolved_features.DebugString(),
+          "\nRawFeatures: ", unresolved_features));
+    }
+
+    if (field.containing_type() == nullptr ||
+        !field.containing_type()->options().map_entry()) {
+      // Skip validation of explicit features on generated map fields.  These
+      // will be blindly propagated from the original map field, and may violate
+      // a lot of these conditions.  Note: we do still validate the
+      // user-specified map field.
+      if (unresolved_features.has_legacy_closed_enum() &&
+          field.cpp_type() != FieldDescriptor::CPPTYPE_ENUM) {
+        status = absl::FailedPreconditionError(
+            absl::StrCat("Field ", field.full_name(),
+                         " specifies the legacy_closed_enum feature but has "
+                         "non-enum type."));
+      }
+      if (field.type() != FieldDescriptor::TYPE_STRING &&
+          !IsStringMapType(field) &&
+          unresolved_features.has_utf8_validation()) {
+        status = absl::FailedPreconditionError(
+            absl::StrCat("Field ", field.full_name(),
+                         " specifies the utf8_validation feature but is not of "
+                         "string type."));
+      }
+    }
+
+#ifdef PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
+    if (field.options().has_ctype()) {
+      if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+        status = absl::FailedPreconditionError(absl::StrCat(
+            "Field ", field.full_name(),
+            " specifies ctype, but is not a string nor bytes field."));
+      }
+      if (field.options().ctype() == FieldOptions::CORD) {
+        if (field.is_extension()) {
+          status = absl::FailedPreconditionError(absl::StrCat(
+              "Extension ", field.full_name(),
+              " specifies ctype=CORD which is not supported for extensions."));
+        }
+      }
+    }
+#endif  // !PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
+  });
+  return status;
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

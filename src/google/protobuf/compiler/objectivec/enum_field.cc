@@ -32,9 +32,14 @@
 
 #include <string>
 
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
-#include "google/protobuf/compiler/objectivec/helpers.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -79,22 +84,21 @@ void EnumFieldGenerator::GenerateCFunctionDeclarations(
     return;
   }
 
-  // clang-format off
-  printer->Print(
-      variables_,
-      "/**\n"
-      " * Fetches the raw value of a @c $owning_message_class$'s @c $name$ property, even\n"
-      " * if the value was not defined by the enum at the time the code was generated.\n"
-      " **/\n"
-      "int32_t $owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message);\n"
-      "/**\n"
-      " * Sets the raw value of an @c $owning_message_class$'s @c $name$ property, allowing\n"
-      " * it to be set to a value that was not defined by the enum at the time the code\n"
-      " * was generated.\n"
-      " **/\n"
-      "void Set$owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message, int32_t value);\n"
-      "\n");
-  // clang-format on
+  auto vars = printer->WithVars(variables_);
+  printer->Emit(R"objc(
+    /**
+     * Fetches the raw value of a @c $owning_message_class$'s @c $name$ property, even
+     * if the value was not defined by the enum at the time the code was generated.
+     **/
+    int32_t $owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message);
+    /**
+     * Sets the raw value of an @c $owning_message_class$'s @c $name$ property, allowing
+     * it to be set to a value that was not defined by the enum at the time the code
+     * was generated.
+     **/
+    void Set$owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message, int32_t value);
+  )objc");
+  printer->Emit("\n");
 }
 
 void EnumFieldGenerator::GenerateCFunctionImplementations(
@@ -103,22 +107,21 @@ void EnumFieldGenerator::GenerateCFunctionImplementations(
     return;
   }
 
-  // clang-format off
-  printer->Print(
-      variables_,
-      "int32_t $owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message) {\n"
-      "  GPBDescriptor *descriptor = [$owning_message_class$ descriptor];\n"
-      "  GPBFieldDescriptor *field = [descriptor fieldWithNumber:$field_number_name$];\n"
-      "  return GPBGetMessageRawEnumField(message, field);\n"
-      "}\n"
-      "\n"
-      "void Set$owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message, int32_t value) {\n"
-      "  GPBDescriptor *descriptor = [$owning_message_class$ descriptor];\n"
-      "  GPBFieldDescriptor *field = [descriptor fieldWithNumber:$field_number_name$];\n"
-      "  GPBSetMessageRawEnumField(message, field, value);\n"
-      "}\n"
-      "\n");
-  // clang-format on
+  auto vars = printer->WithVars(variables_);
+  printer->Emit(R"objc(
+    int32_t $owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message) {
+      GPBDescriptor *descriptor = [$owning_message_class$ descriptor];
+      GPBFieldDescriptor *field = [descriptor fieldWithNumber:$field_number_name$];
+      return GPBGetMessageRawEnumField(message, field);
+    }
+
+    void Set$owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message, int32_t value) {
+      GPBDescriptor *descriptor = [$owning_message_class$ descriptor];
+      GPBFieldDescriptor *field = [descriptor fieldWithNumber:$field_number_name$];
+      GPBSetMessageRawEnumField(message, field, value);
+    }
+  )objc");
+  printer->Emit("\n");
 }
 
 void EnumFieldGenerator::DetermineForwardDeclarations(
@@ -138,6 +141,13 @@ void EnumFieldGenerator::DetermineForwardDeclarations(
   }
 }
 
+void EnumFieldGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  if (descriptor_->file() != descriptor_->enum_type()->file()) {
+    deps->insert(descriptor_->enum_type()->file());
+  }
+}
+
 RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
     const FieldDescriptor* descriptor)
     : RepeatedFieldGenerator(descriptor) {
@@ -145,17 +155,23 @@ RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
   variables_["array_storage_type"] = "GPBEnumArray";
 }
 
-void RepeatedEnumFieldGenerator::FinishInitialization() {
-  RepeatedFieldGenerator::FinishInitialization();
-  std::string name = variables_["name"];
-  std::string storage_type = variables_["storage_type"];
-  variables_["array_comment"] =
-      absl::StrCat("// |", name, "| contains |", storage_type, "|\n");
+void RepeatedEnumFieldGenerator::EmitArrayComment(io::Printer* printer) const {
+  auto vars = printer->WithVars(variables_);
+  printer->Emit(R"objc(
+    // |$name$| contains |$storage_type$|
+  )objc");
 }
 
 // NOTE: RepeatedEnumFieldGenerator::DetermineForwardDeclarations isn't needed
 // because `GPBEnumArray` isn't generic (like `NSArray` would be for messages)
 // and thus doesn't reference the type in the header.
+
+void RepeatedEnumFieldGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  if (descriptor_->file() != descriptor_->enum_type()->file()) {
+    deps->insert(descriptor_->enum_type()->file());
+  }
+}
 
 }  // namespace objectivec
 }  // namespace compiler

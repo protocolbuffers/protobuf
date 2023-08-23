@@ -42,7 +42,6 @@
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/text_format.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -52,6 +51,7 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
@@ -171,6 +171,8 @@ class ParserTest : public testing::Test {
   // input.
   void ExpectHasEarlyExitErrors(const char* text, const char* expected_errors) {
     SetupParser(text);
+    SourceLocationTable source_locations;
+    parser_->RecordSourceLocationsTo(&source_locations);
     FileDescriptorProto file;
     EXPECT_FALSE(parser_->Parse(input_.get(), &file));
     EXPECT_EQ(expected_errors, error_collector_.text_);
@@ -869,6 +871,22 @@ TEST_F(ParseMessageTest, ReservedNames) {
       "}");
 }
 
+TEST_F(ParseMessageTest, ReservedIdentifiers) {
+  ExpectParsesTo(
+      "edition = \"2023\";\n"
+      "message TestMessage {\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+
+      "syntax: \"editions\" "
+      "edition: \"2023\" "
+      "message_type {"
+      "  name: \"TestMessage\""
+      "  reserved_name: \"foo\""
+      "  reserved_name: \"bar\""
+      "}");
+}
+
 TEST_F(ParseMessageTest, ExtensionRange) {
   ExpectParsesTo(
       "message TestMessage {\n"
@@ -1227,6 +1245,24 @@ TEST_F(ParseEnumTest, ReservedNames) {
       "}");
 }
 
+TEST_F(ParseEnumTest, ReservedIdentifiers) {
+  ExpectParsesTo(
+      "edition = \"2023\";\n"
+      "enum TestEnum {\n"
+      "  FOO = 0;\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+
+      "syntax: \"editions\" "
+      "edition: \"2023\" "
+      "enum_type {"
+      "  name: \"TestEnum\""
+      "  value { name:\"FOO\" number:0 }"
+      "  reserved_name: \"foo\""
+      "  reserved_name: \"bar\""
+      "}");
+}
+
 // ===================================================================
 
 typedef ParserTest ParseServiceTest;
@@ -1500,6 +1536,44 @@ TEST_F(ParseErrorTest, DuplicateJsonName) {
       "1:41: Already set option \"json_name\".\n");
 }
 
+TEST_F(ParseErrorTest, MsgReservedIdentifierOnlyInEditions) {
+  ExpectHasErrors(
+      "message TestMessage {\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+      "1:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
+}
+TEST_F(ParseErrorTest, MsgReservedNameStringNotInEditions) {
+  ExpectHasErrors(
+      "edition = \"2023\";\n"
+      "message TestMessage {\n"
+      "  reserved \"foo\", \"bar\";\n"
+      "}\n",
+      "2:11: Reserved names must be identifiers in editions, not string "
+      "literals.\n");
+}
+
+TEST_F(ParseErrorTest, EnumReservedIdentifierOnlyInEditions) {
+  ExpectHasErrors(
+      "enum TestEnum {\n"
+      "  FOO = 0;\n"
+      "  reserved foo, bar;\n"
+      "}\n",
+      "2:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
+}
+TEST_F(ParseErrorTest, EnumReservedNameStringNotInEditions) {
+  ExpectHasErrors(
+      "edition = \"2023\";\n"
+      "enum TestEnum {\n"
+      "  FOO = 0;\n"
+      "  reserved \"foo\", \"bar\";\n"
+      "}\n",
+      "3:11: Reserved names must be identifiers in editions, not string "
+      "literals.\n");
+}
+
 TEST_F(ParseErrorTest, EnumValueOutOfRange) {
   ExpectHasErrors(
       "enum TestEnum {\n"
@@ -1699,13 +1773,16 @@ TEST_F(ParseErrorTest, EnumValueMissingNumber) {
       "1:5: Missing numeric value for enum constant.\n");
 }
 
+// NB: with editions, this would be accepted and would reserve a value name of
+// "max"
 TEST_F(ParseErrorTest, EnumReservedStandaloneMaxNotAllowed) {
   ExpectHasErrors(
       "enum TestEnum {\n"
       "  FOO = 1;\n"
       "  reserved max;\n"
       "}\n",
-      "2:11: Expected enum value or number range.\n");
+      "2:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
 }
 
 TEST_F(ParseErrorTest, EnumReservedMixNameAndNumber) {
@@ -1715,6 +1792,15 @@ TEST_F(ParseErrorTest, EnumReservedMixNameAndNumber) {
       "  reserved 10, \"foo\";\n"
       "}\n",
       "2:15: Expected enum number range.\n");
+}
+TEST_F(ParseErrorTest, EnumReservedMixNameAndNumberEditions) {
+  ExpectHasErrors(
+      "edition = \"2023\";\n"
+      "enum TestEnum {\n"
+      "  FOO = 1;\n"
+      "  reserved 10, foo;\n"
+      "}\n",
+      "3:15: Expected enum number range.\n");
 }
 
 TEST_F(ParseErrorTest, EnumReservedPositiveNumberOutOfRange) {
@@ -1741,29 +1827,33 @@ TEST_F(ParseErrorTest, EnumReservedMissingQuotes) {
       "  FOO = 1;\n"
       "  reserved foo;\n"
       "}\n",
-      "2:11: Expected enum value or number range.\n");
+      "2:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
 }
 
 TEST_F(ParseErrorTest, EnumReservedInvalidIdentifier) {
   ExpectHasWarnings(
-      R"pb(
-      enum TestEnum {
-        FOO = 1;
-        reserved "foo bar";
-      }
-      )pb",
-      "3:17: Reserved name \"foo bar\" is not a valid identifier.\n");
+      R"schema(
+        enum TestEnum {
+          FOO = 1;
+          reserved "foo bar";
+        }
+      )schema",
+      "3:19: Reserved name \"foo bar\" is not a valid identifier.\n");
 }
 
 // -------------------------------------------------------------------
 // Reserved field number errors
 
+// NB: with editions, this would be accepted and would reserve a field name of
+// "max"
 TEST_F(ParseErrorTest, ReservedStandaloneMaxNotAllowed) {
   ExpectHasErrors(
       "message Foo {\n"
       "  reserved max;\n"
       "}\n",
-      "1:11: Expected field name or number range.\n");
+      "1:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
 }
 
 TEST_F(ParseErrorTest, ReservedMixNameAndNumber) {
@@ -1773,23 +1863,32 @@ TEST_F(ParseErrorTest, ReservedMixNameAndNumber) {
       "}\n",
       "1:15: Expected field number range.\n");
 }
+TEST_F(ParseErrorTest, ReservedMixNameAndNumberEditions) {
+  ExpectHasErrors(
+      "edition = \"2023\";\n"
+      "message Foo {\n"
+      "  reserved 10, foo;\n"
+      "}\n",
+      "2:15: Expected field number range.\n");
+}
 
 TEST_F(ParseErrorTest, ReservedMissingQuotes) {
   ExpectHasErrors(
       "message Foo {\n"
       "  reserved foo;\n"
       "}\n",
-      "1:11: Expected field name or number range.\n");
+      "1:11: Reserved names must be string literals. (Only editions supports "
+      "identifiers.)\n");
 }
 
 TEST_F(ParseErrorTest, ReservedInvalidIdentifier) {
   ExpectHasWarnings(
-      R"pb(
-      message Foo {
-        reserved "foo bar";
-      }
-      )pb",
-      "2:17: Reserved name \"foo bar\" is not a valid identifier.\n");
+      R"schema(
+        message Foo {
+          reserved "foo bar";
+        }
+      )schema",
+      "2:19: Reserved name \"foo bar\" is not a valid identifier.\n");
 }
 
 TEST_F(ParseErrorTest, ReservedNegativeNumber) {
@@ -2038,6 +2137,22 @@ TEST_F(ParserValidationErrorTest, ExtensionRangeNumberError) {
       "1:13: Suggested field numbers for Foo: 1\n");
 }
 
+TEST_F(ParserValidationErrorTest, ExtensionRangeNumberOrderError) {
+  ExpectHasValidationErrors(
+      "message Foo {\n"
+      "  extensions 2 to 1;\n"
+      "}\n",
+      "1:13: Extension range end number must be greater than start number.\n");
+}
+
+TEST_F(ParserValidationErrorTest, ReservedRangeError) {
+  ExpectHasValidationErrors(
+      "message Foo {\n"
+      "  reserved 2 to 1;\n"
+      "}\n",
+      "1:11: Reserved range end number must be greater than start number.\n");
+}
+
 TEST_F(ParserValidationErrorTest, Proto3ExtensionError) {
   ExpectHasValidationErrors(
       "syntax = 'proto3';\n"
@@ -2211,7 +2326,7 @@ TEST_F(ParserValidationErrorTest, Proto3EnumError) {
   ExpectHasValidationErrors(
       "syntax = 'proto3';\n"
       "enum Foo {A = 1;}\n",
-      "1:14: The first enum value must be zero in proto3.\n");
+      "1:14: The first enum value must be zero for open enums.\n");
 }
 
 TEST_F(ParserValidationErrorTest, EnumValueNameError) {
@@ -2234,8 +2349,17 @@ TEST_F(ParserValidationErrorTest, EnumValueAliasError) {
       "definition. The next available enum value is 2.\n");
 }
 
-TEST_F(ParserValidationErrorTest, ExplicitlyMapEntryError) {
+TEST_F(ParserValidationErrorTest, EnumReservedRangeError) {
   ExpectHasValidationErrors(
+      "enum Foo {\n"
+      "  BAR = 1;\n"
+      "  reserved 2 to 1;\n"
+      "}\n",
+      "2:11: Reserved range end number must be greater than start number.\n");
+}
+
+TEST_F(ParserValidationErrorTest, ExplicitlyMapEntryError) {
+  ExpectHasErrors(
       "message Foo {\n"
       "  message ValueEntry {\n"
       "    option map_entry = true;\n"
@@ -2243,9 +2367,8 @@ TEST_F(ParserValidationErrorTest, ExplicitlyMapEntryError) {
       "    optional int32 value = 2;\n"
       "    extensions 99 to 999;\n"
       "  }\n"
-      "  repeated ValueEntry value = 1;\n"
       "}",
-      "7:11: map_entry should not be set explicitly. Use "
+      "2:11: map_entry should not be set explicitly. Use "
       "map<KeyType, ValueType> instead.\n");
 }
 
@@ -2318,7 +2441,7 @@ TEST_F(ParserValidationErrorTest, ResovledUndefinedOptionError) {
 
   // base2.proto:
   //   package baz
-  //   import net/proto2/proto/descriptor.proto
+  //   import google/protobuf/descriptor.proto
   //   message Bar { optional int32 foo = 1; }
   //   extend FileOptions { optional Bar bar = 7672757; }
   FileDescriptorProto other_file;
@@ -2461,8 +2584,7 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   // We now have a FileDescriptorProto, but to compare with the expected we
   // need to link to a FileDecriptor, then output back to a proto. We'll
   // also need to give it the same name as the original.
-  parsed.set_name(
-      TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
+  parsed.set_name("google/protobuf/unittest.proto");
   // We need the imported dependency before we can build our parsed proto
   const FileDescriptor* public_import =
       protobuf_unittest_import::PublicImportMessage::descriptor()->file();
@@ -2523,7 +2645,7 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   ASSERT_TRUE(pool_.BuildFile(any_import) != nullptr);
 
   const FileDescriptor* actual = pool_.BuildFile(parsed);
-  ASSERT_TRUE(actual != nullptr);
+  ASSERT_TRUE(actual != nullptr) << error_collector_.text_;
   parsed.Clear();
   actual->CopyTo(&parsed);
 
@@ -2951,7 +3073,7 @@ class SourceInfoTest : public ParserTest {
       }
     }
 
-      return false;
+    return false;
   }
 
  private:
@@ -3915,6 +4037,233 @@ TEST_F(SourceInfoTest, DocCommentsOneof) {
 
 // ===================================================================
 
+typedef ParserTest ParseEditionsTest;
+
+TEST_F(ParseEditionsTest, Editions) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "super-cool";
+        message A {
+          int32 b = 1;
+        })schema",
+      "message_type \t {"
+      "  name: \"A\""
+      "  field {"
+      "    name: \"b\""
+      "    number: 1"
+      "    label: LABEL_OPTIONAL"
+      "    type: TYPE_INT32"
+      "  }"
+      "}"
+      "syntax: \"editions\""
+      "edition: \"super-cool\"\n");
+}
+
+TEST_F(ParseEditionsTest, ExtensionsParse) {
+  ExpectParsesTo(
+      R"schema(
+        edition = '2023';
+        message Foo {
+          extensions 100 to 199;
+        }
+        extend Foo { string foo = 101; })schema",
+      "message_type \t {"
+      "  name: \"Foo\""
+      "  extension_range {"
+      "    start: 100"
+      "    end: 200"
+      "  }"
+      "}"
+      "extension {"
+      "  name: \"foo\""
+      "  extendee: \"Foo\""
+      "  number: 101"
+      "  label: LABEL_OPTIONAL"
+      "  type: TYPE_STRING"
+      "}"
+      "syntax: \"editions\""
+      "edition: \"2023\"\n");
+}
+
+TEST_F(ParseEditionsTest, MapFeatures) {
+  ExpectParsesTo(
+      R"schema(
+        edition = '2023';
+        message Foo {
+          map<string, int> map_field = 1 [
+            features.my_feature = SOMETHING
+          ];
+        })schema",
+      R"pb(message_type {
+             name: "Foo"
+             field {
+               name: "map_field"
+               number: 1
+               label: LABEL_REPEATED
+               type_name: "MapFieldEntry"
+               options {
+                 uninterpreted_option {
+                   name { name_part: "features" is_extension: false }
+                   name { name_part: "my_feature" is_extension: false }
+                   identifier_value: "SOMETHING"
+                 }
+               }
+             }
+             nested_type {
+               name: "MapFieldEntry"
+               field {
+                 name: "key"
+                 number: 1
+                 label: LABEL_OPTIONAL
+                 type: TYPE_STRING
+                 options {
+                   uninterpreted_option {
+                     name { name_part: "features" is_extension: false }
+                     name { name_part: "my_feature" is_extension: false }
+                     identifier_value: "SOMETHING"
+                   }
+                 }
+               }
+               field {
+                 name: "value"
+                 number: 2
+                 label: LABEL_OPTIONAL
+                 type_name: "int"
+                 options {
+                   uninterpreted_option {
+                     name { name_part: "features" is_extension: false }
+                     name { name_part: "my_feature" is_extension: false }
+                     identifier_value: "SOMETHING"
+                   }
+                 }
+               }
+               options { map_entry: true }
+             }
+           }
+           syntax: "editions"
+           edition: "2023")pb");
+}
+
+TEST_F(ParseEditionsTest, EmptyEdition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: A file's edition must be a nonempty string.\n");
+}
+
+TEST_F(ParseEditionsTest, SyntaxEditions) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        syntax = "editions";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:17: Unrecognized syntax identifier \"editions\".  This parser only "
+      "recognizes \"proto2\" and \"proto3\".\n");
+}
+
+TEST_F(ParseEditionsTest, MixedSyntaxAndEdition) {
+  ExpectHasErrors(
+      R"schema(
+        syntax = "proto2";
+        edition = "super-cool";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "2:8: Expected top-level statement (e.g. \"message\").\n");
+}
+
+TEST_F(ParseEditionsTest, MixedEditionAndSyntax) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "super-cool";
+        syntax = "proto2";
+        message A {
+          int32 b = 1;
+        })schema",
+      "2:8: Expected top-level statement (e.g. \"message\").\n");
+}
+
+TEST_F(ParseEditionsTest, OptionalKeywordBanned) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2023";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "3:10: Label \"optional\" is not supported in editions.  By default, all "
+      "singular fields have presence unless features.field_presence is set.\n");
+}
+
+TEST_F(ParseEditionsTest, RequiredKeywordBanned) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2023";
+        message A {
+          required int32 b = 1;
+        })schema",
+      "3:10: Label \"required\" is not supported in editions, use "
+      "features.field_presence = LEGACY_REQUIRED.\n");
+}
+
+TEST_F(ParseEditionsTest, GroupsBanned) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2023";
+        message TestMessage {
+          group TestGroup = 1 {};
+        })schema",
+      "3:10: Group syntax is no longer supported in editions. To get group "
+      "behavior you can specify features.message_encoding = DELIMITED on a "
+      "message field.\n");
+}
+
+TEST_F(ParseEditionsTest, ValidationError) {
+  ExpectHasValidationErrors(
+      R"schema(
+        edition = "2023";
+        option features.field_presence = IMPLICIT;
+        option java_package = "blah";
+        message TestMessage {
+          string foo = 1 [default = "hello"];
+        })schema",
+      "5:17: Implicit presence fields can't specify defaults.\n");
+}
+
+TEST_F(ParseEditionsTest, InvalidMerge) {
+  ExpectHasValidationErrors(
+      R"schema(
+        edition = "2023";
+        option features.field_presence = IMPLICIT;
+        option java_package = "blah";
+        message TestMessage {
+          string foo = 1 [
+            default = "hello",
+            features.field_presence = FIELD_PRESENCE_UNKNOWN,
+            features.enum_type = ENUM_TYPE_UNKNOWN
+          ];
+        })schema",
+      "5:17: Feature field google.protobuf.FeatureSet.field_presence must resolve to a "
+      "known value, found FIELD_PRESENCE_UNKNOWN\n");
+}
+
+TEST_F(ParseEditionsTest, FeaturesWithoutEditions) {
+  ExpectHasValidationErrors(
+      R"schema(
+        syntax = "proto3";
+        option features.field_presence = IMPLICIT;
+        message TestMessage {
+          string foo = 1 [
+            default = "hello",
+            features.field_presence = EXPLICIT
+          ];
+        })schema",
+      "1:8: Features are only valid under editions.\n"
+      "4:17: Features are only valid under editions.\n");
+}
 
 
 }  // anonymous namespace

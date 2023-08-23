@@ -37,11 +37,11 @@
 /* stringsink *****************************************************************/
 
 typedef struct {
-  char *ptr;
+  char* ptr;
   size_t len, size;
 } stringsink;
 
-static size_t stringsink_string(stringsink *sink, const char *ptr, size_t len) {
+static size_t stringsink_string(stringsink* sink, const char* ptr, size_t len) {
   size_t new_size = sink->size;
 
   while (sink->len + len > new_size) {
@@ -59,38 +59,37 @@ static size_t stringsink_string(stringsink *sink, const char *ptr, size_t len) {
   return len;
 }
 
-static void stringsink_init(stringsink *sink) {
+static void stringsink_init(stringsink* sink) {
   sink->size = 32;
   sink->ptr = malloc(sink->size);
   PBPHP_ASSERT(sink->ptr != NULL);
   sink->len = 0;
 }
 
-static void stringsink_uninit(stringsink *sink) { free(sink->ptr); }
+static void stringsink_uninit(stringsink* sink) { free(sink->ptr); }
 
 /* def name -> classname ******************************************************/
 
-const char *const kReservedNames[] = {
-    "abstract",   "and",         "array",        "as",           "break",
-    "callable",   "case",        "catch",        "class",        "clone",
-    "const",      "continue",    "declare",      "default",      "die",
-    "do",         "echo",        "else",         "elseif",       "empty",
-    "enddeclare", "endfor",      "endforeach",   "endif",        "endswitch",
-    "endwhile",   "eval",        "exit",         "extends",      "final",
-    "finally",    "fn",          "for",          "foreach",      "function",
-    "if",         "implements",  "include",      "include_once", "instanceof",
-    "global",     "goto",        "insteadof",    "interface",    "isset",
-    "list",       "match",       "namespace",    "new",          "object",
-    "or",         "parent",      "print",        "private",      "protected",
-    "public",     "readonly",    "require",      "require_once", "return",
-    "self",       "static",      "switch",       "throw",        "trait",
-    "try",        "unset",       "use",          "var",          "while",
-    "xor",        "yield",       "int",          "float",        "bool",
-    "string",     "true",        "false",        "null",         "void",
+const char* const kReservedNames[] = {
+    "abstract",   "and",        "array",      "as",           "break",
+    "callable",   "case",       "catch",      "class",        "clone",
+    "const",      "continue",   "declare",    "default",      "die",
+    "do",         "echo",       "else",       "elseif",       "empty",
+    "enddeclare", "endfor",     "endforeach", "endif",        "endswitch",
+    "endwhile",   "eval",       "exit",       "extends",      "final",
+    "finally",    "fn",         "for",        "foreach",      "function",
+    "if",         "implements", "include",    "include_once", "instanceof",
+    "global",     "goto",       "insteadof",  "interface",    "isset",
+    "list",       "match",      "namespace",  "new",          "object",
+    "or",         "parent",     "print",      "private",      "protected",
+    "public",     "readonly",   "require",    "require_once", "return",
+    "self",       "static",     "switch",     "throw",        "trait",
+    "try",        "unset",      "use",        "var",          "while",
+    "xor",        "yield",      "int",        "float",        "bool",
+    "string",     "true",       "false",      "null",         "void",
     "iterable",   NULL};
 
-const char *const kPreviouslyUnreservedNames[] = {
-    "readonly", NULL};
+const char* const kPreviouslyUnreservedNames[] = {"readonly", NULL};
 
 bool is_reserved_name(const char* name) {
   int i;
@@ -127,16 +126,16 @@ static char nolocale_toupper(char ch) {
   }
 }
 
-static char *strdup_nolocale_lower(char *str, int length) {
+static char* strdup_nolocale_lower(const char* str, int length) {
   char* lower = malloc(length + 1);
   lower[length] = '\0';
-  for(int i = 0; i < length; ++i) {
+  for (int i = 0; i < length; ++i) {
     lower[i] = nolocale_tolower(str[i]);
   }
   return lower;
 }
 
-static bool is_reserved(const char *segment, int length, bool previous) {
+static bool is_reserved(const char* segment, int length, bool previous) {
   bool result;
   char* lower = strdup_nolocale_lower(segment, length);
   result = is_reserved_name(lower);
@@ -147,11 +146,9 @@ static bool is_reserved(const char *segment, int length, bool previous) {
   return result;
 }
 
-static void fill_prefix(const char *segment, int length,
-                        const char *prefix_given,
-                        const char *package_name,
-                        stringsink *classname,
-                        bool previous) {
+static void fill_prefix(const char* segment, int length,
+                        const char* prefix_given, const char* package_name,
+                        stringsink* classname, bool previous) {
   if (prefix_given != NULL && strcmp(prefix_given, "") != 0) {
     stringsink_string(classname, prefix_given, strlen(prefix_given));
   } else {
@@ -166,8 +163,8 @@ static void fill_prefix(const char *segment, int length,
   }
 }
 
-static void fill_segment(const char *segment, int length,
-                         stringsink *classname, bool use_camel) {
+static void fill_segment(const char* segment, int length, stringsink* classname,
+                         bool use_camel) {
   if (use_camel && (segment[0] < 'A' || segment[0] > 'Z')) {
     char first = nolocale_toupper(segment[0]);
     stringsink_string(classname, &first, 1);
@@ -177,8 +174,8 @@ static void fill_segment(const char *segment, int length,
   }
 }
 
-static void fill_namespace(const char *package, const char *php_namespace,
-                           stringsink *classname, bool previous) {
+static void fill_namespace(const char* package, const char* php_namespace,
+                           stringsink* classname, bool previous) {
   if (php_namespace != NULL) {
     if (strlen(php_namespace) != 0) {
       stringsink_string(classname, php_namespace, strlen(php_namespace));
@@ -200,10 +197,8 @@ static void fill_namespace(const char *package, const char *php_namespace,
   }
 }
 
-static void fill_classname(const char *fullname,
-                           const char *package,
-                           const char *prefix,
-                           stringsink *classname,
+static void fill_classname(const char* fullname, const char* package,
+                           const char* prefix, stringsink* classname,
                            bool previous) {
   int classname_start = 0;
   if (package != NULL) {
@@ -227,28 +222,29 @@ static void fill_classname(const char *fullname,
   }
 }
 
-char *str_view_dup(upb_StringView str) {
-  char *ret = malloc(str.size + 1);
+char* str_view_dup(upb_StringView str) {
+  char* ret = malloc(str.size + 1);
   memcpy(ret, str.data, str.size);
   ret[str.size] = '\0';
   return ret;
 }
 
-char *GetPhpClassname(const upb_FileDef *file, const char *fullname, bool previous) {
+char* GetPhpClassname(const upb_FileDef* file, const char* fullname,
+                      bool previous) {
   // Prepend '.' to package name to make it absolute. In the 5 additional
   // bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
   // given message is google.protobuf.Empty.
   const google_protobuf_FileOptions* opts = upb_FileDef_Options(file);
-  const char *package = upb_FileDef_Package(file);
-  char *php_namespace =
+  const char* package = upb_FileDef_Package(file);
+  char* php_namespace =
       google_protobuf_FileOptions_has_php_namespace(opts)
           ? str_view_dup(google_protobuf_FileOptions_php_namespace(opts))
           : NULL;
-  char *prefix =
+  char* prefix =
       google_protobuf_FileOptions_has_php_class_prefix(opts)
           ? str_view_dup(google_protobuf_FileOptions_php_class_prefix(opts))
           : NULL;
-  char *ret;
+  char* ret;
 
   stringsink namesink;
   stringsink_init(&namesink);
@@ -264,7 +260,7 @@ char *GetPhpClassname(const upb_FileDef *file, const char *fullname, bool previo
 }
 
 bool IsPreviouslyUnreservedClassName(const char* fullname) {
-  const char *classname = strrchr(fullname, '\\');
+  const char* classname = strrchr(fullname, '\\');
   if (classname) {
     classname += 1;
   } else {

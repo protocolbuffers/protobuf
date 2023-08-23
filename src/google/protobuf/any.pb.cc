@@ -11,6 +11,7 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 // @@protoc_insertion_point(includes)
 
 // Must be included last.
@@ -18,24 +19,28 @@
 PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
+namespace _fl = ::google::protobuf::internal::field_layout;
 #if defined(__llvm__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wuninitialized"
 #endif  // __llvm__
 namespace google {
 namespace protobuf {
-PROTOBUF_CONSTEXPR Any::Any(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.type_url_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_.value_)*/ {
-    &::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized {}
-  }
-
-  , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_._any_metadata_)*/{&_impl_.type_url_, &_impl_.value_}} {}
+        template <typename>
+PROTOBUF_CONSTEXPR Any::Any(::_pbi::ConstantInitialized)
+    : _impl_{
+      /*decltype(_impl_.type_url_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_.value_)*/ {
+          &::_pbi::fixed_address_empty_string,
+          ::_pbi::ConstantInitialized{},
+      },
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_._any_metadata_)*/ {&_impl_.type_url_,
+                                    &_impl_.value_},
+    } {}
 struct AnyDefaultTypeInternal {
   PROTOBUF_CONSTEXPR AnyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~AnyDefaultTypeInternal() {}
@@ -44,7 +49,7 @@ struct AnyDefaultTypeInternal {
   };
 };
 
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 AnyDefaultTypeInternal _Any_default_instance_;
 }  // namespace protobuf
 }  // namespace google
@@ -69,7 +74,7 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fany_2eproto::offsets[] PROTOBUF
 
 static const ::_pbi::MigrationSchema
     schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, -1, -1, sizeof(::google::protobuf::Any)},
+        {0, -1, -1, sizeof(::google::protobuf::Any)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -141,22 +146,24 @@ class Any::_Internal {
 };
 
 Any::Any(::google::protobuf::Arena* arena)
-  : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
 }
-Any::Any(const Any& from)
-  : ::google::protobuf::Message() {
-  Any* const _this = this; (void)_this;
+Any::Any(const Any& from) : ::google::protobuf::Message() {
+  Any* const _this = this;
+  (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.type_url_) {}
-
-    , decltype(_impl_.value_) {}
-
-    , /*decltype(_impl_._cached_size_)*/{}
-    , /*decltype(_impl_._any_metadata_)*/{&_impl_.type_url_, &_impl_.value_}};
-
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+      decltype(_impl_.type_url_){},
+      decltype(_impl_.value_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_._any_metadata_)*/ {
+          &_impl_.type_url_,
+          &_impl_.value_,
+      },
+  };
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
   _impl_.type_url_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         _impl_.type_url_.Set("", GetArenaForAllocation());
@@ -171,18 +178,17 @@ Any::Any(const Any& from)
   if (!from._internal_value().empty()) {
     _this->_impl_.value_.Set(from._internal_value(), _this->GetArenaForAllocation());
   }
+
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
 }
-
 inline void Any::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
   new (&_impl_) Impl_{
-      decltype(_impl_.type_url_) {}
-
-    , decltype(_impl_.value_) {}
-
-    , /*decltype(_impl_._cached_size_)*/{}
-    , /*decltype(_impl_._any_metadata_)*/{&_impl_.type_url_, &_impl_.value_}
+      decltype(_impl_.type_url_){},
+      decltype(_impl_.value_){},
+      /*decltype(_impl_._cached_size_)*/ {},
+      /*decltype(_impl_._any_metadata_)*/ {&_impl_.type_url_,
+                                    &_impl_.value_},
   };
   _impl_.type_url_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -193,29 +199,24 @@ inline void Any::SharedCtor(::_pb::Arena* arena) {
         _impl_.value_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
-
 Any::~Any() {
   // @@protoc_insertion_point(destructor:google.protobuf.Any)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::google::protobuf::UnknownFieldSet>()) {
-  (void)arena;
-    return;
-  }
+  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   SharedDtor();
 }
-
 inline void Any::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.type_url_.Destroy();
   _impl_.value_.Destroy();
   _impl_._any_metadata_.~AnyMetadata();
 }
-
 void Any::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Any::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -225,61 +226,58 @@ PROTOBUF_NOINLINE void Any::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* Any::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  while (!ctx->Done(&ptr)) {
-    ::uint32_t tag;
-    ptr = ::_pbi::ReadTag(ptr, &tag);
-    switch (tag >> 3) {
-      // string type_url = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 10)) {
-          auto str = _internal_mutable_type_url();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "google.protobuf.Any.type_url"));
-        } else {
-          goto handle_unusual;
-        }
-        continue;
-      // bytes value = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 18)) {
-          auto str = _internal_mutable_value();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-        } else {
-          goto handle_unusual;
-        }
-        continue;
-      default:
-        goto handle_unusual;
-    }  // switch
-  handle_unusual:
-    if ((tag == 0) || ((tag & 7) == 4)) {
-      CHK_(ptr);
-      ctx->SetLastTag(tag);
-      goto message_done;
-    }
-    ptr = UnknownFieldParse(
-        tag,
-        _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(),
-        ptr, ctx);
-    CHK_(ptr != nullptr);
-  }  // while
-message_done:
+const char* Any::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
   return ptr;
-failure:
-  ptr = nullptr;
-  goto message_done;
-#undef CHK_
 }
 
+
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
+  {
+    0,  // no _has_bits_
+    0, // no _extensions_
+    2, 8,  // max_field_number, fast_idx_mask
+    offsetof(decltype(_table_), field_lookup_table),
+    4294967292,  // skipmap
+    offsetof(decltype(_table_), field_entries),
+    2,  // num_field_entries
+    0,  // num_aux_entries
+    offsetof(decltype(_table_), field_names),  // no aux_entries
+    &_Any_default_instance_._instance,
+    ::_pbi::TcParser::GenericFallback,  // fallback
+  }, {{
+    // bytes value = 2;
+    {::_pbi::TcParser::FastBS1,
+     {18, 63, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.value_)}},
+    // string type_url = 1;
+    {::_pbi::TcParser::FastUS1,
+     {10, 63, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.type_url_)}},
+  }}, {{
+    65535, 65535
+  }}, {{
+    // string type_url = 1;
+    {PROTOBUF_FIELD_OFFSET(Any, _impl_.type_url_), 0, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // bytes value = 2;
+    {PROTOBUF_FIELD_OFFSET(Any, _impl_.value_), 0, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kBytes | ::_fl::kRepAString)},
+  }},
+  // no aux_entries
+  {{
+    "\23\10\0\0\0\0\0\0"
+    "google.protobuf.Any"
+    "type_url"
+  }},
+};
+
 ::uint8_t* Any::_InternalSerialize(
-    ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    ::uint8_t* target,
+    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Any)
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   // string type_url = 1;
   if (!this->_internal_type_url().empty()) {
@@ -296,8 +294,9 @@ failure:
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Any)
   return target;
@@ -382,10 +381,6 @@ void Any::InternalSwap(Any* other) {
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::Any*
-Arena::CreateMaybeMessage< ::google::protobuf::Any >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Any >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

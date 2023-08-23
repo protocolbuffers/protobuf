@@ -28,14 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-syntax = "proto2";
+edition = "2023";
 
 package proto2_arena_unittest;
 
+// Use expanded encoding for repeated fields by default (proto2 behavior).
+option features.repeated_field_encoding = EXPANDED;
 option cc_enable_arenas = true;
 
 message NestedMessage {
-  optional int32 d = 1;
+  int32 d = 1;
 }
 
 message ArenaMessage {

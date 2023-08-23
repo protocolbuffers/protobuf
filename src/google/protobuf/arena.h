@@ -34,6 +34,7 @@
 #define GOOGLE_PROTOBUF_ARENA_H__
 
 #include <limits>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -50,7 +51,6 @@ using type_info = ::type_info;
 
 #include "absl/meta/type_traits.h"
 #include "google/protobuf/arena_align.h"
-#include "google/protobuf/arena_config.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/thread_safe_arena.h"
@@ -122,7 +122,7 @@ struct ArenaOptions {
   // individual arena allocation request occurs with a size larger than this
   // maximum). Requested block sizes increase up to this value, then remain
   // here.
-  size_t max_block_size = internal::GetDefaultArenaMaxBlockSize();
+  size_t max_block_size = internal::AllocationPolicy::kDefaultMaxBlockSize;
 
   // An initial block of memory for the arena to use, or nullptr for none. If
   // provided, the block must live at least as long as the arena itself. The
@@ -571,7 +571,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     if (trivial) {
       return AllocateAligned(sizeof(T), alignof(T));
     } else {
-      constexpr auto dtor = &internal::cleanup::arena_destruct_object<T>;
+      // We avoid instantiating arena_destruct_object<T> in the trivial case.
+      constexpr auto dtor = &internal::cleanup::arena_destruct_object<
+          std::conditional_t<trivial, std::string, T>>;
       return AllocateAlignedWithCleanup(sizeof(T), alignof(T), dtor);
     }
   }

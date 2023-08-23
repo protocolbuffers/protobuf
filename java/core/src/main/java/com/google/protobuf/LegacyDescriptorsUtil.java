@@ -30,7 +30,9 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
+import com.google.protobuf.Descriptors.OneofDescriptor;
 
 /**
  * This file is meant to be a temporary housing for legacy descriptor APIs we want to deprecate and
@@ -67,6 +69,26 @@ public final class LegacyDescriptorsUtil {
     }
 
     private LegacyFileDescriptor() {}
+  }
+
+  /** Wraps FieldDescriptor */
+  public static final class LegacyFieldDescriptor {
+
+    public static boolean hasOptionalKeyword(FieldDescriptor descriptor) {
+      return descriptor.hasOptionalKeyword();
+    }
+
+    private LegacyFieldDescriptor() {}
+  }
+
+  /** Wraps OneofDescriptor */
+  public static final class LegacyOneofDescriptor {
+
+    public static boolean isSynthetic(OneofDescriptor descriptor) {
+      return descriptor.isSynthetic();
+    }
+
+    private LegacyOneofDescriptor() {}
   }
 
   private LegacyDescriptorsUtil() {}

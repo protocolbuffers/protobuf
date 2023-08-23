@@ -30,6 +30,7 @@
 
 # require mixins before we hook them into the java & c code
 require 'google/protobuf/message_exts'
+require 'google/protobuf/object_cache'
 
 # We define these before requiring the platform-specific modules.
 # That way the module init can grab references to these.
@@ -38,26 +39,16 @@ module Google
     class Error < StandardError; end
     class ParseError < Error; end
     class TypeError < ::TypeError; end
-  end
-end
 
-if RUBY_PLATFORM == "java"
-  require 'json'
-  require 'google/protobuf_java'
-else
-  begin
-    require "google/#{RUBY_VERSION.sub(/\.\d+$/, '')}/protobuf_c"
-  rescue LoadError
-    require 'google/protobuf_c'
-  end
-
-end
-
-require 'google/protobuf/descriptor_dsl'
-require 'google/protobuf/repeated_field'
-
-module Google
-  module Protobuf
+    PREFER_FFI = case ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']
+                 when nil, "", /^native$/i
+                   false
+                 when /^ffi$/i
+                   true
+                 else
+                   warn "Unexpected value `#{ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']}` for environment variable `PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION`. Should be either \"FFI\", \"NATIVE\"."
+                   false
+                 end
 
     def self.encode(msg, options = {})
       msg.to_proto(options)
@@ -75,5 +66,19 @@ module Google
       klass.decode_json(json, options)
     end
 
+    IMPLEMENTATION = if PREFER_FFI
+      begin
+        require 'google/protobuf_ffi'
+        :FFI
+      rescue LoadError
+        warn "Caught exception `#{$!.message}` while loading FFI implementation of google/protobuf."
+        warn "Falling back to native implementation."
+        require 'google/protobuf_native'
+        :NATIVE
+      end
+    else
+      require 'google/protobuf_native'
+      :NATIVE
+    end
   end
 end

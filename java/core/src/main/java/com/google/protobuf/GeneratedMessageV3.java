@@ -485,11 +485,27 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new BooleanArrayList();
   }
 
-  @SuppressWarnings("unchecked") // Guaranteed by proto runtime.
   protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(ListT list) {
+    return makeMutableCopy(list, 0);
+  }
+
+  @SuppressWarnings("unchecked") // Guaranteed by proto runtime.
+  protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(
+      ListT list, int minCapacity) {
     int size = list.size();
-    return (ListT)
-        list.mutableCopyWithCapacity(size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    if (minCapacity <= size) {
+      minCapacity = size * 2;
+    }
+    if (minCapacity <= 0) {
+      minCapacity = AbstractProtobufList.DEFAULT_CAPACITY;
+    }
+
+    return (ListT) list.mutableCopyWithCapacity(minCapacity);
+  }
+
+  @SuppressWarnings("unchecked") // The empty list can be safely cast
+  protected static <T> ProtobufList<T> emptyList(Class<T> elementType) {
+    return (ProtobufList<T>) ProtobufArrayList.emptyList();
   }
 
   @Override
@@ -943,13 +959,27 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
      * map field directly and thus enables us to access the map field as a list.
      */
     @SuppressWarnings({"unused", "rawtypes"})
+    protected MapFieldReflectionAccessor internalGetMapFieldReflection(int fieldNumber) {
+      return internalGetMapField(fieldNumber);
+    }
+
+    /** TODO(b/258340024): Remove, exists for compatibility with generated code. */
+    @Deprecated
+    @SuppressWarnings({"unused", "rawtypes"})
     protected MapField internalGetMapField(int fieldNumber) {
       // Note that we can't use descriptor names here because this method will
       // be called when descriptor is being initialized.
       throw new IllegalArgumentException("No map fields found in " + getClass().getName());
     }
 
-    /** Like {@link #internalGetMapField} but return a mutable version. */
+    /** Like {@link #internalGetMapFieldReflection} but return a mutable version. */
+    @SuppressWarnings({"unused", "rawtypes"})
+    protected MapFieldReflectionAccessor internalGetMutableMapFieldReflection(int fieldNumber) {
+      return internalGetMutableMapField(fieldNumber);
+    }
+
+    /** TODO(b/258340024): Remove, exists for compatibility with generated code. */
+    @Deprecated
     @SuppressWarnings({"unused", "rawtypes"})
     protected MapField internalGetMutableMapField(int fieldNumber) {
       // Note that we can't use descriptor names here because this method will
@@ -2031,6 +2061,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    * generated API only allows us to access it as a map. This method returns the underlying map
    * field directly and thus enables us to access the map field as a list.
    */
+  @SuppressWarnings("unused")
+  protected MapFieldReflectionAccessor internalGetMapFieldReflection(int fieldNumber) {
+    return internalGetMapField(fieldNumber);
+  }
+
+  /** TODO(b/258340024): Remove, exists for compatibility with generated code. */
+  @Deprecated
   @SuppressWarnings({"rawtypes", "unused"})
   protected MapField internalGetMapField(int fieldNumber) {
     // Note that we can't use descriptor names here because this method will
@@ -2096,8 +2133,10 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           FieldDescriptor field = descriptor.getFields().get(i);
           String containingOneofCamelCaseName = null;
           if (field.getContainingOneof() != null) {
-            containingOneofCamelCaseName =
-                camelCaseNames[fieldsSize + field.getContainingOneof().getIndex()];
+            int index = fieldsSize + field.getContainingOneof().getIndex();
+            if (index < camelCaseNames.length) {
+              containingOneofCamelCaseName = camelCaseNames[index];
+            }
           }
           if (field.isRepeated()) {
             if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
@@ -2153,12 +2192,16 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           }
         }
 
-        int oneofsSize = oneofs.length;
-        for (int i = 0; i < oneofsSize; i++) {
-          oneofs[i] =
-              new OneofAccessor(
-                  descriptor, i, camelCaseNames[i + fieldsSize], messageClass, builderClass);
+        for (int i = 0; i < descriptor.getOneofs().size(); i++) {
+          if (i < descriptor.getRealOneofs().size()) {
+            oneofs[i] =
+                new RealOneofAccessor(
+                    descriptor, i, camelCaseNames[i + fieldsSize], messageClass, builderClass);
+          } else {
+            oneofs[i] = new SyntheticOneofAccessor(descriptor, i);
+          }
         }
+
         initialized = true;
         camelCaseNames = null;
         return this;
@@ -2230,24 +2273,29 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
 
     /** OneofAccessor provides access to a single oneof. */
-    private static class OneofAccessor {
-      OneofAccessor(
+    private static interface OneofAccessor {
+      public boolean has(final GeneratedMessageV3 message);
+
+      public boolean has(GeneratedMessageV3.Builder<?> builder);
+
+      public FieldDescriptor get(final GeneratedMessageV3 message);
+
+      public FieldDescriptor get(GeneratedMessageV3.Builder<?> builder);
+
+      public void clear(final Builder<?> builder);
+    }
+
+    /** RealOneofAccessor provides access to a single real oneof. */
+    private static class RealOneofAccessor implements OneofAccessor {
+      RealOneofAccessor(
           final Descriptor descriptor,
           final int oneofIndex,
           final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
           final Class<? extends Builder<?>> builderClass) {
         this.descriptor = descriptor;
-        OneofDescriptor oneofDescriptor = descriptor.getOneofs().get(oneofIndex);
-        if (oneofDescriptor.isSynthetic()) {
-          caseMethod = null;
-          caseMethodBuilder = null;
-          fieldDescriptor = oneofDescriptor.getFields().get(0);
-        } else {
-          caseMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "Case");
-          caseMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "Case");
-          fieldDescriptor = null;
-        }
+        caseMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "Case");
+        caseMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "Case");
         clearMethod = getMethodOrDie(builderClass, "clear" + camelCaseName);
       }
 
@@ -2255,52 +2303,73 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       private final Method caseMethod;
       private final Method caseMethodBuilder;
       private final Method clearMethod;
-      private final FieldDescriptor fieldDescriptor;
 
+      @Override
       public boolean has(final GeneratedMessageV3 message) {
-        if (fieldDescriptor != null) {
-          return message.hasField(fieldDescriptor);
-        } else {
-          return ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber() != 0;
-        }
+        return ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber() != 0;
       }
 
+      @Override
       public boolean has(GeneratedMessageV3.Builder<?> builder) {
-        if (fieldDescriptor != null) {
-          return builder.hasField(fieldDescriptor);
-        } else {
-          return ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber() != 0;
-        }
+        return ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber() != 0;
       }
 
+      @Override
       public FieldDescriptor get(final GeneratedMessageV3 message) {
-        if (fieldDescriptor != null) {
-          return message.hasField(fieldDescriptor) ? fieldDescriptor : null;
-        } else {
-          int fieldNumber = ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber();
-          if (fieldNumber > 0) {
-            return descriptor.findFieldByNumber(fieldNumber);
-          }
+        int fieldNumber = ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber();
+        if (fieldNumber > 0) {
+          return descriptor.findFieldByNumber(fieldNumber);
         }
         return null;
       }
 
+      @Override
       public FieldDescriptor get(GeneratedMessageV3.Builder<?> builder) {
-        if (fieldDescriptor != null) {
-          return builder.hasField(fieldDescriptor) ? fieldDescriptor : null;
-        } else {
-          int fieldNumber =
-              ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber();
-          if (fieldNumber > 0) {
-            return descriptor.findFieldByNumber(fieldNumber);
-          }
+        int fieldNumber = ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber();
+        if (fieldNumber > 0) {
+          return descriptor.findFieldByNumber(fieldNumber);
         }
         return null;
       }
 
+      @Override
       public void clear(final Builder<?> builder) {
         // TODO(b/230609037): remove the unused variable
         Object unused = invokeOrDie(clearMethod, builder);
+      }
+    }
+
+    /** SyntheticOneofAccessor provides access to a single synthetic oneof. */
+    private static class SyntheticOneofAccessor implements OneofAccessor {
+      SyntheticOneofAccessor(final Descriptor descriptor, final int oneofIndex) {
+        OneofDescriptor oneofDescriptor = descriptor.getOneofs().get(oneofIndex);
+        fieldDescriptor = oneofDescriptor.getFields().get(0);
+      }
+
+      private final FieldDescriptor fieldDescriptor;
+
+      @Override
+      public boolean has(final GeneratedMessageV3 message) {
+        return message.hasField(fieldDescriptor);
+      }
+
+      @Override
+      public boolean has(GeneratedMessageV3.Builder<?> builder) {
+        return builder.hasField(fieldDescriptor);
+      }
+
+      @Override
+      public FieldDescriptor get(final GeneratedMessageV3 message) {
+        return message.hasField(fieldDescriptor) ? fieldDescriptor : null;
+      }
+
+      public FieldDescriptor get(GeneratedMessageV3.Builder<?> builder) {
+        return builder.hasField(fieldDescriptor) ? fieldDescriptor : null;
+      }
+
+      @Override
+      public void clear(final Builder<?> builder) {
+        builder.clearField(fieldDescriptor);
       }
     }
 
@@ -2412,8 +2481,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final Class<? extends Builder<?>> builderClass,
           final String containingOneofCamelCaseName) {
         isOneofField =
-            descriptor.getContainingOneof() != null
-                && !descriptor.getContainingOneof().isSynthetic();
+            descriptor.getRealContainingOneof() != null;
         hasHasMethod = descriptor.hasPresence();
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(
@@ -2755,7 +2823,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final FieldDescriptor descriptor, final Class<? extends GeneratedMessageV3> messageClass) {
         field = descriptor;
         Method getDefaultInstanceMethod = getMethodOrDie(messageClass, "getDefaultInstance");
-        MapField<?, ?> defaultMapField =
+        MapFieldReflectionAccessor defaultMapField =
             getMapField((GeneratedMessageV3) invokeOrDie(getDefaultInstanceMethod, null));
         mapEntryMessageDefaultInstance = defaultMapField.getMapEntryMessageDefaultInstance();
       }
@@ -2763,16 +2831,16 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       private final FieldDescriptor field;
       private final Message mapEntryMessageDefaultInstance;
 
-      private MapField<?, ?> getMapField(GeneratedMessageV3 message) {
-        return (MapField<?, ?>) message.internalGetMapField(field.getNumber());
+      private MapFieldReflectionAccessor getMapField(GeneratedMessageV3 message) {
+        return message.internalGetMapFieldReflection(field.getNumber());
       }
 
-      private MapField<?, ?> getMapField(GeneratedMessageV3.Builder<?> builder) {
-        return (MapField<?, ?>) builder.internalGetMapField(field.getNumber());
+      private MapFieldReflectionAccessor getMapField(GeneratedMessageV3.Builder<?> builder) {
+        return builder.internalGetMapFieldReflection(field.getNumber());
       }
 
-      private MapField<?, ?> getMutableMapField(GeneratedMessageV3.Builder<?> builder) {
-        return (MapField<?, ?>) builder.internalGetMutableMapField(field.getNumber());
+      private MapFieldReflectionAccessor getMutableMapField(GeneratedMessageV3.Builder<?> builder) {
+        return builder.internalGetMutableMapFieldReflection(field.getNumber());
       }
 
       private Message coerceType(Message value) {

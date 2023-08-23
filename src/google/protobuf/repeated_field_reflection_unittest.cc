@@ -33,12 +33,12 @@
 // Test reflection methods for aggregate access to Repeated[Ptr]Fields.
 // This test proto2 methods on a proto2 layout.
 
-#include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/reflection.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/strings/cord.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/reflection.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 
@@ -362,6 +362,12 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
     EXPECT_EQ(message.repeated_foreign_message(index).c(), new_it->c());
   }
   EXPECT_EQ(10, index);
+
+  // Test MutableRepeatedFieldRef::Reserve()
+  mrf_int32.Reserve(mrf_int32.size() + 1);
+  mrf_double.Reserve(mrf_double.size() + 1);
+  mrf_string.Reserve(mrf_string.size() + 1);
+  mrf_foreign_message.Reserve(mrf_foreign_message.size() + 1);
 
   // Test MutableRepeatedFieldRef::Add()
   mrf_int32.Add(1234);

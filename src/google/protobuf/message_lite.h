@@ -44,13 +44,13 @@
 #include <string>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/arena.h"
-#include "google/protobuf/port.h"
 #include "absl/base/call_once.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/explicitly_constructed.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/port.h"
@@ -461,10 +461,22 @@ class PROTOBUF_EXPORT MessageLite {
   virtual void OnDemandRegisterArenaDtor(Arena* /*arena*/) {}
 
  protected:
+  // Message implementations require access to internally visible API.
+  static constexpr internal::InternalVisibility internal_visibility() {
+    return internal::InternalVisibility{};
+  }
+
   template <typename T>
   static T* CreateMaybeMessage(Arena* arena) {
     return Arena::CreateMaybeMessage<T>(arena);
   }
+
+#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
+  template <typename T>
+  static T* CreateMaybeMessage(Arena* arena, const T& from) {
+    return Arena::CreateMaybeMessage<T>(arena, from);
+  }
+#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
 
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
@@ -617,6 +629,10 @@ T* OnShutdownDelete(T* p) {
 }
 
 }  // namespace internal
+
+std::string ShortFormat(const MessageLite& message_lite);
+std::string Utf8Format(const MessageLite& message_lite);
+
 }  // namespace protobuf
 }  // namespace google
 

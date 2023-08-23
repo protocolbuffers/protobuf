@@ -34,10 +34,14 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -150,17 +154,18 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
       value_field_generator_->variable("dataTypeSpecific_value");
 }
 
-void MapFieldGenerator::FinishInitialization() {
-  RepeatedFieldGenerator::FinishInitialization();
+void MapFieldGenerator::EmitArrayComment(io::Printer* printer) const {
   // Use the array_comment support in RepeatedFieldGenerator to output what the
   // values in the map are.
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_ENUM) {
-    std::string name = variables_["name"];
-    variables_["array_comment"] =
-        absl::StrCat("// |", name, "| values are |",
-                     value_field_generator_->variable("storage_type"), "|\n");
+    printer->Emit(
+        {{"name", variable("name")},
+         {"storage_type", value_field_generator_->variable("storage_type")}},
+        R"objc(
+          // |$name$| values are |$storage_type$|
+        )objc");
   }
 }
 
@@ -201,6 +206,24 @@ void MapFieldGenerator::DetermineObjectiveCClassDefinitions(
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_MESSAGE) {
     fwd_decls->insert(
         ObjCClassDeclaration(value_field_generator_->variable("storage_type")));
+  }
+}
+
+void MapFieldGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  const FieldDescriptor* value_descriptor =
+      descriptor_->message_type()->map_value();
+  const ObjectiveCType value_objc_type = GetObjectiveCType(value_descriptor);
+  if (value_objc_type == OBJECTIVECTYPE_MESSAGE) {
+    const Descriptor* value_msg_descriptor = value_descriptor->message_type();
+    if (descriptor_->file() != value_msg_descriptor->file()) {
+      deps->insert(value_msg_descriptor->file());
+    }
+  } else if (value_objc_type == OBJECTIVECTYPE_ENUM) {
+    const EnumDescriptor* value_enum_descriptor = value_descriptor->enum_type();
+    if (descriptor_->file() != value_enum_descriptor->file()) {
+      deps->insert(value_enum_descriptor->file());
+    }
   }
 }
 

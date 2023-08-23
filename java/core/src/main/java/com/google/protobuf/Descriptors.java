@@ -167,7 +167,8 @@ public final class Descriptors {
     enum Syntax {
       UNKNOWN("unknown"),
       PROTO2("proto2"),
-      PROTO3("proto3");
+      PROTO3("proto3"),
+      EDITIONS("editions");
 
       Syntax(String name) {
         this.name = name;
@@ -182,14 +183,25 @@ public final class Descriptors {
     Syntax getSyntax() {
       if (Syntax.PROTO3.name.equals(proto.getSyntax())) {
         return Syntax.PROTO3;
+      } else if (Syntax.EDITIONS.name.equals(proto.getSyntax())) {
+        return Syntax.EDITIONS;
       }
       return Syntax.PROTO2;
+    }
+
+    /** Get the edition of the .proto file. */
+    public String getEdition() {
+      return proto.getEdition();
     }
 
     public void copyHeadingTo(FileDescriptorProto.Builder protoBuilder) {
       protoBuilder.setName(getName()).setSyntax(getSyntax().name);
       if (!getPackage().isEmpty()) {
         protoBuilder.setPackage(getPackage());
+      }
+
+      if (getSyntax().equals(Syntax.EDITIONS)) {
+        protoBuilder.setEdition(getEdition());
       }
 
       if (!getOptions().equals(FileOptions.getDefaultInstance())) {
@@ -1266,7 +1278,9 @@ public final class Descriptors {
      * Returns true if this field was syntactically written with "optional" in the .proto file.
      * Excludes singular proto3 fields that do not have a label.
      */
-    public boolean hasOptionalKeyword() {
+    @Deprecated
+    public
+    boolean hasOptionalKeyword() {
       return isProto3Optional
           || (file.getSyntax() == Syntax.PROTO2 && isOptional() && getContainingOneof() == null);
     }
@@ -2820,10 +2834,6 @@ public final class Descriptors {
       return proto.getOptions();
     }
 
-    public boolean isSynthetic() {
-      return fields.length == 1 && fields[0].isProto3Optional;
-    }
-
     /** Get a list of this message type's fields. */
     public List<FieldDescriptor> getFields() {
       return Collections.unmodifiableList(Arrays.asList(fields));
@@ -2836,6 +2846,12 @@ public final class Descriptors {
     @Override
     public OneofDescriptorProto toProto() {
       return proto;
+    }
+
+    @Deprecated
+    public
+    boolean isSynthetic() {
+      return fields.length == 1 && fields[0].isProto3Optional;
     }
 
     private void setProto(final OneofDescriptorProto proto) {

@@ -52,7 +52,7 @@ void ZeroFieldsBase::Clear() {
 }
 
 ZeroFieldsBase::~ZeroFieldsBase() {
-  (void)_internal_metadata_.DeleteReturnArena<UnknownFieldSet>();
+  _internal_metadata_.Delete<UnknownFieldSet>();
 }
 
 size_t ZeroFieldsBase::ByteSizeLong() const {

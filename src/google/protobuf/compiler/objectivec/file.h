@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <string>
@@ -55,7 +56,10 @@ class FileGenerator {
   // Wrapper for some common state that is shared between file generations to
   // improve performance when more than one file is generated at a time.
   struct CommonState {
-    CommonState() = default;
+    // `include_custom_options` will cause any custom options to be included
+    // in the calculations around files defining extensions.
+    explicit CommonState(bool include_custom_options)
+        : include_custom_options(include_custom_options) {}
 
     std::vector<const FileDescriptor*>
     CollectMinimalFileDepsContainingExtensions(const FileDescriptor* file);
@@ -71,6 +75,7 @@ class FileGenerator {
     const MinDepsEntry& CollectMinimalFileDepsContainingExtensionsInternal(
         const FileDescriptor* file);
     absl::flat_hash_map<const FileDescriptor*, MinDepsEntry> deps_info_cache;
+    const bool include_custom_options;
   };
 
   FileGenerator(const FileDescriptor* file,
@@ -108,13 +113,17 @@ class FileGenerator {
     GenerateFile(p, file_type, file_options, body);
   }
 
-  void PrintRootImplementation(
+  void EmitRootImplementation(
       io::Printer* p,
       const std::vector<const FileDescriptor*>& deps_with_extensions) const;
-  void PrintRootExtensionRegistryImplementation(
+  void EmitRootExtensionRegistryImplementation(
       io::Printer* p,
       const std::vector<const FileDescriptor*>& deps_with_extensions) const;
-  void PrintFileDescription(io::Printer* p) const;
+  void EmitFileDescription(io::Printer* p) const;
+
+  enum class PublicDepsHandling : int { kAsUsed, kForceInclude, kExclude };
+  void DetermineNeededDeps(absl::flat_hash_set<const FileDescriptor*>* deps,
+                           PublicDepsHandling public_deps_handling) const;
 
   bool HeadersUseForwardDeclarations() const {
     // The bundled protos (WKTs) don't make use of forward declarations.
@@ -131,7 +140,10 @@ class FileGenerator {
 
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
   std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
-  // The first file_->extension_count() are the extensions at file level scope.
+  // The first file_scoped_extension_count_ are the extensions at file level
+  // scope. This can be less than file_->extension_count() when custom options
+  // are being filtered away.
+  size_t file_scoped_extension_count_;
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
 };
 

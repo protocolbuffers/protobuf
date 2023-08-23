@@ -43,7 +43,6 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/arena.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -54,6 +53,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -576,7 +576,8 @@ bool MessageLite::AppendPartialToCord(absl::Cord* output) const {
         target, static_cast<int>(available.size()),
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
     auto res = _InternalSerialize(target, &out);
-    ABSL_DCHECK_EQ(res, target + size);
+    ABSL_DCHECK_EQ(static_cast<const void*>(res),
+                   static_cast<const void*>(target + size));
     buffer.IncreaseLengthBy(size);
     output->Append(std::move(buffer));
     ABSL_DCHECK_EQ(output->size(), total_size);
@@ -656,6 +657,14 @@ void InternalMetadata::DoSwap<std::string>(std::string* other) {
 }
 
 }  // namespace internal
+
+std::string ShortFormat(const MessageLite& message_lite) {
+  return message_lite.DebugString();
+}
+
+std::string Utf8Format(const MessageLite& message_lite) {
+  return message_lite.DebugString();
+}
 
 
 // ===================================================================

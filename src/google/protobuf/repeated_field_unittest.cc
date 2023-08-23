@@ -41,6 +41,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -50,7 +52,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/arena.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
@@ -59,10 +60,10 @@
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/internal_visibility_for_testing.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/parse_context.h"
-#include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
 
@@ -712,16 +713,73 @@ TEST(RepeatedField, AddAndAssignRanges) {
   EXPECT_EQ(field.Get(7), 609250);
 }
 
-TEST(RepeatedField, CopyConstruct) {
-  RepeatedField<int> source;
-  source.Add(1);
-  source.Add(2);
+TEST(RepeatedField, CopyConstructIntegers) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using RepeatedType = RepeatedField<int>;
+  RepeatedType original;
+  original.Add(1);
+  original.Add(2);
 
-  RepeatedField<int> destination(source);
+  RepeatedType fields1(original);
+  ASSERT_EQ(2, fields1.size());
+  EXPECT_EQ(1, fields1.Get(0));
+  EXPECT_EQ(2, fields1.Get(1));
 
-  ASSERT_EQ(2, destination.size());
-  EXPECT_EQ(1, destination.Get(0));
-  EXPECT_EQ(2, destination.Get(1));
+  RepeatedType fields2(token, nullptr, original);
+  ASSERT_EQ(2, fields1.size());
+  EXPECT_EQ(1, fields1.Get(0));
+  EXPECT_EQ(2, fields1.Get(1));
+}
+
+TEST(RepeatedField, CopyConstructCords) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using RepeatedType = RepeatedField<absl::Cord>;
+  RepeatedType original;
+  original.Add(absl::Cord("hello"));
+  original.Add(absl::Cord("world and text to avoid SSO"));
+
+  RepeatedType fields1(original);
+  ASSERT_EQ(2, fields1.size());
+  EXPECT_EQ("hello", fields1.Get(0));
+  EXPECT_EQ("world and text to avoid SSO", fields1.Get(1));
+
+  RepeatedType fields2(token, nullptr, original);
+  ASSERT_EQ(2, fields1.size());
+  EXPECT_EQ("hello", fields1.Get(0));
+  EXPECT_EQ("world and text to avoid SSO", fields2.Get(1));
+}
+
+TEST(RepeatedField, CopyConstructIntegersWithArena) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using RepeatedType = RepeatedField<int>;
+  RepeatedType original;
+  original.Add(1);
+  original.Add(2);
+
+  Arena arena;
+  alignas(RepeatedType) char mem[sizeof(RepeatedType)];
+  RepeatedType& fields1 = *new (mem) RepeatedType(token, &arena, original);
+  ASSERT_EQ(2, fields1.size());
+  EXPECT_EQ(1, fields1.Get(0));
+  EXPECT_EQ(2, fields1.Get(1));
+}
+
+TEST(RepeatedField, CopyConstructCordsWithArena) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using RepeatedType = RepeatedField<absl::Cord>;
+  RepeatedType original;
+  original.Add(absl::Cord("hello"));
+  original.Add(absl::Cord("world and text to avoid SSO"));
+
+  Arena arena;
+  alignas(RepeatedType) char mem[sizeof(RepeatedType)];
+  RepeatedType& fields1 = *new (mem) RepeatedType(token, &arena, original);
+  ASSERT_EQ(2, fields1.size());
+  EXPECT_EQ("hello", fields1.Get(0));
+  EXPECT_EQ("world and text to avoid SSO", fields1.Get(1));
+
+  // Contract requires dtor to be invoked for absl::Cord
+  fields1.~RepeatedType();
 }
 
 TEST(RepeatedField, IteratorConstruct) {
@@ -827,13 +885,9 @@ TEST(RepeatedField, MoveAssign) {
         Arena::CreateMessage<RepeatedField<int>>(&arena);
     destination->Add(3);
     const int* source_data = source->data();
-    const int* destination_data = destination->data();
     *destination = std::move(*source);
     EXPECT_EQ(source_data, destination->data());
     EXPECT_THAT(*destination, ElementsAre(1, 2));
-    // This property isn't guaranteed but it's useful to have a test that would
-    // catch changes in this area.
-    EXPECT_EQ(destination_data, source->data());
     EXPECT_THAT(*source, ElementsAre(3));
   }
   {
@@ -1597,9 +1651,18 @@ TEST(RepeatedPtrField, AddAllocated) {
     field.Add()->assign("filler");
   }
 
+  const auto ensure_at_capacity = [&] {
+    while (field.size() < field.Capacity()) {
+      field.Add()->assign("filler");
+    }
+  };
+  const auto ensure_not_at_capacity = [&] { field.Reserve(field.size() + 1); };
+
+  ensure_at_capacity();
   int index = field.size();
 
   // First branch:  Field is at capacity with no cleared objects.
+  ASSERT_EQ(field.size(), field.Capacity());
   std::string* foo = new std::string("foo");
   field.AddAllocated(foo);
   EXPECT_EQ(index + 1, field.size());
@@ -1607,6 +1670,7 @@ TEST(RepeatedPtrField, AddAllocated) {
   EXPECT_EQ(foo, &field.Get(index));
 
   // Last branch:  Field is not at capacity and there are no cleared objects.
+  ensure_not_at_capacity();
   std::string* bar = new std::string("bar");
   field.AddAllocated(bar);
   ++index;
@@ -1615,6 +1679,7 @@ TEST(RepeatedPtrField, AddAllocated) {
   EXPECT_EQ(bar, &field.Get(index));
 
   // Third branch:  Field is not at capacity and there are no cleared objects.
+  ensure_not_at_capacity();
   field.RemoveLast();
   std::string* baz = new std::string("baz");
   field.AddAllocated(baz);
@@ -1623,9 +1688,7 @@ TEST(RepeatedPtrField, AddAllocated) {
   EXPECT_EQ(baz, &field.Get(index));
 
   // Second branch:  Field is at capacity but has some cleared objects.
-  while (field.size() < field.Capacity()) {
-    field.Add()->assign("filler2");
-  }
+  ensure_at_capacity();
   field.RemoveLast();
   index = field.size();
   std::string* moo = new std::string("moo");
@@ -1719,12 +1782,30 @@ TEST(RepeatedPtrField, Erase) {
 }
 
 TEST(RepeatedPtrField, CopyConstruct) {
+  auto token = internal::InternalVisibilityForTesting{};
   RepeatedPtrField<std::string> source;
   source.Add()->assign("1");
   source.Add()->assign("2");
 
-  RepeatedPtrField<std::string> destination(source);
+  RepeatedPtrField<std::string> destination1(source);
+  ASSERT_EQ(2, destination1.size());
+  EXPECT_EQ("1", destination1.Get(0));
+  EXPECT_EQ("2", destination1.Get(1));
 
+  RepeatedPtrField<std::string> destination2(token, nullptr, source);
+  ASSERT_EQ(2, destination2.size());
+  EXPECT_EQ("1", destination2.Get(0));
+  EXPECT_EQ("2", destination2.Get(1));
+}
+
+TEST(RepeatedPtrField, CopyConstructWithArena) {
+  auto token = internal::InternalVisibilityForTesting{};
+  RepeatedPtrField<std::string> source;
+  source.Add()->assign("1");
+  source.Add()->assign("2");
+
+  Arena arena;
+  RepeatedPtrField<std::string> destination(token, &arena, source);
   ASSERT_EQ(2, destination.size());
   EXPECT_EQ("1", destination.Get(0));
   EXPECT_EQ("2", destination.Get(1));
@@ -1763,6 +1844,47 @@ TEST(RepeatedPtrField, IteratorConstruct_Proto) {
   ASSERT_EQ(values.size(), other.size());
   EXPECT_EQ(values[0].bb(), other.Get(0).bb());
   EXPECT_EQ(values[1].bb(), other.Get(1).bb());
+}
+
+TEST(RepeatedPtrField, SmallOptimization) {
+  // Properties checked here are not part of the contract of RepeatedPtrField,
+  // but we test them to verify that SSO is working as expected by the
+  // implementation.
+
+  // We use an arena to easily measure memory usage, but not needed.
+  Arena arena;
+  auto* array = Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+  EXPECT_EQ(array->Capacity(), 1);
+  EXPECT_EQ(array->SpaceUsedExcludingSelf(), 0);
+  std::string str;
+  auto usage_before = arena.SpaceUsed();
+  // We use UnsafeArenaAddAllocated just to grow the array without creating
+  // objects or causing extra cleanup costs in the arena to make the
+  // measurements simpler.
+  array->UnsafeArenaAddAllocated(&str);
+  // No backing array, just the string.
+  EXPECT_EQ(array->SpaceUsedExcludingSelf(), sizeof(str));
+  // We have not used any arena space.
+  EXPECT_EQ(usage_before, arena.SpaceUsed());
+  // Verify the string is where we think it is.
+  EXPECT_EQ(&*array->begin(), &str);
+  EXPECT_EQ(array->pointer_begin()[0], &str);
+  // The T** in pointer_begin points into the sso in the object.
+  EXPECT_TRUE(std::less_equal<void*>{}(array, &*array->pointer_begin()));
+  EXPECT_TRUE(std::less_equal<void*>{}(&*array->pointer_begin(), array + 1));
+
+  // Adding a second object stops sso.
+  std::string str2;
+  array->UnsafeArenaAddAllocated(&str2);
+  EXPECT_EQ(array->Capacity(), 3);
+  // Backing array and the strings.
+  EXPECT_EQ(array->SpaceUsedExcludingSelf(),
+            (1 + array->Capacity()) * sizeof(void*) + 2 * sizeof(str));
+  // We used some arena space now.
+  EXPECT_LT(usage_before, arena.SpaceUsed());
+  // And the pointer_begin is not in the sso anymore.
+  EXPECT_FALSE(std::less_equal<void*>{}(array, &*array->pointer_begin()) &&
+               std::less_equal<void*>{}(&*array->pointer_begin(), array + 1));
 }
 
 TEST(RepeatedPtrField, CopyAssign) {
@@ -1830,13 +1952,9 @@ TEST(RepeatedPtrField, MoveAssign) {
     RepeatedPtrField<std::string> destination;
     *destination.Add() = "3";
     const std::string* const* source_data = source.data();
-    const std::string* const* destination_data = destination.data();
     destination = std::move(source);
     EXPECT_EQ(source_data, destination.data());
     EXPECT_THAT(destination, ElementsAre("1", "2"));
-    // This property isn't guaranteed but it's useful to have a test that would
-    // catch changes in this area.
-    EXPECT_EQ(destination_data, source.data());
     EXPECT_THAT(source, ElementsAre("3"));
   }
   {
@@ -1849,13 +1967,9 @@ TEST(RepeatedPtrField, MoveAssign) {
         Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
     *destination->Add() = "3";
     const std::string* const* source_data = source->data();
-    const std::string* const* destination_data = destination->data();
     *destination = std::move(*source);
     EXPECT_EQ(source_data, destination->data());
     EXPECT_THAT(*destination, ElementsAre("1", "2"));
-    // This property isn't guaranteed but it's useful to have a test that would
-    // catch changes in this area.
-    EXPECT_EQ(destination_data, source->data());
     EXPECT_THAT(*source, ElementsAre("3"));
   }
   {
@@ -2028,6 +2142,7 @@ TEST(RepeatedPtrField, Cleanups) {
   });
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 }
+
 
 // ===================================================================
 

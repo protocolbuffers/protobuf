@@ -46,13 +46,13 @@
 
 #include <memory>
 
-#include "google/protobuf/arena.h"
-#include "google/protobuf/descriptor.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/test_util.h"
@@ -1299,6 +1299,7 @@ TEST(GeneratedMessageReflectionTest, ArenaReleaseOneofMessageTest) {
 
 TEST(GeneratedMessageReflectionTest, UsageErrors) {
   unittest::TestAllTypes message;
+  unittest::ForeignMessage foreign;
   const Reflection* reflection = message.GetReflection();
   const Descriptor* descriptor = message.GetDescriptor();
 
@@ -1322,6 +1323,17 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
                "  Field       : protobuf_unittest.TestAllTypes.repeated_int32\n"
                "  Problem     : Field is repeated; the method requires a "
                "singular field.");
+#ifndef NDEBUG
+  EXPECT_DEATH(
+      reflection->GetInt32(foreign,
+                           descriptor->FindFieldByName("optional_int32")),
+      "Protocol Buffer reflection usage error:\n"
+      "  Method       : google::protobuf::Reflection::GetInt32\n"
+      "  Expected type: protobuf_unittest.TestAllTypes\n"
+      "  Actual type  : protobuf_unittest.ForeignMessage\n"
+      "  Field        : protobuf_unittest.TestAllTypes.optional_int32\n"
+      "  Problem      : Message is not the right object for reflection");
+#endif
   EXPECT_DEATH(
       reflection->GetInt32(
           message,

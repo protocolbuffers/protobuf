@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2023 Google Inc.  All rights reserved.
+// Copyright 2023 Google LLC.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -49,17 +49,17 @@ void MessageStructFields(Context<Descriptor> msg) {
   switch (msg.opts().kernel) {
     case Kernel::kCpp:
       msg.Emit(R"rs(
-        msg: $NonNull$<u8>,
+        msg: $pbi$::RawMessage,
       )rs");
       return;
 
     case Kernel::kUpb:
       msg.Emit(R"rs(
-        msg: $NonNull$<u8>,
+        msg: $pbi$::RawMessage,
         //~ rustc incorrectly thinks this field is never read, even though
         //~ it has a destructor!
         #[allow(dead_code)]
-        arena: $pbi$::Arena,
+        arena: $pbr$::Arena,
       )rs");
       return;
   }
@@ -77,7 +77,7 @@ void MessageNew(Context<Descriptor> msg) {
 
     case Kernel::kUpb:
       msg.Emit({{"new_thunk", Thunk(msg, "new")}}, R"rs(
-        let arena = $pbi$::Arena::new();
+        let arena = $pbr$::Arena::new();
         Self {
           msg: unsafe { $new_thunk$(arena.raw()) },
           arena,
@@ -99,11 +99,11 @@ void MessageSerialize(Context<Descriptor> msg) {
 
     case Kernel::kUpb:
       msg.Emit({{"serialize_thunk", Thunk(msg, "serialize")}}, R"rs(
-        let arena = $pbi$::Arena::new();
+        let arena = $pbr$::Arena::new();
         let mut len = 0;
         unsafe {
           let data = $serialize_thunk$(self.msg, arena.raw(), &mut len);
-          $pb$::SerializedData::from_raw_parts(arena, data, len)
+          $pbr$::SerializedData::from_raw_parts(arena, data, len)
         }
       )rs");
       return;
@@ -121,7 +121,7 @@ void MessageDeserialize(Context<Descriptor> msg) {
           },
           R"rs(
           let success = unsafe {
-            let data = $pb$::SerializedData::from_raw_parts(
+            let data = $pbr$::SerializedData::from_raw_parts(
               $NonNull$::new(data.as_ptr() as *mut _).unwrap(),
               data.len(),
             );
@@ -134,11 +134,9 @@ void MessageDeserialize(Context<Descriptor> msg) {
 
     case Kernel::kUpb:
       msg.Emit({{"deserialize_thunk", Thunk(msg, "parse")}}, R"rs(
-        let arena = $pbi$::Arena::new();
+        let arena = $pbr$::Arena::new();
         let msg = unsafe {
-          $NonNull$::<u8>::new(
-            $deserialize_thunk$(data.as_ptr(), data.len(), arena.raw())
-          )
+          $deserialize_thunk$(data.as_ptr(), data.len(), arena.raw())
         };
 
         match msg {
@@ -169,10 +167,10 @@ void MessageExterns(Context<Descriptor> msg) {
               {"deserialize_thunk", Thunk(msg, "deserialize")},
           },
           R"rs(
-          fn $new_thunk$() -> $NonNull$<u8>;
-          fn $delete_thunk$(raw_msg: $NonNull$<u8>);
-          fn $serialize_thunk$(raw_msg: $NonNull$<u8>) -> $pb$::SerializedData;
-          fn $deserialize_thunk$(raw_msg: $NonNull$<u8>, data: $pb$::SerializedData) -> bool;
+          fn $new_thunk$() -> $pbi$::RawMessage;
+          fn $delete_thunk$(raw_msg: $pbi$::RawMessage);
+          fn $serialize_thunk$(raw_msg: $pbi$::RawMessage) -> $pbr$::SerializedData;
+          fn $deserialize_thunk$(raw_msg: $pbi$::RawMessage, data: $pbr$::SerializedData) -> bool;
         )rs");
       return;
 
@@ -184,9 +182,9 @@ void MessageExterns(Context<Descriptor> msg) {
               {"deserialize_thunk", Thunk(msg, "parse")},
           },
           R"rs(
-          fn $new_thunk$(arena: $pbi$::RawArena) -> $NonNull$<u8>;
-          fn $serialize_thunk$(msg: $NonNull$<u8>, arena: $pbi$::RawArena, len: &mut usize) -> $NonNull$<u8>;
-          fn $deserialize_thunk$(data: *const u8, size: usize, arena: $pbi$::RawArena) -> *mut u8;
+          fn $new_thunk$(arena: $pbi$::RawArena) -> $pbi$::RawMessage;
+          fn $serialize_thunk$(msg: $pbi$::RawMessage, arena: $pbi$::RawArena, len: &mut usize) -> $NonNull$<u8>;
+          fn $deserialize_thunk$(data: *const u8, size: usize, arena: $pbi$::RawArena) -> Option<$pbi$::RawMessage>;
       )rs");
       return;
   }
@@ -207,18 +205,11 @@ void MessageDrop(Context<Descriptor> msg) {
 }
 }  // namespace
 
-MessageGenerator::MessageGenerator(Context<Descriptor> msg) {
-  accessors_.resize(msg.desc().field_count());
-  for (int i = 0; i < msg.desc().field_count(); ++i) {
-    auto field = msg.WithDesc(msg.desc().field(i));
-    accessors_[i] = AccessorGenerator::For(field);
-    if (accessors_[i] == nullptr) {
-      ABSL_LOG(WARNING) << "unsupported field: " << field.desc().full_name();
-    }
+void GenerateRs(Context<Descriptor> msg) {
+  if (msg.desc().map_key() != nullptr) {
+    ABSL_LOG(WARNING) << "unsupported map field: " << msg.desc().full_name();
+    return;
   }
-}
-
-void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
   msg.Emit(
       {
           {"Msg", msg.desc().name()},
@@ -231,31 +222,19 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
           {"accessor_fns",
            [&] {
              for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto& gen = accessors_[i];
                auto field = msg.WithDesc(*msg.desc().field(i));
                msg.Emit({{"comment", FieldInfoComment(field)}}, R"rs(
                  // $comment$
                )rs");
 
-               if (gen == nullptr) {
-                 msg.Emit({{"field", field.desc().full_name()}}, R"rs(
-                  // Unsupported! :(
-                 )rs");
-                 msg.printer().PrintRaw("\n");
-                 continue;
-               }
-
-               gen->GenerateMsgImpl(field);
+               GenerateAccessorMsgImpl(field);
                msg.printer().PrintRaw("\n");
              }
            }},
           {"accessor_externs",
            [&] {
              for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto& gen = accessors_[i];
-               if (gen == nullptr) continue;
-
-               gen->GenerateExternC(msg.WithDesc(*msg.desc().field(i)));
+               GenerateAccessorExternC(msg.WithDesc(*msg.desc().field(i)));
                msg.printer().PrintRaw("\n");
              }
            }},
@@ -271,8 +250,7 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
                                ++i) {
                             auto nested_msg =
                                 msg.WithDesc(msg.desc().nested_type(i));
-                            MessageGenerator gen(nested_msg);
-                            gen.GenerateRs(nested_msg);
+                            GenerateRs(nested_msg);
                           }
                         }}},
                       R"rs(
@@ -284,8 +262,68 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
       },
       R"rs(
         #[allow(non_camel_case_types)]
+        #[derive(Debug)]
         pub struct $Msg$ {
           $Msg.fields$
+        }
+
+        unsafe impl Sync for $Msg$ {}
+        unsafe impl Sync for $Msg$View<'_> {}
+        unsafe impl Send for $Msg$View<'_> {}
+
+        impl $pb$::Proxied for $Msg$ {
+          type View<'a> = $Msg$View<'a>;
+          type Mut<'a> = $Msg$Mut<'a>;
+        }
+
+        #[derive(Debug, Copy, Clone)]
+        #[allow(dead_code)]
+        pub struct $Msg$View<'a> {
+          msg: $pbi$::RawMessage,
+          _phantom: $Phantom$<&'a ()>,
+        }
+
+        impl<'a> $pb$::ViewProxy<'a> for $Msg$View<'a> {
+          type Proxied = $Msg$;
+
+          fn as_view(&self) -> $pb$::View<'a, $Msg$> {
+            *self
+          }
+          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter {
+            self
+          }
+        }
+
+        impl<'a> $pb$::SettableValue<$Msg$> for $Msg$View<'a> {
+          fn set_on(self, _private: $pb$::__internal::Private, _mutator: $pb$::Mut<$Msg$>) {
+            todo!()
+          }
+        }
+
+        #[derive(Debug, Copy, Clone)]
+        #[allow(dead_code)]
+        pub struct $Msg$Mut<'a> {
+          msg: $pbi$::RawMessage,
+          _phantom: $Phantom$<&'a mut ()>,
+        }
+
+        unsafe impl Sync for $Msg$Mut<'_> {}
+
+        impl<'a> $pb$::MutProxy<'a> for $Msg$Mut<'a> {
+          fn as_mut(&mut self) -> $pb$::Mut<'_, $Msg$> {
+            $Msg$Mut { msg: self.msg, _phantom: self._phantom }
+          }
+          fn into_mut<'shorter>(self) -> $pb$::Mut<'shorter, $Msg$> where 'a : 'shorter { self }
+        }
+
+        impl<'a> $pb$::ViewProxy<'a> for $Msg$Mut<'a> {
+          type Proxied = $Msg$;
+          fn as_view(&self) -> $pb$::View<'_, $Msg$> {
+            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
+          }
+          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter {
+            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
+          }
         }
 
         impl $Msg$ {
@@ -293,7 +331,7 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
             $Msg::new$
           }
 
-          pub fn serialize(&self) -> $pb$::SerializedData {
+          pub fn serialize(&self) -> $pbr$::SerializedData {
             $Msg::serialize$
           }
           pub fn deserialize(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
@@ -324,10 +362,10 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
     msg.printer().PrintRaw("\n");
     msg.Emit({{"Msg", msg.desc().name()}}, R"rs(
       impl $Msg$ {
-        pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $NonNull$<u8>) -> Self {
+        pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbi$::RawMessage) -> Self {
           Self { msg }
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $NonNull$<u8> {
+        pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $pbi$::RawMessage {
           self.msg
         }
       }
@@ -336,8 +374,12 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
 }
 
 // Generates code for a particular message in `.pb.thunk.cc`.
-void MessageGenerator::GenerateThunksCc(Context<Descriptor> msg) {
+void GenerateThunksCc(Context<Descriptor> msg) {
   ABSL_CHECK(msg.is_cpp());
+  if (msg.desc().map_key() != nullptr) {
+    ABSL_LOG(WARNING) << "unsupported map field: " << msg.desc().full_name();
+    return;
+  }
 
   msg.Emit(
       {
@@ -353,17 +395,13 @@ void MessageGenerator::GenerateThunksCc(Context<Descriptor> msg) {
              for (int i = 0; i < msg.desc().nested_type_count(); ++i) {
                Context<Descriptor> nested_msg =
                    msg.WithDesc(msg.desc().nested_type(i));
-               MessageGenerator gen(nested_msg);
-               gen.GenerateThunksCc(nested_msg);
+               GenerateThunksCc(nested_msg);
              }
            }},
           {"accessor_thunks",
            [&] {
              for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto& gen = accessors_[i];
-               if (gen == nullptr) continue;
-
-               gen->GenerateThunkCc(msg.WithDesc(*msg.desc().field(i)));
+               GenerateAccessorThunkCc(msg.WithDesc(*msg.desc().field(i)));
              }
            }},
       },

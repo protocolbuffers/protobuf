@@ -63,7 +63,7 @@ int CompileJavaProto(std::string proto_file_name) {
 
   std::string proto_path = absl::StrCat(
       "--proto_path=",
-      TestUtil::GetTestDataPath("third_party/protobuf/compiler/java"));
+      TestUtil::GetTestDataPath("google/protobuf/compiler/java"));
   std::string java_out = absl::StrCat("--java_out=", TestTempDir());
 
   const char* argv[] = {

@@ -31,8 +31,22 @@
 #ifndef __GOOGLE_PROTOBUF_RUBY_PROTOBUF_H__
 #define __GOOGLE_PROTOBUF_RUBY_PROTOBUF_H__
 
+// Ruby 3+ defines NDEBUG itself, see: https://bugs.ruby-lang.org/issues/18777
+#ifdef NDEBUG
+#include <ruby.h>
+#else
+#include <ruby.h>
+#undef NDEBUG
+#endif
+
+#include <ruby/version.h>
+
+#if RUBY_API_VERSION_CODE < 20700
+#error Protobuf requires Ruby >= 2.7
+#endif
+
+#include <assert.h>  // Must be included after the NDEBUG logic above.
 #include <ruby/encoding.h>
-#include <ruby/ruby.h>
 #include <ruby/vm.h>
 
 #include "defs.h"
@@ -76,10 +90,9 @@ void Arena_Pin(VALUE arena, VALUE obj);
 // being collected (though in Ruby <2.7 is it effectively strong, due to
 // implementation limitations).
 
-// Adds an entry to the cache. The "arena" parameter must give the arena that
-// "key" was allocated from.  In Ruby <2.7.0, it will be used to remove the key
-// from the cache when the arena is destroyed.
-void ObjectCache_Add(const void* key, VALUE val);
+// Tries to add a new entry to the cache, returning the newly installed value or
+// the pre-existing entry.
+VALUE ObjectCache_TryAdd(const void* key, VALUE val);
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key);
@@ -110,7 +123,9 @@ extern VALUE cTypeError;
   do {                      \
   } while (false && (expr))
 #else
-#define PBRUBY_ASSERT(expr) assert(expr)
+#define PBRUBY_ASSERT(expr) \
+  if (!(expr))              \
+  rb_bug("Assertion failed at %s:%d, expr: %s", __FILE__, __LINE__, #expr)
 #endif
 
 #define PBRUBY_MAX(x, y) (((x) > (y)) ? (x) : (y))

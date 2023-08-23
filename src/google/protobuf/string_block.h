@@ -142,10 +142,11 @@ inline size_t StringBlock::NextSize(StringBlock* block) {
 }
 
 inline StringBlock* StringBlock::Emplace(void* p, size_t n, StringBlock* next) {
-  ABSL_DCHECK_EQ(n, NextSize(next));
-  uint32_t doubled = static_cast<uint32_t>(n) * 2;
+  const auto count = static_cast<uint32_t>(n);
+  ABSL_DCHECK_EQ(count, NextSize(next));
+  uint32_t doubled = count * 2;
   uint32_t next_size = next ? std::min(doubled, max_size()) : min_size();
-  return new (p) StringBlock(next, false, RoundedSize(n), next_size);
+  return new (p) StringBlock(next, false, RoundedSize(count), next_size);
 }
 
 inline StringBlock* StringBlock::New(StringBlock* next) {

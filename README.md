@@ -14,10 +14,10 @@ This README file contains protobuf installation instructions. To install
 protobuf, you need to install the protocol compiler (used to compile .proto
 files) and the protobuf runtime for your chosen programming language.
 
-Protocol Compiler Installation
+Protobuf Compiler Installation
 ------------------------------
 
-The protocol compiler is written in C++. If you are using C++, please follow
+The protobuf compiler is written in C++. If you are using C++, please follow
 the [C++ Installation Instructions](src/README.md) to install protoc along
 with the C++ runtime.
 
@@ -56,7 +56,7 @@ how to install protobuf runtime for that specific language:
 | Go                                   | [protocolbuffers/protobuf-go](https://github.com/protocolbuffers/protobuf-go)|
 | PHP                                  | [php](php)                                                  |
 | Dart                                 | [dart-lang/protobuf](https://github.com/dart-lang/protobuf) |
-| Javascript                           | [protocolbuffers/protobuf-javascript](https://github.com/protocolbuffers/protobuf-javascript)|
+| JavaScript                           | [protocolbuffers/protobuf-javascript](https://github.com/protocolbuffers/protobuf-javascript)|
 
 Quick Start
 -----------

@@ -24,6 +24,7 @@ exports_files([
     "failure_list_python_cpp.txt",
     "failure_list_ruby.txt",
     "failure_list_jruby.txt",
+    "failure_list_jruby_ffi.txt",
     "text_format_failure_list_cpp.txt",
     "text_format_failure_list_csharp.txt",
     "text_format_failure_list_java.txt",
@@ -34,6 +35,7 @@ exports_files([
     "text_format_failure_list_python_cpp.txt",
     "text_format_failure_list_ruby.txt",
     "text_format_failure_list_jruby.txt",
+    "text_format_failure_list_jruby_ffi.txt",
 ])
 
 cc_proto_library(
@@ -326,12 +328,12 @@ ruby_binary(
     name = "conformance_ruby",
     testonly = True,
     srcs = ["conformance_ruby.rb"],
+    visibility = ["//ruby:__subpackages__"],
     deps = [
         ":conformance_ruby_proto",
         "//:test_messages_proto2_ruby_proto",
-        "//:test_messages_proto3_ruby_proto",        
+        "//:test_messages_proto3_ruby_proto",
     ],
-    visibility = ["//ruby:__subpackages__"],
 )
 
 ################################################################################

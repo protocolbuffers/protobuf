@@ -103,20 +103,20 @@ map_bool_bool {
   value: true
 }
 map_string_string {
-  key: "0"
-  value: "0"
+  key: "This is a very long string that goes in the heap"
+  value: "This is a very long string that goes in the heap"
 }
 map_string_string {
-  key: "1"
-  value: "1"
+  key: "This is another very long string that goes in the heap"
+  value: "This is another very long string that goes in the heap"
 }
 map_int32_bytes {
   key: 0
-  value: "0"
+  value: "This is a very long string that goes in the heap"
 }
 map_int32_bytes {
   key: 1
-  value: "1"
+  value: "This is another very long string that goes in the heap"
 }
 map_int32_enum {
   key: 0

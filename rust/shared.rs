@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2023 Google Inc.  All rights reserved.
+// Copyright 2023 Google LLC.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//     * Neither the name of Google LLC. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -30,41 +30,50 @@
 
 //! Kernel-agnostic logic for the Rust Protobuf Runtime.
 //!
-//! For kernel-specific logic this crate delegates to the respective __runtime
+//! For kernel-specific logic this crate delegates to the respective `__runtime`
 //! crate.
-
-#[cfg(cpp_kernel)]
-pub extern crate cpp as __runtime;
-#[cfg(upb_kernel)]
-pub extern crate upb as __runtime;
-
-pub use __runtime::SerializedData;
+#![deny(unsafe_op_in_unsafe_fn)]
 
 use std::fmt;
-use std::slice;
 
-/// Represents error during deserialization.
+/// Everything in `__public` is re-exported in `protobuf.rs`.
+/// These are the items protobuf users can access directly.
+#[doc(hidden)]
+pub mod __public {
+    pub use crate::optional::{AbsentField, FieldEntry, Optional, PresentField};
+    pub use crate::proxied::{
+        Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
+    };
+    pub use crate::string::{BytesMut, ProtoStr};
+}
+pub use __public::*;
+
+/// Everything in `__internal` is allowed to change without it being considered
+/// a breaking change for the protobuf library. Nothing in here should be
+/// exported in `protobuf.rs`.
+#[path = "internal.rs"]
+pub mod __internal;
+
+/// Everything in `__runtime` is allowed to change without it being considered
+/// a breaking change for the protobuf library. Nothing in here should be
+/// exported in `protobuf.rs`.
+#[cfg(cpp_kernel)]
+#[path = "cpp.rs"]
+pub mod __runtime;
+#[cfg(upb_kernel)]
+#[path = "upb.rs"]
+pub mod __runtime;
+
+mod optional;
+mod proxied;
+mod string;
+
+/// An error that happened during deserialization.
 #[derive(Debug, Clone)]
 pub struct ParseError;
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Couldn't deserialize given bytes into a proto")
-    }
-}
-
-/// Represents an ABI-stable version of &[u8]/string_view (a borrowed slice of
-/// bytes) for FFI use only.
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct PtrAndLen {
-    /// Borrows the memory.
-    pub ptr: *const u8,
-    pub len: usize,
-}
-
-impl PtrAndLen {
-    pub unsafe fn as_ref<'a>(self) -> &'a [u8] {
-        slice::from_raw_parts(self.ptr, self.len)
     }
 }

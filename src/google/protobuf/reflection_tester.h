@@ -68,6 +68,13 @@ class MapReflectionTester {
   MapIterator MapEnd(Message* message, const std::string& field_name);
   int MapSize(const Message& message, const std::string& field_name);
 
+  static std::string long_string() {
+    return "This is a very long string that goes in the heap";
+  }
+  static std::string long_string_2() {
+    return "This is another very long string that goes in the heap";
+  }
+
  private:
   const FieldDescriptor* F(const std::string& name);
 

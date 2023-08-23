@@ -36,8 +36,6 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/message.h"
-#include "google/protobuf/text_format.h"
 #include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "absl/log/absl_check.h"
@@ -46,9 +44,12 @@
 #include "absl/status/statusor.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
+#include "google/protobuf/endian.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -228,6 +229,7 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
     // EOF means we're done.
     return true;
   }
+  in_len = internal::little_endian::ToHost(in_len);
 
   std::string serialized_input;
   serialized_input.resize(in_len);
@@ -242,9 +244,12 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   std::string serialized_output;
   response->SerializeToString(&serialized_output);
 
-  uint32_t out_len = static_cast<uint32_t>(serialized_output.size());
+  uint32_t out_len = internal::little_endian::FromHost(
+      static_cast<uint32_t>(serialized_output.size()));
+
   RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, &out_len, sizeof(out_len)));
-  RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, serialized_output.data(), out_len));
+  RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, serialized_output.data(),
+                          serialized_output.size()));
 
   if (verbose_) {
     ABSL_LOG(INFO) << "conformance-cpp: request=" << request.ShortDebugString()

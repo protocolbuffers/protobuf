@@ -46,7 +46,14 @@ struct GenerationOptions {
   // TODO(thomasvl): Eventually flip this default to false for better interop
   // with Swift if proto usages span modules made from ObjC sources.
   bool headers_use_forward_declarations = true;
+  // TODO(thomasvl): Removing this so there is one less path to validate in
+  // code generation.
+  bool strip_custom_options = true;
+  // TODO(thomasvl): Eventually flip this default to true.
+  bool generate_minimal_imports = false;
   bool experimental_multi_source_generation = false;
+  // This is used by some of the protobuf infrastructure.
+  bool experimental_strip_nonfunctional_codegen = false;
 };
 
 }  // namespace objectivec

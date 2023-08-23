@@ -671,12 +671,14 @@ struct WireFormat::MessageSetParser {
       if (tag == WireFormatLite::kMessageSetTypeIdTag) {
         uint64_t tmp;
         ptr = ParseBigVarint(ptr, &tmp);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+        // We should fail parsing if type id is 0 after cast to uint32.
+        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr &&
+                                       static_cast<uint32_t>(tmp) != 0);
         if (state == State::kNoTag) {
-          type_id = tmp;
+          type_id = static_cast<uint32_t>(tmp);
           state = State::kHasType;
         } else if (state == State::kHasPayload) {
-          type_id = tmp;
+          type_id = static_cast<uint32_t>(tmp);
           const FieldDescriptor* field;
           if (ctx->data().pool == nullptr) {
             field = reflection->FindKnownExtensionByNumber(type_id);
@@ -696,10 +698,9 @@ struct WireFormat::MessageSetParser {
                                                  ctx->data().factory);
             const char* p;
             // We can't use regular parse from string as we have to track
-            // proper recursion depth and descriptor pools.
-            ParseContext tmp_ctx(ctx->depth(), false, &p, payload);
-            tmp_ctx.data().pool = ctx->data().pool;
-            tmp_ctx.data().factory = ctx->data().factory;
+            // proper recursion depth and descriptor pools. Spawn a new
+            // ParseContext inheriting those attributes.
+            ParseContext tmp_ctx(ParseContext::kSpawn, *ctx, &p, payload);
             GOOGLE_PROTOBUF_PARSER_ASSERT(value->_InternalParse(p, &tmp_ctx) &&
                                            tmp_ctx.EndedAtLimit());
           }

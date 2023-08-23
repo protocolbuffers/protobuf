@@ -47,6 +47,8 @@ typedef NS_ENUM(uint8_t, GPBFileSyntax) {
   GPBFileSyntaxProto2 = 2,
   /** Proto3 syntax. */
   GPBFileSyntaxProto3 = 3,
+  /** Editions syntax. */
+  GPBFileSyntaxProtoEditions = 99,
 };
 
 /** Type of proto field. */
@@ -135,16 +137,9 @@ __attribute__((objc_subclassing_restricted))
 @property(nonatomic, readonly, copy) NSString *package;
 /** The objc prefix declared in the proto file. */
 @property(nonatomic, readonly, copy, nullable) NSString *objcPrefix;
-/**
- * The syntax of the proto file.
- *
- * This should not be used for making decisions about support
- * features/behaviors, what proto2 vs. proto3 syntax has meant has evolved over
- * time, and not more specific methods on the descriptors should be used
- * instead.
- */
+/** The syntax of the proto file, this property will be removed in the future. */
 @property(nonatomic, readonly) GPBFileSyntax syntax
-    __attribute__((deprecated("Syntax is not a good way to decide things about behaviors.")));
+    __attribute__((deprecated("Syntax will be removed in the future.")));
 
 @end
 

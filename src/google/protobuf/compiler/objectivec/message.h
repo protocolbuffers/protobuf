@@ -37,6 +37,7 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/oneof.h"
 #include "google/protobuf/descriptor.h"
@@ -59,7 +60,8 @@ class MessageGenerator {
   MessageGenerator& operator=(const MessageGenerator&) = delete;
 
   void AddExtensionGenerators(
-      std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators);
+      std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
+      bool strip_custom_options);
 
   void GenerateMessageHeader(io::Printer* printer) const;
   void GenerateSource(io::Printer* printer) const;
@@ -67,12 +69,13 @@ class MessageGenerator {
       absl::btree_set<std::string>* fwd_decls) const;
   void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
                                     bool include_external_types) const;
+  void DetermineNeededFiles(
+      absl::flat_hash_set<const FileDescriptor*>* deps) const;
 
   // Checks if the message or a nested message includes a oneof definition.
   bool IncludesOneOfDefinition() const { return !oneof_generators_.empty(); }
 
  private:
-  const std::string root_classname_;
   const std::string file_description_name_;
   const Descriptor* descriptor_;
   FieldGeneratorMap field_generators_;

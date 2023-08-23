@@ -68,7 +68,7 @@ void SetCordVariables(
   (*variables)["default_variable_field"] = MakeDefaultFieldName(descriptor);
   (*variables)["default_variable"] =
       descriptor->default_value_string().empty()
-          ? absl::StrCat(ProtobufNamespace(options),
+          ? absl::StrCat("::", ProtobufNamespace(options),
                          "::internal::GetEmptyCordAlreadyInited()")
           : absl::StrCat(
                 QualifiedClassName(descriptor->containing_type(), options),
@@ -77,7 +77,8 @@ void SetCordVariables(
 
 class CordFieldGenerator : public FieldGeneratorBase {
  public:
-  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
+  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options,
+                     MessageSCCAnalyzer* scc);
   ~CordFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -87,7 +88,9 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
   void GenerateDestructorCode(io::Printer* printer) const override;
+#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
@@ -98,12 +101,43 @@ class CordFieldGenerator : public FieldGeneratorBase {
   ArenaDtorNeeds NeedsArenaDestructor() const override {
     return ArenaDtorNeeds::kRequired;
   }
+
+  void GenerateMemberConstexprConstructor(io::Printer* p) const override {
+    if (descriptor_->default_value_string().empty()) {
+      p->Emit("$name$_{}");
+    } else {
+      p->Emit({{"Split", ShouldSplit(descriptor_, options_) ? "Split::" : ""}},
+              "$name$_{::absl::strings_internal::MakeStringConstant("
+              "$classname$::Impl_::$Split$_default_$name$_func_{})}");
+    }
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const override {
+    auto vars = p->WithVars(variables_);
+    if (descriptor_->default_value_string().empty()) {
+      p->Emit("$name$_{}");
+    } else {
+      p->Emit("$name$_{::absl::string_view($default$, $default_length$)}");
+    }
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const override {
+    auto vars = p->WithVars(variables_);
+    p->Emit("$name$_{from.$name$_}");
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const override {
+    auto vars = p->WithVars(variables_);
+    p->Emit(R"cc(
+      $field$ = ::$proto_ns$::Arena::Create<absl::Cord>(arena, *from.$field$);
+    )cc");
+  }
 };
 
 class CordOneofFieldGenerator : public CordFieldGenerator {
  public:
   CordOneofFieldGenerator(const FieldDescriptor* descriptor,
-                          const Options& options);
+                          const Options& options, MessageSCCAnalyzer* scc);
   ~CordOneofFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -123,8 +157,9 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
 
 
 CordFieldGenerator::CordFieldGenerator(const FieldDescriptor* descriptor,
-                                       const Options& options)
-    : FieldGeneratorBase(descriptor, options) {
+                                       const Options& options,
+                                       MessageSCCAnalyzer* scc)
+    : FieldGeneratorBase(descriptor, options, scc) {
   SetCordVariables(descriptor, &variables_, options);
 }
 
@@ -215,22 +250,24 @@ void CordFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
 }
 
 void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
-  ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+  ABSL_CHECK(!should_split());
   Formatter format(printer, variables_);
   if (!descriptor_->default_value_string().empty()) {
     format("$field$ = ::absl::string_view($default$, $default_length$);\n");
   }
 }
 
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
 void CordFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (ShouldSplit(descriptor_, options_)) {
+  if (should_split()) {
     // A cord field in the `Split` struct is automatically destroyed when the
     // split pointer is deleted and should not be explicitly destroyed here.
     return;
   }
   format("$field$.~Cord();\n");
 }
+#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
 
 void CordFieldGenerator::GenerateArenaDestructorCode(
     io::Printer* printer) const {
@@ -263,33 +300,39 @@ void CordFieldGenerator::GenerateByteSize(io::Printer* printer) const {
 }
 
 void CordFieldGenerator::GenerateConstexprAggregateInitializer(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
+    io::Printer* p) const {
   if (descriptor_->default_value_string().empty()) {
-    format("/*decltype($field$)*/{}");
+    p->Emit(R"cc(
+      /*decltype($field$)*/ {},
+    )cc");
   } else {
-    format(
-        "/*decltype($field$)*/{::absl::strings_internal::MakeStringConstant(\n"
-        "    $classname$::Impl_::$1$_default_$name$_func_{})}",
-        ShouldSplit(descriptor_, options_) ? "Split::" : "");
+    p->Emit(
+        {{"Split", should_split() ? "Split::" : ""}},
+        R"cc(
+          /*decltype($field$)*/ {::absl::strings_internal::MakeStringConstant(
+              $classname$::Impl_::$Split$_default_$name$_func_{})},
+        )cc");
   }
 }
 
-void CordFieldGenerator::GenerateAggregateInitializer(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  if (ShouldSplit(descriptor_, options_)) {
-    format("decltype(Impl_::Split::$name$_){}");
-    return;
+void CordFieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
+  if (should_split()) {
+    p->Emit(R"cc(
+      decltype(Impl_::Split::$name$_){},
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      decltype($field$){},
+    )cc");
   }
-  format("decltype($field$){}");
 }
 
 // ===================================================================
 
 CordOneofFieldGenerator::CordOneofFieldGenerator(
-    const FieldDescriptor* descriptor, const Options& options)
-    : CordFieldGenerator(descriptor, options) {}
+    const FieldDescriptor* descriptor, const Options& options,
+    MessageSCCAnalyzer* scc)
+    : CordFieldGenerator(descriptor, options, scc) {}
 
 void CordOneofFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
@@ -405,14 +448,14 @@ void CordOneofFieldGenerator::GenerateArenaDestructorCode(
 std::unique_ptr<FieldGeneratorBase> MakeSingularCordGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<CordFieldGenerator>(desc, options);
+  return absl::make_unique<CordFieldGenerator>(desc, options, scc);
 }
 
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<CordOneofFieldGenerator>(desc, options);
+  return absl::make_unique<CordOneofFieldGenerator>(desc, options, scc);
 }
 
 }  // namespace cpp

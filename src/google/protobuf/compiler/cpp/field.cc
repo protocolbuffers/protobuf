@@ -39,8 +39,8 @@
 #include <string>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -86,6 +86,12 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"{", ""},
       {"}", ""},
 
+      // For TSan validation.
+      {"TsanDetectConcurrentMutation",
+       "PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race)"},
+      {"TsanDetectConcurrentRead",
+       "PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race)"},
+
       // Old-style names.
       {"field", FieldMemberName(field, split)},
       {"declared_type", DeclaredTypeMethodName(field->type())},
@@ -111,41 +117,122 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   return vars;
 }
 
-void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
-  Formatter format(p, variables_);
-  if (ShouldSplit(descriptor_, options_)) {
-    format("decltype(Impl_::Split::$name$_){arena}");
-    return;
+FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
+                                       const Options& options,
+                                       MessageSCCAnalyzer* scc)
+    : descriptor_(descriptor), options_(options) {
+  bool is_repeated_or_map = descriptor->is_repeated();
+  should_split_ = ShouldSplit(descriptor, options);
+  is_oneof_ = descriptor->real_containing_oneof() != nullptr;
+  switch (descriptor->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_BOOL:
+      is_trivial_ = has_trivial_value_ = !is_repeated_or_map;
+      has_default_constexpr_constructor_ = is_repeated_or_map;
+      break;
+    case FieldDescriptor::CPPTYPE_STRING:
+      is_string_ = true;
+      string_type_ = descriptor->options().ctype();
+      is_inlined_ = IsStringInlined(descriptor, options);
+      is_bytes_ = descriptor->type() == FieldDescriptor::TYPE_BYTES;
+      has_default_constexpr_constructor_ = is_repeated_or_map;
+      break;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      is_message_ = true;
+      is_group_ = descriptor->type() == FieldDescriptor::TYPE_GROUP;
+      is_foreign_ = IsCrossFileMessage(descriptor);
+      is_weak_ = IsImplicitWeakField(descriptor, options, scc);
+      is_lazy_ = IsLazy(descriptor, options, scc);
+      has_trivial_value_ = !(is_repeated_or_map || is_lazy_);
+      has_default_constexpr_constructor_ = is_repeated_or_map || is_lazy_;
+      break;
   }
-  format("decltype($field$){arena}");
+
+  has_trivial_zero_default_ = CanInitializeByZeroing(descriptor, options, scc);
+}
+
+void FieldGeneratorBase::GenerateMemberConstexprConstructor(
+    io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension());
+  if (descriptor_->is_repeated()) {
+    p->Emit("$name$_{}");
+  } else {
+    p->Emit({{"default", DefaultValue(options_, descriptor_)}},
+            "$name$_{$default$}");
+  }
+}
+
+void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension());
+  if (descriptor_->is_map()) {
+    p->Emit("$name$_{visibility, arena}");
+  } else if (descriptor_->is_repeated()) {
+    if (ShouldSplit(descriptor_, options_)) {
+      p->Emit("$name$_{}");  // RawPtr<Repeated>
+    } else {
+      p->Emit("$name$_{visibility, arena}");
+    }
+  } else {
+    p->Emit({{"default", DefaultValue(options_, descriptor_)}},
+            "$name$_{$default$}");
+  }
+}
+
+void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension());
+  if (descriptor_->is_repeated()) {
+    p->Emit("$name$_{visibility, arena, from.$name$_}");
+  } else {
+    p->Emit("$name$_{from.$name$_}");
+  }
+}
+
+void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension()) << "Not supported";
+  ABSL_CHECK(!descriptor_->is_repeated()) << "Not supported";
+  ABSL_CHECK(!descriptor_->is_map()) << "Not supported";
+  p->Emit("$field$ = from.$field$;\n");
+}
+
+void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
+  if (ShouldSplit(descriptor_, options_)) {
+    p->Emit(R"cc(
+      decltype(Impl_::Split::$name$_){arena},
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      decltype($field$){arena},
+    )cc");
+  }
 }
 
 void FieldGeneratorBase::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
-  Formatter format(p, variables_);
-  format("/*decltype($field$)*/{}");
+  p->Emit(R"cc(
+    /*decltype($field$)*/ {},
+  )cc");
 }
 
 void FieldGeneratorBase::GenerateCopyAggregateInitializer(
     io::Printer* p) const {
-  Formatter format(p, variables_);
-  format("decltype($field$){from.$field$}");
+  p->Emit(R"cc(
+    decltype($field$){from.$field$},
+  )cc");
 }
 
 void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
-  if (ShouldSplit(descriptor_, options_)) {
+  if (should_split()) {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
     Formatter format(p, variables_);
     format("$field$ = from.$field$;\n");
   }
-}
-
-void FieldGeneratorBase::GenerateIfHasField(io::Printer* p) const {
-  ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
-
-  Formatter format(p);
-  format("if (($has_hasbit$) != 0) {\n");
 }
 
 namespace {
@@ -234,6 +321,8 @@ void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
 
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
+  vars.emplace_back("inlined_string_index", index);
+  vars.emplace_back("inlined_string_mask", mask);
 
   absl::string_view array = IsMapEntryMessage(field->containing_type())
                                 ? "_inlined_string_donated_"

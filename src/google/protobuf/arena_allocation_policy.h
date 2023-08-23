@@ -34,8 +34,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "google/protobuf/arena_config.h"
-
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -47,17 +45,18 @@ namespace internal {
 // public configuration class such as `ArenaOptions`.
 struct AllocationPolicy {
   static constexpr size_t kDefaultStartBlockSize = 256;
+  static constexpr size_t kDefaultMaxBlockSize = 32 << 10;
 
   size_t start_block_size = kDefaultStartBlockSize;
-  size_t max_block_size = GetDefaultArenaMaxBlockSize();
+  size_t max_block_size = kDefaultMaxBlockSize;
 
   void* (*block_alloc)(size_t) = nullptr;
   void (*block_dealloc)(void*, size_t) = nullptr;
 
   bool IsDefault() const {
     return start_block_size == kDefaultStartBlockSize &&
-           max_block_size == GetDefaultArenaMaxBlockSize() &&
-           block_alloc == nullptr && block_dealloc == nullptr;
+           max_block_size == kDefaultMaxBlockSize && block_alloc == nullptr &&
+           block_dealloc == nullptr;
   }
 };
 

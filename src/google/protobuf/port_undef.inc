@@ -48,6 +48,7 @@
 #undef PROTOBUF_CLANG_MIN
 #undef PROTOBUF_MSC_VER_MIN
 #undef PROTOBUF_CPLUSPLUS_MIN
+#undef PROTOBUF_ABSL_MIN
 #undef PROTOBUF_ALWAYS_INLINE
 #undef PROTOBUF_ALWAYS_INLINE_CALL
 #undef PROTOBUF_NDEBUG_INLINE
@@ -91,6 +92,7 @@
 #undef PROTOBUF_BIG_ENDIAN
 #undef PROTOBUF_CONSTINIT
 #undef PROTOBUF_CONSTEXPR
+#undef PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 #undef PROTOBUF_ATTRIBUTE_WEAK
 #undef PROTOBUF_HAVE_ATTRIBUTE_WEAK
 #undef PROTOBUF_ATTRIBUTE_NO_DESTROY
@@ -101,6 +103,9 @@
 #undef PROTOBUF_ASAN
 #undef PROTOBUF_MSAN
 #undef PROTOBUF_TSAN
+#undef PROTOBUF_TSAN_DECLARE_MEMBER
+#undef PROTOBUF_TSAN_READ
+#undef PROTOBUF_TSAN_WRITE
 #undef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
 #undef PROTOBUF_TC_PARAM_DECL
 #undef PROTOBUF_EXCLUSIVE_LOCKS_REQUIRED
@@ -129,14 +134,19 @@
 #undef PROTOBUF_DID_UNDEF_PACKED
 #endif
 
+#ifdef PROTOBUF_DID_UNDEF_DOMAIN
+#pragma pop_macro("DOMAIN")
+#undef PROTOBUF_DID_UNDEF_DOMAIN
+#endif
+
 #ifdef PROTOBUF_DID_UNDEF_LINUX
 #pragma pop_macro("linux")
 #endif
 
 #ifdef _WIN32
+#pragma pop_macro("CompareString")
 #pragma pop_macro("CREATE_NEW")
 #pragma pop_macro("DELETE")
-#pragma pop_macro("DOMAIN")
 #pragma pop_macro("DOUBLE_CLICK")
 #pragma pop_macro("ERROR")
 #pragma pop_macro("ERROR_BUSY")
@@ -167,13 +177,19 @@
 #endif
 
 #ifdef __APPLE__
-#pragma pop_macro("DOMAIN")
 #pragma pop_macro("TRUE")
 #pragma pop_macro("FALSE")
 #pragma pop_macro("UID_MAX")
 #pragma pop_macro("GID_MAX")
 #pragma pop_macro("TYPE_BOOL")
 #endif  // __APPLE__
+
+#ifdef __FreeBSD__
+#pragma pop_macro("TRUE")
+#pragma pop_macro("FALSE")
+#pragma pop_macro("UID_MAX")
+#pragma pop_macro("GID_MAX")
+#endif  // __FreeBSD__
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 #pragma pop_macro("DEBUG")

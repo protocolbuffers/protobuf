@@ -44,9 +44,9 @@
 #include <string>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/port.h"
 #include "absl/base/casts.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
@@ -663,9 +663,7 @@ class PROTOBUF_EXPORT WireFormatLite {
                                        int cached_size, uint8_t* target,
                                        io::EpsCopyOutputStream* stream);
 
-  // Like above, but de-virtualize the call to SerializeWithCachedSizes().  The
-  // pointer must point at an instance of MessageType, *not* a subclass (or
-  // the subclass must not override SerializeWithCachedSizes()).
+  // Like above, but de-virtualize the call to SerializeWithCachedSizes().
   template <typename MessageType>
   PROTOBUF_NDEBUG_INLINE static uint8_t* InternalWriteGroupNoVirtualToArray(
       int field_number, const MessageType& value, uint8_t* target);
@@ -738,6 +736,8 @@ class PROTOBUF_EXPORT WireFormatLite {
   static inline size_t StringSize(const absl::Cord& value);
   static inline size_t BytesSize(const std::string& value);
   static inline size_t BytesSize(const absl::Cord& value);
+  static inline size_t StringSize(absl::string_view value);
+  static inline size_t BytesSize(absl::string_view value);
 
   template <typename MessageType>
   static inline size_t GroupSize(const MessageType& value);
@@ -1835,6 +1835,15 @@ inline size_t WireFormatLite::StringSize(const absl::Cord& value) {
   return LengthDelimitedSize(value.size());
 }
 
+inline size_t WireFormatLite::StringSize(const absl::string_view value) {
+  // WARNING:  In wire_format.cc, both strings and bytes are handled by
+  //   StringSize() to avoid code duplication.  If the implementations become
+  //   different, you will need to update that usage.
+  return LengthDelimitedSize(value.size());
+}
+inline size_t WireFormatLite::BytesSize(const absl::string_view value) {
+  return LengthDelimitedSize(value.size());
+}
 
 template <typename MessageType>
 inline size_t WireFormatLite::GroupSize(const MessageType& value) {
@@ -1890,7 +1899,8 @@ bool ParseMessageSetItemImpl(io::CodedInputStream* input, MS ms) {
     switch (tag) {
       case WireFormatLite::kMessageSetTypeIdTag: {
         uint32_t type_id;
-        if (!input->ReadVarint32(&type_id)) return false;
+        // We should fail parsing if type id is 0.
+        if (!input->ReadVarint32(&type_id) || type_id == 0) return false;
         if (state == State::kNoTag) {
           last_type_id = type_id;
           state = State::kHasType;

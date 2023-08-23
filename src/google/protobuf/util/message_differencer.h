@@ -48,14 +48,14 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"  // FieldDescriptor
-#include "google/protobuf/message.h"     // Message
-#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/stubs/common.h"
 #include "absl/container/fixed_array.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "google/protobuf/descriptor.h"  // FieldDescriptor
+#include "google/protobuf/message.h"     // Message
+#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation
@@ -76,12 +76,6 @@ namespace util {
 
 class DefaultFieldComparator;
 class FieldContext;  // declared below MessageDifferencer
-
-// Defines a collection of field descriptors.
-// In case of internal google codebase we are using absl::FixedArray instead
-// of vector. It significantly speeds up proto comparison (by ~30%) by
-// reducing the number of malloc/free operations
-typedef absl::FixedArray<const FieldDescriptor*, 16> FieldDescriptorArray;
 
 // A basic differencer that can be used to determine
 // the differences between two specified Protocol Messages. If any differences
@@ -655,6 +649,13 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // differences to any previously set reporters or output strings.
   void ReportDifferencesTo(Reporter* reporter);
 
+  // Returns the list of fields which was automatically added to the list of
+  // compared fields by calling set_force_compare_no_presence and caused the
+  // last call to Compare to fail.
+  const absl::flat_hash_set<std::string>& NoPresenceFieldsCausingFailure() {
+    return force_compare_failure_triggering_fields_;
+  }
+
  private:
   // Class for processing Any deserialization.  This logic is used by both the
   // MessageDifferencer and StreamReporter classes.
@@ -782,17 +783,16 @@ class PROTOBUF_EXPORT MessageDifferencer {
                           const FieldDescriptor* field2);
 
   // Retrieve all the set fields, including extensions.
-  FieldDescriptorArray RetrieveFields(const Message& message,
-                                      bool base_message);
+  std::vector<const FieldDescriptor*> RetrieveFields(const Message& message,
+                                                     bool base_message);
 
   // Combine the two lists of fields into the combined_fields output vector.
   // All fields present in both lists will always be included in the combined
   // list.  Fields only present in one of the lists will only appear in the
   // combined list if the corresponding fields_scope option is set to FULL.
-  FieldDescriptorArray CombineFields(const FieldDescriptorArray& fields1,
-                                     Scope fields1_scope,
-                                     const FieldDescriptorArray& fields2,
-                                     Scope fields2_scope);
+  std::vector<const FieldDescriptor*> CombineFields(
+      const std::vector<const FieldDescriptor*>& fields1, Scope fields1_scope,
+      const std::vector<const FieldDescriptor*>& fields2, Scope fields2_scope);
 
   // Internal version of the Compare method which performs the actual
   // comparison. The parent_fields vector is a vector containing field
@@ -812,16 +812,16 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // CompareWithFieldsInternal.
   bool CompareRequestedFieldsUsingSettings(
       const Message& message1, const Message& message2, int unpacked_any,
-      const FieldDescriptorArray& message1_fields,
-      const FieldDescriptorArray& message2_fields,
+      const std::vector<const FieldDescriptor*>& message1_fields,
+      const std::vector<const FieldDescriptor*>& message2_fields,
       std::vector<SpecificField>* parent_fields);
 
   // Compares the specified messages with the specified field lists.
-  bool CompareWithFieldsInternal(const Message& message1,
-                                 const Message& message2, int unpacked_any,
-                                 const FieldDescriptorArray& message1_fields,
-                                 const FieldDescriptorArray& message2_fields,
-                                 std::vector<SpecificField>* parent_fields);
+  bool CompareWithFieldsInternal(
+      const Message& message1, const Message& message2, int unpacked_any,
+      const std::vector<const FieldDescriptor*>& message1_fields,
+      const std::vector<const FieldDescriptor*>& message2_fields,
+      std::vector<SpecificField>* parent_fields);
 
   // Compares the repeated fields, and report the error.
   bool CompareRepeatedField(const Message& message1, const Message& message2,
@@ -947,6 +947,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   MessageFieldComparison message_field_comparison_;
   Scope scope_;
   absl::flat_hash_set<const FieldDescriptor*> force_compare_no_presence_fields_;
+  absl::flat_hash_set<std::string> force_compare_failure_triggering_fields_;
   RepeatedFieldComparison repeated_field_comparison_;
 
   absl::flat_hash_map<const FieldDescriptor*, RepeatedFieldComparison>

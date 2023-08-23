@@ -40,6 +40,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/stubs/common.h"
@@ -104,7 +105,14 @@ std::string HandleExtremeFloatingPoint(std::string val, bool add_float_suffix) {
   }
 }
 
+const char* kDescriptorProtoName = "google/protobuf/descriptor.proto";
+
 }  // namespace
+
+bool ExtensionIsCustomOption(const FieldDescriptor* extension_field) {
+  return extension_field->containing_type()->file()->name() ==
+         kDescriptorProtoName;
+}
 
 std::string GetCapitalizedType(const FieldDescriptor* field) {
   switch (field->type()) {
@@ -340,56 +348,67 @@ std::string ObjCClassDeclaration(absl::string_view class_name) {
   return absl::StrCat("GPBObjCClassDeclaration(", class_name, ");");
 }
 
-std::string BuildCommentsString(const SourceLocation& location,
-                                bool prefer_single_line) {
+void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
+                        CommentStringFlags flags) {
   absl::string_view comments = location.leading_comments.empty()
                                    ? location.trailing_comments
                                    : location.leading_comments;
-  std::vector<absl::string_view> lines;
-  lines = absl::StrSplit(comments, '\n', absl::AllowEmpty());
-  while (!lines.empty() && lines.back().empty()) {
-    lines.pop_back();
+  std::vector<absl::string_view> raw_lines(
+      absl::StrSplit(comments, '\n', absl::AllowEmpty()));
+  while (!raw_lines.empty() && raw_lines.back().empty()) {
+    raw_lines.pop_back();
   }
-  // If there are no comments, just return an empty string.
-  if (lines.empty()) {
-    return "";
-  }
-
-  std::string prefix;
-  std::string suffix;
-  std::string final_comments;
-  std::string epilogue;
-
-  bool add_leading_space = false;
-
-  if (prefer_single_line && lines.size() == 1) {
-    prefix = "/** ";
-    suffix = " */\n";
-  } else {
-    prefix = "* ";
-    suffix = "\n";
-    absl::StrAppend(&final_comments, "/**\n");
-    epilogue = " **/\n";
-    add_leading_space = true;
+  if (raw_lines.empty()) {
+    return;
   }
 
-  for (size_t i = 0; i < lines.size(); i++) {
-    std::string line = absl::StrReplaceAll(
-        absl::StripPrefix(lines[i], " "),
+  std::vector<std::string> lines;
+  lines.reserve(raw_lines.size());
+  for (absl::string_view l : raw_lines) {
+    lines.push_back(absl::StrReplaceAll(
+        // Strip any trailing whitespace to avoid any warnings on the generated
+        // code; but only stip one leading white space as that tends to be
+        // carried over from the .proto file, and we don't want extra spaces,
+        // the formatting below will ensure there is a space.
+        // NOTE: There could be >1 leading whitespace if the .proto file has
+        // formatted comments (see the WKTs), so we maintain any additional
+        // leading whitespace.
+        absl::StripTrailingAsciiWhitespace(absl::StripPrefix(l, " ")),
         {// HeaderDoc and appledoc use '\' and '@' for markers; escape them.
          {"\\", "\\\\"},
          {"@", "\\@"},
          // Decouple / from * to not have inline comments inside comments.
          {"/*", "/\\*"},
-         {"*/", "*\\/"}});
-    line = prefix + line;
-    absl::StripAsciiWhitespace(&line);
-    // If not a one line, need to add the first space before *, as
-    // absl::StripAsciiWhitespace would have removed it.
-    line = absl::StrCat(add_leading_space ? " " : "", line);
-    absl::StrAppend(&final_comments, line, suffix);
+         {"*/", "*\\/"}}));
   }
-  return absl::StrCat(final_comments, epilogue);
+
+  if (flags & CommentStringFlags::kAddLeadingNewline) {
+    printer->Emit("\n");
+  }
+
+  if ((flags & CommentStringFlags::kForceMultiline) == 0 && lines.size() == 1) {
+    printer->Emit({{"text", lines[0]}}, R"(
+      /** $text$ */
+    )");
+    return;
+  }
+
+  printer->Emit(
+      {
+          {"lines",
+           [&] {
+             for (absl::string_view line : lines) {
+               printer->Emit({{"text", line}}, R"(
+                *$ text$
+              )");
+             }
+           }},
+      },
+      R"(
+        /**
+         $lines$
+         **/
+      )");
 }
 
 }  // namespace objectivec

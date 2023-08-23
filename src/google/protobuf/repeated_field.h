@@ -45,6 +45,7 @@
 #define GOOGLE_PROTOBUF_REPEATED_FIELD_H__
 
 #include <algorithm>
+#include <cstddef>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -52,13 +53,16 @@
 #include <type_traits>
 #include <utility>
 
-#include "google/protobuf/arena.h"
-#include "google/protobuf/port.h"
+#include "absl/base/attributes.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/generated_enum_util.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -98,52 +102,19 @@ constexpr int RepeatedFieldLowerClampLimit() {
 constexpr int kRepeatedFieldUpperClampLimit =
     (std::numeric_limits<int>::max() / 2) + 1;
 
-// Swaps two blocks of memory of size kSize:
-template <size_t kSize>
-void memswap(char* a, char* b) {
-#if __SIZEOF_INT128__
-  using Buffer = __uint128_t;
-#else
-  using Buffer = uint64_t;
-#endif
-
-  constexpr size_t kBlockSize = sizeof(Buffer);
-  Buffer buf;
-  for (size_t i = 0; i < kSize / kBlockSize; ++i) {
-    memcpy(&buf, a, kBlockSize);
-    memcpy(a, b, kBlockSize);
-    memcpy(b, &buf, kBlockSize);
-    a += kBlockSize;
-    b += kBlockSize;
-  }
-
-#if defined(__GNUC__) && !defined(__clang__)
-  // Workaround GCC bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99578
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
-#endif  // __GNUC__
-
-  // Swap the leftover bytes, could be zero.
-  memcpy(&buf, a, kSize % kBlockSize);
-  memcpy(a, b, kSize % kBlockSize);
-  memcpy(b, &buf, kSize % kBlockSize);
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif  // GCC
-}
-
 template <typename Element>
 class RepeatedIterator;
+
+// Sentinel base class.
+struct RepeatedFieldBase {};
 
 // We can't skip the destructor for, e.g., arena allocated RepeatedField<Cord>.
 template <typename Element,
           bool Trivial = Arena::is_destructor_skippable<Element>::value>
-struct RepeatedFieldDestructorSkippableBase {};
+struct RepeatedFieldDestructorSkippableBase : RepeatedFieldBase {};
 
 template <typename Element>
-struct RepeatedFieldDestructorSkippableBase<Element, true> {
+struct RepeatedFieldDestructorSkippableBase<Element, true> : RepeatedFieldBase {
   using DestructorSkippable_ = void;
 };
 
@@ -181,41 +152,67 @@ class RepeatedField final
   }
 
  public:
-  constexpr RepeatedField();
-  explicit RepeatedField(Arena* arena);
+  using value_type = Element;
+  using size_type = int;
+  using difference_type = ptrdiff_t;
+  using reference = Element&;
+  using const_reference = const Element&;
+  using pointer = Element*;
+  using const_pointer = const Element*;
+  using iterator = internal::RepeatedIterator<Element>;
+  using const_iterator = internal::RepeatedIterator<const Element>;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-  RepeatedField(const RepeatedField& rhs);
+  constexpr RepeatedField();
+  RepeatedField(const RepeatedField& rhs) : RepeatedField(nullptr, rhs) {}
+
+  // TODO(b/290091828): make this constructor private
+  explicit RepeatedField(Arena* arena);
 
   template <typename Iter,
             typename = typename std::enable_if<std::is_constructible<
                 Element, decltype(*std::declval<Iter>())>::value>::type>
   RepeatedField(Iter begin, Iter end);
 
-  ~RepeatedField();
+  // Arena enabled constructors: for internal use only.
+  RepeatedField(internal::InternalVisibility, Arena* arena)
+      : RepeatedField(arena) {}
+  RepeatedField(internal::InternalVisibility, Arena* arena,
+                const RepeatedField& rhs)
+      : RepeatedField(arena, rhs) {}
 
-  RepeatedField& operator=(const RepeatedField& other);
+  RepeatedField& operator=(const RepeatedField& other)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   RepeatedField(RepeatedField&& other) noexcept;
-  RepeatedField& operator=(RepeatedField&& other) noexcept;
+  RepeatedField& operator=(RepeatedField&& other) noexcept
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+
+  ~RepeatedField();
 
   bool empty() const;
   int size() const;
 
-  const Element& Get(int index) const;
-  Element* Mutable(int index);
+  const_reference Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  pointer Mutable(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  const Element& operator[](int index) const { return Get(index); }
-  Element& operator[](int index) { return *Mutable(index); }
+  const_reference operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return Get(index);
+  }
+  reference operator[](int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return *Mutable(index);
+  }
 
-  const Element& at(int index) const;
-  Element& at(int index);
+  const_reference at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  reference at(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   void Set(int index, const Element& value);
   void Add(Element value);
 
   // Appends a new element and returns a pointer to it.
   // The new element is uninitialized if |Element| is a POD type.
-  Element* Add();
+  pointer Add() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   // Appends elements in the range [begin, end) after reserving
   // the appropriate number of elements.
   template <typename Iter>
@@ -251,18 +248,18 @@ class RepeatedField final
 
   // Adds `n` elements to this instance asserting there is enough capacity.
   // The added elements are uninitialized if `Element` is trivial.
-  Element* AddAlreadyReserved();
-  Element* AddNAlreadyReserved(int n);
+  pointer AddAlreadyReserved() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  pointer AddNAlreadyReserved(int n) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Like STL resize.  Uses value to fill appended elements.
   // Like Truncate() if new_size <= size(), otherwise this is
   // O(new_size - size()).
-  void Resize(int new_size, const Element& value);
+  void Resize(size_type new_size, const Element& value);
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
-  Element* mutable_data();
-  const Element* data() const;
+  pointer mutable_data() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_pointer data() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Swaps entire contents with "other". If they are separate arenas, then
   // copies data between each other.
@@ -271,33 +268,24 @@ class RepeatedField final
   // Swaps two elements.
   void SwapElements(int index1, int index2);
 
-  // STL-like iterator support
-  typedef internal::RepeatedIterator<Element> iterator;
-  typedef internal::RepeatedIterator<const Element> const_iterator;
-  typedef Element value_type;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
-  typedef value_type* pointer;
-  typedef const value_type* const_pointer;
-  typedef int size_type;
-  typedef ptrdiff_t difference_type;
-
-  iterator begin();
-  const_iterator begin() const;
-  const_iterator cbegin() const;
-  iterator end();
-  const_iterator end() const;
-  const_iterator cend() const;
+  iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_iterator begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_iterator cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_iterator end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  const_iterator cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Reverse iterator support
-  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-  typedef std::reverse_iterator<iterator> reverse_iterator;
-  reverse_iterator rbegin() { return reverse_iterator(end()); }
-  const_reverse_iterator rbegin() const {
+  reverse_iterator rbegin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return reverse_iterator(end());
+  }
+  const_reverse_iterator rbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(end());
   }
-  reverse_iterator rend() { return reverse_iterator(begin()); }
-  const_reverse_iterator rend() const {
+  reverse_iterator rend() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return reverse_iterator(begin());
+  }
+  const_reverse_iterator rend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(begin());
   }
 
@@ -315,14 +303,15 @@ class RepeatedField final
   // element.
   //
   // Invalidates all iterators at or after the removed element, including end().
-  iterator erase(const_iterator position);
+  iterator erase(const_iterator position) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Removes the elements in the range [first, last).
   //
   // Returns an iterator to the element immediately following the removed range.
   //
   // Invalidates all iterators at or after the removed range, including end().
-  iterator erase(const_iterator first, const_iterator last);
+  iterator erase(const_iterator first,
+                 const_iterator last) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Gets the Arena on which this RepeatedField stores its elements.
   // Note: this can be inaccurate for split default fields so we make this
@@ -335,7 +324,31 @@ class RepeatedField final
   inline void InternalSwap(RepeatedField* other);
 
  private:
-  template <typename T> friend class Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+
+  template <typename T>
+  friend class Arena::InternalHelper;
+
+  friend class Arena;
+
+  // Pad the rep to being max(Arena*, Element) with a minimum align
+  // of 8 as sanitizers are picky on the alignment of containers to
+  // start at 8 byte offsets even when compiling for 32 bit platforms.
+  struct Rep {
+    union {
+      alignas(8) Arena* arena;
+      Element unused;
+    };
+    Element* elements() { return reinterpret_cast<Element*>(this + 1); }
+
+    // Avoid 'implicitly deleted dtor' warnings on certain compilers.
+    ~Rep() = delete;
+  };
+
+  static constexpr int kInitialSize = 0;
+  static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize = sizeof(Rep);
+
+  RepeatedField(Arena* arena, const RepeatedField& rhs);
 
   // Gets the Arena on which this RepeatedField stores its elements.
   inline Arena* GetOwningArena() const {
@@ -366,6 +379,14 @@ class RepeatedField final
     std::uninitialized_copy(begin, end, dst);
   }
 
+  // Destroys all elements in [begin, end).
+  // This function does nothing if `Element` is trivial.
+  static void Destroy(const Element* begin, const Element* end) {
+    if (!std::is_trivial<Element>::value) {
+      std::for_each(begin, end, [&](const Element& e) { e.~Element(); });
+    }
+  }
+
   template <typename Iter>
   void AddForwardIterator(Iter begin, Iter end);
 
@@ -380,20 +401,6 @@ class RepeatedField final
   // `total_size_` to `current_size` (poison unused memory).
   void Grow(int current_size, int new_size);
   void GrowNoAnnotate(int current_size, int new_size);
-
-  static constexpr int kInitialSize = 0;
-  // A note on the representation here (see also comment below for
-  // RepeatedPtrFieldBase's struct Rep):
-  //
-  // We maintain the same sizeof(RepeatedField) as before we added arena support
-  // so that we do not degrade performance by bloating memory usage. Directly
-  // adding an arena_ element to RepeatedField is quite costly. By using
-  // indirection in this way, we keep the same size when the RepeatedField is
-  // empty (common case), and add only an 8-byte header to the elements array
-  // when non-empty. We make sure to place the size fields directly in the
-  // RepeatedField class to avoid costly cache misses due to the indirection.
-  int current_size_;
-  int total_size_;
 
   // Annotates a change in size of this instance. This function should be called
   // with (total_size, current_size) after new memory has been allocated and
@@ -423,23 +430,6 @@ class RepeatedField final
     return prev_size;
   }
 
-  // Pad the rep to being max(Arena*, Element) with a minimum align
-  // of 8 as sanitizers are picky on the alignment of containers to
-  // start at 8 byte offsets even when compiling for 32 bit platforms.
-  struct Rep {
-    union {
-      alignas(8) Arena* arena;
-      Element unused;
-    };
-    Element* elements() { return reinterpret_cast<Element*>(this + 1); }
-  };
-  static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize = sizeof(Rep);
-
-  // If total_size_ == 0 this points to an Arena otherwise it points to the
-  // elements member of a Rep struct. Using this invariant allows the storage of
-  // the arena pointer without an extra allocation in the constructor.
-  void* arena_or_elements_;
-
   // Returns a pointer to elements array.
   // pre-condition: the array must have been allocated.
   Element* elements() const {
@@ -462,17 +452,6 @@ class RepeatedField final
                                   kRepHeaderSize);
   }
 
-  friend class Arena;
-  typedef void InternalArenaConstructable_;
-
-  // Destroys all elements in [begin, end).
-  // This function does nothing if `Element` is trivial.
-  static void Destroy(const Element* begin, const Element* end) {
-    if (!std::is_trivial<Element>::value) {
-      std::for_each(begin, end, [&](const Element& e) { e.~Element(); });
-    }
-  }
-
   // Internal helper to delete all elements and deallocate the storage.
   template <bool in_destructor = false>
   void InternalDeallocate() {
@@ -485,6 +464,23 @@ class RepeatedField final
       rep()->arena->ReturnArrayMemory(rep(), bytes);
     }
   }
+
+  // A note on the representation here (see also comment below for
+  // RepeatedPtrFieldBase's struct Rep):
+  //
+  // We maintain the same sizeof(RepeatedField) as before we added arena support
+  // so that we do not degrade performance by bloating memory usage. Directly
+  // adding an arena_ element to RepeatedField is quite costly. By using
+  // indirection in this way, we keep the same size when the RepeatedField is
+  // empty (common case), and add only an 8-byte header to the elements array
+  // when non-empty. We make sure to place the size fields directly in the
+  // RepeatedField class to avoid costly cache misses due to the indirection.
+  int current_size_;
+  int total_size_;
+  // If total_size_ == 0 this points to an Arena otherwise it points to the
+  // elements member of a Rep struct. Using this invariant allows the storage of
+  // the arena pointer without an extra allocation in the constructor.
+  void* arena_or_elements_;
 };
 
 // implementation ====================================================
@@ -502,8 +498,9 @@ inline RepeatedField<Element>::RepeatedField(Arena* arena)
 }
 
 template <typename Element>
-inline RepeatedField<Element>::RepeatedField(const RepeatedField& rhs)
-    : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {
+inline RepeatedField<Element>::RepeatedField(Arena* arena,
+                                             const RepeatedField& rhs)
+    : current_size_(0), total_size_(0), arena_or_elements_(arena) {
   StaticValidityCheck();
   if (auto size = rhs.current_size_) {
     Grow(0, size);
@@ -537,7 +534,7 @@ RepeatedField<Element>::~RepeatedField() {
 
 template <typename Element>
 inline RepeatedField<Element>& RepeatedField<Element>::operator=(
-    const RepeatedField& other) {
+    const RepeatedField& other) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   if (this != &other) CopyFrom(other);
   return *this;
 }
@@ -561,7 +558,7 @@ inline RepeatedField<Element>::RepeatedField(RepeatedField&& other) noexcept
 
 template <typename Element>
 inline RepeatedField<Element>& RepeatedField<Element>::operator=(
-    RepeatedField&& other) noexcept {
+    RepeatedField&& other) noexcept ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
@@ -601,7 +598,8 @@ inline void RepeatedField<Element>::AddAlreadyReserved(Element value) {
 }
 
 template <typename Element>
-inline Element* RepeatedField<Element>::AddAlreadyReserved() {
+inline Element* RepeatedField<Element>::AddAlreadyReserved()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ABSL_DCHECK_LT(current_size_, total_size_);
   // new (p) <TrivialType> compiles into nothing: this is intentional as this
   // function is documented to return uninitialized data for trivial types.
@@ -610,7 +608,8 @@ inline Element* RepeatedField<Element>::AddAlreadyReserved() {
 }
 
 template <typename Element>
-inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n) {
+inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ABSL_DCHECK_GE(total_size_ - current_size_, n)
       << total_size_ << ", " << current_size_;
   Element* p = unsafe_elements() + ExchangeCurrentSize(current_size_ + n);
@@ -634,28 +633,32 @@ inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
 }
 
 template <typename Element>
-inline const Element& RepeatedField<Element>::Get(int index) const {
+inline const Element& RepeatedField<Element>::Get(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ABSL_DCHECK_GE(index, 0);
   ABSL_DCHECK_LT(index, current_size_);
   return elements()[index];
 }
 
 template <typename Element>
-inline const Element& RepeatedField<Element>::at(int index) const {
+inline const Element& RepeatedField<Element>::at(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ABSL_CHECK_GE(index, 0);
   ABSL_CHECK_LT(index, current_size_);
   return elements()[index];
 }
 
 template <typename Element>
-inline Element& RepeatedField<Element>::at(int index) {
+inline Element& RepeatedField<Element>::at(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ABSL_CHECK_GE(index, 0);
   ABSL_CHECK_LT(index, current_size_);
   return elements()[index];
 }
 
 template <typename Element>
-inline Element* RepeatedField<Element>::Mutable(int index) {
+inline Element* RepeatedField<Element>::Mutable(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ABSL_DCHECK_GE(index, 0);
   ABSL_DCHECK_LT(index, current_size_);
   return &elements()[index];
@@ -688,7 +691,7 @@ inline void RepeatedField<Element>::Add(Element value) {
 }
 
 template <typename Element>
-inline Element* RepeatedField<Element>::Add() {
+inline Element* RepeatedField<Element>::Add() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   if (ABSL_PREDICT_FALSE(current_size_ == total_size_)) {
     Grow(current_size_, current_size_ + 1);
   }
@@ -784,12 +787,12 @@ inline void RepeatedField<Element>::Clear() {
 }
 
 template <typename Element>
-inline void RepeatedField<Element>::MergeFrom(const RepeatedField& rhs) {
-  ABSL_DCHECK_NE(&rhs, this);
-  if (auto size = rhs.current_size_) {
+inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
+  ABSL_DCHECK_NE(&other, this);
+  if (auto size = other.current_size_) {
     Reserve(current_size_ + size);
     Element* dst = elements() + ExchangeCurrentSize(current_size_ + size);
-    UninitializedCopyN(rhs.elements(), size, dst);
+    UninitializedCopyN(other.elements(), size, dst);
   }
 }
 
@@ -809,13 +812,13 @@ inline void RepeatedField<Element>::Assign(Iter begin, Iter end) {
 
 template <typename Element>
 inline typename RepeatedField<Element>::iterator RepeatedField<Element>::erase(
-    const_iterator position) {
+    const_iterator position) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return erase(position, position + 1);
 }
 
 template <typename Element>
 inline typename RepeatedField<Element>::iterator RepeatedField<Element>::erase(
-    const_iterator first, const_iterator last) {
+    const_iterator first, const_iterator last) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   size_type first_offset = first - cbegin();
   if (first != last) {
     Truncate(std::copy(last, cend(), begin() + first_offset) - cbegin());
@@ -824,12 +827,14 @@ inline typename RepeatedField<Element>::iterator RepeatedField<Element>::erase(
 }
 
 template <typename Element>
-inline Element* RepeatedField<Element>::mutable_data() {
+inline Element* RepeatedField<Element>::mutable_data()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return unsafe_elements();
 }
 
 template <typename Element>
-inline const Element* RepeatedField<Element>::data() const {
+inline const Element* RepeatedField<Element>::data() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return unsafe_elements();
 }
 
@@ -840,11 +845,11 @@ inline void RepeatedField<Element>::InternalSwap(RepeatedField* other) {
   // Swap all fields at once.
   static_assert(std::is_standard_layout<RepeatedField<Element>>::value,
                 "offsetof() requires standard layout before c++17");
+  static constexpr size_t kOffset = offsetof(RepeatedField, current_size_);
   internal::memswap<offsetof(RepeatedField, arena_or_elements_) +
-                    sizeof(this->arena_or_elements_) -
-                    offsetof(RepeatedField, current_size_)>(
-      reinterpret_cast<char*>(this) + offsetof(RepeatedField, current_size_),
-      reinterpret_cast<char*>(other) + offsetof(RepeatedField, current_size_));
+                    sizeof(this->arena_or_elements_) - kOffset>(
+      reinterpret_cast<char*>(this) + kOffset,
+      reinterpret_cast<char*>(other) + kOffset);
 }
 
 template <typename Element>
@@ -879,32 +884,33 @@ void RepeatedField<Element>::SwapElements(int index1, int index2) {
 }
 
 template <typename Element>
-inline typename RepeatedField<Element>::iterator
-RepeatedField<Element>::begin() {
+inline typename RepeatedField<Element>::iterator RepeatedField<Element>::begin()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return iterator(unsafe_elements());
 }
 template <typename Element>
 inline typename RepeatedField<Element>::const_iterator
-RepeatedField<Element>::begin() const {
+RepeatedField<Element>::begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return const_iterator(unsafe_elements());
 }
 template <typename Element>
 inline typename RepeatedField<Element>::const_iterator
-RepeatedField<Element>::cbegin() const {
+RepeatedField<Element>::cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return const_iterator(unsafe_elements());
 }
 template <typename Element>
-inline typename RepeatedField<Element>::iterator RepeatedField<Element>::end() {
+inline typename RepeatedField<Element>::iterator RepeatedField<Element>::end()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return iterator(unsafe_elements() + current_size_);
 }
 template <typename Element>
 inline typename RepeatedField<Element>::const_iterator
-RepeatedField<Element>::end() const {
+RepeatedField<Element>::end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return const_iterator(unsafe_elements() + current_size_);
 }
 template <typename Element>
 inline typename RepeatedField<Element>::const_iterator
-RepeatedField<Element>::cend() const {
+RepeatedField<Element>::cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return const_iterator(unsafe_elements() + current_size_);
 }
 
@@ -1003,9 +1009,11 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
   arena_or_elements_ = new_rep->elements();
 }
 
-// TODO(b/266411038): we should really be able to make this:
-// template <bool annotate_size = true>
-// void Grow();
+// Ideally we would be able to use:
+//   template <bool annotate_size = true>
+//   void Grow();
+// However, as explained in b/266411038#comment9, this causes issues
+// in shared libraries for Youtube (and possibly elsewhere).
 template <typename Element>
 PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(int current_size,
                                                     int new_size) {

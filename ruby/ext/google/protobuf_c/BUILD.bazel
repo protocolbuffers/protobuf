@@ -6,20 +6,104 @@ package(default_visibility = ["//ruby:__subpackages__"])
 
 cc_library(
     name = "protobuf_c",
-    srcs = glob([
-        "*.h",
-        "*.c",
-    ]),
-    deps = [
-        "@rules_ruby//ruby/runtime:headers",
-        "@utf8_range//:utf8_range",
+    srcs = [
+        "convert.c",
+        "convert.h",
+        "defs.c",
+        "defs.h",
+        "map.c",
+        "map.h",
+        "message.c",
+        "message.h",
+        "protobuf.c",
+        "protobuf.h",
+        "repeated_field.c",
+        "repeated_field.h",
+        "ruby-upb.c",
+        "ruby-upb.h",
+        "shared_convert.c",
+        "shared_convert.h",
+        "shared_message.c",
+        "shared_message.h",
+        "wrap_memcpy.c",
     ],
+    linkstatic = True,
     target_compatible_with = select({
         "@rules_ruby//ruby/runtime:config_jruby": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
-    linkstatic = True,
+    deps = [
+        "@rules_ruby//ruby/runtime:headers",
+        "@utf8_range",
+    ],
     alwayslink = True,
+)
+
+# Needs to be compiled with UPB_BUILD_API in order to expose functions called
+# via FFI directly by Ruby.
+cc_library(
+    name = "upb_api",
+    srcs = [
+        "ruby-upb.c",
+    ],
+    hdrs = [
+        "ruby-upb.h",
+    ],
+    copts = ["-fvisibility=hidden"],
+    linkstatic = False,
+    local_defines = [
+        "UPB_BUILD_API",
+    ],
+    target_compatible_with = select({
+        "//ruby:ffi_disabled": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        "@utf8_range",
+    ],
+)
+
+cc_library(
+    name = "protobuf_c_ffi",
+    srcs = [
+        "glue.c",
+        "shared_convert.c",
+        "shared_convert.h",
+        "shared_message.c",
+        "shared_message.h",
+    ],
+    copts = [
+        "-std=gnu99",
+        "-O3",
+        "-Wall",
+        "-Wsign-compare",
+        "-Wno-declaration-after-statement",
+    ],
+    linkstatic = True,
+    local_defines = [
+        "NDEBUG",
+    ],
+    target_compatible_with = select({
+        "//ruby:ffi_disabled": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    deps = [":upb_api"],
+    alwayslink = 1,
+)
+
+apple_binary(
+    name = "ffi_bundle",
+    binary_type = "loadable_bundle",
+    linkopts = [
+        "-undefined,dynamic_lookup",
+        "-multiply_defined,suppress",
+    ],
+    minimum_os_version = "10.11",
+    platform_type = "macos",
+    tags = ["manual"],
+    deps = [
+        ":protobuf_c_ffi",
+    ],
 )
 
 apple_binary(
@@ -29,8 +113,8 @@ apple_binary(
         "-undefined,dynamic_lookup",
         "-multiply_defined,suppress",
     ],
-    platform_type = "macos",
     minimum_os_version = "10.11",
+    platform_type = "macos",
     tags = ["manual"],
     deps = [
         ":protobuf_c",
@@ -43,6 +127,7 @@ pkg_files(
         "*.h",
         "*.c",
         "*.rb",
+        "Rakefile",
     ]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//ruby:__pkg__"],
@@ -65,8 +150,8 @@ genrule(
 staleness_test(
     name = "test_amalgamation_staleness",
     outs = [
-        "ruby-upb.h",
         "ruby-upb.c",
+        "ruby-upb.h",
     ],
     generated_pattern = "generated-in/%s",
 )

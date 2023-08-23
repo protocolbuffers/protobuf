@@ -112,7 +112,6 @@ def _compile_cc(
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
         srcs = [src],
-        grep_includes = ctx.file._grep_includes,
         user_compile_flags = attr.copts if hasattr(attr, "copts") else [],
         compilation_contexts = [cc_info.compilation_context],
     )
@@ -297,11 +296,6 @@ def _make_proto_library_aspect(is_upb):
             ),
             "_cpp_thunks_deps": attr.label(
                 default = Label("//rust/cpp_kernel:cpp_api"),
-            ),
-            "_grep_includes": attr.label(
-                allow_single_file = True,
-                default = Label("@bazel_tools//tools/cpp:grep-includes"),
-                cfg = "exec",
             ),
             "_error_format": attr.label(
                 default = Label("@rules_rust//:error_format"),
