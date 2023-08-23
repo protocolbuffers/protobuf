@@ -97,7 +97,7 @@ load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
 
 cc_library(
    name = "python_headers",
-   hdrs = glob(["python/**/*.h"]),
+   hdrs = glob(["python/**/*.h"], allow_empty = True),
    includes = ["python"],
    visibility = ["//visibility:public"],
 )
