@@ -53,7 +53,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "google/protobuf/arena.h"
 #include "absl/base/attributes.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/base/optimization.h"
@@ -61,6 +60,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"

@@ -32,9 +32,9 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/arena.h"
 #include <gtest/gtest.h>
 #include "absl/strings/match.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
