@@ -68,7 +68,12 @@
 #include <assert.h>
 #include <setjmp.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
+
+#ifndef UINTPTR_MAX
+Error, UINTPTR_MAX is undefined
+#endif
 
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32
@@ -292,7 +297,7 @@
 #define UPB_ASAN 1
 #define UPB_ASAN_GUARD_SIZE 32
 #ifdef __cplusplus
-extern "C" {
+    extern "C" {
 #endif
 void __asan_poison_memory_region(void const volatile *addr, size_t size);
 void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
