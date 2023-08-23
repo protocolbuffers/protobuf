@@ -288,6 +288,7 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
   )cc");
 }
 
+
 void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
   auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
 
