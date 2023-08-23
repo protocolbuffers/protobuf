@@ -52,6 +52,7 @@ rust_library(
     name = "protobuf_upb",
     srcs = [
         "internal.rs",
+        "macros.rs",
         "optional.rs",
         "proxied.rs",
         "shared.rs",
@@ -89,6 +90,7 @@ rust_library(
     srcs = [
         "cpp.rs",
         "internal.rs",
+        "macros.rs",
         "optional.rs",
         "proxied.rs",
         "shared.rs",

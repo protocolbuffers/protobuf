@@ -64,6 +64,7 @@ pub mod __runtime;
 #[path = "upb.rs"]
 pub mod __runtime;
 
+mod macros;
 mod optional;
 mod proxied;
 mod string;
