@@ -46,7 +46,7 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
       R"rs(
           // inMsgImpl
           pub fn r#$field$(&self) -> $Msg$View {
-            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
+            $Msg$View { msg: self.inner.msg, _phantom: std::marker::PhantomData }
           }
         )rs");
 }

@@ -28,6 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <string>
+
+#include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
@@ -41,45 +44,107 @@ namespace compiler {
 namespace rust {
 
 void SingularBytes::InMsgImpl(Context<FieldDescriptor> field) const {
+  std::string hazzer_thunk = Thunk(field, "has");
+  std::string getter_thunk = Thunk(field, "get");
+  std::string setter_thunk = Thunk(field, "set");
   field.Emit(
       {
           {"field", field.desc().name()},
-          {"hazzer_thunk", Thunk(field, "has")},
-          {"getter_thunk", Thunk(field, "get")},
-          {"setter_thunk", Thunk(field, "set")},
-          {"clearer_thunk", Thunk(field, "clear")},
-          {"getter_opt",
+          {"hazzer_thunk", hazzer_thunk},
+          {"getter_thunk", getter_thunk},
+          {"setter_thunk", setter_thunk},
+          {"field_optional_getter",
            [&] {
              if (!field.desc().is_optional()) return;
              if (!field.desc().has_presence()) return;
-             field.Emit({}, R"rs(
-                  pub fn $field$_opt(&self) -> Option<&[u8]> {
-                    if !unsafe { $hazzer_thunk$(self.msg) } {
-                      return None;
-                    }
-                    unsafe {
-                      Some($getter_thunk$(self.msg).as_ref())
-                    }
-                  })rs");
+             field.Emit({{"hazzer_thunk", hazzer_thunk},
+                         {"getter_thunk", getter_thunk}},
+                        R"rs(
+            pub fn $field$_opt(&self) -> $pb$::Optional<&[u8]> {
+              unsafe {
+                $pb$::Optional::new(
+                  $getter_thunk$(self.inner.msg).as_ref(),
+                  $hazzer_thunk$(self.inner.msg)
+                )
+              }
+            }
+          )rs");
+           }},
+          {"field_mutator_getter",
+           [&] {
+             if (field.desc().has_presence()) {
+               field.Emit(
+                   {
+                       {"field", field.desc().name()},
+                       {"default_val",
+                        absl::CHexEscape(field.desc().default_value_string())},
+                       {"hazzer_thunk", hazzer_thunk},
+                       {"getter_thunk", getter_thunk},
+                       {"setter_thunk", setter_thunk},
+                       {"clearer_thunk", Thunk(field, "clear")},
+                   },
+                   R"rs(
+            pub fn $field$_mut(&mut self) -> $pb$::FieldEntry<'_, [u8]> {
+              static VTABLE: $pbi$::BytesOptionalMutVTable = unsafe {
+                $pbi$::BytesOptionalMutVTable::new(
+                  $pbi$::Private,
+                  $getter_thunk$,
+                  $setter_thunk$,
+                  $clearer_thunk$,
+                  b"$default_val$",
+                )
+              };
+              unsafe {
+                let has = $hazzer_thunk$(self.inner.msg);
+                $pbi$::new_vtable_field_entry(
+                  $pbi$::Private,
+                  $pbr$::MutatorMessageRef::new(
+                    $pbi$::Private, &mut self.inner),
+                  &VTABLE,
+                  has,
+                )
+              }
+            }
+          )rs");
+             } else {
+               field.Emit({{"field", field.desc().name()},
+                           {"getter_thunk", getter_thunk},
+                           {"setter_thunk", setter_thunk}},
+                          R"rs(
+              pub fn $field$_mut(&mut self) -> $pb$::BytesMut<'_> {
+                static VTABLE: $pbi$::BytesMutVTable = unsafe {
+                  $pbi$::BytesMutVTable::new(
+                    $pbi$::Private,
+                    $getter_thunk$,
+                    $setter_thunk$,
+                  )
+                };
+                unsafe {
+                  $pb$::BytesMut::from_inner(
+                    $pbi$::Private,
+                    $pbi$::RawVTableMutator::new(
+                      $pbi$::Private,
+                      $pbr$::MutatorMessageRef::new(
+                        $pbi$::Private, &mut self.inner),
+                      &VTABLE,
+                    )
+                  )
+                }
+              }
+            )rs");
+             }
            }},
       },
       R"rs(
-          pub fn r#$field$(&self) -> &[u8] {
-            unsafe { $getter_thunk$(self.msg).as_ref() }
+        pub fn r#$field$(&self) -> &[u8] {
+          unsafe {
+            $getter_thunk$(self.inner.msg).as_ref()
           }
-          $getter_opt$
-          pub fn $field$_set(&mut self, val: Option<&[u8]>) {
-            match val {
-              Some(val) =>
-                if val.len() == 0 {
-                  unsafe { $setter_thunk$(self.msg, $std$::ptr::null(), 0) }
-                } else {
-                  unsafe { $setter_thunk$(self.msg, val.as_ptr(), val.len()) }
-                },
-              None => unsafe { $clearer_thunk$(self.msg) },
-            }
-          }
-        )rs");
+        }
+
+        $field_optional_getter$
+        $field_mutator_getter$
+      )rs");
 }
 
 void SingularBytes::InExternC(Context<FieldDescriptor> field) const {
