@@ -114,6 +114,9 @@ class GetDeallocator {
 SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
     : ptr_{b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)},
       limit_{b->Limit()},
+      prefetch_ptr_(
+          b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)),
+      prefetch_limit_(b->Limit()),
       head_{b},
       space_allocated_{b->size},
       parent_{parent} {
@@ -130,9 +133,7 @@ SerialArena::SerialArena(FirstSerialArena, ArenaBlock* b,
                          ThreadSafeArena& parent)
     : head_{b}, space_allocated_{b->size}, parent_{parent} {
   if (b->IsSentry()) return;
-
-  set_ptr(b->Pointer(kBlockHeaderSize));
-  limit_ = b->Limit();
+  set_range(b->Pointer(kBlockHeaderSize), b->Limit());
 }
 
 std::vector<void*> SerialArena::PeekCleanupListForTesting() {
@@ -159,8 +160,7 @@ std::vector<void*> ThreadSafeArena::PeekCleanupListForTesting() {
 }
 
 void SerialArena::Init(ArenaBlock* b, size_t offset) {
-  set_ptr(b->Pointer(offset));
-  limit_ = b->Limit();
+  set_range(b->Pointer(offset), b->Limit());
   head_.store(b, std::memory_order_relaxed);
   space_used_.store(0, std::memory_order_relaxed);
   space_allocated_.store(b->size, std::memory_order_relaxed);
@@ -268,8 +268,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
                                             /*used=*/used,
                                             /*allocated=*/mem.n, wasted);
   auto* new_head = new (mem.p) ArenaBlock{old_head, mem.n};
-  set_ptr(new_head->Pointer(kBlockHeaderSize));
-  limit_ = new_head->Limit();
+  set_range(new_head->Pointer(kBlockHeaderSize), new_head->Limit());
   // Previous writes must take effect before writing new head.
   head_.store(new_head, std::memory_order_release);
 
