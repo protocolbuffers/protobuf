@@ -97,3 +97,25 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
           bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} @upb//...
+
+  no-python:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: No System Python
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "upb-bazel-no-python"
+          bash: >-
+            which python3 &&
+            mv `which python3` /tmp &&
+            ! which python3 &&
+            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 @upb//python/... -- -@upb//python/dist:source_wheel
