@@ -271,6 +271,7 @@ void GenerateRs(Context<Descriptor> msg) {
       },
       R"rs(
         #[allow(non_camel_case_types)]
+        // TODO(b/291938599): Implement support for debug redaction
         #[derive(Debug)]
         pub struct $Msg$ {
           inner: $pbr$::MessageInner
