@@ -43,16 +43,14 @@ struct GenerationOptions {
   std::string generate_for_named_framework;
   std::string named_framework_to_proto_path_mappings_path;
   std::string runtime_import_prefix;
-  // TODO(thomasvl): Eventually flip this default to false for better interop
-  // with Swift if proto usages span modules made from ObjC sources.
-  bool headers_use_forward_declarations = true;
-  // TODO(thomasvl): Removing this so there is one less path to validate in
-  // code generation.
+
+  bool headers_use_forward_declarations = false;
   bool strip_custom_options = true;
-  // TODO(thomasvl): Eventually flip this default to true.
-  bool generate_minimal_imports = false;
+  bool generate_minimal_imports = true;
+
+  // These are experiments that are not officially supported. They can change
+  // in behavior or go away at any time.
   bool experimental_multi_source_generation = false;
-  // This is used by some of the protobuf infrastructure.
   bool experimental_strip_nonfunctional_codegen = false;
 };
 
