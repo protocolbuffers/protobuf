@@ -370,6 +370,9 @@ bool IsProfileDriven(const Options& options);
 // Returns true if `field` is unlikely to be present based on PDProto profile.
 bool IsRarelyPresent(const FieldDescriptor* field, const Options& options);
 
+// Returns true if `field` is likely to be present based on PDProto profile.
+bool IsLikelyPresent(const FieldDescriptor* field, const Options& options);
+
 float GetPresenceProbability(const FieldDescriptor* field,
                              const Options& options);
 

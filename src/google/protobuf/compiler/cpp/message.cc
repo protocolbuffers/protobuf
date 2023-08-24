@@ -3600,6 +3600,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         bool same =
             HasByteIndex(a) == HasByteIndex(b) &&
             a->is_repeated() == b->is_repeated() &&
+            IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
             ShouldSplit(a, options_) == ShouldSplit(b, options_) &&
             (CanClearByZeroing(a) == CanClearByZeroing(b) ||
              (CanClearByZeroing(a) && (chunk_count == 1 || merge_zero_init)));
@@ -3646,11 +3647,12 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       // We can omit the if() for chunk size 1, or if our fields do not have
       // hasbits. I don't understand the rationale for the last part of the
       // condition, but it matches the old logic.
-      const bool have_outer_if =
+      const bool check_has_byte =
           HasBitIndex(fields.front()) != kNoHasbit && fields.size() > 1 &&
+          !IsLikelyPresent(fields.back(), options_) &&
           (memset_end != fields.back() || merge_zero_init);
 
-      if (have_outer_if) {
+      if (check_has_byte) {
         // Emit an if() that will let us skip the whole chunk if none are set.
         uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
         std::string chunk_mask_str =
@@ -3712,7 +3714,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         }
       }
 
-      if (have_outer_if) {
+      if (check_has_byte) {
         format.Outdent();
         format("}\n");
       }
@@ -3996,6 +3998,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       optimized_order_, options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         return HasByteIndex(a) == HasByteIndex(b) &&
+               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
                ShouldSplit(a, options_) == ShouldSplit(b, options_);
       });
 
@@ -4013,10 +4016,11 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
     while (it != next) {
       const std::vector<const FieldDescriptor*>& fields = it->fields;
-      const bool have_outer_if =
-          fields.size() > 1 && HasByteIndex(fields.front()) != kNoHasbit;
+      const bool check_has_byte = fields.size() > 1 &&
+                                  HasByteIndex(fields.front()) != kNoHasbit &&
+                                  !IsLikelyPresent(fields.back(), options_);
 
-      if (have_outer_if) {
+      if (check_has_byte) {
         // Emit an if() that will let us skip the whole chunk if none are set.
         uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
         std::string chunk_mask_str =
@@ -4076,7 +4080,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           format("if (cached_has_bits & 0x$1$u) {\n", mask);
           format.Indent();
 
-          if (have_outer_if && IsPOD(field)) {
+          if (check_has_byte && IsPOD(field)) {
             // Defer hasbit modification until the end of chunk.
             // This can reduce the number of loads/stores by up to 7 per 8
             // fields.
@@ -4091,7 +4095,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         }
       }
 
-      if (have_outer_if) {
+      if (check_has_byte) {
         if (deferred_has_bit_changes) {
           // Flush the has bits for the primitives we deferred.
           ABSL_CHECK_LE(0, cached_has_word_index);
@@ -4743,6 +4747,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
       optimized_order_, options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
         return a->label() == b->label() && HasByteIndex(a) == HasByteIndex(b) &&
+               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
                ShouldSplit(a, options_) == ShouldSplit(b, options_);
       });
 
@@ -4762,10 +4767,11 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 
     while (it != next) {
       const std::vector<const FieldDescriptor*>& fields = it->fields;
-      const bool have_outer_if =
-          fields.size() > 1 && HasWordIndex(fields[0]) != kNoHasbit;
+      const bool check_has_byte = fields.size() > 1 &&
+                                  HasWordIndex(fields[0]) != kNoHasbit &&
+                                  !IsLikelyPresent(fields.back(), options_);
 
-      if (have_outer_if) {
+      if (check_has_byte) {
         // Emit an if() that will let us skip the whole chunk if none are set.
         uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
         std::string chunk_mask_str =
@@ -4815,7 +4821,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         }
       }
 
-      if (have_outer_if) {
+      if (check_has_byte) {
         format.Outdent();
         format("}\n");
       }
