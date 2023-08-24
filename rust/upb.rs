@@ -229,7 +229,14 @@ pub struct MessageInner {
 ///   MessageInner` since they can't store an owned `Arena`.
 ///
 /// Note: even though this type is `Copy`, it should only be copied by
-/// protobuf internals that can maintain mutation invariants.
+/// protobuf internals that can maintain mutation invariants:
+///
+/// - No concurrent mutation for any two fields in a message: this means
+///   mutators cannot be `Send` but are `Sync`.
+/// - If there are multiple accessible `Mut` to a single message at a time, they
+///   must be different fields, and not be in the same oneof. As such, a `Mut`
+///   cannot be `Clone` but *can* reborrow itself with `.as_mut()`, which
+///   converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
 #[derive(Clone, Copy, Debug)]
 pub struct MutatorMessageRef<'msg> {
     msg: RawMessage,
