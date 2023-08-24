@@ -405,12 +405,16 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
       return static_cast<$Enum$>(_internal_$name$().Get(index));
     }
+  )cc");
+  p->Emit(R"cc(
     inline void $Msg$::set_$name$(int index, $Enum$ value) {
       $assert_valid$;
       _internal_mutable_$name$()->Set(index, value);
       $annotate_set$
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
+  )cc");
+  p->Emit(R"cc(
     inline void $Msg$::add_$name$($Enum$ value) {
       $assert_valid$;
       $TsanDetectConcurrentMutation$;
@@ -418,12 +422,18 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
-    inline const $pb$::RepeatedField<int>& $Msg$::$name$() const {
+  )cc");
+  p->Emit(R"cc(
+    inline const $pb$::RepeatedField<int>& $Msg$::$name$() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_list$;
       // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
       return _internal_$name$();
     }
-    inline $pb$::RepeatedField<int>* $Msg$::mutable_$name$() {
+  )cc");
+  p->Emit(R"cc(
+    inline $pb$::RepeatedField<int>* $Msg$::mutable_$name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       $TsanDetectConcurrentMutation$;

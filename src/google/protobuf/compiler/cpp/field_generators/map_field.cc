@@ -224,17 +224,23 @@ void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentRead$;
       return $field_$.GetMap();
     }
-    inline const $Map$& $Msg$::$name$() const {
+  )cc");
+  p->Emit(R"cc(
+    inline const $Map$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_get$;
       // @@protoc_insertion_point(field_map:$pkg.Msg.field$)
       return _internal_$name$();
     }
+  )cc");
+  p->Emit(R"cc(
     inline $Map$* $Msg$::_internal_mutable_$name$() {
       $PrepareSplitMessageForWrite$;
       $TsanDetectConcurrentMutation$;
       return $field_$.MutableMap();
     }
-    inline $Map$* $Msg$::mutable_$name$() {
+  )cc");
+  p->Emit(R"cc(
+    inline $Map$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_mutable$;
       // @@protoc_insertion_point(field_mutable_map:$pkg.Msg.field$)
       return _internal_mutable_$name$();

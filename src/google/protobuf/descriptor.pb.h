@@ -10935,11 +10935,13 @@ inline void FileDescriptorProto::add_public_dependency(::int32_t value) {
   _internal_mutable_public_dependency()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.public_dependency)
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::public_dependency() const {
+inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::public_dependency() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.public_dependency)
   return _internal_public_dependency();
 }
-inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutable_public_dependency() {
+inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutable_public_dependency()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.public_dependency)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_public_dependency();
@@ -10978,11 +10980,13 @@ inline void FileDescriptorProto::add_weak_dependency(::int32_t value) {
   _internal_mutable_weak_dependency()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.weak_dependency)
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::weak_dependency() const {
+inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::weak_dependency() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.FileDescriptorProto.weak_dependency)
   return _internal_weak_dependency();
 }
-inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutable_weak_dependency() {
+inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutable_weak_dependency()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.weak_dependency)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_weak_dependency();
@@ -16732,11 +16736,13 @@ inline void FieldOptions::add_targets(::google::protobuf::FieldOptions_OptionTar
   _internal_mutable_targets()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.targets)
 }
-inline const ::google::protobuf::RepeatedField<int>& FieldOptions::targets() const {
+inline const ::google::protobuf::RepeatedField<int>& FieldOptions::targets() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.FieldOptions.targets)
   return _internal_targets();
 }
-inline ::google::protobuf::RepeatedField<int>* FieldOptions::mutable_targets() {
+inline ::google::protobuf::RepeatedField<int>* FieldOptions::mutable_targets()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.targets)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_targets();
@@ -19004,11 +19010,13 @@ inline void SourceCodeInfo_Location::add_path(::int32_t value) {
   _internal_mutable_path()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.path)
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::path() const {
+inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::path() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.SourceCodeInfo.Location.path)
   return _internal_path();
 }
-inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mutable_path() {
+inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mutable_path()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.path)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_path();
@@ -19047,11 +19055,13 @@ inline void SourceCodeInfo_Location::add_span(::int32_t value) {
   _internal_mutable_span()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.span)
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::span() const {
+inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::span() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.SourceCodeInfo.Location.span)
   return _internal_span();
 }
-inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mutable_span() {
+inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mutable_span()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.span)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_span();
@@ -19390,11 +19400,13 @@ inline void GeneratedCodeInfo_Annotation::add_path(::int32_t value) {
   _internal_mutable_path()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.GeneratedCodeInfo.Annotation.path)
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Annotation::path() const {
+inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Annotation::path() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.GeneratedCodeInfo.Annotation.path)
   return _internal_path();
 }
-inline ::google::protobuf::RepeatedField<::int32_t>* GeneratedCodeInfo_Annotation::mutable_path() {
+inline ::google::protobuf::RepeatedField<::int32_t>* GeneratedCodeInfo_Annotation::mutable_path()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.GeneratedCodeInfo.Annotation.path)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_path();
