@@ -34,6 +34,7 @@
 
 use crate::__internal::{Private, PtrAndLen, RawMessage};
 use crate::__runtime::{BytesAbsentMutData, BytesPresentMutData, InnerBytesMut};
+use crate::macros::impl_forwarding_settable_value;
 use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
@@ -228,30 +229,6 @@ impl<'bytes> SettableValue<[u8]> for &'bytes [u8] {
             present_mutator.set(self);
         }
     }
-}
-
-macro_rules! impl_forwarding_settable_value {
-    ($proxied:ty, $self:ident => $self_forwarding_expr:expr) => {
-        fn set_on($self, _private: Private, mutator: BytesMut<'_>) {
-            ($self_forwarding_expr).set_on(Private, mutator)
-        }
-
-        fn set_on_absent(
-            $self,
-            _private: Private,
-            absent_mutator: <$proxied as ProxiedWithPresence>::AbsentMutData<'_>,
-        ) -> <$proxied as ProxiedWithPresence>::PresentMutData<'_> {
-            ($self_forwarding_expr).set_on_absent(Private, absent_mutator)
-        }
-
-        fn set_on_present(
-            $self,
-            _private: Private,
-            present_mutator: <$proxied as ProxiedWithPresence>::PresentMutData<'_>,
-        ) {
-            ($self_forwarding_expr).set_on_present(Private, present_mutator)
-        }
-    };
 }
 
 impl<'a, const N: usize> SettableValue<[u8]> for &'a [u8; N] {
