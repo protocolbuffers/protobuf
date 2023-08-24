@@ -1237,12 +1237,15 @@ static PyObject* PyUpb_Message_CopyFrom(PyObject* _self, PyObject* arg) {
   PyUpb_Message* other = (void*)arg;
   PyUpb_Message_EnsureReified(self);
 
-  PyObject* tmp = PyUpb_Message_Clear(self);
-  Py_DECREF(tmp);
-
-  upb_Message_DeepCopy(self->ptr.msg, other->ptr.msg,
-                       upb_MessageDef_MiniTable(other->def),
-                       PyUpb_Arena_Get(self->arena));
+  const upb_Message* other_msg = PyUpb_Message_GetIfReified((PyObject*)other);
+  if (other_msg) {
+    upb_Message_DeepCopy(self->ptr.msg, other_msg,
+                         upb_MessageDef_MiniTable(other->def),
+                         PyUpb_Arena_Get(self->arena));
+  } else {
+    PyObject* tmp = PyUpb_Message_Clear(self);
+    Py_DECREF(tmp);
+  }
   PyUpb_Message_SyncSubobjs(self);
 
   Py_RETURN_NONE;
