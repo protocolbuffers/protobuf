@@ -452,7 +452,8 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           {"set_allocated_impl", [&] { SetAllocatedImpl(p); }},
       },
       R"cc(
-        inline const std::string& $Msg$::$name$() const {
+        inline const std::string& $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $annotate_get$;
           // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
           $if_IsDefault$;
@@ -468,7 +469,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $annotate_set$;
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }
-        inline std::string* $Msg$::mutable_$name$() {
+        inline std::string* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $PrepareSplitMessageForWrite$;
           std::string* _s = _internal_mutable_$name$();
           $annotate_mutable$;
@@ -887,19 +888,22 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
                           : "");
             }}},
           R"cc(
-            inline std::string* $Msg$::add_$name$() {
+            inline std::string* $Msg$::add_$name$()
+                ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $TsanDetectConcurrentMutation$;
               std::string* _s = _internal_mutable_$name$()->Add();
               $annotate_add_mutable$;
               // @@protoc_insertion_point(field_add_mutable:$pkg.Msg.field$)
               return _s;
             }
-            inline const std::string& $Msg$::$name$(int index) const {
+            inline const std::string& $Msg$::$name$(int index) const
+                ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $annotate_get$;
               // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
               return _internal_$name$().$Get$(index$GetExtraArg$);
             }
-            inline std::string* $Msg$::mutable_$name$(int index) {
+            inline std::string* $Msg$::mutable_$name$(int index)
+                ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $annotate_mutable$;
               // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
               return _internal_mutable_$name$()->Mutable(index);
@@ -966,12 +970,13 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
               // @@protoc_insertion_point(field_add_string_piece:$pkg.Msg.field$)
             }
             inline const ::$proto_ns$::RepeatedPtrField<std::string>&
-            $Msg$::$name$() const {
+            $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $annotate_list$;
               // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
               return _internal_$name$();
             }
-            inline ::$proto_ns$::RepeatedPtrField<std::string>* $Msg$::mutable_$name$() {
+            inline ::$proto_ns$::RepeatedPtrField<std::string>*
+            $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $annotate_mutable_list$;
               // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
               $TsanDetectConcurrentMutation$;
