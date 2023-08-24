@@ -32,22 +32,54 @@
 //! exposed to through the `protobuf` path but must be public for use by
 //! generated code.
 
-use crate::macros::define_opaque_nonnulls;
 pub use crate::vtable::{
     new_vtable_field_entry, BytesMutVTable, BytesOptionalMutVTable, RawVTableMutator,
 };
+use std::ptr::NonNull;
 use std::slice;
 
 /// Used to protect internal-only items from being used accidentally.
 pub struct Private;
 
-define_opaque_nonnulls!(
-    /// A raw pointer to the underlying arena for this runtime.
-    pub type RawArena = NonNull<RawArenaData>;
+/// Defines a set of opaque, unique, non-accessible pointees.
+///
+/// The [Rustonomicon][nomicon] currently recommends a zero-sized struct,
+/// though this should use [`extern type`] when that is stabilized.
+/// [nomicon]: https://doc.rust-lang.org/nomicon/ffi.html#representing-opaque-structs
+/// [`extern type`]: https://github.com/rust-lang/rust/issues/43467
+mod _opaque_pointees {
+    /// Opaque pointee for [`RawMessage`]
+    ///
+    /// This type is not meant to be dereferenced in Rust code.
+    /// It is only meant to provide type safety for raw pointers
+    /// which are manipulated behind FFI.
+    ///
+    /// [`RawMessage`]: super::RawMessage
+    #[repr(C)]
+    pub struct RawMessageData {
+        _data: [u8; 0],
+        _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
+    }
 
-    /// A raw pointer to the underlying message for this runtime.
-    pub type RawMessage = NonNull<RawMessageData>;
-);
+    /// Opaque pointee for [`RawArena`]
+    ///
+    /// This type is not meant to be dereferenced in Rust code.
+    /// It is only meant to provide type safety for raw pointers
+    /// which are manipulated behind FFI.
+    ///
+    /// [`RawArena`]: super::RawArena
+    #[repr(C)]
+    pub struct RawArenaData {
+        _data: [u8; 0],
+        _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
+    }
+}
+
+/// A raw pointer to the underlying message for this runtime.
+pub type RawMessage = NonNull<_opaque_pointees::RawMessageData>;
+
+/// A raw pointer to the underlying arena for this runtime.
+pub type RawArena = NonNull<_opaque_pointees::RawArenaData>;
 
 /// Represents an ABI-stable version of `NonNull<[u8]>`/`string_view` (a
 /// borrowed slice of bytes) for FFI use only.
