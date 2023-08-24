@@ -23,6 +23,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+load("@rules_python//python:defs.bzl", "py_binary")
+
 # begin:google_only
 # load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 # end:google_only
