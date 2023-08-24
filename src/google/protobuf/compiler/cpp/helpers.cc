@@ -931,6 +931,10 @@ bool IsRarelyPresent(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
+bool IsLikelyPresent(const FieldDescriptor* field, const Options& options) {
+  return false;
+}
+
 float GetPresenceProbability(const FieldDescriptor* field,
                              const Options& options) {
   return 1.f;
