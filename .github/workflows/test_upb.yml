@@ -84,7 +84,7 @@ jobs:
         config:
           - { name: "macOS", bazel-command: "test" }
           - { name: "macOS ARM (build only)", bazel-command: "build", flags: "--cpu=darwin_arm64" }
-    name: macOS
+    name: ${{ matrix.config.name }}
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
