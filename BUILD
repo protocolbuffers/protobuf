@@ -438,7 +438,7 @@ alias(
 alias(
     name = "mini_table_internal",
     actual = "//upb/mini_table:internal",
-    visibility = ["//:friends"],
+    visibility = ["//visibility:public"],
 )
 
 alias(
