@@ -34,13 +34,17 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
+#include <cstdlib>
+
 #include "absl/algorithm/container.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/statusor.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/allowlists/allowlists.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/descriptor_visitor.h"
+#include "google/protobuf/feature_resolver.h"
 
 #include "google/protobuf/stubs/platform_macros.h"
 
@@ -1270,8 +1274,13 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
   descriptor_pool->EnforceWeakDependencies(true);
 
-  // Enforce extension declarations only when compiling. We want to skip this
-  // enforcement when protoc is just being invoked to encode or decode protos.
+  if (!SetupFeatureResolution(*descriptor_pool)) {
+    return EXIT_FAILURE;
+  }
+
+  // Enforce extension declarations only when compiling. We want to skip
+  // this enforcement when protoc is just being invoked to encode or decode
+  // protos.
   if (mode_ == MODE_COMPILE) {
     descriptor_pool->EnforceExtensionDeclarations(true);
   }
@@ -1522,6 +1531,56 @@ bool CommandLineInterface::VerifyInputFilesInDescriptors(
     }
 
   }
+  return true;
+}
+
+bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
+  // Calculate the feature defaults for each built-in generator.  All generators
+  // that support editions must agree on the supported edition range.
+  std::vector<const FieldDescriptor*> feature_extensions;
+  absl::string_view minimum_edition = PROTOBUF_MINIMUM_EDITION;
+  absl::string_view maximum_edition = PROTOBUF_MAXIMUM_EDITION;
+  for (const auto& output : output_directives_) {
+    if (output.generator == nullptr) continue;
+    if ((output.generator->GetSupportedFeatures() &
+         CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
+      continue;
+    }
+    if (output.generator->GetMinimumEdition() != PROTOBUF_MINIMUM_EDITION) {
+      ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                      << " specifies a minimum edition "
+                      << output.generator->GetMinimumEdition()
+                      << " which is not the protoc minimum "
+                      << PROTOBUF_MINIMUM_EDITION << ".";
+      return false;
+    }
+    if (output.generator->GetMaximumEdition() != PROTOBUF_MAXIMUM_EDITION) {
+      ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                      << " specifies a maximum edition "
+                      << output.generator->GetMaximumEdition()
+                      << " which is not the protoc maximum "
+                      << PROTOBUF_MINIMUM_EDITION << ".";
+      return false;
+    }
+    for (const FieldDescriptor* ext :
+         output.generator->GetFeatureExtensions()) {
+      if (ext == nullptr) {
+        ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                        << " specifies an unknown feature extension.";
+        return false;
+      }
+      feature_extensions.push_back(ext);
+    }
+  }
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       feature_extensions, minimum_edition,
+                                       maximum_edition);
+  if (!defaults.ok()) {
+    ABSL_LOG(ERROR) << defaults.status();
+    return false;
+  }
+  pool.SetFeatureSetDefaults(std::move(defaults).value());
   return true;
 }
 

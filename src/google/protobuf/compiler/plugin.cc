@@ -33,12 +33,16 @@
 #include "google/protobuf/compiler/plugin.h"
 
 #include <iostream>
+#include <vector>
+
 #ifdef _WIN32
 #include <fcntl.h>
 #else
 #include <unistd.h>
 #endif
 
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
@@ -112,6 +116,17 @@ bool GenerateCode(const CodeGeneratorRequest& request,
                   const CodeGenerator& generator,
                   CodeGeneratorResponse* response, std::string* error_msg) {
   DescriptorPool pool;
+
+  // Initialize feature set default mapping.
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      generator.BuildFeatureSetDefaults();
+  if (!defaults.ok()) {
+    *error_msg = absl::StrCat("error generating feature defaults: ",
+                              defaults.status().message());
+    return false;
+  }
+  pool.SetFeatureSetDefaults(*defaults);
+
   for (int i = 0; i < request.proto_file_size(); i++) {
     const FileDescriptor* file = pool.BuildFile(request.proto_file(i));
     if (file == nullptr) {

@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
@@ -130,6 +131,34 @@ class PROTOC_EXPORT CodeGenerator {
   // version of the library. When protobufs does a api breaking change, the
   // method can be removed.
   virtual bool HasGenerateAll() const { return true; }
+
+  // Returns all the feature extensions used by this generator.  This must be in
+  // the generated pool, meaning that the extensions should be linked into this
+  // binary.  Any generator features not included here will not get properly
+  // resolved and GetResolvedSourceFeatures will not provide useful values.
+  virtual std::vector<const FieldDescriptor*> GetFeatureExtensions() const {
+    return {};
+  }
+
+  // Returns the minimum edition (inclusive) supported by this generator.  Any
+  // proto files with an edition before this will result in an error.
+  virtual absl::string_view GetMinimumEdition() const {
+    return PROTOBUF_MINIMUM_EDITION;
+  }
+
+  // Returns the maximum edition (inclusive) supported by this generator.  Any
+  // proto files with an edition after this will result in an error.
+  virtual absl::string_view GetMaximumEdition() const {
+    return PROTOBUF_MAXIMUM_EDITION;
+  }
+
+  // Builds a default feature set mapping for this generator.
+  //
+  // This will use the extensions specified by GetFeatureExtensions(), with the
+  // supported edition range [GetMinimumEdition(), GetMaximumEdition].  It has
+  // no side-effects, and code generators only need to call this if they want to
+  // embed the defaults into the generated code.
+  absl::StatusOr<FeatureSetDefaults> BuildFeatureSetDefaults() const;
 
  protected:
   // Retrieves the resolved source features for a given descriptor.  All the

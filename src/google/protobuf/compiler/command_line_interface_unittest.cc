@@ -215,6 +215,16 @@ class CommandLineInterfaceTest : public CommandLineInterfaceTester {
     RegisterGenerator(name, std::move(generator), description);
   }
 
+  void SetMockGeneratorTestCase(absl::string_view name) {
+#ifdef _WIN32
+    ::_putenv(absl::StrCat("TEST_CASE", "=", name).c_str());
+#else
+    ::setenv("TEST_CASE", name.data(), 1);
+#endif
+  }
+
+  MockCodeGenerator* mock_generator_ = nullptr;
+
  private:
   // Was DisallowPlugins() called?
   bool disallow_plugins_ = false;
@@ -242,9 +252,13 @@ class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
 // ===================================================================
 
 CommandLineInterfaceTest::CommandLineInterfaceTest() {
+  // Reset the mock generator's test case environment variable.
+  SetMockGeneratorTestCase("");
+
   // Register generators.
-  RegisterGenerator("--test_out", "--test_opt",
-                    std::make_unique<MockCodeGenerator>("test_generator"),
+  auto mock_generator = std::make_unique<MockCodeGenerator>("test_generator");
+  mock_generator_ = mock_generator.get();
+  RegisterGenerator("--test_out", "--test_opt", std::move(mock_generator),
                     "Test output.");
   RegisterGenerator("-t", std::make_unique<MockCodeGenerator>("test_generator"),
                     "Test output.");
@@ -1457,36 +1471,106 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("features.proto",
-                 R"schema(
-    syntax = "proto2";
-    package pb;
-    import "google/protobuf/descriptor.proto";
-    extend google.protobuf.FeatureSet {
-      optional TestFeatures test = 9999;
-    }
-    message TestFeatures {
-      repeated int32 repeated_feature = 1 [
-        retention = RETENTION_RUNTIME,
-        targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition: "2023", value: "3" }
-      ];
-    })schema");
+                 pb::TestInvalidFeatures::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
     import "features.proto";
     message Foo {
       int32 bar = 1;
-      int32 baz = 2 [features.(pb.test).repeated_feature = 5];
+      int32 baz = 2 [features.(pb.test_invalid).repeated_feature = 5];
     })schema");
+
+  mock_generator_->set_feature_extensions(
+      {DescriptorPool::generated_pool()->FindExtensionByNumber(
+          FeatureSet::descriptor(), pb::test_invalid.number())});
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
       "--experimental_editions foo.proto");
-  // TODO(b/296638633) Flip this once generators can specify their feature sets.
+  ExpectErrorSubstring(
+      "Feature field pb.TestInvalidFeatures.repeated_feature is an unsupported "
+      "repeated field");
+}
+
+TEST_F(CommandLineInterfaceTest, InvalidMinimumEditionError) {
+  CreateTempFile("foo.proto", R"schema(edition = "2023";)schema");
+
+  mock_generator_->set_minimum_edition("2022");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring(
+      "generator --test_out specifies a minimum edition 2022 which is not the "
+      "protoc minimum 2023");
+}
+
+TEST_F(CommandLineInterfaceTest, InvalidMaximumEditionError) {
+  CreateTempFile("foo.proto", R"schema(edition = "2023";)schema");
+
+  mock_generator_->set_maximum_edition("2123");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring(
+      "generator --test_out specifies a maximum edition 2123 which is not "
+      "the protoc maximum 2023");
+}
+
+TEST_F(CommandLineInterfaceTest, InvalidFeatureExtensionError) {
+  CreateTempFile("foo.proto", R"schema(edition = "2023";)schema");
+
+  mock_generator_->set_feature_extensions({nullptr});
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring(
+      "generator --test_out specifies an unknown feature extension");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_InvalidFeatureExtensionError) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("invalid_features");
+  Run("protocol_compiler --experimental_editions "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "error generating feature defaults: Unknown extension of "
+      "google.protobuf.FeatureSet");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_MissingFeatureExtensionError) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("no_feature_defaults");
+  Run("protocol_compiler --experimental_editions "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring("Test features were not resolved properly");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_TestFeatures) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  Run("protocol_compiler --experimental_editions "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
   ExpectNoErrors();
-  // ExpectErrorSubstring(
-  //     "Feature field pb.TestFeatures.repeated_feature is an unsupported "
-  //     "repeated field");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_LegacyFeatures) {
@@ -1657,8 +1741,9 @@ TEST_F(CommandLineInterfaceTest, PluginNoEditionsSupport) {
     }
   )schema");
 
+  SetMockGeneratorTestCase("no_editions");
   Run("protocol_compiler --experimental_editions "
-      "--proto_path=$tmpdir foo.proto --plug_out=no_editions:$tmpdir");
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
 
   ExpectErrorSubstring(
       "code generator prefix-gen-plug hasn't been updated to support editions");

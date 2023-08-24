@@ -272,6 +272,16 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 #define PROTOBUF_VERSION_SUFFIX ""
 
+#ifdef PROTOBUF_MINIMUM_EDITION
+#error PROTOBUF_MINIMUM_EDITION was previously defined
+#endif
+#define PROTOBUF_MINIMUM_EDITION "2023"
+
+#ifdef PROTOBUF_MAXIMUM_EDITION
+#error PROTOBUF_MAXIMUM_EDITION was previously defined
+#endif
+#define PROTOBUF_MAXIMUM_EDITION "2023"
+
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined
 #endif
