@@ -148,7 +148,9 @@ std::string PrimitiveRsTypeName(const FieldDescriptor& desc) {
     case FieldDescriptor::TYPE_DOUBLE:
       return "f64";
     case FieldDescriptor::TYPE_BYTES:
-      return "&[u8]";
+      return "[u8]";
+    case FieldDescriptor::TYPE_STRING:
+      return "::__pb::ProtoStr";
     default:
       break;
   }

@@ -44,7 +44,7 @@ pub mod __public {
     pub use crate::proxied::{
         Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
     };
-    pub use crate::string::{BytesMut, ProtoStr};
+    pub use crate::string::{BytesMut, ProtoStr, ProtoStrMut};
 }
 pub use __public::*;
 

@@ -72,7 +72,8 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     case FieldDescriptor::TYPE_BOOL:
       return std::make_unique<SingularScalar>();
     case FieldDescriptor::TYPE_BYTES:
-      return std::make_unique<SingularBytes>();
+    case FieldDescriptor::TYPE_STRING:
+      return std::make_unique<SingularString>();
     case FieldDescriptor::TYPE_MESSAGE:
       return std::make_unique<SingularMessage>();
 
