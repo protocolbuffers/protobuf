@@ -1818,7 +1818,8 @@ inline void StringValue::clear_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_.ClearToEmpty();
 }
-inline const std::string& StringValue::value() const {
+inline const std::string& StringValue::value() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.StringValue.value)
   return _internal_value();
 }
@@ -1830,7 +1831,7 @@ inline PROTOBUF_ALWAYS_INLINE void StringValue::set_value(Arg_&& arg,
   _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.StringValue.value)
 }
-inline std::string* StringValue::mutable_value() {
+inline std::string* StringValue::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.StringValue.value)
   return _s;
@@ -1874,7 +1875,8 @@ inline void BytesValue::clear_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_.ClearToEmpty();
 }
-inline const std::string& BytesValue::value() const {
+inline const std::string& BytesValue::value() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.BytesValue.value)
   return _internal_value();
 }
@@ -1886,7 +1888,7 @@ inline PROTOBUF_ALWAYS_INLINE void BytesValue::set_value(Arg_&& arg,
   _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.BytesValue.value)
 }
-inline std::string* BytesValue::mutable_value() {
+inline std::string* BytesValue::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.BytesValue.value)
   return _s;

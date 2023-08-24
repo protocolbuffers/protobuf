@@ -908,7 +908,8 @@ inline void Value::clear_string_value() {
     clear_has_kind();
   }
 }
-inline const std::string& Value::string_value() const {
+inline const std::string& Value::string_value() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.string_value)
   return _internal_string_value();
 }
@@ -925,7 +926,7 @@ inline PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
   _impl_.kind_.string_value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
-inline std::string* Value::mutable_string_value() {
+inline std::string* Value::mutable_string_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_string_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.string_value)
   return _s;
