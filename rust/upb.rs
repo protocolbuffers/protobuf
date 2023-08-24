@@ -30,7 +30,7 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::{Private, RawArena, RawMessage};
+use crate::__internal::Private;
 use std::alloc;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
@@ -43,6 +43,15 @@ use std::slice;
 
 /// See `upb/port/def.inc`.
 const UPB_MALLOC_ALIGN: usize = 8;
+
+/// A UPB-managed pointer to a raw arena.
+pub type RawArena = NonNull<RawArenaData>;
+
+/// The data behind a [`RawArena`]. Do not use this type.
+#[repr(C)]
+pub struct RawArenaData {
+    _data: [u8; 0],
+}
 
 /// A wrapper over a `upb_Arena`.
 ///
@@ -208,7 +217,7 @@ pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
 /// The raw contents of every generated message.
 #[derive(Debug)]
 pub struct MessageInner {
-    pub msg: RawMessage,
+    pub msg: NonNull<u8>,
     pub arena: Arena,
 }
 
@@ -232,7 +241,7 @@ pub struct MessageInner {
 /// protobuf internals that can maintain mutation invariants.
 #[derive(Clone, Copy, Debug)]
 pub struct MutatorMessageRef<'msg> {
-    msg: RawMessage,
+    msg: NonNull<u8>,
     arena: &'msg Arena,
 }
 
@@ -243,7 +252,7 @@ impl<'msg> MutatorMessageRef<'msg> {
         MutatorMessageRef { msg: msg.msg, arena: &msg.arena }
     }
 
-    pub fn msg(&self) -> RawMessage {
+    pub fn msg(&self) -> NonNull<u8> {
         self.msg
     }
 }

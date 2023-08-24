@@ -32,7 +32,7 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
-use crate::__internal::{Private, PtrAndLen, RawMessage};
+use crate::__internal::{Private, PtrAndLen};
 use crate::__runtime::{BytesAbsentMutData, BytesPresentMutData, InnerBytesMut};
 use crate::macros::impl_forwarding_settable_value;
 use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};

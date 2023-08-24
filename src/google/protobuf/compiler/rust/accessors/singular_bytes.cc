@@ -156,15 +156,15 @@ void SingularBytes::InExternC(Context<FieldDescriptor> field) const {
                [&] {
                  if (field.desc().has_presence()) {
                    field.Emit(R"rs(
-          fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
+          fn $hazzer_thunk$(raw_msg: $NonNull$<u8>) -> bool;
         )rs");
                  }
                }}},
              R"rs(
           $hazzer$
-          fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::PtrAndLen;
-          fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: *const u8, len: usize);
-          fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
+          fn $getter_thunk$(raw_msg: $NonNull$<u8>) -> $pbi$::PtrAndLen;
+          fn $setter_thunk$(raw_msg: $NonNull$<u8>, val: *const u8, len: usize);
+          fn $clearer_thunk$(raw_msg: $NonNull$<u8>);
         )rs");
 }
 

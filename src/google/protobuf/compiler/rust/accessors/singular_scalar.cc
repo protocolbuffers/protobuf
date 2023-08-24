@@ -95,14 +95,14 @@ void SingularScalar::InExternC(Context<FieldDescriptor> field) const {
         [&] {
           if (field.desc().has_presence()) {
             field.Emit(
-                R"rs(fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;)rs");
+                R"rs(fn $hazzer_thunk$(raw_msg: $NonNull$<u8>) -> bool;)rs");
           }
         }}},
       R"rs(
           $hazzer$
-          fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $Scalar$;
-          fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $Scalar$);
-          fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
+          fn $getter_thunk$(raw_msg: $NonNull$<u8>) -> $Scalar$;
+          fn $setter_thunk$(raw_msg: $NonNull$<u8>, val: $Scalar$);
+          fn $clearer_thunk$(raw_msg: $NonNull$<u8>);
         )rs");
 }
 

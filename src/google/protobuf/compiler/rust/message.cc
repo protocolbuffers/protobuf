@@ -148,10 +148,10 @@ void MessageExterns(Context<Descriptor> msg) {
               {"deserialize_thunk", Thunk(msg, "deserialize")},
           },
           R"rs(
-          fn $new_thunk$() -> $pbi$::RawMessage;
-          fn $delete_thunk$(raw_msg: $pbi$::RawMessage);
-          fn $serialize_thunk$(raw_msg: $pbi$::RawMessage) -> $pbr$::SerializedData;
-          fn $deserialize_thunk$(raw_msg: $pbi$::RawMessage, data: $pbr$::SerializedData) -> bool;
+          fn $new_thunk$() -> $NonNull$<u8>;
+          fn $delete_thunk$(raw_msg: $NonNull$<u8>);
+          fn $serialize_thunk$(raw_msg: $NonNull$<u8>) -> $pbr$::SerializedData;
+          fn $deserialize_thunk$(raw_msg: $NonNull$<u8>, data: $pbr$::SerializedData) -> bool;
         )rs");
       return;
 
@@ -163,9 +163,9 @@ void MessageExterns(Context<Descriptor> msg) {
               {"deserialize_thunk", Thunk(msg, "parse")},
           },
           R"rs(
-          fn $new_thunk$(arena: $pbi$::RawArena) -> $pbi$::RawMessage;
-          fn $serialize_thunk$(msg: $pbi$::RawMessage, arena: $pbi$::RawArena, len: &mut usize) -> $NonNull$<u8>;
-          fn $deserialize_thunk$(data: *const u8, size: usize, arena: $pbi$::RawArena) -> Option<$pbi$::RawMessage>;
+          fn $new_thunk$(arena: $pbr$::RawArena) -> $NonNull$<u8>;
+          fn $serialize_thunk$(msg: $NonNull$<u8>, arena: $pbr$::RawArena, len: &mut usize) -> $NonNull$<u8>;
+          fn $deserialize_thunk$(data: *const u8, size: usize, arena: $pbr$::RawArena) -> Option<$NonNull$<u8>>;
       )rs");
       return;
   }
@@ -262,7 +262,7 @@ void GenerateRs(Context<Descriptor> msg) {
         #[derive(Debug, Copy, Clone)]
         #[allow(dead_code)]
         pub struct $Msg$View<'a> {
-          msg: $pbi$::RawMessage,
+          msg: $NonNull$<u8>,
           _phantom: $Phantom$<&'a ()>,
         }
 
@@ -357,10 +357,10 @@ void GenerateRs(Context<Descriptor> msg) {
     msg.printer().PrintRaw("\n");
     msg.Emit({{"Msg", msg.desc().name()}}, R"rs(
       impl $Msg$ {
-        pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbi$::RawMessage) -> Self {
+        pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $NonNull$<u8>) -> Self {
           Self { inner: $pbr$::MessageInner { msg } }
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $pbi$::RawMessage {
+        pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $NonNull$<u8> {
           self.inner.msg
         }
       }

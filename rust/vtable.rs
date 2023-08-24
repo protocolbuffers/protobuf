@@ -28,13 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::__internal::{Private, PtrAndLen, RawMessage};
+use crate::__internal::{Private, PtrAndLen};
 use crate::__runtime::{copy_bytes_in_arena_if_needed_by_runtime, MutatorMessageRef};
 use crate::{
     AbsentField, FieldEntry, Mut, MutProxy, Optional, PresentField, Proxied, ProxiedWithPresence,
     View, ViewProxy,
 };
 use std::fmt::{self, Debug};
+use std::ptr::NonNull;
 
 /// A proxied type that can use a vtable to provide get/set access for a
 /// present field.
@@ -277,15 +278,15 @@ impl ProxiedWithRawOptionalVTable for [u8] {
 #[doc(hidden)]
 #[derive(Debug)]
 pub struct BytesMutVTable {
-    pub(crate) setter: unsafe extern "C" fn(msg: RawMessage, val: *const u8, len: usize),
-    pub(crate) getter: unsafe extern "C" fn(msg: RawMessage) -> PtrAndLen,
+    pub(crate) setter: unsafe extern "C" fn(msg: NonNull<u8>, val: *const u8, len: usize),
+    pub(crate) getter: unsafe extern "C" fn(msg: NonNull<u8>) -> PtrAndLen,
 }
 
 /// A generic thunk vtable for mutating an `optional` `bytes` or `string` field.
 #[derive(Debug)]
 pub struct BytesOptionalMutVTable {
     pub(crate) base: BytesMutVTable,
-    pub(crate) clearer: unsafe extern "C" fn(msg: RawMessage),
+    pub(crate) clearer: unsafe extern "C" fn(msg: NonNull<u8>),
     pub(crate) default: &'static [u8],
 }
 
@@ -293,8 +294,8 @@ impl BytesMutVTable {
     #[doc(hidden)]
     pub const fn new(
         _private: Private,
-        getter: unsafe extern "C" fn(msg: RawMessage) -> PtrAndLen,
-        setter: unsafe extern "C" fn(msg: RawMessage, val: *const u8, len: usize),
+        getter: unsafe extern "C" fn(msg: NonNull<u8>) -> PtrAndLen,
+        setter: unsafe extern "C" fn(msg: NonNull<u8>, val: *const u8, len: usize),
     ) -> Self {
         Self { getter, setter }
     }
@@ -307,9 +308,9 @@ impl BytesOptionalMutVTable {
     #[doc(hidden)]
     pub const unsafe fn new(
         _private: Private,
-        getter: unsafe extern "C" fn(msg: RawMessage) -> PtrAndLen,
-        setter: unsafe extern "C" fn(msg: RawMessage, val: *const u8, len: usize),
-        clearer: unsafe extern "C" fn(msg: RawMessage),
+        getter: unsafe extern "C" fn(msg: NonNull<u8>) -> PtrAndLen,
+        setter: unsafe extern "C" fn(msg: NonNull<u8>, val: *const u8, len: usize),
+        clearer: unsafe extern "C" fn(msg: NonNull<u8>),
         default: &'static [u8],
     ) -> Self {
         Self { base: BytesMutVTable { getter, setter }, clearer, default }

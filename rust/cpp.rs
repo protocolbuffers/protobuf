@@ -30,7 +30,7 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::{Private, RawArena, RawMessage};
+use crate::__internal::Private;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
 use std::fmt;
@@ -51,7 +51,7 @@ use std::ptr::{self, NonNull};
 #[derive(Debug)]
 pub struct Arena {
     #[allow(dead_code)]
-    ptr: RawArena,
+    ptr: NonNull<u8>,
     _not_sync: PhantomData<UnsafeCell<()>>,
 }
 
@@ -163,19 +163,19 @@ pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
 /// The raw contents of every generated message.
 #[derive(Debug)]
 pub struct MessageInner {
-    pub msg: RawMessage,
+    pub msg: NonNull<u8>,
 }
 
 /// Mutators that point to their original message use this to do so.
 ///
 /// Since C++ messages manage their own memory, this can just copy the
-/// `RawMessage` instead of referencing an arena like UPB must.
+/// msg instead of referencing an arena like UPB must.
 ///
 /// Note: even though this type is `Copy`, it should only be copied by
 /// protobuf internals that can maintain mutation invariants.
 #[derive(Clone, Copy, Debug)]
 pub struct MutatorMessageRef<'msg> {
-    msg: RawMessage,
+    msg: NonNull<u8>,
     _phantom: PhantomData<&'msg mut ()>,
 }
 impl<'msg> MutatorMessageRef<'msg> {
@@ -184,7 +184,7 @@ impl<'msg> MutatorMessageRef<'msg> {
         MutatorMessageRef { msg: msg.msg, _phantom: PhantomData }
     }
 
-    pub fn msg(&self) -> RawMessage {
+    pub fn msg(&self) -> NonNull<u8> {
         self.msg
     }
 }

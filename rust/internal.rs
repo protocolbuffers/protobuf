@@ -32,7 +32,6 @@
 //! exposed to through the `protobuf` path but must be public for use by
 //! generated code.
 
-use crate::macros::define_opaque_nonnulls;
 pub use crate::vtable::{
     new_vtable_field_entry, BytesMutVTable, BytesOptionalMutVTable, RawVTableMutator,
 };
@@ -40,14 +39,6 @@ use std::slice;
 
 /// Used to protect internal-only items from being used accidentally.
 pub struct Private;
-
-define_opaque_nonnulls!(
-    /// A raw pointer to the underlying arena for this runtime.
-    pub type RawArena = NonNull<RawArenaData>;
-
-    /// A raw pointer to the underlying message for this runtime.
-    pub type RawMessage = NonNull<RawMessageData>;
-);
 
 /// Represents an ABI-stable version of `NonNull<[u8]>`/`string_view` (a
 /// borrowed slice of bytes) for FFI use only.

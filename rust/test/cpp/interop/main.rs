@@ -29,7 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use protobuf_cpp::__internal::PtrAndLen;
-use protobuf_cpp::__internal::RawMessage;
+use std::ptr::NonNull;
 use unittest_proto::proto2_unittest::TestAllExtensions;
 use unittest_proto::proto2_unittest::TestAllTypes;
 
@@ -47,12 +47,12 @@ macro_rules! proto_assert_eq {
 // Helper functions invoking C++ Protobuf APIs directly in C++.
 // Defined in `test_utils.cc`.
 extern "C" {
-    fn DeserializeTestAllTypes(data: *const u8, len: usize) -> RawMessage;
-    fn MutateTestAllTypes(msg: RawMessage);
-    fn SerializeTestAllTypes(msg: RawMessage) -> protobuf_cpp::__runtime::SerializedData;
+    fn DeserializeTestAllTypes(data: *const u8, len: usize) -> NonNull<u8>;
+    fn MutateTestAllTypes(msg: NonNull<u8>);
+    fn SerializeTestAllTypes(msg: NonNull<u8>) -> protobuf_cpp::__runtime::SerializedData;
 
-    fn NewWithExtension() -> RawMessage;
-    fn GetBytesExtension(msg: RawMessage) -> PtrAndLen;
+    fn NewWithExtension() -> NonNull<u8>;
+    fn GetBytesExtension(msg: NonNull<u8>) -> PtrAndLen;
 }
 
 #[test]
