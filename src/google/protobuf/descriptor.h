@@ -122,6 +122,7 @@ class MethodOptions;
 class FileOptions;
 class UninterpretedOption;
 class FeatureSet;
+class FeatureSetDefaults;
 class SourceCodeInfo;
 
 // Defined in message_lite.h
@@ -2289,6 +2290,13 @@ class PROTOBUF_EXPORT DescriptorPool {
   // DescriptorPool will report a import not found error.
   void EnforceWeakDependencies(bool enforce) { enforce_weak_ = enforce; }
 
+  // Sets the default feature mappings used during the build. If this function
+  // isn't called, the C++ feature set defaults are used.  If this function is
+  // called, these defaults will be used instead.
+  // FeatureSetDefaults includes a minimum/maximum supported edition, which will
+  // be enforced while building proto files.
+  void SetFeatureSetDefaults(FeatureSetDefaults spec);
+
   // Toggles enforcement of extension declarations.
   // This enforcement is disabled by default because it requires full
   // descriptors with source-retention options, which are generally not
@@ -2469,10 +2477,15 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool enforce_extension_declarations_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
+  mutable bool build_started_ = false;
 
   // Set of files to track for unused imports. The bool value when true means
   // unused imports are treated as errors (and as warnings when false).
   absl::flat_hash_map<std::string, bool> unused_import_track_files_;
+
+  // Specification of defaults to use for feature resolution.  This defaults to
+  // just the global and C++ features, but can be overridden for other runtimes.
+  std::unique_ptr<FeatureSetDefaults> feature_set_defaults_spec_;
 
   // Returns true if the field extends an option message of descriptor.proto.
   bool IsExtendingDescriptor(const FieldDescriptor& field) const;

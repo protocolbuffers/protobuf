@@ -41,6 +41,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
@@ -67,6 +68,7 @@
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/test_textproto.h"
@@ -514,17 +516,17 @@ TEST_F(FileDescriptorTest, Syntax) {
   }
   {
     proto.set_syntax("editions");
-    proto.set_edition("very-cool");
+    proto.set_edition("2023");
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     ASSERT_TRUE(file != nullptr);
     EXPECT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS,
               FileDescriptorLegacy(file).syntax());
-    EXPECT_EQ("very-cool", file->edition());
+    EXPECT_EQ("2023", file->edition());
     FileDescriptorProto other;
     file->CopyTo(&other);
     EXPECT_EQ("editions", other.syntax());
-    EXPECT_EQ("very-cool", other.edition());
+    EXPECT_EQ("2023", other.edition());
   }
 }
 
@@ -552,7 +554,7 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
   EXPECT_EQ(&other.options().features(), &FeatureSet::default_instance());
   {
     proto.set_syntax("editions");
-    proto.set_edition("very-cool");
+    proto.set_edition("2023");
 
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
@@ -563,7 +565,7 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
     EXPECT_EQ(other.name(), "foo.proto");
     EXPECT_EQ(other.package(), "foo.bar.baz");
     EXPECT_EQ(other.syntax(), "editions");
-    EXPECT_EQ(other.edition(), "very-cool");
+    EXPECT_EQ(other.edition(), "2023");
     EXPECT_EQ(other.options().java_package(), "foo.bar.baz");
     EXPECT_TRUE(other.message_type().empty());
     EXPECT_EQ(&other.options().features(), &FeatureSet::default_instance());
@@ -7235,7 +7237,24 @@ TEST_F(ValidationErrorTest, UnusedImportWithOtherError) {
       "foo.proto: Foo.foo: EXTENDEE: \"Baz\" is not defined.\n");
 }
 
-using FeaturesTest = ValidationErrorTest;
+using FeaturesBaseTest = ValidationErrorTest;
+
+class FeaturesTest : public FeaturesBaseTest {
+ protected:
+  void SetUp() override {
+    ValidationErrorTest::SetUp();
+
+    auto default_spec = FeatureResolver::CompileDefaults(
+        FeatureSet::descriptor(),
+        {pb::CppFeatures::descriptor()->file()->extension(0),
+         pb::TestFeatures::descriptor()->file()->extension(0),
+         pb::TestMessage::descriptor()->extension(0),
+         pb::TestMessage::Nested::descriptor()->extension(0)},
+        "2023", "2025");
+    ASSERT_OK(default_spec);
+    pool_.SetFeatureSetDefaults(std::move(default_spec).value());
+  }
+};
 
 template <typename T>
 const FeatureSet& GetFeatures(const T* descriptor) {
@@ -7544,10 +7563,34 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
         [pb.cpp] { legacy_closed_enum: false utf8_validation: VERIFY_PARSE }
       )pb"));
 
-  // Since pb::test is linked in, it should end up with defaults in our
-  // FeatureSet.
+  // Since pb::test is registered in the pool, it should end up with defaults in
+  // our FeatureSet.
   EXPECT_TRUE(GetFeatures(file).HasExtension(pb::test));
   EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), 1);
+}
+
+TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: "2023"
+    dependency: "google/protobuf/unittest_features.proto"
+  )pb");
+  ASSERT_NE(file, nullptr);
+
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_THAT(
+      GetFeatures(file), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false utf8_validation: VERIFY_PARSE }
+      )pb"));
+  EXPECT_FALSE(GetFeatures(file).HasExtension(pb::test));
 }
 
 TEST_F(FeaturesTest, ClearsOptions) {
@@ -7842,9 +7885,8 @@ TEST_F(FeaturesTest, InvalidEdition) {
       R"pb(
         name: "foo.proto" syntax: "editions" edition: "2022"
       )pb",
-      "foo.proto: foo.proto: EDITIONS: No valid default found for edition 2022 "
-      "in "
-      "feature field google.protobuf.FeatureSet.field_presence\n");
+      "foo.proto: foo.proto: EDITIONS: Edition 2022 is earlier than the "
+      "minimum supported edition 2023\n");
 }
 
 TEST_F(FeaturesTest, FileFeatures) {
@@ -9108,48 +9150,6 @@ TEST_F(FeaturesTest, FeaturesOutsideEditions) {
       )pb",
       "foo.proto: foo.proto: EDITIONS: Features are only valid under "
       "editions.\n");
-}
-
-TEST_F(FeaturesTest, InvalidExtensionNonMessage) {
-  BuildDescriptorMessagesInTestPool();
-  ASSERT_NE(BuildFile(R"pb(
-              name: "unittest_invalid_features.proto"
-              syntax: "proto2"
-              package: "pb"
-              dependency: "google/protobuf/descriptor.proto"
-              message_type {
-                name: "TestInvalid"
-                extension {
-                  name: "scalar_extension"
-                  number: 9996
-                  label: LABEL_OPTIONAL
-                  type: TYPE_STRING
-                  extendee: ".google.protobuf.FeatureSet"
-                }
-              }
-            )pb"),
-            nullptr);
-  BuildFileWithErrors(
-      R"pb(
-        name: "foo.proto"
-        syntax: "editions"
-        edition: "2023"
-        dependency: "unittest_invalid_features.proto"
-        options {
-          uninterpreted_option {
-            name { name_part: "features" is_extension: false }
-            name {
-              name_part: "pb.TestInvalid.scalar_extension"
-              is_extension: true
-            }
-            identifier_value: "hello"
-          }
-        }
-      )pb",
-      "foo.proto: unittest_invalid_features.proto: EDITIONS: FeatureSet "
-      "extension pb.TestInvalid.scalar_extension is not of message type.  "
-      "Feature extensions should always use messages to allow for "
-      "evolution.\n");
 }
 
 TEST_F(FeaturesTest, InvalidFieldImplicitDefault) {

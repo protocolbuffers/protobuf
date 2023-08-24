@@ -44,6 +44,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
@@ -57,6 +58,7 @@
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -1109,6 +1111,18 @@ bool AllowedExtendeeInProto3(const std::string& name) {
       internal::OnShutdownDelete(NewAllowedProto3Extendee());
   return allowed_proto3_extendees->find(name) !=
          allowed_proto3_extendees->end();
+}
+
+const FeatureSetDefaults& GetCppFeatureSetDefaults() {
+  static const FeatureSetDefaults* default_spec = [] {
+    auto default_spec = FeatureResolver::CompileDefaults(
+        FeatureSet::descriptor(),
+        // TODO(b/297261063) Move this range to a central location.
+        {pb::CppFeatures::descriptor()->file()->extension(0)}, "2023", "2023");
+    ABSL_CHECK(default_spec.ok()) << default_spec.status();
+    return new FeatureSetDefaults(std::move(default_spec).value());
+  }();
+  return *default_spec;
 }
 
 // Create global defaults for proto2/proto3 compatibility.
@@ -4577,14 +4591,7 @@ class DescriptorBuilder {
 
 const FileDescriptor* DescriptorPool::BuildFile(
     const FileDescriptorProto& proto) {
-  ABSL_CHECK(fallback_database_ == nullptr)
-      << "Cannot call BuildFile on a DescriptorPool that uses a "
-         "DescriptorDatabase.  You must instead find a way to get your file "
-         "into the underlying database.";
-  ABSL_CHECK(mutex_ == nullptr);  // Implied by the above ABSL_CHECK.
-  tables_->known_bad_symbols_.clear();
-  tables_->known_bad_files_.clear();
-  return DescriptorBuilder::New(this, tables_.get(), nullptr)->BuildFile(proto);
+  return BuildFileCollectingErrors(proto, nullptr);
 }
 
 const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
@@ -4596,6 +4603,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
   ABSL_CHECK(mutex_ == nullptr);  // Implied by the above ABSL_CHECK.
   tables_->known_bad_symbols_.clear();
   tables_->known_bad_files_.clear();
+  build_started_ = true;
   return DescriptorBuilder::New(this, tables_.get(), error_collector)
       ->BuildFile(proto);
 }
@@ -4603,6 +4611,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     const FileDescriptorProto& proto) const {
   mutex_->AssertHeld();
+  build_started_ = true;
   if (tables_->known_bad_files_.contains(proto.name())) {
     return nullptr;
   }
@@ -4613,6 +4622,14 @@ const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     tables_->known_bad_files_.insert(proto.name());
   }
   return result;
+}
+
+void DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
+  ABSL_CHECK(!build_started_)
+      << "Feature set defaults can't be changed once the pool has started "
+         "building.";
+  feature_set_defaults_spec_ =
+      absl::make_unique<FeatureSetDefaults>(std::move(spec));
 }
 
 DescriptorBuilder::DescriptorBuilder(
@@ -5699,8 +5716,13 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     }
     ABSL_CHECK(descriptor);
 
+    const FeatureSetDefaults& defaults =
+        pool_->feature_set_defaults_spec_ == nullptr
+            ? GetCppFeatureSetDefaults()
+            : *pool_->feature_set_defaults_spec_;
+
     absl::StatusOr<FeatureResolver> feature_resolver =
-        FeatureResolver::Create(proto.edition(), descriptor);
+        FeatureResolver::Create(proto.edition(), defaults);
     if (!feature_resolver.ok()) {
       AddError(
           proto.name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
@@ -5814,16 +5836,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       // dangerous to try to do anything with it.  The recursive import error
       // will be detected and reported in DescriptorBuilder::BuildFile().
       return nullptr;
-    }
-
-    // Look for feature extensions in regular imports.
-    if (feature_resolver_.has_value() && dependency != nullptr) {
-      absl::Status status = feature_resolver_->RegisterExtensions(*dependency);
-      if (!status.ok()) {
-        AddError(dependency->name(), proto,
-                 DescriptorPool::ErrorCollector::EDITIONS,
-                 [&] { return std::string(status.message()); });
-      }
     }
 
     if (dependency == nullptr) {

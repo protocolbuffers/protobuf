@@ -1353,7 +1353,7 @@ TEST_F(CommandLineInterfaceTest, AllowServicesHasService) {
 
 TEST_F(CommandLineInterfaceTest, EditionsAreNotAllowed) {
   CreateTempFile("foo.proto",
-                 "edition = \"very-cool\";\n"
+                 "edition = \"2023\";\n"
                  "message FooRequest {}\n");
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
@@ -1365,7 +1365,7 @@ TEST_F(CommandLineInterfaceTest, EditionsAreNotAllowed) {
 
 TEST_F(CommandLineInterfaceTest, EditionsFlagExplicitTrue) {
   CreateTempFile("foo.proto",
-                 "edition = \"very-cool\";\n"
+                 "edition = \"2023\";\n"
                  "message FooRequest {}\n");
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
@@ -1477,14 +1477,16 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
     import "features.proto";
     message Foo {
       int32 bar = 1;
-      int32 baz = 2 [features.(pb.test).int_feature = 5];
+      int32 baz = 2 [features.(pb.test).repeated_feature = 5];
     })schema");
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
       "--experimental_editions foo.proto");
-  ExpectErrorSubstring(
-      "Feature field pb.TestFeatures.repeated_feature is an unsupported "
-      "repeated field");
+  // TODO(b/296638633) Flip this once generators can specify their feature sets.
+  ExpectNoErrors();
+  // ExpectErrorSubstring(
+  //     "Feature field pb.TestFeatures.repeated_feature is an unsupported "
+  //     "repeated field");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_LegacyFeatures) {

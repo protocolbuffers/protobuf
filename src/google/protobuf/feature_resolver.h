@@ -39,6 +39,7 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -56,48 +57,32 @@ class PROTOBUF_EXPORT FeatureResolver {
   FeatureResolver(FeatureResolver&&) = default;
   FeatureResolver& operator=(FeatureResolver&&) = delete;
 
-  // Creates a new FeatureResolver at a specific edition.  This validates the
-  // built-in features for the given edition, and calculates the default feature
-  // set.
-  static absl::StatusOr<FeatureResolver> Create(
-      absl::string_view edition, const Descriptor* descriptor,
-      const DescriptorPool* generated_pool =
-          DescriptorPool::internal_generated_pool());
+  // Compiles a set of FeatureSet extensions into a mapping of edition to unique
+  // defaults.  This is the most complicated part of feature resolution, and by
+  // abstracting this out into an intermediate message, we can make feature
+  // resolution significantly more portable.
+  static absl::StatusOr<FeatureSetDefaults> CompileDefaults(
+      const Descriptor* feature_set,
+      absl::Span<const FieldDescriptor* const> extensions,
+      absl::string_view minimum_edition, absl::string_view maximum_edition);
 
-  // Registers a potential extension of the FeatureSet proto.  Any visible
-  // extensions will be used during merging.  Returns an error if the extension
-  // is a feature extension but fails validation.
-  absl::Status RegisterExtensions(const FileDescriptor& file);
+  // Creates a new FeatureResolver at a specific edition.  This calculates the
+  // default feature set for that edition, using the output of CompileDefaults.
+  static absl::StatusOr<FeatureResolver> Create(
+      absl::string_view edition, const FeatureSetDefaults& defaults);
 
   // Creates a new feature set using inheritance and default behavior. This is
   // designed to be called recursively, and the parent feature set is expected
-  // to be a fully merged one.
-  // The returned FeatureSet will be fully resolved for any extensions that were
-  // explicitly registered (in the custom pool) or linked into this binary (in
-  // the generated pool).
+  // to be a fully merged one.  The returned FeatureSet will be fully resolved
+  // for any extensions that were used to construct the defaults.
   absl::StatusOr<FeatureSet> MergeFeatures(
       const FeatureSet& merged_parent, const FeatureSet& unmerged_child) const;
 
  private:
-  FeatureResolver(absl::string_view edition, const Descriptor& descriptor,
-                  std::unique_ptr<DynamicMessageFactory> message_factory,
-                  std::unique_ptr<Message> defaults,
-                  FeatureSet generated_defaults)
-      : edition_(edition),
-        descriptor_(descriptor),
-        message_factory_(std::move(message_factory)),
-        defaults_(std::move(defaults)),
-        generated_defaults_(std::move(generated_defaults)) {}
+  explicit FeatureResolver(FeatureSet defaults)
+      : defaults_(std::move(defaults)) {}
 
-  absl::Status RegisterExtensions(const Descriptor& message);
-  absl::Status RegisterExtension(const FieldDescriptor& extension);
-
-  std::string edition_;
-  const Descriptor& descriptor_;
-  absl::flat_hash_set<const FieldDescriptor*> extensions_;
-  std::unique_ptr<DynamicMessageFactory> message_factory_;
-  std::unique_ptr<Message> defaults_;
-  FeatureSet generated_defaults_;
+  FeatureSet defaults_;
 };
 
 }  // namespace protobuf
