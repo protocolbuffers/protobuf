@@ -306,6 +306,9 @@ class WorkspaceFileFunctions(object):
   def googletest_deps(self):
     pass
 
+  def local_repository(self, **kwargs):
+    pass
+
 
 class Converter(object):
   def __init__(self):
