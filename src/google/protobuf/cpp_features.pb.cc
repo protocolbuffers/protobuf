@@ -122,16 +122,10 @@ const ::google::protobuf::EnumDescriptor* CppFeatures_Utf8Validation_descriptor(
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[0];
 }
+PROTOBUF_CONSTINIT const uint32_t CppFeatures_Utf8Validation_internal_data_[] = {
+    262144u, 0u, };
 bool CppFeatures_Utf8Validation_IsValid(int value) {
-  switch (value) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-      return true;
-    default:
-      return false;
-  }
+  return 0 <= value && value <= 3;
 }
 #if (__cplusplus < 201703) && \
   (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
