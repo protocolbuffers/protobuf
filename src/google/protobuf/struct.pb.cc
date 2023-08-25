@@ -212,13 +212,10 @@ const ::google::protobuf::EnumDescriptor* NullValue_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto[0];
 }
+PROTOBUF_CONSTINIT const uint32_t NullValue_internal_data_[] = {
+    65536u, 0u, };
 bool NullValue_IsValid(int value) {
-  switch (value) {
-    case 0:
-      return true;
-    default:
-      return false;
-  }
+  return 0 <= value && value <= 0;
 }
 // ===================================================================
 

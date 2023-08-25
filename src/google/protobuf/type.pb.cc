@@ -358,31 +358,10 @@ const ::google::protobuf::EnumDescriptor* Field_Kind_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[0];
 }
+PROTOBUF_CONSTINIT const uint32_t Field_Kind_internal_data_[] = {
+    1245184u, 0u, };
 bool Field_Kind_IsValid(int value) {
-  switch (value) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-    case 13:
-    case 14:
-    case 15:
-    case 16:
-    case 17:
-    case 18:
-      return true;
-    default:
-      return false;
-  }
+  return 0 <= value && value <= 18;
 }
 #if (__cplusplus < 201703) && \
   (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
@@ -416,16 +395,10 @@ const ::google::protobuf::EnumDescriptor* Field_Cardinality_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[1];
 }
+PROTOBUF_CONSTINIT const uint32_t Field_Cardinality_internal_data_[] = {
+    262144u, 0u, };
 bool Field_Cardinality_IsValid(int value) {
-  switch (value) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-      return true;
-    default:
-      return false;
-  }
+  return 0 <= value && value <= 3;
 }
 #if (__cplusplus < 201703) && \
   (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
@@ -444,15 +417,10 @@ const ::google::protobuf::EnumDescriptor* Syntax_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[2];
 }
+PROTOBUF_CONSTINIT const uint32_t Syntax_internal_data_[] = {
+    196608u, 0u, };
 bool Syntax_IsValid(int value) {
-  switch (value) {
-    case 0:
-    case 1:
-    case 2:
-      return true;
-    default:
-      return false;
-  }
+  return 0 <= value && value <= 2;
 }
 // ===================================================================
 

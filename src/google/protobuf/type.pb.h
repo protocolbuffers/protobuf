@@ -105,6 +105,7 @@ enum Field_Kind : int {
 };
 
 PROTOBUF_EXPORT bool Field_Kind_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t Field_Kind_internal_data_[];
 constexpr Field_Kind Field_Kind_Kind_MIN = static_cast<Field_Kind>(0);
 constexpr Field_Kind Field_Kind_Kind_MAX = static_cast<Field_Kind>(18);
 constexpr int Field_Kind_Kind_ARRAYSIZE = 18 + 1;
@@ -139,6 +140,7 @@ enum Field_Cardinality : int {
 };
 
 PROTOBUF_EXPORT bool Field_Cardinality_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t Field_Cardinality_internal_data_[];
 constexpr Field_Cardinality Field_Cardinality_Cardinality_MIN = static_cast<Field_Cardinality>(0);
 constexpr Field_Cardinality Field_Cardinality_Cardinality_MAX = static_cast<Field_Cardinality>(3);
 constexpr int Field_Cardinality_Cardinality_ARRAYSIZE = 3 + 1;
@@ -172,6 +174,7 @@ enum Syntax : int {
 };
 
 PROTOBUF_EXPORT bool Syntax_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t Syntax_internal_data_[];
 constexpr Syntax Syntax_MIN = static_cast<Syntax>(0);
 constexpr Syntax Syntax_MAX = static_cast<Syntax>(2);
 constexpr int Syntax_ARRAYSIZE = 2 + 1;

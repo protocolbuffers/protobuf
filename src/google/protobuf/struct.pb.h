@@ -85,6 +85,7 @@ enum NullValue : int {
 };
 
 PROTOBUF_EXPORT bool NullValue_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
 constexpr NullValue NullValue_MIN = static_cast<NullValue>(0);
 constexpr NullValue NullValue_MAX = static_cast<NullValue>(0);
 constexpr int NullValue_ARRAYSIZE = 0 + 1;
