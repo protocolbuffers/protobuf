@@ -6,9 +6,9 @@
 in C.
 
 upb is the core runtime for protobuf languages extensions in
-[Ruby](https://github.com/protocolbuffers/protobuf/tree/master/ruby),
-[PHP](https://github.com/protocolbuffers/protobuf/tree/master/php), and
-[Python](https://github.com/protocolbuffers/upb/tree/main/python).
+[Ruby](https://github.com/protocolbuffers/protobuf/tree/main/ruby),
+[PHP](https://github.com/protocolbuffers/protobuf/tree/main/php), and
+[Python](https://github.com/protocolbuffers/protobuf/tree/main/upb/python).
 
 While upb offers a C API, the C API & ABI **are not stable**. For this reason,
 upb is not generally offered as a C library for direct consumption, and there
