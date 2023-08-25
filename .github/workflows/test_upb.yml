@@ -58,7 +58,12 @@ jobs:
           image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-518b4fcd8d0ded2484c94f02e835526cacfdac2d"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-gcc"
-          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt @upb//...
+          # The other test runs use the protobuf workspace. For this one let's
+          # cd into upb and use its workspace instead, to make sure we cover
+          # that use case.
+          bash: >-
+            cd upb &&
+            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //...
 
   windows:
     strategy:
