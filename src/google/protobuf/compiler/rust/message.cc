@@ -38,6 +38,7 @@
 #include "google/protobuf/compiler/rust/accessors/accessors.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
+#include "google/protobuf/compiler/rust/oneof.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -206,8 +207,15 @@ void GenerateRs(Context<Descriptor> msg) {
                msg.Emit({{"comment", FieldInfoComment(field)}}, R"rs(
                  // $comment$
                )rs");
-
                GenerateAccessorMsgImpl(field);
+               msg.printer().PrintRaw("\n");
+             }
+           }},
+          {"oneof_accessor_fns",
+           [&] {
+             for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+               GenerateOneofAccessors(
+                   msg.WithDesc(*msg.desc().real_oneof_decl(i)));
                msg.printer().PrintRaw("\n");
              }
            }},
@@ -218,9 +226,20 @@ void GenerateRs(Context<Descriptor> msg) {
                msg.printer().PrintRaw("\n");
              }
            }},
+          {"oneof_externs",
+           [&] {
+             for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+               GenerateOneofExternC(
+                   msg.WithDesc(*msg.desc().real_oneof_decl(i)));
+               msg.printer().PrintRaw("\n");
+             }
+           }},
           {"nested_msgs",
            [&] {
-             if (msg.desc().nested_type_count() == 0) {
+             // If we have no nested types or oneofs, bail out without emitting
+             // an empty mod SomeMsg_.
+             if (msg.desc().nested_type_count() == 0 &&
+                 msg.desc().real_oneof_decl_count() == 0) {
                return;
              }
              msg.Emit({{"Msg", msg.desc().name()},
@@ -232,10 +251,20 @@ void GenerateRs(Context<Descriptor> msg) {
                                 msg.WithDesc(msg.desc().nested_type(i));
                             GenerateRs(nested_msg);
                           }
+                        }},
+                       {"oneofs",
+                        [&] {
+                          for (int i = 0;
+                               i < msg.desc().real_oneof_decl_count(); ++i) {
+                            GenerateOneofDefinition(
+                                msg.WithDesc(*msg.desc().real_oneof_decl(i)));
+                          }
                         }}},
                       R"rs(
                  pub mod $Msg$_ {
                    $nested_msgs$
+
+                   $oneofs$
                  }  // mod $Msg$_
                 )rs");
            }},
@@ -334,6 +363,8 @@ void GenerateRs(Context<Descriptor> msg) {
           }
 
           $accessor_fns$
+
+          $oneof_accessor_fns$
         }  // impl $Msg$
 
         //~ We implement drop unconditionally, so that `$Msg$: Drop` regardless
@@ -348,6 +379,8 @@ void GenerateRs(Context<Descriptor> msg) {
           $Msg_externs$
 
           $accessor_externs$
+
+          $oneof_externs$
         }  // extern "C" for $Msg$
 
         $nested_msgs$
@@ -377,29 +410,33 @@ void GenerateThunksCc(Context<Descriptor> msg) {
   }
 
   msg.Emit(
-      {
-          {"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
-          {"Msg", msg.desc().name()},
-          {"QualifiedMsg", cpp::QualifiedClassName(&msg.desc())},
-          {"new_thunk", Thunk(msg, "new")},
-          {"delete_thunk", Thunk(msg, "delete")},
-          {"serialize_thunk", Thunk(msg, "serialize")},
-          {"deserialize_thunk", Thunk(msg, "deserialize")},
-          {"nested_msg_thunks",
-           [&] {
-             for (int i = 0; i < msg.desc().nested_type_count(); ++i) {
-               Context<Descriptor> nested_msg =
-                   msg.WithDesc(msg.desc().nested_type(i));
-               GenerateThunksCc(nested_msg);
-             }
-           }},
-          {"accessor_thunks",
-           [&] {
-             for (int i = 0; i < msg.desc().field_count(); ++i) {
-               GenerateAccessorThunkCc(msg.WithDesc(*msg.desc().field(i)));
-             }
-           }},
-      },
+      {{"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
+       {"Msg", msg.desc().name()},
+       {"QualifiedMsg", cpp::QualifiedClassName(&msg.desc())},
+       {"new_thunk", Thunk(msg, "new")},
+       {"delete_thunk", Thunk(msg, "delete")},
+       {"serialize_thunk", Thunk(msg, "serialize")},
+       {"deserialize_thunk", Thunk(msg, "deserialize")},
+       {"nested_msg_thunks",
+        [&] {
+          for (int i = 0; i < msg.desc().nested_type_count(); ++i) {
+            Context<Descriptor> nested_msg =
+                msg.WithDesc(msg.desc().nested_type(i));
+            GenerateThunksCc(nested_msg);
+          }
+        }},
+       {"accessor_thunks",
+        [&] {
+          for (int i = 0; i < msg.desc().field_count(); ++i) {
+            GenerateAccessorThunkCc(msg.WithDesc(*msg.desc().field(i)));
+          }
+        }},
+       {"oneof_thunks",
+        [&] {
+          for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+            GenerateOneofThunkCc(msg.WithDesc(*msg.desc().real_oneof_decl(i)));
+          }
+        }}},
       R"cc(
         //~ $abi$ is a workaround for a syntax highlight bug in VSCode. However,
         //~ that confuses clang-format (it refuses to keep the newline after
@@ -417,6 +454,8 @@ void GenerateThunksCc(Context<Descriptor> msg) {
         }
 
         $accessor_thunks$
+
+        $oneof_thunks$
         }  // extern $abi$
         // clang-format on
 
