@@ -10,14 +10,15 @@ jobs:
   stale-prs:
     name: Close Stale Copybara PRs
     runs-on: ubuntu-latest
-    run: |
-      set -ex
-      STALE_PRS=$(gh pr list --author "app/copybara-service" --limit 500 \
-          --json "number" --search "updated:<=$(date --date="-7 day" +%F)" \
-        | jq ".[].number")
-      for pr in $(STALE_PRS); do
-        echo "Closing #$pr..."
-        gh pr close --comment "Auto-closing Copybara pull request" --delete-branch "$pr"
-      done
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      run: |
+        set -ex
+        STALE_PRS=$(gh pr list --author "app/copybara-service" --limit 500 \
+            --json "number" --search "updated:<=$(date --date="-7 day" +%F)" \
+          | jq ".[].number")
+        for pr in $(STALE_PRS); do
+          echo "Closing #$pr..."
+          gh pr close --comment "Auto-closing Copybara pull request" --delete-branch "$pr"
+        done
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
