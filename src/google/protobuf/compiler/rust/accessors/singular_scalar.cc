@@ -44,7 +44,7 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
   field.Emit(
       {
           {"field", field.desc().name()},
-          {"Scalar", PrimitiveRsTypeName(field)},
+          {"Scalar", PrimitiveRsTypeName(field.desc())},
           {"hazzer_thunk", Thunk(field, "has")},
           {"getter",
            [&] {
@@ -86,7 +86,7 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
 
 void SingularScalar::InExternC(Context<FieldDescriptor> field) const {
   field.Emit(
-      {{"Scalar", PrimitiveRsTypeName(field)},
+      {{"Scalar", PrimitiveRsTypeName(field.desc())},
        {"hazzer_thunk", Thunk(field, "has")},
        {"getter_thunk", Thunk(field, "get")},
        {"setter_thunk", Thunk(field, "set")},

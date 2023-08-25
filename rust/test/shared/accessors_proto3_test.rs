@@ -31,7 +31,7 @@
 /// Tests covering accessors for singular bool, int32, int64, and bytes fields
 /// on proto3.
 use protobuf::Optional;
-use unittest_proto3::proto3_unittest::TestAllTypes;
+use unittest_proto3::proto3_unittest::{TestAllTypes, TestAllTypes_};
 use unittest_proto3_optional::proto2_unittest::TestProto3Optional;
 
 #[test]
@@ -118,4 +118,25 @@ fn test_optional_bytes_accessors() {
     assert!(msg.optional_bytes_mut().is_set());
     assert_eq!(msg.optional_bytes_mut().get(), b"\xffbinary\x85non-utf8");
     assert_eq!(msg.optional_bytes_mut().or_default().get(), b"\xffbinary\x85non-utf8");
+}
+
+#[test]
+fn test_oneof_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::not_set);
+
+    msg.oneof_uint32_set(Some(7));
+    assert_eq!(msg.oneof_uint32_opt(), Some(7));
+    assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::OneofUint32(7));
+
+    msg.oneof_uint32_set(None);
+    assert_eq!(msg.oneof_uint32_opt(), None);
+    assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::not_set);
+
+    msg.oneof_uint32_set(Some(7));
+    msg.oneof_bytes_mut().set(b"");
+    assert_eq!(msg.oneof_uint32_opt(), None);
+
+    // This should show it set to the OneofBytes but its not supported yet.
+    assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::not_set);
 }
