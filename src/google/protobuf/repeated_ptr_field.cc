@@ -190,6 +190,10 @@ MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
   return result;
 }
 
+void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
+  delete message;
+}
+
 }  // namespace internal
 
 }  // namespace protobuf
