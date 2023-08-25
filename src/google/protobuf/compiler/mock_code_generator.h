@@ -149,8 +149,7 @@ class MockCodeGenerator : public CodeGenerator {
   absl::string_view minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
   absl::string_view maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
   std::vector<const FieldDescriptor*> feature_extensions_ = {
-      DescriptorPool::generated_pool()->FindExtensionByNumber(
-          FeatureSet::descriptor(), pb::test.number())};
+      GetExtensionReflection(pb::test)};
 
   static std::string GetOutputFileContent(absl::string_view generator_name,
                                           absl::string_view parameter,

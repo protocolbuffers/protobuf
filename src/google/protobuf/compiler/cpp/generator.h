@@ -96,8 +96,7 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
   }
 
   std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
-    return {DescriptorPool::generated_pool()->FindExtensionByNumber(
-        FeatureSet::descriptor(), pb::cpp.number())};
+    return {GetExtensionReflection(pb::cpp)};
   }
 
  private:
