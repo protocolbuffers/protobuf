@@ -282,7 +282,7 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsInvalidExtension) {
 TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
   TestGenerator generator;
   generator.set_feature_extensions({});
-  generator.set_minimum_edition(EDITION_1_TEST_ONLY);
+  generator.set_minimum_edition(EDITION_99997_TEST_ONLY);
   generator.set_maximum_edition(EDITION_99999_TEST_ONLY);
   EXPECT_THAT(generator.BuildFeatureSetDefaults(),
               IsOkAndHolds(EqualsProto(R"pb(
@@ -296,7 +296,7 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                     json_format: ALLOW
                   }
                 }
-                minimum_edition_enum: EDITION_1_TEST_ONLY
+                minimum_edition_enum: EDITION_99997_TEST_ONLY
                 maximum_edition_enum: EDITION_99999_TEST_ONLY
               )pb")));
 }
