@@ -1518,7 +1518,7 @@ inline void CodeGeneratorRequest::unsafe_arena_set_allocated_compiler_version(::
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.compiler_version_);
   }
-  _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(value);
+  _impl_.compiler_version_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -1559,7 +1559,7 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::_internal_mu
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.compiler_version_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::compiler::Version>(GetArenaForAllocation());
-    _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(p);
+    _impl_.compiler_version_ = p;
   }
   return _impl_.compiler_version_;
 }
@@ -1586,7 +1586,7 @@ inline void CodeGeneratorRequest::set_allocated_compiler_version(::google::proto
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
 
-  _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(value);
+  _impl_.compiler_version_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
 }
 
@@ -1827,7 +1827,7 @@ inline void CodeGeneratorResponse_File::unsafe_arena_set_allocated_generated_cod
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.generated_code_info_);
   }
-  _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(value);
+  _impl_.generated_code_info_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000008u;
   } else {
@@ -1868,7 +1868,7 @@ inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::_inter
   _impl_._has_bits_[0] |= 0x00000008u;
   if (_impl_.generated_code_info_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::GeneratedCodeInfo>(GetArenaForAllocation());
-    _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(p);
+    _impl_.generated_code_info_ = p;
   }
   return _impl_.generated_code_info_;
 }
@@ -1895,7 +1895,7 @@ inline void CodeGeneratorResponse_File::set_allocated_generated_code_info(::goog
     _impl_._has_bits_[0] &= ~0x00000008u;
   }
 
-  _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(value);
+  _impl_.generated_code_info_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
 }
 

@@ -232,7 +232,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           if (GetArenaForAllocation() == nullptr) {
             delete reinterpret_cast<$pb$::MessageLite*>($field_$);
           }
-          $field_$ = reinterpret_cast<$MemberType$*>(value);
+          $field_$ = value;
           $update_hasbit$;
           $annotate_set$;
           // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
@@ -277,7 +277,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $set_hasbit$;
           if ($field_$ == nullptr) {
             auto* p = CreateMaybeMessage<$Submsg$>(GetArenaForAllocation());
-            $field_$ = reinterpret_cast<$MemberType$*>(p);
+            $field_$ = p;
           }
           return $cast_field_$;
         }
@@ -314,7 +314,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
             $clear_hasbit$;
           }
 
-          $field_$ = reinterpret_cast<$MemberType$*>(value);
+          $field_$ = value;
           $annotate_set$;
           // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
         }

@@ -10901,7 +10901,7 @@ inline void FileDescriptorProto::unsafe_arena_set_allocated_options(::google::pr
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
-  _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(value);
+  _impl_.options_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000010u;
   } else {
@@ -10942,7 +10942,7 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::_internal_mutable_o
   _impl_._has_bits_[0] |= 0x00000010u;
   if (_impl_.options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FileOptions>(GetArenaForAllocation());
-    _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(p);
+    _impl_.options_ = p;
   }
   return _impl_.options_;
 }
@@ -10969,7 +10969,7 @@ inline void FileDescriptorProto::set_allocated_options(::google::protobuf::FileO
     _impl_._has_bits_[0] &= ~0x00000010u;
   }
 
-  _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(value);
+  _impl_.options_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.options)
 }
 
@@ -10998,7 +10998,7 @@ inline void FileDescriptorProto::unsafe_arena_set_allocated_source_code_info(::g
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_code_info_);
   }
-  _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(value);
+  _impl_.source_code_info_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000020u;
   } else {
@@ -11039,7 +11039,7 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::_internal_mutabl
   _impl_._has_bits_[0] |= 0x00000020u;
   if (_impl_.source_code_info_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::SourceCodeInfo>(GetArenaForAllocation());
-    _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(p);
+    _impl_.source_code_info_ = p;
   }
   return _impl_.source_code_info_;
 }
@@ -11066,7 +11066,7 @@ inline void FileDescriptorProto::set_allocated_source_code_info(::google::protob
     _impl_._has_bits_[0] &= ~0x00000020u;
   }
 
-  _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(value);
+  _impl_.source_code_info_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.source_code_info)
 }
 
@@ -11297,7 +11297,7 @@ inline void DescriptorProto_ExtensionRange::unsafe_arena_set_allocated_options(:
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
-  _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(value);
+  _impl_.options_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -11338,7 +11338,7 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions>(GetArenaForAllocation());
-    _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(p);
+    _impl_.options_ = p;
   }
   return _impl_.options_;
 }
@@ -11365,7 +11365,7 @@ inline void DescriptorProto_ExtensionRange::set_allocated_options(::google::prot
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
 
-  _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(value);
+  _impl_.options_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.DescriptorProto.ExtensionRange.options)
 }
 
@@ -11823,7 +11823,7 @@ inline void DescriptorProto::unsafe_arena_set_allocated_options(::google::protob
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
-  _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(value);
+  _impl_.options_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -11864,7 +11864,7 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::_internal_mutable_op
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::MessageOptions>(GetArenaForAllocation());
-    _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(p);
+    _impl_.options_ = p;
   }
   return _impl_.options_;
 }
@@ -11891,7 +11891,7 @@ inline void DescriptorProto::set_allocated_options(::google::protobuf::MessageOp
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
 
-  _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(value);
+  _impl_.options_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.DescriptorProto.options)
 }
 
@@ -12402,7 +12402,7 @@ inline void ExtensionRangeOptions::unsafe_arena_set_allocated_features(::google:
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -12443,7 +12443,7 @@ inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::_internal_mutable_
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+    _impl_.features_ = p;
   }
   return _impl_.features_;
 }
@@ -12470,7 +12470,7 @@ inline void ExtensionRangeOptions::set_allocated_features(::google::protobuf::Fe
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
 
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.features)
 }
 
@@ -13001,7 +13001,7 @@ inline void FieldDescriptorProto::unsafe_arena_set_allocated_options(::google::p
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
-  _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(value);
+  _impl_.options_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000020u;
   } else {
@@ -13042,7 +13042,7 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::_internal_mutable
   _impl_._has_bits_[0] |= 0x00000020u;
   if (_impl_.options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FieldOptions>(GetArenaForAllocation());
-    _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(p);
+    _impl_.options_ = p;
   }
   return _impl_.options_;
 }
@@ -13069,7 +13069,7 @@ inline void FieldDescriptorProto::set_allocated_options(::google::protobuf::Fiel
     _impl_._has_bits_[0] &= ~0x00000020u;
   }
 
-  _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(value);
+  _impl_.options_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.options)
 }
 
@@ -13201,7 +13201,7 @@ inline void OneofDescriptorProto::unsafe_arena_set_allocated_options(::google::p
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
-  _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(value);
+  _impl_.options_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -13242,7 +13242,7 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::_internal_mutable
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::OneofOptions>(GetArenaForAllocation());
-    _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(p);
+    _impl_.options_ = p;
   }
   return _impl_.options_;
 }
@@ -13269,7 +13269,7 @@ inline void OneofDescriptorProto::set_allocated_options(::google::protobuf::Oneo
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
 
-  _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(value);
+  _impl_.options_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofDescriptorProto.options)
 }
 
@@ -13482,7 +13482,7 @@ inline void EnumDescriptorProto::unsafe_arena_set_allocated_options(::google::pr
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
-  _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(value);
+  _impl_.options_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -13523,7 +13523,7 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::_internal_mutable_o
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::EnumOptions>(GetArenaForAllocation());
-    _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(p);
+    _impl_.options_ = p;
   }
   return _impl_.options_;
 }
@@ -13550,7 +13550,7 @@ inline void EnumDescriptorProto::set_allocated_options(::google::protobuf::EnumO
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
 
-  _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(value);
+  _impl_.options_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumDescriptorProto.options)
 }
 
@@ -13832,7 +13832,7 @@ inline void EnumValueDescriptorProto::unsafe_arena_set_allocated_options(::googl
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
-  _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(value);
+  _impl_.options_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -13873,7 +13873,7 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::_internal
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::EnumValueOptions>(GetArenaForAllocation());
-    _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(p);
+    _impl_.options_ = p;
   }
   return _impl_.options_;
 }
@@ -13900,7 +13900,7 @@ inline void EnumValueDescriptorProto::set_allocated_options(::google::protobuf::
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
 
-  _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(value);
+  _impl_.options_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueDescriptorProto.options)
 }
 
@@ -14053,7 +14053,7 @@ inline void ServiceDescriptorProto::unsafe_arena_set_allocated_options(::google:
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
-  _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(value);
+  _impl_.options_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -14094,7 +14094,7 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::_internal_mut
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::ServiceOptions>(GetArenaForAllocation());
-    _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(p);
+    _impl_.options_ = p;
   }
   return _impl_.options_;
 }
@@ -14121,7 +14121,7 @@ inline void ServiceDescriptorProto::set_allocated_options(::google::protobuf::Se
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
 
-  _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(value);
+  _impl_.options_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceDescriptorProto.options)
 }
 
@@ -14367,7 +14367,7 @@ inline void MethodDescriptorProto::unsafe_arena_set_allocated_options(::google::
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
-  _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(value);
+  _impl_.options_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000008u;
   } else {
@@ -14408,7 +14408,7 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::_internal_mutab
   _impl_._has_bits_[0] |= 0x00000008u;
   if (_impl_.options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::MethodOptions>(GetArenaForAllocation());
-    _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(p);
+    _impl_.options_ = p;
   }
   return _impl_.options_;
 }
@@ -14435,7 +14435,7 @@ inline void MethodDescriptorProto::set_allocated_options(::google::protobuf::Met
     _impl_._has_bits_[0] &= ~0x00000008u;
   }
 
-  _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(value);
+  _impl_.options_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.options)
 }
 
@@ -15515,7 +15515,7 @@ inline void FileOptions::unsafe_arena_set_allocated_features(::google::protobuf:
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000400u;
   } else {
@@ -15556,7 +15556,7 @@ inline ::google::protobuf::FeatureSet* FileOptions::_internal_mutable_features()
   _impl_._has_bits_[0] |= 0x00000400u;
   if (_impl_.features_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+    _impl_.features_ = p;
   }
   return _impl_.features_;
 }
@@ -15583,7 +15583,7 @@ inline void FileOptions::set_allocated_features(::google::protobuf::FeatureSet* 
     _impl_._has_bits_[0] &= ~0x00000400u;
   }
 
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.features)
 }
 
@@ -15805,7 +15805,7 @@ inline void MessageOptions::unsafe_arena_set_allocated_features(::google::protob
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -15846,7 +15846,7 @@ inline ::google::protobuf::FeatureSet* MessageOptions::_internal_mutable_feature
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+    _impl_.features_ = p;
   }
   return _impl_.features_;
 }
@@ -15873,7 +15873,7 @@ inline void MessageOptions::set_allocated_features(::google::protobuf::FeatureSe
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
 
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MessageOptions.features)
 }
 
@@ -16449,7 +16449,7 @@ inline void FieldOptions::unsafe_arena_set_allocated_features(::google::protobuf
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -16490,7 +16490,7 @@ inline ::google::protobuf::FeatureSet* FieldOptions::_internal_mutable_features(
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+    _impl_.features_ = p;
   }
   return _impl_.features_;
 }
@@ -16517,7 +16517,7 @@ inline void FieldOptions::set_allocated_features(::google::protobuf::FeatureSet*
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
 
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.features)
 }
 
@@ -16599,7 +16599,7 @@ inline void OneofOptions::unsafe_arena_set_allocated_features(::google::protobuf
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -16640,7 +16640,7 @@ inline ::google::protobuf::FeatureSet* OneofOptions::_internal_mutable_features(
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+    _impl_.features_ = p;
   }
   return _impl_.features_;
 }
@@ -16667,7 +16667,7 @@ inline void OneofOptions::set_allocated_features(::google::protobuf::FeatureSet*
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
 
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofOptions.features)
 }
 
@@ -16833,7 +16833,7 @@ inline void EnumOptions::unsafe_arena_set_allocated_features(::google::protobuf:
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -16874,7 +16874,7 @@ inline ::google::protobuf::FeatureSet* EnumOptions::_internal_mutable_features()
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+    _impl_.features_ = p;
   }
   return _impl_.features_;
 }
@@ -16901,7 +16901,7 @@ inline void EnumOptions::set_allocated_features(::google::protobuf::FeatureSet* 
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
 
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumOptions.features)
 }
 
@@ -17011,7 +17011,7 @@ inline void EnumValueOptions::unsafe_arena_set_allocated_features(::google::prot
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -17052,7 +17052,7 @@ inline ::google::protobuf::FeatureSet* EnumValueOptions::_internal_mutable_featu
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+    _impl_.features_ = p;
   }
   return _impl_.features_;
 }
@@ -17079,7 +17079,7 @@ inline void EnumValueOptions::set_allocated_features(::google::protobuf::Feature
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
 
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueOptions.features)
 }
 
@@ -17189,7 +17189,7 @@ inline void ServiceOptions::unsafe_arena_set_allocated_features(::google::protob
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -17230,7 +17230,7 @@ inline ::google::protobuf::FeatureSet* ServiceOptions::_internal_mutable_feature
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+    _impl_.features_ = p;
   }
   return _impl_.features_;
 }
@@ -17257,7 +17257,7 @@ inline void ServiceOptions::set_allocated_features(::google::protobuf::FeatureSe
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
 
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceOptions.features)
 }
 
@@ -17424,7 +17424,7 @@ inline void MethodOptions::unsafe_arena_set_allocated_features(::google::protobu
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -17465,7 +17465,7 @@ inline ::google::protobuf::FeatureSet* MethodOptions::_internal_mutable_features
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+    _impl_.features_ = p;
   }
   return _impl_.features_;
 }
@@ -17492,7 +17492,7 @@ inline void MethodOptions::set_allocated_features(::google::protobuf::FeatureSet
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
 
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodOptions.features)
 }
 
@@ -18247,7 +18247,7 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::unsafe_arena_set_alloca
   if (GetArenaForAllocation() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -18288,7 +18288,7 @@ inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefau
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.features_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
-    _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
+    _impl_.features_ = p;
   }
   return _impl_.features_;
 }
@@ -18315,7 +18315,7 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_features(
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
 
-  _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
+  _impl_.features_ = value;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.features)
 }
 
