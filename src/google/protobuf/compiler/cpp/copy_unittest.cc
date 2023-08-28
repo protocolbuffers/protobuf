@@ -65,6 +65,23 @@ TEST(CopyMessageTest, ArenaEnabledCopyConstructor) {
   TestUtil::ExpectAllFieldsSet(*message2);
 }
 
+TEST(CopyMessageTest, ArenaEnabledCopyConstructorArenaLeakTest) {
+  // Set possible leaking field types for TestAllTypes with values
+  // guaranteed to not be inlined string or Cord values.
+  // TestAllTypes has unconditional ArenaDtor registration.
+  protobuf_unittest::TestAllTypes message1;
+
+  message1.set_optional_string(std::string(1000, 'a'));
+  message1.add_repeated_string(std::string(1000, 'd'));
+
+  Arena arena;
+  protobuf_unittest::TestAllTypes* message2 =
+      Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena, message1);
+
+  EXPECT_EQ(message2->optional_string(), message1.optional_string());
+  EXPECT_EQ(message2->repeated_string(0), message1.repeated_string(0));
+}
+
 }  // namespace
 }  // namespace cpp
 }  // namespace compiler

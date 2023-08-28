@@ -3346,9 +3346,20 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
     }
   };
 
+  auto maybe_register_arena_dtor = [&] {
+    if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
+      p->Emit(R"cc(
+        if (arena != nullptr) {
+          arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
+        }
+      )cc");
+    }
+  };
+
   p->Emit({{"copy_construct_impl", copy_construct_impl},
            {"copy_init_fields", [&] { GenerateCopyInitFields(p); }},
-           {"force_allocation", force_allocation}},
+           {"force_allocation", force_allocation},
+           {"maybe_register_arena_dtor", maybe_register_arena_dtor}},
           R"cc(
             $classname$::$classname$(
                 //~ force alignment
@@ -3363,6 +3374,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
               $copy_construct_impl$;
               $copy_init_fields$;
               $force_allocation$;
+              $maybe_register_arena_dtor$;
 
               // @@protoc_insertion_point(copy_constructor:$full_name$)
             }
