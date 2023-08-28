@@ -305,7 +305,7 @@ bool Generator::Generate(const FileDescriptor* file,
     printer_->Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
     printer_->Indent();
     // Create enums before message descriptors
-    PrintAllNestedEnumsInFile();
+    PrintAllEnumsInFile();
     PrintMessageDescriptors();
     FixForeignFieldsInDescriptors();
     printer_->Outdent();
@@ -503,7 +503,10 @@ void Generator::PrintFileDescriptor() const {
 }
 
 // Prints all enums contained in all message types in |file|.
-void Generator::PrintAllNestedEnumsInFile() const {
+void Generator::PrintAllEnumsInFile() const {
+  for (int i = 0; i < file_->enum_type_count(); ++i) {
+    PrintEnum(*file_->enum_type(i));
+  }
   for (int i = 0; i < file_->message_type_count(); ++i) {
     PrintNestedEnums(*file_->message_type(i));
   }

@@ -692,7 +692,7 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       if (file != nullptr) {
         file->set_syntax(syntax_identifier_);
         if (syntax_identifier_ == "editions") {
-          file->set_edition(edition_);
+          file->set_edition_enum(edition_);
         }
       }
     } else if (!stop_after_syntax_identifier_) {
@@ -750,17 +750,17 @@ bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
   DO(ConsumeString(&syntax, "Expected syntax identifier."));
   DO(ConsumeEndOfDeclaration(";", &syntax_location));
 
-  (has_edition ? edition_ : syntax_identifier_) = syntax;
   if (has_edition) {
-    if (syntax.empty()) {
+    if (!Edition_Parse(absl::StrCat("EDITION_", syntax), &edition_) ||
+        edition_ == Edition::EDITION_UNKNOWN) {
       RecordError(syntax_token.line, syntax_token.column,
-                  "A file's edition must be a nonempty string.");
+                  absl::StrCat("Unknown edition \"", syntax, "\"."));
       return false;
     }
-    edition_ = syntax;
     syntax_identifier_ = "editions";
     return true;
   }
+
   syntax_identifier_ = syntax;
   if (syntax != "proto2" && syntax != "proto3" &&
       !stop_after_syntax_identifier_) {

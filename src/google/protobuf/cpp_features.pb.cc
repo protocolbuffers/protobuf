@@ -70,15 +70,15 @@ static const ::_pb::Message* const file_default_instances[] = {
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
     "\n\"google/protobuf/cpp_features.proto\022\002pb"
-    "\032 google/protobuf/descriptor.proto\"\373\001\n\013C"
-    "ppFeatures\0225\n\022legacy_closed_enum\030\001 \001(\010B\031"
-    "\210\001\001\230\001\004\230\001\001\242\001\r\n\0042023\022\005false\022Y\n\017utf8_valida"
-    "tion\030\002 \001(\0162\036.pb.CppFeatures.Utf8Validati"
-    "onB \210\001\001\230\001\004\230\001\001\242\001\024\n\0042023\022\014VERIFY_PARSE\"Z\n\016"
-    "Utf8Validation\022\033\n\027UTF8_VALIDATION_UNKNOW"
-    "N\020\000\022\020\n\014VERIFY_PARSE\020\001\022\017\n\013VERIFY_DLOG\020\002\022\010"
-    "\n\004NONE\020\003::\n\003cpp\022\033.google.protobuf.Featur"
-    "eSet\030\350\007 \001(\0132\017.pb.CppFeatures"
+    "\032 google/protobuf/descriptor.proto\"\201\002\n\013C"
+    "ppFeatures\0228\n\022legacy_closed_enum\030\001 \001(\010B\034"
+    "\210\001\001\230\001\004\230\001\001\242\001\020\n\0042023\022\005false\030\350\007\022\\\n\017utf8_val"
+    "idation\030\002 \001(\0162\036.pb.CppFeatures.Utf8Valid"
+    "ationB#\210\001\001\230\001\004\230\001\001\242\001\027\n\0042023\022\014VERIFY_PARSE\030"
+    "\350\007\"Z\n\016Utf8Validation\022\033\n\027UTF8_VALIDATION_"
+    "UNKNOWN\020\000\022\020\n\014VERIFY_PARSE\020\001\022\017\n\013VERIFY_DL"
+    "OG\020\002\022\010\n\004NONE\020\003::\n\003cpp\022\033.google.protobuf."
+    "FeatureSet\030\350\007 \001(\0132\017.pb.CppFeatures"
 };
 static const ::_pbi::DescriptorTable* const descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_deps[1] =
     {
@@ -88,7 +88,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2ep
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto = {
     false,
     false,
-    388,
+    394,
     descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
     "google/protobuf/cpp_features.proto",
     &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_once,

@@ -102,6 +102,7 @@ class DescriptorDatabase;
 class DescriptorPool;
 
 // Defined in descriptor.proto
+enum Edition : int;
 class DescriptorProto;
 class DescriptorProto_ExtensionRange;
 class FieldDescriptorProto;
@@ -293,7 +294,15 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
   }
 };
 
+absl::string_view ShortEditionName(Edition edition);
+
 }  // namespace internal
+
+// Provide an Abseil formatter for edition names.
+template <typename Sink>
+void AbslStringify(Sink& sink, Edition edition) {
+  absl::Format(&sink, "%v", internal::ShortEditionName(edition));
+}
 
 // Describes a type of protocol message, or a particular group within a
 // message.  To obtain the Descriptor for a given message object, call
@@ -1910,8 +1919,8 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   PROTOBUF_IGNORE_DEPRECATION_STOP
 
  public:
-  // Returns an unspecified value if syntax() is not SYNTAX_EDITIONS.
-  absl::string_view edition() const;
+  // Returns EDITION_UNKNOWN if syntax() is not SYNTAX_EDITIONS.
+  Edition edition() const;
 
   // Find a top-level message type by name (not full_name).  Returns nullptr if
   // not found.
@@ -1996,7 +2005,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   const std::string* name_;
   const std::string* package_;
   const DescriptorPool* pool_;
-  const std::string* edition_ = nullptr;
+  Edition edition_;
 
   // Get the merged features that apply to this file.  These are specified in
   // the .proto file through the feature options in the message definition.
