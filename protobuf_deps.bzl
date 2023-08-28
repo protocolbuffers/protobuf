@@ -147,9 +147,9 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("upb"):
-        _github_archive(
+        http_archive(
             name = "upb",
-            repo = "https://github.com/protocolbuffers/upb",
-            commit = "57636ce03ac1e2aab3a362a61a6664981e21cda5",
-            sha256 = "75da534db927e165cb550d232c35e2dec4b5153b3b47989b250d75febbfc1710",
+            url = "https://github.com/protocolbuffers/protobuf/archive/f85a338d79f05938d1725fba3b2c603a8d06462e.zip",
+            strip_prefix = "protobuf-f85a338d79f05938d1725fba3b2c603a8d06462e/upb",
+            sha256 = "cd28ae63e40a146ec1a2d41e96f53e637aaa5d6c746e7120d013aafc65092882",
         )
