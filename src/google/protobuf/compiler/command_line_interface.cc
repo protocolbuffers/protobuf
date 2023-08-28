@@ -1538,8 +1538,8 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
   // Calculate the feature defaults for each built-in generator.  All generators
   // that support editions must agree on the supported edition range.
   std::vector<const FieldDescriptor*> feature_extensions;
-  absl::string_view minimum_edition = PROTOBUF_MINIMUM_EDITION;
-  absl::string_view maximum_edition = PROTOBUF_MAXIMUM_EDITION;
+  Edition minimum_edition = PROTOBUF_MINIMUM_EDITION;
+  Edition maximum_edition = PROTOBUF_MAXIMUM_EDITION;
   for (const auto& output : output_directives_) {
     if (output.generator == nullptr) continue;
     if ((output.generator->GetSupportedFeatures() &

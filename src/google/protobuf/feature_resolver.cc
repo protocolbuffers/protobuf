@@ -76,24 +76,6 @@ absl::Status Error(Args... args) {
   return absl::FailedPreconditionError(absl::StrCat(args...));
 }
 
-struct EditionsLessThan {
-  bool operator()(absl::string_view a, absl::string_view b) const {
-    std::vector<absl::string_view> as = absl::StrSplit(a, '.');
-    std::vector<absl::string_view> bs = absl::StrSplit(b, '.');
-    size_t min_size = std::min(as.size(), bs.size());
-    for (size_t i = 0; i < min_size; ++i) {
-      if (as[i].size() != bs[i].size()) {
-        return as[i].size() < bs[i].size();
-      } else if (as[i] != bs[i]) {
-        return as[i] < bs[i];
-      }
-    }
-    // Both strings are equal up until an extra element, which makes that string
-    // more recent.
-    return as.size() < bs.size();
-  }
-};
-
 absl::Status ValidateDescriptor(const Descriptor& descriptor) {
   if (descriptor.oneof_decl_count() > 0) {
     return Error("Type ", descriptor.full_name(),
@@ -152,27 +134,26 @@ absl::Status ValidateExtension(const Descriptor& feature_set,
   return absl::OkStatus();
 }
 
-void CollectEditions(const Descriptor& descriptor,
-                     absl::string_view minimum_edition,
-                     absl::string_view maximum_edition,
-                     absl::btree_set<std::string, EditionsLessThan>& editions) {
+void CollectEditions(const Descriptor& descriptor, Edition minimum_edition,
+                     Edition maximum_edition,
+                     absl::btree_set<Edition>& editions) {
   for (int i = 0; i < descriptor.field_count(); ++i) {
     for (const auto& def : descriptor.field(i)->options().edition_defaults()) {
-      if (EditionsLessThan()(maximum_edition, def.edition())) continue;
-      editions.insert(def.edition());
+      if (maximum_edition < def.edition_enum()) continue;
+      editions.insert(def.edition_enum());
     }
   }
 }
 
-absl::Status FillDefaults(absl::string_view edition, Message& msg) {
+absl::Status FillDefaults(Edition edition, Message& msg) {
   const Descriptor& descriptor = *msg.GetDescriptor();
 
   auto comparator = [](const FieldOptions::EditionDefault& a,
                        const FieldOptions::EditionDefault& b) {
-    return EditionsLessThan()(a.edition(), b.edition());
+    return a.edition_enum() < b.edition_enum();
   };
   FieldOptions::EditionDefault edition_lookup;
-  edition_lookup.set_edition(edition);
+  edition_lookup.set_edition_enum(edition);
 
   for (int i = 0; i < descriptor.field_count(); ++i) {
     const FieldDescriptor& field = *descriptor.field(i);
@@ -239,7 +220,7 @@ absl::Status ValidateMergedFeatures(const Message& msg) {
 absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
     const Descriptor* feature_set,
     absl::Span<const FieldDescriptor* const> extensions,
-    absl::string_view minimum_edition, absl::string_view maximum_edition) {
+    Edition minimum_edition, Edition maximum_edition) {
   // Find and validate the FeatureSet in the pool.
   if (feature_set == nullptr) {
     return Error(
@@ -254,7 +235,7 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
   }
 
   // Collect all the editions with unique defaults.
-  absl::btree_set<std::string, EditionsLessThan> editions;
+  absl::btree_set<Edition> editions;
   CollectEditions(*feature_set, minimum_edition, maximum_edition, editions);
   for (const auto* extension : extensions) {
     CollectEditions(*extension->message_type(), minimum_edition,
@@ -263,8 +244,8 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
 
   // Fill the default spec.
   FeatureSetDefaults defaults;
-  defaults.set_minimum_edition(minimum_edition);
-  defaults.set_maximum_edition(maximum_edition);
+  defaults.set_minimum_edition_enum(minimum_edition);
+  defaults.set_maximum_edition_enum(maximum_edition);
   auto message_factory = absl::make_unique<DynamicMessageFactory>();
   for (const auto& edition : editions) {
     auto defaults_dynamic =
@@ -276,7 +257,7 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
                        defaults_dynamic.get(), extension)));
     }
     auto* edition_defaults = defaults.mutable_defaults()->Add();
-    edition_defaults->set_edition(edition);
+    edition_defaults->set_edition_enum(edition);
     edition_defaults->mutable_features()->MergeFromString(
         defaults_dynamic->SerializeAsString());
   }
@@ -284,38 +265,42 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
 }
 
 absl::StatusOr<FeatureResolver> FeatureResolver::Create(
-    absl::string_view edition, const FeatureSetDefaults& compiled_defaults) {
-  if (EditionsLessThan()(edition, compiled_defaults.minimum_edition())) {
+    Edition edition, const FeatureSetDefaults& compiled_defaults) {
+  if (edition < compiled_defaults.minimum_edition_enum()) {
     return Error("Edition ", edition,
                  " is earlier than the minimum supported edition ",
-                 compiled_defaults.minimum_edition());
+                 compiled_defaults.minimum_edition_enum());
   }
-  if (EditionsLessThan()(compiled_defaults.maximum_edition(), edition)) {
+  if (compiled_defaults.maximum_edition_enum() < edition) {
     return Error("Edition ", edition,
                  " is later than the maximum supported edition ",
-                 compiled_defaults.maximum_edition());
+                 compiled_defaults.maximum_edition_enum());
   }
 
   // Validate compiled defaults.
-  absl::string_view prev_edition;
+  Edition prev_edition = EDITION_UNKNOWN;
   for (const auto& edition_default : compiled_defaults.defaults()) {
-    if (!prev_edition.empty()) {
-      if (!EditionsLessThan()(prev_edition, edition_default.edition())) {
+    if (edition_default.edition_enum() == EDITION_UNKNOWN) {
+      return Error("Invalid edition ", edition_default.edition_enum(),
+                   " specified.");
+    }
+    if (prev_edition != EDITION_UNKNOWN) {
+      if (edition_default.edition_enum() <= prev_edition) {
         return Error(
             "Feature set defaults are not strictly increasing.  Edition ",
             prev_edition, " is greater than or equal to edition ",
-            edition_default.edition(), ".");
+            edition_default.edition_enum(), ".");
       }
     }
-    prev_edition = edition_default.edition();
+    prev_edition = edition_default.edition_enum();
   }
 
   // Select the matching edition defaults.
   auto comparator = [](const auto& a, const auto& b) {
-    return EditionsLessThan()(a.edition(), b.edition());
+    return a.edition_enum() < b.edition_enum();
   };
   FeatureSetDefaults::FeatureSetEditionDefault search;
-  search.set_edition(edition);
+  search.set_edition_enum(edition);
   auto first_nonmatch =
       absl::c_upper_bound(compiled_defaults.defaults(), search, comparator);
   if (first_nonmatch == compiled_defaults.defaults().begin()) {

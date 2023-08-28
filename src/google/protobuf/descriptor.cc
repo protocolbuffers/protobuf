@@ -2818,7 +2818,7 @@ void FileDescriptor::CopyHeadingTo(FileDescriptorProto* proto) const {
     proto->set_syntax(FileDescriptorLegacy::SyntaxName(syntax));
   }
   if (syntax == FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
-    proto->set_edition(edition());
+    proto->set_edition_enum(edition());
   }
 
   if (&options() != &FileOptions::default_instance()) {
@@ -3260,8 +3260,7 @@ std::string FileDescriptor::DebugStringWithOptions(
     if (FileDescriptorLegacy(this).syntax() ==
         FileDescriptorLegacy::SYNTAX_EDITIONS) {
       absl::SubstituteAndAppend(&contents, "edition = \"$0\";\n\n", edition());
-    } else  // NOLINT(readability/braces)
-    {
+    } else {
       absl::SubstituteAndAppend(&contents, "syntax = \"$0\";\n\n",
                                 FileDescriptorLegacy::SyntaxName(
                                     FileDescriptorLegacy(this).syntax()));
@@ -5595,10 +5594,9 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
                                internal::FlatAllocator& alloc) {
   alloc.PlanArray<FileDescriptor>(1);
   alloc.PlanArray<FileDescriptorTables>(1);
-  alloc.PlanArray<std::string>(
-      2 + (proto.has_edition() ? 1 : 0));  // name + package
+  alloc.PlanArray<std::string>(2);  // name + package
   if (proto.has_options()) alloc.PlanArray<FileOptions>(1);
-  if (proto.has_edition()) {
+  if (proto.has_edition_enum()) {
     alloc.PlanArray<FeatureSet>(1);
     if (HasFeatures(proto.options())) {
       alloc.PlanArray<FeatureSet>(1);
@@ -5705,14 +5703,14 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   FileDescriptor* result = alloc.AllocateArray<FileDescriptor>(1);
   file_ = result;
 
-  if (proto.has_edition()) {
+  if (proto.has_edition_enum()) {
     const FeatureSetDefaults& defaults =
         pool_->feature_set_defaults_spec_ == nullptr
             ? GetCppFeatureSetDefaults()
             : *pool_->feature_set_defaults_spec_;
 
     absl::StatusOr<FeatureResolver> feature_resolver =
-        FeatureResolver::Create(proto.edition(), defaults);
+        FeatureResolver::Create(proto.edition_enum(), defaults);
     if (!feature_resolver.ok()) {
       AddError(
           proto.name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
@@ -5755,10 +5753,10 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       return absl::StrCat("Unrecognized syntax: ", proto.syntax());
     });
   }
-  if (proto.has_edition()) {
-    file_->edition_ = alloc.AllocateStrings(proto.edition());
+  if (proto.has_edition_enum()) {
+    file_->edition_ = proto.edition_enum();
   } else {
-    file_->edition_ = nullptr;
+    file_->edition_ = Edition::EDITION_UNKNOWN;
   }
 
   result->name_ = alloc.AllocateStrings(proto.name());
@@ -9568,15 +9566,14 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
 }  // namespace cpp
 }  // namespace internal
 
-absl::string_view FileDescriptor::edition() const {
-  // ASLR will help give this a random value across processes.
-  static const void* kAntiHyrumText = &kAntiHyrumText;
-  absl::string_view anti_hyrum_string(
-      reinterpret_cast<const char*>(kAntiHyrumText),
-      (reinterpret_cast<size_t>(kAntiHyrumText) >> 3) % sizeof(void*));
+Edition FileDescriptor::edition() const { return edition_; }
 
-  return edition_ == nullptr ? anti_hyrum_string : *edition_;
+namespace internal {
+absl::string_view ShortEditionName(Edition edition) {
+  return absl::StripPrefix(Edition_Name(edition), "EDITION_");
 }
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 
