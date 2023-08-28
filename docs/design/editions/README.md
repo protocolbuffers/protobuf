@@ -11,8 +11,13 @@ the files after their initial upload, you should consider the possibility that
 they are outdated as you read them. These are purely for historical value and
 should not be treated as documentation of the current state.
 
+Note that the authors listed in the topics were the authors of the *original*
+version of the document; it may have changed since they last worked on the
+document.
+
 ## Design Documents
 
 The following topics are in this repository:
 
 *   [What are Protobuf Editions?](what-are-protobuf-editions.md)
+*   [Life of an Edition](life-of-an-edition.md)
