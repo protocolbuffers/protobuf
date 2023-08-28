@@ -843,6 +843,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void* tagged_rep_or_elem_;
 };
 
+void InternalOutOfLineDeleteMessageLite(MessageLite* message);
+
 template <typename GenericType>
 class GenericTypeHandler {
  public:
@@ -860,9 +862,18 @@ class GenericTypeHandler {
     return New(arena);
   }
   static inline void Delete(GenericType* value, Arena* arena) {
-    if (arena == nullptr) {
+    if (arena != nullptr) return;
+#ifdef __cpp_if_constexpr
+    if constexpr (std::is_base_of<MessageLite, GenericType>::value) {
+      // Using virtual destructor to reduce generated code size that would have
+      // happened otherwise due to inlined `~GenericType`.
+      InternalOutOfLineDeleteMessageLite(value);
+    } else {
       delete value;
     }
+#else
+    delete value;
+#endif
   }
   static inline Arena* GetOwningArena(GenericType* value) {
     return Arena::InternalGetOwningArena(value);
