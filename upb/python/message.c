@@ -1431,9 +1431,10 @@ static PyObject* PyUpb_Message_FindInitializationErrors(PyObject* _self,
   upb_Message* msg = PyUpb_Message_GetIfReified(_self);
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
-  upb_FieldPathEntry* fields;
+  upb_FieldPathEntry* fields_base;
   PyObject* ret = PyList_New(0);
-  if (upb_util_HasUnsetRequired(msg, msgdef, ext_pool, &fields)) {
+  if (upb_util_HasUnsetRequired(msg, msgdef, ext_pool, &fields_base)) {
+    upb_FieldPathEntry* fields = fields_base;
     char* buf = NULL;
     size_t size = 0;
     assert(fields->field);
@@ -1453,6 +1454,7 @@ static PyObject* PyUpb_Message_FindInitializationErrors(PyObject* _self,
       Py_DECREF(str);
     }
     free(buf);
+    free(fields_base);
   }
   return ret;
 }

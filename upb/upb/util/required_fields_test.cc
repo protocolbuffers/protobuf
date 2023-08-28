@@ -30,6 +30,8 @@
 
 #include "upb/util/required_fields.h"
 
+#include <stdlib.h>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/strings/string_view.h"
@@ -73,11 +75,13 @@ void CheckRequired(absl::string_view json,
   EXPECT_TRUE(upb_JsonDecode(json.data(), json.size(), test_msg, m.ptr(),
                              defpool.ptr(), 0, arena.ptr(), status.ptr()))
       << status.error_message();
-  upb_FieldPathEntry* entries;
+  upb_FieldPathEntry* entries = nullptr;
   EXPECT_EQ(!missing.empty(), upb_util_HasUnsetRequired(
                                   test_msg, m.ptr(), defpool.ptr(), &entries));
-  EXPECT_EQ(missing, PathsToText(entries));
-  free(entries);
+  if (entries) {
+    EXPECT_EQ(missing, PathsToText(entries));
+    free(entries);
+  }
 
   // Verify that we can pass a NULL pointer to entries when we don't care about
   // them.
