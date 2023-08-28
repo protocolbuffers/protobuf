@@ -159,6 +159,7 @@ impl fmt::Debug for SerializedData {
 pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
+pub type InnerPrimitiveMut<'a, T> = crate::vtable::RawVTableMutator<'a, T>;
 
 /// The raw contents of every generated message.
 #[derive(Debug)]

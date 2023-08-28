@@ -38,12 +38,30 @@ use unittest_proto3_optional::proto2_unittest::TestProto3Optional;
 fn test_fixed32_accessors() {
     let mut msg = TestAllTypes::new();
     assert_eq!(msg.optional_fixed32(), 0);
+    assert_eq!(msg.optional_fixed32_mut().get(), 0);
 
-    msg.optional_fixed32_set(Some(99));
-    assert_eq!(msg.optional_fixed32(), 99);
+    msg.optional_fixed32_mut().set(42);
+    assert_eq!(msg.optional_fixed32_mut().get(), 42);
+    assert_eq!(msg.optional_fixed32(), 42);
 
-    msg.optional_fixed32_set(None);
+    msg.optional_fixed32_mut().clear();
     assert_eq!(msg.optional_fixed32(), 0);
+    assert_eq!(msg.optional_fixed32_mut().get(), 0);
+}
+
+#[test]
+fn test_bool_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert!(!msg.optional_bool());
+    assert!(!msg.optional_bool_mut().get());
+
+    msg.optional_bool_mut().set(true);
+    assert!(msg.optional_bool());
+    assert!(msg.optional_bool_mut().get());
+
+    msg.optional_bool_mut().clear();
+    assert!(!msg.optional_bool());
+    assert!(!msg.optional_bool_mut().get());
 }
 
 #[test]

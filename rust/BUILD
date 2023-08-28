@@ -48,6 +48,7 @@ PROTOBUF_SHARED = [
     "internal.rs",
     "macros.rs",
     "optional.rs",
+    "primitive.rs",
     "proxied.rs",
     "shared.rs",
     "string.rs",

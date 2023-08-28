@@ -33,7 +33,8 @@
 //! generated code.
 
 pub use crate::vtable::{
-    new_vtable_field_entry, BytesMutVTable, BytesOptionalMutVTable, RawVTableMutator,
+    new_vtable_field_entry, BytesMutVTable, BytesOptionalMutVTable, PrimitiveVTable,
+    RawVTableMutator,
 };
 use std::ptr::NonNull;
 use std::slice;

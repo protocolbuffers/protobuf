@@ -273,6 +273,51 @@ impl ProxiedWithRawOptionalVTable for [u8] {
     }
 }
 
+/// A generic thunk vtable for mutating a present primitive field.
+#[doc(hidden)]
+#[derive(Debug)]
+pub struct PrimitiveVTable<T> {
+    pub(crate) setter: unsafe extern "C" fn(msg: RawMessage, val: T),
+    pub(crate) getter: unsafe extern "C" fn(msg: RawMessage) -> T,
+}
+
+impl<T> PrimitiveVTable<T> {
+    #[doc(hidden)]
+    pub const fn new(
+        _private: Private,
+        getter: unsafe extern "C" fn(msg: RawMessage) -> T,
+        setter: unsafe extern "C" fn(msg: RawMessage, val: T),
+    ) -> Self {
+        Self { getter, setter }
+    }
+}
+
+macro_rules! impl_raw_vtable_mutator_get_set {
+  ($($t:ty),*) => {
+      $(
+          impl RawVTableMutator<'_, $t> {
+              pub(crate) fn get(self) -> $t {
+                  // SAFETY:
+                  // - `msg_ref` is valid for the lifetime of `RawVTableMutator` as promised by the
+                  //   caller of `new`.
+                  unsafe { (self.vtable.getter)(self.msg_ref.msg()) }
+              }
+
+              /// # Safety
+              /// - `msg_ref` must be valid for the lifetime of `RawVTableMutator`.
+              pub(crate) unsafe fn set(self, val: $t) {
+                // SAFETY:
+                // - `msg_ref` is valid for the lifetime of `RawVTableMutator` as promised by the
+                //   caller of `new`.
+                  unsafe { (self.vtable.setter)(self.msg_ref.msg(), val) }
+              }
+          }
+      )*
+  }
+}
+
+impl_raw_vtable_mutator_get_set!(bool, f32, f64, i32, i64, u32, u64);
+
 /// A generic thunk vtable for mutating a present `bytes` or `string` field.
 #[doc(hidden)]
 #[derive(Debug)]
