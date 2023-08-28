@@ -77,7 +77,7 @@ These are projects we know about implementing Protocol Buffers for other program
 *   Javascript: https://github.com/seishun/node-protoc-gen-javascript (Node.js
     port of the Google-official implementation)
 *   Javascript: https://github.com/ButterCam/sisyphus-js
-*   Julia: https://github.com/tanmaykm/ProtoBuf.jl
+*   Julia: https://github.com/JuliaIO/ProtoBuf.jl
 *   Kotlin: https://github.com/marcoferrer/kroto-plus
 *   Kotlin: https://github.com/Kotlin/kotlinx.serialization
 *   Kotlin: https://github.com/ButterCam/sisyphus
