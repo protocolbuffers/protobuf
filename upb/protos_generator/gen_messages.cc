@@ -366,11 +366,11 @@ void WriteMessageImplementation(
           }
           $0::$0(const $0& from) : $0Access() {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)upb_Message_DeepClone(from.msg_, &$2, arena_);
+            msg_ = ($1*)::protos::internal::DeepClone(from.msg_, &$2, arena_);
           }
           $0::$0(const CProxy& from) : $0Access() {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)upb_Message_DeepClone(
+            msg_ = ($1*)::protos::internal::DeepClone(
                 ::protos::internal::GetInternalMsg(&from), &$2, arena_);
           }
           $0::$0(const Proxy& from) : $0(static_cast<const CProxy&>(from)) {}
@@ -380,12 +380,12 @@ void WriteMessageImplementation(
           }
           $0& $0::operator=(const $3& from) {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)upb_Message_DeepClone(from.msg_, &$2, arena_);
+            msg_ = ($1*)::protos::internal::DeepClone(from.msg_, &$2, arena_);
             return *this;
           }
           $0& $0::operator=(const CProxy& from) {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)upb_Message_DeepClone(
+            msg_ = ($1*)::protos::internal::DeepClone(
                 ::protos::internal::GetInternalMsg(&from), &$2, arena_);
             return *this;
           }
