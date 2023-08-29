@@ -57,6 +57,7 @@ using ::protos_generator::test::protos::TestModel_Category_VIDEO;
 using ::protos_generator::test::protos::theme;
 using ::protos_generator::test::protos::ThemeExtension;
 using ::testing::ElementsAre;
+using ::testing::HasSubstr;
 
 TEST(CppGeneratedCode, Constructor) { TestModel test_model; }
 
@@ -682,11 +683,34 @@ TEST(CppGeneratedCode, ClearExtensionWithEmptyExtensionPtr) {
 
 TEST(CppGeneratedCode, SetExtension) {
   TestModel model;
+  {
+    // Use a nested scope to make sure the arenas are fused correctly.
+    ThemeExtension extension1;
+    extension1.set_ext_name("Hello World");
+    EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
+    EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
+  }
+  EXPECT_EQ(true, ::protos::HasExtension(&model, theme));
+  auto ext = ::protos::GetExtension(&model, theme);
+  EXPECT_TRUE(ext.ok());
+  EXPECT_EQ((*ext)->ext_name(), "Hello World");
+}
+
+TEST(CppGeneratedCode, SetExtensionFailsFusing) {
+  // Use an initial block to disallow fusing.
+  char initial_block[1000];
+  protos::Arena arena(initial_block, sizeof(initial_block));
+
+  protos::Ptr<TestModel> model = protos::CreateMessage<TestModel>(arena);
+
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
-  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
-  EXPECT_EQ(true, ::protos::HasExtension(&model, theme));
+  EXPECT_FALSE(::protos::HasExtension(model, theme));
+  auto status = ::protos::SetExtension(model, theme, extension1);
+  EXPECT_FALSE(status.ok());
+  EXPECT_THAT(status.message(), HasSubstr("Unable to fuse arenas."));
+  EXPECT_FALSE(::protos::HasExtension(model, theme));
+  EXPECT_FALSE(::protos::GetExtension(model, theme).ok());
 }
 
 TEST(CppGeneratedCode, SetExtensionOnMutableChild) {

@@ -39,6 +39,7 @@
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 #include "upb/message/copy.h"
+#include "upb/message/internal/accessors.h"
 #include "upb/message/internal/extension.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
@@ -371,15 +372,24 @@ absl::Status SetExtension(
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id,
     Extension& value) {
   static_assert(!std::is_const_v<T>);
-  auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  auto* message_arena = internal::GetArena(message);
   upb_Message_Extension* msg_ext = _upb_Message_GetOrCreateExtension(
       internal::GetInternalMsg(message), id.mini_table_ext(), message_arena);
   if (!msg_ext) {
     return MessageAllocationError();
   }
-  auto* extension_arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  auto* extension_arena = internal::GetArena(&value);
   if (message_arena != extension_arena) {
-    upb_Arena_Fuse(message_arena, extension_arena);
+    if (!upb_Arena_Fuse(message_arena, extension_arena)) {
+      // We have to undo the Create part. Otherwise ,we end up with a broken
+      // extension. We do fuse last because we can undo Create, but we can't
+      // undo Fuse.
+      if (msg_ext->data.ptr == nullptr) {
+        _upb_Message_ClearExtensionField(internal::GetInternalMsg(message),
+                                         id.mini_table_ext());
+      }
+      return absl::InvalidArgumentError("Unable to fuse arenas.");
+    }
   }
   msg_ext->data.ptr = internal::GetInternalMsg(&value);
   return absl::OkStatus();
