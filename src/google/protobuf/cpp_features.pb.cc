@@ -183,9 +183,6 @@ CppFeatures::~CppFeatures() {
 inline void CppFeatures::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-void CppFeatures::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
-}
 
 PROTOBUF_NOINLINE void CppFeatures::Clear() {
 // @@protoc_insertion_point(message_clear_start:pb.CppFeatures)
@@ -342,6 +339,9 @@ PROTOBUF_NOINLINE bool CppFeatures::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* CppFeatures::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void CppFeatures::InternalSwap(CppFeatures* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

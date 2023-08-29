@@ -227,8 +227,9 @@ class DynamicMessage final : public Message {
 
   Message* New(Arena* arena) const override;
 
-  int GetCachedSize() const override;
-  void SetCachedSize(int size) const override;
+  internal::CachedSize* AccessCachedSize() const final {
+    return &cached_byte_size_;
+  }
 
   Metadata GetMetadata() const override;
 
@@ -270,7 +271,7 @@ class DynamicMessage final : public Message {
   void* MutableOneofFieldRaw(const FieldDescriptor* f);
 
   const DynamicMessageFactory::TypeInfo* type_info_;
-  mutable std::atomic<int> cached_byte_size_;
+  mutable internal::CachedSize cached_byte_size_;
 };
 
 struct DynamicMessageFactory::TypeInfo {
@@ -611,14 +612,6 @@ Message* DynamicMessage::New(Arena* arena) const {
     memset(new_base, 0, type_info_->size);
     return new (new_base) DynamicMessage(type_info_);
   }
-}
-
-int DynamicMessage::GetCachedSize() const {
-  return cached_byte_size_.load(std::memory_order_relaxed);
-}
-
-void DynamicMessage::SetCachedSize(int size) const {
-  cached_byte_size_.store(size, std::memory_order_relaxed);
 }
 
 Metadata DynamicMessage::GetMetadata() const {

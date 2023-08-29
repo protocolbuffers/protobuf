@@ -226,8 +226,6 @@ class MapEntry : public Message {
     return ValueTypeHandler::Write(kValueFieldNumber, value(), ptr, stream);
   }
 
-  int GetCachedSize() const override { return ByteSizeLong(); }
-
   bool IsInitialized() const override {
     return ValueTypeHandler::IsInitialized(value_);
   }

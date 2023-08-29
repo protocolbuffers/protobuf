@@ -1558,14 +1558,16 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   }
 
   if (!HasSimpleBaseClass(descriptor_, options_)) {
-    format(
-        "int GetCachedSize() const final { return "
-        "$cached_size$.Get(); }"
-        "\n\nprivate:\n"
-        "void SharedCtor(::$proto_ns$::Arena* arena);\n"
-        "void SharedDtor();\n"
-        "void SetCachedSize(int size) const$ full_final$;\n"
-        "void InternalSwap($classname$* other);\n");
+    p->Emit(
+        R"cc(
+          int GetCachedSize() const { return $cached_size$.Get(); }
+
+          private:
+          $pbi$::CachedSize* AccessCachedSize() const final;
+          void SharedCtor(::$proto_ns$::Arena* arena);
+          void SharedDtor();
+          void InternalSwap($classname$* other);
+        )cc");
   }
 
   format(
@@ -2098,6 +2100,14 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         "}\n",
         DefaultInstanceName(descriptor_, options_, /*split=*/true),
         DefaultInstanceName(descriptor_, options_, /*split=*/false));
+  }
+
+  if (!HasSimpleBaseClass(descriptor_, options_)) {
+    p->Emit(R"cc(
+      ::_pbi::CachedSize* $classname$::AccessCachedSize() const {
+        return &$cached_size$;
+      }
+    )cc");
   }
 
   GenerateVerify(p);
@@ -3515,15 +3525,6 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
   if (NeedsArenaDestructor() > ArenaDtorNeeds::kNone) {
     GenerateArenaDestructorCode(p);
   }
-
-  if (!HasSimpleBaseClass(descriptor_, options_)) {
-    // Generate SetCachedSize.
-    p->Emit(R"cc(
-      void $classname$::SetCachedSize(int size) const {
-        $cached_size$.Set(size);
-      }
-    )cc");
-  }
 }
 
 void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
@@ -4731,8 +4732,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
             if ($have_unknown_fields$) {
               total_size += ::_pbi::ComputeUnknownMessageSetItemsSize($unknown_fields$);
             }
-            int cached_size = ::_pbi::ToCachedSize(total_size);
-            SetCachedSize(cached_size);
+            $cached_size$.Set(::_pbi::ToCachedSize(total_size));
             return total_size;
           }
         )cc");
@@ -4900,10 +4900,10 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     // abstract away the underlying atomic. This makes it easier on platforms
     // where even relaxed memory order might have perf impact to replace it with
     // ordinary loads and stores.
-    format(
-        "int cached_size = ::_pbi::ToCachedSize(total_size);\n"
-        "SetCachedSize(cached_size);\n"
-        "return total_size;\n");
+    p->Emit(R"cc(
+      $cached_size$.Set(::_pbi::ToCachedSize(total_size));
+      return total_size;
+    )cc");
   }
 
   format.Outdent();
