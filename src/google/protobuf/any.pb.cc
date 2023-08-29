@@ -210,9 +210,6 @@ inline void Any::SharedDtor() {
   _impl_.value_.Destroy();
   _impl_._any_metadata_.~AnyMetadata();
 }
-void Any::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
-}
 
 PROTOBUF_NOINLINE void Any::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
@@ -360,6 +357,9 @@ PROTOBUF_NOINLINE bool Any::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Any::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Any::InternalSwap(Any* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();

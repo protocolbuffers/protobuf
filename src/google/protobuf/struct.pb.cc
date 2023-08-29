@@ -270,9 +270,6 @@ inline void Struct::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.fields_.~MapField();
 }
-void Struct::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
-}
 
 PROTOBUF_NOINLINE void Struct::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Struct)
@@ -418,6 +415,9 @@ PROTOBUF_NOINLINE bool Struct::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Struct::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Struct::InternalSwap(Struct* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -542,9 +542,6 @@ inline void Value::SharedDtor() {
   if (has_kind()) {
     clear_kind();
   }
-}
-void Value::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 void Value::clear_kind() {
@@ -821,6 +818,9 @@ PROTOBUF_NOINLINE bool Value::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Value::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Value::InternalSwap(Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -871,9 +871,6 @@ ListValue::~ListValue() {
 inline void ListValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.values_.~RepeatedPtrField();
-}
-void ListValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void ListValue::Clear() {
@@ -996,6 +993,9 @@ PROTOBUF_NOINLINE bool ListValue::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* ListValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void ListValue::InternalSwap(ListValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

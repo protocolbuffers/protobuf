@@ -521,9 +521,6 @@ inline void Type::SharedDtor() {
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
 }
-void Type::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
-}
 
 PROTOBUF_NOINLINE void Type::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
@@ -801,6 +798,9 @@ PROTOBUF_NOINLINE bool Type::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Type::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Type::InternalSwap(Type* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -934,9 +934,6 @@ inline void Field::SharedDtor() {
   _impl_.type_url_.Destroy();
   _impl_.json_name_.Destroy();
   _impl_.default_value_.Destroy();
-}
-void Field::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Field::Clear() {
@@ -1279,6 +1276,9 @@ PROTOBUF_NOINLINE bool Field::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Field::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Field::InternalSwap(Field* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -1401,9 +1401,6 @@ inline void Enum::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
-}
-void Enum::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Enum::Clear() {
@@ -1660,6 +1657,9 @@ PROTOBUF_NOINLINE bool Enum::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Enum::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Enum::InternalSwap(Enum* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -1740,9 +1740,6 @@ inline void EnumValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
-}
-void EnumValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void EnumValue::Clear() {
@@ -1916,6 +1913,9 @@ PROTOBUF_NOINLINE bool EnumValue::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* EnumValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void EnumValue::InternalSwap(EnumValue* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -2004,9 +2004,6 @@ inline void Option::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.value_;
-}
-void Option::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Option::Clear() {
@@ -2165,6 +2162,9 @@ PROTOBUF_NOINLINE bool Option::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Option::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Option::InternalSwap(Option* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
