@@ -322,7 +322,7 @@ void GenerateRs(Context<Descriptor> msg) {
           }
         }
 
-        #[derive(Debug, Copy, Clone)]
+        #[derive(Debug)]
         #[allow(dead_code)]
         pub struct $Msg$Mut<'a> {
           inner: $pbr$::MutatorMessageRef<'a>,
