@@ -38,7 +38,7 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # v3.0.3
+        uses: actions/setup-dotnet@3447fd6a9f9e57506b15f895c5b76d3b197dc7c2 # v3.2.0
         with:
           dotnet-version: '6.0.x'
 
