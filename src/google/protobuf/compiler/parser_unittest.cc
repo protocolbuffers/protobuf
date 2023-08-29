@@ -1134,6 +1134,19 @@ TEST_F(ParseMessageTest, ExplicitOptionalLabelProto3) {
       "}");
 }
 
+TEST_F(ParseMessageTest, CanHandleErrorOnFirstToken) {
+  require_syntax_identifier_ = false;
+  ExpectHasEarlyExitErrors(
+      "/", "0:0: Expected top-level statement (e.g. \"message\").\n");
+
+  require_syntax_identifier_ = true;
+  ExpectHasEarlyExitErrors(
+      "/",
+      "0:0: Expected top-level statement (e.g. \"message\").\n"
+      "0:0: File must begin with a syntax statement, e.g. 'syntax = "
+      "\"proto2\";'.\n");
+}
+
 // ===================================================================
 
 typedef ParserTest ParseEnumTest;
