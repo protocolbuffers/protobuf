@@ -1054,7 +1054,7 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
      "Default Value"},
     {"has_default_value", (getter)PyUpb_FieldDescriptor_HasDefaultValue},
     {"is_extension", (getter)PyUpb_FieldDescriptor_GetIsExtension, NULL, "ID"},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
+    // TODO(https://github.com/protocolbuffers/protobuf/issues/13760)
     //{ "id", (getter)GetID, NULL, "ID"},
     {"message_type", (getter)PyUpb_FieldDescriptor_GetMessageType, NULL,
      "Message type"},
@@ -1069,7 +1069,7 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
      "Has Options"},
     {"has_presence", (getter)PyUpb_FieldDescriptor_GetHasPresence, NULL,
      "Has Presence"},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
+    // TODO(https://github.com/protocolbuffers/protobuf/issues/13760)
     //{ "_options",
     //(getter)NULL, (setter)SetOptions, "Options"}, { "_serialized_options",
     //(getter)NULL, (setter)SetSerializedOptions, "Serialized Options"},
