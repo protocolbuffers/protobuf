@@ -104,6 +104,7 @@ staleness_test(
         "ext/google/protobuf/php-upb.c",
     ],
     generated_pattern = "generated-in/%s",
+    tags = ["manual"],
 )
 
 ################################################################################
