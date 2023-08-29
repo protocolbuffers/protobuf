@@ -248,6 +248,10 @@ void DeepCopy(upb_Message* target, const upb_Message* source,
 upb_Message* DeepClone(const upb_Message* source,
                        const upb_MiniTable* mini_table, upb_Arena* arena);
 
+absl::Status SetExtension(upb_Message* msg, upb_Arena* message_arena,
+                          const upb_MiniTableExtension* ext,
+                          upb_Message* extension, upb_Arena* extension_arena);
+
 }  // namespace internal
 
 template <typename T>
@@ -372,17 +376,10 @@ absl::Status SetExtension(
     Extension& value) {
   static_assert(!std::is_const_v<T>);
   auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
-  upb_Message_Extension* msg_ext = _upb_Message_GetOrCreateExtension(
-      internal::GetInternalMsg(message), id.mini_table_ext(), message_arena);
-  if (!msg_ext) {
-    return MessageAllocationError();
-  }
-  auto* extension_arena = static_cast<upb_Arena*>(message->GetInternalArena());
-  if (message_arena != extension_arena) {
-    upb_Arena_Fuse(message_arena, extension_arena);
-  }
-  msg_ext->data.ptr = internal::GetInternalMsg(&value);
-  return absl::OkStatus();
+  auto* extension_arena = static_cast<upb_Arena*>(value.GetInternalArena());
+  return ::protos::internal::SetExtension(
+      internal::GetInternalMsg(message), message_arena, id.mini_table_ext(),
+      internal::GetInternalMsg(&value), extension_arena);
 }
 
 template <typename T, typename Extendee, typename Extension,

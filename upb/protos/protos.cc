@@ -182,6 +182,21 @@ upb_Message* DeepClone(const upb_Message* source,
   return upb_Message_DeepClone(source, mini_table, arena);
 }
 
+absl::Status SetExtension(upb_Message* msg, upb_Arena* message_arena,
+                          const upb_MiniTableExtension* ext,
+                          upb_Message* extension, upb_Arena* extension_arena) {
+  upb_Message_Extension* msg_ext =
+      _upb_Message_GetOrCreateExtension(msg, ext, message_arena);
+  if (!msg_ext) {
+    return MessageAllocationError();
+  }
+  if (message_arena != extension_arena) {
+    upb_Arena_Fuse(message_arena, extension_arena);
+  }
+  msg_ext->data.ptr = extension;
+  return absl::OkStatus();
+}
+
 }  // namespace internal
 
 }  // namespace protos
