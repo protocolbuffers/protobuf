@@ -47,7 +47,11 @@ message CppFeatures {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: "2023", value: "false" }
+    edition_defaults = {
+      edition: "2023",
+      edition_enum: EDITION_2023,
+      value: "false"
+    }
   ];
 
   // The UTF8 validation strategy to use.  See go/editions-utf8-validation for
@@ -68,6 +72,10 @@ message CppFeatures {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: "2023", value: "VERIFY_PARSE" }
+    edition_defaults = {
+      edition: "2023",
+      edition_enum: EDITION_2023,
+      value: "VERIFY_PARSE"
+    }
   ];
 }

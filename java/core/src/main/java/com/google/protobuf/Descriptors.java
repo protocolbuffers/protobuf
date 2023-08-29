@@ -33,6 +33,7 @@ package com.google.protobuf;
 import static com.google.protobuf.Internal.checkNotNull;
 
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
+import com.google.protobuf.DescriptorProtos.Edition;
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.DescriptorProtos.EnumOptions;
 import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProto;
@@ -190,8 +191,16 @@ public final class Descriptors {
     }
 
     /** Get the edition of the .proto file. */
-    public String getEdition() {
-      return proto.getEdition();
+    public Edition getEdition() {
+      return proto.getEditionEnum();
+    }
+
+    /** Gets the name of the edition as specified in the .proto file. */
+    public String getEditionName() {
+      if (proto.getEditionEnum().equals(Edition.EDITION_UNKNOWN)) {
+        return "";
+      }
+      return proto.getEditionEnum().name().substring("EDITION_".length());
     }
 
     public void copyHeadingTo(FileDescriptorProto.Builder protoBuilder) {
@@ -201,7 +210,7 @@ public final class Descriptors {
       }
 
       if (getSyntax().equals(Syntax.EDITIONS)) {
-        protoBuilder.setEdition(getEdition());
+        protoBuilder.setEditionEnum(getEdition());
       }
 
       if (!getOptions().equals(FileOptions.getDefaultInstance())) {

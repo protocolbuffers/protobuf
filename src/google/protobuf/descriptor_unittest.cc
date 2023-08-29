@@ -85,6 +85,9 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+using ::google::protobuf::internal::cpp::GetUtf8CheckMode;
+using ::google::protobuf::internal::cpp::HasPreservingUnknownEnumSemantics;
+using ::google::protobuf::internal::cpp::Utf8CheckMode;
 using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
@@ -516,17 +519,17 @@ TEST_F(FileDescriptorTest, Syntax) {
   }
   {
     proto.set_syntax("editions");
-    proto.set_edition("2023");
+    proto.set_edition_enum(EDITION_2023);
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     ASSERT_TRUE(file != nullptr);
     EXPECT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS,
               FileDescriptorLegacy(file).syntax());
-    EXPECT_EQ("2023", file->edition());
+    EXPECT_EQ(file->edition(), EDITION_2023);
     FileDescriptorProto other;
     file->CopyTo(&other);
     EXPECT_EQ("editions", other.syntax());
-    EXPECT_EQ("2023", other.edition());
+    EXPECT_EQ(other.edition_enum(), EDITION_2023);
   }
 }
 
@@ -554,7 +557,7 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
   EXPECT_EQ(&other.options().features(), &FeatureSet::default_instance());
   {
     proto.set_syntax("editions");
-    proto.set_edition("2023");
+    proto.set_edition_enum(EDITION_2023);
 
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
@@ -565,7 +568,7 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
     EXPECT_EQ(other.name(), "foo.proto");
     EXPECT_EQ(other.package(), "foo.bar.baz");
     EXPECT_EQ(other.syntax(), "editions");
-    EXPECT_EQ(other.edition(), "2023");
+    EXPECT_EQ(other.edition_enum(), EDITION_2023);
     EXPECT_EQ(other.options().java_package(), "foo.bar.baz");
     EXPECT_TRUE(other.message_type().empty());
     EXPECT_EQ(&other.options().features(), &FeatureSet::default_instance());
@@ -7250,7 +7253,7 @@ class FeaturesTest : public FeaturesBaseTest {
          pb::TestFeatures::descriptor()->file()->extension(0),
          pb::TestMessage::descriptor()->extension(0),
          pb::TestMessage::Nested::descriptor()->extension(0)},
-        "2023", "2025");
+        EDITION_2023, EDITION_99999_TEST_ONLY);
     ASSERT_OK(default_spec);
     pool_.SetFeatureSetDefaults(std::move(default_spec).value());
   }
@@ -7365,8 +7368,11 @@ TEST_F(FeaturesTest, Proto2Features) {
                 })pb"));
   EXPECT_TRUE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
+  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/false), Utf8CheckMode::kVerify);
+  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/true), Utf8CheckMode::kNone);
   EXPECT_FALSE(field->is_packed());
   EXPECT_FALSE(field->legacy_enum_field_treated_as_closed());
+  EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field));
   EXPECT_FALSE(message->FindFieldByName("str")->requires_utf8_validation());
   EXPECT_FALSE(message->FindFieldByName("rep")->is_packed());
   EXPECT_FALSE(message->FindFieldByName("utf8")->requires_utf8_validation());
@@ -7431,8 +7437,11 @@ TEST_F(FeaturesTest, Proto3Features) {
                 })pb"));
   EXPECT_FALSE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
+  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/false), Utf8CheckMode::kStrict);
+  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/true), Utf8CheckMode::kStrict);
   EXPECT_FALSE(field->is_packed());
   EXPECT_FALSE(field->legacy_enum_field_treated_as_closed());
+  EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field));
   EXPECT_TRUE(message->FindFieldByName("rep")->is_packed());
   EXPECT_TRUE(message->FindFieldByName("str")->requires_utf8_validation());
   EXPECT_FALSE(message->FindFieldByName("expanded")->is_packed());
@@ -7545,10 +7554,11 @@ TEST_F(FeaturesTest, Proto3Extensions) {
 }
 
 TEST_F(FeaturesTest, Edition2023Defaults) {
-  FileDescriptorProto file_proto =
-      ParseTextOrDie(R"pb(
-        name: "foo.proto" syntax: "editions" edition: "2023"
-      )pb");
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition_enum: EDITION_2023
+  )pb");
 
   BuildDescriptorMessagesInTestPool();
   const FileDescriptor* file = ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
@@ -7575,7 +7585,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
   )pb");
   ASSERT_NE(file, nullptr);
@@ -7598,7 +7608,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     options {
       java_package: "bar"
       features { field_presence: IMPLICIT }
@@ -7623,7 +7633,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       java_package: "bar"
@@ -7770,7 +7780,7 @@ TEST_F(FeaturesTest, RestoresLabelRoundTrip) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     message_type {
       name: "Foo"
       field {
@@ -7800,7 +7810,7 @@ TEST_F(FeaturesTest, RestoresGroupRoundTrip) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     message_type {
       name: "Foo"
       nested_type {
@@ -7834,7 +7844,7 @@ TEST_F(FeaturesTest, OnlyMessagesInheritGroupEncoding) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     options { features { message_encoding: DELIMITED } }
     message_type {
       name: "Foo"
@@ -7862,10 +7872,11 @@ TEST_F(FeaturesTest, OnlyMessagesInheritGroupEncoding) {
 
 TEST_F(FeaturesTest, NoOptions) {
   BuildDescriptorMessagesInTestPool();
-  const FileDescriptor* file =
-      BuildFile(R"pb(
-        name: "foo.proto" syntax: "editions" edition: "2023"
-      )pb");
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition_enum: EDITION_2023
+  )pb");
   EXPECT_EQ(&file->options(), &FileOptions::default_instance());
   EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
                 field_presence: EXPLICIT
@@ -7883,9 +7894,11 @@ TEST_F(FeaturesTest, InvalidEdition) {
   BuildDescriptorMessagesInTestPool();
   BuildFileWithErrors(
       R"pb(
-        name: "foo.proto" syntax: "editions" edition: "2022"
+        name: "foo.proto"
+        syntax: "editions"
+        edition_enum: EDITION_1_TEST_ONLY
       )pb",
-      "foo.proto: foo.proto: EDITIONS: Edition 2022 is earlier than the "
+      "foo.proto: foo.proto: EDITIONS: Edition 1_TEST_ONLY is earlier than the "
       "minimum supported edition 2023\n");
 }
 
@@ -7894,7 +7907,7 @@ TEST_F(FeaturesTest, FileFeatures) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     options { features { field_presence: IMPLICIT } }
   )pb");
   EXPECT_THAT(file->options(), EqualsProto(""));
@@ -7916,22 +7929,22 @@ TEST_F(FeaturesTest, FileFeaturesExtension) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2024"
+    edition_enum: EDITION_99998_TEST_ONLY
     dependency: "google/protobuf/unittest_features.proto"
     options { features { field_presence: IMPLICIT } }
   )pb");
   EXPECT_THAT(file->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(file).field_presence(), FeatureSet::IMPLICIT);
   EXPECT_EQ(GetFeatures(file).enum_type(), FeatureSet::OPEN);
-  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), 4);
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), 3);
   EXPECT_EQ(GetFeatures(file)
                 .GetExtension(pb::TestMessage::test_message)
                 .int_file_feature(),
-            4);
+            3);
   EXPECT_EQ(GetFeatures(file)
                 .GetExtension(pb::TestMessage::Nested::test_nested)
                 .int_file_feature(),
-            4);
+            3);
 }
 
 TEST_F(FeaturesTest, FileFeaturesExtensionOverride) {
@@ -7940,7 +7953,7 @@ TEST_F(FeaturesTest, FileFeaturesExtensionOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2024"
+    edition_enum: EDITION_99998_TEST_ONLY
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -7970,7 +7983,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     message_type { name: "Foo" }
   )pb");
   const Descriptor* message = file->message_type(0);
@@ -7992,7 +8005,7 @@ TEST_F(FeaturesTest, MessageFeaturesInherit) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     options { features { field_presence: IMPLICIT } }
     message_type { name: "Foo" }
   )pb");
@@ -8007,7 +8020,7 @@ TEST_F(FeaturesTest, MessageFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8035,7 +8048,7 @@ TEST_F(FeaturesTest, NestedMessageFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8074,7 +8087,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     message_type {
       name: "Foo"
       field { name: "bar" number: 1 label: LABEL_REPEATED type: TYPE_INT64 }
@@ -8100,7 +8113,7 @@ TEST_F(FeaturesTest, FieldFeaturesInherit) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8131,7 +8144,7 @@ TEST_F(FeaturesTest, FieldFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8175,7 +8188,7 @@ TEST_F(FeaturesTest, OneofFieldFeaturesInherit) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8220,7 +8233,7 @@ TEST_F(FeaturesTest, OneofFieldFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8329,7 +8342,7 @@ TEST_F(FeaturesTest, RootExtensionFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8370,7 +8383,7 @@ TEST_F(FeaturesTest, MessageExtensionFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8418,7 +8431,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     enum_type {
       name: "Foo"
       value { name: "BAR" number: 0 }
@@ -8443,7 +8456,7 @@ TEST_F(FeaturesTest, EnumFeaturesInherit) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     options { features { enum_type: CLOSED } }
     enum_type {
       name: "Foo"
@@ -8461,7 +8474,7 @@ TEST_F(FeaturesTest, EnumFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8489,7 +8502,7 @@ TEST_F(FeaturesTest, NestedEnumFeatures) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8527,7 +8540,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     enum_type {
       name: "Foo"
       value { name: "BAR" number: 0 }
@@ -8552,7 +8565,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesInherit) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     options { features { enum_type: CLOSED } }
     enum_type {
       name: "Foo"
@@ -8576,7 +8589,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8614,7 +8627,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     message_type {
       name: "Foo"
       field {
@@ -8646,7 +8659,7 @@ TEST_F(FeaturesTest, OneofFeaturesInherit) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     options { features { enum_type: CLOSED } }
     message_type {
       name: "Foo"
@@ -8677,7 +8690,7 @@ TEST_F(FeaturesTest, OneofFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8721,7 +8734,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     message_type {
       name: "Foo"
       extension_range { start: 1 end: 100 }
@@ -8747,7 +8760,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesInherit) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     options { features { enum_type: CLOSED } }
     message_type {
       name: "Foo"
@@ -8772,7 +8785,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8811,7 +8824,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     service { name: "Foo" }
   )pb");
   const ServiceDescriptor* service = file->service(0);
@@ -8833,7 +8846,7 @@ TEST_F(FeaturesTest, ServiceFeaturesInherit) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     options { features { enum_type: CLOSED } }
     service { name: "Foo" }
   )pb");
@@ -8848,7 +8861,7 @@ TEST_F(FeaturesTest, ServiceFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
@@ -8875,7 +8888,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     message_type { name: "EmptyMsg" }
     service {
       name: "Foo"
@@ -8902,7 +8915,7 @@ TEST_F(FeaturesTest, MethodFeaturesInherit) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     message_type { name: "EmptyMsg" }
     options { features { enum_type: CLOSED } }
@@ -8929,7 +8942,7 @@ TEST_F(FeaturesTest, MethodFeaturesOverride) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     message_type { name: "EmptyMsg" }
     options {
@@ -8973,7 +8986,7 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
     name: "foo.proto"
     syntax: "editions"
     dependency: "google/protobuf/cpp_features.proto"
-    edition: "2023"
+    edition_enum: EDITION_2023
     message_type {
       name: "Foo"
       field { name: "def" number: 1 label: LABEL_OPTIONAL type: TYPE_STRING }
@@ -9045,10 +9058,18 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
   EXPECT_FALSE(default_field->is_required());
   EXPECT_TRUE(default_field->has_presence());
   EXPECT_TRUE(default_field->requires_utf8_validation());
+  EXPECT_EQ(GetUtf8CheckMode(default_field, /*is_lite=*/false),
+            Utf8CheckMode::kStrict);
+  EXPECT_EQ(GetUtf8CheckMode(default_field, /*is_lite=*/true),
+            Utf8CheckMode::kStrict);
 
   EXPECT_TRUE(default_repeated_field->is_packed());
   EXPECT_FALSE(default_repeated_field->has_presence());
   EXPECT_FALSE(default_repeated_field->requires_utf8_validation());
+  EXPECT_EQ(GetUtf8CheckMode(default_repeated_field, /*is_lite=*/false),
+            Utf8CheckMode::kStrict);
+  EXPECT_EQ(GetUtf8CheckMode(default_repeated_field, /*is_lite=*/true),
+            Utf8CheckMode::kStrict);
 
   EXPECT_TRUE(required_field->has_presence());
   EXPECT_TRUE(required_field->is_required());
@@ -9058,7 +9079,15 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
   EXPECT_FALSE(implicit_field->has_presence());
   EXPECT_FALSE(expanded_field->is_packed());
   EXPECT_FALSE(utf8_verify_field->requires_utf8_validation());
+  EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/false),
+            Utf8CheckMode::kVerify);
+  EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/true),
+            Utf8CheckMode::kNone);
   EXPECT_FALSE(utf8_none_field->requires_utf8_validation());
+  EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/false),
+            Utf8CheckMode::kVerify);
+  EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/true),
+            Utf8CheckMode::kNone);
 }
 
 TEST_F(FeaturesTest, EnumFeatureHelpers) {
@@ -9068,7 +9097,7 @@ TEST_F(FeaturesTest, EnumFeatureHelpers) {
     name: "foo.proto"
     syntax: "editions"
     dependency: "google/protobuf/cpp_features.proto"
-    edition: "2023"
+    edition_enum: EDITION_2023
     enum_type {
       name: "FooOpen"
       value { name: "BAR" number: 0 }
@@ -9120,6 +9149,9 @@ TEST_F(FeaturesTest, EnumFeatureHelpers) {
   EXPECT_FALSE(field_open->legacy_enum_field_treated_as_closed());
   EXPECT_TRUE(field_closed->legacy_enum_field_treated_as_closed());
   EXPECT_TRUE(field_legacy_closed->legacy_enum_field_treated_as_closed());
+  EXPECT_TRUE(HasPreservingUnknownEnumSemantics(field_open));
+  EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field_closed));
+  EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field_legacy_closed));
 }
 
 TEST_F(FeaturesTest, MergeFeatureValidationFailed) {
@@ -9129,7 +9161,7 @@ TEST_F(FeaturesTest, MergeFeatureValidationFailed) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2024"
+        edition_enum: EDITION_2023
         dependency: "google/protobuf/unittest_features.proto"
         options { features { field_presence: FIELD_PRESENCE_UNKNOWN } }
       )pb",
@@ -9158,7 +9190,7 @@ TEST_F(FeaturesTest, InvalidFieldImplicitDefault) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9181,7 +9213,7 @@ TEST_F(FeaturesTest, InvalidFieldImplicitOpen) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9209,7 +9241,7 @@ TEST_F(FeaturesTest, InvalidFieldRequiredExtension) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           extension_range { start: 1 end: 100 }
@@ -9232,7 +9264,7 @@ TEST_F(FeaturesTest, InvalidFieldImplicitExtension) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           extension_range { start: 1 end: 100 }
@@ -9255,7 +9287,7 @@ TEST_F(FeaturesTest, InvalidFieldMessageImplicit) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9278,7 +9310,7 @@ TEST_F(FeaturesTest, InvalidFieldRepeatedImplicit) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9328,7 +9360,7 @@ TEST_F(FeaturesTest, InvalidFieldOneofImplicit) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9351,7 +9383,7 @@ TEST_F(FeaturesTest, InvalidFieldRepeatedRequired) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9373,7 +9405,7 @@ TEST_F(FeaturesTest, InvalidFieldOneofRequired) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9396,7 +9428,7 @@ TEST_F(FeaturesTest, InvalidFieldNonRepeatedWithRepeatedEncoding) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9418,7 +9450,7 @@ TEST_F(FeaturesTest, InvalidFieldNonPackableWithPackedRepeatedEncoding) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9440,7 +9472,7 @@ TEST_F(FeaturesTest, InvalidFieldNonMessageWithMessageEncoding) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9491,7 +9523,7 @@ TEST_F(FeaturesTest, InvalidOpenEnumNonZeroFirstValue) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         enum_type {
           name: "Enum"
           value { name: "BAR" number: 1 }
@@ -9508,7 +9540,7 @@ TEST_F(FeaturesTest, ClosedEnumNonZeroFirstValue) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         enum_type {
           name: "Enum"
           value { name: "BAR" number: 9 }
@@ -9525,7 +9557,7 @@ TEST_F(FeaturesTest, CopyToIncludesFeatures) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       java_package: "pkg"
@@ -9566,7 +9598,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     options {
       uninterpreted_option {
         name { name_part: "features" is_extension: false }
@@ -9593,7 +9625,7 @@ TEST_F(FeaturesTest, UninterpretedOptionsMerge) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     options {
       uninterpreted_option {
         name { name_part: "features" is_extension: false }
@@ -9631,7 +9663,7 @@ TEST_F(FeaturesTest, UninterpretedOptionsMergeExtension) {
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    edition: "2023"
+    edition_enum: EDITION_2023
     dependency: "google/protobuf/unittest_features.proto"
     options {
       uninterpreted_option {
@@ -9699,7 +9731,7 @@ TEST_F(FeaturesTest, InvalidJsonUniquenessDefaultWarning) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9726,7 +9758,7 @@ TEST_F(FeaturesTest, InvalidJsonUniquenessDefaultError) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9753,7 +9785,7 @@ TEST_F(FeaturesTest, InvalidJsonUniquenessCustomError) {
       R"pb(
         name: "foo.proto"
         syntax: "editions"
-        edition: "2023"
+        edition_enum: EDITION_2023
         message_type {
           name: "Foo"
           field {
@@ -9833,13 +9865,13 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(
         std::make_tuple("Empty", R"pb(name: "foo.proto"
                                       syntax: "editions"
-                                      edition: "2023"
+                                      edition_enum: EDITION_2023
         )pb"),
         std::make_tuple(
             "FileFeature",
             R"pb(name: "foo.proto"
                  syntax: "editions"
-                 edition: "2023"
+                 edition_enum: EDITION_2023
                  dependency: "google/protobuf/unittest_features.proto"
                  options {
                    features {
@@ -9850,7 +9882,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("FieldFeature",
                         R"pb(name: "foo.proto"
                              syntax: "editions"
-                             edition: "2023"
+                             edition_enum: EDITION_2023
                              message_type {
                                name: "Foo"
                                field {
@@ -9867,7 +9899,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("Required",
                         R"pb(name: "foo.proto"
                              syntax: "editions"
-                             edition: "2023"
+                             edition_enum: EDITION_2023
                              message_type {
                                name: "Foo"
                                field {
@@ -9884,7 +9916,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("Group",
                         R"pb(name: "foo.proto"
                              syntax: "editions"
-                             edition: "2023"
+                             edition_enum: EDITION_2023
                              message_type {
                                name: "Foo"
                                nested_type {
@@ -9911,7 +9943,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("MessageFeature",
                         R"pb(name: "foo.proto"
                              syntax: "editions"
-                             edition: "2023"
+                             edition_enum: EDITION_2023
                              message_type {
                                name: "Foo"
                                options {
@@ -9923,7 +9955,7 @@ INSTANTIATE_TEST_SUITE_P(
             "OneofFeature",
             R"pb(name: "foo.proto"
                  syntax: "editions"
-                 edition: "2023"
+                 edition_enum: EDITION_2023
                  dependency: "google/protobuf/unittest_features.proto"
                  message_type {
                    name: "Foo"
@@ -9947,7 +9979,7 @@ INSTANTIATE_TEST_SUITE_P(
             "ExtensionRangeFeature",
             R"pb(name: "foo.proto"
                  syntax: "editions"
-                 edition: "2023"
+                 edition_enum: EDITION_2023
                  dependency: "google/protobuf/unittest_features.proto"
                  message_type {
                    name: "Foo"
@@ -9965,7 +9997,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("EnumFeature",
                         R"pb(name: "foo.proto"
                              syntax: "editions"
-                             edition: "2023"
+                             edition_enum: EDITION_2023
                              enum_type {
                                name: "Foo"
                                value { name: "BAR" number: 1 }
@@ -9976,7 +10008,7 @@ INSTANTIATE_TEST_SUITE_P(
             "EnumValueFeature",
             R"pb(name: "foo.proto"
                  syntax: "editions"
-                 edition: "2023"
+                 edition_enum: EDITION_2023
                  dependency: "google/protobuf/unittest_features.proto"
                  enum_type {
                    name: "Foo"
@@ -9996,7 +10028,7 @@ INSTANTIATE_TEST_SUITE_P(
             "ServiceFeature",
             R"pb(name: "foo.proto"
                  syntax: "editions"
-                 edition: "2023"
+                 edition_enum: EDITION_2023
                  dependency: "google/protobuf/unittest_features.proto"
                  service {
                    name: "FooService"
@@ -10011,7 +10043,7 @@ INSTANTIATE_TEST_SUITE_P(
             "MethodFeature",
             R"pb(name: "foo.proto"
                  syntax: "editions"
-                 edition: "2023"
+                 edition_enum: EDITION_2023
                  dependency: "google/protobuf/unittest_features.proto"
                  message_type { name: "EmptyMessage" }
                  service {

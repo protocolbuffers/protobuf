@@ -446,13 +446,13 @@ class DescriptorPoolTypeResolverSyntaxTest : public testing::Test {
 
   const FileDescriptor* BuildFile(
       absl::string_view syntax,
-      absl::optional<absl::string_view> edition = absl::nullopt) {
+      absl::optional<Edition> edition = absl::nullopt) {
     FileDescriptorProto proto;
     proto.set_package("test");
     proto.set_name("foo");
     proto.set_syntax(syntax);
     if (edition.has_value()) {
-      proto.set_edition(*edition);
+      proto.set_edition_enum(*edition);
     }
     DescriptorProto* message = proto.add_message_type();
     message->set_name("MyMessage");
