@@ -1194,10 +1194,18 @@ void PrintDescriptorOptionsFixingCode(absl::string_view descriptor,
                                       io::Printer* printer) {
   // Reset the _options to None thus DescriptorBase.GetOptions() can
   // parse _options again after extensions are registered.
+  size_t dot_pos = descriptor.find('.');
+  std::string descriptor_name;
+  if (dot_pos == std::string::npos) {
+    descriptor_name = absl::StrCat("_globals['", descriptor, "']");
+  } else {
+    descriptor_name = absl::StrCat("_globals['", descriptor.substr(0, dot_pos),
+                                   "']", descriptor.substr(dot_pos));
+  }
   printer->Print(
-      "$descriptor$._options = None\n"
-      "$descriptor$._serialized_options = $serialized_value$\n",
-      "descriptor", descriptor, "serialized_value", options);
+      "$descriptor_name$._options = None\n"
+      "$descriptor_name$._serialized_options = $serialized_value$\n",
+      "descriptor_name", descriptor_name, "serialized_value", options);
 }
 }  // namespace
 
