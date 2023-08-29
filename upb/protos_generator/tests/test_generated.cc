@@ -46,6 +46,8 @@
 #include "protos_generator/tests/test_model.upb.proto.h"
 #include "upb/mem/arena.h"
 
+namespace {
+
 using ::protos_generator::test::protos::ChildModel1;
 using ::protos_generator::test::protos::other_ext;
 using ::protos_generator::test::protos::RED;
@@ -59,6 +61,12 @@ using ::protos_generator::test::protos::theme;
 using ::protos_generator::test::protos::ThemeExtension;
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
+
+// C++17 port of C++20 `requires`
+template <typename... T, typename F>
+constexpr bool Requires(F) {
+  return std::is_invocable_v<F, T...>;
+}
 
 TEST(CppGeneratedCode, Constructor) { TestModel test_model; }
 
@@ -963,6 +971,61 @@ TEST(CppGeneratedCode, ProxyToCProxy) {
   (void)child2;
 }
 
+TEST(CppGeneratedCode, MutableAccessorsAreHiddenInCProxy) {
+  TestModel model;
+  ::protos::Ptr<TestModel> proxy = &model;
+  ::protos::Ptr<const TestModel> cproxy = proxy;
+
+  const auto test_const_accessors = [](auto p) {
+    // We don't want to run it, just check it compiles.
+    if (false) {
+      (void)p->has_str1();
+      (void)p->str1();
+      (void)p->has_value();
+      (void)p->value();
+      (void)p->has_oneof_member1();
+      (void)p->oneof_member1();
+      (void)p->value_array();
+      (void)p->value_array_size();
+      (void)p->value_array(1);
+      (void)p->has_nested_child_1();
+      (void)p->nested_child_1();
+      (void)p->child_models();
+      (void)p->child_models_size();
+      (void)p->child_models(1);
+      (void)p->child_map_size();
+      (void)p->get_child_map(1);
+    }
+  };
+
+  test_const_accessors(proxy);
+  test_const_accessors(cproxy);
+
+  const auto test_mutable_accessors = [](auto p, bool expected) {
+    const auto r = [&](auto l) { return Requires<decltype(p)>(l) == expected; };
+    EXPECT_TRUE(r([](auto p) -> decltype(p->set_str1("")) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->clear_str1()) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->set_value(1)) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->clear_value()) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->set_oneof_member1("")) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->clear_oneof_member1()) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->mutable_nested_child_1()) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->clear_nested_child_1()) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->add_value_array(1)) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->mutable_value_array()) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->resize_value_array(1)) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->set_value_array(1, 1)) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->add_child_models()) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->mutable_child_models(1)) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->clear_child_map()) {}));
+    EXPECT_TRUE(r([](auto p) -> decltype(p->delete_child_map(1)) {}));
+    EXPECT_TRUE(r(
+        [](auto p) -> decltype(p->set_child_map(1, *p->get_child_map(1))) {}));
+  };
+  test_mutable_accessors(proxy, true);
+  test_mutable_accessors(cproxy, false);
+}
+
 bool ProxyToCProxyMethod(::protos::Ptr<const ChildModel1> child) {
   return child->child_str1() == "text in child";
 }
@@ -1067,3 +1130,5 @@ TEST(CppGeneratedCode, ClearConstMessageShouldFail) {
   ::protos::ClearMessage(model.child_model_1());
 }
 #endif
+
+}  // namespace

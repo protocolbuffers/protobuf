@@ -447,18 +447,26 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
     // Generate hazzer (if any).
     if (field->has_presence()) {
       output("using $0Access::has_$1;\n", class_name, resolved_field_name);
-      output("using $0Access::clear_$1;\n", class_name, resolved_field_name);
+      if (!read_only) {
+        output("using $0Access::clear_$1;\n", class_name, resolved_field_name);
+      }
     }
     if (field->is_map()) {
       output(
           R"cc(
             using $0Access::$1_size;
-            using $0Access::clear_$1;
-            using $0Access::delete_$1;
             using $0Access::get_$1;
-            using $0Access::set_$1;
           )cc",
           class_name, resolved_field_name);
+      if (!read_only) {
+        output(
+            R"cc(
+              using $0Access::clear_$1;
+              using $0Access::delete_$1;
+              using $0Access::set_$1;
+            )cc",
+            class_name, resolved_field_name);
+      }
     } else if (desc->options().map_entry()) {
       // TODO(b/237399867) Implement map entry
     } else if (field->is_repeated()) {
