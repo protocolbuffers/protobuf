@@ -34,4 +34,7 @@ package naming;
 
 message Reserved {
   optional int32 for = 1; // for is a reserved word in rust, let's make sure we can compile it
+
+  message Inner {}
+  optional Inner pub = 2;  // pub is reserved too!
 }
