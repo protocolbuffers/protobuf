@@ -43,6 +43,7 @@
 #include "upb/message/copy.h"
 
 // Must be last:
+#include "upb/message/types.h"
 #include "upb/port/def.inc"
 
 namespace protos {
@@ -165,7 +166,9 @@ class Iterator {
   using value_type = std::remove_const_t<typename PolicyT::value_type>;
   using difference_type = std::ptrdiff_t;
   using pointer = Iterator;
-  using reference = ReferenceProxy<PolicyT>;
+  using reference =
+      std::conditional_t<PolicyT::kUseReferenceProxy, ReferenceProxy<PolicyT>,
+                         typename PolicyT::value_type>;
 
   constexpr Iterator() noexcept : it_(nullptr) {}
   Iterator(const Iterator& other) = default;
@@ -175,7 +178,13 @@ class Iterator {
       typename = std::enable_if_t<std::is_const<typename P::value_type>::value>>
   Iterator(const Iterator<typename P::RemoveConst>& other) : it_(other.it_) {}
 
-  constexpr reference operator*() const noexcept { return reference(it_); }
+  constexpr reference operator*() const noexcept {
+    if constexpr (PolicyT::kUseReferenceProxy) {
+      return reference(it_);
+    } else {
+      return it_.Get();
+    }
+  }
   // No operator-> needed because T is a scalar.
 
  private:
@@ -275,6 +284,8 @@ class Iterator {
   friend class RepeatedFieldScalarProxy;
   template <typename U>
   friend class RepeatedFieldStringProxy;
+  template <typename U>
+  friend class RepeatedFieldProxy;
 
   // Create from internal::RepeatedFieldScalarProxy.
   explicit Iterator(typename PolicyT::Payload it) noexcept : it_(it) {}
@@ -285,6 +296,7 @@ class Iterator {
 
 template <typename T>
 struct ScalarIteratorPolicy {
+  static constexpr bool kUseReferenceProxy = true;
   using value_type = T;
   using RemoveConst = ScalarIteratorPolicy<std::remove_const_t<T>>;
   using AddConst = ScalarIteratorPolicy<const T>;
@@ -309,6 +321,7 @@ struct ScalarIteratorPolicy {
 
 template <typename T>
 struct StringIteratorPolicy {
+  static constexpr bool kUseReferenceProxy = true;
   using value_type = T;
   using RemoveConst = StringIteratorPolicy<std::remove_const_t<T>>;
   using AddConst = StringIteratorPolicy<const T>;
@@ -347,6 +360,33 @@ struct StringIteratorPolicy {
     operator typename StringIteratorPolicy<const T>::Payload() const {
       return {arr, arena, index};
     }
+  };
+};
+
+template <typename T>
+struct MessageIteratorPolicy {
+  static constexpr bool kUseReferenceProxy = false;
+  using value_type = std::conditional_t<std::is_const_v<T>, typename T::CProxy,
+                                        typename T::Proxy>;
+  using RemoveConst = MessageIteratorPolicy<std::remove_const_t<T>>;
+  using AddConst = MessageIteratorPolicy<const T>;
+
+  struct Payload {
+    using Array =
+        std::conditional_t<std::is_const_v<T>, const upb_Array, upb_Array>;
+    upb_Message** arr;
+    upb_Arena* arena;
+
+    void AddOffset(ptrdiff_t offset) { arr += offset; }
+    auto Get() const {
+      if constexpr (std::is_const_v<T>) {
+        return ::protos::internal::CreateMessage<
+            typename std::remove_const_t<T>>(*arr, arena);
+      } else {
+        return ::protos::internal::CreateMessageProxy<T>(*arr, arena);
+      }
+    }
+    auto Index() const { return arr; }
   };
 };
 

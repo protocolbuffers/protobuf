@@ -559,6 +559,30 @@ TEST(CppGeneratedCode, RepeatedFieldProxyForMessages) {
   ChildModel1 child2;
   child2.set_child_str1(kTestStr2);
   test_model.mutable_child_models()->push_back(std::move(child2));
+
+  int i = 0;
+  for (auto child : test_model.child_models()) {
+    EXPECT_FALSE(Requires<decltype(child)>(
+        [](auto&& x) -> decltype(x.set_child_str1("")) {}));
+    if (i++ == 0) {
+      EXPECT_EQ(child.child_str1(), kTestStr1);
+    } else {
+      EXPECT_EQ(child.child_str1(), kTestStr2);
+    }
+  }
+
+  i = 0;
+  for (auto child : *test_model.mutable_child_models()) {
+    if (i++ == 0) {
+      EXPECT_EQ(child.child_str1(), kTestStr1);
+    } else {
+      EXPECT_EQ(child.child_str1(), kTestStr2);
+    }
+  }
+
+  using testing::_;
+  EXPECT_THAT(test_model.child_models(), ElementsAre(_, _));
+
   EXPECT_EQ(test_model.child_models().size(), 2);
   EXPECT_EQ(test_model.child_models()[0].child_str1(), kTestStr1);
   EXPECT_EQ(test_model.child_models()[1].child_str1(), kTestStr2);
