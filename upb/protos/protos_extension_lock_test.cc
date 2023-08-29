@@ -100,6 +100,11 @@ void TestConcurrentExtensionAccess(::protos::ExtensionRegistry registry) {
     ::upb::Arena arena;
     EXPECT_OK(::protos::Serialize(&parsed_model, arena));
   };
+  const auto test_copy_constructor = [&] {
+    TestModel copy_a = parsed_model;
+    TestModel copy_b = parsed_model;
+    EXPECT_EQ(copy_a.has_str1(), copy_b.has_str1());
+  };
   std::thread t1(test_main);
   std::thread t2(test_main);
   std::thread t3(test_theme);
@@ -107,6 +112,7 @@ void TestConcurrentExtensionAccess(::protos::ExtensionRegistry registry) {
   std::thread t5(test_theme_extension);
   std::thread t6(test_theme_extension);
   std::thread t7(test_serialize);
+  std::thread t8(test_copy_constructor);
   t1.join();
   t2.join();
   t3.join();
@@ -114,6 +120,7 @@ void TestConcurrentExtensionAccess(::protos::ExtensionRegistry registry) {
   t5.join();
   t6.join();
   t7.join();
+  t8.join();
   test_main();
   test_theme();
   test_theme_extension();
