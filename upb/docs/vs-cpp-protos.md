@@ -5,10 +5,10 @@ freshness: { owner: 'haberman' reviewed: '2023-02-24' }
 
 # upb vs. C++ Protobuf Design
 
-[upb](https://github.com/protocolbuffers/upb) is a small C protobuf library.
-While some of the design follows in the footsteps of the C++ Protobuf Library,
-upb departs from C++'s design in several key ways.  This document compares
-and contrasts the two libraries on several design points.
+[upb](https://github.com/protocolbuffers/protobuf/tree/main/upb) is a small C
+protobuf library. While some of the design follows in the footsteps of the C++
+Protobuf Library, upb departs from C++'s design in several key ways.  This
+document compares and contrasts the two libraries on several design points.
 
 ## Design Goals
 
@@ -36,7 +36,8 @@ core to stay small and simple.  We want to be compatible with all FFI
 interfaces, so C ABI compatibility is a must.
 
 Despite these differences, C++ protos and upb offer [roughly the same core set
-of features](https://github.com/protocolbuffers/upb#features).
+of
+features](https://github.com/protocolbuffers/protobuf/tree/main/upb#features).
 
 ## Arenas
 

@@ -1309,9 +1309,9 @@ static PyObject* PyUpb_Message_ParseFromString(PyObject* self, PyObject* arg) {
 }
 
 static PyObject* PyUpb_Message_ByteSize(PyObject* self, PyObject* args) {
-  // TODO(https://github.com/protocolbuffers/upb/issues/462): At the moment upb
-  // does not have a "byte size" function, so we just serialize to string and
-  // get the size of the string.
+  // TODO(https://github.com/protocolbuffers/protobuf/issues/13759): At the
+  // moment upb does not have a "byte size" function, so we just serialize to
+  // string and get the size of the string.
   PyObject* subargs = PyTuple_New(0);
   PyObject* serialized = PyUpb_Message_SerializeToString(self, subargs, NULL);
   Py_DECREF(subargs);
@@ -1656,7 +1656,7 @@ static PyGetSetDef PyUpb_Message_Getters[] = {
 static PyMethodDef PyUpb_Message_Methods[] = {
     {"__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
      "Makes a deep copy of the class."},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
+    // TODO(https://github.com/protocolbuffers/protobuf/issues/13760)
     //{ "__unicode__", (PyCFunction)ToUnicode, METH_NOARGS,
     //  "Outputs a unicode representation of the message." },
     {"ByteSize", (PyCFunction)PyUpb_Message_ByteSize, METH_NOARGS,
