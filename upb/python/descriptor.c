@@ -917,21 +917,22 @@ static PyObject* PyUpb_FieldDescriptor_GetType(PyUpb_DescriptorBase* self,
   return PyLong_FromLong(upb_FieldDef_Type(self->def));
 }
 
+// Enum values copied from descriptor.h in C++.
+enum CppType {
+  CPPTYPE_INT32 = 1,     // TYPE_INT32, TYPE_SINT32, TYPE_SFIXED32
+  CPPTYPE_INT64 = 2,     // TYPE_INT64, TYPE_SINT64, TYPE_SFIXED64
+  CPPTYPE_UINT32 = 3,    // TYPE_UINT32, TYPE_FIXED32
+  CPPTYPE_UINT64 = 4,    // TYPE_UINT64, TYPE_FIXED64
+  CPPTYPE_DOUBLE = 5,    // TYPE_DOUBLE
+  CPPTYPE_FLOAT = 6,     // TYPE_FLOAT
+  CPPTYPE_BOOL = 7,      // TYPE_BOOL
+  CPPTYPE_ENUM = 8,      // TYPE_ENUM
+  CPPTYPE_STRING = 9,    // TYPE_STRING, TYPE_BYTES
+  CPPTYPE_MESSAGE = 10,  // TYPE_MESSAGE, TYPE_GROUP
+};
+
 static PyObject* PyUpb_FieldDescriptor_GetCppType(PyUpb_DescriptorBase* self,
                                                   void* closure) {
-  // Enum values copied from descriptor.h in C++.
-  enum CppType {
-    CPPTYPE_INT32 = 1,     // TYPE_INT32, TYPE_SINT32, TYPE_SFIXED32
-    CPPTYPE_INT64 = 2,     // TYPE_INT64, TYPE_SINT64, TYPE_SFIXED64
-    CPPTYPE_UINT32 = 3,    // TYPE_UINT32, TYPE_FIXED32
-    CPPTYPE_UINT64 = 4,    // TYPE_UINT64, TYPE_FIXED64
-    CPPTYPE_DOUBLE = 5,    // TYPE_DOUBLE
-    CPPTYPE_FLOAT = 6,     // TYPE_FLOAT
-    CPPTYPE_BOOL = 7,      // TYPE_BOOL
-    CPPTYPE_ENUM = 8,      // TYPE_ENUM
-    CPPTYPE_STRING = 9,    // TYPE_STRING, TYPE_BYTES
-    CPPTYPE_MESSAGE = 10,  // TYPE_MESSAGE, TYPE_GROUP
-  };
   static const uint8_t cpp_types[] = {
       -1,
       [kUpb_CType_Int32] = CPPTYPE_INT32,
@@ -1697,5 +1698,16 @@ bool PyUpb_InitDescriptor(PyObject* m) {
          PyUpb_SetIntAttr(fd, "TYPE_SINT64", kUpb_FieldType_SInt64) &&
          PyUpb_SetIntAttr(fd, "TYPE_STRING", kUpb_FieldType_String) &&
          PyUpb_SetIntAttr(fd, "TYPE_UINT32", kUpb_FieldType_UInt32) &&
-         PyUpb_SetIntAttr(fd, "TYPE_UINT64", kUpb_FieldType_UInt64);
+         PyUpb_SetIntAttr(fd, "TYPE_UINT64", kUpb_FieldType_UInt64) &&
+         PyUpb_SetIntAttr(fd, "CPPTYPE_INT32", CPPTYPE_INT32) &&
+         PyUpb_SetIntAttr(fd, "CPPTYPE_INT64", CPPTYPE_INT64) &&
+         PyUpb_SetIntAttr(fd, "CPPTYPE_UINT32", CPPTYPE_UINT32) &&
+         PyUpb_SetIntAttr(fd, "CPPTYPE_UINT64", CPPTYPE_UINT64) &&
+         PyUpb_SetIntAttr(fd, "CPPTYPE_DOUBLE", CPPTYPE_DOUBLE) &&
+         PyUpb_SetIntAttr(fd, "CPPTYPE_FLOAT", CPPTYPE_FLOAT) &&
+         PyUpb_SetIntAttr(fd, "CPPTYPE_BOOL", CPPTYPE_BOOL) &&
+         PyUpb_SetIntAttr(fd, "CPPTYPE_ENUM", CPPTYPE_ENUM) &&
+         PyUpb_SetIntAttr(fd, "CPPTYPE_STRING", CPPTYPE_STRING) &&
+         PyUpb_SetIntAttr(fd, "CPPTYPE_BYTES", CPPTYPE_STRING) &&
+         PyUpb_SetIntAttr(fd, "CPPTYPE_MESSAGE", CPPTYPE_MESSAGE);
 }
