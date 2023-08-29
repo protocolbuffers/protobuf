@@ -1082,7 +1082,8 @@ inline ::google::protobuf::Struct* Value::_internal_mutable_struct_value() {
   if (kind_case() != kStructValue) {
     clear_kind();
     set_has_struct_value();
-    _impl_.kind_.struct_value_ = CreateMaybeMessage<::google::protobuf::Struct>(GetArenaForAllocation());
+    _impl_.kind_.struct_value_ =
+        CreateMaybeMessage<::google::protobuf::Struct>(GetArenaForAllocation());
   }
   return _impl_.kind_.struct_value_;
 }
@@ -1158,7 +1159,8 @@ inline ::google::protobuf::ListValue* Value::_internal_mutable_list_value() {
   if (kind_case() != kListValue) {
     clear_kind();
     set_has_list_value();
-    _impl_.kind_.list_value_ = CreateMaybeMessage<::google::protobuf::ListValue>(GetArenaForAllocation());
+    _impl_.kind_.list_value_ =
+        CreateMaybeMessage<::google::protobuf::ListValue>(GetArenaForAllocation());
   }
   return _impl_.kind_.list_value_;
 }
