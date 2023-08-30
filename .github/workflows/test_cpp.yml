@@ -44,7 +44,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@version-test
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -64,7 +64,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@version-test
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.version }}-6.3.0-518b4fcd8d0ded2484c94f02e835526cacfdac2d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -86,17 +86,17 @@ jobs:
           submodules: recursive
       - name: Cross compile protoc for ${{ matrix.arch }}
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@version-test
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-${{ matrix.arch }}
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v2
+        uses: protocolbuffers/protobuf-ci/ccache@version-test
         with:
           cache-prefix: linux-release-${{ matrix.arch }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@version-test
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-e02879ddc84fa6917e4e22833e7f75884ea890b8
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -133,12 +133,12 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v2
+        uses: protocolbuffers/protobuf-ci/ccache@version-test
         with:
           cache-prefix: linux-cmake-${{ matrix.name }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@version-test
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-e6272cdfe97c6df307e17b83f3a7a70844f6fc08
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -158,12 +158,12 @@ jobs:
           submodules: recursive
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v2
+        uses: protocolbuffers/protobuf-ci/ccache@version-test
         with:
           cache-prefix: linux-cmake-install
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@version-test
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -187,12 +187,12 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v2
+        uses: protocolbuffers/protobuf-ci/ccache@version-test
         with:
           cache-prefix: linux-cmake-examples
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@version-test
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -227,12 +227,12 @@ jobs:
           submodules: recursive
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v2
+        uses: protocolbuffers/protobuf-ci/ccache@version-test
         with:
           cache-prefix: linux-cmake-gcc-${{ matrix.name }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@version-test
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-518b4fcd8d0ded2484c94f02e835526cacfdac2d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -257,12 +257,12 @@ jobs:
           submodules: recursive
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v2
+        uses: protocolbuffers/protobuf-ci/ccache@version-test
         with:
           cache-prefix: linux-cmake-${{ matrix.name }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@version-test
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -281,12 +281,12 @@ jobs:
           submodules: recursive
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v2
+        uses: protocolbuffers/protobuf-ci/ccache@version-test
         with:
           cache-prefix: linux-cmake-32-bit
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@version-test
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:f99f051daa8b12f4ebad5927f389bc71372f771ab080290ab451cbaf1648f9ea
           platform: linux/386
@@ -327,7 +327,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@version-test
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.bazel }}
@@ -385,7 +385,7 @@ jobs:
           submodules: recursive
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v2
+        uses: protocolbuffers/protobuf-ci/ccache@version-test
         with:
           cache-prefix: ${{ matrix.name }}
           vsversion: ${{ matrix.vsversion }}
@@ -394,7 +394,7 @@ jobs:
       # Install phase.
       - name: Configure CMake for install
         if: matrix.install-flags
-        uses: protocolbuffers/protobuf-ci/bash@v2
+        uses: protocolbuffers/protobuf-ci/bash@version-test
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.install-flags }} ${{ env.CCACHE_CMAKE_FLAGS }}
@@ -416,7 +416,7 @@ jobs:
         run: cmake --build . --target clean && rm CMakeCache.txt
 
       - name: Configure CMake
-        uses: protocolbuffers/protobuf-ci/bash@v2
+        uses: protocolbuffers/protobuf-ci/bash@version-test
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.flags }} ${{ env.CCACHE_CMAKE_FLAGS }}
