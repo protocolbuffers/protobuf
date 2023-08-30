@@ -210,6 +210,9 @@ static PyObject* PyUpb_GenericSequence_GetItem(PyObject* _self,
                                                Py_ssize_t index) {
   PyUpb_GenericSequence* self = PyUpb_GenericSequence_Self(_self);
   Py_ssize_t size = self->funcs->get_elem_count(self->parent);
+  if (index < 0) {
+    index += size;
+  }
   if (index < 0 || index >= size) {
     PyErr_Format(PyExc_IndexError, "list index (%zd) out of range", index);
     return NULL;
@@ -265,6 +268,24 @@ static PyObject* PyUpb_GenericSequence_RichCompare(PyObject* _self,
   bool ret = PyUpb_GenericSequence_IsEqual(self, other);
   if (opid == Py_NE) ret = !ret;
   return PyBool_FromLong(ret);
+}
+
+static PyObject* PyUpb_GenericSequence_Subscript(PyObject* _self,
+                                                 PyObject* item) {
+  PyUpb_GenericSequence* self = PyUpb_GenericSequence_Self(_self);
+  Py_ssize_t size = self->funcs->get_elem_count(self->parent);
+  Py_ssize_t idx, count, step;
+  if (!PyUpb_IndexToRange(item, size, &idx, &count, &step)) return NULL;
+  if (step == 0) {
+    return PyUpb_GenericSequence_GetItem(_self, idx);
+  } else {
+    PyObject* list = PyList_New(count);
+    for (Py_ssize_t i = 0; i < count; i++, idx += step) {
+      const void* elem = self->funcs->index(self->parent, idx);
+      PyList_SetItem(list, i, self->funcs->get_elem_wrapper(elem));
+    }
+    return list;
+  }
 }
 
 // Linear search.  Could optimize this in some cases (defs that have index),
@@ -323,10 +344,10 @@ static PyType_Slot PyUpb_GenericSequence_Slots[] = {
     {Py_sq_length, PyUpb_GenericSequence_Length},
     {Py_sq_item, PyUpb_GenericSequence_GetItem},
     {Py_tp_richcompare, &PyUpb_GenericSequence_RichCompare},
+    {Py_mp_subscript, PyUpb_GenericSequence_Subscript},
     // These were implemented for Python/C++ but so far have not been required.
     // {Py_tp_repr, &PyUpb_GenericSequence_Repr},
     // {Py_sq_contains, PyUpb_GenericSequence_Contains},
-    // {Py_mp_subscript, PyUpb_GenericSequence_Subscript},
     // {Py_mp_ass_subscript, PyUpb_GenericSequence_AssignSubscript},
     {0, NULL},
 };
