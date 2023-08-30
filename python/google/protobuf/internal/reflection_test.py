@@ -1950,14 +1950,14 @@ class TestProto2Reflection:
         assert descriptor_pb2.DESCRIPTOR.has_options
         assert (
             descriptor_pb2.DESCRIPTOR.GetOptions().java_package
-            == 'com.google.protobuf',
+            == 'com.google.protobuf'
         )
 
     def test_descriptor_proto_has_field_options(self):
         assert descriptor_pb2.DESCRIPTOR.has_options
         assert (
             descriptor_pb2.DESCRIPTOR.GetOptions().java_package
-            == 'com.google.protobuf',
+            == 'com.google.protobuf'
         )
         packed_desc = (
             descriptor_pb2.SourceCodeInfo.DESCRIPTOR.nested_types_by_name.get(
@@ -1971,7 +1971,7 @@ class TestProto2Reflection:
         assert descriptor_pb2.DESCRIPTOR.has_options
         assert (
             descriptor_pb2.DESCRIPTOR.GetOptions().java_package
-            == 'com.google.protobuf',
+            == 'com.google.protobuf'
         )
         presence_desc = descriptor_pb2.FeatureSet.DESCRIPTOR.fields_by_name.get(
             'field_presence'
@@ -1986,7 +1986,7 @@ class TestProto2Reflection:
             == [
                 descriptor_pb2.FieldOptions.OptionTargetType.TARGET_TYPE_FIELD,
                 descriptor_pb2.FieldOptions.OptionTargetType.TARGET_TYPE_FILE,
-            ],
+            ]
         )
     
     def test_string_utf8_serialization(self):
