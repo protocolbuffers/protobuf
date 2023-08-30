@@ -234,7 +234,7 @@ pub struct PresentField<'msg, T>
 where
     T: ProxiedWithPresence + ?Sized + 'msg,
 {
-    inner: T::PresentMutData<'msg>,
+    pub(crate) inner: T::PresentMutData<'msg>,
 }
 
 impl<'msg, T: ProxiedWithPresence + ?Sized + 'msg> Debug for PresentField<'msg, T> {
@@ -312,7 +312,7 @@ pub struct AbsentField<'a, T>
 where
     T: ProxiedWithPresence + ?Sized + 'a,
 {
-    inner: T::AbsentMutData<'a>,
+    pub(crate) inner: T::AbsentMutData<'a>,
 }
 
 impl<'msg, T: ProxiedWithPresence + ?Sized + 'msg> Debug for AbsentField<'msg, T> {

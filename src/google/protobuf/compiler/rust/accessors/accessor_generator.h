@@ -93,9 +93,9 @@ class SingularScalar final : public AccessorGenerator {
   void InThunkCc(Context<FieldDescriptor> field) const override;
 };
 
-class SingularBytes final : public AccessorGenerator {
+class SingularString final : public AccessorGenerator {
  public:
-  ~SingularBytes() override = default;
+  ~SingularString() override = default;
   void InMsgImpl(Context<FieldDescriptor> field) const override;
   void InExternC(Context<FieldDescriptor> field) const override;
   void InThunkCc(Context<FieldDescriptor> field) const override;

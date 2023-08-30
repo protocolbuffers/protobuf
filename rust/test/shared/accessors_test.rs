@@ -308,6 +308,84 @@ fn test_nonempty_default_bytes_accessors() {
 }
 
 #[test]
+fn test_optional_string_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert_eq!(msg.optional_string(), "");
+    assert_eq!(msg.optional_string_opt(), Optional::Unset("".into()));
+    assert_eq!(msg.optional_string_mut().get(), "");
+    assert!(msg.optional_string_mut().is_unset());
+
+    {
+        let s = String::from("hello world");
+        msg.optional_string_mut().set(&s[..]);
+    }
+    assert_eq!(msg.optional_string(), "hello world");
+    assert_eq!(msg.optional_string_opt(), Optional::Set("hello world".into()));
+    assert!(msg.optional_string_mut().is_set());
+    assert_eq!(msg.optional_string_mut().get(), "hello world");
+
+    msg.optional_string_mut().or_default().set("accessors_test");
+    assert_eq!(msg.optional_string(), "accessors_test");
+    assert_eq!(msg.optional_string_opt(), Optional::Set("accessors_test".into()));
+    assert!(msg.optional_string_mut().is_set());
+    assert_eq!(msg.optional_string_mut().get(), "accessors_test");
+    assert_eq!(msg.optional_string_mut().or_default().get(), "accessors_test");
+
+    msg.optional_string_mut().clear();
+    assert_eq!(msg.optional_string(), "");
+    assert_eq!(msg.optional_string_opt(), Optional::Unset("".into()));
+    assert!(msg.optional_string_mut().is_unset());
+
+    msg.optional_string_mut().set("");
+    assert_eq!(msg.optional_string(), "");
+    assert_eq!(msg.optional_string_opt(), Optional::Set("".into()));
+
+    msg.optional_string_mut().clear();
+    msg.optional_string_mut().or_default();
+    assert_eq!(msg.optional_string(), "");
+    assert_eq!(msg.optional_string_opt(), Optional::Set("".into()));
+}
+
+#[test]
+fn test_nonempty_default_string_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert_eq!(msg.default_string(), "hello");
+    assert_eq!(msg.default_string_opt(), Optional::Unset("hello".into()));
+    assert_eq!(msg.default_string_mut().get(), "hello");
+    assert!(msg.default_string_mut().is_unset());
+
+    {
+        let s = String::from("hello world");
+        msg.default_string_mut().set(&s[..]);
+    }
+    assert_eq!(msg.default_string(), "hello world");
+    assert_eq!(msg.default_string_opt(), Optional::Set("hello world".into()));
+    assert!(msg.default_string_mut().is_set());
+    assert_eq!(msg.default_string_mut().get(), "hello world");
+
+    msg.default_string_mut().or_default().set("accessors_test");
+    assert_eq!(msg.default_string(), "accessors_test");
+    assert_eq!(msg.default_string_opt(), Optional::Set("accessors_test".into()));
+    assert!(msg.default_string_mut().is_set());
+    assert_eq!(msg.default_string_mut().get(), "accessors_test");
+    assert_eq!(msg.default_string_mut().or_default().get(), "accessors_test");
+
+    msg.default_string_mut().clear();
+    assert_eq!(msg.default_string(), "hello");
+    assert_eq!(msg.default_string_opt(), Optional::Unset("hello".into()));
+    assert!(msg.default_string_mut().is_unset());
+
+    msg.default_string_mut().set("");
+    assert_eq!(msg.default_string(), "");
+    assert_eq!(msg.default_string_opt(), Optional::Set("".into()));
+
+    msg.default_string_mut().clear();
+    msg.default_string_mut().or_default();
+    assert_eq!(msg.default_string(), "hello");
+    assert_eq!(msg.default_string_opt(), Optional::Set("hello".into()));
+}
+
+#[test]
 fn test_singular_msg_field() {
     let msg = TestAllTypes::new();
     // TODO("b/285309454"): fetch the inner integer `bb`
