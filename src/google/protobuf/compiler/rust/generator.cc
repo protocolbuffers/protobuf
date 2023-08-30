@@ -96,6 +96,8 @@ void EmitPubUseOfOwnMessages(Context<FileDescriptor>& primary_file,
     primary_file.Emit({{"mod", mod}, {"Msg", name}},
                       R"rs(
                         pub use crate::$mod$::$Msg$;
+                        // TODO(b/285309454) Address use for imported crates
+                        pub use crate::$mod$::$Msg$View;
                       )rs");
   }
 }
@@ -110,10 +112,11 @@ void EmitPubUseForImportedMessages(Context<FileDescriptor>& primary_file,
   std::string crate_name = GetCrateName(dep);
   for (int i = 0; i < dep.desc().message_type_count(); ++i) {
     auto msg = primary_file.WithDesc(dep.desc().message_type(i));
-    auto path = GetCrateRelativeQualifiedPath(msg);
+    auto path = GetCrateRelativeQualifiedPath(msg);  // TODO: b/300080946
     primary_file.Emit({{"crate", crate_name}, {"pkg::Msg", path}},
                       R"rs(
                         pub use $crate$::$pkg::Msg$;
+                        pub use $crate$::$pkg::Msg$View;
                       )rs");
   }
 }

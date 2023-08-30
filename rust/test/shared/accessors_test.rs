@@ -364,10 +364,11 @@ fn test_nonempty_default_string_accessors() {
 
 #[test]
 fn test_singular_msg_field() {
+    use crate::TestAllTypes_::NestedMessageView;
     let msg = TestAllTypes::new();
     // TODO("b/285309454"): fetch the inner integer `bb`
     // call should look like msg.optional_nested_message().bb()
-    let _msg: unittest_proto::proto2_unittest::TestAllTypesView = msg.optional_nested_message();
+    let _msg: NestedMessageView = msg.optional_nested_message();
 }
 
 #[test]
