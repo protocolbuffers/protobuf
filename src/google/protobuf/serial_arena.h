@@ -112,8 +112,8 @@ class PROTOBUF_EXPORT SerialArena {
   size_t FreeStringBlocks() {
     // On the active block delete all strings skipping the unused instances.
     size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
-    if (string_block_ != nullptr) {
-      return FreeStringBlocks(string_block_, unused_bytes);
+    if (StringBlock* sb = string_block_.load(std::memory_order_relaxed)) {
+      return FreeStringBlocks(sb, unused_bytes);
     }
     return 0;
   }
@@ -346,7 +346,7 @@ class PROTOBUF_EXPORT SerialArena {
   char* limit_ = nullptr;
 
   // The active string block.
-  StringBlock* string_block_ = nullptr;
+  std::atomic<StringBlock*> string_block_{nullptr};
 
   // The number of unused bytes in string_block_.
   // We allocate from `effective_size()` down to 0 inside `string_block_`.
@@ -407,7 +407,7 @@ inline PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
   if (PROTOBUF_PREDICT_TRUE(unused_bytes != 0)) {
     unused_bytes -= sizeof(std::string);
     string_block_unused_.store(unused_bytes, std::memory_order_relaxed);
-    p = string_block_->AtOffset(unused_bytes);
+    p = string_block_.load(std::memory_order_relaxed)->AtOffset(unused_bytes);
     return true;
   }
   return false;
