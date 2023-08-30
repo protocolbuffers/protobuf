@@ -810,6 +810,15 @@ class GeneratedDescriptorTest(unittest.TestCase):
                      oneof_descriptor.full_name)
     self.assertEqual(0, oneof_descriptor.index)
 
+  def testDescriptorSlice(self):
+    message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
+    nested = message_descriptor.nested_types[:]
+    self.assertEqual(message_descriptor.nested_types, nested)
+    fields = message_descriptor.fields
+    fields_list = list(fields)
+    self.assertEqual(fields_list[:], fields[:])
+    self.assertEqual(fields_list[2::2], fields[2::2])
+    self.assertEqual(fields_list[3:19:3], fields[3:19:3])
 
 class DescriptorCopyToProtoTest(unittest.TestCase):
   """Tests for CopyTo functions of Descriptor."""

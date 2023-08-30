@@ -325,6 +325,34 @@ PyObject* PyUpb_Forbidden_New(PyObject* cls, PyObject* args, PyObject* kwds) {
   return NULL;
 }
 
+bool PyUpb_IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
+                        Py_ssize_t* count, Py_ssize_t* step) {
+  assert(i && count && step);
+  if (PySlice_Check(index)) {
+    Py_ssize_t start, stop;
+    if (PySlice_Unpack(index, &start, &stop, step) < 0) return false;
+    *count = PySlice_AdjustIndices(size, &start, &stop, *step);
+    *i = start;
+  } else {
+    *i = PyNumber_AsSsize_t(index, PyExc_IndexError);
+
+    if (*i == -1 && PyErr_Occurred()) {
+      PyErr_SetString(PyExc_TypeError, "list indices must be integers");
+      return false;
+    }
+
+    if (*i < 0) *i += size;
+    *step = 0;
+    *count = 1;
+
+    if (*i < 0 || size <= *i) {
+      PyErr_Format(PyExc_IndexError, "list index out of range");
+      return false;
+    }
+  }
+  return true;
+}
+
 // -----------------------------------------------------------------------------
 // Module Entry Point
 // -----------------------------------------------------------------------------

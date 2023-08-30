@@ -39,39 +39,6 @@ static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
 static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
                                                       PyObject* value);
 
-// For an expression like:
-//    foo[index]
-//
-// Converts `index` to an effective i/count/step, for a repeated field
-// field of size `size`.
-static bool IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
-                         Py_ssize_t* count, Py_ssize_t* step) {
-  assert(i && count && step);
-  if (PySlice_Check(index)) {
-    Py_ssize_t start, stop;
-    if (PySlice_Unpack(index, &start, &stop, step) < 0) return false;
-    *count = PySlice_AdjustIndices(size, &start, &stop, *step);
-    *i = start;
-  } else {
-    *i = PyNumber_AsSsize_t(index, PyExc_IndexError);
-
-    if (*i == -1 && PyErr_Occurred()) {
-      PyErr_SetString(PyExc_TypeError, "list indices must be integers");
-      return false;
-    }
-
-    if (*i < 0) *i += size;
-    *step = 0;
-    *count = 1;
-
-    if (*i < 0 || size <= *i) {
-      PyErr_Format(PyExc_IndexError, "list index out of range");
-      return false;
-    }
-  }
-  return true;
-}
-
 // Wrapper for a repeated field.
 typedef struct {
   PyObject_HEAD;
@@ -322,7 +289,7 @@ static PyObject* PyUpb_RepeatedContainer_Subscript(PyObject* _self,
   upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
   Py_ssize_t size = arr ? upb_Array_Size(arr) : 0;
   Py_ssize_t idx, count, step;
-  if (!IndexToRange(key, size, &idx, &count, &step)) return NULL;
+  if (!PyUpb_IndexToRange(key, size, &idx, &count, &step)) return NULL;
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
   if (step == 0) {
     return PyUpb_UpbToPy(upb_Array_Get(arr, idx), f, self->arena);
@@ -445,7 +412,7 @@ static int PyUpb_RepeatedContainer_AssignSubscript(PyObject* _self,
   upb_Array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   Py_ssize_t size = arr ? upb_Array_Size(arr) : 0;
   Py_ssize_t idx, count, step;
-  if (!IndexToRange(key, size, &idx, &count, &step)) return -1;
+  if (!PyUpb_IndexToRange(key, size, &idx, &count, &step)) return -1;
   if (value) {
     return PyUpb_RepeatedContainer_SetSubscript(self, arr, f, idx, count, step,
                                                 value);
