@@ -1482,8 +1482,7 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
     })schema");
 
   mock_generator_->set_feature_extensions(
-      {DescriptorPool::generated_pool()->FindExtensionByNumber(
-          FeatureSet::descriptor(), pb::test_invalid.number())});
+      {GetExtensionReflection(pb::test_invalid)});
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
       "--experimental_editions foo.proto");

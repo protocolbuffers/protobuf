@@ -95,8 +95,7 @@ class TestGenerator : public CodeGenerator {
   absl::string_view minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
   absl::string_view maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
   std::vector<const FieldDescriptor*> feature_extensions_ = {
-      DescriptorPool::generated_pool()->FindExtensionByNumber(
-          FeatureSet::descriptor(), pb::test.number())};
+      GetExtensionReflection(pb::test)};
 };
 
 class SimpleErrorCollector : public io::ErrorCollector {
@@ -190,9 +189,7 @@ TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesInherited) {
 
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
   TestGenerator generator;
-  generator.set_feature_extensions(
-      {DescriptorPool::generated_pool()->FindExtensionByNumber(
-          FeatureSet::descriptor(), pb::test.number())});
+  generator.set_feature_extensions({GetExtensionReflection(pb::test)});
   pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults());
 
   ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
@@ -225,9 +222,7 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
 
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
   TestGenerator generator;
-  generator.set_feature_extensions(
-      {DescriptorPool::generated_pool()->FindExtensionByNumber(
-          FeatureSet::descriptor(), pb::test.number())});
+  generator.set_feature_extensions({GetExtensionReflection(pb::test)});
   pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults());
 
   ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());

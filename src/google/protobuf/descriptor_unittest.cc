@@ -7246,10 +7246,9 @@ class FeaturesTest : public FeaturesBaseTest {
 
     auto default_spec = FeatureResolver::CompileDefaults(
         FeatureSet::descriptor(),
-        {pb::CppFeatures::descriptor()->file()->extension(0),
-         pb::TestFeatures::descriptor()->file()->extension(0),
-         pb::TestMessage::descriptor()->extension(0),
-         pb::TestMessage::Nested::descriptor()->extension(0)},
+        {GetExtensionReflection(pb::cpp), GetExtensionReflection(pb::test),
+         GetExtensionReflection(pb::TestMessage::test_message),
+         GetExtensionReflection(pb::TestMessage::Nested::test_nested)},
         "2023", "2025");
     ASSERT_OK(default_spec);
     pool_.SetFeatureSetDefaults(std::move(default_spec).value());
