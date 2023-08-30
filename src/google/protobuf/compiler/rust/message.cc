@@ -261,6 +261,7 @@ void GenerateRs(Context<Descriptor> msg) {
                           }
                         }}},
                       R"rs(
+                 #[allow(non_snake_case)]
                  pub mod $Msg$_ {
                    $nested_msgs$
 
