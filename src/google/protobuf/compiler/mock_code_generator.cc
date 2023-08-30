@@ -57,9 +57,12 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/unittest_features.pb.h"
 
 #ifdef major
 #undef major
@@ -92,7 +95,16 @@ static constexpr absl::string_view kFirstInsertionPoint =
 static constexpr absl::string_view kSecondInsertionPoint =
     "  # @@protoc_insertion_point(second_mock_insertion_point) is here\n";
 
-MockCodeGenerator::MockCodeGenerator(absl::string_view name) : name_(name) {}
+MockCodeGenerator::MockCodeGenerator(absl::string_view name) : name_(name) {
+  absl::string_view key = getenv("TEST_CASE");
+  if (key == "no_editions") {
+    suppressed_features_ |= CodeGenerator::FEATURE_SUPPORTS_EDITIONS;
+  } else if (key == "invalid_features") {
+    feature_extensions_ = {nullptr};
+  } else if (key == "no_feature_defaults") {
+    feature_extensions_ = {};
+  }
+}
 
 MockCodeGenerator::~MockCodeGenerator() = default;
 
@@ -214,14 +226,17 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
                                  const std::string& parameter,
                                  GeneratorContext* context,
                                  std::string* error) const {
-  std::vector<std::pair<std::string, std::string>> options;
-  ParseGeneratorParameter(parameter, &options);
-  for (const auto& option : options) {
-    const auto& key = option.first;
-
-    if (key == "no_editions") {
-      suppressed_features_ |= CodeGenerator::FEATURE_SUPPORTS_EDITIONS;
-    }
+  if (FileDescriptorLegacy(file).syntax() ==
+      FileDescriptorLegacy::SYNTAX_EDITIONS) {
+    internal::VisitDescriptors(*file, [&](const auto& descriptor) {
+      const FeatureSet& features = GetResolvedSourceFeatures(descriptor);
+      ABSL_CHECK(features.HasExtension(pb::test))
+          << "Test features were not resolved properly";
+      ABSL_CHECK(features.GetExtension(pb::test).has_int_file_feature())
+          << "Test features were not resolved properly";
+      ABSL_CHECK(features.GetExtension(pb::test).has_int_source_feature())
+          << "Test features were not resolved properly";
+    });
   }
 
   bool annotate = false;

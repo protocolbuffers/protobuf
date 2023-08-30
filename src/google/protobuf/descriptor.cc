@@ -1117,8 +1117,8 @@ const FeatureSetDefaults& GetCppFeatureSetDefaults() {
   static const FeatureSetDefaults* default_spec = [] {
     auto default_spec = FeatureResolver::CompileDefaults(
         FeatureSet::descriptor(),
-        // TODO(b/297261063) Move this range to a central location.
-        {pb::CppFeatures::descriptor()->file()->extension(0)}, "2023", "2023");
+        {pb::CppFeatures::descriptor()->file()->extension(0)},
+        PROTOBUF_MINIMUM_EDITION, PROTOBUF_MAXIMUM_EDITION);
     ABSL_CHECK(default_spec.ok()) << default_spec.status();
     return new FeatureSetDefaults(std::move(default_spec).value());
   }();
