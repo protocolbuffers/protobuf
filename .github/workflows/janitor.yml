@@ -6,10 +6,15 @@ on:
     - cron: 0 10 * * *
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   stale-prs:
     name: Close Stale Copybara PRs
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # to allow closing the PR
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
