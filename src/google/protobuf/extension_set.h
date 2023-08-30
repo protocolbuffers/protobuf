@@ -51,7 +51,6 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/repeated_field.h"

@@ -48,9 +48,12 @@ class Message;
 
 namespace internal {
 
-extern const char kAnyFullTypeName[];          // "google.protobuf.Any".
-extern const char kTypeGoogleApisComPrefix[];  // "type.googleapis.com/".
-extern const char kTypeGoogleProdComPrefix[];  // "type.googleprod.com/".
+// "google.protobuf.Any".
+PROTOBUF_EXPORT extern const char kAnyFullTypeName[];
+// "type.googleapis.com/".
+PROTOBUF_EXPORT extern const char kTypeGoogleApisComPrefix[];
+// "type.googleprod.com/".
+PROTOBUF_EXPORT extern const char kTypeGoogleProdComPrefix[];
 
 std::string GetTypeUrl(absl::string_view message_name,
                        absl::string_view type_url_prefix);

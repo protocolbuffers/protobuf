@@ -163,25 +163,6 @@ class TestUnknownFieldsAccessors:
         self.empty_message = unittest_pb2.TestEmptyMessage()
         self.empty_message.ParseFromString(self.all_fields_data)
 
-    # internal_check_unknown_field() is an additional Pure Python check which checks
-    # a detail of unknown fields. It cannot be used by the C++
-    # implementation because some protect members are called.
-    # The test is added for historical reasons. It is not necessary as
-    # serialized string is checked.
-    # TODO(jieluo): Remove message._unknown_fields.
-    def internal_check_unknown_field(self, name, expected_value):
-        if api_implementation.Type() != 'python':
-            return
-        field_descriptor = self.descriptor.fields_by_name[name]
-        wire_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type]
-        field_tag = encoder.TagBytes(field_descriptor.number, wire_type)
-        result_dict = {}
-        for tag_bytes, value in self.empty_message._unknown_fields:
-            if tag_bytes == field_tag:
-                decoder = unittest_pb2.TestAllTypes._decoders_by_tag[tag_bytes][0]
-                decoder(memoryview(value), 0, len(value), self.all_fields, result_dict)
-        assert expected_value == result_dict[field_descriptor]
-
     def check_unknown_field(self, name, unknown_field_set, expected_value):
         field_descriptor = self.descriptor.fields_by_name[name]
         expected_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[
@@ -208,50 +189,36 @@ class TestUnknownFieldsAccessors:
         self.check_unknown_field('optional_nested_enum',
                               unknown_field_set,
                               self.all_fields.optional_nested_enum)
-        self.internal_check_unknown_field('optional_nested_enum',
-                                      self.all_fields.optional_nested_enum)
 
         # Test repeated enum.
         self.check_unknown_field('repeated_nested_enum',
                               unknown_field_set,
                               self.all_fields.repeated_nested_enum)
-        self.internal_check_unknown_field('repeated_nested_enum',
-                                      self.all_fields.repeated_nested_enum)
 
         # Test varint.
         self.check_unknown_field('optional_int32',
                               unknown_field_set,
                               self.all_fields.optional_int32)
-        self.internal_check_unknown_field('optional_int32',
-                                      self.all_fields.optional_int32)
 
         # Test fixed32.
         self.check_unknown_field('optional_fixed32',
                               unknown_field_set,
                               self.all_fields.optional_fixed32)
-        self.internal_check_unknown_field('optional_fixed32',
-                                      self.all_fields.optional_fixed32)
 
         # Test fixed64.
         self.check_unknown_field('optional_fixed64',
                               unknown_field_set,
                               self.all_fields.optional_fixed64)
-        self.internal_check_unknown_field('optional_fixed64',
-                                      self.all_fields.optional_fixed64)
 
         # Test length delimited.
         self.check_unknown_field('optional_string',
                               unknown_field_set,
                               self.all_fields.optional_string.encode('utf-8'))
-        self.internal_check_unknown_field('optional_string',
-                                      self.all_fields.optional_string)
 
         # Test group.
         self.check_unknown_field('optionalgroup',
                               unknown_field_set,
                               (17, 0, 117))
-        self.internal_check_unknown_field('optionalgroup',
-                                      self.all_fields.optionalgroup)
 
         assert 98 == len(unknown_field_set)
 

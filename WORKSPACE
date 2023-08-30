@@ -7,6 +7,15 @@ local_repository(
     path = "examples",
 )
 
+# We will soon merge upb and protobuf into the same Bazel repository, but for
+# now we depend on the separate Bazel repo in the upb/ directory. This is
+# important to ensure that the CI tests exercise upb at head instead of relying
+# on a stale version from protobuf_deps.bzl.
+local_repository(
+    name = "upb",
+    path = "upb",
+)
+
 # Load common dependencies first to ensure we use the correct version
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 

@@ -34,8 +34,13 @@
 
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -86,6 +91,13 @@ void MessageFieldGenerator::DetermineObjectiveCClassDefinitions(
   fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
 }
 
+void MessageFieldGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  if (descriptor_->file() != descriptor_->message_type()->file()) {
+    deps->insert(descriptor_->message_type()->file());
+  }
+}
+
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
     const FieldDescriptor* descriptor)
     : RepeatedFieldGenerator(descriptor) {
@@ -115,6 +127,13 @@ void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
 void RepeatedMessageFieldGenerator::DetermineObjectiveCClassDefinitions(
     absl::btree_set<std::string>* fwd_decls) const {
   fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
+}
+
+void RepeatedMessageFieldGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  if (descriptor_->file() != descriptor_->message_type()->file()) {
+    deps->insert(descriptor_->message_type()->file());
+  }
 }
 
 }  // namespace objectivec

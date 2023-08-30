@@ -41,9 +41,9 @@
 
 #include <string>
 
-#include "google/protobuf/port.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/generated_enum_util.h"
+#include "google/protobuf/port.h"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"

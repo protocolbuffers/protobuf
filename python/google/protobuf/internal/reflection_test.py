@@ -1946,6 +1946,49 @@ class TestProto2Reflection:
             # dependency on the C++ logging code.
             assert 'test_file_descriptor_errors.msg1' in str(cm.exception)
 
+    def test_descriptor_proto_has_file_options(self):
+        assert descriptor_pb2.DESCRIPTOR.has_options
+        assert (
+            descriptor_pb2.DESCRIPTOR.GetOptions().java_package
+            == 'com.google.protobuf',
+        )
+
+    def test_descriptor_proto_has_field_options(self):
+        assert descriptor_pb2.DESCRIPTOR.has_options
+        assert (
+            descriptor_pb2.DESCRIPTOR.GetOptions().java_package
+            == 'com.google.protobuf',
+        )
+        packed_desc = (
+            descriptor_pb2.SourceCodeInfo.DESCRIPTOR.nested_types_by_name.get(
+                'Location'
+            ).fields_by_name.get('path')
+        )
+        assert packed_desc.has_options
+        assert packed_desc.GetOptions().packed
+
+    def test_descriptor_proto_has_feature_options(self):
+        assert descriptor_pb2.DESCRIPTOR.has_options
+        assert (
+            descriptor_pb2.DESCRIPTOR.GetOptions().java_package
+            == 'com.google.protobuf',
+        )
+        presence_desc = descriptor_pb2.FeatureSet.DESCRIPTOR.fields_by_name.get(
+            'field_presence'
+        )
+        assert presence_desc.has_options
+        assert (
+            presence_desc.GetOptions().retention
+            == descriptor_pb2.FieldOptions.OptionRetention.RETENTION_RUNTIME
+        )
+        assert (
+            presence_desc.GetOptions().targets
+            == [
+                descriptor_pb2.FieldOptions.OptionTargetType.TARGET_TYPE_FIELD,
+                descriptor_pb2.FieldOptions.OptionTargetType.TARGET_TYPE_FILE,
+            ],
+        )
+    
     def test_string_utf8_serialization(self):
         proto = message_set_extensions_pb2.TestMessageSet()
         extension_message = message_set_extensions_pb2.TestMessageSetExtension2

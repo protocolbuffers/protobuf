@@ -121,6 +121,7 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
                                        const Options& options,
                                        MessageSCCAnalyzer* scc)
     : descriptor_(descriptor), options_(options) {
+  bool is_repeated_or_map = descriptor->is_repeated();
   should_split_ = ShouldSplit(descriptor, options);
   is_oneof_ = descriptor->real_containing_oneof() != nullptr;
   switch (descriptor->cpp_type()) {
@@ -132,26 +133,71 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
     case FieldDescriptor::CPPTYPE_FLOAT:
     case FieldDescriptor::CPPTYPE_DOUBLE:
     case FieldDescriptor::CPPTYPE_BOOL:
-      is_trivial_ = !(descriptor->is_repeated() || descriptor->is_map());
-      has_trivial_value_ = is_trivial_;
+      is_trivial_ = has_trivial_value_ = !is_repeated_or_map;
+      has_default_constexpr_constructor_ = is_repeated_or_map;
       break;
     case FieldDescriptor::CPPTYPE_STRING:
       is_string_ = true;
       string_type_ = descriptor->options().ctype();
       is_inlined_ = IsStringInlined(descriptor, options);
       is_bytes_ = descriptor->type() == FieldDescriptor::TYPE_BYTES;
+      has_default_constexpr_constructor_ = is_repeated_or_map;
       break;
     case FieldDescriptor::CPPTYPE_MESSAGE:
       is_message_ = true;
       is_group_ = descriptor->type() == FieldDescriptor::TYPE_GROUP;
       is_foreign_ = IsCrossFileMessage(descriptor);
-      is_lazy_ = IsLazy(descriptor, options, scc);
       is_weak_ = IsImplicitWeakField(descriptor, options, scc);
-      if (!(descriptor->is_repeated() || descriptor->is_map())) {
-        has_trivial_value_ = !is_lazy_;
-      }
+      is_lazy_ = IsLazy(descriptor, options, scc);
+      has_trivial_value_ = !(is_repeated_or_map || is_lazy_);
+      has_default_constexpr_constructor_ = is_repeated_or_map || is_lazy_;
       break;
   }
+
+  has_trivial_zero_default_ = CanInitializeByZeroing(descriptor, options, scc);
+}
+
+void FieldGeneratorBase::GenerateMemberConstexprConstructor(
+    io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension());
+  if (descriptor_->is_repeated()) {
+    p->Emit("$name$_{}");
+  } else {
+    p->Emit({{"default", DefaultValue(options_, descriptor_)}},
+            "$name$_{$default$}");
+  }
+}
+
+void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension());
+  if (descriptor_->is_map()) {
+    p->Emit("$name$_{visibility, arena}");
+  } else if (descriptor_->is_repeated()) {
+    if (ShouldSplit(descriptor_, options_)) {
+      p->Emit("$name$_{}");  // RawPtr<Repeated>
+    } else {
+      p->Emit("$name$_{visibility, arena}");
+    }
+  } else {
+    p->Emit({{"default", DefaultValue(options_, descriptor_)}},
+            "$name$_{$default$}");
+  }
+}
+
+void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension());
+  if (descriptor_->is_repeated()) {
+    p->Emit("$name$_{visibility, arena, from.$name$_}");
+  } else {
+    p->Emit("$name$_{from.$name$_}");
+  }
+}
+
+void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
+  ABSL_CHECK(!descriptor_->is_extension()) << "Not supported";
+  ABSL_CHECK(!descriptor_->is_repeated()) << "Not supported";
+  ABSL_CHECK(!descriptor_->is_map()) << "Not supported";
+  p->Emit("$field$ = from.$field$;\n");
 }
 
 void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
@@ -275,6 +321,8 @@ void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
 
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
+  vars.emplace_back("inlined_string_index", index);
+  vars.emplace_back("inlined_string_mask", mask);
 
   absl::string_view array = IsMapEntryMessage(field->containing_type())
                                 ? "_inlined_string_donated_"

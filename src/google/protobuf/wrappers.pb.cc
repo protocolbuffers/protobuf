@@ -372,9 +372,6 @@ DoubleValue::~DoubleValue() {
 inline void DoubleValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-void DoubleValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
-}
 
 PROTOBUF_NOINLINE void DoubleValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DoubleValue)
@@ -510,6 +507,9 @@ PROTOBUF_NOINLINE bool DoubleValue::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* DoubleValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void DoubleValue::InternalSwap(DoubleValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -552,9 +552,6 @@ FloatValue::~FloatValue() {
 }
 inline void FloatValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void FloatValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void FloatValue::Clear() {
@@ -691,6 +688,9 @@ PROTOBUF_NOINLINE bool FloatValue::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* FloatValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void FloatValue::InternalSwap(FloatValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -733,9 +733,6 @@ Int64Value::~Int64Value() {
 }
 inline void Int64Value::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void Int64Value::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Int64Value::Clear() {
@@ -858,6 +855,9 @@ PROTOBUF_NOINLINE bool Int64Value::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Int64Value::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Int64Value::InternalSwap(Int64Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -900,9 +900,6 @@ UInt64Value::~UInt64Value() {
 }
 inline void UInt64Value::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void UInt64Value::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void UInt64Value::Clear() {
@@ -1025,6 +1022,9 @@ PROTOBUF_NOINLINE bool UInt64Value::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* UInt64Value::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void UInt64Value::InternalSwap(UInt64Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1067,9 +1067,6 @@ Int32Value::~Int32Value() {
 }
 inline void Int32Value::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void Int32Value::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Int32Value::Clear() {
@@ -1192,6 +1189,9 @@ PROTOBUF_NOINLINE bool Int32Value::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Int32Value::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Int32Value::InternalSwap(Int32Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1234,9 +1234,6 @@ UInt32Value::~UInt32Value() {
 }
 inline void UInt32Value::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void UInt32Value::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void UInt32Value::Clear() {
@@ -1359,6 +1356,9 @@ PROTOBUF_NOINLINE bool UInt32Value::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* UInt32Value::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void UInt32Value::InternalSwap(UInt32Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1401,9 +1401,6 @@ BoolValue::~BoolValue() {
 }
 inline void BoolValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void BoolValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void BoolValue::Clear() {
@@ -1525,6 +1522,9 @@ PROTOBUF_NOINLINE bool BoolValue::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* BoolValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void BoolValue::InternalSwap(BoolValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1585,9 +1585,6 @@ StringValue::~StringValue() {
 inline void StringValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.Destroy();
-}
-void StringValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void StringValue::Clear() {
@@ -1714,6 +1711,9 @@ PROTOBUF_NOINLINE bool StringValue::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* StringValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void StringValue::InternalSwap(StringValue* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -1777,9 +1777,6 @@ BytesValue::~BytesValue() {
 inline void BytesValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.value_.Destroy();
-}
-void BytesValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void BytesValue::Clear() {
@@ -1901,6 +1898,9 @@ PROTOBUF_NOINLINE bool BytesValue::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* BytesValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void BytesValue::InternalSwap(BytesValue* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();

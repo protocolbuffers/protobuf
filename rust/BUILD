@@ -37,27 +37,31 @@ rust_library(
     }),
 )
 
+# This list contains kernel-agnostic logic and simple kernel-specific logic controlled by
+# `#[cfg(...)]` attributes. That forces us to compile these files twice, once for each kernel. As a
+# result these files are included in both `:protobuf_upb` and `:protobuf_cpp`. This is in principle
+# identical to how we compile regular Rust source files twice (once for production, and once for
+# unittesting).
+#
+# shared.rs is the root of the crate and has public items re-exported in protobuf.rs for user use.
+PROTOBUF_SHARED = [
+    "internal.rs",
+    "macros.rs",
+    "optional.rs",
+    "proxied.rs",
+    "shared.rs",
+    "string.rs",
+    "vtable.rs",
+]
+
 # The Rust Protobuf runtime using the upb kernel.
 #
 # `rust_upb_proto_library` implicitly depends on this target. This target cannot depend on
 # `:rust_proto_library_kernel` build setting; it has to be fully functional under any value of that
 # setting.
-#
-# `shared.rs` contains kernel-agnostic logic and simple kernel-specific logic controlled by
-# `#[cfg(...)]` attributes. That forces us to compile this file twice, once for each kernel. As a
-# result this file is included in both `:protobuf_upb` and `:protobuf_cpp`. This is in principle
-# identical to how we compile regular Rust source files twice (once for production, and once for
-# unittesting).
 rust_library(
     name = "protobuf_upb",
-    srcs = [
-        "internal.rs",
-        "optional.rs",
-        "proxied.rs",
-        "shared.rs",
-        "string.rs",
-        "upb.rs",
-    ],
+    srcs = PROTOBUF_SHARED + ["upb.rs"],
     crate_root = "shared.rs",
     rustc_flags = ["--cfg=upb_kernel"],
     visibility = [
@@ -81,18 +85,9 @@ rust_test(
 # `rust_cpp_proto_library` implicitly depends on this target. This target cannot depend on
 # `:rust_proto_library_kernel` build setting; it has to be fully functional under any value of that
 # setting.
-#
-# See the comment for `:protobuf_upb` for discussion of the `shared.rs` file.
 rust_library(
     name = "protobuf_cpp",
-    srcs = [
-        "cpp.rs",
-        "internal.rs",
-        "optional.rs",
-        "proxied.rs",
-        "shared.rs",
-        "string.rs",
-    ],
+    srcs = PROTOBUF_SHARED + ["cpp.rs"],
     crate_root = "shared.rs",
     rustc_flags = ["--cfg=cpp_kernel"],
     visibility = [

@@ -42,12 +42,12 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/descriptor.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/json/internal/message_path.h"
 #include "google/protobuf/json/internal/zero_copy_buffered_stream.h"

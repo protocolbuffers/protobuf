@@ -85,6 +85,7 @@ enum NullValue : int {
 };
 
 PROTOBUF_EXPORT bool NullValue_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
 constexpr NullValue NullValue_MIN = static_cast<NullValue>(0);
 constexpr NullValue NullValue_MAX = static_cast<NullValue>(0);
 constexpr int NullValue_ARRAYSIZE = 0 + 1;
@@ -220,12 +221,12 @@ class PROTOBUF_EXPORT ListValue final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(ListValue* other);
 
   private:
@@ -395,12 +396,12 @@ class PROTOBUF_EXPORT Struct final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(Struct* other);
 
   private:
@@ -607,12 +608,12 @@ class PROTOBUF_EXPORT Value final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(Value* other);
 
   private:
@@ -908,7 +909,8 @@ inline void Value::clear_string_value() {
     clear_has_kind();
   }
 }
-inline const std::string& Value::string_value() const {
+inline const std::string& Value::string_value() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.string_value)
   return _internal_string_value();
 }
@@ -925,7 +927,7 @@ inline PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
   _impl_.kind_.string_value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
-inline std::string* Value::mutable_string_value() {
+inline std::string* Value::mutable_string_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_string_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.string_value)
   return _s;
@@ -1080,7 +1082,8 @@ inline ::google::protobuf::Struct* Value::_internal_mutable_struct_value() {
   if (kind_case() != kStructValue) {
     clear_kind();
     set_has_struct_value();
-    _impl_.kind_.struct_value_ = CreateMaybeMessage<::google::protobuf::Struct>(GetArenaForAllocation());
+    _impl_.kind_.struct_value_ =
+        CreateMaybeMessage<::google::protobuf::Struct>(GetArenaForAllocation());
   }
   return _impl_.kind_.struct_value_;
 }
@@ -1156,7 +1159,8 @@ inline ::google::protobuf::ListValue* Value::_internal_mutable_list_value() {
   if (kind_case() != kListValue) {
     clear_kind();
     set_has_list_value();
-    _impl_.kind_.list_value_ = CreateMaybeMessage<::google::protobuf::ListValue>(GetArenaForAllocation());
+    _impl_.kind_.list_value_ =
+        CreateMaybeMessage<::google::protobuf::ListValue>(GetArenaForAllocation());
   }
   return _impl_.kind_.list_value_;
 }

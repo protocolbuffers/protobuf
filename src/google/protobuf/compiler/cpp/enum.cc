@@ -41,13 +41,14 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_enum_util.h"
 
 namespace google {
 namespace protobuf {
@@ -180,6 +181,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
         };
 
         $dllexport_decl $bool $Msg_Enum$_IsValid(int value);
+        $dllexport_decl $extern const uint32_t $Msg_Enum$_internal_data_[];
         constexpr $Msg_Enum$ $Msg_Enum_Enum_MIN$ = static_cast<$Msg_Enum$>($kMin$);
         constexpr $Msg_Enum$ $Msg_Enum_Enum_MAX$ = static_cast<$Msg_Enum$>($kMax$);
       )cc");
@@ -288,6 +290,7 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
   )cc");
 }
 
+
 void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
   auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
 
@@ -365,39 +368,65 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
     )cc");
   }
 
-  p->Emit({{"cases",
+  // Multiple values may have the same number. Sort and dedup.
+  std::vector<int> numbers;
+  numbers.reserve(enum_->value_count());
+  for (int i = 0; i < enum_->value_count(); ++i) {
+    numbers.push_back(enum_->value(i)->number());
+  }
+  // Sort and deduplicate `numbers`.
+  absl::c_sort(numbers);
+  numbers.erase(std::unique(numbers.begin(), numbers.end()), numbers.end());
+
+  // We now generate the XXX_IsValid functions, as well as their encoded enum
+  // data.
+  // For simple enums we skip the generic ValidateEnum call and use better
+  // codegen. It matches the speed of the previous switch-based codegen.
+  // For more complex enums we use the new algorithm with the encoded data.
+  // Always generate the data array, even on the simple cases because someone
+  // might be using it for TDP entries. If it is not used in the end, the linker
+  // will drop it.
+  p->Emit({{"encoded",
             [&] {
-              // Multiple values may have the same number.  Make sure we only
-              // cover each number once by first constructing a set containing
-              // all valid numbers, then printing a case statement for each
-              // element.
-
-              std::vector<int> numbers;
-              numbers.reserve(enum_->value_count());
-              for (int i = 0; i < enum_->value_count(); ++i) {
-                numbers.push_back(enum_->value(i)->number());
-              }
-              // Sort and deduplicate `numbers`.
-              absl::c_sort(numbers);
-              numbers.erase(std::unique(numbers.begin(), numbers.end()),
-                            numbers.end());
-
-              for (int n : numbers) {
-                p->Emit({{"n", n}}, R"cc(
-                  case $n$:
-                )cc");
+              for (uint32_t n : google::protobuf::internal::GenerateEnumData(numbers)) {
+                p->Emit({{"n", n}}, "$n$u, ");
               }
             }}},
-          R"(
-            bool $Msg_Enum$_IsValid(int value) {
-              switch (value) {
-                $cases$;
-                  return true;
-                default:
-                  return false;
+          R"cc(
+            PROTOBUF_CONSTINIT const uint32_t $Msg_Enum$_internal_data_[] = {
+                $encoded$};
+          )cc");
+
+  if (numbers.front() + static_cast<int64_t>(numbers.size()) - 1 ==
+      numbers.back()) {
+    // They are sequential. Do a simple range check.
+    p->Emit({{"min", numbers.front()}, {"max", numbers.back()}},
+            R"cc(
+              bool $Msg_Enum$_IsValid(int value) {
+                return $min$ <= value && value <= $max$;
               }
-            }
-          )");
+            )cc");
+  } else if (numbers.front() >= 0 && numbers.back() < 64) {
+    // Not sequential, but they fit in a 64-bit bitmap.
+    uint64_t bitmap = 0;
+    for (int n : numbers) {
+      bitmap |= uint64_t{1} << n;
+    }
+    p->Emit({{"bitmap", bitmap}, {"max", numbers.back()}},
+            R"cc(
+              bool $Msg_Enum$_IsValid(int value) {
+                return 0 <= value && value <= $max$ && (($bitmap$u >> value) & 1) != 0;
+              }
+            )cc");
+  } else {
+    // More complex struct. Use enum data structure for lookup.
+    p->Emit(
+        R"cc(
+          bool $Msg_Enum$_IsValid(int value) {
+            return ::_pbi::ValidateEnum(value, $Msg_Enum$_internal_data_);
+          }
+        )cc");
+  }
 
   if (!has_reflection_) {
     // In lite mode (where descriptors are unavailable), we generate separate

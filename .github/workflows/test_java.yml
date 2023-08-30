@@ -110,6 +110,6 @@ jobs:
       run: |
         sudo rm -rf _build
     - name: Validate Protobuf BOM
-      uses: googleapis/java-cloud-bom/tests/validate-bom@v26.13.0
+      uses: googleapis/java-cloud-bom/tests/validate-bom@fd56f04bb0bc581776a74031591f0b3bc5e7920a # v26.13.0
       with:
         bom-path: java/bom/pom.xml

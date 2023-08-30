@@ -28,11 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <memory>
-
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-#include "google/protobuf/compiler/rust/accessors/accessors.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
@@ -41,112 +39,102 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-namespace {
-class SingularScalar final : public AccessorGenerator {
- public:
-  ~SingularScalar() override = default;
 
-  void InMsgImpl(Context<FieldDescriptor> field) const override {
-    field.Emit(
-        {
-            {"field", field.desc().name()},
-            {"Scalar", PrimitiveRsTypeName(field)},
-            {"hazzer_thunk", Thunk(field, "has")},
-            {"getter",
-             [&] {
-               field.Emit({}, R"rs(
+void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
+  field.Emit(
+      {
+          {"field", field.desc().name()},
+          {"Scalar", PrimitiveRsTypeName(field.desc())},
+          {"hazzer_thunk", Thunk(field, "has")},
+          {"getter",
+           [&] {
+             field.Emit({}, R"rs(
                   pub fn r#$field$(&self) -> $Scalar$ {
-                    unsafe { $getter_thunk$(self.msg) }
+                    unsafe { $getter_thunk$(self.inner.msg) }
                   }
                 )rs");
-             }},
-            {"getter_opt",
-             [&] {
-               if (!field.desc().is_optional()) return;
-               if (!field.desc().has_presence()) return;
-               field.Emit({}, R"rs(
+           }},
+          {"getter_opt",
+           [&] {
+             if (!field.desc().is_optional()) return;
+             if (!field.desc().has_presence()) return;
+             field.Emit({}, R"rs(
                   pub fn r#$field$_opt(&self) -> Option<$Scalar$> {
-                    if !unsafe { $hazzer_thunk$(self.msg) } {
+                    if !unsafe { $hazzer_thunk$(self.inner.msg) } {
                       return None;
                     }
-                    Some(unsafe { $getter_thunk$(self.msg) })
+                    Some(unsafe { $getter_thunk$(self.inner.msg) })
                   }
                   )rs");
-             }},
-            {"getter_thunk", Thunk(field, "get")},
-            {"setter_thunk", Thunk(field, "set")},
-            {"clearer_thunk", Thunk(field, "clear")},
-        },
-        R"rs(
+           }},
+          {"getter_thunk", Thunk(field, "get")},
+          {"setter_thunk", Thunk(field, "set")},
+          {"clearer_thunk", Thunk(field, "clear")},
+      },
+      R"rs(
           $getter$
           $getter_opt$
 
           pub fn $field$_set(&mut self, val: Option<$Scalar$>) {
             match val {
-              Some(val) => unsafe { $setter_thunk$(self.msg, val) },
-              None => unsafe { $clearer_thunk$(self.msg) },
+              Some(val) => unsafe { $setter_thunk$(self.inner.msg, val) },
+              None => unsafe { $clearer_thunk$(self.inner.msg) },
             }
           }
         )rs");
-  }
+}
 
-  void InExternC(Context<FieldDescriptor> field) const override {
-    field.Emit(
-        {{"Scalar", PrimitiveRsTypeName(field)},
-         {"hazzer_thunk", Thunk(field, "has")},
-         {"getter_thunk", Thunk(field, "get")},
-         {"setter_thunk", Thunk(field, "set")},
-         {"clearer_thunk", Thunk(field, "clear")},
-         {"hazzer",
-          [&] {
-            if (field.desc().has_presence()) {
-              field.Emit(
-                  R"rs(fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;)rs");
-            }
-          }}},
-        R"rs(
+void SingularScalar::InExternC(Context<FieldDescriptor> field) const {
+  field.Emit(
+      {{"Scalar", PrimitiveRsTypeName(field.desc())},
+       {"hazzer_thunk", Thunk(field, "has")},
+       {"getter_thunk", Thunk(field, "get")},
+       {"setter_thunk", Thunk(field, "set")},
+       {"clearer_thunk", Thunk(field, "clear")},
+       {"hazzer",
+        [&] {
+          if (field.desc().has_presence()) {
+            field.Emit(
+                R"rs(fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;)rs");
+          }
+        }}},
+      R"rs(
           $hazzer$
           fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $Scalar$;
           fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $Scalar$);
           fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
         )rs");
-  }
-
-  void InThunkCc(Context<FieldDescriptor> field) const override {
-    field.Emit({{"field", cpp::FieldName(&field.desc())},
-                {"Scalar", cpp::PrimitiveTypeName(field.desc().cpp_type())},
-                {"QualifiedMsg",
-                 cpp::QualifiedClassName(field.desc().containing_type())},
-                {"hazzer_thunk", Thunk(field, "has")},
-                {"getter_thunk", Thunk(field, "get")},
-                {"setter_thunk", Thunk(field, "set")},
-                {"clearer_thunk", Thunk(field, "clear")},
-                {"hazzer",
-                 [&] {
-                   if (field.desc().has_presence()) {
-                     field.Emit(R"cc(
-                       bool $hazzer_thunk$($QualifiedMsg$* msg) {
-                         return msg->has_$field$();
-                       }
-                     )cc");
-                   }
-                 }}},
-               R"cc(
-                 $hazzer$;
-                 $Scalar$ $getter_thunk$($QualifiedMsg$* msg) { return msg->$field$(); }
-                 void $setter_thunk$($QualifiedMsg$* msg, $Scalar$ val) {
-                   msg->set_$field$(val);
-                 }
-                 void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
-               )cc");
-  }
-};
-}  // namespace
-
-std::unique_ptr<AccessorGenerator> AccessorGenerator::ForSingularScalar(
-    Context<FieldDescriptor> field) {
-  return std::make_unique<SingularScalar>();
 }
+
+void SingularScalar::InThunkCc(Context<FieldDescriptor> field) const {
+  field.Emit({{"field", cpp::FieldName(&field.desc())},
+              {"Scalar", cpp::PrimitiveTypeName(field.desc().cpp_type())},
+              {"QualifiedMsg",
+               cpp::QualifiedClassName(field.desc().containing_type())},
+              {"hazzer_thunk", Thunk(field, "has")},
+              {"getter_thunk", Thunk(field, "get")},
+              {"setter_thunk", Thunk(field, "set")},
+              {"clearer_thunk", Thunk(field, "clear")},
+              {"hazzer",
+               [&] {
+                 if (field.desc().has_presence()) {
+                   field.Emit(R"cc(
+                     bool $hazzer_thunk$($QualifiedMsg$* msg) {
+                       return msg->has_$field$();
+                     }
+                   )cc");
+                 }
+               }}},
+             R"cc(
+               $hazzer$;
+               $Scalar$ $getter_thunk$($QualifiedMsg$* msg) { return msg->$field$(); }
+               void $setter_thunk$($QualifiedMsg$* msg, $Scalar$ val) {
+                 msg->set_$field$(val);
+               }
+               void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
+             )cc");
+}
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf

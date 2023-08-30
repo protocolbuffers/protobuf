@@ -1038,7 +1038,9 @@ class TestMakeDescriptor:
 
         result = descriptor.MakeDescriptor(message_type)
         assert result.fields[0].cpp_type == descriptor.FieldDescriptor.CPPTYPE_UINT64
+        assert result.fields[0].cpp_type == result.fields[0].CPPTYPE_UINT64
         assert result.fields[1].cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE
+        assert result.fields[1].cpp_type == result.fields[1].CPPTYPE_MESSAGE
         assert result.fields[1].message_type.containing_type == result
         assert result.nested_types[0].fields[0].full_name == 'Foo2.Sub.bar_field'
         assert result.nested_types[0].fields[0].enum_type == result.nested_types[0].enum_types[0]

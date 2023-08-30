@@ -38,8 +38,8 @@
 #include <utility>
 
 #include "absl/log/absl_check.h"
-#include "google/protobuf/arena.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/explicitly_constructed.h"
 #include "google/protobuf/port.h"
 

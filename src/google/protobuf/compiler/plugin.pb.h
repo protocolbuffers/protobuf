@@ -90,6 +90,7 @@ enum CodeGeneratorResponse_Feature : int {
 };
 
 PROTOC_EXPORT bool CodeGeneratorResponse_Feature_IsValid(int value);
+PROTOC_EXPORT extern const uint32_t CodeGeneratorResponse_Feature_internal_data_[];
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MIN = static_cast<CodeGeneratorResponse_Feature>(0);
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MAX = static_cast<CodeGeneratorResponse_Feature>(2);
 constexpr int CodeGeneratorResponse_Feature_Feature_ARRAYSIZE = 2 + 1;
@@ -225,12 +226,12 @@ class PROTOC_EXPORT Version final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(Version* other);
 
   private:
@@ -439,12 +440,12 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorResponse_File* other);
 
   private:
@@ -669,12 +670,12 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorResponse* other);
 
   private:
@@ -900,12 +901,12 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorRequest* other);
 
   private:
@@ -1165,7 +1166,8 @@ inline void Version::clear_suffix() {
   _impl_.suffix_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& Version::suffix() const {
+inline const std::string& Version::suffix() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.suffix)
   return _internal_suffix();
 }
@@ -1177,7 +1179,7 @@ inline PROTOBUF_ALWAYS_INLINE void Version::set_suffix(Arg_&& arg,
   _impl_.suffix_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.suffix)
 }
-inline std::string* Version::mutable_suffix() {
+inline std::string* Version::mutable_suffix() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_suffix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.Version.suffix)
   return _s;
@@ -1240,17 +1242,20 @@ inline void CodeGeneratorRequest::clear_file_to_generate() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.file_to_generate_.Clear();
 }
-inline std::string* CodeGeneratorRequest::add_file_to_generate() {
+inline std::string* CodeGeneratorRequest::add_file_to_generate()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   std::string* _s = _internal_mutable_file_to_generate()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _s;
 }
-inline const std::string& CodeGeneratorRequest::file_to_generate(int index) const {
+inline const std::string& CodeGeneratorRequest::file_to_generate(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _internal_file_to_generate().Get(index);
 }
-inline std::string* CodeGeneratorRequest::mutable_file_to_generate(int index) {
+inline std::string* CodeGeneratorRequest::mutable_file_to_generate(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _internal_mutable_file_to_generate()->Mutable(index);
 }
@@ -1306,11 +1311,12 @@ inline void CodeGeneratorRequest::add_file_to_generate(absl::string_view value) 
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
-CodeGeneratorRequest::file_to_generate() const {
+CodeGeneratorRequest::file_to_generate() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _internal_file_to_generate();
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* CodeGeneratorRequest::mutable_file_to_generate() {
+inline ::google::protobuf::RepeatedPtrField<std::string>*
+CodeGeneratorRequest::mutable_file_to_generate() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_file_to_generate();
@@ -1336,7 +1342,8 @@ inline void CodeGeneratorRequest::clear_parameter() {
   _impl_.parameter_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& CodeGeneratorRequest::parameter() const {
+inline const std::string& CodeGeneratorRequest::parameter() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.parameter)
   return _internal_parameter();
 }
@@ -1348,7 +1355,7 @@ inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorRequest::set_parameter(Arg_&& ar
   _impl_.parameter_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
-inline std::string* CodeGeneratorRequest::mutable_parameter() {
+inline std::string* CodeGeneratorRequest::mutable_parameter() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_parameter();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.parameter)
   return _s;
@@ -1597,7 +1604,8 @@ inline void CodeGeneratorResponse_File::clear_name() {
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& CodeGeneratorResponse_File::name() const {
+inline const std::string& CodeGeneratorResponse_File::name() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.name)
   return _internal_name();
 }
@@ -1609,7 +1617,7 @@ inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_name(Arg_&& a
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
-inline std::string* CodeGeneratorResponse_File::mutable_name() {
+inline std::string* CodeGeneratorResponse_File::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.name)
   return _s;
@@ -1667,7 +1675,8 @@ inline void CodeGeneratorResponse_File::clear_insertion_point() {
   _impl_.insertion_point_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline const std::string& CodeGeneratorResponse_File::insertion_point() const {
+inline const std::string& CodeGeneratorResponse_File::insertion_point() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
   return _internal_insertion_point();
 }
@@ -1679,7 +1688,7 @@ inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_insertion_poi
   _impl_.insertion_point_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
-inline std::string* CodeGeneratorResponse_File::mutable_insertion_point() {
+inline std::string* CodeGeneratorResponse_File::mutable_insertion_point() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_insertion_point();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
   return _s;
@@ -1737,7 +1746,8 @@ inline void CodeGeneratorResponse_File::clear_content() {
   _impl_.content_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-inline const std::string& CodeGeneratorResponse_File::content() const {
+inline const std::string& CodeGeneratorResponse_File::content() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.content)
   return _internal_content();
 }
@@ -1749,7 +1759,7 @@ inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse_File::set_content(Arg_&
   _impl_.content_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
-inline std::string* CodeGeneratorResponse_File::mutable_content() {
+inline std::string* CodeGeneratorResponse_File::mutable_content() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_content();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.content)
   return _s;
@@ -1903,7 +1913,8 @@ inline void CodeGeneratorResponse::clear_error() {
   _impl_.error_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& CodeGeneratorResponse::error() const {
+inline const std::string& CodeGeneratorResponse::error() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.error)
   return _internal_error();
 }
@@ -1915,7 +1926,7 @@ inline PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse::set_error(Arg_&& arg,
   _impl_.error_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
-inline std::string* CodeGeneratorResponse::mutable_error() {
+inline std::string* CodeGeneratorResponse::mutable_error() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_error();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.error)
   return _s;

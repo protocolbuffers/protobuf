@@ -309,7 +309,7 @@ void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
   std::string enum_name = enum_descriptor.name();
   printer_->Print(
       "class $enum_name$(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):\n"
-      "    __slots__ = []\n",
+      "    __slots__ = ()\n",
       "enum_name", enum_name);
   Annotate("enum_name", &enum_descriptor);
   printer_->Indent();
@@ -419,21 +419,20 @@ void PyiGenerator::PrintMessage(
   printer_->Indent();
 
   // Prints slots
-  printer_->Print("__slots__ = [", "class_name", class_name);
-  bool first_item = true;
+  printer_->Print("__slots__ = (");
+  int items_printed = 0;
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
     const FieldDescriptor* field_des = message_descriptor.field(i);
     if (IsPythonKeyword(field_des->name())) {
       continue;
     }
-    if (first_item) {
-      first_item = false;
-    } else {
+    if (items_printed > 0) {
       printer_->Print(", ");
     }
+    ++items_printed;
     printer_->Print("\"$field_name$\"", "field_name", field_des->name());
   }
-  printer_->Print("]\n");
+  printer_->Print(items_printed == 1 ? ",)\n" : ")\n");
 
   // Prints Extensions for extendable messages
   if (message_descriptor.extension_range_count() > 0) {

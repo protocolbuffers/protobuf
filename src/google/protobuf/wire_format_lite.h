@@ -44,7 +44,6 @@
 #include <string>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/port.h"
 #include "absl/base/casts.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"

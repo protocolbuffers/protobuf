@@ -235,6 +235,7 @@ Tokenizer::Tokenizer(ZeroCopyInputStream* input,
   current_.column = 0;
   current_.end_column = 0;
   current_.type = TYPE_START;
+  previous_ = current_;
 
   Refresh();
 }

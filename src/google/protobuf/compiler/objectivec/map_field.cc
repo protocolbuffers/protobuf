@@ -34,10 +34,14 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -202,6 +206,24 @@ void MapFieldGenerator::DetermineObjectiveCClassDefinitions(
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_MESSAGE) {
     fwd_decls->insert(
         ObjCClassDeclaration(value_field_generator_->variable("storage_type")));
+  }
+}
+
+void MapFieldGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  const FieldDescriptor* value_descriptor =
+      descriptor_->message_type()->map_value();
+  const ObjectiveCType value_objc_type = GetObjectiveCType(value_descriptor);
+  if (value_objc_type == OBJECTIVECTYPE_MESSAGE) {
+    const Descriptor* value_msg_descriptor = value_descriptor->message_type();
+    if (descriptor_->file() != value_msg_descriptor->file()) {
+      deps->insert(value_msg_descriptor->file());
+    }
+  } else if (value_objc_type == OBJECTIVECTYPE_ENUM) {
+    const EnumDescriptor* value_enum_descriptor = value_descriptor->enum_type();
+    if (descriptor_->file() != value_enum_descriptor->file()) {
+      deps->insert(value_enum_descriptor->file());
+    }
   }
 }
 

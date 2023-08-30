@@ -68,6 +68,10 @@ const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30007;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
+bool IsMapEntryMessage(const Descriptor* descriptor) {
+  return descriptor->options().map_entry();
+}
+
 // Checks if a message contains extension definitions (on the message or
 // a nested message under it). `include_custom_options` decides if custom
 // options count as extensions.
@@ -143,12 +147,18 @@ void MakeDescriptors(
         std::make_unique<EnumGenerator>(descriptor->enum_type(i)));
   }
   for (int i = 0; i < descriptor->nested_type_count(); i++) {
+    const Descriptor* message_type = descriptor->nested_type(i);
+    if (IsMapEntryMessage(message_type)) {
+      // Map entries can't have extensions, or sub messages, they are an
+      // implementation detail of how map<> works.
+      continue;
+    }
     message_generators->emplace_back(std::make_unique<MessageGenerator>(
-        file_description_name, descriptor->nested_type(i)));
+        file_description_name, message_type));
     message_generators->back()->AddExtensionGenerators(extension_generators,
                                                        strip_custom_options);
-    MakeDescriptors(descriptor->nested_type(i), file_description_name,
-                    enum_generators, extension_generators, message_generators,
+    MakeDescriptors(message_type, file_description_name, enum_generators,
+                    extension_generators, message_generators,
                     strip_custom_options);
   }
 }
@@ -278,13 +288,18 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
   }
   file_scoped_extension_count_ = extension_generators_.size();
   for (int i = 0; i < file_->message_type_count(); i++) {
+    const Descriptor* message_type = file_->message_type(i);
+    if (IsMapEntryMessage(message_type)) {
+      // Map entries can't have extensions, or sub messages, they are an
+      // implementation detail of how map<> works.
+      continue;
+    }
     message_generators_.emplace_back(std::make_unique<MessageGenerator>(
-        file_description_name_, file_->message_type(i)));
+        file_description_name_, message_type));
     message_generators_.back()->AddExtensionGenerators(
         &extension_generators_, generation_options.strip_custom_options);
-    MakeDescriptors(file_->message_type(i), file_description_name_,
-                    &enum_generators_, &extension_generators_,
-                    &message_generators_,
+    MakeDescriptors(message_type, file_description_name_, &enum_generators_,
+                    &extension_generators_, &message_generators_,
                     generation_options.strip_custom_options);
   }
 }
@@ -361,16 +376,7 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
   std::vector<const FileDescriptor*> deps_with_extensions =
       common_state_->CollectMinimalFileDepsContainingExtensions(file_);
   GeneratedFileOptions file_options;
-
-  // If any indirect dependency provided extensions, it needs to be directly
-  // imported so it can get merged into the root's extensions registry.
-  // See the Note by CollectMinimalFileDepsContainingExtensions before
-  // changing this.
-  for (auto& dep : deps_with_extensions) {
-    if (!IsDirectDependency(dep, file_)) {
-      file_options.extra_files_to_import.push_back(dep);
-    }
-  }
+  file_options.forced_files_to_import = deps_with_extensions;
 
   absl::btree_set<std::string> fwd_decls;
   for (const auto& generator : message_generators_) {
@@ -417,16 +423,7 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
   std::vector<const FileDescriptor*> deps_with_extensions =
       common_state_->CollectMinimalFileDepsContainingExtensions(file_);
   GeneratedFileOptions file_options;
-
-  // If any indirect dependency provided extensions, it needs to be directly
-  // imported so it can get merged into the root's extensions registry.
-  // See the Note by CollectMinimalFileDepsContainingExtensions before
-  // changing this.
-  for (auto& dep : deps_with_extensions) {
-    if (!IsDirectDependency(dep, file_)) {
-      file_options.extra_files_to_import.push_back(dep);
-    }
-  }
+  file_options.forced_files_to_import = deps_with_extensions;
 
   absl::btree_set<std::string> fwd_decls;
   for (const auto& generator : extension_generators_) {
@@ -486,6 +483,7 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       /* for_bundled_proto = */ is_bundled_proto_);
   const std::string header_extension(kHeaderExtension);
 
+  absl::flat_hash_set<const FileDescriptor*> file_imports;
   switch (file_type) {
     case GeneratedFileType::kHeader:
       // Generated files bundled with the library get minimal imports,
@@ -500,11 +498,13 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       if (HeadersUseForwardDeclarations()) {
         // #import any headers for "public imports" in the proto file.
         for (int i = 0; i < file_->public_dependency_count(); i++) {
-          import_writer.AddFile(file_->public_dependency(i), header_extension);
+          file_imports.insert(file_->public_dependency(i));
         }
+      } else if (generation_options_.generate_minimal_imports) {
+        DetermineNeededDeps(&file_imports, PublicDepsHandling::kForceInclude);
       } else {
         for (int i = 0; i < file_->dependency_count(); i++) {
-          import_writer.AddFile(file_->dependency(i), header_extension);
+          file_imports.insert(file_->dependency(i));
         }
       }
       break;
@@ -512,24 +512,48 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       import_writer.AddRuntimeImport("GPBProtocolBuffers_RuntimeSupport.h");
       import_writer.AddFile(file_, header_extension);
       if (HeadersUseForwardDeclarations()) {
-        // #import the headers for anything that a plain dependency of this
-        // proto file (that means they were just an include, not a "public"
-        // include).
-        absl::flat_hash_set<std::string> public_import_names;
-        for (int i = 0; i < file_->public_dependency_count(); i++) {
-          public_import_names.insert(file_->public_dependency(i)->name());
-        }
-        for (int i = 0; i < file_->dependency_count(); i++) {
-          const FileDescriptor* dep = file_->dependency(i);
-          if (!public_import_names.contains(dep->name())) {
-            import_writer.AddFile(dep, header_extension);
+        if (generation_options_.generate_minimal_imports) {
+          DetermineNeededDeps(&file_imports, PublicDepsHandling::kExclude);
+        } else {
+          // #import the headers for anything that a plain dependency of this
+          // proto file (that means they were just an include, not a "public"
+          // include).
+          absl::flat_hash_set<std::string> public_import_names;
+          for (int i = 0; i < file_->public_dependency_count(); i++) {
+            public_import_names.insert(file_->public_dependency(i)->name());
+          }
+          for (int i = 0; i < file_->dependency_count(); i++) {
+            const FileDescriptor* dep = file_->dependency(i);
+            if (!public_import_names.contains(dep->name())) {
+              file_imports.insert(dep);
+            }
           }
         }
       }
       break;
   }
 
-  for (const auto& dep : file_options.extra_files_to_import) {
+  // If a forced file was a direct dep, move it into the file_imports.
+  std::vector<const FileDescriptor*> extra_files_to_import;
+  for (const auto& dep : file_options.forced_files_to_import) {
+    if (IsDirectDependency(dep, file_)) {
+      file_imports.insert(dep);
+    } else {
+      extra_files_to_import.push_back(dep);
+    }
+  }
+
+  if (!file_imports.empty()) {
+    // Output the file_imports in the order they were listed as dependencies.
+    for (int i = 0; i < file_->dependency_count(); i++) {
+      const FileDescriptor* dep = file_->dependency(i);
+      if (file_imports.contains(dep)) {
+        import_writer.AddFile(file_->dependency(i), header_extension);
+      }
+    }
+  }
+
+  for (const auto& dep : extra_files_to_import) {
     import_writer.AddFile(dep, header_extension);
   }
 
@@ -718,19 +742,25 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
 
   const std::string objc_prefix(FileClassPrefix(file_));
   std::string syntax;
-  switch (FileDescriptorLegacy(file_).syntax()) {
-    case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
-      syntax = "GPBFileSyntaxUnknown";
-      break;
-    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
-      syntax = "GPBFileSyntaxProto2";
-      break;
-    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
-      syntax = "GPBFileSyntaxProto3";
-      break;
-    case FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS:
-      syntax = "GPBFileSyntaxProtoEditions";
-      break;
+  if (generation_options_.experimental_strip_nonfunctional_codegen) {
+    // Doesn't matter for current sources, use Unknown as a marker for this
+    // mode.
+    syntax = "GPBFileSyntaxUnknown";
+  } else {
+    switch (FileDescriptorLegacy(file_).syntax()) {
+      case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
+        syntax = "GPBFileSyntaxUnknown";
+        break;
+      case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
+        syntax = "GPBFileSyntaxProto2";
+        break;
+      case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
+        syntax = "GPBFileSyntaxProto3";
+        break;
+      case FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS:
+        syntax = "GPBFileSyntaxProtoEditions";
+        break;
+    }
   }
 
   p->Emit({{"file_description_name", file_description_name_},
@@ -750,6 +780,34 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
             };
           )objc");
   p->Emit("\n");
+}
+
+void FileGenerator::DetermineNeededDeps(
+    absl::flat_hash_set<const FileDescriptor*>* deps,
+    PublicDepsHandling public_deps_handling) const {
+  // This logic captures the deps that are needed for types thus removing the
+  // ones that are only deps because they provide the definitions for custom
+  // options. If protoc gets something like "import options" then this logic can
+  // go away as the non "import options" deps would be the ones needed.
+
+  if (public_deps_handling == PublicDepsHandling::kForceInclude) {
+    for (int i = 0; i < file_->public_dependency_count(); i++) {
+      deps->insert(file_->public_dependency(i));
+    }
+  }
+
+  for (const auto& generator : message_generators_) {
+    generator->DetermineNeededFiles(deps);
+  }
+  for (const auto& generator : extension_generators_) {
+    generator->DetermineNeededFiles(deps);
+  }
+
+  if (public_deps_handling == PublicDepsHandling::kExclude) {
+    for (int i = 0; i < file_->public_dependency_count(); i++) {
+      deps->erase(file_);
+    }
+  }
 }
 
 }  // namespace objectivec

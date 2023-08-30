@@ -49,9 +49,11 @@ std::string GetThunkCcFile(Context<FileDescriptor> file);
 std::string GetHeaderFile(Context<FileDescriptor> file);
 
 std::string Thunk(Context<FieldDescriptor> field, absl::string_view op);
+std::string Thunk(Context<OneofDescriptor> field, absl::string_view op);
+
 std::string Thunk(Context<Descriptor> msg, absl::string_view op);
 
-absl::string_view PrimitiveRsTypeName(Context<FieldDescriptor> field);
+std::string PrimitiveRsTypeName(const FieldDescriptor& desc);
 
 std::string FieldInfoComment(Context<FieldDescriptor> field);
 
@@ -59,6 +61,7 @@ std::string RustModule(Context<Descriptor> msg);
 std::string RustInternalModuleName(Context<FileDescriptor> file);
 
 std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg);
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf

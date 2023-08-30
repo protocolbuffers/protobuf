@@ -30,7 +30,7 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::RawArena;
+use crate::__internal::{Private, RawArena, RawMessage};
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
 use std::fmt;
@@ -154,6 +154,54 @@ impl fmt::Debug for SerializedData {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Debug::fmt(self.deref(), f)
     }
+}
+
+pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
+pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
+pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
+
+/// The raw contents of every generated message.
+#[derive(Debug)]
+pub struct MessageInner {
+    pub msg: RawMessage,
+}
+
+/// Mutators that point to their original message use this to do so.
+///
+/// Since C++ messages manage their own memory, this can just copy the
+/// `RawMessage` instead of referencing an arena like UPB must.
+///
+/// Note: even though this type is `Copy`, it should only be copied by
+/// protobuf internals that can maintain mutation invariants:
+///
+/// - No concurrent mutation for any two fields in a message: this means
+///   mutators cannot be `Send` but are `Sync`.
+/// - If there are multiple accessible `Mut` to a single message at a time, they
+///   must be different fields, and not be in the same oneof. As such, a `Mut`
+///   cannot be `Clone` but *can* reborrow itself with `.as_mut()`, which
+///   converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
+#[derive(Clone, Copy, Debug)]
+pub struct MutatorMessageRef<'msg> {
+    msg: RawMessage,
+    _phantom: PhantomData<&'msg mut ()>,
+}
+impl<'msg> MutatorMessageRef<'msg> {
+    #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
+    pub fn new(_private: Private, msg: &'msg mut MessageInner) -> Self {
+        MutatorMessageRef { msg: msg.msg, _phantom: PhantomData }
+    }
+
+    pub fn msg(&self) -> RawMessage {
+        self.msg
+    }
+}
+
+pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
+    _msg_ref: MutatorMessageRef<'a>,
+    val: &'a [u8],
+) -> &'a [u8] {
+    // Nothing to do, the message manages its own string memory for C++.
+    val
 }
 
 #[cfg(test)]

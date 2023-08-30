@@ -342,9 +342,6 @@ inline void Api::SharedDtor() {
   _impl_.version_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
 }
-void Api::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
-}
 
 PROTOBUF_NOINLINE void Api::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
@@ -623,6 +620,9 @@ PROTOBUF_NOINLINE bool Api::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Api::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Api::InternalSwap(Api* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -742,9 +742,6 @@ inline void Method::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.request_type_url_.Destroy();
   _impl_.response_type_url_.Destroy();
-}
-void Method::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Method::Clear() {
@@ -1012,6 +1009,9 @@ PROTOBUF_NOINLINE bool Method::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Method::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Method::InternalSwap(Method* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -1100,9 +1100,6 @@ inline void Mixin::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   _impl_.root_.Destroy();
-}
-void Mixin::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Mixin::Clear() {
@@ -1254,6 +1251,9 @@ PROTOBUF_NOINLINE bool Mixin::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Mixin::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Mixin::InternalSwap(Mixin* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();

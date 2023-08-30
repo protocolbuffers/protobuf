@@ -147,9 +147,6 @@ Duration::~Duration() {
 inline void Duration::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
-void Duration::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
-}
 
 PROTOBUF_NOINLINE void Duration::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Duration)
@@ -295,6 +292,9 @@ PROTOBUF_NOINLINE bool Duration::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Duration::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Duration::InternalSwap(Duration* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

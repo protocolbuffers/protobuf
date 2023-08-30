@@ -34,8 +34,8 @@
 
 #include <limits>
 
-#include "google/protobuf/descriptor.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 
 namespace google {

@@ -30,11 +30,6 @@
 
 #include <memory>
 
-#include "google/protobuf/arena.h"
-#include "google/protobuf/map.h"
-#include "google/protobuf/map_field_inl.h"
-#include "google/protobuf/message.h"
-#include "google/protobuf/repeated_field.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -43,9 +38,14 @@
 #include "absl/synchronization/barrier.h"
 #include "absl/synchronization/blocking_counter.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/map.h"
+#include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unittest.pb.h"
 
 // Must be included last.

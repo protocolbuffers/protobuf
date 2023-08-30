@@ -38,6 +38,7 @@
 #include "google/protobuf/compiler/rust/accessors/accessors.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
+#include "google/protobuf/compiler/rust/oneof.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -45,33 +46,12 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 namespace {
-void MessageStructFields(Context<Descriptor> msg) {
-  switch (msg.opts().kernel) {
-    case Kernel::kCpp:
-      msg.Emit(R"rs(
-        msg: $pbi$::RawMessage,
-      )rs");
-      return;
-
-    case Kernel::kUpb:
-      msg.Emit(R"rs(
-        msg: $pbi$::RawMessage,
-        //~ rustc incorrectly thinks this field is never read, even though
-        //~ it has a destructor!
-        #[allow(dead_code)]
-        arena: $pbr$::Arena,
-      )rs");
-      return;
-  }
-
-  ABSL_LOG(FATAL) << "unreachable";
-}
 
 void MessageNew(Context<Descriptor> msg) {
   switch (msg.opts().kernel) {
     case Kernel::kCpp:
       msg.Emit({{"new_thunk", Thunk(msg, "new")}}, R"rs(
-        Self { msg: unsafe { $new_thunk$() } }
+        Self { inner: $pbr$::MessageInner { msg: unsafe { $new_thunk$() } } }
       )rs");
       return;
 
@@ -79,8 +59,10 @@ void MessageNew(Context<Descriptor> msg) {
       msg.Emit({{"new_thunk", Thunk(msg, "new")}}, R"rs(
         let arena = $pbr$::Arena::new();
         Self {
-          msg: unsafe { $new_thunk$(arena.raw()) },
-          arena,
+          inner: $pbr$::MessageInner {
+            msg: unsafe { $new_thunk$(arena.raw()) },
+            arena,
+          }
         }
       )rs");
       return;
@@ -93,7 +75,7 @@ void MessageSerialize(Context<Descriptor> msg) {
   switch (msg.opts().kernel) {
     case Kernel::kCpp:
       msg.Emit({{"serialize_thunk", Thunk(msg, "serialize")}}, R"rs(
-        unsafe { $serialize_thunk$(self.msg) }
+        unsafe { $serialize_thunk$(self.inner.msg) }
       )rs");
       return;
 
@@ -102,7 +84,7 @@ void MessageSerialize(Context<Descriptor> msg) {
         let arena = $pbr$::Arena::new();
         let mut len = 0;
         unsafe {
-          let data = $serialize_thunk$(self.msg, arena.raw(), &mut len);
+          let data = $serialize_thunk$(self.inner.msg, arena.raw(), &mut len);
           $pbr$::SerializedData::from_raw_parts(arena, data, len)
         }
       )rs");
@@ -126,7 +108,7 @@ void MessageDeserialize(Context<Descriptor> msg) {
               data.len(),
             );
 
-            $deserialize_thunk$(self.msg, data)
+            $deserialize_thunk$(self.inner.msg, data)
           };
           success.then_some(()).ok_or($pb$::ParseError)
         )rs");
@@ -143,9 +125,9 @@ void MessageDeserialize(Context<Descriptor> msg) {
           None => Err($pb$::ParseError),
           Some(msg) => {
             // This assignment causes self.arena to be dropped and to deallocate
-            // any previous message pointed/owned to by self.msg.
-            self.arena = arena;
-            self.msg = msg;
+            // any previous message pointed/owned to by self.inner.msg.
+            self.inner.arena = arena;
+            self.inner.msg = msg;
             Ok(())
           }
         }
@@ -200,23 +182,12 @@ void MessageDrop(Context<Descriptor> msg) {
   }
 
   msg.Emit({{"delete_thunk", Thunk(msg, "delete")}}, R"rs(
-    unsafe { $delete_thunk$(self.msg); }
+    unsafe { $delete_thunk$(self.inner.msg); }
   )rs");
 }
 }  // namespace
 
-MessageGenerator::MessageGenerator(Context<Descriptor> msg) {
-  accessors_.resize(msg.desc().field_count());
-  for (int i = 0; i < msg.desc().field_count(); ++i) {
-    auto field = msg.WithDesc(msg.desc().field(i));
-    accessors_[i] = AccessorGenerator::For(field);
-    if (accessors_[i] == nullptr) {
-      ABSL_LOG(WARNING) << "unsupported field: " << field.desc().full_name();
-    }
-  }
-}
-
-void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
+void GenerateRs(Context<Descriptor> msg) {
   if (msg.desc().map_key() != nullptr) {
     ABSL_LOG(WARNING) << "unsupported map field: " << msg.desc().full_name();
     return;
@@ -224,7 +195,6 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
   msg.Emit(
       {
           {"Msg", msg.desc().name()},
-          {"Msg.fields", [&] { MessageStructFields(msg); }},
           {"Msg::new", [&] { MessageNew(msg); }},
           {"Msg::serialize", [&] { MessageSerialize(msg); }},
           {"Msg::deserialize", [&] { MessageDeserialize(msg); }},
@@ -233,37 +203,43 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
           {"accessor_fns",
            [&] {
              for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto& gen = accessors_[i];
                auto field = msg.WithDesc(*msg.desc().field(i));
                msg.Emit({{"comment", FieldInfoComment(field)}}, R"rs(
                  // $comment$
                )rs");
-
-               if (gen == nullptr) {
-                 msg.Emit({{"field", field.desc().full_name()}}, R"rs(
-                  // Unsupported! :(
-                 )rs");
-                 msg.printer().PrintRaw("\n");
-                 continue;
-               }
-
-               gen->GenerateMsgImpl(field);
+               GenerateAccessorMsgImpl(field);
+               msg.printer().PrintRaw("\n");
+             }
+           }},
+          {"oneof_accessor_fns",
+           [&] {
+             for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+               GenerateOneofAccessors(
+                   msg.WithDesc(*msg.desc().real_oneof_decl(i)));
                msg.printer().PrintRaw("\n");
              }
            }},
           {"accessor_externs",
            [&] {
              for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto& gen = accessors_[i];
-               if (gen == nullptr) continue;
-
-               gen->GenerateExternC(msg.WithDesc(*msg.desc().field(i)));
+               GenerateAccessorExternC(msg.WithDesc(*msg.desc().field(i)));
+               msg.printer().PrintRaw("\n");
+             }
+           }},
+          {"oneof_externs",
+           [&] {
+             for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+               GenerateOneofExternC(
+                   msg.WithDesc(*msg.desc().real_oneof_decl(i)));
                msg.printer().PrintRaw("\n");
              }
            }},
           {"nested_msgs",
            [&] {
-             if (msg.desc().nested_type_count() == 0) {
+             // If we have no nested types or oneofs, bail out without emitting
+             // an empty mod SomeMsg_.
+             if (msg.desc().nested_type_count() == 0 &&
+                 msg.desc().real_oneof_decl_count() == 0) {
                return;
              }
              msg.Emit({{"Msg", msg.desc().name()},
@@ -273,27 +249,40 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
                                ++i) {
                             auto nested_msg =
                                 msg.WithDesc(msg.desc().nested_type(i));
-                            MessageGenerator gen(nested_msg);
-                            gen.GenerateRs(nested_msg);
+                            GenerateRs(nested_msg);
+                          }
+                        }},
+                       {"oneofs",
+                        [&] {
+                          for (int i = 0;
+                               i < msg.desc().real_oneof_decl_count(); ++i) {
+                            GenerateOneofDefinition(
+                                msg.WithDesc(*msg.desc().real_oneof_decl(i)));
                           }
                         }}},
                       R"rs(
                  pub mod $Msg$_ {
                    $nested_msgs$
+
+                   $oneofs$
                  }  // mod $Msg$_
                 )rs");
            }},
       },
       R"rs(
         #[allow(non_camel_case_types)]
+        // TODO(b/291938599): Implement support for debug redaction
         #[derive(Debug)]
         pub struct $Msg$ {
-          $Msg.fields$
+          inner: $pbr$::MessageInner
         }
 
+        // SAFETY:
+        // - `$Msg$` does not provide shared mutation with its arena.
+        // - `$Msg$Mut` is not `Send`, and so even in the presence of mutator
+        //   splitting, synchronous access of an arena that would conflict with
+        //   field access is impossible.
         unsafe impl Sync for $Msg$ {}
-        unsafe impl Sync for $Msg$View<'_> {}
-        unsafe impl Send for $Msg$View<'_> {}
 
         impl $pb$::Proxied for $Msg$ {
           type View<'a> = $Msg$View<'a>;
@@ -306,6 +295,15 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
           msg: $pbi$::RawMessage,
           _phantom: $Phantom$<&'a ()>,
         }
+
+        // SAFETY:
+        // - `$Msg$View` does not perform any mutation.
+        // - While a `$Msg$View` exists, a `$Msg$Mut` can't exist to mutate
+        //   the arena that would conflict with field access.
+        // - `$Msg$Mut` is not `Send`, and so even in the presence of mutator
+        //   splitting, synchronous access of an arena is impossible.
+        unsafe impl Sync for $Msg$View<'_> {}
+        unsafe impl Send for $Msg$View<'_> {}
 
         impl<'a> $pb$::ViewProxy<'a> for $Msg$View<'a> {
           type Proxied = $Msg$;
@@ -324,18 +322,21 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
           }
         }
 
-        #[derive(Debug, Copy, Clone)]
+        #[derive(Debug)]
         #[allow(dead_code)]
         pub struct $Msg$Mut<'a> {
-          msg: $pbi$::RawMessage,
-          _phantom: $Phantom$<&'a mut ()>,
+          inner: $pbr$::MutatorMessageRef<'a>,
         }
 
+        // SAFETY:
+        // - `$Msg$Mut` does not perform any shared mutation.
+        // - `$Msg$Mut` is not `Send`, and so even in the presence of mutator
+        //   splitting, synchronous access of an arena is impossible.
         unsafe impl Sync for $Msg$Mut<'_> {}
 
         impl<'a> $pb$::MutProxy<'a> for $Msg$Mut<'a> {
           fn as_mut(&mut self) -> $pb$::Mut<'_, $Msg$> {
-            $Msg$Mut { msg: self.msg, _phantom: self._phantom }
+            $Msg$Mut { inner: self.inner }
           }
           fn into_mut<'shorter>(self) -> $pb$::Mut<'shorter, $Msg$> where 'a : 'shorter { self }
         }
@@ -343,10 +344,10 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
         impl<'a> $pb$::ViewProxy<'a> for $Msg$Mut<'a> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
-            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
+            $Msg$View { msg: self.inner.msg(), _phantom: std::marker::PhantomData }
           }
           fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter {
-            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
+            $Msg$View { msg: self.inner.msg(), _phantom: std::marker::PhantomData }
           }
         }
 
@@ -363,6 +364,8 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
           }
 
           $accessor_fns$
+
+          $oneof_accessor_fns$
         }  // impl $Msg$
 
         //~ We implement drop unconditionally, so that `$Msg$: Drop` regardless
@@ -377,6 +380,8 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
           $Msg_externs$
 
           $accessor_externs$
+
+          $oneof_externs$
         }  // extern "C" for $Msg$
 
         $nested_msgs$
@@ -387,10 +392,10 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
     msg.Emit({{"Msg", msg.desc().name()}}, R"rs(
       impl $Msg$ {
         pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbi$::RawMessage) -> Self {
-          Self { msg }
+          Self { inner: $pbr$::MessageInner { msg } }
         }
         pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $pbi$::RawMessage {
-          self.msg
+          self.inner.msg
         }
       }
     )rs");
@@ -398,7 +403,7 @@ void MessageGenerator::GenerateRs(Context<Descriptor> msg) {
 }
 
 // Generates code for a particular message in `.pb.thunk.cc`.
-void MessageGenerator::GenerateThunksCc(Context<Descriptor> msg) {
+void GenerateThunksCc(Context<Descriptor> msg) {
   ABSL_CHECK(msg.is_cpp());
   if (msg.desc().map_key() != nullptr) {
     ABSL_LOG(WARNING) << "unsupported map field: " << msg.desc().full_name();
@@ -406,33 +411,33 @@ void MessageGenerator::GenerateThunksCc(Context<Descriptor> msg) {
   }
 
   msg.Emit(
-      {
-          {"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
-          {"Msg", msg.desc().name()},
-          {"QualifiedMsg", cpp::QualifiedClassName(&msg.desc())},
-          {"new_thunk", Thunk(msg, "new")},
-          {"delete_thunk", Thunk(msg, "delete")},
-          {"serialize_thunk", Thunk(msg, "serialize")},
-          {"deserialize_thunk", Thunk(msg, "deserialize")},
-          {"nested_msg_thunks",
-           [&] {
-             for (int i = 0; i < msg.desc().nested_type_count(); ++i) {
-               Context<Descriptor> nested_msg =
-                   msg.WithDesc(msg.desc().nested_type(i));
-               MessageGenerator gen(nested_msg);
-               gen.GenerateThunksCc(nested_msg);
-             }
-           }},
-          {"accessor_thunks",
-           [&] {
-             for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto& gen = accessors_[i];
-               if (gen == nullptr) continue;
-
-               gen->GenerateThunkCc(msg.WithDesc(*msg.desc().field(i)));
-             }
-           }},
-      },
+      {{"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
+       {"Msg", msg.desc().name()},
+       {"QualifiedMsg", cpp::QualifiedClassName(&msg.desc())},
+       {"new_thunk", Thunk(msg, "new")},
+       {"delete_thunk", Thunk(msg, "delete")},
+       {"serialize_thunk", Thunk(msg, "serialize")},
+       {"deserialize_thunk", Thunk(msg, "deserialize")},
+       {"nested_msg_thunks",
+        [&] {
+          for (int i = 0; i < msg.desc().nested_type_count(); ++i) {
+            Context<Descriptor> nested_msg =
+                msg.WithDesc(msg.desc().nested_type(i));
+            GenerateThunksCc(nested_msg);
+          }
+        }},
+       {"accessor_thunks",
+        [&] {
+          for (int i = 0; i < msg.desc().field_count(); ++i) {
+            GenerateAccessorThunkCc(msg.WithDesc(*msg.desc().field(i)));
+          }
+        }},
+       {"oneof_thunks",
+        [&] {
+          for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+            GenerateOneofThunkCc(msg.WithDesc(*msg.desc().real_oneof_decl(i)));
+          }
+        }}},
       R"cc(
         //~ $abi$ is a workaround for a syntax highlight bug in VSCode. However,
         //~ that confuses clang-format (it refuses to keep the newline after
@@ -450,6 +455,8 @@ void MessageGenerator::GenerateThunksCc(Context<Descriptor> msg) {
         }
 
         $accessor_thunks$
+
+        $oneof_thunks$
         }  // extern $abi$
         // clang-format on
 

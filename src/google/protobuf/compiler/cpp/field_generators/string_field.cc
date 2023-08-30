@@ -150,6 +150,45 @@ class SingularString : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMemberConstexprConstructor(io::Printer* p) const override {
+    if (is_inlined()) {
+      p->Emit("$name$_(nullptr, false)");
+    } else {
+      p->Emit(
+          "$name$_(\n"
+          "    &$pbi$::fixed_address_empty_string,\n"
+          "    ::_pbi::ConstantInitialized())");
+    }
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const override {
+    if (is_inlined()) {
+      p->Emit("$name$_{}");
+    } else if (EmptyDefault()) {
+      p->Emit("$name$_(arena)");
+    } else {
+      p->Emit("$name$_(arena, $default_variable_field$)");
+    }
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const override {
+    if (is_inlined() || EmptyDefault()) {
+      p->Emit("$name$_(arena, from.$name$_)");
+    } else {
+      p->Emit("$name$_(arena, from.$name$_, $default_variable_name$)");
+    }
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const override {
+    if (is_inlined() || EmptyDefault()) {
+      p->Emit("new (&$field$) decltype($field$){arena, from.$field$};\n");
+    } else {
+      p->Emit(
+          "new (&$field$) decltype($field$){arena, from.$field$,"
+          " $default_variable_field$};\n");
+    }
+  }
+
   void GenerateStaticMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
@@ -413,7 +452,8 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           {"set_allocated_impl", [&] { SetAllocatedImpl(p); }},
       },
       R"cc(
-        inline const std::string& $Msg$::$name$() const {
+        inline const std::string& $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $annotate_get$;
           // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
           $if_IsDefault$;
@@ -429,7 +469,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $annotate_set$;
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }
-        inline std::string* $Msg$::mutable_$name$() {
+        inline std::string* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $PrepareSplitMessageForWrite$;
           std::string* _s = _internal_mutable_$name$();
           $annotate_mutable$;
@@ -627,12 +667,14 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
 
 void SingularString::GenerateDestructorCode(io::Printer* p) const {
   if (is_inlined()) {
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
     // Explicitly calls ~InlinedStringField as its automatic call is disabled.
     // Destructor has been implicitly skipped as a union.
     ABSL_DCHECK(!should_split());
     p->Emit(R"cc(
       $field_$.~InlinedStringField();
     )cc");
+#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
     return;
   }
 
@@ -757,9 +799,11 @@ class RepeatedString : public FieldGeneratorBase {
         $field_$.DeleteIfNotDefault();
       )cc");
     } else {
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
       p->Emit(R"cc(
         _internal_mutable_$name$()->~RepeatedPtrField();
       )cc");
+#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
     }
   }
 
@@ -844,19 +888,22 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
                           : "");
             }}},
           R"cc(
-            inline std::string* $Msg$::add_$name$() {
+            inline std::string* $Msg$::add_$name$()
+                ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $TsanDetectConcurrentMutation$;
               std::string* _s = _internal_mutable_$name$()->Add();
               $annotate_add_mutable$;
               // @@protoc_insertion_point(field_add_mutable:$pkg.Msg.field$)
               return _s;
             }
-            inline const std::string& $Msg$::$name$(int index) const {
+            inline const std::string& $Msg$::$name$(int index) const
+                ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $annotate_get$;
               // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
               return _internal_$name$().$Get$(index$GetExtraArg$);
             }
-            inline std::string* $Msg$::mutable_$name$(int index) {
+            inline std::string* $Msg$::mutable_$name$(int index)
+                ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $annotate_mutable$;
               // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
               return _internal_mutable_$name$()->Mutable(index);
@@ -923,12 +970,13 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
               // @@protoc_insertion_point(field_add_string_piece:$pkg.Msg.field$)
             }
             inline const ::$proto_ns$::RepeatedPtrField<std::string>&
-            $Msg$::$name$() const {
+            $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $annotate_list$;
               // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
               return _internal_$name$();
             }
-            inline ::$proto_ns$::RepeatedPtrField<std::string>* $Msg$::mutable_$name$() {
+            inline ::$proto_ns$::RepeatedPtrField<std::string>*
+            $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $annotate_mutable_list$;
               // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
               $TsanDetectConcurrentMutation$;

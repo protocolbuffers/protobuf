@@ -35,7 +35,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/text_format.h"
 #include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "absl/log/absl_check.h"
@@ -48,6 +47,7 @@
 #include "google/protobuf/endian.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/wire_format_lite.h"
 
 namespace proto2_messages = protobuf_test_messages::proto2;

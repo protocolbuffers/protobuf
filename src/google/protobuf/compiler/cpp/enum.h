@@ -37,8 +37,8 @@
 
 #include <string>
 
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -62,6 +62,7 @@ class EnumGenerator {
   // Generate specialization of GetEnumDescriptor<MyEnum>().
   // Precondition: in ::google::protobuf namespace.
   void GenerateGetEnumDescriptorSpecializations(io::Printer* p);
+
 
   // For enums nested within a message, generate code to import all the enum's
   // symbols (e.g. the enum type name, all its values, etc.) into the class's

@@ -116,14 +116,13 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/arena.h"
-#include "google/protobuf/port.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/functional/function_ref.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -367,17 +366,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   uint8_t* _InternalSerialize(uint8_t* target,
                               io::EpsCopyOutputStream* stream) const override;
 
- private:
-  // This is called only by the default implementation of ByteSize(), to
-  // update the cached size.  If you override ByteSize(), you do not need
-  // to override this.  If you do not override ByteSize(), you MUST override
-  // this; the default implementation will crash.
-  //
-  // The method is private because subclasses should never call it; only
-  // override it.  Yes, C++ lets you do that.  Crazy, huh?
-  virtual void SetCachedSize(int size) const;
-
- public:
   // Introspection ---------------------------------------------------
 
 

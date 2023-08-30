@@ -417,6 +417,22 @@ class TestMessage:
         empty.ParseFromString(populated.SerializeToString())
         assert str(empty) == ''
 
+    def test_copy_from_empty(self, message_module):
+        msg = message_module.NestedTestAllTypes()
+        test_msg = message_module.NestedTestAllTypes()
+        test_util.SetAllFields(test_msg.payload)
+        assert test_msg.HasField('payload')
+        # Copy from empty message
+        test_msg.CopyFrom(msg)
+        assert 0 == len(test_msg.ListFields())
+    
+        test_util.SetAllFields(test_msg.payload)
+        assert test_msg.HasField('payload')
+        # Copy from a non exist message
+        test_msg.CopyFrom(msg.child)
+        assert not test_msg.HasField('payload')
+        assert 0 == len(test_msg.ListFields())
+
     def test_append_repeated_composite_field(self, message_module):
         msg = message_module.TestAllTypes()
         msg.repeated_nested_message.append(
