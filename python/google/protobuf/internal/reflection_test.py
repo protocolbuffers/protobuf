@@ -2053,6 +2053,49 @@ class Proto2ReflectionTest(unittest.TestCase):
       # dependency on the C++ logging code.
       self.assertIn('test_file_descriptor_errors.msg1', str(cm.exception))
 
+  def testDescriptorProtoHasFileOptions(self):
+    self.assertTrue(descriptor_pb2.DESCRIPTOR.has_options)
+    self.assertEqual(
+        descriptor_pb2.DESCRIPTOR.GetOptions().java_package,
+        'com.google.protobuf',
+    )
+
+  def testDescriptorProtoHasFieldOptions(self):
+    self.assertTrue(descriptor_pb2.DESCRIPTOR.has_options)
+    self.assertEqual(
+        descriptor_pb2.DESCRIPTOR.GetOptions().java_package,
+        'com.google.protobuf',
+    )
+    packed_desc = (
+        descriptor_pb2.SourceCodeInfo.DESCRIPTOR.nested_types_by_name.get(
+            'Location'
+        ).fields_by_name.get('path')
+    )
+    self.assertTrue(packed_desc.has_options)
+    self.assertTrue(packed_desc.GetOptions().packed)
+
+  def testDescriptorProtoHasFeatureOptions(self):
+    self.assertTrue(descriptor_pb2.DESCRIPTOR.has_options)
+    self.assertEqual(
+        descriptor_pb2.DESCRIPTOR.GetOptions().java_package,
+        'com.google.protobuf',
+    )
+    presence_desc = descriptor_pb2.FeatureSet.DESCRIPTOR.fields_by_name.get(
+        'field_presence'
+    )
+    self.assertTrue(presence_desc.has_options)
+    self.assertEqual(
+        presence_desc.GetOptions().retention,
+        descriptor_pb2.FieldOptions.OptionRetention.RETENTION_RUNTIME,
+    )
+    self.assertListsEqual(
+        presence_desc.GetOptions().targets,
+        [
+            descriptor_pb2.FieldOptions.OptionTargetType.TARGET_TYPE_FIELD,
+            descriptor_pb2.FieldOptions.OptionTargetType.TARGET_TYPE_FILE,
+        ],
+    )
+
   def testStringUTF8Serialization(self):
     proto = message_set_extensions_pb2.TestMessageSet()
     extension_message = message_set_extensions_pb2.TestMessageSetExtension2

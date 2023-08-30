@@ -38,86 +38,6 @@
 
 upb_DefPool* get_global_symtab();
 
-#if PHP_VERSION_ID < 70300
-#define GC_ADDREF(h) ++GC_REFCOUNT(h)
-#define GC_DELREF(h) --GC_REFCOUNT(h)
-#endif
-
-// Since php 7.4, the write_property() object handler now returns the assigned
-// value (after possible type coercions) rather than void.
-// https://github.com/php/php-src/blob/PHP-7.4.0/UPGRADING.INTERNALS#L171-L173
-#if PHP_VERSION_ID < 70400
-#define PROTO_RETURN_VAL void
-#else
-#define PROTO_RETURN_VAL zval*
-#endif
-
-// Since php 8.0, the Object Handlers API was changed to receive zend_object*
-// instead of zval* and zend_string* instead of zval* for property names.
-// https://github.com/php/php-src/blob/php-8.0.0beta1/UPGRADING.INTERNALS#L37-L39
-#if PHP_VERSION_ID < 80000
-#define PROTO_VAL zval
-#define PROTO_STR zval
-#define PROTO_VAL_P(obj) (void*)Z_OBJ_P(obj)
-#define PROTO_STRVAL_P(obj) Z_STRVAL_P(obj)
-#define PROTO_STRLEN_P(obj) Z_STRLEN_P(obj)
-#define ZVAL_OBJ_COPY(z, o) \
-  do {                      \
-    ZVAL_OBJ(z, o);         \
-    GC_ADDREF(o);           \
-  } while (0)
-#define RETVAL_OBJ_COPY(r) ZVAL_OBJ_COPY(return_value, r)
-#define RETURN_OBJ_COPY(r) \
-  do {                     \
-    RETVAL_OBJ_COPY(r);    \
-    return;                \
-  } while (0)
-#define RETURN_COPY(zv)          \
-  do {                           \
-    ZVAL_COPY(return_value, zv); \
-    return;                      \
-  } while (0)
-#define RETURN_COPY_VALUE(zv)          \
-  do {                                 \
-    ZVAL_COPY_VALUE(return_value, zv); \
-    return;                            \
-  } while (0)
-#else
-#define PROTO_VAL zend_object
-#define PROTO_STR zend_string
-#define PROTO_VAL_P(obj) (void*)(obj)
-#define PROTO_STRVAL_P(obj) ZSTR_VAL(obj)
-#define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
-#endif
-
-// In PHP 8.1, several old interfaces are removed:
-// https://github.com/php/php-src/blob/14f599ea7def7c7a59c40aff763ce8b105573e7a/UPGRADING.INTERNALS#L27-L31
-//
-// We now use the new interfaces (zend_ce_arrayaccess and zend_ce_countable).
-// However we have to polyfill zend_ce_countable, which was only introduced in
-// PHP 7.2.0.
-#if PHP_VERSION_ID < 70200
-#define zend_ce_countable spl_ce_Countable
-#define ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(                        \
-    name, return_reference, required_num_args, class_name, allow_null) \
-  ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
-#endif
-
-// polyfill for ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX, which changes
-// between 7.1 and 7.2
-#if PHP_VERSION_ID < 70200
-#define PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(               \
-    name, return_reference, required_num_args, type, allow_null)   \
-  ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference,  \
-                                          required_num_args, type, \
-                                          /*class_name*/ 0, allow_null)
-#else
-#define PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(              \
-    name, return_reference, required_num_args, type, allow_null)  \
-  ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, \
-                                          required_num_args, type, allow_null)
-#endif
-
 // In PHP 8.1, mismatched tentative return types emit a deprecation notice.
 // https://wiki.php.net/rfc/internal_method_return_types
 //
@@ -126,22 +46,6 @@ upb_DefPool* get_global_symtab();
 #define ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(       \
     name, return_reference, required_num_args, type, allow_null) \
   ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
-#endif
-
-#ifndef IS_VOID
-#define IS_VOID 99
-#endif
-
-#ifndef IS_MIXED
-#define IS_MIXED 99
-#endif
-
-#ifndef _IS_BOOL
-#define _IS_BOOL 99
-#endif
-
-#ifndef IS_LONG
-#define IS_LONG 99
 #endif
 
 ZEND_BEGIN_ARG_INFO(arginfo_void, 0)

@@ -37,13 +37,13 @@
 #include <type_traits>
 #include <utility>
 
-#include "google/protobuf/port.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -167,7 +167,7 @@ enum TransformValidation : uint16_t {
 
   // Varint fields:
   kTvZigZag    = 1 << kTvShift,
-  kTvEnum      = 2 << kTvShift,  // validate using generated _IsValid()
+  kTvEnum      = 2 << kTvShift,  // validate using ValidateEnum()
   kTvRange     = 3 << kTvShift,  // validate using FieldAux::enum_range
   // String fields:
   kTvUtf8Debug = 1 << kTvShift,  // proto2
@@ -493,7 +493,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   // Functions referenced by generated fast tables (closed enum):
   //   E: closed enum (N.B.: open enums use V32, above)
-  //   r: enum range  v: enum validator (_IsValid function)
+  //   r: enum range  v: enum validator (ValidateEnum function)
   //   S: singular   R: repeated   P: packed
   //   1/2: tag length (bytes)
   static const char* FastErS1(PROTOBUF_TC_PARAM_DECL);
@@ -583,7 +583,9 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename T>
   static inline T& RefAt(void* x, size_t offset) {
     T* target = reinterpret_cast<T*>(static_cast<char*>(x) + offset);
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
+    // Check the alignment in debug mode, except in 32-bit msvc because it does
+    // not respect the alignment as expressed by `alignof(T)`
     if (PROTOBUF_PREDICT_FALSE(
             reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
       AlignFail(std::integral_constant<size_t, alignof(T)>(),
@@ -597,18 +599,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   template <typename T>
   static inline const T& RefAt(const void* x, size_t offset) {
-    const T* target =
-        reinterpret_cast<const T*>(static_cast<const char*>(x) + offset);
-#ifndef NDEBUG
-    if (PROTOBUF_PREDICT_FALSE(
-            reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
-      AlignFail(std::integral_constant<size_t, alignof(T)>(),
-                reinterpret_cast<uintptr_t>(target));
-      // Explicit abort to let compilers know this code-path does not return
-      abort();
-    }
-#endif
-    return *target;
+    return RefAt<T>(const_cast<void*>(x), offset);
   }
 
   template <typename T, bool is_split>

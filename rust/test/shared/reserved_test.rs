@@ -37,3 +37,9 @@ fn test_reserved_keyword_in_accessors() {
     let res = msg.r#for();
     assert_eq!(res, 0);
 }
+
+#[test]
+fn test_reserved_keyword_in_messages() {
+    let msg = Reserved::new();
+    let _ = msg.r#pub();
+}

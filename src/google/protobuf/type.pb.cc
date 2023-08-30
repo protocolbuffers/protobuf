@@ -358,31 +358,10 @@ const ::google::protobuf::EnumDescriptor* Field_Kind_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[0];
 }
+PROTOBUF_CONSTINIT const uint32_t Field_Kind_internal_data_[] = {
+    1245184u, 0u, };
 bool Field_Kind_IsValid(int value) {
-  switch (value) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-    case 13:
-    case 14:
-    case 15:
-    case 16:
-    case 17:
-    case 18:
-      return true;
-    default:
-      return false;
-  }
+  return 0 <= value && value <= 18;
 }
 #if (__cplusplus < 201703) && \
   (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
@@ -416,16 +395,10 @@ const ::google::protobuf::EnumDescriptor* Field_Cardinality_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[1];
 }
+PROTOBUF_CONSTINIT const uint32_t Field_Cardinality_internal_data_[] = {
+    262144u, 0u, };
 bool Field_Cardinality_IsValid(int value) {
-  switch (value) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-      return true;
-    default:
-      return false;
-  }
+  return 0 <= value && value <= 3;
 }
 #if (__cplusplus < 201703) && \
   (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
@@ -444,15 +417,10 @@ const ::google::protobuf::EnumDescriptor* Syntax_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[2];
 }
+PROTOBUF_CONSTINIT const uint32_t Syntax_internal_data_[] = {
+    196608u, 0u, };
 bool Syntax_IsValid(int value) {
-  switch (value) {
-    case 0:
-    case 1:
-    case 2:
-      return true;
-    default:
-      return false;
-  }
+  return 0 <= value && value <= 2;
 }
 // ===================================================================
 
@@ -552,9 +520,6 @@ inline void Type::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
-}
-void Type::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Type::Clear() {
@@ -833,6 +798,9 @@ PROTOBUF_NOINLINE bool Type::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Type::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Type::InternalSwap(Type* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -966,9 +934,6 @@ inline void Field::SharedDtor() {
   _impl_.type_url_.Destroy();
   _impl_.json_name_.Destroy();
   _impl_.default_value_.Destroy();
-}
-void Field::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Field::Clear() {
@@ -1311,6 +1276,9 @@ PROTOBUF_NOINLINE bool Field::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Field::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Field::InternalSwap(Field* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -1433,9 +1401,6 @@ inline void Enum::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
-}
-void Enum::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Enum::Clear() {
@@ -1692,6 +1657,9 @@ PROTOBUF_NOINLINE bool Enum::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Enum::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Enum::InternalSwap(Enum* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -1772,9 +1740,6 @@ inline void EnumValue::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
-}
-void EnumValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void EnumValue::Clear() {
@@ -1948,6 +1913,9 @@ PROTOBUF_NOINLINE bool EnumValue::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* EnumValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void EnumValue::InternalSwap(EnumValue* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
@@ -2036,9 +2004,6 @@ inline void Option::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.value_;
-}
-void Option::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
 }
 
 PROTOBUF_NOINLINE void Option::Clear() {
@@ -2197,6 +2162,9 @@ PROTOBUF_NOINLINE bool Option::IsInitialized() const {
   return true;
 }
 
+::_pbi::CachedSize* Option::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
 void Option::InternalSwap(Option* other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();

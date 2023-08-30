@@ -429,8 +429,8 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // AppendUntilEnd appends data until a limit (either a PushLimit or end of
   // stream. Normal payloads are from length delimited fields which have an
   // explicit size. Reading until limit only comes when the string takes
-  // the place of a protobuf, ie RawMessage/StringRawMessage, lazy fields and
-  // implicit weak messages. We keep these methods private and friend them.
+  // the place of a protobuf, ie RawMessage, lazy fields and implicit weak
+  // messages. We keep these methods private and friend them.
   template <typename A>
   const char* AppendUntilEnd(const char* ptr, const A& append) {
     if (ptr - buffer_end_ > limit_) return nullptr;
@@ -993,7 +993,7 @@ RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
   res |= 0xFF & byte;
 #endif
   return res;
-};
+}
 
 inline PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
                                                          uint32_t* out) {

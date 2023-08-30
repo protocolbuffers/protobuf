@@ -177,7 +177,8 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
   EXPECT_EQ(features.field_presence(), FeatureSet::EXPLICIT);
   EXPECT_EQ(features.enum_type(), FeatureSet::CLOSED);
 
-  EXPECT_TRUE(ext.has_int_message_feature());
+  // TODO(b/296638633) Flip this once generators can specify their feature sets.
+  EXPECT_FALSE(ext.has_int_message_feature());
   EXPECT_EQ(ext.int_file_feature(), 8);
   EXPECT_EQ(ext.string_source_feature(), "file");
 }

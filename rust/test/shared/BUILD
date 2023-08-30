@@ -87,25 +87,51 @@ rust_test(
 rust_test(
     name = "accessors_cpp_test",
     srcs = ["accessors_test.rs"],
-    deps = ["//rust/test:unittest_cc_rust_proto"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_cpp",
+        "//rust/test:unittest_cc_rust_proto",
+    ],
 )
 
 rust_test(
     name = "accessors_upb_test",
     srcs = ["accessors_test.rs"],
-    deps = ["//rust/test:unittest_upb_rust_proto"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_upb",
+        "//rust/test:unittest_upb_rust_proto",
+    ],
 )
 
 rust_test(
     name = "accessors_proto3_cpp_test",
     srcs = ["accessors_proto3_test.rs"],
-    deps = ["//rust/test:unittest_proto3_cc_rust_proto"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_cpp",
+        "//rust/test:unittest_proto3_cc_rust_proto",
+        "//rust/test:unittest_proto3_optional_cc_rust_proto",
+    ],
 )
 
 rust_test(
     name = "accessors_proto3_upb_test",
     srcs = ["accessors_proto3_test.rs"],
-    deps = ["//rust/test:unittest_proto3_upb_rust_proto"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_upb",
+        "//rust/test:unittest_proto3_optional_upb_rust_proto",
+        "//rust/test:unittest_proto3_upb_rust_proto",
+    ],
 )
 
 rust_test(

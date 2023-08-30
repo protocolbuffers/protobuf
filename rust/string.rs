@@ -32,7 +32,9 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
-use crate::__internal::Private;
+use crate::__internal::{Private, PtrAndLen, RawMessage};
+use crate::__runtime::{BytesAbsentMutData, BytesPresentMutData, InnerBytesMut};
+use crate::macros::impl_forwarding_settable_value;
 use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
@@ -42,10 +44,6 @@ use std::hash::{Hash, Hasher};
 use std::iter;
 use std::ops::{Deref, DerefMut};
 use utf8::Utf8Chunks;
-
-/// This type will be replaced by something else in a future revision.
-// TODO(b/285309330): remove this and any `impl`s using it.
-pub type Todo<'msg> = (std::convert::Infallible, std::marker::PhantomData<&'msg mut ()>);
 
 /// A mutator for `bytes` fields - this type is `protobuf::Mut<'msg, [u8]>`.
 ///
@@ -62,9 +60,29 @@ pub type Todo<'msg> = (std::convert::Infallible, std::marker::PhantomData<&'msg 
 /// recommended to instead build a `Vec<u8>` or `String` and pass that directly
 /// to `set`, which will reuse the allocation if supported by the runtime.
 #[derive(Debug)]
-pub struct BytesMut<'msg>(Todo<'msg>);
+pub struct BytesMut<'msg> {
+    inner: InnerBytesMut<'msg>,
+}
+
+// SAFETY:
+// - Protobuf Rust messages don't allow shared mutation across threads.
+// - Protobuf Rust messages don't share arenas.
+// - All access that touches an arena occurs behind a `&mut`.
+// - All mutators that store an arena are `!Send`.
+unsafe impl Sync for BytesMut<'_> {}
 
 impl<'msg> BytesMut<'msg> {
+    /// Constructs a new `BytesMut` from its internal, runtime-dependent part.
+    #[doc(hidden)]
+    pub fn from_inner(_private: Private, inner: InnerBytesMut<'msg>) -> Self {
+        Self { inner }
+    }
+
+    /// Gets the current value of the field.
+    pub fn get(&self) -> &[u8] {
+        self.as_view()
+    }
+
     /// Sets the byte string to the given `val`, cloning any borrowed data.
     ///
     /// This method accepts both owned and borrowed byte strings; if the runtime
@@ -78,7 +96,7 @@ impl<'msg> BytesMut<'msg> {
     ///
     /// Has no effect if `new_len` is larger than the current `len`.
     pub fn truncate(&mut self, new_len: usize) {
-        todo!("b/285309330")
+        self.inner.truncate(new_len)
     }
 
     /// Clears the byte string to the empty string.
@@ -93,7 +111,7 @@ impl<'msg> BytesMut<'msg> {
     /// `BytesMut::clear` results in the accessor returning an empty string
     /// while `FieldEntry::clear` results in the non-empty default.
     ///
-    /// However, for a proto3 `bytes` that has implicit presence, there is no
+    /// However, for a proto3 `bytes` that have implicit presence, there is no
     /// distinction between these states: unset `bytes` is the same as empty
     /// `bytes` and the default is always the empty string.
     ///
@@ -117,7 +135,7 @@ impl Deref for BytesMut<'_> {
 
 impl AsRef<[u8]> for BytesMut<'_> {
     fn as_ref(&self) -> &[u8] {
-        todo!("b/285309330")
+        unsafe { self.inner.get() }
     }
 }
 
@@ -126,45 +144,20 @@ impl Proxied for [u8] {
     type Mut<'msg> = BytesMut<'msg>;
 }
 
-impl<'msg> ViewProxy<'msg> for Todo<'msg> {
-    type Proxied = [u8];
-    fn as_view(&self) -> &[u8] {
-        unreachable!()
-    }
-    fn into_view<'shorter>(self) -> &'shorter [u8]
-    where
-        'msg: 'shorter,
-    {
-        unreachable!()
-    }
-}
-
-impl<'msg> MutProxy<'msg> for Todo<'msg> {
-    fn as_mut(&mut self) -> BytesMut<'msg> {
-        unreachable!()
-    }
-    fn into_mut<'shorter>(self) -> BytesMut<'shorter>
-    where
-        'msg: 'shorter,
-    {
-        unreachable!()
-    }
-}
-
 impl ProxiedWithPresence for [u8] {
-    type PresentMutData<'msg> = Todo<'msg>;
-    type AbsentMutData<'msg> = Todo<'msg>;
+    type PresentMutData<'msg> = BytesPresentMutData<'msg>;
+    type AbsentMutData<'msg> = BytesAbsentMutData<'msg>;
 
     fn clear_present_field<'a>(
         present_mutator: Self::PresentMutData<'a>,
     ) -> Self::AbsentMutData<'a> {
-        todo!("b/285309330")
+        present_mutator.clear()
     }
 
     fn set_absent_to_default<'a>(
         absent_mutator: Self::AbsentMutData<'a>,
     ) -> Self::PresentMutData<'a> {
-        todo!("b/285309330")
+        absent_mutator.set_absent_to_default()
     }
 }
 
@@ -194,48 +187,65 @@ impl<'msg> ViewProxy<'msg> for BytesMut<'msg> {
     where
         'msg: 'shorter,
     {
-        todo!("b/285309330")
+        self.inner.get()
     }
 }
 
 impl<'msg> MutProxy<'msg> for BytesMut<'msg> {
     fn as_mut(&mut self) -> BytesMut<'_> {
-        todo!("b/285309330")
+        BytesMut { inner: self.inner }
     }
 
     fn into_mut<'shorter>(self) -> BytesMut<'shorter>
     where
         'msg: 'shorter,
     {
-        todo!("b/285309330")
+        BytesMut { inner: self.inner }
     }
 }
 
-impl SettableValue<[u8]> for &'_ [u8] {
+impl<'bytes> SettableValue<[u8]> for &'bytes [u8] {
     fn set_on(self, _private: Private, mutator: BytesMut<'_>) {
-        todo!("b/285309330")
+        // SAFETY: this is a `bytes` field with no restriction on UTF-8.
+        unsafe { mutator.inner.set(self) }
+    }
+
+    fn set_on_absent(
+        self,
+        _private: Private,
+        absent_mutator: <[u8] as ProxiedWithPresence>::AbsentMutData<'_>,
+    ) -> <[u8] as ProxiedWithPresence>::PresentMutData<'_> {
+        // SAFETY: this is a `bytes` field with no restriction on UTF-8.
+        unsafe { absent_mutator.set(self) }
+    }
+
+    fn set_on_present(
+        self,
+        _private: Private,
+        present_mutator: <[u8] as ProxiedWithPresence>::PresentMutData<'_>,
+    ) {
+        // SAFETY: this is a `bytes` field with no restriction on UTF-8.
+        unsafe {
+            present_mutator.set(self);
+        }
     }
 }
 
-impl<const N: usize> SettableValue<[u8]> for &'_ [u8; N] {
-    fn set_on(self, _private: Private, mutator: BytesMut<'_>) {
-        self[..].set_on(Private, mutator)
-    }
+impl<'a, const N: usize> SettableValue<[u8]> for &'a [u8; N] {
+    // forward to `self[..]`
+    impl_forwarding_settable_value!([u8], self => &self[..]);
 }
 
 impl SettableValue<[u8]> for Vec<u8> {
-    fn set_on(self, _private: Private, mutator: BytesMut<'_>) {
-        todo!("b/285309330")
-    }
+    // TODO(b/293956360): Investigate taking ownership of this when allowed by the
+    // runtime.
+    impl_forwarding_settable_value!([u8], self => &self[..]);
 }
 
 impl SettableValue<[u8]> for Cow<'_, [u8]> {
-    fn set_on(self, _private: Private, mutator: BytesMut<'_>) {
-        match self {
-            Cow::Borrowed(s) => s.set_on(Private, mutator),
-            Cow::Owned(v) => v.set_on(Private, mutator),
-        }
-    }
+    // TODO(b/293956360): Investigate taking ownership of this when allowed by the
+    // runtime.
+    impl_forwarding_settable_value!([u8], self => &self[..]);
 }
 
 impl Hash for BytesMut<'_> {

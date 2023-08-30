@@ -126,7 +126,7 @@ static char nolocale_toupper(char ch) {
   }
 }
 
-static char* strdup_nolocale_lower(char* str, int length) {
+static char* strdup_nolocale_lower(const char* str, int length) {
   char* lower = malloc(length + 1);
   lower[length] = '\0';
   for (int i = 0; i < length; ++i) {

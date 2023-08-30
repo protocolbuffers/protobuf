@@ -39,7 +39,6 @@
 #include <cstddef>
 #include <functional>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -417,7 +416,38 @@ void Printer::WriteRaw(const char* data, size_t size) {
   // the current line.
   line_start_variables_.clear();
 
-  sink_.Append(data, size);
+  if (paren_depth_to_omit_.empty()) {
+    sink_.Append(data, size);
+  } else {
+    for (size_t i = 0; i < size; ++i) {
+      char c = data[i];
+      switch (c) {
+        case '(':
+          paren_depth_++;
+          if (!paren_depth_to_omit_.empty() &&
+              paren_depth_to_omit_.back() == paren_depth_) {
+            break;
+          }
+
+          sink_.Append(&c, 1);
+          break;
+        case ')':
+          if (!paren_depth_to_omit_.empty() &&
+              paren_depth_to_omit_.back() == paren_depth_) {
+            paren_depth_to_omit_.pop_back();
+            paren_depth_--;
+            break;
+          }
+
+          paren_depth_--;
+          sink_.Append(&c, 1);
+          break;
+        default:
+          sink_.Append(&c, 1);
+          break;
+      }
+    }
+  }
   failed_ |= sink_.failed();
 }
 
@@ -713,6 +743,10 @@ void Printer::PrintImpl(absl::string_view format,
         ABSL_CHECK((*fnc)())
             << "recursive call encountered while evaluating \"" << var << "\"";
         range_end = sink_.bytes_written();
+      }
+
+      if (range_start == range_end && sub->consume_parens_if_empty) {
+        paren_depth_to_omit_.push_back(paren_depth_ + 1);
       }
 
       // If we just evaluated a value which specifies end-of-line consume-after

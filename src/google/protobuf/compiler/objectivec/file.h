@@ -100,7 +100,7 @@ class FileGenerator {
   enum class GeneratedFileType : int { kHeader, kSource };
   struct GeneratedFileOptions {
     std::vector<std::string> ignored_warnings;
-    std::vector<const FileDescriptor*> extra_files_to_import;
+    std::vector<const FileDescriptor*> forced_files_to_import;
     std::vector<std::string> extra_system_headers;
   };
 
@@ -120,6 +120,10 @@ class FileGenerator {
       io::Printer* p,
       const std::vector<const FileDescriptor*>& deps_with_extensions) const;
   void EmitFileDescription(io::Printer* p) const;
+
+  enum class PublicDepsHandling : int { kAsUsed, kForceInclude, kExclude };
+  void DetermineNeededDeps(absl::flat_hash_set<const FileDescriptor*>* deps,
+                           PublicDepsHandling public_deps_handling) const;
 
   bool HeadersUseForwardDeclarations() const {
     // The bundled protos (WKTs) don't make use of forward declarations.

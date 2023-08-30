@@ -33,12 +33,12 @@
 
 #include <type_traits>
 
-#include "google/protobuf/port.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/wire_format_lite.h"
 
 // Must be included last.

@@ -40,9 +40,9 @@
 #include <utility>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/arena.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/extension_set_inl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"

@@ -35,8 +35,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 
-#include <algorithm>
-#include <cstdint>
 #include <iterator>
 #include <string>
 #include <tuple>
@@ -371,6 +369,9 @@ bool IsProfileDriven(const Options& options);
 
 // Returns true if `field` is unlikely to be present based on PDProto profile.
 bool IsRarelyPresent(const FieldDescriptor* field, const Options& options);
+
+// Returns true if `field` is likely to be present based on PDProto profile.
+bool IsLikelyPresent(const FieldDescriptor* field, const Options& options);
 
 float GetPresenceProbability(const FieldDescriptor* field,
                              const Options& options);

@@ -37,8 +37,8 @@
 
 #include <vector>
 
-#include "google/protobuf/arena.h"
 #include "absl/log/absl_check.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"

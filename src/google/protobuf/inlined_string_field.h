@@ -34,12 +34,12 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/port.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/explicitly_constructed.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

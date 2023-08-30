@@ -33,9 +33,9 @@
 
 #include <string>
 
-#include "google/protobuf/message.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/json/internal/lexer.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/util/type_resolver.h"
 
 namespace google {

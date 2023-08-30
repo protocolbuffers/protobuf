@@ -43,7 +43,6 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/arena.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -54,6 +53,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -74,6 +74,14 @@ std::string MessageLite::InitializationErrorString() const {
 std::string MessageLite::DebugString() const {
   return absl::StrCat("MessageLite at 0x", absl::Hex(this));
 }
+
+int MessageLite::GetCachedSize() const {
+  auto* cached_size = AccessCachedSize();
+  if (PROTOBUF_PREDICT_FALSE(cached_size == nullptr)) return ByteSize();
+  return cached_size->Get();
+}
+
+internal::CachedSize* MessageLite::AccessCachedSize() const { return nullptr; }
 
 namespace {
 

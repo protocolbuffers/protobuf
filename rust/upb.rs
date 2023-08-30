@@ -30,7 +30,7 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::RawArena;
+use crate::__internal::{Private, RawArena, RawMessage};
 use std::alloc;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
@@ -197,6 +197,79 @@ impl Deref for SerializedData {
 impl fmt::Debug for SerializedData {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Debug::fmt(self.deref(), f)
+    }
+}
+
+// TODO(b/293919363): Investigate replacing this with direct access to UPB bits.
+pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
+pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
+pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
+
+/// The raw contents of every generated message.
+#[derive(Debug)]
+pub struct MessageInner {
+    pub msg: RawMessage,
+    pub arena: Arena,
+}
+
+/// Mutators that point to their original message use this to do so.
+///
+/// Since UPB expects runtimes to manage their own arenas, this needs to have
+/// access to an `Arena`.
+///
+/// This has two possible designs:
+/// - Store two pointers here, `RawMessage` and `&'msg Arena`. This doesn't
+///   place any restriction on the layout of generated messages and their
+///   mutators. This makes a vtable-based mutator three pointers, which can no
+///   longer be returned in registers on most platforms.
+/// - Store one pointer here, `&'msg MessageInner`, where `MessageInner` stores
+///   a `RawMessage` and an `Arena`. This would require all generated messages
+///   to store `MessageInner`, and since their mutators need to be able to
+///   generate `BytesMut`, would also require `BytesMut` to store a `&'msg
+///   MessageInner` since they can't store an owned `Arena`.
+///
+/// Note: even though this type is `Copy`, it should only be copied by
+/// protobuf internals that can maintain mutation invariants:
+///
+/// - No concurrent mutation for any two fields in a message: this means
+///   mutators cannot be `Send` but are `Sync`.
+/// - If there are multiple accessible `Mut` to a single message at a time, they
+///   must be different fields, and not be in the same oneof. As such, a `Mut`
+///   cannot be `Clone` but *can* reborrow itself with `.as_mut()`, which
+///   converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
+#[derive(Clone, Copy, Debug)]
+pub struct MutatorMessageRef<'msg> {
+    msg: RawMessage,
+    arena: &'msg Arena,
+}
+
+impl<'msg> MutatorMessageRef<'msg> {
+    #[doc(hidden)]
+    #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
+    pub fn new(_private: Private, msg: &'msg mut MessageInner) -> Self {
+        MutatorMessageRef { msg: msg.msg, arena: &msg.arena }
+    }
+
+    pub fn msg(&self) -> RawMessage {
+        self.msg
+    }
+}
+
+pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
+    msg_ref: MutatorMessageRef<'a>,
+    val: &'a [u8],
+) -> &'a [u8] {
+    // SAFETY: the alignment of `[u8]` is less than `UPB_MALLOC_ALIGN`.
+    let new_alloc = unsafe { msg_ref.arena.alloc(Layout::for_value(val)) };
+    debug_assert_eq!(new_alloc.len(), val.len());
+
+    let start: *mut u8 = new_alloc.as_mut_ptr().cast();
+    // SAFETY:
+    // - `new_alloc` is writeable for `val.len()` bytes.
+    // - After the copy, `new_alloc` is initialized for `val.len()` bytes.
+    unsafe {
+        val.as_ptr().copy_to_nonoverlapping(start, val.len());
+        &*(new_alloc as *mut _ as *mut [u8])
     }
 }
 

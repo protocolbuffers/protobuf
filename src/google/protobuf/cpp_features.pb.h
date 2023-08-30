@@ -74,6 +74,7 @@ enum CppFeatures_Utf8Validation : int {
 };
 
 PROTOBUF_EXPORT bool CppFeatures_Utf8Validation_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t CppFeatures_Utf8Validation_internal_data_[];
 constexpr CppFeatures_Utf8Validation CppFeatures_Utf8Validation_Utf8Validation_MIN = static_cast<CppFeatures_Utf8Validation>(0);
 constexpr CppFeatures_Utf8Validation CppFeatures_Utf8Validation_Utf8Validation_MAX = static_cast<CppFeatures_Utf8Validation>(3);
 constexpr int CppFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
@@ -209,12 +210,12 @@ class PROTOBUF_EXPORT CppFeatures final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(CppFeatures* other);
 
   private:

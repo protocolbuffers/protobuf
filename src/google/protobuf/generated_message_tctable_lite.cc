@@ -795,13 +795,31 @@ inline int64_t ZigZagDecodeHelper<int64_t, true>(int64_t value) {
   return WireFormatLite::ZigZagDecode64(value);
 }
 
-bool EnumIsValidAux(int32_t val, uint16_t xform_val,
-                    TcParseTableBase::FieldAux aux) {
+// Prefetch the enum data, if necessary.
+// We can issue the prefetch before we start parsing the ints.
+PROTOBUF_ALWAYS_INLINE void PrefetchEnumData(uint16_t xform_val,
+                                             TcParseTableBase::FieldAux aux) {
+}
+
+// When `xform_val` is a constant, we want to inline `ValidateEnum` because it
+// is either dropped when not a kTvEnum, or useful when it is.
+//
+// When it is not a constant, we do not inline `ValidateEnum` because it bloats
+// the code around it and pessimizes the non-enum and kTvRange cases which are
+// way more common than the kTvEnum cases. It is also called from places that
+// already have out-of-line functions (like MpVarint) so an extra out-of-line
+// call to `ValidateEnum` does not affect much.
+PROTOBUF_ALWAYS_INLINE bool EnumIsValidAux(int32_t val, uint16_t xform_val,
+                                           TcParseTableBase::FieldAux aux) {
   if (xform_val == field_layout::kTvRange) {
     auto lo = aux.enum_range.start;
     return lo <= val && val < (lo + aux.enum_range.length);
   }
-  return aux.enum_validator(val);
+  if (PROTOBUF_BUILTIN_CONSTANT_P(xform_val)) {
+    return internal::ValidateEnumInlined(val, aux.enum_data);
+  } else {
+    return internal::ValidateEnum(val, aux.enum_data);
+  }
 }
 
 }  // namespace
@@ -1136,6 +1154,8 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnum(
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
+  const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
+  PrefetchEnumData(xform_val, aux);
   const char* ptr2 = ptr;  // Save for unknown enum case
   ptr += sizeof(TagType);  // Consume tag
   uint64_t tmp;
@@ -1143,7 +1163,6 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnum(
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
-  const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
   if (PROTOBUF_PREDICT_FALSE(
           !EnumIsValidAux(static_cast<int32_t>(tmp), xform_val, aux))) {
     ptr = ptr2;
@@ -1185,6 +1204,7 @@ const char* TcParser::RepeatedEnum(PROTOBUF_TC_PARAM_DECL) {
   auto& field = RefAt<RepeatedField<int32_t>>(msg, data.offset());
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
+  PrefetchEnumData(xform_val, aux);
   do {
     const char* ptr2 = ptr;  // save for unknown enum case
     ptr += sizeof(TagType);
@@ -1245,6 +1265,7 @@ const char* TcParser::PackedEnum(PROTOBUF_TC_PARAM_DECL) {
   SyncHasbits(msg, hasbits, table);
   auto* field = &RefAt<RepeatedField<int32_t>>(msg, data.offset());
   const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
+  PrefetchEnumData(xform_val, aux);
   return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
     if (!EnumIsValidAux(value, xform_val, aux)) {
       AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), value);
@@ -2004,13 +2025,18 @@ const char* TcParser::MpRepeatedVarintT(PROTOBUF_TC_PARAM_DECL) {
   auto& field = MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
       base, entry.offset, msg);
 
+  TcParseTableBase::FieldAux aux;
+  if (is_validated_enum) {
+    aux = *table->field_aux(&entry);
+    PrefetchEnumData(xform_val, aux);
+  }
+
   do {
     uint64_t tmp;
     ptr = ParseVarint(ptr2, &tmp);
     if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
     if (is_validated_enum) {
-      if (!EnumIsValidAux(static_cast<int32_t>(tmp), xform_val,
-                          *table->field_aux(&entry))) {
+      if (!EnumIsValidAux(static_cast<int32_t>(tmp), xform_val, aux)) {
         ptr = ptr2;
         PROTOBUF_MUSTTAIL return MpUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
       }
@@ -2107,6 +2133,7 @@ const char* TcParser::MpPackedVarintT(PROTOBUF_TC_PARAM_DECL) {
 
   if (is_validated_enum) {
     const TcParseTableBase::FieldAux aux = *table->field_aux(entry.aux_idx);
+    PrefetchEnumData(xform_val, aux);
     return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
       if (!EnumIsValidAux(value, xform_val, aux)) {
         AddUnknownEnum(msg, table, data.tag(), value);
@@ -2778,7 +2805,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   // `aux[0]` points into a MapAuxInfo.
   // If we have a message mapped_type aux[1] points into a `create_in_arena`.
   // If we have a validated enum mapped_type aux[1] point into a
-  // `enum_validator`.
+  // `enum_data`.
   const auto* aux = table->field_aux(&entry);
   const auto map_info = aux[0].map_info;
 
@@ -2813,10 +2840,11 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
     });
 
     if (PROTOBUF_PREDICT_TRUE(ptr != nullptr)) {
-      if (PROTOBUF_PREDICT_FALSE(
-              map_info.value_is_validated_enum &&
-              !aux[1].enum_validator(*static_cast<int32_t*>(
-                  node->GetVoidValue(map_info.node_size_info))))) {
+      if (PROTOBUF_PREDICT_FALSE(map_info.value_is_validated_enum &&
+                                 !internal::ValidateEnumInlined(
+                                     *static_cast<int32_t*>(node->GetVoidValue(
+                                         map_info.node_size_info)),
+                                     aux[1].enum_data))) {
         WriteMapEntryAsUnknown(msg, table, saved_tag, node, map_info);
       } else {
         // Done parsing the node, try to insert it.

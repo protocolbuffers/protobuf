@@ -31,6 +31,7 @@
 #include "google/protobuf/feature_resolver.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -38,13 +39,17 @@
 #include <vector>
 
 #include "absl/algorithm/container.h"
+#include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -71,24 +76,25 @@ absl::Status Error(Args... args) {
   return absl::FailedPreconditionError(absl::StrCat(args...));
 }
 
-bool EditionsLessThan(absl::string_view a, absl::string_view b) {
-  std::vector<absl::string_view> as = absl::StrSplit(a, '.');
-  std::vector<absl::string_view> bs = absl::StrSplit(b, '.');
-  size_t min_size = std::min(as.size(), bs.size());
-  for (size_t i = 0; i < min_size; ++i) {
-    if (as[i].size() != bs[i].size()) {
-      return as[i].size() < bs[i].size();
-    } else if (as[i] != bs[i]) {
-      return as[i] < bs[i];
+struct EditionsLessThan {
+  bool operator()(absl::string_view a, absl::string_view b) const {
+    std::vector<absl::string_view> as = absl::StrSplit(a, '.');
+    std::vector<absl::string_view> bs = absl::StrSplit(b, '.');
+    size_t min_size = std::min(as.size(), bs.size());
+    for (size_t i = 0; i < min_size; ++i) {
+      if (as[i].size() != bs[i].size()) {
+        return as[i].size() < bs[i].size();
+      } else if (as[i] != bs[i]) {
+        return as[i] < bs[i];
+      }
     }
+    // Both strings are equal up until an extra element, which makes that string
+    // more recent.
+    return as.size() < bs.size();
   }
-  // Both strings are equal up until an extra element, which makes that string
-  // more recent.
-  return as.size() < bs.size();
-}
+};
 
-absl::Status ValidateDescriptor(absl::string_view edition,
-                                const Descriptor& descriptor) {
+absl::Status ValidateDescriptor(const Descriptor& descriptor) {
   if (descriptor.oneof_decl_count() > 0) {
     return Error("Type ", descriptor.full_name(),
                  " contains unsupported oneof feature fields.");
@@ -113,27 +119,49 @@ absl::Status ValidateDescriptor(absl::string_view edition,
   return absl::OkStatus();
 }
 
-absl::Status ValidateExtension(const FieldDescriptor& extension) {
-  if (extension.message_type() == nullptr) {
-    return Error("FeatureSet extension ", extension.full_name(),
+absl::Status ValidateExtension(const Descriptor& feature_set,
+                               const FieldDescriptor* extension) {
+  if (extension == nullptr) {
+    return Error("Unknown extension of ", feature_set.full_name(), ".");
+  }
+
+  if (extension->containing_type() != &feature_set) {
+    return Error("Extension ", extension->full_name(),
+                 " is not an extension of ", feature_set.full_name(), ".");
+  }
+
+  if (extension->message_type() == nullptr) {
+    return Error("FeatureSet extension ", extension->full_name(),
                  " is not of message type.  Feature extensions should "
                  "always use messages to allow for evolution.");
   }
 
-  if (extension.is_repeated()) {
+  if (extension->is_repeated()) {
     return Error(
         "Only singular features extensions are supported.  Found "
         "repeated extension ",
-        extension.full_name());
+        extension->full_name());
   }
 
-  if (extension.message_type()->extension_count() > 0 ||
-      extension.message_type()->extension_range_count() > 0) {
+  if (extension->message_type()->extension_count() > 0 ||
+      extension->message_type()->extension_range_count() > 0) {
     return Error("Nested extensions in feature extension ",
-                 extension.full_name(), " are not supported.");
+                 extension->full_name(), " are not supported.");
   }
 
   return absl::OkStatus();
+}
+
+void CollectEditions(const Descriptor& descriptor,
+                     absl::string_view minimum_edition,
+                     absl::string_view maximum_edition,
+                     absl::btree_set<std::string, EditionsLessThan>& editions) {
+  for (int i = 0; i < descriptor.field_count(); ++i) {
+    for (const auto& def : descriptor.field(i)->options().edition_defaults()) {
+      if (EditionsLessThan()(maximum_edition, def.edition())) continue;
+      editions.insert(def.edition());
+    }
+  }
 }
 
 absl::Status FillDefaults(absl::string_view edition, Message& msg) {
@@ -141,7 +169,7 @@ absl::Status FillDefaults(absl::string_view edition, Message& msg) {
 
   auto comparator = [](const FieldOptions::EditionDefault& a,
                        const FieldOptions::EditionDefault& b) {
-    return EditionsLessThan(a.edition(), b.edition());
+    return EditionsLessThan()(a.edition(), b.edition());
   };
   FieldOptions::EditionDefault edition_lookup;
   edition_lookup.set_edition(edition);
@@ -206,124 +234,100 @@ absl::Status ValidateMergedFeatures(const Message& msg) {
   return absl::OkStatus();
 }
 
-// Forces calculation of the defaults for any features from the generated pool
-// that may be missed if the proto file doesn't import them, giving the final
-// resolved FeatureSet object maximal coverage.
-absl::StatusOr<FeatureSet> FillGeneratedDefaults(absl::string_view edition,
-                                                 const DescriptorPool* pool) {
-  const Descriptor* desc =
-      pool->FindMessageTypeByName(FeatureSet::descriptor()->full_name());
-  // If there's no FeatureSet, there's no extensions.
-  if (desc == nullptr) return FeatureSet();
-
-  DynamicMessageFactory message_factory;
-  auto defaults = absl::WrapUnique(message_factory.GetPrototype(desc)->New());
-  std::vector<const FieldDescriptor*> extensions;
-  pool->FindAllExtensions(desc, &extensions);
-  for (const auto* extension : extensions) {
-    RETURN_IF_ERROR(ValidateExtension(*extension));
-    Message* msg =
-        defaults->GetReflection()->MutableMessage(defaults.get(), extension);
-    ABSL_CHECK(msg != nullptr);
-    RETURN_IF_ERROR(FillDefaults(edition, *msg));
-  }
-
-  // Our defaults are reflectively built in a custom pool, while the
-  // returned object here is in the generated pool.  We parse/serialize to
-  // convert from the potentially skewed FeatureSet descriptors.
-  FeatureSet features;
-  ABSL_CHECK(features.MergeFromString(defaults->SerializeAsString()));
-  return features;
-}
-
 }  // namespace
 
-absl::StatusOr<FeatureResolver> FeatureResolver::Create(
-    absl::string_view edition, const Descriptor* descriptor,
-    const DescriptorPool* generated_pool) {
-  if (descriptor == nullptr) {
+absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
+    const Descriptor* feature_set,
+    absl::Span<const FieldDescriptor* const> extensions,
+    absl::string_view minimum_edition, absl::string_view maximum_edition) {
+  // Find and validate the FeatureSet in the pool.
+  if (feature_set == nullptr) {
     return Error(
         "Unable to find definition of google.protobuf.FeatureSet in descriptor pool.");
   }
+  RETURN_IF_ERROR(ValidateDescriptor(*feature_set));
 
-  RETURN_IF_ERROR(ValidateDescriptor(edition, *descriptor));
+  // Collect and validate all the FeatureSet extensions.
+  for (const auto* extension : extensions) {
+    RETURN_IF_ERROR(ValidateExtension(*feature_set, extension));
+    RETURN_IF_ERROR(ValidateDescriptor(*extension->message_type()));
+  }
 
+  // Collect all the editions with unique defaults.
+  absl::btree_set<std::string, EditionsLessThan> editions;
+  CollectEditions(*feature_set, minimum_edition, maximum_edition, editions);
+  for (const auto* extension : extensions) {
+    CollectEditions(*extension->message_type(), minimum_edition,
+                    maximum_edition, editions);
+  }
+
+  // Fill the default spec.
+  FeatureSetDefaults defaults;
+  defaults.set_minimum_edition(minimum_edition);
+  defaults.set_maximum_edition(maximum_edition);
   auto message_factory = absl::make_unique<DynamicMessageFactory>();
-  auto defaults =
-      absl::WrapUnique(message_factory->GetPrototype(descriptor)->New());
-
-  RETURN_IF_ERROR(FillDefaults(edition, *defaults));
-
-  FeatureSet generated_defaults;
-  if (descriptor->file()->pool() == generated_pool) {
-    // If we're building the generated pool, the best we can do is load the C++
-    // language features, which should always be present for code using the C++
-    // runtime.
-    RETURN_IF_ERROR(
-        FillDefaults(edition, *generated_defaults.MutableExtension(pb::cpp)));
-  } else {
-    absl::StatusOr<FeatureSet> defaults =
-        FillGeneratedDefaults(edition, generated_pool);
-    RETURN_IF_ERROR(defaults.status());
-    generated_defaults = std::move(defaults).value();
+  for (const auto& edition : editions) {
+    auto defaults_dynamic =
+        absl::WrapUnique(message_factory->GetPrototype(feature_set)->New());
+    RETURN_IF_ERROR(FillDefaults(edition, *defaults_dynamic));
+    for (const auto* extension : extensions) {
+      RETURN_IF_ERROR(FillDefaults(
+          edition, *defaults_dynamic->GetReflection()->MutableMessage(
+                       defaults_dynamic.get(), extension)));
+    }
+    auto* edition_defaults = defaults.mutable_defaults()->Add();
+    edition_defaults->set_edition(edition);
+    edition_defaults->mutable_features()->MergeFromString(
+        defaults_dynamic->SerializeAsString());
   }
-
-  return FeatureResolver(edition, *descriptor, std::move(message_factory),
-                         std::move(defaults), std::move(generated_defaults));
+  return defaults;
 }
 
-absl::Status FeatureResolver::RegisterExtension(
-    const FieldDescriptor& extension) {
-  if (!extension.is_extension() ||
-      extension.containing_type() != &descriptor_ ||
-      extensions_.contains(&extension)) {
-    // These are valid but irrelevant extensions, just return ok.
-    return absl::OkStatus();
+absl::StatusOr<FeatureResolver> FeatureResolver::Create(
+    absl::string_view edition, const FeatureSetDefaults& compiled_defaults) {
+  if (EditionsLessThan()(edition, compiled_defaults.minimum_edition())) {
+    return Error("Edition ", edition,
+                 " is earlier than the minimum supported edition ",
+                 compiled_defaults.minimum_edition());
+  }
+  if (EditionsLessThan()(compiled_defaults.maximum_edition(), edition)) {
+    return Error("Edition ", edition,
+                 " is later than the maximum supported edition ",
+                 compiled_defaults.maximum_edition());
   }
 
-  ABSL_CHECK(descriptor_.IsExtensionNumber(extension.number()));
-
-  RETURN_IF_ERROR(ValidateExtension(extension));
-
-  RETURN_IF_ERROR(ValidateDescriptor(edition_, *extension.message_type()));
-
-  Message* msg =
-      defaults_->GetReflection()->MutableMessage(defaults_.get(), &extension);
-  ABSL_CHECK(msg != nullptr);
-  RETURN_IF_ERROR(FillDefaults(edition_, *msg));
-
-  extensions_.insert(&extension);
-  return absl::OkStatus();
-}
-
-absl::Status FeatureResolver::RegisterExtensions(const FileDescriptor& file) {
-  for (int i = 0; i < file.extension_count(); ++i) {
-    RETURN_IF_ERROR(RegisterExtension(*file.extension(i)));
+  // Validate compiled defaults.
+  absl::string_view prev_edition;
+  for (const auto& edition_default : compiled_defaults.defaults()) {
+    if (!prev_edition.empty()) {
+      if (!EditionsLessThan()(prev_edition, edition_default.edition())) {
+        return Error(
+            "Feature set defaults are not strictly increasing.  Edition ",
+            prev_edition, " is greater than or equal to edition ",
+            edition_default.edition(), ".");
+      }
+    }
+    prev_edition = edition_default.edition();
   }
-  for (int i = 0; i < file.message_type_count(); ++i) {
-    RETURN_IF_ERROR(RegisterExtensions(*file.message_type(i)));
-  }
-  return absl::OkStatus();
-}
 
-absl::Status FeatureResolver::RegisterExtensions(const Descriptor& message) {
-  for (int i = 0; i < message.extension_count(); ++i) {
-    RETURN_IF_ERROR(RegisterExtension(*message.extension(i)));
+  // Select the matching edition defaults.
+  auto comparator = [](const auto& a, const auto& b) {
+    return EditionsLessThan()(a.edition(), b.edition());
+  };
+  FeatureSetDefaults::FeatureSetEditionDefault search;
+  search.set_edition(edition);
+  auto first_nonmatch =
+      absl::c_upper_bound(compiled_defaults.defaults(), search, comparator);
+  if (first_nonmatch == compiled_defaults.defaults().begin()) {
+    return Error("No valid default found for edition ", edition);
   }
-  for (int i = 0; i < message.nested_type_count(); ++i) {
-    RETURN_IF_ERROR(RegisterExtensions(*message.nested_type(i)));
-  }
-  return absl::OkStatus();
+
+  return FeatureResolver(std::prev(first_nonmatch)->features());
 }
 
 absl::StatusOr<FeatureSet> FeatureResolver::MergeFeatures(
     const FeatureSet& merged_parent, const FeatureSet& unmerged_child) const {
-  FeatureSet merged = generated_defaults_;
-
-  // Our defaults are a dynamic message located in the build pool, while the
-  // returned object here is in the generated pool.  We parse/serialize to
-  // convert from the potentially skewed FeatureSet descriptors.
-  ABSL_CHECK(merged.MergeFromString(defaults_->SerializeAsString()));
+  FeatureSet merged = defaults_;
   merged.MergeFrom(merged_parent);
   merged.MergeFrom(unmerged_child);
 
