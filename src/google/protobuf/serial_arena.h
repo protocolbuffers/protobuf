@@ -251,25 +251,12 @@ class PROTOBUF_EXPORT SerialArena {
     return true;
   }
 
-  // If there is enough space in the current block, allocate space for one `T`
-  // object and register for destruction. The object has not been constructed
-  // and the memory returned is uninitialized.
-  template <typename T>
-  PROTOBUF_ALWAYS_INLINE void* MaybeAllocateWithCleanup() {
-    ABSL_DCHECK_GE(limit_, ptr());
-    static_assert(!std::is_trivially_destructible<T>::value,
-                  "This function is only for non-trivial types.");
-
-    constexpr int aligned_size = ArenaAlignDefault::Ceil(sizeof(T));
-    constexpr auto destructor = cleanup::arena_destruct_object<T>;
-    size_t required = aligned_size + cleanup::Size(destructor);
-    if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
-      return nullptr;
-    }
-    void* ptr = AllocateFromExistingWithCleanupFallback(aligned_size,
-                                                        alignof(T), destructor);
-    PROTOBUF_ASSUME(ptr != nullptr);
-    return ptr;
+  // If there is enough space in the current block, allocate space for one
+  // std::string object and register for destruction. The object has not been
+  // constructed and the memory returned is uninitialized.
+  PROTOBUF_ALWAYS_INLINE void* MaybeAllocateStringWithCleanup() {
+    void* p;
+    return MaybeAllocateString(p) ? p : nullptr;
   }
 
   PROTOBUF_ALWAYS_INLINE
@@ -424,13 +411,6 @@ inline PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
     return true;
   }
   return false;
-}
-
-template <>
-inline PROTOBUF_ALWAYS_INLINE void*
-SerialArena::MaybeAllocateWithCleanup<std::string>() {
-  void* p;
-  return MaybeAllocateString(p) ? p : nullptr;
 }
 
 ABSL_ATTRIBUTE_RETURNS_NONNULL inline PROTOBUF_ALWAYS_INLINE void*
