@@ -44,6 +44,7 @@
 #include "protos_generator/tests/child_model.upb.proto.h"
 #include "protos_generator/tests/no_package.upb.proto.h"
 #include "protos_generator/tests/test_model.upb.proto.h"
+#include "upb/mem/arena.h"
 
 using ::protos_generator::test::protos::ChildModel1;
 using ::protos_generator::test::protos::other_ext;
@@ -683,20 +684,24 @@ TEST(CppGeneratedCode, ClearExtensionWithEmptyExtensionPtr) {
 
 TEST(CppGeneratedCode, SetExtension) {
   TestModel model;
+  void* prior_message;
   {
     // Use a nested scope to make sure the arenas are fused correctly.
     ThemeExtension extension1;
     extension1.set_ext_name("Hello World");
+    prior_message = ::protos::internal::GetInternalMsg(&extension1);
     EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
-    EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
+    EXPECT_EQ(
+        true,
+        ::protos::SetExtension(&model, theme, std::move(extension1)).ok());
   }
   EXPECT_EQ(true, ::protos::HasExtension(&model, theme));
   auto ext = ::protos::GetExtension(&model, theme);
   EXPECT_TRUE(ext.ok());
-  EXPECT_EQ((*ext)->ext_name(), "Hello World");
+  EXPECT_EQ(::protos::internal::GetInternalMsg(*ext), prior_message);
 }
 
-TEST(CppGeneratedCode, SetExtensionFailsFusing) {
+TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
   // Use an initial block to disallow fusing.
   char initial_block[1000];
   protos::Arena arena(initial_block, sizeof(initial_block));
@@ -705,12 +710,41 @@ TEST(CppGeneratedCode, SetExtensionFailsFusing) {
 
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
+  ASSERT_FALSE(
+      upb_Arena_Fuse(arena.ptr(), ::protos::internal::GetArena(&extension1)));
   EXPECT_FALSE(::protos::HasExtension(model, theme));
-  auto status = ::protos::SetExtension(model, theme, extension1);
-  EXPECT_FALSE(status.ok());
-  EXPECT_THAT(status.message(), HasSubstr("Unable to fuse arenas."));
-  EXPECT_FALSE(::protos::HasExtension(model, theme));
-  EXPECT_FALSE(::protos::GetExtension(model, theme).ok());
+  auto status = ::protos::SetExtension(model, theme, std::move(extension1));
+  EXPECT_TRUE(status.ok());
+  EXPECT_TRUE(::protos::HasExtension(model, theme));
+  EXPECT_TRUE(::protos::GetExtension(model, theme).ok());
+}
+
+TEST(CppGeneratedCode, SetExtensionShouldClone) {
+  TestModel model;
+  ThemeExtension extension1;
+  extension1.set_ext_name("Hello World");
+  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
+  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
+  extension1.set_ext_name("Goodbye");
+  EXPECT_EQ(true, ::protos::HasExtension(&model, theme));
+  auto ext = ::protos::GetExtension(&model, theme);
+  EXPECT_TRUE(ext.ok());
+  EXPECT_EQ((*ext)->ext_name(), "Hello World");
+}
+
+TEST(CppGeneratedCode, SetExtensionShouldCloneConst) {
+  TestModel model;
+  ThemeExtension extension1;
+  extension1.set_ext_name("Hello World");
+  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
+  EXPECT_EQ(
+      true,
+      ::protos::SetExtension(&model, theme, std::as_const(extension1)).ok());
+  extension1.set_ext_name("Goodbye");
+  EXPECT_EQ(true, ::protos::HasExtension(&model, theme));
+  auto ext = ::protos::GetExtension(&model, theme);
+  EXPECT_TRUE(ext.ok());
+  EXPECT_EQ((*ext)->ext_name(), "Hello World");
 }
 
 TEST(CppGeneratedCode, SetExtensionOnMutableChild) {

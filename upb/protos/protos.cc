@@ -42,11 +42,13 @@
 #include "upb/message/copy.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/promote.h"
+#include "upb/message/types.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
+#include "upb/wire/types.h"
 
 namespace protos {
 
@@ -180,6 +182,40 @@ upb_Message* DeepClone(const upb_Message* source,
                        const upb_MiniTable* mini_table, upb_Arena* arena) {
   MessageLock msg_lock(source);
   return upb_Message_DeepClone(source, mini_table, arena);
+}
+
+absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
+                           const upb_MiniTableExtension* ext,
+                           upb_Message* extension, upb_Arena* extension_arena) {
+  upb_Message_Extension* msg_ext =
+      _upb_Message_GetOrCreateExtension(message, ext, message_arena);
+  if (!msg_ext) {
+    return MessageAllocationError();
+  }
+  if (message_arena != extension_arena) {
+    // Try fuse, if fusing is not allowed or fails, create copy of extension.
+    if (!upb_Arena_Fuse(message_arena, extension_arena)) {
+      msg_ext->data.ptr =
+          DeepClone(extension, msg_ext->ext->sub.submsg, message_arena);
+      return absl::OkStatus();
+    }
+  }
+  msg_ext->data.ptr = extension;
+  return absl::OkStatus();
+}
+
+absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
+                          const upb_MiniTableExtension* ext,
+                          const upb_Message* extension) {
+  upb_Message_Extension* msg_ext =
+      _upb_Message_GetOrCreateExtension(message, ext, message_arena);
+  if (!msg_ext) {
+    return MessageAllocationError();
+  }
+  // Clone extension into target message arena.
+  msg_ext->data.ptr =
+      DeepClone(extension, msg_ext->ext->sub.submsg, message_arena);
+  return absl::OkStatus();
 }
 
 }  // namespace internal

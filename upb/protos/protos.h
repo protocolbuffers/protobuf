@@ -249,6 +249,14 @@ void DeepCopy(upb_Message* target, const upb_Message* source,
 upb_Message* DeepClone(const upb_Message* source,
                        const upb_MiniTable* mini_table, upb_Arena* arena);
 
+absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
+                           const upb_MiniTableExtension* ext,
+                           upb_Message* extension, upb_Arena* extension_arena);
+
+absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
+                          const upb_MiniTableExtension* ext,
+                          const upb_Message* extension);
+
 }  // namespace internal
 
 template <typename T>
@@ -370,29 +378,27 @@ template <typename T, typename Extendee, typename Extension,
 absl::Status SetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id,
-    Extension& value) {
+    const Extension& value) {
   static_assert(!std::is_const_v<T>);
-  auto* message_arena = internal::GetArena(message);
-  upb_Message_Extension* msg_ext = _upb_Message_GetOrCreateExtension(
-      internal::GetInternalMsg(message), id.mini_table_ext(), message_arena);
-  if (!msg_ext) {
-    return MessageAllocationError();
-  }
-  auto* extension_arena = internal::GetArena(&value);
-  if (message_arena != extension_arena) {
-    if (!upb_Arena_Fuse(message_arena, extension_arena)) {
-      // We have to undo the Create part. Otherwise ,we end up with a broken
-      // extension. We do fuse last because we can undo Create, but we can't
-      // undo Fuse.
-      if (msg_ext->data.ptr == nullptr) {
-        _upb_Message_ClearExtensionField(internal::GetInternalMsg(message),
-                                         id.mini_table_ext());
-      }
-      return absl::InvalidArgumentError("Unable to fuse arenas.");
-    }
-  }
-  msg_ext->data.ptr = internal::GetInternalMsg(&value);
-  return absl::OkStatus();
+  auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  return ::protos::internal::SetExtension(internal::GetInternalMsg(message),
+                                          message_arena, id.mini_table_ext(),
+                                          internal::GetInternalMsg(&value));
+}
+
+template <typename T, typename Extendee, typename Extension,
+          typename = EnableIfProtosClass<T>, typename = EnableIfMutableProto<T>>
+absl::Status SetExtension(
+    Ptr<T> message,
+    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id,
+    Extension&& value) {
+  Extension ext = std::move(value);
+  static_assert(!std::is_const_v<T>);
+  auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  auto* extension_arena = static_cast<upb_Arena*>(ext.GetInternalArena());
+  return ::protos::internal::MoveExtension(
+      internal::GetInternalMsg(message), message_arena, id.mini_table_ext(),
+      internal::GetInternalMsg(&ext), extension_arena);
 }
 
 template <typename T, typename Extendee, typename Extension,
@@ -400,8 +406,18 @@ template <typename T, typename Extendee, typename Extension,
 absl::Status SetExtension(
     T* message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id,
-    Extension& value) {
+    const Extension& value) {
   return ::protos::SetExtension(::protos::Ptr(message), id, value);
+}
+
+template <typename T, typename Extendee, typename Extension,
+          typename = EnableIfProtosClass<T>>
+absl::Status SetExtension(
+    T* message,
+    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id,
+    Extension&& value) {
+  return ::protos::SetExtension(::protos::Ptr(message), id,
+                                std::forward<Extension>(value));
 }
 
 template <typename T, typename Extendee, typename Extension,
