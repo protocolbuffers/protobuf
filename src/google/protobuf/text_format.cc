@@ -34,22 +34,29 @@
 
 #include "google/protobuf/text_format.h"
 
-#include <float.h>
 #include <stdio.h>
 
 #include <algorithm>
 #include <atomic>
 #include <climits>
 #include <cmath>
+#include <cstdint>
+#include <cstring>
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
@@ -62,7 +69,6 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
@@ -2758,6 +2764,14 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
                                             std::string* output) {
   auto printer = Printer();
   return printer.PrintToString(message, output);
+}
+
+/* static */ std::string TextFormat::PrintToStringOrDie(
+    const Message& message) {
+  auto printer = Printer();
+  std::string output;
+  ABSL_CHECK(printer.PrintToString(message, &output));
+  return output;
 }
 
 /* static */ bool TextFormat::PrintUnknownFieldsToString(

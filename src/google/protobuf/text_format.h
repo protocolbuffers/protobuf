@@ -39,6 +39,8 @@
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
 #include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -49,7 +51,6 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
-#include "google/protobuf/port.h"
 
 
 // Must be included last.
@@ -130,6 +131,10 @@ class PROTOBUF_EXPORT TextFormat {
   // Note: output will be cleared prior to printing, and will be left empty
   // even if printing fails. Returns false if printing fails.
   static bool PrintToString(const Message& message, std::string* output);
+
+  // Same as above, but returns the text format string and CHECKs for successful
+  // printing.
+  static std::string PrintToStringOrDie(const Message& message);
 
   // Like PrintUnknownFields(), but outputs directly to a string. Returns
   // false if printing fails.

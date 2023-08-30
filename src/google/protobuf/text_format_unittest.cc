@@ -34,20 +34,22 @@
 
 #include "google/protobuf/text_format.h"
 
-#include <math.h>
 #include <stdlib.h>
 
 #include <atomic>
+#include <cmath>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
 #include <gmock/gmock.h>
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/base/log_severity.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/die_if_null.h"
 #include "absl/log/scoped_mock_log.h"
@@ -57,8 +59,10 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
+#include "absl/synchronization/notification.h"
+#include "google/protobuf/any.h"
 #include "google/protobuf/io/tokenizer.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_util.h"
@@ -67,10 +71,8 @@
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
+#include "google/protobuf/wire_format_lite.h"
 
-
-// Must be included last.
-#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -140,6 +142,7 @@ TEST_F(TextFormatTest, Basic) {
   std::string actual_proto_text_format;
   TextFormat::PrintToString(proto_, &actual_proto_text_format);
   EXPECT_EQ(actual_proto_text_format, proto_text_format_);
+  EXPECT_EQ(TextFormat::PrintToStringOrDie(proto_), actual_proto_text_format);
 }
 
 TEST_F(TextFormatExtensionsTest, Extensions) {
@@ -147,6 +150,7 @@ TEST_F(TextFormatExtensionsTest, Extensions) {
   std::string actual_proto_text_format;
   TextFormat::PrintToString(proto_, &actual_proto_text_format);
   EXPECT_EQ(actual_proto_text_format, proto_text_format_);
+  EXPECT_EQ(TextFormat::PrintToStringOrDie(proto_), actual_proto_text_format);
 }
 
 TEST_F(TextFormatTest, ShortDebugString) {
@@ -2539,4 +2543,3 @@ TEST(TextFormatFloatingPointTest, PreservesNegative0) {
 }  // namespace protobuf
 }  // namespace google
 
-#include "google/protobuf/port_undef.inc"
