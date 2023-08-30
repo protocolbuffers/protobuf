@@ -184,12 +184,10 @@ jobs:
           directory: php
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bash@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: php_macos/${{ matrix.version }}
-          bash: |
-            ./regenerate_stale_files.sh
+          command: |
             pushd php
             php -v
             php -m
@@ -202,8 +200,4 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}
-          bash: >-
-            bazelisk $BAZEL_STARTUP_FLAGS \
-              test $BAZEL_FLAGS \
-              --action_env=PATH --test_env=PATH \
-              //php:conformance_test_c
+          bazel: test //php:conformance_test_c --action_env=PATH --test_env=PATH
