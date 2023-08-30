@@ -21,3 +21,4 @@ The following topics are in this repository:
 
 *   [What are Protobuf Editions?](what-are-protobuf-editions.md)
 *   [Life of an Edition](life-of-an-edition.md)
+*   [Editions: Life of a FeatureSet](editions-life-of-a-featureset.md)
