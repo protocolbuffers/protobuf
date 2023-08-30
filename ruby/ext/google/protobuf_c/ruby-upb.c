@@ -1,6 +1,8 @@
 /* Amalgamated source file */
 #include "ruby-upb.h"
 
+test-xyz
+
 /*
  * This is where we define internal portability macros used across upb.
  *
