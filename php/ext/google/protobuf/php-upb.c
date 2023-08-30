@@ -1,8 +1,6 @@
 /* Amalgamated source file */
 #include "php-upb.h"
 
-test-xyz
-
 /*
  * This is where we define internal portability macros used across upb.
  *
