@@ -38,6 +38,7 @@
 
 #include <float.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <string>
@@ -555,14 +556,15 @@ void Parser::SkipStatement() {
 }
 
 void Parser::SkipRestOfBlock() {
+  size_t block_count = 1;
   while (true) {
     if (AtEnd()) {
       return;
     } else if (LookingAtType(io::Tokenizer::TYPE_SYMBOL)) {
       if (TryConsumeEndOfDeclaration("}", nullptr)) {
-        return;
+        if (--block_count == 0) break;
       } else if (TryConsume("{")) {
-        SkipRestOfBlock();
+        ++block_count;
       }
     }
     input_->Next();

@@ -117,8 +117,9 @@ class ParserTest : public testing::Test {
   ParserTest() : require_syntax_identifier_(false) {}
 
   // Set up the parser to parse the given text.
-  void SetupParser(const char* text) {
-    raw_input_ = absl::make_unique<io::ArrayInputStream>(text, strlen(text));
+  void SetupParser(absl::string_view text) {
+    raw_input_ =
+        absl::make_unique<io::ArrayInputStream>(text.data(), text.size());
     input_ =
         absl::make_unique<io::Tokenizer>(raw_input_.get(), &error_collector_);
     parser_ = absl::make_unique<Parser>();
@@ -169,7 +170,8 @@ class ParserTest : public testing::Test {
 
   // Same as above but does not expect that the parser parses the complete
   // input.
-  void ExpectHasEarlyExitErrors(const char* text, const char* expected_errors) {
+  void ExpectHasEarlyExitErrors(absl::string_view text,
+                                absl::string_view expected_errors) {
     SetupParser(text);
     SourceLocationTable source_locations;
     parser_->RecordSourceLocationsTo(&source_locations);
@@ -284,6 +286,16 @@ TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
   EXPECT_TRUE(error_collector_.warning_.find(
                   "Number should not come right after an underscore. Found: "
                   "song_name_1.") != std::string::npos);
+}
+
+TEST_F(ParserTest, RegressionNestedOpenBraceDoNotStackOverflow) {
+  std::string input("edition=\"a\000;", 12);
+  input += std::string(100000, '{');
+  ExpectHasEarlyExitErrors(
+      input,
+      "0:10: Unexpected end of string.\n"
+      "0:10: Invalid control characters encountered in text.\n"
+      "0:12: Expected top-level statement (e.g. \"message\").\n");
 }
 
 // ===================================================================
