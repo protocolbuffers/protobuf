@@ -269,7 +269,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
 
     // Record how much used in this block.
     used = static_cast<size_t>(ptr() - old_head->Pointer(kBlockHeaderSize));
-    wasted = old_head->size - used;
+    wasted = old_head->size - used - kBlockHeaderSize;
     AddSpaceUsed(used);
   }
 

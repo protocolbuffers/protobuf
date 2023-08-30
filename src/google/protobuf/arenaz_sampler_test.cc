@@ -587,6 +587,33 @@ TEST(ThreadSafeArenazSamplerTest, SampleFirstArena) {
   EXPECT_TRUE(sampled);
   EXPECT_TRUE(unsampled);
 }
+
+TEST(ThreadSafeArenazSamplerTest, UsedAndWasted) {
+  SetThreadSafeArenazEnabled(true);
+  int32_t oldparam = ThreadSafeArenazSampleParameter();
+  SetThreadSafeArenazSampleParameter(1);
+  SetThreadSafeArenazGlobalNextSample(0);
+  auto& sampler = GlobalThreadSafeArenazSampler();
+  google::protobuf::Arena arena;
+  // Do enough small allocations to completely fill 3 first blocks.
+  // Test that they are fully used and none wasted.
+  for (int i = 0; i < 1000; ++i) {
+    Arena::Create<char>(&arena);
+  }
+  sampler.Iterate([&](const ThreadSafeArenaStats& h) {
+    for (size_t i = 0; i < 3; ++i) {
+      constexpr auto kSize =
+          google::protobuf::internal::AllocationPolicy::kDefaultStartBlockSize;
+      const auto& histbin =
+          h.block_histogram[ThreadSafeArenaStats::FindBin(kSize << i)];
+      EXPECT_EQ(histbin.bytes_allocated, kSize << i);
+      EXPECT_EQ(histbin.bytes_used,
+                (kSize << i) - google::protobuf::internal::SerialArena::kBlockHeaderSize);
+      EXPECT_EQ(histbin.bytes_wasted, 0);
+    }
+  });
+  SetThreadSafeArenazSampleParameter(oldparam);
+}
 #endif  // defined(PROTOBUF_ARENAZ_SAMPLE)
 
 }  // namespace
