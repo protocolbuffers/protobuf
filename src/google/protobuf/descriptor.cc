@@ -5706,16 +5706,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   file_ = result;
 
   if (proto.has_edition()) {
-    Symbol symbol = FindSymbolNotEnforcingDeps("google.protobuf.FeatureSet");
-    const Descriptor* descriptor = symbol.descriptor();
-    if (descriptor == nullptr) {
-      // descriptor.proto is not in the pool. This means no custom features are
-      // used so we are safe to proceed with the compiled FeatureSet message
-      // type.
-      descriptor = FeatureSet::descriptor();
-    }
-    ABSL_CHECK(descriptor);
-
     const FeatureSetDefaults& defaults =
         pool_->feature_set_defaults_spec_ == nullptr
             ? GetCppFeatureSetDefaults()
