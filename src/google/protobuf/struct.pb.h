@@ -283,7 +283,7 @@ class PROTOBUF_EXPORT ListValue final :
   struct Impl_ {
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value > values_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
@@ -459,7 +459,7 @@ class PROTOBUF_EXPORT Struct final :
                       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>
         fields_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
@@ -767,7 +767,7 @@ class PROTOBUF_EXPORT Value final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::uint32_t _oneof_case_[1];
 
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;

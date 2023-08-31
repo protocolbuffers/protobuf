@@ -388,7 +388,7 @@ class PROTOBUF_EXPORT Option final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::Any* value_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
@@ -754,7 +754,7 @@ class PROTOBUF_EXPORT Field final :
     ::int32_t oneof_index_;
     bool packed_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
@@ -959,7 +959,7 @@ class PROTOBUF_EXPORT EnumValue final :
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::int32_t number_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
@@ -1250,7 +1250,7 @@ class PROTOBUF_EXPORT Type final :
     ::google::protobuf::internal::ArenaStringPtr edition_;
     ::google::protobuf::SourceContext* source_context_;
     int syntax_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
@@ -1511,7 +1511,7 @@ class PROTOBUF_EXPORT Enum final :
     ::google::protobuf::internal::ArenaStringPtr edition_;
     ::google::protobuf::SourceContext* source_context_;
     int syntax_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
