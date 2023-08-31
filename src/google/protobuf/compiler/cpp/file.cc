@@ -1555,8 +1555,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
   IncludeFile("third_party/protobuf/arena.h", p);
   IncludeFile("third_party/protobuf/arenastring.h", p);
-  if ((options_.force_inline_string || options_.profile_driven_inline_string) &&
-      !options_.opensource_runtime) {
+  if (IsStringInliningEnabled(options_)) {
     IncludeFile("third_party/protobuf/inlined_string_field.h", p);
   }
   if (HasSimpleBaseClasses(file_, options_)) {
