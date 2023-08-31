@@ -471,6 +471,7 @@ cc_library(
         "service.cc",
         "text_format.cc",
         "unknown_field_set.cc",
+        "versions.cc",
         "wire_format.cc",
     ],
     hdrs = [
@@ -500,6 +501,7 @@ cc_library(
         "service.h",
         "text_format.h",
         "unknown_field_set.h",
+        "versions.h",
         "wire_format.h",
     ],
     copts = COPTS,
@@ -1449,6 +1451,22 @@ cc_test(
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
+)
+
+cc_test(
+    name = "versions_test",
+    srcs = ["versions_test.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+         ":protobuf",
+         "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ]
 )
 
 cc_test(
