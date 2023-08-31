@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -47,7 +46,7 @@ func main() {
 
 	// [START unmarshal_proto]
 	// Read the existing address book.
-	in, err := ioutil.ReadFile(fname)
+	in, err := os.ReadFile(fname)
 	if err != nil {
 		log.Fatalln("Error reading file:", err)
 	}

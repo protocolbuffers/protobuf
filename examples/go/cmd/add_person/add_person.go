@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -97,7 +96,7 @@ func main() {
 	fname := os.Args[1]
 
 	// Read the existing address book.
-	in, err := ioutil.ReadFile(fname)
+	in, err := os.ReadFile(fname)
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Printf("%s: File not found.  Creating new file.\n", fname)
@@ -126,7 +125,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("Failed to encode address book:", err)
 	}
-	if err := ioutil.WriteFile(fname, out, 0644); err != nil {
+	if err := os.WriteFile(fname, out, 0644); err != nil {
 		log.Fatalln("Failed to write address book:", err)
 	}
 	// [END marshal_proto]
