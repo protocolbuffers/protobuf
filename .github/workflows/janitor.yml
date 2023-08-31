@@ -13,7 +13,7 @@ jobs:
     name: Close Stale Copybara PRs
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write # to allow deleting branches
       pull-requests: write # to allow closing the PR
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
