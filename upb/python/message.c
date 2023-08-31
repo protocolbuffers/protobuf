@@ -1239,9 +1239,10 @@ static PyObject* PyUpb_Message_CopyFrom(PyObject* _self, PyObject* arg) {
 
   const upb_Message* other_msg = PyUpb_Message_GetIfReified((PyObject*)other);
   if (other_msg) {
-    upb_Message_DeepCopy(self->ptr.msg, other_msg,
-                         upb_MessageDef_MiniTable(other->def),
-                         PyUpb_Arena_Get(self->arena));
+    upb_Message_DeepCopy(
+        self->ptr.msg, other_msg,
+        upb_MessageDef_MiniTable((const upb_MessageDef*)other->def),
+        PyUpb_Arena_Get(self->arena));
   } else {
     PyObject* tmp = PyUpb_Message_Clear(self);
     Py_DECREF(tmp);
@@ -1614,12 +1615,12 @@ static PyObject* PyUpb_Message_WhichOneof(PyObject* _self, PyObject* name) {
 
 PyObject* DeepCopy(PyObject* _self, PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
+  const upb_MessageDef* def = PyUpb_Message_GetMsgdef(_self);
 
   PyObject* arena = PyUpb_Arena_New();
-  upb_Message* clone =
-      upb_Message_DeepClone(self->ptr.msg, upb_MessageDef_MiniTable(self->def),
-                            PyUpb_Arena_Get(arena));
-  PyObject* ret = PyUpb_Message_Get(clone, self->def, arena);
+  upb_Message* clone = upb_Message_DeepClone(
+      self->ptr.msg, upb_MessageDef_MiniTable(def), PyUpb_Arena_Get(arena));
+  PyObject* ret = PyUpb_Message_Get(clone, def, arena);
   Py_DECREF(arena);
 
   return ret;
