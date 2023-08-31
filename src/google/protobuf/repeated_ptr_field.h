@@ -95,6 +95,41 @@ class RepeatedPtrOverPtrsIterator;
 
 namespace internal {
 
+// A pointer wrapper that allows to store a tag (three bits) alongside the
+// pointer. Provided pointer must be pointing to a type with alignment >= 8.
+class TaggedVoidPointer {
+ public:
+  explicit constexpr TaggedVoidPointer(std::nullptr_t ptr) : rep_(0) {}
+  explicit TaggedVoidPointer(void* ptr) : TaggedVoidPointer(ptr, 0) {}
+  explicit TaggedVoidPointer(void* ptr, uint32_t tag) {
+    uintptr_t rep = reinterpret_cast<uintptr_t>(ptr);
+    // Catch attempts to set pointers which the tag would clobber.
+    ABSL_DCHECK((rep & 0b111) == 0);
+    ABSL_DCHECK(tag <= 0b111);
+    rep_ = (rep & ~0b111) | (tag & 0b111);
+  }
+
+  // Returns true iff `ptr()==nullptr` and `tag()==0`.
+  bool is_zero() const { return rep_ == 0; }
+
+  uint32_t tag() const { return rep_ & 0b111; }
+  void* ptr() const { return reinterpret_cast<void*>(rep_ & ~0b111); }
+
+  // Returns address of the pointer.
+  //
+  // Pre-condition: no tags are set.
+  void** ptr_address() {
+    ABSL_DCHECK(tag() == 0);
+    return reinterpret_cast<void**>(&rep_);
+  }
+  void* const* ptr_address() const {
+    return const_cast<TaggedVoidPointer*>(this)->ptr_address();
+  }
+
+ private:
+  uintptr_t rep_;
+};
+
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
 inline void memswap(char* PROTOBUF_RESTRICT a, char* PROTOBUF_RESTRICT b) {
@@ -176,59 +211,50 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
  protected:
   constexpr RepeatedPtrFieldBase()
-      : arena_(nullptr),
-        current_size_(0),
-        total_size_(kSSOCapacity),
-        tagged_rep_or_elem_(nullptr) {}
+      : rep_or_elem_(nullptr), sso_arena_(nullptr) {}
   explicit RepeatedPtrFieldBase(Arena* arena)
-      : arena_(arena),
-        current_size_(0),
-        total_size_(kSSOCapacity),
-        tagged_rep_or_elem_(nullptr) {}
+      : rep_or_elem_(nullptr), sso_arena_(arena) {}
 
   RepeatedPtrFieldBase(const RepeatedPtrFieldBase&) = delete;
   RepeatedPtrFieldBase& operator=(const RepeatedPtrFieldBase&) = delete;
 
-  ~RepeatedPtrFieldBase() {
-#ifndef NDEBUG
-    // Try to trigger segfault / asan failure in non-opt builds. If arena_
-    // lifetime has ended before the destructor.
-    if (arena_) (void)arena_->SpaceAllocated();
-#endif
-  }
+  ~RepeatedPtrFieldBase() = default;
 
-  bool empty() const { return current_size_ == 0; }
-  int size() const { return current_size_; }
-  int Capacity() const { return total_size_; }
+  bool empty() const { return size() == 0; }
+  int size() const {
+    return using_sso() ? (sso_arena_.tag() & kNonEmptyTag) : rep_metadata_.size;
+  }
+  int Capacity() const {
+    return using_sso() ? kSSOCapacity : rep_metadata_.capacity;
+  }
 
   template <typename TypeHandler>
   const Value<TypeHandler>& at(int index) const {
     ABSL_CHECK_GE(index, 0);
-    ABSL_CHECK_LT(index, current_size_);
+    ABSL_CHECK_LT(index, size());
     return *cast<TypeHandler>(element_at(index));
   }
 
   template <typename TypeHandler>
   Value<TypeHandler>& at(int index) {
     ABSL_CHECK_GE(index, 0);
-    ABSL_CHECK_LT(index, current_size_);
+    ABSL_CHECK_LT(index, size());
     return *cast<TypeHandler>(element_at(index));
   }
 
   template <typename TypeHandler>
   Value<TypeHandler>* Mutable(int index) {
     ABSL_DCHECK_GE(index, 0);
-    ABSL_DCHECK_LT(index, current_size_);
+    ABSL_DCHECK_LT(index, size());
     return cast<TypeHandler>(element_at(index));
   }
 
   template <typename TypeHandler>
   Value<TypeHandler>* Add(const Value<TypeHandler>* prototype = nullptr) {
-    if (current_size_ < allocated_size()) {
-      return cast<TypeHandler>(
-          element_at(ExchangeCurrentSize(current_size_ + 1)));
+    if (size() < allocated_size()) {
+      return cast<TypeHandler>(element_at(ExchangeCurrentSize(size() + 1)));
     }
-    auto* result = TypeHandler::NewFromPrototype(prototype, arena_);
+    auto* result = TypeHandler::NewFromPrototype(prototype, GetOwningArena());
     return cast<TypeHandler>(AddOutOfLineHelper(result));
   }
 
@@ -236,34 +262,34 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       typename TypeHandler,
       typename std::enable_if<TypeHandler::Movable::value>::type* = nullptr>
   inline void Add(Value<TypeHandler>&& value) {
-    if (current_size_ < allocated_size()) {
-      *cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1))) =
+    if (size() < allocated_size()) {
+      *cast<TypeHandler>(element_at(ExchangeCurrentSize(size() + 1))) =
           std::move(value);
       return;
     }
-    if (allocated_size() == total_size_) {
-      Reserve(total_size_ + 1);
+    if (allocated_size() == Capacity()) {
+      Reserve(Capacity() + 1);
     }
     if (!using_sso()) ++rep()->allocated_size;
-    auto* result = TypeHandler::New(arena_, std::move(value));
-    element_at(ExchangeCurrentSize(current_size_ + 1)) = result;
+    auto* result = TypeHandler::New(GetOwningArena(), std::move(value));
+    element_at(ExchangeCurrentSize(size() + 1)) = result;
   }
 
   template <typename TypeHandler>
   void Delete(int index) {
     ABSL_DCHECK_GE(index, 0);
-    ABSL_DCHECK_LT(index, current_size_);
-    Delete<TypeHandler>(element_at(index), arena_);
+    ABSL_DCHECK_LT(index, size());
+    Delete<TypeHandler>(element_at(index), GetOwningArena());
   }
 
   // Must be called from destructor.
   template <typename TypeHandler>
   void Destroy() {
-    if (arena_ != nullptr) return;
+    if (GetOwningArena() != nullptr) return;
 
     if (using_sso()) {
-      if (tagged_rep_or_elem_ == nullptr) return;
-      Delete<TypeHandler>(tagged_rep_or_elem_, nullptr);
+      if (rep_or_elem_.is_zero()) return;
+      Delete<TypeHandler>(rep_or_elem_.ptr(), nullptr);
       return;
     }
 
@@ -273,11 +299,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     for (int i = 0; i < n; i++) {
       Delete<TypeHandler>(elems[i], nullptr);
     }
-    internal::SizedDelete(r, total_size_ * sizeof(elems[0]) + kRepHeaderSize);
+    internal::SizedDelete(r, Capacity() * sizeof(elems[0]) + kRepHeaderSize);
   }
 
   bool NeedsDestroy() const {
-    return tagged_rep_or_elem_ != nullptr && arena_ == nullptr;
+    return !rep_or_elem_.is_zero() && GetOwningArena() == nullptr;
   }
   void DestroyProtos();  // implemented in the cc file
 
@@ -289,7 +315,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   const Value<TypeHandler>& Get(int index) const {
     ABSL_DCHECK_GE(index, 0);
-    ABSL_DCHECK_LT(index, current_size_);
+    ABSL_DCHECK_LT(index, size());
     return *cast<TypeHandler>(element_at(index));
   }
 
@@ -301,7 +327,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   void Clear() {
-    const int n = current_size_;
+    const int n = size();
     ABSL_DCHECK_GE(n, 0);
     if (n > 0) {
       ClearNonEmpty<TypeHandler>();
@@ -317,7 +343,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // passing a function pointer to another type-specific piece of code that
     // calls the object-allocate and merge handlers.
     ABSL_DCHECK_NE(&other, this);
-    if (other.current_size_ == 0) return;
+    if (other.size() == 0) return;
     MergeFromInternal(other,
                       &RepeatedPtrFieldBase::MergeFromInnerLoop<TypeHandler>);
   }
@@ -334,28 +360,28 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // It ensures we have no preallocated elements in the array.
   //  Returns true if the invariants hold and `AddAllocatedForParse` can be
   //  used.
-  bool PrepareForParse() { return allocated_size() == current_size_; }
+  bool PrepareForParse() { return allocated_size() == size(); }
 
   // Similar to `AddAllocated` but faster.
   // Can only be invoked after a call to `PrepareForParse` that returned `true`,
   // or other calls to `AddAllocatedForParse`.
   template <typename TypeHandler>
   void AddAllocatedForParse(Value<TypeHandler>* value) {
-    ABSL_DCHECK_EQ(current_size_, allocated_size());
-    if (current_size_ == total_size_) {
+    ABSL_DCHECK_EQ(size(), allocated_size());
+    if (size() == Capacity()) {
       // The array is completely full with no cleared objects, so grow it.
       InternalExtend(1);
     }
-    element_at(current_size_++) = value;
+    element_at(ExchangeCurrentSize(size() + 1)) = value;
     if (!using_sso()) ++rep()->allocated_size;
   }
 
  protected:
   template <typename TypeHandler>
   void RemoveLast() {
-    ABSL_DCHECK_GT(current_size_, 0);
-    ExchangeCurrentSize(current_size_ - 1);
-    TypeHandler::Clear(cast<TypeHandler>(element_at(current_size_)));
+    ABSL_DCHECK_GT(size(), 0);
+    ExchangeCurrentSize(size() - 1);
+    TypeHandler::Clear(cast<TypeHandler>(element_at(size())));
   }
 
   template <typename TypeHandler>
@@ -419,7 +445,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     size_t allocated_bytes =
         using_sso()
             ? 0
-            : static_cast<size_t>(total_size_) * sizeof(void*) + kRepHeaderSize;
+            : static_cast<size_t>(Capacity()) * sizeof(void*) + kRepHeaderSize;
     const int n = allocated_size();
     void* const* elems = elements();
     for (int i = 0; i < n; ++i) {
@@ -434,9 +460,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Like Add(), but if there are no cleared objects to use, returns nullptr.
   template <typename TypeHandler>
   Value<TypeHandler>* AddFromCleared() {
-    if (current_size_ < allocated_size()) {
-      return cast<TypeHandler>(
-          element_at(ExchangeCurrentSize(current_size_ + 1)));
+    if (size() < allocated_size()) {
+      return cast<TypeHandler>(element_at(ExchangeCurrentSize(size() + 1)));
     } else {
       return nullptr;
     }
@@ -451,27 +476,27 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   void UnsafeArenaAddAllocated(Value<TypeHandler>* value) {
     // Make room for the new pointer.
-    if (current_size_ == total_size_) {
+    if (size() == Capacity()) {
       // The array is completely full with no cleared objects, so grow it.
-      Reserve(total_size_ + 1);
+      Reserve(Capacity() + 1);
       ++rep()->allocated_size;
-    } else if (allocated_size() == total_size_) {
+    } else if (allocated_size() == Capacity()) {
       // There is no more space in the pointer array because it contains some
       // cleared objects awaiting reuse.  We don't want to grow the array in
       // this case because otherwise a loop calling AddAllocated() followed by
       // Clear() would leak memory.
-      Delete<TypeHandler>(element_at(current_size_), arena_);
-    } else if (current_size_ < allocated_size()) {
+      Delete<TypeHandler>(element_at(size()), GetOwningArena());
+    } else if (size() < allocated_size()) {
       // We have some cleared objects.  We don't care about their order, so we
       // can just move the first one to the end to make space.
-      element_at(allocated_size()) = element_at(current_size_);
+      element_at(allocated_size()) = element_at(size());
       ++rep()->allocated_size;
     } else {
       // There are no cleared objects.
       if (!using_sso()) ++rep()->allocated_size;
     }
 
-    element_at(ExchangeCurrentSize(current_size_ + 1)) = value;
+    element_at(ExchangeCurrentSize(size() + 1)) = value;
   }
 
   template <typename TypeHandler>
@@ -485,23 +510,23 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // arena.
   template <typename TypeHandler>
   Value<TypeHandler>* UnsafeArenaReleaseLast() {
-    ABSL_DCHECK_GT(current_size_, 0);
-    ExchangeCurrentSize(current_size_ - 1);
-    auto* result = cast<TypeHandler>(element_at(current_size_));
+    ABSL_DCHECK_GT(size(), 0);
+    ExchangeCurrentSize(size() - 1);
+    auto* result = cast<TypeHandler>(element_at(size()));
     if (using_sso()) {
-      tagged_rep_or_elem_ = nullptr;
+      rep_or_elem_ = TaggedVoidPointer(nullptr);
     } else {
       --rep()->allocated_size;
-      if (current_size_ < allocated_size()) {
+      if (size() < allocated_size()) {
         // There are cleared elements on the end; replace the removed element
         // with the last allocated element.
-        element_at(current_size_) = element_at(allocated_size());
+        element_at(size()) = element_at(allocated_size());
       }
     }
     return result;
   }
 
-  int ClearedCount() const { return allocated_size() - current_size_; }
+  int ClearedCount() const { return allocated_size() - size(); }
 
   template <typename TypeHandler>
   void AddCleared(Value<TypeHandler>* value) {
@@ -510,11 +535,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
            "RepeatedPtrField not on an arena.";
     ABSL_DCHECK(TypeHandler::GetOwningArena(value) == nullptr)
         << "AddCleared() can only accept values not on an arena.";
-    if (allocated_size() == total_size_) {
-      Reserve(total_size_ + 1);
+    if (allocated_size() == Capacity()) {
+      Reserve(Capacity() + 1);
     }
     if (using_sso()) {
-      tagged_rep_or_elem_ = value;
+      rep_or_elem_ = TaggedVoidPointer(value);
     } else {
       element_at(rep()->allocated_size++) = value;
     }
@@ -525,11 +550,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ABSL_DCHECK(GetOwningArena() == nullptr)
         << "ReleaseCleared() can only be used on a RepeatedPtrField not on "
         << "an arena.";
-    ABSL_DCHECK(tagged_rep_or_elem_ != nullptr);
-    ABSL_DCHECK_GT(allocated_size(), current_size_);
+    ABSL_DCHECK(!rep_or_elem_.is_zero());
+    ABSL_DCHECK_GT(allocated_size(), size());
     if (using_sso()) {
-      auto* result = cast<TypeHandler>(tagged_rep_or_elem_);
-      tagged_rep_or_elem_ = nullptr;
+      auto* result = cast<TypeHandler>(rep_or_elem_.ptr());
+      rep_or_elem_ = TaggedVoidPointer(nullptr);
       return result;
     } else {
       return cast<TypeHandler>(element_at(--rep()->allocated_size));
@@ -541,17 +566,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void AddAllocatedInternal(Value<TypeHandler>* value, std::true_type) {
     Arena* element_arena = TypeHandler::GetOwningArena(value);
     Arena* arena = GetOwningArena();
-    if (arena == element_arena && allocated_size() < total_size_) {
+    if (arena == element_arena && allocated_size() < Capacity()) {
       // Fast path: underlying arena representation (tagged pointer) is equal to
       // our arena pointer, and we can add to array without resizing it (at
       // least one slot that is not allocated).
       void** elems = elements();
-      if (current_size_ < allocated_size()) {
+      if (size() < allocated_size()) {
         // Make space at [current] by moving first allocated element to end of
         // allocated list.
-        elems[allocated_size()] = elems[current_size_];
+        elems[allocated_size()] = elems[size()];
       }
-      elems[ExchangeCurrentSize(current_size_ + 1)] = value;
+      elems[ExchangeCurrentSize(size() + 1)] = value;
       if (!using_sso()) ++rep()->allocated_size;
     } else {
       AddAllocatedSlowWithCopy<TypeHandler>(value, element_arena, arena);
@@ -561,17 +586,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // AddAllocated version that does not implement arena-safe copying behavior.
   template <typename TypeHandler>
   void AddAllocatedInternal(Value<TypeHandler>* value, std::false_type) {
-    if (allocated_size() < total_size_) {
+    if (allocated_size() < Capacity()) {
       // Fast path: underlying arena representation (tagged pointer) is equal to
       // our arena pointer, and we can add to array without resizing it (at
       // least one slot that is not allocated).
       void** elems = elements();
-      if (current_size_ < allocated_size()) {
+      if (size() < allocated_size()) {
         // Make space at [current] by moving first allocated element to end of
         // allocated list.
-        elems[allocated_size()] = elems[current_size_];
+        elems[allocated_size()] = elems[size()];
       }
-      elems[ExchangeCurrentSize(current_size_ + 1)] = value;
+      elems[ExchangeCurrentSize(size() + 1)] = value;
       if (!using_sso()) ++rep()->allocated_size;
     } else {
       UnsafeArenaAddAllocated<TypeHandler>(value);
@@ -652,7 +677,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Gets the Arena on which this RepeatedPtrField stores its elements.
   inline Arena* GetArena() const { return GetOwningArena(); }
 
-  inline Arena* GetOwningArena() const { return arena_; }
+  inline Arena* GetOwningArena() const {
+    return using_sso() ? static_cast<Arena*>(sso_arena_.ptr()) : rep()->arena;
+  }
 
  private:
   using InternalArenaConstructable_ = void;
@@ -691,13 +718,25 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   friend class google::protobuf::Reflection;
   friend class internal::SwapFieldHelper;
 
+  struct Metadata {
+    int size;
+    int capacity;
+  };
   struct Rep {
+    // Possible improvement: we are allocating 8 bytes for the pointer even when
+    // it's nullptr.
+    Arena* arena;
     int allocated_size;
     // Here we declare a huge array as a way of approximating C's "flexible
     // array member" feature without relying on undefined behavior.
     void* elements[(std::numeric_limits<int>::max() - 2 * sizeof(int)) /
                    sizeof(void*)];
   };
+
+  // Signals whether `rep_or_elem_` is used as a pointer to Rep.
+  static constexpr uint32_t kRepTag = 0b1;
+  // Signals whether SSO buffer has an element.
+  static constexpr uint32_t kNonEmptyTag = 0b1;
 
   static constexpr int kInitialSize = 0;
   static constexpr size_t kRepHeaderSize = offsetof(Rep, elements);
@@ -706,20 +745,27 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // current_size_. This function is intended to be the only place where
   // current_size_ is modified.
   inline int ExchangeCurrentSize(int new_size) {
-    return std::exchange(current_size_, new_size);
+    if (using_sso()) {
+      ABSL_DCHECK(new_size == 0 || new_size == 1);
+      int old = sso_arena_.tag() & kNonEmptyTag;
+      sso_arena_ =
+          TaggedVoidPointer(sso_arena_.ptr(), new_size ? kNonEmptyTag : 0);
+      return old;
+    }
+    return std::exchange(rep_metadata_.size, new_size);
   }
 
   void* const* elements() const {
-    return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
+    return using_sso() ? rep_or_elem_.ptr_address() : +rep()->elements;
   }
   void** elements() {
-    return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
+    return using_sso() ? rep_or_elem_.ptr_address() : +rep()->elements;
   }
 
   void*& element_at(int index) {
     if (using_sso()) {
       ABSL_DCHECK_EQ(index, 0);
-      return tagged_rep_or_elem_;
+      return *rep_or_elem_.ptr_address();
     }
     return rep()->elements[index];
   }
@@ -728,21 +774,18 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   int allocated_size() const {
-    return using_sso() ? (tagged_rep_or_elem_ != nullptr ? 1 : 0)
+    return using_sso() ? (rep_or_elem_.is_zero() ? 0 : 1)
                        : rep()->allocated_size;
   }
   Rep* rep() {
     ABSL_DCHECK(!using_sso());
-    return reinterpret_cast<Rep*>(
-        reinterpret_cast<uintptr_t>(tagged_rep_or_elem_) - 1);
+    return reinterpret_cast<Rep*>(rep_or_elem_.ptr());
   }
   const Rep* rep() const {
     return const_cast<RepeatedPtrFieldBase*>(this)->rep();
   }
 
-  bool using_sso() const {
-    return (reinterpret_cast<uintptr_t>(tagged_rep_or_elem_) & 1) == 0;
-  }
+  bool using_sso() const { return (rep_or_elem_.tag() & kRepTag) == 0; }
 
   template <typename TypeHandler>
   static inline Value<TypeHandler>* cast(void* element) {
@@ -761,12 +804,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // determined the container is non-empty
   template <typename TypeHandler>
   PROTOBUF_NOINLINE void ClearNonEmpty() {
-    const int n = current_size_;
+    const int n = size();
     void* const* elems = elements();
     int i = 0;
-    ABSL_DCHECK_GT(
-        n,
-        0);  // do/while loop to avoid initial test because we know n > 0
+    ABSL_DCHECK_GT(n, 0);
+    // do/while loop to avoid initial test because we know n > 0
     do {
       TypeHandler::Clear(cast<TypeHandler>(elems[i++]));
     } while (i < n);
@@ -780,15 +822,15 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       void (RepeatedPtrFieldBase::*inner_loop)(void**, void* const*, int,
                                                int)) {
     // Note: wrapper has already guaranteed that other.rep_ != nullptr here.
-    int other_size = other.current_size_;
+    int other_size = other.size();
     void* const* other_elements = other.elements();
     void** new_elements = InternalExtend(other_size);
-    int allocated_elems = allocated_size() - current_size_;
+    int allocated_elems = allocated_size() - size();
     (this->*inner_loop)(new_elements, other_elements, other_size,
                         allocated_elems);
-    ExchangeCurrentSize(current_size_ + other_size);
-    if (allocated_size() < current_size_) {
-      rep()->allocated_size = current_size_;
+    ExchangeCurrentSize(size() + other_size);
+    if (allocated_size() < size()) {
+      rep()->allocated_size = size();
     }
   }
 
@@ -828,19 +870,34 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   // A few notes on internal representation:
   //
-  // We use an indirected approach, with struct Rep, to keep
-  // sizeof(RepeatedPtrFieldBase) equivalent to what it was before arena support
-  // was added; namely, 3 8-byte machine words on x86-64. An instance of Rep is
-  // allocated only when the repeated field is non-empty, and it is a
-  // dynamically-sized struct (the header is directly followed by elements[]).
-  // We place arena_ and current_size_ directly in the object to avoid cache
-  // misses due to the indirection, because these fields are checked frequently.
-  // Placing all fields directly in the RepeatedPtrFieldBase instance would cost
-  // significant performance for memory-sensitive workloads.
-  Arena* arena_;
-  int current_size_;
-  int total_size_;
-  void* tagged_rep_or_elem_;
+  // We strive to achieve two goals:
+  //   (1) minimize sizeof(RepeatedPtrFieldBase)
+  //   (2) have Small Buffer Optimization (SBO or sometimes SSO)
+  //
+  // The latter means that we affectively have two different representations:
+  //
+  //   (1) SBO
+  //       Members `rep_or_elem_` and `sso_arena_` are used for:
+  //
+  //       elements():       derived from TaggedVoidPointer (`rep_or_elem_`).
+  //       allocated_size(): derived from TaggedVoidPointer (`rep_or_elem_`).
+  //       GetArena():       part of TaggedVoidPointer (`sso_arena_`).
+  //       size():           part of TaggedVoidPointer (`sso_arena_`).
+  //       Capacity():       kSSOCapacity.
+
+  //   (2) Rep (non-SBO)
+  //       Members `rep_or_elem_` and `metadata_` are used for:
+  //
+  //       elements():       part of Rep (`rep_or_elem_`).
+  //       allocated_size(): part of Rep (`rep_or_elem_`).
+  //       GetArena():       part of Rep (`rep_or_elem_`).
+  //       Capacity():       part of Metadata (`metadata_`).
+  //       size():           part of Metadata (`metadata_`).
+  TaggedVoidPointer rep_or_elem_;
+  union {
+    TaggedVoidPointer sso_arena_;
+    Metadata rep_metadata_;
+  };
 };
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message);
@@ -1355,6 +1412,13 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(Iter begin, Iter end) {
 template <typename Element>
 RepeatedPtrField<Element>::~RepeatedPtrField() {
   StaticValidityCheck();
+#ifndef NDEBUG
+  // Try to trigger segfault / asan failure in non-opt builds. If arena_
+  // lifetime has ended before the destructor.
+  // Caution: pointer to arena itself is stored (unless using sso) in a
+  // dynamically allocated storage (`Rep`) which is freed by the code below.
+  if (Arena* arena = GetOwningArena(); arena) (void)arena->SpaceAllocated();
+#endif
 #ifdef __cpp_if_constexpr
   if constexpr (std::is_base_of<MessageLite, Element>::value) {
 #else

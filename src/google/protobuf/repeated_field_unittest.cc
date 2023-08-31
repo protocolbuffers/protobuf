@@ -1441,8 +1441,8 @@ TEST(RepeatedPtrField, NaturalGrowthOnArenasReuseBlocks) {
   }
 
   size_t expected =
-      values.size() * values[0]->Capacity() * sizeof(std::string*) +
-      sizeof(std::string) * kNumElems * kNumFields;
+      kNumFields * (((2 + values[0]->Capacity()) * sizeof(std::string*)) +
+                    sizeof(std::string) * kNumElems);
   // Use a 2% slack for other overhead.
   // If we were not reusing the blocks, the actual value would be ~2x the
   // expected.
@@ -1876,10 +1876,10 @@ TEST(RepeatedPtrField, SmallOptimization) {
   // Adding a second object stops sso.
   std::string str2;
   array->UnsafeArenaAddAllocated(&str2);
-  EXPECT_EQ(array->Capacity(), 3);
+  EXPECT_EQ(array->Capacity(), 2);
   // Backing array and the strings.
   EXPECT_EQ(array->SpaceUsedExcludingSelf(),
-            (1 + array->Capacity()) * sizeof(void*) + 2 * sizeof(str));
+            (2 + array->Capacity()) * sizeof(void*) + 2 * sizeof(str));
   // We used some arena space now.
   EXPECT_LT(usage_before, arena.SpaceUsed());
   // And the pointer_begin is not in the sso anymore.
