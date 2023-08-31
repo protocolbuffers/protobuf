@@ -199,6 +199,18 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
+  const Value<TypeHandler>& back() const {
+    ABSL_CHECK_GT(current_size_, 0);
+    return *cast<TypeHandler>(element_at(current_size_ - 1));
+  }
+
+  template <typename TypeHandler>
+  Value<TypeHandler>& back() {
+    ABSL_CHECK_GT(current_size_, 0);
+    return *cast<TypeHandler>(element_at(current_size_ - 1));
+  }
+
+  template <typename TypeHandler>
   Value<TypeHandler>* Mutable(int index) {
     if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
       RuntimeAssertInBounds(index, current_size_);
@@ -1061,6 +1073,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   PROTOBUF_FUTURE_ADD_NODISCARD reference at(int index)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
+  // Returns the last element in the array.
+  [[nodiscard]] const_reference back() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] reference back() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+
   // Removes the last element in the array.
   // Ownership of the element is retained by the array.
   void RemoveLast();
@@ -1392,6 +1408,18 @@ template <typename Element>
 inline Element& RepeatedPtrField<Element>::at(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::at<TypeHandler>(index);
+}
+
+template <typename Element>
+inline const Element& RepeatedPtrField<Element>::back() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return RepeatedPtrFieldBase::back<TypeHandler>();
+}
+
+template <typename Element>
+inline Element& RepeatedPtrField<Element>::back()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return RepeatedPtrFieldBase::back<TypeHandler>();
 }
 
 template <typename Element>

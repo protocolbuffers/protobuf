@@ -330,6 +330,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
   PROTOBUF_FUTURE_ADD_NODISCARD reference at(int index)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
+  // Returns the last element in the array.
+  [[nodiscard]] const_reference back() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  [[nodiscard]] reference back() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+
   void Set(int index, const Element& value);
   void Add(Element value);
 
@@ -846,6 +850,19 @@ inline Element& RepeatedField<Element>::at(int index)
   ABSL_CHECK_GE(index, 0);
   ABSL_CHECK_LT(index, size());
   return elements(is_soo())[index];
+}
+
+template <typename Element>
+inline const Element& RepeatedField<Element>::back() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ABSL_CHECK_GT(size(), 0);
+  return elements(is_soo())[size() - 1];
+}
+
+template <typename Element>
+inline Element& RepeatedField<Element>::back() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ABSL_CHECK_GT(size(), 0);
+  return elements(is_soo())[size() - 1];
 }
 
 template <typename Element>

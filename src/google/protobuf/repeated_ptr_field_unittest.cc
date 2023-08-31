@@ -107,10 +107,16 @@ TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
 
 TEST(RepeatedPtrFieldTest, SimpleAddWithStrings) {
   RepeatedPtrField<std::string> field;
+  const auto& field_const = field;
+
   ASSERT_EQ(field.size(), 0);
   field.Add("foo");
+  EXPECT_EQ(field.back(), "foo");
+  EXPECT_EQ(field_const.back(), "foo");
   ASSERT_EQ(field.size(), 1);
   field.Add("bar");
+  EXPECT_EQ(field.back(), "bar");
+  EXPECT_EQ(field_const.back(), "bar");
   ASSERT_EQ(field.size(), 2);
   field.Add("buz");
   ASSERT_EQ(field.size(), 3);
