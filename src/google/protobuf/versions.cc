@@ -44,6 +44,6 @@ std::string VersionString(int version, absl::string_view suffix) {
   return absl::Substitute("$0.$1.$2$3", major, minor, micro, suffix);
 }
 
-}
-}
-}
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google

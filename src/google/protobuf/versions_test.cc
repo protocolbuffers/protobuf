@@ -14,6 +14,7 @@ TEST(VersionsTest, VersionStringWithEmptySuffix) {
 TEST(VersionsTest, VersionStringWithDevSuffix) {
   EXPECT_EQ(VersionString(4024000, "-dev"), "4.24.0-dev");
 }
-}
-}
-}
+
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google

@@ -36,21 +36,29 @@
 #include "absl/strings/string_view.h"
 
 // Macros to be used by language generators to insert version information.
+// Although "main" is not a normal version suffix, it would be helpful for
+// code generators to discern the main version.
+//
+// Currently, it holds language versions only for C++, Java and Python,
+// but can be extended to other Protobuf languages.
+//
+// Usually, they should be updated automatically by Protobuf release
+// process.
 #define PROTOBUF_CPP_VERSION 4024000
-#define PROTOBUF_CPP_VERSION_SUFFIX "main"
+#define PROTOBUF_CPP_VERSION_SUFFIX "-main"
 
 #define PROTOBUF_JAVA_VERSION 3024000
-#define PROTOBUF_JAVA_VERSION_SUFFIX "main"
+#define PROTOBUF_JAVA_VERSION_SUFFIX "-main"
 
 #define PROTOBUF_PYTHON_VERSION 4024000
-#define PROTOBUF_PYTHON_VERSION_SUFFIX "main"
+#define PROTOBUF_PYTHON_VERSION_SUFFIX "-main"
 
 namespace google {
 namespace protobuf {
 namespace internal {
 
-// Gets the version string with suffix. For example, "4.24.0-dev".
-// version must be an integer in the form of
+// Gets the version string with version number and suffix.
+// For example, "4.24.0-dev". version must be an integer in the form of
 // {1 digit major}0{2 digits minor}0{2 digits micro}.
 // suffix can be empty or prefixed by "-".
 std::string VersionString(int version, absl::string_view suffix);
