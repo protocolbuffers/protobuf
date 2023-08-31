@@ -822,7 +822,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_part_;
     bool is_extension_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -1088,7 +1088,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
     ::google::protobuf::RepeatedPtrField<std::string> leading_detached_comments_;
     ::google::protobuf::internal::ArenaStringPtr leading_comments_;
     ::google::protobuf::internal::ArenaStringPtr trailing_comments_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -1344,7 +1344,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
     ::int32_t begin_;
     ::int32_t end_;
     int semantic_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -1538,7 +1538,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr edition_;
     ::google::protobuf::internal::ArenaStringPtr value_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -2018,7 +2018,7 @@ class PROTOBUF_EXPORT FeatureSet final :
     int repeated_field_encoding_;
     int message_encoding_;
     int json_format_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -2251,7 +2251,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     ::int32_t number_;
     bool reserved_;
     bool repeated_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -2433,7 +2433,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
     ::int32_t end_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -2615,7 +2615,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
     ::int32_t end_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -2889,7 +2889,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
     ::uint64_t positive_int_value_;
     ::int64_t negative_int_value_;
     double double_value_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -3066,7 +3066,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   struct Impl_ {
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -3243,7 +3243,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   struct Impl_ {
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -3435,7 +3435,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr edition_;
     ::google::protobuf::FeatureSet* features_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -3794,7 +3794,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
     bool deprecated_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -4140,7 +4140,7 @@ class PROTOBUF_EXPORT OneofOptions final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -4533,7 +4533,7 @@ class PROTOBUF_EXPORT MethodOptions final :
     ::google::protobuf::FeatureSet* features_;
     bool deprecated_;
     int idempotency_level_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -4944,7 +4944,7 @@ class PROTOBUF_EXPORT MessageOptions final :
     bool deprecated_;
     bool map_entry_;
     bool deprecated_legacy_json_field_conflicts_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -5631,7 +5631,7 @@ class PROTOBUF_EXPORT FileOptions final :
     bool deprecated_;
     int optimize_for_;
     bool cc_enable_arenas_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -6228,7 +6228,7 @@ class PROTOBUF_EXPORT FieldOptions final :
     bool weak_;
     bool debug_redact_;
     int retention_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -6444,7 +6444,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault > defaults_;
     ::google::protobuf::internal::ArenaStringPtr minimum_edition_;
     ::google::protobuf::internal::ArenaStringPtr maximum_edition_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -6845,7 +6845,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
     int verification_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -7217,7 +7217,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
     ::google::protobuf::FeatureSet* features_;
     bool deprecated_;
     bool debug_redact_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -7602,7 +7602,7 @@ class PROTOBUF_EXPORT EnumOptions final :
     bool allow_alias_;
     bool deprecated_;
     bool deprecated_legacy_json_field_conflicts_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -7794,7 +7794,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::OneofOptions* options_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -8050,7 +8050,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
     ::google::protobuf::MethodOptions* options_;
     bool client_streaming_;
     bool server_streaming_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -8440,7 +8440,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
     bool proto3_optional_;
     int label_;
     int type_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -8645,7 +8645,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::EnumValueOptions* options_;
     ::int32_t number_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -8844,7 +8844,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
     ::google::protobuf::ExtensionRangeOptions* options_;
     ::int32_t start_;
     ::int32_t end_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -9056,7 +9056,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::ServiceOptions* options_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -9320,7 +9320,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
     ::google::protobuf::RepeatedPtrField<std::string> reserved_name_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::EnumOptions* options_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -9685,7 +9685,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
     ::google::protobuf::RepeatedPtrField<std::string> reserved_name_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::MessageOptions* options_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -10101,7 +10101,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     ::google::protobuf::internal::ArenaStringPtr edition_;
     ::google::protobuf::FileOptions* options_;
     ::google::protobuf::SourceCodeInfo* source_code_info_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -10276,7 +10276,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   struct Impl_ {
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;

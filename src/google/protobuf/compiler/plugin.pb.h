@@ -327,7 +327,7 @@ class PROTOC_EXPORT Version final :
     ::int32_t major_;
     ::int32_t minor_;
     ::int32_t patch_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
@@ -557,7 +557,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
     ::google::protobuf::internal::ArenaStringPtr insertion_point_;
     ::google::protobuf::internal::ArenaStringPtr content_;
     ::google::protobuf::GeneratedCodeInfo* generated_code_info_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
@@ -788,7 +788,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File > file_;
     ::google::protobuf::internal::ArenaStringPtr error_;
     ::uint64_t supported_features_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
@@ -1050,7 +1050,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > source_file_descriptors_;
     ::google::protobuf::internal::ArenaStringPtr parameter_;
     ::google::protobuf::compiler::Version* compiler_version_;
-    PROTOBUF_TSAN_DECLARE_MEMBER;
+    PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
