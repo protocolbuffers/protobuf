@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <type_traits>
@@ -21,6 +22,8 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
+#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
@@ -28,7 +31,6 @@
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/string_block.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -225,6 +227,7 @@ class PROTOBUF_EXPORT SerialArena {
     PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
     *out = ret;
     set_ptr(reinterpret_cast<char*>(next));
+    MaybePrefetchForwards(reinterpret_cast<char*>(next));
     return true;
   }
 
@@ -251,6 +254,7 @@ class PROTOBUF_EXPORT SerialArena {
     set_ptr(reinterpret_cast<char*>(next));
     AddCleanupFromExisting(ret, destructor);
     ABSL_DCHECK_GE(limit_, ptr());
+    MaybePrefetchForwards(reinterpret_cast<char*>(next));
     return ret;
   }
 
@@ -279,8 +283,56 @@ class PROTOBUF_EXPORT SerialArena {
 
     PROTOBUF_UNPOISON_MEMORY_REGION(limit_ - n, n);
     limit_ -= n;
+    MaybePrefetchBackwards(limit_);
     ABSL_DCHECK_GE(limit_, ptr());
     cleanup::CreateNode(tag, limit_, elem, destructor);
+  }
+
+  static constexpr ptrdiff_t kPrefetchForwardsDegree = ABSL_CACHELINE_SIZE * 16;
+  static constexpr ptrdiff_t kPrefetchBackwardsDegree = ABSL_CACHELINE_SIZE * 6;
+
+  // Prefetch the next kPrefetchForwardsDegree bytes after `prefetch_ptr_` and
+  // up to `prefetch_limit_`, if `next` is within kPrefetchForwardsDegree bytes
+  // of `prefetch_ptr_`.
+  PROTOBUF_ALWAYS_INLINE
+  void MaybePrefetchForwards(const char* next) {
+    ABSL_DCHECK(static_cast<const void*>(prefetch_ptr_) == nullptr ||
+                static_cast<const void*>(prefetch_ptr_) >= head());
+    if (PROTOBUF_PREDICT_TRUE(prefetch_ptr_ - next > kPrefetchForwardsDegree))
+      return;
+    if (PROTOBUF_PREDICT_TRUE(prefetch_ptr_ < prefetch_limit_)) {
+      const char* prefetch_ptr = std::max(next, prefetch_ptr_);
+      ABSL_DCHECK(prefetch_ptr != nullptr);
+      const char* end =
+          std::min(prefetch_limit_, prefetch_ptr + ABSL_CACHELINE_SIZE * 16);
+      for (; prefetch_ptr < end; prefetch_ptr += ABSL_CACHELINE_SIZE) {
+        absl::PrefetchToLocalCacheForWrite(prefetch_ptr);
+      }
+      prefetch_ptr_ = prefetch_ptr;
+    }
+  }
+
+  PROTOBUF_ALWAYS_INLINE
+  // Prefetch up to kPrefetchBackwardsDegree before `prefetch_limit_` and after
+  // `prefetch_ptr_`, if `limit` is within  kPrefetchBackwardsDegree of
+  // `prefetch_limit_`.
+  void MaybePrefetchBackwards(const char* limit) {
+    ABSL_DCHECK(prefetch_limit_ == nullptr ||
+                static_cast<const void*>(prefetch_limit_) <=
+                    static_cast<const void*>(head()->Limit()));
+    if (PROTOBUF_PREDICT_TRUE(limit - prefetch_limit_ >
+                              kPrefetchBackwardsDegree))
+      return;
+    if (PROTOBUF_PREDICT_TRUE(prefetch_limit_ > prefetch_ptr_)) {
+      const char* prefetch_limit = std::min(limit, prefetch_limit_);
+      ABSL_DCHECK_NE(prefetch_limit, nullptr);
+      const char* end =
+          std::max(prefetch_ptr_, prefetch_limit - kPrefetchBackwardsDegree);
+      for (; prefetch_limit > end; prefetch_limit -= ABSL_CACHELINE_SIZE) {
+        absl::PrefetchToLocalCacheForWrite(prefetch_limit);
+      }
+      prefetch_limit_ = prefetch_limit;
+    }
   }
 
  private:
@@ -319,6 +371,11 @@ class PROTOBUF_EXPORT SerialArena {
   std::atomic<char*> ptr_{nullptr};
   // Limiting address up to which memory can be allocated from the head block.
   char* limit_ = nullptr;
+  // Current prefetch positions. Data from `ptr_` up to but not including
+  // `prefetch_ptr_` is software prefetched. Similarly, data from `limit_` down
+  // to but not including `prefetch_limit_` is software prefetched.
+  const char* prefetch_ptr_ = nullptr;
+  const char* prefetch_limit_ = nullptr;
 
   // The active string block.
   std::atomic<StringBlock*> string_block_{nullptr};
