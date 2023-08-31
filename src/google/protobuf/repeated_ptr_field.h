@@ -216,6 +216,18 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
+  const Value<TypeHandler>& back() const {
+    ABSL_CHECK_GT(current_size_, 0);
+    return *cast<TypeHandler>(element_at(current_size_ - 1));
+  }
+
+  template <typename TypeHandler>
+  Value<TypeHandler>& back() {
+    ABSL_CHECK_GT(current_size_, 0);
+    return *cast<TypeHandler>(element_at(current_size_ - 1));
+  }
+
+  template <typename TypeHandler>
   Value<TypeHandler>* Mutable(int index) {
     ABSL_DCHECK_GE(index, 0);
     ABSL_DCHECK_LT(index, current_size_);
@@ -1071,6 +1083,10 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   const_reference at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   reference at(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
+  // Returns the last element in the array.
+  const_reference back() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  reference back() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+
   // Removes the last element in the array.
   // Ownership of the element is retained by the array.
   void RemoveLast();
@@ -1436,6 +1452,18 @@ template <typename Element>
 inline Element& RepeatedPtrField<Element>::at(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::at<TypeHandler>(index);
+}
+
+template <typename Element>
+inline const Element& RepeatedPtrField<Element>::back() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return RepeatedPtrFieldBase::back<TypeHandler>();
+}
+
+template <typename Element>
+inline Element& RepeatedPtrField<Element>::back()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return RepeatedPtrFieldBase::back<TypeHandler>();
 }
 
 
