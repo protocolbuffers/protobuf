@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  linux:
+  linux-clang:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
@@ -20,10 +20,11 @@ jobs:
           - { name: "Fastbuild" }
           - { name: "Optimized", flags: "-c opt" }
           - { name: "FastTable", flags: "--@upb//:fasttable_enabled=true" }
-        include:
-          # Set defaults
-          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
-          - targets: "@upb//..."
+          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-@upb//benchmarks:benchmark -@upb//python/..." }
+          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-@upb//benchmarks:benchmark -@upb//python/... -@upb//lua/..." }
+          - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-@upb//benchmarks:benchmark -@upb//python/..." }
+          # TODO: b/297027295 - Add 32-bit ASAN test
+
     name: ${{ matrix.config.name }}
     runs-on: ubuntu-latest
 
@@ -35,7 +36,91 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
-          image: ${{ matrix.image }}
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
-          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.targets }} ${{ matrix.config.flags }}
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 @upb//... ${{ matrix.config.flags }}
+          exclude-targets: ${{ matrix.config.exclude-targets }}
+
+  linux-gcc:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: GCC Optimized
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-518b4fcd8d0ded2484c94f02e835526cacfdac2d"
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "upb-bazel-gcc"
+          # The other test runs use the protobuf workspace. For this one let's
+          # cd into upb and use its workspace instead, to make sure we cover
+          # that use case.
+          bash: >-
+            cd upb &&
+            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //...
+
+  windows:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: Windows
+    runs-on: windows-2019
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v2
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "upb-bazel-windows"
+          bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 @upb//upb/... @upb//upbc/... @upb//python/... @upb//protos/... @upb//protos_generator/...
+
+  macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        config:
+          - { name: "macOS", bazel-command: "test" }
+          - { name: "macOS ARM (build only)", bazel-command: "build", flags: "--cpu=darwin_arm64" }
+    name: ${{ matrix.config.name }}
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v2
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "upb-bazel-macos"
+          bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} @upb//...
+
+  no-python:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: No System Python
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "upb-bazel-no-python"
+          bash: >-
+            which python3 &&
+            mv `which python3` /tmp &&
+            ! which python3 &&
+            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 @upb//python/... -- -@upb//python/dist:source_wheel

@@ -37,7 +37,9 @@
 
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -73,6 +75,8 @@ class FieldGenerator {
       bool include_external_types) const;
   virtual void DetermineObjectiveCClassDefinitions(
       absl::btree_set<std::string>* fwd_decls) const;
+  virtual void DetermineNeededFiles(
+      absl::flat_hash_set<const FileDescriptor*>* deps) const;
 
   // Used during generation, not intended to be extended by subclasses.
   void GenerateFieldDescription(io::Printer* printer,

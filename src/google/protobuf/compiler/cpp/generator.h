@@ -37,11 +37,14 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_GENERATOR_H__
 
+#include <cstdint>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "absl/status/status.h"
+#include "google/protobuf/cpp_features.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -90,6 +93,10 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
 
   uint64_t GetSupportedFeatures() const override {
     return FEATURE_PROTO3_OPTIONAL | FEATURE_SUPPORTS_EDITIONS;
+  }
+
+  std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
+    return {GetExtensionReflection(pb::cpp)};
   }
 
  private:

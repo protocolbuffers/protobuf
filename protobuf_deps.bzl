@@ -71,8 +71,8 @@ def protobuf_deps():
         _github_archive(
             name = "utf8_range",
             repo = "https://github.com/protocolbuffers/utf8_range",
-            commit = "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f",
-            sha256 = "5da960e5e5d92394c809629a03af3c7709d2d3d0ca731dacb3a9fb4bf28f7702",
+            commit = "d863bc33e15cba6d873c878dcca9e6fe52b2f8cb",
+            sha256 = "568988b5f7261ca181468dba38849fabf59dd9200fb2ed4b2823da187ef84d8c",
         )
 
     if not native.existing_rule("rules_cc"):
@@ -102,8 +102,8 @@ def protobuf_deps():
         _github_archive(
             name = "rules_python",
             repo = "https://github.com/bazelbuild/rules_python",
-            commit = "912a5051f51581784fd64094f6bdabf93f6d698f",  # 0.14.0
-            sha256 = "a3e4b4ade7c4a52e757b16a16e94d0b2640333062180cba577d81fac087a501d",
+            commit = "02b521fce3c7b36b05813aa986d72777cc3ee328",  # 0.24.0
+            sha256 = "f9e4f6acf82449324d56669bda4bdb28b48688ad2990d8b39fa5b93ed39c9ad1",
         )
 
     if not native.existing_rule("rules_ruby"):
@@ -147,9 +147,9 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("upb"):
-        _github_archive(
+        http_archive(
             name = "upb",
-            repo = "https://github.com/protocolbuffers/upb",
-            commit = "cd176a0cd1913ea8c643680d206c8ca278815c2c",
-            sha256 = "661b2d63dff82c6868cd1dea5e7be2ca1a6467746a146c293834f18aaa709077",
+            url = "https://github.com/protocolbuffers/protobuf/archive/f85a338d79f05938d1725fba3b2c603a8d06462e.zip",
+            strip_prefix = "protobuf-f85a338d79f05938d1725fba3b2c603a8d06462e/upb",
+            sha256 = "cd28ae63e40a146ec1a2d41e96f53e637aaa5d6c746e7120d013aafc65092882",
         )

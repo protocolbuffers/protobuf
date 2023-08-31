@@ -51,7 +51,6 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/repeated_field.h"
@@ -1555,6 +1554,9 @@ template <>
 class ExtensionIdentifier<FeatureSet, MessageTypeTraits<::pb::CppFeatures>, 11,
                           false> {
  public:
+  using TypeTraits = MessageTypeTraits<::pb::CppFeatures>;
+  using Extendee = FeatureSet;
+
   explicit constexpr ExtensionIdentifier(int number) : number_(number) {}
 
   int number() const { return number_; }
@@ -1611,6 +1613,21 @@ void LinkExtensionReflection(
     const google::protobuf::internal::ExtensionIdentifier<
         ExtendeeType, TypeTraitsType, field_type, is_packed>& extension) {
   internal::StrongReference(extension);
+}
+
+// Returns the field descriptor for a generated extension identifier.  This is
+// useful when doing reflection over generated extensions.
+template <typename ExtendeeType, typename TypeTraitsType,
+          internal::FieldType field_type, bool is_packed,
+          typename PoolType = DescriptorPool>
+const FieldDescriptor* GetExtensionReflection(
+    const google::protobuf::internal::ExtensionIdentifier<
+        ExtendeeType, TypeTraitsType, field_type, is_packed>& extension) {
+  return PoolType::generated_pool()->FindExtensionByNumber(
+      google::protobuf::internal::ExtensionIdentifier<ExtendeeType, TypeTraitsType,
+                                            field_type,
+                                            is_packed>::Extendee::descriptor(),
+      extension.number());
 }
 
 }  // namespace protobuf

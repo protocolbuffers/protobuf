@@ -179,14 +179,15 @@ uint8_t* Message::_InternalSerialize(uint8_t* target,
 
 size_t Message::ByteSizeLong() const {
   size_t size = WireFormat::ByteSize(*this);
-  SetCachedSize(internal::ToCachedSize(size));
-  return size;
-}
 
-void Message::SetCachedSize(int /* size */) const {
-  ABSL_LOG(FATAL) << "Message class \"" << GetDescriptor()->full_name()
-                  << "\" implements neither SetCachedSize() nor ByteSize().  "
-                     "Must implement one or the other.";
+  auto* cached_size = AccessCachedSize();
+  ABSL_CHECK(cached_size != nullptr)
+      << "Message class \"" << GetDescriptor()->full_name()
+      << "\" implements neither AccessCachedSize() nor ByteSizeLong().  "
+         "Must implement one or the other.";
+  cached_size->Set(internal::ToCachedSize(size));
+
+  return size;
 }
 
 size_t Message::ComputeUnknownFieldsSize(

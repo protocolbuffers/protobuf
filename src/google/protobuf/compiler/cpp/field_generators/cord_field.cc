@@ -68,7 +68,7 @@ void SetCordVariables(
   (*variables)["default_variable_field"] = MakeDefaultFieldName(descriptor);
   (*variables)["default_variable"] =
       descriptor->default_value_string().empty()
-          ? absl::StrCat(ProtobufNamespace(options),
+          ? absl::StrCat("::", ProtobufNamespace(options),
                          "::internal::GetEmptyCordAlreadyInited()")
           : absl::StrCat(
                 QualifiedClassName(descriptor->containing_type(), options),
@@ -88,7 +88,9 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
   void GenerateDestructorCode(io::Printer* printer) const override;
+#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
@@ -98,6 +100,37 @@ class CordFieldGenerator : public FieldGeneratorBase {
       io::Printer* printer) const override;
   ArenaDtorNeeds NeedsArenaDestructor() const override {
     return ArenaDtorNeeds::kRequired;
+  }
+
+  void GenerateMemberConstexprConstructor(io::Printer* p) const override {
+    if (descriptor_->default_value_string().empty()) {
+      p->Emit("$name$_{}");
+    } else {
+      p->Emit({{"Split", ShouldSplit(descriptor_, options_) ? "Split::" : ""}},
+              "$name$_{::absl::strings_internal::MakeStringConstant("
+              "$classname$::Impl_::$Split$_default_$name$_func_{})}");
+    }
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const override {
+    auto vars = p->WithVars(variables_);
+    if (descriptor_->default_value_string().empty()) {
+      p->Emit("$name$_{}");
+    } else {
+      p->Emit("$name$_{::absl::string_view($default$, $default_length$)}");
+    }
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const override {
+    auto vars = p->WithVars(variables_);
+    p->Emit("$name$_{from.$name$_}");
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const override {
+    auto vars = p->WithVars(variables_);
+    p->Emit(R"cc(
+      $field$ = ::$proto_ns$::Arena::Create<absl::Cord>(arena, *from.$field$);
+    )cc");
   }
 };
 
@@ -163,38 +196,48 @@ void CordFieldGenerator::GenerateAccessorDeclarations(
 
 void CordFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format(
-      "inline const ::absl::Cord& $classname$::_internal_$name$() const {\n"
-      "  return $field$;\n"
-      "}\n"
-      "inline const ::absl::Cord& $classname$::$name$() const {\n"
-      "$annotate_get$"
-      "  // @@protoc_insertion_point(field_get:$full_name$)\n"
-      "  return _internal_$name$();\n"
-      "}\n"
-      "inline void $classname$::_internal_set_$name$(const ::absl::Cord& "
-      "value) {\n"
-      "  $set_hasbit$\n"
-      "  $field$ = value;\n"
-      "}\n"
-      "inline void $classname$::set_$name$(const ::absl::Cord& value) {\n"
-      "$PrepareSplitMessageForWrite$"
-      "  _internal_set_$name$(value);\n"
-      "$annotate_set$"
-      "  // @@protoc_insertion_point(field_set:$full_name$)\n"
-      "}\n"
-      "inline void $classname$::set_$name$(::absl::string_view value) {\n"
-      "$PrepareSplitMessageForWrite$"
-      "  $set_hasbit$\n"
-      "  $field$ = value;\n"
-      "$annotate_set$"
-      "  // @@protoc_insertion_point(field_set_string_piece:$full_name$)\n"
-      "}\n"
-      "inline ::absl::Cord* $classname$::_internal_mutable_$name$() {\n"
-      "  $set_hasbit$\n"
-      "  return &$field$;\n"
-      "}\n");
+  auto v = printer->WithVars(variables_);
+  printer->Emit(R"cc(
+    inline const ::absl::Cord& $classname$::_internal_$name$() const {
+      return $field$;
+    }
+  )cc");
+  printer->Emit(R"cc(
+    inline const ::absl::Cord& $classname$::$name$() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $annotate_get$;
+      // @@protoc_insertion_point(field_get:$full_name$)
+      return _internal_$name$();
+    }
+  )cc");
+  printer->Emit(R"cc(
+    inline void $classname$::_internal_set_$name$(const ::absl::Cord& value) {
+      $set_hasbit$;
+      $field$ = value;
+    }
+  )cc");
+  printer->Emit(R"cc(
+    inline void $classname$::set_$name$(const ::absl::Cord& value) {
+      $PrepareSplitMessageForWrite$ _internal_set_$name$(value);
+      $annotate_set$;
+      // @@protoc_insertion_point(field_set:$full_name$)
+    }
+  )cc");
+  printer->Emit(R"cc(
+    inline void $classname$::set_$name$(::absl::string_view value) {
+      $PrepareSplitMessageForWrite$;
+      $set_hasbit$;
+      $field$ = value;
+      $annotate_set$;
+      // @@protoc_insertion_point(field_set_string_piece:$full_name$)
+    }
+  )cc");
+  printer->Emit(R"cc(
+    inline ::absl::Cord* $classname$::_internal_mutable_$name$() {
+      $set_hasbit$;
+      return &$field$;
+    }
+  )cc");
 }
 
 void CordFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
@@ -224,6 +267,7 @@ void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   }
 }
 
+#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
 void CordFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (should_split()) {
@@ -233,6 +277,7 @@ void CordFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   }
   format("$field$.~Cord();\n");
 }
+#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
 
 void CordFieldGenerator::GenerateArenaDestructorCode(
     io::Printer* printer) const {
@@ -321,60 +366,70 @@ void CordOneofFieldGenerator::GenerateStaticMembers(
 
 void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format(
-      "inline const ::absl::Cord& $classname$::_internal_$name$() const {\n"
-      "  if ($has_field$) {\n"
-      "    return *$field$;\n"
-      "  }\n"
-      "  return $default_variable$;\n"
-      "}\n"
-      "inline const ::absl::Cord& $classname$::$name$() const {\n"
-      "$annotate_get$"
-      "  // @@protoc_insertion_point(field_get:$full_name$)\n"
-      "  return _internal_$name$();\n"
-      "}\n"
-      "inline void $classname$::_internal_set_$name$(const ::absl::Cord& "
-      "value) {\n"
-      "  if ($not_has_field$) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n"
-      "    $field$ = new ::absl::Cord;\n"
-      "    if (GetArenaForAllocation() != nullptr) {\n"
-      "      GetArenaForAllocation()->Own($field$);\n"
-      "    }\n"
-      "  }\n"
-      "  *$field$ = value;\n"
-      "}\n"
-      "inline void $classname$::set_$name$(const ::absl::Cord& value) {\n"
-      "  _internal_set_$name$(value);\n"
-      "$annotate_set$"
-      "  // @@protoc_insertion_point(field_set:$full_name$)\n"
-      "}\n"
-      "inline void $classname$::set_$name$(::absl::string_view value) {\n"
-      "  if ($not_has_field$) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n"
-      "    $field$ = new ::absl::Cord;\n"
-      "    if (GetArenaForAllocation() != nullptr) {\n"
-      "      GetArenaForAllocation()->Own($field$);\n"
-      "    }\n"
-      "  }\n"
-      "  *$field$ = value;\n"
-      "$annotate_set$"
-      "  // @@protoc_insertion_point(field_set_string_piece:$full_name$)\n"
-      "}\n"
-      "inline ::absl::Cord* $classname$::_internal_mutable_$name$() {\n"
-      "  if ($not_has_field$) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n"
-      "    $field$ = new ::absl::Cord;\n"
-      "    if (GetArenaForAllocation() != nullptr) {\n"
-      "      GetArenaForAllocation()->Own($field$);\n"
-      "    }\n"
-      "  }\n"
-      "  return $field$;\n"
-      "}\n");
+  auto v = printer->WithVars(variables_);
+  printer->Emit(R"cc(
+    inline const ::absl::Cord& $classname$::_internal_$name$() const {
+      if ($has_field$) {
+        return *$field$;
+      }
+      return $default_variable$;
+    }
+  )cc");
+  printer->Emit(R"cc(
+    inline const ::absl::Cord& $classname$::$name$() const {
+      $annotate_get$;
+      // @@protoc_insertion_point(field_get:$full_name$)
+      return _internal_$name$();
+    }
+  )cc");
+  printer->Emit(R"cc(
+    inline void $classname$::_internal_set_$name$(const ::absl::Cord& value) {
+      if ($not_has_field$) {
+        clear_$oneof_name$();
+        set_has_$name$();
+        $field$ = new ::absl::Cord;
+        if (GetArenaForAllocation() != nullptr) {
+          GetArenaForAllocation()->Own($field$);
+        }
+      }
+      *$field$ = value;
+    }
+  )cc");
+  printer->Emit(R"cc(
+    inline void $classname$::set_$name$(const ::absl::Cord& value) {
+      _internal_set_$name$(value);
+      $annotate_set$;
+      // @@protoc_insertion_point(field_set:$full_name$)
+    }
+  )cc");
+  printer->Emit(R"cc(
+    inline void $classname$::set_$name$(::absl::string_view value) {
+      if ($not_has_field$) {
+        clear_$oneof_name$();
+        set_has_$name$();
+        $field$ = new ::absl::Cord;
+        if (GetArenaForAllocation() != nullptr) {
+          GetArenaForAllocation()->Own($field$);
+        }
+      }
+      *$field$ = value;
+      $annotate_set$;
+      // @@protoc_insertion_point(field_set_string_piece:$full_name$)
+    }
+  )cc");
+  printer->Emit(R"cc(
+    inline ::absl::Cord* $classname$::_internal_mutable_$name$() {
+      if ($not_has_field$) {
+        clear_$oneof_name$();
+        set_has_$name$();
+        $field$ = new ::absl::Cord;
+        if (GetArenaForAllocation() != nullptr) {
+          GetArenaForAllocation()->Own($field$);
+        }
+      }
+      return $field$;
+    }
+  )cc");
 }
 
 void CordOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(

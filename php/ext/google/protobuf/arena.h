@@ -39,9 +39,9 @@
 void Arena_ModuleInit();
 
 // Creates and returns a new arena object that wraps a new upb_Arena*.
-void Arena_Init(zval *val);
+void Arena_Init(zval* val);
 
 // Gets the underlying upb_Arena from this arena object.
-upb_Arena *Arena_Get(zval *arena);
+upb_Arena* Arena_Get(zval* arena);
 
 #endif  // PHP_PROTOBUF_ARENA_H_

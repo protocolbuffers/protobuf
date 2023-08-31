@@ -633,6 +633,34 @@ TEST_F(PrinterTest, EmitConsumeAfter) {
             "};\n");
 }
 
+TEST_F(PrinterTest, EmitConditionalFunctionCall) {
+  {
+    Printer printer(output());
+    printer.Emit(
+        {
+            Printer::Sub{"weak_cast", ""}.ConditionalFunctionCall(),
+            Printer::Sub{"strong_cast", "static_cast<void*>"}
+                .ConditionalFunctionCall(),
+        },
+        R"cc(
+          $weak_cast$(weak);
+          $weak_cast$(weak + (1234 * 89) + zomg);
+          $strong_cast$(strong);
+          $weak_cast$($strong_cast$($weak_cast$(1 + 2)));
+          $weak_cast$(boy_this_expression_got_really_long +
+                      what_kind_of_monster_does_this);
+        )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "weak;\n"
+            "weak + (1234 * 89) + zomg;\n"
+            "static_cast<void*>(strong);\n"
+            "static_cast<void*>(1 + 2);\n"
+            "boy_this_expression_got_really_long +\n"
+            "            what_kind_of_monster_does_this;\n");
+}
+
 TEST_F(PrinterTest, EmitWithSpacedVars) {
   {
     Printer printer(output());

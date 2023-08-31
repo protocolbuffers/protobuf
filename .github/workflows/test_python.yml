@@ -30,7 +30,7 @@ jobs:
             targets: //python/... //python:aarch64_test
             # TODO(b/262628111) Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-222e7e87028b7098e088f5ca7cae06d32f483eb5
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e02879ddc84fa6917e4e22833e7f75884ea890b8
 
     name: Linux ${{ matrix.type }} ${{ matrix.version }}
     runs-on: ubuntu-latest
@@ -71,7 +71,7 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Pin Python version
-        uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4.5.0
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           python-version: ${{ matrix.version }}
           cache: pip

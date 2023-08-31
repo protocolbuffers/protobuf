@@ -107,11 +107,13 @@ set(fake_plugin_files
   ${fake_plugin_files}
   ${common_test_hdrs}
   ${common_test_srcs}
+  ${tests_proto_files}
 )
 set(test_plugin_files
   ${test_plugin_files}
   ${common_test_hdrs}
   ${common_test_srcs}
+  ${tests_proto_files}
 )
 
 add_executable(fake_plugin ${fake_plugin_files})

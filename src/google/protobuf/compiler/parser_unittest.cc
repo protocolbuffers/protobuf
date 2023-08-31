@@ -42,7 +42,6 @@
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/text_format.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -52,6 +51,7 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
@@ -1132,6 +1132,19 @@ TEST_F(ParseMessageTest, ExplicitOptionalLabelProto3) {
       "  oneof_decl { name:\"_foo\" } "
       "  oneof_decl { name:\"X_foo\" } "
       "}");
+}
+
+TEST_F(ParseMessageTest, CanHandleErrorOnFirstToken) {
+  require_syntax_identifier_ = false;
+  ExpectHasEarlyExitErrors(
+      "/", "0:0: Expected top-level statement (e.g. \"message\").\n");
+
+  require_syntax_identifier_ = true;
+  ExpectHasEarlyExitErrors(
+      "/",
+      "0:0: Expected top-level statement (e.g. \"message\").\n"
+      "0:0: File must begin with a syntax statement, e.g. 'syntax = "
+      "\"proto2\";'.\n");
 }
 
 // ===================================================================

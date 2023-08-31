@@ -35,9 +35,15 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/unittest_features.pb.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -116,12 +122,34 @@ class MockCodeGenerator : public CodeGenerator {
   uint64_t GetSupportedFeatures() const override;
   void SuppressFeatures(uint64_t features);
 
+  std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
+    return feature_extensions_;
+  }
+  void set_feature_extensions(std::vector<const FieldDescriptor*> extensions) {
+    feature_extensions_ = extensions;
+  }
+
+  absl::string_view GetMinimumEdition() const override {
+    return minimum_edition_;
+  }
+  void set_minimum_edition(absl::string_view minimum_edition) {
+    minimum_edition_ = minimum_edition;
+  }
+
+  absl::string_view GetMaximumEdition() const override {
+    return maximum_edition_;
+  }
+  void set_maximum_edition(absl::string_view maximum_edition) {
+    maximum_edition_ = maximum_edition;
+  }
+
  private:
   std::string name_;
-
-  // Mark this mutable so that our test plugin can modify it during the Generate
-  // call via generator flags.
-  mutable uint64_t suppressed_features_ = 0;
+  uint64_t suppressed_features_ = 0;
+  absl::string_view minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
+  absl::string_view maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
+  std::vector<const FieldDescriptor*> feature_extensions_ = {
+      GetExtensionReflection(pb::test)};
 
   static std::string GetOutputFileContent(absl::string_view generator_name,
                                           absl::string_view parameter,
@@ -137,5 +165,7 @@ class MockCodeGenerator : public CodeGenerator {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_MOCK_CODE_GENERATOR_H__

@@ -112,8 +112,8 @@ class PROTOBUF_EXPORT SerialArena {
   size_t FreeStringBlocks() {
     // On the active block delete all strings skipping the unused instances.
     size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
-    if (string_block_ != nullptr) {
-      return FreeStringBlocks(string_block_, unused_bytes);
+    if (StringBlock* sb = string_block_.load(std::memory_order_relaxed)) {
+      return FreeStringBlocks(sb, unused_bytes);
     }
     return 0;
   }
@@ -133,7 +133,7 @@ class PROTOBUF_EXPORT SerialArena {
     // the pattern we are looking for.
     const size_t index = absl::bit_width(size - 1) - 4;
 
-    if (index >= cached_block_length_) return nullptr;
+    if (PROTOBUF_PREDICT_FALSE(index >= cached_block_length_)) return nullptr;
     auto& cached_head = cached_blocks_[index];
     if (cached_head == nullptr) return nullptr;
 
@@ -251,25 +251,12 @@ class PROTOBUF_EXPORT SerialArena {
     return true;
   }
 
-  // If there is enough space in the current block, allocate space for one `T`
-  // object and register for destruction. The object has not been constructed
-  // and the memory returned is uninitialized.
-  template <typename T>
-  PROTOBUF_ALWAYS_INLINE void* MaybeAllocateWithCleanup() {
-    ABSL_DCHECK_GE(limit_, ptr());
-    static_assert(!std::is_trivially_destructible<T>::value,
-                  "This function is only for non-trivial types.");
-
-    constexpr int aligned_size = ArenaAlignDefault::Ceil(sizeof(T));
-    constexpr auto destructor = cleanup::arena_destruct_object<T>;
-    size_t required = aligned_size + cleanup::Size(destructor);
-    if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
-      return nullptr;
-    }
-    void* ptr = AllocateFromExistingWithCleanupFallback(aligned_size,
-                                                        alignof(T), destructor);
-    PROTOBUF_ASSUME(ptr != nullptr);
-    return ptr;
+  // If there is enough space in the current block, allocate space for one
+  // std::string object and register for destruction. The object has not been
+  // constructed and the memory returned is uninitialized.
+  PROTOBUF_ALWAYS_INLINE void* MaybeAllocateStringWithCleanup() {
+    void* p;
+    return MaybeAllocateString(p) ? p : nullptr;
   }
 
   PROTOBUF_ALWAYS_INLINE
@@ -359,7 +346,7 @@ class PROTOBUF_EXPORT SerialArena {
   char* limit_ = nullptr;
 
   // The active string block.
-  StringBlock* string_block_ = nullptr;
+  std::atomic<StringBlock*> string_block_{nullptr};
 
   // The number of unused bytes in string_block_.
   // We allocate from `effective_size()` down to 0 inside `string_block_`.
@@ -420,17 +407,10 @@ inline PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
   if (PROTOBUF_PREDICT_TRUE(unused_bytes != 0)) {
     unused_bytes -= sizeof(std::string);
     string_block_unused_.store(unused_bytes, std::memory_order_relaxed);
-    p = string_block_->AtOffset(unused_bytes);
+    p = string_block_.load(std::memory_order_relaxed)->AtOffset(unused_bytes);
     return true;
   }
   return false;
-}
-
-template <>
-inline PROTOBUF_ALWAYS_INLINE void*
-SerialArena::MaybeAllocateWithCleanup<std::string>() {
-  void* p;
-  return MaybeAllocateString(p) ? p : nullptr;
 }
 
 ABSL_ATTRIBUTE_RETURNS_NONNULL inline PROTOBUF_ALWAYS_INLINE void*

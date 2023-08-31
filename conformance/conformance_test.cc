@@ -35,8 +35,6 @@
 #include <fstream>
 #include <string>
 
-#include "google/protobuf/message.h"
-#include "google/protobuf/text_format.h"
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/message_differencer.h"
@@ -47,6 +45,8 @@
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/text_format.h"
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;

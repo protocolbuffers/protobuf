@@ -145,7 +145,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
     Returns:
       A DepVariantInfo provider.
     """
-    toolchain = ctx.toolchains["@rules_rust//rust:toolchain"]
+    toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     output_hash = repr(hash(src.path))
 
     # TODO(b/270124215): Use the import! macro once available
@@ -326,7 +326,7 @@ def _make_proto_library_aspect(is_upb):
         fragments = ["cpp"],
         host_fragments = ["cpp"],
         toolchains = [
-            str(Label("@rules_rust//rust:toolchain")),
+            "@rules_rust//rust:toolchain_type",
             "@bazel_tools//tools/cpp:toolchain_type",
         ],
         incompatible_use_toolchain_transition = True,

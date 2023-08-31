@@ -382,13 +382,15 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessors.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_bytes.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_scalar.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_string.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/unsupported_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/naming.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/oneof.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/relative_path.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.cc
@@ -492,11 +494,13 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessor_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessors.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/naming.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/oneof.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/relative_path.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
@@ -742,6 +746,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/bootstrap_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/copy_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/file_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message_size_unittest.cc

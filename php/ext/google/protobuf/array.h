@@ -49,19 +49,19 @@ void Array_ModuleInit();
 //    |arena| and add all of the PHP elements to it.
 //
 // If an error occurs, we raise a PHP error and return NULL.
-upb_Array *RepeatedField_GetUpbArray(zval *val, TypeInfo type,
-                                     upb_Arena *arena);
+upb_Array* RepeatedField_GetUpbArray(zval* val, TypeInfo type,
+                                     upb_Arena* arena);
 
 // Creates a PHP RepeatedField object for the given upb_Array* and |type| and
 // returns it in |val|. The PHP object will keep a reference to this |arena| to
 // ensure the underlying array data stays alive.
 //
 // If |arr| is NULL, this will return a PHP null object.
-void RepeatedField_GetPhpWrapper(zval *val, upb_Array *arr, TypeInfo type,
-                                 zval *arena);
+void RepeatedField_GetPhpWrapper(zval* val, upb_Array* arr, TypeInfo type,
+                                 zval* arena);
 
 // Returns true if the given arrays are equal. Both arrays must be of this
 // |type| and, if the type is |kUpb_CType_Message|, must have the same |m|.
-bool ArrayEq(const upb_Array *a1, const upb_Array *a2, TypeInfo type);
+bool ArrayEq(const upb_Array* a1, const upb_Array* a2, TypeInfo type);
 
 #endif  // PHP_PROTOBUF_ARRAY_H_

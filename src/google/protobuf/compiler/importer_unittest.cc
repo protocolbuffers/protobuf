@@ -39,7 +39,6 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -47,6 +46,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 
 namespace google {

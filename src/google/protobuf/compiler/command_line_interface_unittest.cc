@@ -215,6 +215,16 @@ class CommandLineInterfaceTest : public CommandLineInterfaceTester {
     RegisterGenerator(name, std::move(generator), description);
   }
 
+  void SetMockGeneratorTestCase(absl::string_view name) {
+#ifdef _WIN32
+    ::_putenv(absl::StrCat("TEST_CASE", "=", name).c_str());
+#else
+    ::setenv("TEST_CASE", name.data(), 1);
+#endif
+  }
+
+  MockCodeGenerator* mock_generator_ = nullptr;
+
  private:
   // Was DisallowPlugins() called?
   bool disallow_plugins_ = false;
@@ -242,9 +252,13 @@ class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
 // ===================================================================
 
 CommandLineInterfaceTest::CommandLineInterfaceTest() {
+  // Reset the mock generator's test case environment variable.
+  SetMockGeneratorTestCase("");
+
   // Register generators.
-  RegisterGenerator("--test_out", "--test_opt",
-                    std::make_unique<MockCodeGenerator>("test_generator"),
+  auto mock_generator = std::make_unique<MockCodeGenerator>("test_generator");
+  mock_generator_ = mock_generator.get();
+  RegisterGenerator("--test_out", "--test_opt", std::move(mock_generator),
                     "Test output.");
   RegisterGenerator("-t", std::make_unique<MockCodeGenerator>("test_generator"),
                     "Test output.");
@@ -1353,7 +1367,7 @@ TEST_F(CommandLineInterfaceTest, AllowServicesHasService) {
 
 TEST_F(CommandLineInterfaceTest, EditionsAreNotAllowed) {
   CreateTempFile("foo.proto",
-                 "edition = \"very-cool\";\n"
+                 "edition = \"2023\";\n"
                  "message FooRequest {}\n");
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
@@ -1365,7 +1379,7 @@ TEST_F(CommandLineInterfaceTest, EditionsAreNotAllowed) {
 
 TEST_F(CommandLineInterfaceTest, EditionsFlagExplicitTrue) {
   CreateTempFile("foo.proto",
-                 "edition = \"very-cool\";\n"
+                 "edition = \"2023\";\n"
                  "message FooRequest {}\n");
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
@@ -1457,34 +1471,105 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("features.proto",
-                 R"schema(
-    syntax = "proto2";
-    package pb;
-    import "google/protobuf/descriptor.proto";
-    extend google.protobuf.FeatureSet {
-      optional TestFeatures test = 9999;
-    }
-    message TestFeatures {
-      repeated int32 repeated_feature = 1 [
-        retention = RETENTION_RUNTIME,
-        targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition: "2023", value: "3" }
-      ];
-    })schema");
+                 pb::TestInvalidFeatures::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
     import "features.proto";
     message Foo {
       int32 bar = 1;
-      int32 baz = 2 [features.(pb.test).int_feature = 5];
+      int32 baz = 2 [features.(pb.test_invalid).repeated_feature = 5];
     })schema");
+
+  mock_generator_->set_feature_extensions(
+      {GetExtensionReflection(pb::test_invalid)});
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
       "--experimental_editions foo.proto");
   ExpectErrorSubstring(
-      "Feature field pb.TestFeatures.repeated_feature is an unsupported "
+      "Feature field pb.TestInvalidFeatures.repeated_feature is an unsupported "
       "repeated field");
+}
+
+TEST_F(CommandLineInterfaceTest, InvalidMinimumEditionError) {
+  CreateTempFile("foo.proto", R"schema(edition = "2023";)schema");
+
+  mock_generator_->set_minimum_edition("2022");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring(
+      "generator --test_out specifies a minimum edition 2022 which is not the "
+      "protoc minimum 2023");
+}
+
+TEST_F(CommandLineInterfaceTest, InvalidMaximumEditionError) {
+  CreateTempFile("foo.proto", R"schema(edition = "2023";)schema");
+
+  mock_generator_->set_maximum_edition("2123");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring(
+      "generator --test_out specifies a maximum edition 2123 which is not "
+      "the protoc maximum 2023");
+}
+
+TEST_F(CommandLineInterfaceTest, InvalidFeatureExtensionError) {
+  CreateTempFile("foo.proto", R"schema(edition = "2023";)schema");
+
+  mock_generator_->set_feature_extensions({nullptr});
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring(
+      "generator --test_out specifies an unknown feature extension");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_InvalidFeatureExtensionError) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("invalid_features");
+  Run("protocol_compiler --experimental_editions "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "error generating feature defaults: Unknown extension of "
+      "google.protobuf.FeatureSet");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_MissingFeatureExtensionError) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("no_feature_defaults");
+  Run("protocol_compiler --experimental_editions "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring("Test features were not resolved properly");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_TestFeatures) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  Run("protocol_compiler --experimental_editions "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectNoErrors();
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_LegacyFeatures) {
@@ -1557,33 +1642,13 @@ TEST_F(CommandLineInterfaceTest, Plugin_RuntimeFeatures) {
 
   EXPECT_THAT(
       request.proto_file(0).message_type(0).field(0).options().features(),
-      EqualsProto(R"pb(field_presence: IMPLICIT
-                       enum_type: OPEN
-                       repeated_field_encoding: PACKED
-                       message_encoding: LENGTH_PREFIXED
-                       json_format: ALLOW
-                       raw_features { field_presence: IMPLICIT }
-                       [pb.cpp] {
-                         legacy_closed_enum: false
-                         utf8_validation: VERIFY_PARSE
-                       }
-      )pb"));
+      EqualsProto(R"pb(field_presence: IMPLICIT)pb"));
   EXPECT_THAT(request.source_file_descriptors(0)
                   .message_type(0)
                   .field(0)
                   .options()
                   .features(),
-              EqualsProto(R"pb(field_presence: IMPLICIT
-                               enum_type: OPEN
-                               repeated_field_encoding: PACKED
-                               message_encoding: LENGTH_PREFIXED
-                               json_format: ALLOW
-                               raw_features { field_presence: IMPLICIT }
-                               [pb.cpp] {
-                                 legacy_closed_enum: false
-                                 utf8_validation: VERIFY_PARSE
-                               }
-              )pb"));
+              EqualsProto(R"pb(field_presence: IMPLICIT)pb"));
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
@@ -1629,10 +1694,8 @@ TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
     ASSERT_EQ(request.proto_file(2).name(), "foo.proto");
     const FeatureSet& features =
         request.proto_file(2).message_type(0).field(0).options().features();
-    EXPECT_THAT(features.raw_features(),
+    EXPECT_THAT(features,
                 EqualsProto(R"pb([pb.test] { int_field_feature: 99 })pb"));
-    EXPECT_FALSE(features.GetExtension(pb::test).has_int_source_feature());
-    EXPECT_EQ(features.GetExtension(pb::test).int_field_feature(), 99);
   }
 
   {
@@ -1642,13 +1705,10 @@ TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
                                      .field(0)
                                      .options()
                                      .features();
-    EXPECT_THAT(features.raw_features(),
-                EqualsProto(R"pb([pb.test] {
-                                   int_field_feature: 99
-                                   int_source_feature: 87
-                                 })pb"));
-    EXPECT_EQ(features.GetExtension(pb::test).int_field_feature(), 99);
-    EXPECT_EQ(features.GetExtension(pb::test).int_source_feature(), 87);
+    EXPECT_THAT(features, EqualsProto(R"pb([pb.test] {
+                                             int_field_feature: 99
+                                             int_source_feature: 87
+                                           })pb"));
   }
 }
 
@@ -1680,8 +1740,9 @@ TEST_F(CommandLineInterfaceTest, PluginNoEditionsSupport) {
     }
   )schema");
 
+  SetMockGeneratorTestCase("no_editions");
   Run("protocol_compiler --experimental_editions "
-      "--proto_path=$tmpdir foo.proto --plug_out=no_editions:$tmpdir");
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
 
   ExpectErrorSubstring(
       "code generator prefix-gen-plug hasn't been updated to support editions");
@@ -3178,6 +3239,320 @@ TEST_F(CommandLineInterfaceTest,
       "Option protobuf_unittest.A.b cannot be set on an entity of type `file`.");
   ExpectErrorSubstring(
       "Option protobuf_unittest.B.i cannot be set on an entity of type `file`.");
+}
+
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationEnforcement) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 9000,
+          full_name: ".baz.z"
+          type: ".foo.Bar"
+      }];
+    }
+
+    extend Foo {
+      optional int32 o = 5000;
+      repeated int32 i = 9000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "extension field 9000 is expected to be type \".foo.Bar\", not "
+      "\"int32\"");
+  ExpectErrorSubstring(
+      "extension field 9000 is expected to have field name \".baz.z\", not "
+      "\".foo.i\"");
+  ExpectErrorSubstring("extension field 9000 is expected to be optional");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationDuplicateNames) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 9000,
+          full_name: ".foo.o"
+          type: ".foo.Bar"
+      }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension field name \".foo.o\" is declared multiple times");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationDuplicateNumbers) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: ".foo.Bar"
+      }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension declaration number 5000 is declared multiple times");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationCannotUseReservedNumber) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          reserved: true
+          full_name: ".foo.o"
+          type: "int32"
+        }];
+    }
+
+    extend Foo {
+      optional int32 o = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Cannot use number 5000 for extension field foo.o, as it is reserved in "
+      "the extension declarations for message foo.Foo.");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationReservedMissingOneOfNameAndType) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          reserved: true
+          type: "int32"
+        }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension declaration #5000 should have both \"full_name\" and \"type\" "
+      "set");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationMissingBothNameAndType) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 6000
+        }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension declaration #6000 should have both \"full_name\" and \"type\" "
+      "set");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationReservedOptionalNameAndType) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          reserved: true
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 9000,
+          reserved: true
+        }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationRequireDeclarationsForAll) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [ declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        }];
+    }
+
+    extend Foo {
+      optional int32 o = 5000;
+      repeated int32 i = 9000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Missing extension declaration for field foo.i with number 9000 in "
+      "extendee message foo.Foo");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationVerificationDeclarationUndeclaredError) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [verification = DECLARATION];
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Missing extension declaration for field foo.my_field with number 5000 "
+      "in extendee message foo.Foo");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationVerificationDeclarationDeclaredCompile) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        verification = DECLARATION,
+        declaration = {
+          number: 5000,
+          full_name: ".foo.my_field",
+          type: "string"
+      }];
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationUnverifiedWithDeclarationsError) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        verification = UNVERIFIED,
+        declaration = {
+          number: 5000,
+          full_name: "foo.my_field",
+          type: "string"
+        }];
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Cannot mark the extension range as UNVERIFIED when it has extension(s) "
+      "declared.");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationDefaultUnverifiedEmptyRange) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max;
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+// Returns true if x is a prefix of y.
+bool IsPrefix(absl::Span<const int> x, absl::Span<const int> y) {
+  return x.size() <= y.size() && x == y.subspan(0, x.size());
+}
+
+TEST_F(CommandLineInterfaceTest, SourceInfoOptionRetention) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {\n"
+                 "  extensions 1000 to max [\n"
+                 "    declaration = {\n"
+                 "      number: 1000\n"
+                 "      full_name: \".video.cat_video\"\n"
+                 "      type: \".video.CatVideo\"\n"
+                 "  }];\n"
+                 "}\n");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--include_source_info --proto_path=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  if (HasFatalFailure()) return;
+  ASSERT_EQ(descriptor_set.file_size(), 1);
+  EXPECT_EQ(descriptor_set.file(0).name(), "foo.proto");
+
+  // Everything starting with this path should be have been stripped from the
+  // source code info.
+  const int declaration_option_path[] = {
+      FileDescriptorProto::kMessageTypeFieldNumber,
+      0,
+      DescriptorProto::kExtensionRangeFieldNumber,
+      0,
+      DescriptorProto::ExtensionRange::kOptionsFieldNumber,
+      ExtensionRangeOptions::kDeclarationFieldNumber};
+
+  const SourceCodeInfo& source_code_info =
+      descriptor_set.file(0).source_code_info();
+  EXPECT_GT(source_code_info.location_size(), 0);
+  for (const SourceCodeInfo::Location& location : source_code_info.location()) {
+    EXPECT_FALSE(IsPrefix(declaration_option_path, location.path()));
+  }
 }
 
 // ===================================================================

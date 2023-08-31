@@ -112,10 +112,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
                             target);
   }
 
-  int GetCachedSize() const override {
-    return data_ == nullptr ? 0 : static_cast<int>(data_->size());
-  }
-
   typedef void InternalArenaConstructable_;
 
  private:

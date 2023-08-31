@@ -39,17 +39,17 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 
+#include <atomic>
 #include <climits>
 #include <iosfwd>
 #include <string>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/arena.h"
-#include "google/protobuf/port.h"
 #include "absl/base/call_once.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/explicitly_constructed.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -84,6 +84,62 @@ class ZeroCopyOutputStream;
 
 }  // namespace io
 namespace internal {
+
+// Allow easy change to regular int on platforms where the atomic might have a
+// perf impact.
+//
+// CachedSize is like std::atomic<int> but with some important changes:
+//
+// 1) CachedSize uses Get / Set rather than load / store.
+// 2) CachedSize always uses relaxed ordering.
+// 3) CachedSize is assignable and copy-constructible.
+// 4) CachedSize has a constexpr default constructor, and a constexpr
+//    constructor that takes an int argument.
+// 5) If the compiler supports the __atomic_load_n / __atomic_store_n builtins,
+//    then CachedSize is trivially copyable.
+//
+// Developed at https://godbolt.org/z/vYcx7zYs1 ; supports gcc, clang, MSVC.
+class PROTOBUF_EXPORT CachedSize {
+ private:
+  using Scalar = int;
+
+ public:
+  constexpr CachedSize() noexcept : atom_(Scalar{}) {}
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr CachedSize(Scalar desired) noexcept : atom_(desired) {}
+#if PROTOBUF_BUILTIN_ATOMIC
+  constexpr CachedSize(const CachedSize& other) = default;
+
+  Scalar Get() const noexcept {
+    return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
+  }
+
+  void Set(Scalar desired) noexcept {
+    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
+  }
+#else
+  CachedSize(const CachedSize& other) noexcept : atom_(other.Get()) {}
+  CachedSize& operator=(const CachedSize& other) noexcept {
+    Set(other.Get());
+    return *this;
+  }
+
+  Scalar Get() const noexcept {  //
+    return atom_.load(std::memory_order_relaxed);
+  }
+
+  void Set(Scalar desired) noexcept {
+    atom_.store(desired, std::memory_order_relaxed);
+  }
+#endif
+
+ private:
+#if PROTOBUF_BUILTIN_ATOMIC
+  Scalar atom_;
+#else
+  std::atomic<Scalar> atom_;
+#endif
+};
 
 class SwapFieldHelper;
 
@@ -452,7 +508,7 @@ class PROTOBUF_EXPORT MessageLite {
   // sub-message is changed, all of its parents' cached sizes would need to be
   // invalidated, which is too much work for an otherwise inlined setter
   // method.)
-  virtual int GetCachedSize() const = 0;
+  int GetCachedSize() const;
 
   virtual const char* _InternalParse(const char* /*ptr*/,
                                      internal::ParseContext* /*ctx*/) {
@@ -472,6 +528,13 @@ class PROTOBUF_EXPORT MessageLite {
     return Arena::CreateMaybeMessage<T>(arena);
   }
 
+#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
+  template <typename T>
+  static T* CreateMaybeMessage(Arena* arena, const T& from) {
+    return Arena::CreateMaybeMessage<T>(arena, from);
+  }
+#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
+
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
   // Returns the arena, if any, that directly owns this message and its internal
@@ -486,6 +549,10 @@ class PROTOBUF_EXPORT MessageLite {
   Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
 
   internal::InternalMetadata _internal_metadata_;
+
+  // The default implementation means there is no cached size and ByteSize
+  // should be called instead.
+  virtual internal::CachedSize* AccessCachedSize() const;
 
  public:
   enum ParseFlags {

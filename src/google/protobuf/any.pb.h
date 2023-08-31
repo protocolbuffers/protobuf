@@ -83,6 +83,10 @@ class PROTOBUF_EXPORT Any final :
     *this = ::std::move(from);
   }
 
+  inline Any(::google::protobuf::Arena* arena, const Any& from)
+    : Any(arena) {
+    MergeFrom(from);
+  }
   inline Any& operator=(const Any& from) {
     CopyFrom(from);
     return *this;
@@ -101,10 +105,12 @@ class PROTOBUF_EXPORT Any final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -205,12 +211,12 @@ class PROTOBUF_EXPORT Any final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(Any* other);
 
   private:
@@ -311,7 +317,8 @@ inline void Any::clear_type_url() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.type_url_.ClearToEmpty();
 }
-inline const std::string& Any::type_url() const {
+inline const std::string& Any::type_url() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.type_url)
   return _internal_type_url();
 }
@@ -323,7 +330,7 @@ inline PROTOBUF_ALWAYS_INLINE void Any::set_type_url(Arg_&& arg,
   _impl_.type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Any.type_url)
 }
-inline std::string* Any::mutable_type_url() {
+inline std::string* Any::mutable_type_url() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_type_url();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Any.type_url)
   return _s;
@@ -363,7 +370,8 @@ inline void Any::clear_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.value_.ClearToEmpty();
 }
-inline const std::string& Any::value() const {
+inline const std::string& Any::value() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.value)
   return _internal_value();
 }
@@ -375,7 +383,7 @@ inline PROTOBUF_ALWAYS_INLINE void Any::set_value(Arg_&& arg,
   _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Any.value)
 }
-inline std::string* Any::mutable_value() {
+inline std::string* Any::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Any.value)
   return _s;

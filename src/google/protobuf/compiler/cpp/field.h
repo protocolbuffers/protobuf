@@ -41,11 +41,11 @@
 #include <tuple>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -80,6 +80,10 @@ class FieldGeneratorBase {
   // trivial, or a (raw) pointer value to a singular, non lazy message.
   bool has_trivial_value() const { return has_trivial_value_; }
 
+  // Returns true if the provided field has a trivial zero default.
+  // I.e., the field can be initialized with `memset(&field, 0, sizeof(field))`
+  bool has_trivial_zero_default() const { return has_trivial_zero_default_; }
+
   // Returns true if the field is a singular or repeated message.
   // This includes group message types. To explicitly check if a message
   // type is a group type, use the `is_group()` function,
@@ -112,6 +116,12 @@ class FieldGeneratorBase {
   // Returns true if the field should be inlined instead of dynamically
   // allocated. Applies to string and message value.
   bool is_inlined() const { return is_inlined_; }
+
+  // Returns true if this field has an appropriate default constexpr
+  // constructor. i.e., there is no need for an explicit initializer.
+  bool has_default_constexpr_constructor() const {
+    return has_default_constexpr_constructor_;
+  }
 
   virtual std::vector<io::Printer::Sub> MakeVars() const { return {}; }
 
@@ -150,6 +160,32 @@ class FieldGeneratorBase {
         << descriptor_->cpp_type_name();
   }
 
+  // Generates constexpr member initialization code, e.g.: `foo_{5}`.
+  // The default implementation generates the following code:
+  // - repeated fields and maps: `field_{}`
+  // - all other fields: `field_{<default value>}`
+  virtual void GenerateMemberConstexprConstructor(io::Printer* p) const;
+
+  // Generates member initialization code, e.g.: `foo_(5)`.
+  // The default implementation generates the following code:
+  // - repeated fields and maps: `field_{visibility, arena}`
+  // - split repeated fields (RawPtr): `field_{}`
+  // - all other fields: `field_{<default value>}`
+  virtual void GenerateMemberConstructor(io::Printer* p) const;
+
+  // Generates member copy initialization code, e.g.: `foo_(5)`.
+  // The default implementation generates the following code:
+  // - repeated fields and maps: `field_{visibility, arena, from.field_}`
+  // - all other fields: `field_{from.field_}`
+  virtual void GenerateMemberCopyConstructor(io::Printer* p) const;
+
+  // Generates 'placement new' copy construction code used to
+  // explicitly copy initialize oneof field values.
+  // The default implementation checks the current field to not be repeated,
+  // an extension or a map, and generates the following code:
+  // - `field_ = from.field_`
+  virtual void GenerateOneofCopyConstruct(io::Printer* p) const;
+
   virtual void GenerateAggregateInitializer(io::Printer* p) const;
 
   virtual void GenerateConstexprAggregateInitializer(io::Printer* p) const;
@@ -170,15 +206,16 @@ class FieldGeneratorBase {
   }
 
  protected:
-  // TODO(b/245791219): Remove these members and make this a pure interface.
   const FieldDescriptor* descriptor_;
   const Options& options_;
+  MessageSCCAnalyzer* scc_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 
  private:
   bool should_split_ = false;
   bool is_trivial_ = false;
   bool has_trivial_value_ = false;
+  bool has_trivial_zero_default_ = false;
   bool is_message_ = false;
   bool is_group_ = false;
   bool is_string_ = false;
@@ -189,6 +226,7 @@ class FieldGeneratorBase {
   bool is_weak_ = false;
   bool is_oneof_ = false;
   FieldOptions::CType string_type_ = FieldOptions::STRING;
+  bool has_default_constexpr_constructor_ = false;
 };
 
 inline FieldGeneratorBase::~FieldGeneratorBase() = default;
@@ -220,6 +258,27 @@ class FieldGenerator {
   FieldGenerator(FieldGenerator&&) = default;
   FieldGenerator& operator=(FieldGenerator&&) = default;
 
+  // Properties: see FieldGeneratorBase for documentation
+  bool should_split() const { return impl_->should_split(); }
+  bool is_trivial() const { return impl_->is_trivial(); }
+  bool has_trivial_value() const { return impl_->has_trivial_value(); }
+  bool has_trivial_zero_default() const {
+    return impl_->has_trivial_zero_default();
+  }
+  bool is_message() const { return impl_->is_message(); }
+  bool is_group() const { return impl_->is_group(); }
+  bool is_weak() const { return impl_->is_weak(); }
+  bool is_lazy() const { return impl_->is_lazy(); }
+  bool is_foreign() const { return impl_->is_foreign(); }
+  bool is_string() const { return impl_->is_string(); }
+  bool is_bytes() const { return impl_->is_bytes(); }
+  FieldOptions::CType string_type() const { return impl_->string_type(); }
+  bool is_oneof() const { return impl_->is_oneof(); }
+  bool is_inlined() const { return impl_->is_inlined(); }
+  bool has_default_constexpr_constructor() const {
+    return impl_->has_default_constexpr_constructor();
+  }
+
   // Prints private members needed to represent this field.
   //
   // These are placed inside the class definition.
@@ -234,6 +293,26 @@ class FieldGenerator {
   void GenerateStaticMembers(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateStaticMembers(p);
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberConstructor(p);
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberCopyConstructor(p);
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateOneofCopyConstruct(p);
+  }
+
+  void GenerateMemberConstexprConstructor(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberConstexprConstructor(p);
   }
 
   // Generates declarations for all of the accessor functions related to this

@@ -292,6 +292,8 @@ class PROTOC_EXPORT CommandLineInterface {
                        DiskSourceTree* source_tree,
                        std::vector<const FileDescriptor*>* parsed_files);
 
+  bool SetupFeatureResolution(DescriptorPool& pool);
+
   // Generate the given output file from the given input.
   struct OutputDirective;  // see below
   bool GenerateOutput(const std::vector<const FileDescriptor*>& parsed_files,

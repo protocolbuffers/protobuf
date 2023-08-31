@@ -395,8 +395,8 @@ mod tests {
     impl SettableValue<MyProxied> for Cow<'_, str> {
         fn set_on(self, _private: Private, mutator: Mut<MyProxied>) {
             match self {
-                Cow::Owned(x) => x.set_on(Private, mutator),
-                Cow::Borrowed(x) => x.set_on(Private, mutator),
+                Cow::Owned(x) => <String as SettableValue<MyProxied>>::set_on(x, Private, mutator),
+                Cow::Borrowed(x) => <&str as SettableValue<MyProxied>>::set_on(x, Private, mutator),
             }
         }
     }

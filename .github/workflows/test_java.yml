@@ -31,7 +31,7 @@ jobs:
             targets: //java/... //java/internal:java_version
           - name: aarch64
             version: 'aarch64'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-222e7e87028b7098e088f5ca7cae06d32f483eb5
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-e02879ddc84fa6917e4e22833e7f75884ea890b8
             targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
 
     name: Linux ${{ matrix.name }}
@@ -110,6 +110,6 @@ jobs:
       run: |
         sudo rm -rf _build
     - name: Validate Protobuf BOM
-      uses: googleapis/java-cloud-bom/tests/validate-bom@v26.13.0
+      uses: googleapis/java-cloud-bom/tests/validate-bom@fd56f04bb0bc581776a74031591f0b3bc5e7920a # v26.13.0
       with:
         bom-path: java/bom/pom.xml

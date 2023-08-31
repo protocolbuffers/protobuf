@@ -62,16 +62,17 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/port.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/extension_set.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -121,6 +122,7 @@ class MethodOptions;
 class FileOptions;
 class UninterpretedOption;
 class FeatureSet;
+class FeatureSetDefaults;
 class SourceCodeInfo;
 
 // Defined in message_lite.h
@@ -261,9 +263,10 @@ class PROTOBUF_EXPORT SymbolBase {
 template <int N>
 class PROTOBUF_EXPORT SymbolBaseN : public SymbolBase {};
 
-// This class is for internal use only and provides access to the FeatureSets
-// defined on descriptors.  These features are not designed to be stable, and
-// depending directly on them (vs the public descriptor APIs) is not safe.
+// This class is for internal use only and provides access to the resolved
+// runtime FeatureSets of any descriptor.  These features are not designed
+// to be stable, and depending directly on them (vs the public descriptor APIs)
+// is not safe.
 class PROTOBUF_EXPORT InternalFeatureHelper {
  public:
   template <typename DescriptorT>
@@ -275,20 +278,19 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
   friend class ::google::protobuf::compiler::CodeGenerator;
   friend class ::google::protobuf::compiler::CommandLineInterface;
 
-  // Provides a restricted view exclusively to code generators.  Raw features
-  // haven't been resolved, and are virtually meaningless to everyone else. Code
-  // generators will need them to validate their own features, and runtimes may
-  // need them internally to be able to properly represent the original proto
-  // files from generated code.
-  template <typename DescriptorT>
-  static const FeatureSet& GetRawFeatures(const DescriptorT& desc) {
-    return *desc.proto_features_;
+  // Provides a restricted view exclusively to code generators to query their
+  // own unresolved features.  Unresolved features are virtually meaningless to
+  // everyone else. Code generators will need them to validate their own
+  // features, and runtimes may need them internally to be able to properly
+  // represent the original proto files from generated code.
+  template <typename DescriptorT, typename TypeTraitsT, uint8_t field_type,
+            bool is_packed>
+  static typename TypeTraitsT::ConstType GetUnresolvedFeatures(
+      const DescriptorT& descriptor,
+      const google::protobuf::internal::ExtensionIdentifier<
+          FeatureSet, TypeTraitsT, field_type, is_packed>& extension) {
+    return descriptor.proto_features_->GetExtension(extension);
   }
-
-  // Provides the full descriptor tree including both resolved features (in the
-  // `features` fields) and unresolved features (in the `raw_features` fields)
-  // for every descriptor.
-  static FileDescriptorProto GetGeneratorProto(const FileDescriptor& file);
 };
 
 }  // namespace internal
@@ -345,6 +347,12 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // Similar to DebugString(), but additionally takes options (e.g.,
   // include original user comments in output).
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
+
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const Descriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
 
   // Returns true if this is a placeholder for an unknown type. This will
   // only be the case if this descriptor comes from a DescriptorPool
@@ -980,6 +988,12 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
 
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const FieldDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
+
   // Helper method to get the CppType for a particular Type.
   static CppType TypeToCppType(Type type);
 
@@ -1185,6 +1199,12 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
 
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const OneofDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
+
   // Source Location ---------------------------------------------------
 
   // Updates |*out_location| to the source location of the complete
@@ -1305,6 +1325,12 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
+
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const EnumDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
 
   // Returns true if this is a placeholder for an unknown enum. This will
   // only be the case if this descriptor comes from a DescriptorPool
@@ -1499,6 +1525,12 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
 
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const EnumValueDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
+
   // Source Location ---------------------------------------------------
 
   // Updates |*out_location| to the source location of the complete
@@ -1595,6 +1627,12 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
 
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
+
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const ServiceDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
 
   // Source Location ---------------------------------------------------
 
@@ -1696,6 +1734,12 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
 
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
+
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const MethodDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
 
   // Source Location ---------------------------------------------------
 
@@ -1911,6 +1955,12 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
 
   // See Descriptor::DebugStringWithOptions().
   std::string DebugStringWithOptions(const DebugStringOptions& options) const;
+
+  // Allows formatting with absl and gtest.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const FileDescriptor& d) {
+    absl::Format(&sink, "%s", d.DebugString());
+  }
 
   // Returns true if this is a placeholder for an unknown file. This will
   // only be the case if this descriptor comes from a DescriptorPool
@@ -2240,6 +2290,20 @@ class PROTOBUF_EXPORT DescriptorPool {
   // DescriptorPool will report a import not found error.
   void EnforceWeakDependencies(bool enforce) { enforce_weak_ = enforce; }
 
+  // Sets the default feature mappings used during the build. If this function
+  // isn't called, the C++ feature set defaults are used.  If this function is
+  // called, these defaults will be used instead.
+  // FeatureSetDefaults includes a minimum/maximum supported edition, which will
+  // be enforced while building proto files.
+  void SetFeatureSetDefaults(FeatureSetDefaults spec);
+
+  // Toggles enforcement of extension declarations.
+  // This enforcement is disabled by default because it requires full
+  // descriptors with source-retention options, which are generally not
+  // available at runtime.
+  void EnforceExtensionDeclarations(bool enforce) {
+    enforce_extension_declarations_ = enforce;
+  }
   // Internal stuff --------------------------------------------------
   // These methods MUST NOT be called from outside the proto2 library.
   // These methods may contain hidden pitfalls and may be removed in a
@@ -2413,10 +2477,18 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool enforce_extension_declarations_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
+  mutable bool build_started_ = false;
 
   // Set of files to track for unused imports. The bool value when true means
   // unused imports are treated as errors (and as warnings when false).
   absl::flat_hash_map<std::string, bool> unused_import_track_files_;
+
+  // Specification of defaults to use for feature resolution.  This defaults to
+  // just the global and C++ features, but can be overridden for other runtimes.
+  std::unique_ptr<FeatureSetDefaults> feature_set_defaults_spec_;
+
+  // Returns true if the field extends an option message of descriptor.proto.
+  bool IsExtendingDescriptor(const FieldDescriptor& field) const;
 
 };
 

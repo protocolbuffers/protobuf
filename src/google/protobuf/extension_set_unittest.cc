@@ -35,19 +35,20 @@
 #include "google/protobuf/extension_set.h"
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/arena.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/text_format.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/wire_format.h"
@@ -1428,6 +1429,18 @@ TEST(ExtensionSetTest, ExtensionSetSpaceUsed) {
   unittest::TestAllExtensions msg3(msg);
   size_t l3 = msg3.SpaceUsedLong();
   EXPECT_TRUE((l2 - l) > (l3 - l));
+}
+
+TEST(ExtensionSetTest, Descriptor) {
+  EXPECT_EQ(
+      GetExtensionReflection(unittest::optional_int32_extension),
+      unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
+          "optional_int32_extension"));
+  EXPECT_NE(GetExtensionReflection(unittest::optional_int32_extension),
+            nullptr);
+  EXPECT_EQ(GetExtensionReflection(pb::cpp),
+            pb::CppFeatures::descriptor()->file()->FindExtensionByName("cpp"));
+  EXPECT_NE(GetExtensionReflection(pb::cpp), nullptr);
 }
 
 }  // namespace

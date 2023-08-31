@@ -34,16 +34,20 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/enum_field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/map_field.h"
 #include "google/protobuf/compiler/objectivec/message_field.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/primitive_field.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -234,6 +238,11 @@ void FieldGenerator::DetermineForwardDeclarations(
 
 void FieldGenerator::DetermineObjectiveCClassDefinitions(
     absl::btree_set<std::string>* fwd_decls) const {
+  // Nothing
+}
+
+void FieldGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
   // Nothing
 }
 

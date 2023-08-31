@@ -74,6 +74,7 @@ enum CppFeatures_Utf8Validation : int {
 };
 
 PROTOBUF_EXPORT bool CppFeatures_Utf8Validation_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t CppFeatures_Utf8Validation_internal_data_[];
 constexpr CppFeatures_Utf8Validation CppFeatures_Utf8Validation_Utf8Validation_MIN = static_cast<CppFeatures_Utf8Validation>(0);
 constexpr CppFeatures_Utf8Validation CppFeatures_Utf8Validation_Utf8Validation_MAX = static_cast<CppFeatures_Utf8Validation>(3);
 constexpr int CppFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
@@ -116,6 +117,10 @@ class PROTOBUF_EXPORT CppFeatures final :
     *this = ::std::move(from);
   }
 
+  inline CppFeatures(::google::protobuf::Arena* arena, const CppFeatures& from)
+    : CppFeatures(arena) {
+    MergeFrom(from);
+  }
   inline CppFeatures& operator=(const CppFeatures& from) {
     CopyFrom(from);
     return *this;
@@ -134,10 +139,12 @@ class PROTOBUF_EXPORT CppFeatures final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -203,12 +210,12 @@ class PROTOBUF_EXPORT CppFeatures final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(CppFeatures* other);
 
   private:

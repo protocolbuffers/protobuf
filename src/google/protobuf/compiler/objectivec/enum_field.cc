@@ -32,8 +32,14 @@
 
 #include <string>
 
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -135,6 +141,13 @@ void EnumFieldGenerator::DetermineForwardDeclarations(
   }
 }
 
+void EnumFieldGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  if (descriptor_->file() != descriptor_->enum_type()->file()) {
+    deps->insert(descriptor_->enum_type()->file());
+  }
+}
+
 RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
     const FieldDescriptor* descriptor)
     : RepeatedFieldGenerator(descriptor) {
@@ -152,6 +165,13 @@ void RepeatedEnumFieldGenerator::EmitArrayComment(io::Printer* printer) const {
 // NOTE: RepeatedEnumFieldGenerator::DetermineForwardDeclarations isn't needed
 // because `GPBEnumArray` isn't generic (like `NSArray` would be for messages)
 // and thus doesn't reference the type in the header.
+
+void RepeatedEnumFieldGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  if (descriptor_->file() != descriptor_->enum_type()->file()) {
+    deps->insert(descriptor_->enum_type()->file());
+  }
+}
 
 }  // namespace objectivec
 }  // namespace compiler

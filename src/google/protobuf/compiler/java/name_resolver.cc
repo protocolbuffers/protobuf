@@ -39,6 +39,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/names.h"
+#include "google/protobuf/descriptor.h"
 
 
 // Must be last.
@@ -352,6 +353,12 @@ std::string ClassNameResolver::GetJavaImmutableClassName(
                               descriptor->file(), true);
 }
 
+std::string ClassNameResolver::GetJavaImmutableClassName(
+    const ServiceDescriptor* descriptor) {
+  return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, true),
+                              descriptor->file(), true);
+}
+
 std::string ClassNameResolver::GetKotlinExtensionsClassName(
     const Descriptor* descriptor) {
   return GetClassFullName(ClassNameWithoutPackageKotlin(descriptor),
@@ -366,6 +373,12 @@ std::string ClassNameResolver::GetJavaMutableClassName(
 
 std::string ClassNameResolver::GetJavaMutableClassName(
     const EnumDescriptor* descriptor) {
+  return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, false),
+                              descriptor->file(), false);
+}
+
+std::string ClassNameResolver::GetJavaMutableClassName(
+    const ServiceDescriptor* descriptor) {
   return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, false),
                               descriptor->file(), false);
 }

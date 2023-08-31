@@ -43,7 +43,6 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/port.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"

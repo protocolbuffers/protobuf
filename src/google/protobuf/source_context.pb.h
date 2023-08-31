@@ -83,6 +83,10 @@ class PROTOBUF_EXPORT SourceContext final :
     *this = ::std::move(from);
   }
 
+  inline SourceContext(::google::protobuf::Arena* arena, const SourceContext& from)
+    : SourceContext(arena) {
+    MergeFrom(from);
+  }
   inline SourceContext& operator=(const SourceContext& from) {
     CopyFrom(from);
     return *this;
@@ -101,10 +105,12 @@ class PROTOBUF_EXPORT SourceContext final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -170,12 +176,12 @@ class PROTOBUF_EXPORT SourceContext final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(SourceContext* other);
 
   private:
@@ -257,7 +263,8 @@ inline void SourceContext::clear_file_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.file_name_.ClearToEmpty();
 }
-inline const std::string& SourceContext::file_name() const {
+inline const std::string& SourceContext::file_name() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceContext.file_name)
   return _internal_file_name();
 }
@@ -269,7 +276,7 @@ inline PROTOBUF_ALWAYS_INLINE void SourceContext::set_file_name(Arg_&& arg,
   _impl_.file_name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
-inline std::string* SourceContext::mutable_file_name() {
+inline std::string* SourceContext::mutable_file_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   std::string* _s = _internal_mutable_file_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceContext.file_name)
   return _s;

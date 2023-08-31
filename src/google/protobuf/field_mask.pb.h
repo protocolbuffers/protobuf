@@ -83,6 +83,10 @@ class PROTOBUF_EXPORT FieldMask final :
     *this = ::std::move(from);
   }
 
+  inline FieldMask(::google::protobuf::Arena* arena, const FieldMask& from)
+    : FieldMask(arena) {
+    MergeFrom(from);
+  }
   inline FieldMask& operator=(const FieldMask& from) {
     CopyFrom(from);
     return *this;
@@ -101,10 +105,12 @@ class PROTOBUF_EXPORT FieldMask final :
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -170,12 +176,12 @@ class PROTOBUF_EXPORT FieldMask final :
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
+  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
-  void SetCachedSize(int size) const final;
   void InternalSwap(FieldMask* other);
 
   private:
@@ -275,17 +281,20 @@ inline void FieldMask::clear_paths() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.paths_.Clear();
 }
-inline std::string* FieldMask::add_paths() {
+inline std::string* FieldMask::add_paths()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   std::string* _s = _internal_mutable_paths()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
   return _s;
 }
-inline const std::string& FieldMask::paths(int index) const {
+inline const std::string& FieldMask::paths(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldMask.paths)
   return _internal_paths().Get(index);
 }
-inline std::string* FieldMask::mutable_paths(int index) {
+inline std::string* FieldMask::mutable_paths(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldMask.paths)
   return _internal_mutable_paths()->Mutable(index);
 }
@@ -341,11 +350,12 @@ inline void FieldMask::add_paths(absl::string_view value) {
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.FieldMask.paths)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
-FieldMask::paths() const {
+FieldMask::paths() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.FieldMask.paths)
   return _internal_paths();
 }
-inline ::google::protobuf::RepeatedPtrField<std::string>* FieldMask::mutable_paths() {
+inline ::google::protobuf::RepeatedPtrField<std::string>*
+FieldMask::mutable_paths() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldMask.paths)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_paths();

@@ -900,6 +900,7 @@ class DescriptorPool(object):
         serialized_start=None,
         serialized_end=None,
         syntax=syntax,
+        is_map_entry=desc_proto.options.map_entry,
         # pylint: disable=protected-access
         create_key=descriptor._internal_create_key)
     for nested in desc.nested_types:

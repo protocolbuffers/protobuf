@@ -37,6 +37,7 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/oneof.h"
 #include "google/protobuf/descriptor.h"
@@ -68,6 +69,8 @@ class MessageGenerator {
       absl::btree_set<std::string>* fwd_decls) const;
   void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
                                     bool include_external_types) const;
+  void DetermineNeededFiles(
+      absl::flat_hash_set<const FileDescriptor*>* deps) const;
 
   // Checks if the message or a nested message includes a oneof definition.
   bool IncludesOneOfDefinition() const { return !oneof_generators_.empty(); }

@@ -33,13 +33,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PHP_PROTOBUF_H
-# define PHP_PROTOBUF_H
+#define PHP_PROTOBUF_H
 
-# ifdef HAVE_CONFIG_H
-#  include "config.h"
-# endif
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 extern zend_module_entry protobuf_module_entry;
-# define phpext_protobuf_ptr &protobuf_module_entry
+#define phpext_protobuf_ptr &protobuf_module_entry
 
-#endif	/* PHP_PROTOBUF_H */
+#endif /* PHP_PROTOBUF_H */

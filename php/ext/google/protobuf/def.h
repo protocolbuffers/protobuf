@@ -40,38 +40,39 @@ void Def_ModuleInit();
 
 // Creates a new DescriptorPool to wrap the given symtab, which must not be
 // NULL.
-void DescriptorPool_CreateWithSymbolTable(zval *zv, upb_DefPool *symtab);
+void DescriptorPool_CreateWithSymbolTable(zval* zv, upb_DefPool* symtab);
 
-upb_DefPool *DescriptorPool_GetSymbolTable();
+upb_DefPool* DescriptorPool_GetSymbolTable();
 
 // Returns true if the global descriptor pool already has the given filename.
-bool DescriptorPool_HasFile(const char *filename);
+bool DescriptorPool_HasFile(const char* filename);
 
 // Adds the given descriptor with the given filename to the global pool.
-void DescriptorPool_AddDescriptor(const char *filename, const char *data, int size);
+void DescriptorPool_AddDescriptor(const char* filename, const char* data,
+                                  int size);
 
 typedef struct Descriptor {
   zend_object std;
-  const upb_MessageDef *msgdef;
-  zend_class_entry *class_entry;
+  const upb_MessageDef* msgdef;
+  zend_class_entry* class_entry;
 } Descriptor;
 
 // Gets or creates a Descriptor* for the given class entry, upb_MessageDef, or
 // upb_FieldDef. The returned Descriptor* will live for the entire request,
 // so no ref is necessary to keep it alive. The caller does *not* own a ref
 // on the returned object.
-Descriptor* Descriptor_GetFromClassEntry(zend_class_entry *ce);
-Descriptor* Descriptor_GetFromMessageDef(const upb_MessageDef *m);
-Descriptor* Descriptor_GetFromFieldDef(const upb_FieldDef *f);
+Descriptor* Descriptor_GetFromClassEntry(zend_class_entry* ce);
+Descriptor* Descriptor_GetFromMessageDef(const upb_MessageDef* m);
+Descriptor* Descriptor_GetFromFieldDef(const upb_FieldDef* f);
 
 // Packages up a upb_CType with a Descriptor, since many functions need
 // both.
 typedef struct {
   upb_CType type;
-  const Descriptor *desc;  // When type == kUpb_CType_Message.
+  const Descriptor* desc;  // When type == kUpb_CType_Message.
 } TypeInfo;
 
-static inline TypeInfo TypeInfo_Get(const upb_FieldDef *f) {
+static inline TypeInfo TypeInfo_Get(const upb_FieldDef* f) {
   TypeInfo ret = {upb_FieldDef_CType(f), Descriptor_GetFromFieldDef(f)};
   return ret;
 }

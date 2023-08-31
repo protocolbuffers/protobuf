@@ -29,53 +29,42 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/rust/accessors/accessors.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
-#include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-namespace {
-class SingularMessage final : public AccessorGenerator {
- public:
-  ~SingularMessage() override = default;
 
-  void InMsgImpl(Context<FieldDescriptor> field) const override {
-    field.Emit(
-        {
-            {"field", field.desc().name()},
-        },
-        R"rs(
+void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
+  field.Emit(
+      {
+          {"field", field.desc().name()},
+      },
+      R"rs(
           // inMsgImpl
           pub fn r#$field$(&self) -> $Msg$View {
-            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
+            $Msg$View { msg: self.inner.msg, _phantom: std::marker::PhantomData }
           }
         )rs");
-  }
+}
 
-  void InExternC(Context<FieldDescriptor> field) const override {
-    field.Emit({},
-               R"rs(
+void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
+  field.Emit({},
+             R"rs(
                  // inExternC
                )rs");
-  }
-
-  void InThunkCc(Context<FieldDescriptor> field) const override {
-    field.Emit({},
-               R"cc(
-                 // inThunkCC
-               )cc");
-  }
-};
-}  // namespace
-
-std::unique_ptr<AccessorGenerator> AccessorGenerator::ForSingularMessage(
-    Context<FieldDescriptor> field) {
-  return std::make_unique<SingularMessage>();
 }
+
+void SingularMessage::InThunkCc(Context<FieldDescriptor> field) const {
+  field.Emit({},
+             R"cc(
+               // inThunkCC
+             )cc");
+}
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf

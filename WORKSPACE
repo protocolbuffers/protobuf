@@ -7,6 +7,15 @@ local_repository(
     path = "examples",
 )
 
+# We will soon merge upb and protobuf into the same Bazel repository, but for
+# now we depend on the separate Bazel repo in the upb/ directory. This is
+# important to ensure that the CI tests exercise upb at head instead of relying
+# on a stale version from protobuf_deps.bzl.
+local_repository(
+    name = "upb",
+    path = "upb",
+)
+
 # Load common dependencies first to ensure we use the correct version
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 
@@ -15,9 +24,11 @@ protobuf_deps()
 # Bazel platform rules.
 http_archive(
     name = "platforms",
-    sha256 = "a879ea428c6d56ab0ec18224f976515948822451473a80d06c2e50af0bbe5121",
-    strip_prefix = "platforms-da5541f26b7de1dc8e04c075c99df5351742a4a2",
-    urls = ["https://github.com/bazelbuild/platforms/archive/da5541f26b7de1dc8e04c075c99df5351742a4a2.zip"],  # 2022-05-27
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+    ],
+    sha256 = "3a561c99e7bdbe9173aa653fd579fe849f1d8d67395780ab4770b1f381431d51",
 )
 
 http_archive(

@@ -49,6 +49,10 @@ message TestMessage {
   }
 }
 
+extend google.protobuf.FeatureSet {
+  optional TestInvalidFeatures test_invalid = 9996;
+}
+
 message TestFeatures {
   optional int32 int_file_feature = 1 [
     retention = RETENTION_RUNTIME,
@@ -191,5 +195,13 @@ message TestFeatures {
     targets = TARGET_TYPE_ONEOF,
     targets = TARGET_TYPE_EXTENSION_RANGE,
     edition_defaults = { edition: "2023", value: "'2023'" }
+  ];
+}
+
+message TestInvalidFeatures {
+  repeated int32 repeated_feature = 1 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    edition_defaults = { edition: "2023", value: "3" }
   ];
 }

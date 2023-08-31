@@ -101,7 +101,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: ${{ env.image }}
-          skip-staleness-check: true
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
@@ -138,9 +137,8 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64:0cc100b6e03d14c1e8f71ae794dc162ed122fe31@sha256:77b70feba68dced1f0fd21b52a08d3d2e0c5c797bfe68435a0038ce87ecfd310
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
           platform: linux/arm64
-          skip-staleness-check: true
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
           command: >-
@@ -186,11 +184,10 @@ jobs:
           directory: php
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bash@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: php_macos/${{ matrix.version }}
-          bash: |
+          command: |
             pushd php
             php -v
             php -m
@@ -203,8 +200,4 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}
-          bash: >-
-            bazelisk $BAZEL_STARTUP_FLAGS \
-              test $BAZEL_FLAGS \
-              --action_env=PATH --test_env=PATH \
-              //php:conformance_test_c
+          bazel: test //php:conformance_test_c --action_env=PATH --test_env=PATH

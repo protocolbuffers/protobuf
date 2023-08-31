@@ -67,7 +67,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: i386/ruby:2.7.3-buster
-          skip-staleness-check: true
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
@@ -99,7 +98,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: arm64v8/ruby:2.7.3-buster
-          skip-staleness-check: true
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
@@ -181,6 +179,7 @@ jobs:
           bash: >
             bazel --version;
             ruby --version;
+            ./regenerate_stale_files.sh $BAZEL_FLAGS;
             bazel build //ruby:release //:protoc ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled' || '' }} $BAZEL_FLAGS;
             gem install bazel-bin/ruby/google-protobuf-*;
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto;

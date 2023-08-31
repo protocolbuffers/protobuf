@@ -44,6 +44,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
@@ -57,6 +58,7 @@
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -1111,6 +1113,18 @@ bool AllowedExtendeeInProto3(const std::string& name) {
          allowed_proto3_extendees->end();
 }
 
+const FeatureSetDefaults& GetCppFeatureSetDefaults() {
+  static const FeatureSetDefaults* default_spec = [] {
+    auto default_spec = FeatureResolver::CompileDefaults(
+        FeatureSet::descriptor(),
+        {pb::CppFeatures::descriptor()->file()->extension(0)},
+        PROTOBUF_MINIMUM_EDITION, PROTOBUF_MAXIMUM_EDITION);
+    ABSL_CHECK(default_spec.ok()) << default_spec.status();
+    return new FeatureSetDefaults(std::move(default_spec).value());
+  }();
+  return *default_spec;
+}
+
 // Create global defaults for proto2/proto3 compatibility.
 FeatureSet* CreateProto2DefaultFeatures() {
   FeatureSet* features = new FeatureSet();
@@ -2069,6 +2083,22 @@ void DescriptorPool::AddUnusedImportTrackFile(absl::string_view file_name,
   unused_import_track_files_[file_name] = is_error;
 }
 
+bool DescriptorPool::IsExtendingDescriptor(const FieldDescriptor& field) const {
+  static const auto& kDescriptorTypes = *new absl::flat_hash_set<std::string>({
+      "google.protobuf.EnumOptions",
+      "google.protobuf.EnumValueOptions",
+      "google.protobuf.ExtensionRangeOptions",
+      "google.protobuf.FieldOptions",
+      "google.protobuf.FileOptions",
+      "google.protobuf.MessageOptions",
+      "google.protobuf.MethodOptions",
+      "google.protobuf.OneofOptions",
+      "google.protobuf.ServiceOptions",
+      "google.protobuf.StreamOptions",
+  });
+  return kDescriptorTypes.contains(field.containing_type()->full_name());
+}
+
 
 void DescriptorPool::ClearUnusedImportTrackFiles() {
   unused_import_track_files_.clear();
@@ -2745,27 +2775,6 @@ MethodDescriptor::MethodDescriptor() {}
 FileDescriptor::FileDescriptor() {}
 
 // CopyTo methods ====================================================
-
-namespace internal {
-FileDescriptorProto InternalFeatureHelper::GetGeneratorProto(
-    const FileDescriptor& file) {
-  FileDescriptorProto file_proto;
-  file.CopyTo(&file_proto);
-
-  // Insert all the raw features back into the proto.
-  internal::VisitDescriptors(
-      file, file_proto, [](const auto& desc, auto& proto) {
-        const auto& features = GetFeatures(desc);
-        if (&features != &FeatureSet::default_instance() &&
-            !IsLegacyFeatureSet(features)) {
-          *proto.mutable_options()->mutable_features() = features;
-          *proto.mutable_options()->mutable_features()->mutable_raw_features() =
-              GetRawFeatures(desc);
-        }
-      });
-  return file_proto;
-}
-}  // namespace internal
 
 void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
   CopyHeadingTo(proto);
@@ -4355,6 +4364,12 @@ class DescriptorBuilder {
                                  absl::string_view declared_full_name,
                                  absl::string_view declared_type_name,
                                  bool is_repeated);
+  // Checks that the extension field type matches the declared type. It also
+  // handles message types that look like non-message types such as "fixed64" vs
+  // ".fixed64".
+  void CheckExtensionDeclarationFieldType(const FieldDescriptor& field,
+                                          const FieldDescriptorProto& proto,
+                                          absl::string_view type);
 
   // A helper class for interpreting options.
   class OptionInterpreter {
@@ -4576,14 +4591,7 @@ class DescriptorBuilder {
 
 const FileDescriptor* DescriptorPool::BuildFile(
     const FileDescriptorProto& proto) {
-  ABSL_CHECK(fallback_database_ == nullptr)
-      << "Cannot call BuildFile on a DescriptorPool that uses a "
-         "DescriptorDatabase.  You must instead find a way to get your file "
-         "into the underlying database.";
-  ABSL_CHECK(mutex_ == nullptr);  // Implied by the above ABSL_CHECK.
-  tables_->known_bad_symbols_.clear();
-  tables_->known_bad_files_.clear();
-  return DescriptorBuilder::New(this, tables_.get(), nullptr)->BuildFile(proto);
+  return BuildFileCollectingErrors(proto, nullptr);
 }
 
 const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
@@ -4595,6 +4603,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
   ABSL_CHECK(mutex_ == nullptr);  // Implied by the above ABSL_CHECK.
   tables_->known_bad_symbols_.clear();
   tables_->known_bad_files_.clear();
+  build_started_ = true;
   return DescriptorBuilder::New(this, tables_.get(), error_collector)
       ->BuildFile(proto);
 }
@@ -4602,6 +4611,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     const FileDescriptorProto& proto) const {
   mutex_->AssertHeld();
+  build_started_ = true;
   if (tables_->known_bad_files_.contains(proto.name())) {
     return nullptr;
   }
@@ -4612,6 +4622,14 @@ const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     tables_->known_bad_files_.insert(proto.name());
   }
   return result;
+}
+
+void DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
+  ABSL_CHECK(!build_started_)
+      << "Feature set defaults can't be changed once the pool has started "
+         "building.";
+  feature_set_defaults_spec_ =
+      absl::make_unique<FeatureSetDefaults>(std::move(spec));
 }
 
 DescriptorBuilder::DescriptorBuilder(
@@ -5315,14 +5333,7 @@ void DescriptorBuilder::ResolveFeaturesImpl(
     // internal details.
     FeatureSet* mutable_features = alloc.AllocateArray<FeatureSet>(1);
     descriptor->proto_features_ = mutable_features;
-    if (options->features().has_raw_features()) {
-      // If the raw features are specified, use those and recalculate the
-      // resolved features.
-      options->mutable_features()->mutable_raw_features()->Swap(
-          mutable_features);
-    } else {
-      options->mutable_features()->Swap(mutable_features);
-    }
+    options->mutable_features()->Swap(mutable_features);
     options->clear_features();
   } else if (!force_merge) {
     // Nothing to merge, and we aren't forcing it.
@@ -5695,18 +5706,13 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   file_ = result;
 
   if (proto.has_edition()) {
-    Symbol symbol = FindSymbolNotEnforcingDeps("google.protobuf.FeatureSet");
-    const Descriptor* descriptor = symbol.descriptor();
-    if (descriptor == nullptr) {
-      // descriptor.proto is not in the pool. This means no custom features are
-      // used so we are safe to proceed with the compiled FeatureSet message
-      // type.
-      descriptor = FeatureSet::descriptor();
-    }
-    ABSL_CHECK(descriptor);
+    const FeatureSetDefaults& defaults =
+        pool_->feature_set_defaults_spec_ == nullptr
+            ? GetCppFeatureSetDefaults()
+            : *pool_->feature_set_defaults_spec_;
 
     absl::StatusOr<FeatureResolver> feature_resolver =
-        FeatureResolver::Create(proto.edition(), descriptor);
+        FeatureResolver::Create(proto.edition(), defaults);
     if (!feature_resolver.ok()) {
       AddError(
           proto.name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
@@ -5820,16 +5826,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       // dangerous to try to do anything with it.  The recursive import error
       // will be detected and reported in DescriptorBuilder::BuildFile().
       return nullptr;
-    }
-
-    // Look for feature extensions in regular imports.
-    if (feature_resolver_.has_value() && dependency != nullptr) {
-      absl::Status status = feature_resolver_->RegisterExtensions(*dependency);
-      if (!status.ok()) {
-        AddError(dependency->name(), proto,
-                 DescriptorPool::ErrorCollector::EDITIONS,
-                 [&] { return std::string(status.message()); });
-      }
     }
 
     if (dependency == nullptr) {
@@ -7163,12 +7159,44 @@ void DescriptorBuilder::CrossLinkExtensionRange(
   }
 }
 
+void DescriptorBuilder::CheckExtensionDeclarationFieldType(
+    const FieldDescriptor& field, const FieldDescriptorProto& proto,
+    absl::string_view type) {
+  if (had_errors_) return;
+  std::string actual_type = field.type_name();
+  std::string expected_type(type);
+  if (field.message_type() || field.enum_type()) {
+    // Field message type descriptor can be in a partial state which will cause
+    // segmentation fault if it is being accessed.
+    if (had_errors_) return;
+    absl::string_view full_name = field.message_type() != nullptr
+                                      ? field.message_type()->full_name()
+                                      : field.enum_type()->full_name();
+    actual_type = absl::StrCat(".", full_name);
+  }
+  if (!IsNonMessageType(type) && !absl::StartsWith(type, ".")) {
+    expected_type = absl::StrCat(".", type);
+  }
+  if (expected_type != actual_type) {
+    AddError(field.full_name(), proto, DescriptorPool::ErrorCollector::EXTENDEE,
+             [&] {
+               return absl::Substitute(
+                   "\"$0\" extension field $1 is expected to be type "
+                   "\"$2\", not \"$3\".",
+                   field.containing_type()->full_name(), field.number(),
+                   expected_type, actual_type);
+             });
+  }
+}
+
 
 void DescriptorBuilder::CheckExtensionDeclaration(
     const FieldDescriptor& field, const FieldDescriptorProto& proto,
     absl::string_view declared_full_name, absl::string_view declared_type_name,
     bool is_repeated) {
-
+  if (!declared_type_name.empty()) {
+    CheckExtensionDeclarationFieldType(field, proto, declared_type_name);
+  }
   if (!declared_full_name.empty()) {
     std::string actual_full_name = absl::StrCat(".", field.full_name());
     if (declared_full_name != actual_full_name) {
@@ -7840,6 +7868,62 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
              "json_name cannot have embedded null characters.");
   }
 
+
+  // If this is a declared extension, validate that the actual name and type
+  // match the declaration.
+  if (field->is_extension()) {
+    if (pool_->IsExtendingDescriptor(*field)) return;
+    const Descriptor::ExtensionRange* extension_range =
+        field->containing_type()->FindExtensionRangeContainingNumber(
+            field->number());
+
+    if (extension_range->options_ == nullptr) {
+      return;
+    }
+
+    if (pool_->enforce_extension_declarations_) {
+      for (const auto& declaration : extension_range->options_->declaration()) {
+        if (declaration.number() != field->number()) continue;
+        if (declaration.reserved()) {
+          AddError(
+              field->full_name(), proto,
+              DescriptorPool::ErrorCollector::EXTENDEE, [&] {
+                return absl::Substitute(
+                    "Cannot use number $0 for extension field $1, as it is "
+                    "reserved in the extension declarations for message $2.",
+                    field->number(), field->full_name(),
+                    field->containing_type()->full_name());
+              });
+          return;
+        }
+        CheckExtensionDeclaration(*field, proto, declaration.full_name(),
+                                  declaration.type(), declaration.repeated());
+        return;
+      }
+
+      // Either no declarations, or there are but no matches. If there are no
+      // declarations, we check its verification state. If there are other
+      // non-matching declarations, we enforce that this extension must also be
+      // declared.
+      if (!extension_range->options_->declaration().empty() ||
+          (extension_range->options_->verification() ==
+           ExtensionRangeOptions::DECLARATION)) {
+        AddError(
+            field->full_name(), proto, DescriptorPool::ErrorCollector::EXTENDEE,
+            [&] {
+              return absl::Substitute(
+                  "Missing extension declaration for field $0 with number $1 "
+                  "in extendee message $2. An extension range must declare for "
+                  "all extension fields if its verification state is "
+                  "DECLARATION or there's any declaration in the range "
+                  "already. Otherwise, consider splitting up the range.",
+                  field->full_name(), field->number(),
+                  field->containing_type()->full_name());
+            });
+        return;
+      }
+    }
+  }
 }
 
 void DescriptorBuilder::ValidateFieldFeatures(

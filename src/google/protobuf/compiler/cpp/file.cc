@@ -36,14 +36,12 @@
 
 #include <algorithm>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <queue>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/compiler/scc.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
@@ -52,7 +50,6 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/cpp/enum.h"
@@ -1421,6 +1418,15 @@ class FileGenerator::ForwardDeclarations {
           template <>
           $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(Arena*);
         )cc");
+#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
+        if (!IsMapEntryMessage(c.second)) {
+          p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
+            template <>
+            $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(
+                Arena*, const $class$& from);
+          )cc");
+        }
+#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
       }
     }
   }

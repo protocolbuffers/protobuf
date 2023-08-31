@@ -936,19 +936,6 @@ message FeatureSet {
     edition_defaults = { edition: "2023", value: "PACKED" }
   ];
 
-  enum StringFieldValidation {
-    STRING_FIELD_VALIDATION_UNKNOWN = 0;
-    MANDATORY = 1;
-    HINT = 2;
-    NONE = 3;
-  }
-  optional StringFieldValidation string_field_validation = 4 [
-    retention = RETENTION_RUNTIME,
-    targets = TARGET_TYPE_FIELD,
-    targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: "2023", value: "MANDATORY" }
-  ];
-
   enum MessageEncoding {
     MESSAGE_ENCODING_UNKNOWN = 0;
     LENGTH_PREFIXED = 1;
@@ -974,12 +961,36 @@ message FeatureSet {
     edition_defaults = { edition: "2023", value: "ALLOW" }
   ];
 
-  optional FeatureSet raw_features = 999 [targets = TARGET_TYPE_UNKNOWN];
+  reserved 4, 999;
 
   extensions 1000;  // for Protobuf C++
   extensions 1001;  // for Protobuf Java
 
   extensions 9995 to 9999;  // For internal testing
+}
+
+// A compiled specification for the defaults of a set of features.  These
+// messages are generated from FeatureSet extensions and can be used to seed
+// feature resolution. The resolution with this object becomes a simple search
+// for the closest matching edition, followed by proto merges.
+message FeatureSetDefaults {
+  // A map from every known edition with a unique set of defaults to its
+  // defaults. Not all editions may be contained here.  For a given edition,
+  // the defaults at the closest matching edition ordered at or before it should
+  // be used.  This field must be in strict ascending order by edition.
+  message FeatureSetEditionDefault {
+    optional string edition = 1;
+    optional FeatureSet features = 2;
+  }
+  repeated FeatureSetEditionDefault defaults = 1;
+
+  // The minimum supported edition (inclusive) when this was constructed.
+  // Editions before this will not have defaults.
+  optional string minimum_edition = 2;
+
+  // The maximum known edition (inclusive) when this was constructed. Editions
+  // after this will not have reliable defaults.
+  optional string maximum_edition = 3;
 }
 
 // ===================================================================

@@ -34,9 +34,13 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
@@ -125,6 +129,27 @@ void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
   if (objc_type == OBJECTIVECTYPE_MESSAGE) {
     std::string message_type = ClassName(descriptor_->message_type());
     fwd_decls->insert(ObjCClassDeclaration(message_type));
+  }
+}
+
+void ExtensionGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  const Descriptor* extended_type = descriptor_->containing_type();
+  if (descriptor_->file() != extended_type->file()) {
+    deps->insert(extended_type->file());
+  }
+
+  const ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
+  if (objc_type == OBJECTIVECTYPE_MESSAGE) {
+    const Descriptor* value_msg_descriptor = descriptor_->message_type();
+    if (descriptor_->file() != value_msg_descriptor->file()) {
+      deps->insert(value_msg_descriptor->file());
+    }
+  } else if (objc_type == OBJECTIVECTYPE_ENUM) {
+    const EnumDescriptor* value_enum_descriptor = descriptor_->enum_type();
+    if (descriptor_->file() != value_enum_descriptor->file()) {
+      deps->insert(value_enum_descriptor->file());
+    }
   }
 }
 
