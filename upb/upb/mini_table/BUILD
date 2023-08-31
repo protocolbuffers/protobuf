@@ -23,12 +23,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-)
+load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 # begin:google_only
+# load("//bazel:build_defs.bzl", "upb_kt_native_interop_hint")
+#
 # cc_library(
 #     name = "compat",
 #     srcs = [
@@ -46,6 +45,8 @@ load(
 #         "//:port",
 #     ],
 # )
+#
+# upb_kt_native_interop_hint(name = "mini_table_aspect_hint")
 # end:google_only
 
 cc_library(

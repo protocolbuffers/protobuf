@@ -25,6 +25,22 @@
 
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
+# begin:google_only
+# load("//bazel:build_defs.bzl", "upb_kt_native_interop_hint")
+#
+# upb_kt_native_interop_hint(
+#     name = "base_aspect_hint",
+#     headers_to_exclude = [
+#         "status.hpp",
+#     ],
+#     strict_enums = [
+#         "upb_CType",
+#         "upb_FieldType",
+#         "upb_Label",
+#     ],
+# )
+# end:google_only
+
 cc_library(
     name = "base",
     srcs = [

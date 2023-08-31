@@ -25,6 +25,19 @@
 
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
+# begin:google_only
+# load("//bazel:build_defs.bzl", "upb_kt_native_interop_hint")
+#
+# upb_kt_native_interop_hint(
+#     name = "wire_aspect_hint",
+#     strict_enums = [
+#         "upb_DecodeStatus",
+#         "upb_EncodeStatus",
+#         "upb_WireType",
+#     ],
+# )
+# end:google_only
+
 cc_library(
     name = "wire",
     srcs = [

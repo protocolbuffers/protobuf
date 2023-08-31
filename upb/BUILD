@@ -38,7 +38,6 @@ load(
 )
 
 # begin:google_only
-# load("//tools/build_defs/kotlin/native:rules.bzl", "kt_native_interop_hint")
 # load("//tools/build_defs/license:license.bzl", "license")
 # end:google_only
 
@@ -716,29 +715,4 @@ filegroup(
 #         "//third_party/py/absl/flags",
 #     ],
 # )
-#
-# kt_native_interop_hint(
-#     name = "upb_kotlin_native_hint",
-#     compatible_with = ["//buildenv/target:non_prod"],
-#     headers_to_exclude = glob([
-#         "**/*.hpp",
-#     ]),
-#     kotlin_package = "upb",
-#     no_string_conversion = ["_upb_MiniTable_Build"],
-#     strict_enums = [
-#         "upb_CType",
-#         "upb_DecodeStatus",
-#         "upb_EncodeStatus",
-#         "upb_FieldType",
-#         "upb_FindUnknown_Status",
-#         "upb_GetExtension_Status",
-#         "upb_GetExtensionAsBytes_Status",
-#         "upb_Label",
-#         "upb_MapInsertStatus",
-#         "upb_UnknownToMessage_Status",
-#         "upb_WireType",
-#     ],
-#     visibility = ["//:__subpackages__"],
-# )
-#
 # end:google_only

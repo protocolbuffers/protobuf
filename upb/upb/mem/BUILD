@@ -25,6 +25,17 @@
 
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
+# begin:google_only
+# load("//bazel:build_defs.bzl", "upb_kt_native_interop_hint")
+#
+# upb_kt_native_interop_hint(
+#     name = "mem_aspect_hint",
+#     headers_to_exclude = [
+#         "arena.hpp",
+#     ],
+# )
+# end:google_only
+
 cc_library(
     name = "mem",
     hdrs = [

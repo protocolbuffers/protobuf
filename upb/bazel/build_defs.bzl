@@ -23,6 +23,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# begin:google_only
+# load("//tools/build_defs/kotlin/native:rules.bzl", "kt_native_interop_hint")
+# end:google_only
+
 """Internal rules for building upb."""
 
 _DEFAULT_CPPOPTS = []
@@ -99,3 +103,17 @@ def make_shell_script(name, contents, out):
         outs = [out],
         cmd = "(cat <<'HEREDOC'\n%s\nHEREDOC\n) > $@" % contents,
     )
+
+# begin:google_only
+# def upb_kt_native_interop_hint(name, headers_to_exclude = [], strict_enums = []):
+#     kt_native_interop_hint(
+#         name = name,
+#         compatible_with = ["//buildenv/target:non_prod"],
+#         headers_to_exclude = headers_to_exclude,
+#         kotlin_package = "upb",
+#         no_string_conversion = ["_upb_MiniTable_Build"],
+#         strict_enums = strict_enums,
+#         visibility = ["//:__subpackages__"],
+#     )
+#
+# end:google_only

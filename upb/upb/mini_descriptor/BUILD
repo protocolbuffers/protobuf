@@ -4,6 +4,12 @@ load(
     "UPB_DEFAULT_CPPOPTS",
 )
 
+# begin:google_only
+# load("//bazel:build_defs.bzl", "upb_kt_native_interop_hint")
+#
+# upb_kt_native_interop_hint(name = "mini_descriptor_aspect_hint")
+# end:google_only
+
 cc_library(
     name = "mini_descriptor",
     srcs = [
