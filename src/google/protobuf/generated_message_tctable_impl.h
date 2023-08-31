@@ -576,6 +576,9 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* FastMlS1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastMlS2(PROTOBUF_TC_PARAM_DECL);
 
+  // NOTE: Do not dedup RefAt by having one call the other with a const_cast. It
+  // causes ICEs of gcc 7.5.
+  // https://github.com/protocolbuffers/protobuf/issues/13715
   template <typename T>
   static inline T& RefAt(void* x, size_t offset) {
     T* target = reinterpret_cast<T*>(static_cast<char*>(x) + offset);
@@ -595,7 +598,20 @@ class PROTOBUF_EXPORT TcParser final {
 
   template <typename T>
   static inline const T& RefAt(const void* x, size_t offset) {
-    return RefAt<T>(const_cast<void*>(x), offset);
+    const T* target =
+        reinterpret_cast<const T*>(static_cast<const char*>(x) + offset);
+#if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
+    // Check the alignment in debug mode, except in 32-bit msvc because it does
+    // not respect the alignment as expressed by `alignof(T)`
+    if (PROTOBUF_PREDICT_FALSE(
+            reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
+      AlignFail(std::integral_constant<size_t, alignof(T)>(),
+                reinterpret_cast<uintptr_t>(target));
+      // Explicit abort to let compilers know this code-path does not return
+      abort();
+    }
+#endif
+    return *target;
   }
 
   template <typename T>
