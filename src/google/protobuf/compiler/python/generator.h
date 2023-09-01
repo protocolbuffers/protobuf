@@ -97,7 +97,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                                   std::string* error) const;
   void PrintImports() const;
   void PrintFileDescriptor() const;
-  void PrintAllNestedEnumsInFile() const;
+  void PrintAllEnumsInFile() const;
   void PrintNestedEnums(const Descriptor& descriptor) const;
   void PrintEnum(const EnumDescriptor& enum_descriptor) const;
 
