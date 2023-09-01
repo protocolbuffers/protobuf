@@ -28,12 +28,12 @@ load(
     "UPB_DEFAULT_CPPOPTS",
 )
 load(
-    "//protos/bazel:upb_cc_proto_library.bzl",
-    "upb_cc_proto_library",
-)
-load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
+)
+load(
+    "//protos/bazel:upb_cc_proto_library.bzl",
+    "upb_cc_proto_library",
 )
 load(
     "@rules_cc//cc:defs.bzl",
@@ -152,6 +152,7 @@ cc_test(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "//protos",
+        "//:mem",
         "//protos:repeated_field",
     ],
 )
