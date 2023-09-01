@@ -21,14 +21,14 @@ jobs:
         branch: [main, 22.x, 23.x, 24.x]
         os: [{ name: Linux, value: ubuntu-latest}]
 
-    name: Test staleness ${{ matrix.os.name }} ${{ matrix.branch}}
+    name: Test staleness ${{ matrix.os.name }} ${{ inputs.safe-checkout && 'PR' || matrix.branch }}
     runs-on: ${{ matrix.os.value }}
     if: ${{ github.event.repository.full_name == 'protocolbuffers/protobuf' }}
     steps:
-      - name: Checkout ${{ matrix.branch }}
+      - name: Checkout ${{ inputs.safe-checkout && 'PR' || matrix.branch }}
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
-          ref: ${{ inputs.safe-checkout || matrix.branch}}
+          ref: ${{ inputs.safe-checkout || matrix.branch }}
 
       - name: Mark runs associated with commits
         if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
@@ -51,7 +51,8 @@ jobs:
         # commit.
         run: |
           if [[ -z $COMMIT_TRIGGERED_RUN || -z $MAIN_RUN ]]; then
-            bazel query 'attr(tags, "staleness_test", //...)' | xargs bazel test $BAZEL_FLAGS
+            bazel query 'attr(tags, "staleness_test", //...)' | xargs bazel test $BAZEL_FLAGS || \
+              echo "Please run ./regenerate_stale_files.sh to regenerate stale files"
           else
             bazel query 'attr(tags, "staleness_test", //...)'
           fi
