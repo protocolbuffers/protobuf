@@ -44,6 +44,7 @@
 #include "absl/strings/str_format.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/unittest_features.pb.h"
+#include "google/protobuf/unittest_invalid_features.pb.h"
 
 #ifndef _MSC_VER
 #include <unistd.h>

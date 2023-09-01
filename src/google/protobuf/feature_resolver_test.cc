@@ -251,10 +251,11 @@ TEST(FeatureResolverTest, DefaultsGeneratedPoolCustom) {
 
 TEST(FeatureResolverTest, DefaultsTooEarly) {
   absl::StatusOr<FeatureSetDefaults> defaults =
-      FeatureResolver::CompileDefaults(
-          FeatureSet::descriptor(), {GetExtension(pb::test)},
-          EDITION_1_TEST_ONLY, EDITION_99999_TEST_ONLY);
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       {GetExtension(pb::test)}, EDITION_2023,
+                                       EDITION_2023);
   ASSERT_OK(defaults);
+  defaults->set_minimum_edition_enum(EDITION_1_TEST_ONLY);
   absl::StatusOr<FeatureSet> merged =
       GetDefaults(EDITION_1_TEST_ONLY, *defaults);
   EXPECT_THAT(merged, HasError(AllOf(HasSubstr("No valid default found"),
@@ -385,6 +386,15 @@ TEST(FeatureResolverTest, CompileDefaultsInvalidExtension) {
           {GetExtension(protobuf_unittest::file_opt1, FileOptions::descriptor())},
           EDITION_2023, EDITION_2023),
       HasError(HasSubstr("is not an extension of")));
+}
+
+TEST(FeatureResolverTest, CompileDefaultsMinimumLaterThanMaximum) {
+  EXPECT_THAT(
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(), {},
+                                       EDITION_99999_TEST_ONLY, EDITION_2023),
+      HasError(AllOf(HasSubstr("Invalid edition range"),
+                     HasSubstr("99999_TEST_ONLY is newer"),
+                     HasSubstr("2023"))));
 }
 
 TEST(FeatureResolverTest, MergeFeaturesChildOverrideCore) {
@@ -950,6 +960,83 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsInvalidDefaultsTooEarly) {
       FeatureResolver::CompileDefaults(feature_set_, {ext}, EDITION_2023,
                                        EDITION_2023),
       HasError(HasSubstr("No valid default found for edition 2_TEST_ONLY")));
+}
+
+TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumTooEarly) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    message Foo {
+      optional int32 int_field_feature = 12 [
+        targets = TARGET_TYPE_FIELD,
+        edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  EXPECT_THAT(
+      FeatureResolver::CompileDefaults(feature_set_, {ext}, EDITION_1_TEST_ONLY,
+                                       EDITION_99997_TEST_ONLY),
+      HasError(HasSubstr("No valid default found for edition 1_TEST_ONLY")));
+}
+
+TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    message Foo {
+      optional int32 int_file_feature = 1 [
+        targets = TARGET_TYPE_FIELD,
+        edition_defaults = { edition_enum: EDITION_99998_TEST_ONLY, value: "2" },
+        edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  auto defaults = FeatureResolver::CompileDefaults(
+      feature_set_, {ext}, EDITION_99997_TEST_ONLY, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(defaults);
+
+  EXPECT_THAT(*defaults, EqualsProto(R"pb(
+    minimum_edition_enum: EDITION_99997_TEST_ONLY
+    maximum_edition_enum: EDITION_99999_TEST_ONLY
+    defaults {
+      edition_enum: EDITION_2023
+      features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.test] { int_file_feature: 1 }
+      }
+    }
+    defaults {
+      edition_enum: EDITION_99998_TEST_ONLY
+      features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.test] { int_file_feature: 2 }
+      }
+    }
+  )pb"));
 }
 
 }  // namespace
