@@ -3051,9 +3051,7 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldMask() {
   ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
                                 R"(optional_field_mask: {paths: "a,`key`"})");
   ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
-                                R"(optional_field_mask: {paths: "`key`.`key`"})");
-  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
-                                R"(optional_field_mask: {paths: "a,`key`.`key`"})");
+                                R"(optional_field_mask: {paths: "map_field.`key`.`key`"})");
 
   // ... and parse.
   ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
@@ -3063,9 +3061,7 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldMask() {
   ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
                             R"json({"optionalFieldMask": "a,`key`"})json");
   ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
-                            R"json({"optionalFieldMask": "`key`.`key`"})json");
-  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
-                            R"json({"optionalFieldMask": "a,`key`.`key`"})json");
+                            R"json({"optionalFieldMask": "mapField.`key`.`key`"})json");
 
 }
 
