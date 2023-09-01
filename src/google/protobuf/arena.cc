@@ -40,6 +40,7 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/container/internal/layout.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arenaz_sampler.h"
