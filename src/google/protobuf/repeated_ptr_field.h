@@ -172,6 +172,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename Handler>
   using Value = typename Handler::Type;
 
+  template <typename Handler>
+  using MessageHandler = typename std::conditional<
+      std::is_base_of<Message, Value<Handler>>::value,
+      internal::GenericTypeHandler<Message>,
+      typename std::conditional<
+          std::is_base_of<MessageLite, Value<Handler>>::value,
+          internal::GenericTypeHandler<MessageLite>, Handler>::type>::type;
+
   static constexpr int kSSOCapacity = 1;
 
  protected:
@@ -253,27 +261,24 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void Delete(int index) {
     ABSL_DCHECK_GE(index, 0);
     ABSL_DCHECK_LT(index, current_size_);
-    Delete<TypeHandler>(element_at(index), arena_);
+    using H = MessageHandler<TypeHandler>;
+    Delete<H>(element_at(index), arena_);
   }
 
   // Must be called from destructor.
   template <typename TypeHandler>
   void Destroy() {
+    using H = MessageHandler<TypeHandler>;
     if (arena_ != nullptr) return;
-
-    if (using_sso()) {
-      if (tagged_rep_or_elem_ == nullptr) return;
-      Delete<TypeHandler>(tagged_rep_or_elem_, nullptr);
-      return;
-    }
-
-    Rep* r = rep();
-    int n = r->allocated_size;
-    void* const* elems = r->elements;
+    int n = allocated_size();
+    void** elems = elements();
     for (int i = 0; i < n; i++) {
-      Delete<TypeHandler>(elems[i], nullptr);
+      Delete<H>(elems[i], nullptr);
     }
-    internal::SizedDelete(r, total_size_ * sizeof(elems[0]) + kRepHeaderSize);
+    if (!using_sso()) {
+      internal::SizedDelete(rep(),
+                            total_size_ * sizeof(elems[0]) + kRepHeaderSize);
+    }
   }
 
   bool NeedsDestroy() const {
@@ -304,7 +309,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     const int n = current_size_;
     ABSL_DCHECK_GE(n, 0);
     if (n > 0) {
-      ClearNonEmpty<TypeHandler>();
+      using H = MessageHandler<TypeHandler>;
+      ClearNonEmpty<H>();
     }
   }
 
@@ -355,7 +361,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void RemoveLast() {
     ABSL_DCHECK_GT(current_size_, 0);
     ExchangeCurrentSize(current_size_ - 1);
-    TypeHandler::Clear(cast<TypeHandler>(element_at(current_size_)));
+    using H = MessageHandler<TypeHandler>;
+    H::Clear(cast<H>(element_at(current_size_)));
   }
 
   template <typename TypeHandler>
@@ -371,9 +378,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   static inline Value<TypeHandler>* copy(Value<TypeHandler>* value) {
-    auto* new_value = TypeHandler::NewFromPrototype(value, nullptr);
-    TypeHandler::Merge(*value, new_value);
-    return new_value;
+    using H = MessageHandler<TypeHandler>;
+    auto* new_value = H::NewFromPrototype(value, nullptr);
+    H::Merge(*value, new_value);
+    return cast<TypeHandler>(new_value);
   }
 
   // Used for constructing iterators.
@@ -415,7 +423,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  size_t SpaceUsedExcludingSelfLong() const {
+  PROTOBUF_NOINLINE size_t SpaceUsedExcludingSelfLong() const {
     size_t allocated_bytes =
         using_sso()
             ? 0
@@ -460,7 +468,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // cleared objects awaiting reuse.  We don't want to grow the array in
       // this case because otherwise a loop calling AddAllocated() followed by
       // Clear() would leak memory.
-      Delete<TypeHandler>(element_at(current_size_), arena_);
+      using H = MessageHandler<TypeHandler>;
+      Delete<H>(element_at(current_size_), arena_);
     } else if (current_size_ < allocated_size()) {
       // We have some cleared objects.  We don't care about their order, so we
       // can just move the first one to the end to make space.
@@ -591,8 +600,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       my_arena->Own(value);
     } else if (my_arena != value_arena) {
       auto* new_value = TypeHandler::NewFromPrototype(value, my_arena);
-      TypeHandler::Merge(*value, new_value);
-      TypeHandler::Delete(value, value_arena);
+      using H = MessageHandler<TypeHandler>;
+      H::Merge(*value, new_value);
+      H::Delete(value, value_arena);
       value = new_value;
     }
 
@@ -764,9 +774,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     const int n = current_size_;
     void* const* elems = elements();
     int i = 0;
-    ABSL_DCHECK_GT(
-        n,
-        0);  // do/while loop to avoid initial test because we know n > 0
+    ABSL_DCHECK_GT(n, 0);
+    // do/while loop to avoid initial test because we know n > 0
     do {
       TypeHandler::Clear(cast<TypeHandler>(elems[i++]));
     } while (i < n);
@@ -797,12 +806,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   PROTOBUF_NOINLINE void MergeFromInnerLoop(void** our_elems,
                                             void* const* other_elems,
                                             int length, int already_allocated) {
+    using H = MessageHandler<TypeHandler>;
     if (already_allocated < length) {
       Arena* arena = GetOwningArena();
       auto* elem_prototype = cast<TypeHandler>(other_elems[0]);
       for (int i = already_allocated; i < length; i++) {
         // Allocate a new empty element that we'll merge into below
-        our_elems[i] = TypeHandler::NewFromPrototype(elem_prototype, arena);
+        our_elems[i] = H::NewFromPrototype(elem_prototype, arena);
       }
     }
     // Main loop that does the actual merging
@@ -810,7 +820,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // Already allocated: use existing element.
       auto* other_elem = cast<TypeHandler>(other_elems[i]);
       auto* new_elem = cast<TypeHandler>(our_elems[i]);
-      TypeHandler::Merge(*other_elem, new_elem);
+      H::Merge(*other_elem, new_elem);
     }
   }
 
@@ -1665,7 +1675,13 @@ inline Arena* RepeatedPtrField<Element>::GetOwningArena() const {
 
 template <typename Element>
 inline size_t RepeatedPtrField<Element>::SpaceUsedExcludingSelfLong() const {
-  return RepeatedPtrFieldBase::SpaceUsedExcludingSelfLong<TypeHandler>();
+  // `google::protobuf::Message` has a virtual method `SpaceUsedLong`, hence we can
+  // instantiate just one function for all protobuf messages.
+  // Note: std::is_base_of requires that `Element` is a concrete class.
+  using H = typename std::conditional<std::is_base_of<Message, Element>::value,
+                                      internal::GenericTypeHandler<Message>,
+                                      TypeHandler>::type;
+  return RepeatedPtrFieldBase::SpaceUsedExcludingSelfLong<H>();
 }
 
 template <typename Element>
