@@ -1824,7 +1824,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   }
 
   // For detecting when concurrent accessor calls cause races.
-  format("PROTOBUF_TSAN_DECLARE_MEMBER;\n");
+  format("PROTOBUF_TSAN_DECLARE_MEMBER\n");
 
   format.Outdent();
   format("};\n");

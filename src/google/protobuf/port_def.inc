@@ -850,12 +850,12 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
     *reinterpret_cast<char *>(addr) += protobuf_tsan_zero; \
   } while (0)
 #else  // PROTOBUF_TSAN
-#define PROTOBUF_TSAN_READ(addr)
-#define PROTOBUF_TSAN_WRITE(addr)
+#define PROTOBUF_TSAN_READ(addr) (void)0
+#define PROTOBUF_TSAN_WRITE(addr) (void)0
 #endif  // PROTOBUF_TSAN
 
 #ifdef PROTOBUF_TSAN
-#define PROTOBUF_TSAN_DECLARE_MEMBER ::uint32_t _tsan_detect_race = 0
+#define PROTOBUF_TSAN_DECLARE_MEMBER ::uint32_t _tsan_detect_race = 0;
 #else
 #define PROTOBUF_TSAN_DECLARE_MEMBER
 #endif
