@@ -3040,6 +3040,33 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldMask() {
   ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
                             R"json({"optionalFieldMask": "mapField.``foo"})json");
 
+  // Map key must always follow a regular field.
+  // Cases where map key is the first element on the path or follows another map key
+  // should fail to serialize ..
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "`key`"})");
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "`key`.b"})");
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "a,`key`"})");
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "`key`.`key`"})");
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "a,`key`.`key`"})");
+
+  // ... and parse.
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "`key`"})json");
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "`key`.b"})json");
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "a,`key`"})json");
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "`key`.`key`"})json");
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "a,`key`.`key`"})json");
+
 }
 
 void BinaryAndJsonConformanceSuite::RunJsonTestsForStruct() {
