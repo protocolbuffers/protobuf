@@ -328,8 +328,8 @@ def _MaybeAddEncoder(cls, field_descriptor):
     sizer = type_checkers.TYPE_TO_SIZER[field_descriptor.type](
         field_descriptor.number, is_repeated, is_packed)
 
-  field_descriptor._encoder = field_encoder
   field_descriptor._sizer = sizer
+  field_descriptor._encoder = field_encoder
 
 
 def _MaybeAddDecoder(cls, field_descriptor):
@@ -338,7 +338,7 @@ def _MaybeAddDecoder(cls, field_descriptor):
 
   is_repeated = field_descriptor.label == _FieldDescriptor.LABEL_REPEATED
   is_map_entry = _IsMapField(field_descriptor)
-  field_descriptor._decoders = {}
+  helper_decoders = {}
 
   def AddDecoder(is_packed):
     decode_type = field_descriptor.type
@@ -372,7 +372,7 @@ def _MaybeAddDecoder(cls, field_descriptor):
           field_descriptor, field_descriptor._default_constructor,
           not field_descriptor.has_presence)
 
-    field_descriptor._decoders[is_packed] = field_decoder
+    helper_decoders[is_packed] = field_decoder
 
   AddDecoder(False)
 
@@ -380,6 +380,8 @@ def _MaybeAddDecoder(cls, field_descriptor):
     # To support wire compatibility of adding packed = true, add a decoder for
     # packed values regardless of the field's options.
     AddDecoder(True)
+
+  field_descriptor._decoders = helper_decoders
 
 
 def _AddClassAttributesForNestedExtensions(descriptor, dictionary):
