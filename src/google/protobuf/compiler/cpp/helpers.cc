@@ -940,6 +940,10 @@ float GetPresenceProbability(const FieldDescriptor* field,
   return 1.f;
 }
 
+bool IsStringInliningEnabled(const Options& options) {
+  return options.force_inline_string || IsProfileDriven(options);
+}
+
 bool IsStringInlined(const FieldDescriptor* field, const Options& options) {
   (void)field;
   (void)options;

@@ -376,6 +376,8 @@ bool IsLikelyPresent(const FieldDescriptor* field, const Options& options);
 float GetPresenceProbability(const FieldDescriptor* field,
                              const Options& options);
 
+bool IsStringInliningEnabled(const Options& options);
+
 // Returns true if `field` should be inlined based on PDProto profile.
 bool IsStringInlined(const FieldDescriptor* field, const Options& options);
 

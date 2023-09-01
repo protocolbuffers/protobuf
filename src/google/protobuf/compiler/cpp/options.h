@@ -76,7 +76,6 @@ struct Options {
   bool bootstrap = false;
   bool opensource_runtime = false;
   bool annotate_accessor = false;
-  bool profile_driven_inline_string = true;
   bool force_split = false;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = true;
