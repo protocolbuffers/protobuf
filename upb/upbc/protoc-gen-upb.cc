@@ -46,6 +46,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
@@ -194,6 +195,11 @@ std::string DoubleToCLiteral(double value) {
   }
 }
 
+// Escape trigraphs by escaping question marks to \?
+std::string EscapeTrigraphs(absl::string_view to_escape) {
+  return absl::StrReplaceAll(to_escape, {{"?", "\\?"}});
+}
+
 std::string FieldDefault(upb::FieldDefPtr field) {
   switch (field.ctype()) {
     case kUpb_CType_Message:
@@ -201,9 +207,9 @@ std::string FieldDefault(upb::FieldDefPtr field) {
     case kUpb_CType_Bytes:
     case kUpb_CType_String: {
       upb_StringView str = field.default_value().str_val;
-      return absl::Substitute(
-          "upb_StringView_FromString(\"$0\")",
-          absl::CEscape(absl::string_view(str.data, str.size)));
+      return absl::Substitute("upb_StringView_FromString(\"$0\")",
+                              EscapeTrigraphs(absl::CEscape(
+                                  absl::string_view(str.data, str.size))));
     }
     case kUpb_CType_Int32:
       return absl::Substitute("(int32_t)$0", field.default_value().int32_val);
