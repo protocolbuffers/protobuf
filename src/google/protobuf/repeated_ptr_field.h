@@ -225,9 +225,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
           std::move(value);
       return;
     }
-    if (allocated_size() == total_size_) {
-      Reserve(total_size_ + 1);
-    }
+    MaybeExtend();
     if (!using_sso()) ++rep()->allocated_size;
     auto* result = TypeHandler::New(arena_, std::move(value));
     element_at(ExchangeCurrentSize(current_size_ + 1)) = result;
@@ -324,10 +322,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   void AddAllocatedForParse(Value<TypeHandler>* value) {
     ABSL_DCHECK_EQ(current_size_, allocated_size());
-    if (current_size_ == total_size_) {
-      // The array is completely full with no cleared objects, so grow it.
-      InternalExtend(1);
-    }
+    MaybeExtend();
     element_at(current_size_++) = value;
     if (!using_sso()) ++rep()->allocated_size;
   }
@@ -348,9 +343,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     RepeatedPtrFieldBase::MergeFrom<TypeHandler>(other);
   }
 
-  void CloseGap(int start, int num);  // implemented in the cc file
+  void CloseGap(int start, int num);
 
-  void Reserve(int new_size);  // implemented in the cc file
+  void Reserve(int capacity);
 
   template <typename TypeHandler>
   static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
@@ -495,9 +490,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
            "RepeatedPtrField not on an arena.";
     ABSL_DCHECK(TypeHandler::GetOwningArena(value) == nullptr)
         << "AddCleared() can only accept values not on an arena.";
-    if (allocated_size() == total_size_) {
-      Reserve(total_size_ + 1);
-    }
+    MaybeExtend();
     if (using_sso()) {
       tagged_rep_or_elem_ = value;
     } else {
@@ -764,10 +757,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       const RepeatedPtrFieldBase& other,
       void (RepeatedPtrFieldBase::*inner_loop)(void**, void* const*, int,
                                                int)) {
-    // Note: wrapper has already guaranteed that other.rep_ != nullptr here.
+    // Note: wrapper has already guaranteed that `other_size` > 0.
     int other_size = other.current_size_;
+    Reserve(current_size_ + other_size);
     void* const* other_elements = other.elements();
-    void** new_elements = InternalExtend(other_size);
+    void** new_elements = elements() + current_size_;
     int allocated_elems = allocated_size() - current_size_;
     (this->*inner_loop)(new_elements, other_elements, other_size,
                         allocated_elems);
@@ -799,12 +793,21 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
   }
 
-  // Internal helper: extends array space if necessary to contain
-  // |extend_amount| more elements, and returns a pointer to the element
-  // immediately following the old list of elements.  This interface factors out
-  // common behavior from Reserve() and MergeFrom() to reduce code size.
-  // |extend_amount| must be > 0.
-  void** InternalExtend(int extend_amount);
+  // Extends capacity by at least |extend_amount|.
+  //
+  // Pre-condition: |extend_amount| must be > 0.
+  void InternalExtend(int extend_amount);
+
+  // Ensures that capacity is big enough to store one more allocated element.
+  inline void MaybeExtend() {
+    if (using_sso() ? (tagged_rep_or_elem_ != nullptr)
+                    : (rep()->allocated_size == total_size_)) {
+      ABSL_DCHECK_EQ(allocated_size(), Capacity());
+      InternalExtend(1);
+    } else {
+      ABSL_DCHECK_NE(allocated_size(), Capacity());
+    }
+  }
 
   // Internal helper for Add: adds "obj" as the next element in the
   // array, including potentially resizing the array with Reserve if
