@@ -1694,8 +1694,8 @@ TEST(RepeatedPtrField, AddAllocated) {
   std::string* moo = new std::string("moo");
   field.AddAllocated(moo);
   EXPECT_EQ(index + 1, field.size());
-  // We should have discarded the cleared object.
-  EXPECT_EQ(0, field.ClearedCount());
+  // We should have retained the cleared object.
+  EXPECT_EQ(1, field.ClearedCount());
   EXPECT_EQ(moo, &field.Get(index));
 }
 

@@ -2484,7 +2484,7 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
       // We can guarantee here that repeated and result are either both heap
       // allocated or arena owned. So it is safe to call the unsafe version
       // of AddAllocated.
-      repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message> >(result);
+      repeated->UnsafeArenaAddAllocated(result);
     }
 
     return result;
@@ -2526,7 +2526,7 @@ void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
-    repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(new_entry);
+    repeated->UnsafeArenaAddAllocated(new_entry);
   }
 }
 
