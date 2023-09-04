@@ -199,12 +199,12 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
         CollectMinimalFileDepsContainingExtensionsInternal(dep);
 
     // Everything the dep covered, this file will also cover.
-    transitive_deps_collector.insert(dep_info.transitive_compile_time_jars.begin(),
-                                     dep_info.transitive_compile_time_jars.end());
+    transitive_deps_collector.insert(dep_info.transitive_deps.begin(),
+                                     dep_info.transitive_deps.end());
     // Prune everything from the dep's covered list in case another dep lists it
     // as a min dep.
-    to_prune.insert(dep_info.transitive_compile_time_jars.begin(),
-                    dep_info.transitive_compile_time_jars.end());
+    to_prune.insert(dep_info.transitive_deps.begin(),
+                    dep_info.transitive_deps.end());
 
     // Does the dep have any extensions...
     if (dep_info.has_extensions) {
