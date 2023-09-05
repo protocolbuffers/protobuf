@@ -585,17 +585,29 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
   format("};\n\n");  // _table_
 }
 
+static std::string TcParseFunctionName(internal::TcParseFunction func) {
+#define PROTOBUF_TC_PARSE_FUNCTION_X(value) #value,
+  static constexpr absl::string_view kNames[] = {
+      {}, PROTOBUF_TC_PARSE_FUNCTION_LIST};
+#undef PROTOBUF_TC_PARSE_FUNCTION_X
+  const int func_index = static_cast<int>(func);
+  ABSL_CHECK_GE(func_index, 0);
+  ABSL_CHECK_LT(func_index, std::end(kNames) - std::begin(kNames));
+  static constexpr absl::string_view ns = "::_pbi::TcParser::";
+  return absl::StrCat(ns, kNames[func_index]);
+}
+
 void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
   for (const auto& info : tc_table_info_->fast_path_fields) {
     if (auto* nonfield = info.AsNonField()) {
       // Fast slot that is not associated with a field. Eg end group tags.
-      format("{$1$, {$2$, $3$}},\n", nonfield->func_name, nonfield->coded_tag,
-             nonfield->nonfield_info);
+      format("{$1$, {$2$, $3$}},\n", TcParseFunctionName(nonfield->func),
+             nonfield->coded_tag, nonfield->nonfield_info);
     } else if (auto* as_field = info.AsField()) {
       PrintFieldComment(format, as_field->field, options_);
       ABSL_CHECK(!ShouldSplit(as_field->field, options_));
 
-      std::string func_name = as_field->func_name;
+      std::string func_name = TcParseFunctionName(as_field->func);
       if (GetOptimizeFor(as_field->field->file(), options_) ==
           FileOptions::SPEED) {
         // For 1-byte tags we have a more optimized version of the varint parser

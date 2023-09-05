@@ -54,6 +54,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/generated_message_util.h"
@@ -3218,21 +3219,20 @@ static uint32_t AlignTo(uint32_t v) {
 }
 
 static internal::TailCallParseFunc GetFastParseFunction(
-    absl::string_view func_name) {
-#define PROTOBUF_TC_PARSE_FUNCTION_X(value) \
-  {"::_pbi::TcParser::" #value, internal::TcParser::value},
-  static const auto* const map =
-      new absl::flat_hash_map<absl::string_view, internal::TailCallParseFunc>{
-          PROTOBUF_TC_PARSE_FUNCTION_LIST};
+    internal::TcParseFunction func) {
+#define PROTOBUF_TC_PARSE_FUNCTION_X(value) internal::TcParser::value,
+  static constexpr internal::TailCallParseFunc kFuncs[] = {
+      {}, PROTOBUF_TC_PARSE_FUNCTION_LIST};
 #undef PROTOBUF_TC_PARSE_FUNCTION_X
-  auto it = map->find(func_name);
-  if (it == map->end()) {
-    ABSL_DLOG(FATAL) << "Failed to find function: " << func_name;
+  const int index = static_cast<int>(func);
+  if (index < 0 || index >= std::end(kFuncs) - std::begin(kFuncs) ||
+      kFuncs[index] == nullptr) {
+    ABSL_DLOG(FATAL) << "Failed to find function: " << static_cast<int>(func);
     // Let's not crash in opt, just in case.
     // MiniParse is always a valid parser.
     return &internal::TcParser::MiniParse;
   }
-  return it->second;
+  return kFuncs[index];
 }
 
 const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
@@ -3259,11 +3259,11 @@ void Reflection::PopulateTcParseFastEntries(
   for (const auto& fast_field : table_info.fast_path_fields) {
     if (auto* nonfield = fast_field.AsNonField()) {
       // No field, but still a special entry.
-      *fast_entries++ = {GetFastParseFunction(nonfield->func_name),
+      *fast_entries++ = {GetFastParseFunction(nonfield->func),
                          {nonfield->coded_tag, nonfield->nonfield_info}};
     } else if (auto* as_field = fast_field.AsField()) {
       *fast_entries++ = {
-          GetFastParseFunction(as_field->func_name),
+          GetFastParseFunction(as_field->func),
           {as_field->coded_tag, as_field->hasbit_idx, as_field->aux_idx,
            static_cast<uint16_t>(schema_.GetFieldOffset(as_field->field))}};
     } else {

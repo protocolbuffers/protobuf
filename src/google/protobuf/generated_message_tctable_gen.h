@@ -50,6 +50,7 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+enum class TcParseFunction : uint8_t;
 
 namespace field_layout {
 enum TransformValidation : uint16_t;
@@ -90,14 +91,14 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   struct FastFieldInfo {
     struct Empty {};
     struct Field {
-      std::string func_name;
+      TcParseFunction func;
       uint16_t coded_tag;
       const FieldDescriptor* field;
       uint8_t hasbit_idx;
       uint8_t aux_idx;
     };
     struct NonField {
-      std::string func_name;
+      TcParseFunction func;
       uint16_t coded_tag;
       uint16_t nonfield_info;
     };
