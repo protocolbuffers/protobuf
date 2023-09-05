@@ -133,7 +133,8 @@ class PROTOBUF_EXPORT InternalMetadata {
     }
   }
 
-  PROTOBUF_NDEBUG_INLINE void InternalSwap(InternalMetadata* other) {
+  PROTOBUF_NDEBUG_INLINE void InternalSwap(
+      InternalMetadata* PROTOBUF_RESTRICT other) {
     std::swap(ptr_, other->ptr_);
   }
 

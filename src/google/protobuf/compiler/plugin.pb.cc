@@ -586,7 +586,7 @@ PROTOBUF_NOINLINE bool Version::IsInitialized() const {
 ::_pbi::CachedSize* Version::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Version::InternalSwap(Version* other) {
+void Version::InternalSwap(Version* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -940,7 +940,7 @@ PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
 ::_pbi::CachedSize* CodeGeneratorRequest::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
+void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -1292,7 +1292,7 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse_File::IsInitialized() const {
 ::_pbi::CachedSize* CodeGeneratorResponse_File::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* other) {
+void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -1566,7 +1566,7 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse::IsInitialized() const {
 ::_pbi::CachedSize* CodeGeneratorResponse::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
+void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();

@@ -2487,7 +2487,7 @@ PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitialized() const {
 ::_pbi::CachedSize* FileDescriptorSet::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
+void FileDescriptorSet::InternalSwap(FileDescriptorSet* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.file_.InternalSwap(&other->_impl_.file_);
@@ -3115,7 +3115,7 @@ PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitialized() const {
 ::_pbi::CachedSize* FileDescriptorProto::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
+void FileDescriptorProto::InternalSwap(FileDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -3407,7 +3407,7 @@ PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitialized() const {
 ::_pbi::CachedSize* DescriptorProto_ExtensionRange::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange* other) {
+void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -3626,7 +3626,7 @@ PROTOBUF_NOINLINE bool DescriptorProto_ReservedRange::IsInitialized() const {
 ::_pbi::CachedSize* DescriptorProto_ReservedRange::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* other) {
+void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -4118,7 +4118,7 @@ PROTOBUF_NOINLINE bool DescriptorProto::IsInitialized() const {
 ::_pbi::CachedSize* DescriptorProto::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void DescriptorProto::InternalSwap(DescriptorProto* other) {
+void DescriptorProto::InternalSwap(DescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -4475,7 +4475,7 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions_Declaration::IsInitialized() const 
 ::_pbi::CachedSize* ExtensionRangeOptions_Declaration::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Declaration* other) {
+void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Declaration* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -4801,7 +4801,7 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
 ::_pbi::CachedSize* ExtensionRangeOptions::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
+void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -5397,7 +5397,7 @@ PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitialized() const {
 ::_pbi::CachedSize* FieldDescriptorProto::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* other) {
+void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -5668,7 +5668,7 @@ PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitialized() const {
 ::_pbi::CachedSize* OneofDescriptorProto::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* other) {
+void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -5886,7 +5886,7 @@ PROTOBUF_NOINLINE bool EnumDescriptorProto_EnumReservedRange::IsInitialized() co
 ::_pbi::CachedSize* EnumDescriptorProto_EnumReservedRange::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_EnumReservedRange* other) {
+void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_EnumReservedRange* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
@@ -6230,7 +6230,7 @@ PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitialized() const {
 ::_pbi::CachedSize* EnumDescriptorProto::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
+void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -6522,7 +6522,7 @@ PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitialized() const {
 ::_pbi::CachedSize* EnumValueDescriptorProto::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* other) {
+void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -6815,7 +6815,7 @@ PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitialized() const {
 ::_pbi::CachedSize* ServiceDescriptorProto::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
+void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -7223,7 +7223,7 @@ PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitialized() const {
 ::_pbi::CachedSize* MethodDescriptorProto::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
+void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -8224,7 +8224,7 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
 ::_pbi::CachedSize* FileOptions::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void FileOptions::InternalSwap(FileOptions* other) {
+void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   auto* lhs_arena = GetArenaForAllocation();
@@ -8641,7 +8641,7 @@ PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
 ::_pbi::CachedSize* MessageOptions::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void MessageOptions::InternalSwap(MessageOptions* other) {
+void MessageOptions::InternalSwap(MessageOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -8933,7 +8933,7 @@ PROTOBUF_NOINLINE bool FieldOptions_EditionDefault::IsInitialized() const {
 ::_pbi::CachedSize* FieldOptions_EditionDefault::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* other) {
+void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -9506,7 +9506,7 @@ PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
 ::_pbi::CachedSize* FieldOptions::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void FieldOptions::InternalSwap(FieldOptions* other) {
+void FieldOptions::InternalSwap(FieldOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -9764,7 +9764,7 @@ PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
 ::_pbi::CachedSize* OneofOptions::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void OneofOptions::InternalSwap(OneofOptions* other) {
+void OneofOptions::InternalSwap(OneofOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -10104,7 +10104,7 @@ PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
 ::_pbi::CachedSize* EnumOptions::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void EnumOptions::InternalSwap(EnumOptions* other) {
+void EnumOptions::InternalSwap(EnumOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -10426,7 +10426,7 @@ PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
 ::_pbi::CachedSize* EnumValueOptions::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
+void EnumValueOptions::InternalSwap(EnumValueOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -10716,7 +10716,7 @@ PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
 ::_pbi::CachedSize* ServiceOptions::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void ServiceOptions::InternalSwap(ServiceOptions* other) {
+void ServiceOptions::InternalSwap(ServiceOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -11043,7 +11043,7 @@ PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
 ::_pbi::CachedSize* MethodOptions::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void MethodOptions::InternalSwap(MethodOptions* other) {
+void MethodOptions::InternalSwap(MethodOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -11293,7 +11293,7 @@ PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
 ::_pbi::CachedSize* UninterpretedOption_NamePart::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* other) {
+void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -11710,7 +11710,7 @@ PROTOBUF_NOINLINE bool UninterpretedOption::IsInitialized() const {
 ::_pbi::CachedSize* UninterpretedOption::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
+void UninterpretedOption::InternalSwap(UninterpretedOption* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -12052,7 +12052,7 @@ PROTOBUF_NOINLINE bool FeatureSet::IsInitialized() const {
 ::_pbi::CachedSize* FeatureSet::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void FeatureSet::InternalSwap(FeatureSet* other) {
+void FeatureSet::InternalSwap(FeatureSet* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -12344,7 +12344,7 @@ PROTOBUF_NOINLINE bool FeatureSetDefaults_FeatureSetEditionDefault::IsInitialize
 ::_pbi::CachedSize* FeatureSetDefaults_FeatureSetEditionDefault::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void FeatureSetDefaults_FeatureSetEditionDefault::InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* other) {
+void FeatureSetDefaults_FeatureSetEditionDefault::InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -12703,7 +12703,7 @@ PROTOBUF_NOINLINE bool FeatureSetDefaults::IsInitialized() const {
 ::_pbi::CachedSize* FeatureSetDefaults::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void FeatureSetDefaults::InternalSwap(FeatureSetDefaults* other) {
+void FeatureSetDefaults::InternalSwap(FeatureSetDefaults* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -13068,7 +13068,7 @@ PROTOBUF_NOINLINE bool SourceCodeInfo_Location::IsInitialized() const {
 ::_pbi::CachedSize* SourceCodeInfo_Location::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
+void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -13250,7 +13250,7 @@ PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitialized() const {
 ::_pbi::CachedSize* SourceCodeInfo::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
+void SourceCodeInfo::InternalSwap(SourceCodeInfo* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.location_.InternalSwap(&other->_impl_.location_);
@@ -13585,7 +13585,7 @@ PROTOBUF_NOINLINE bool GeneratedCodeInfo_Annotation::IsInitialized() const {
 ::_pbi::CachedSize* GeneratedCodeInfo_Annotation::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* other) {
+void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -13769,7 +13769,7 @@ PROTOBUF_NOINLINE bool GeneratedCodeInfo::IsInitialized() const {
 ::_pbi::CachedSize* GeneratedCodeInfo::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
+void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.annotation_.InternalSwap(&other->_impl_.annotation_);
