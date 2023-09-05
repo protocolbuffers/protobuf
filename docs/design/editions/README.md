@@ -27,4 +27,5 @@ The following topics are in this repository:
 *   [Stricter Schemas with Editions](stricter-schemas-with-editions.md)
 *   [Edition Zero: JSON Handling](edition-zero-json-handling.md)
 *   [Edition Zero: Converged Semantics](edition-zero-converged-semantics.md)
+*   [Edition Zero Feature: Enum Field Closedness](edition-zero-feature-enum-field-closedness.md)
 *   [Edition Naming](edition-naming.md)
