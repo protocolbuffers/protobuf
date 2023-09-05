@@ -212,10 +212,6 @@ size_t Message::SpaceUsedLong() const {
   return GetReflection()->SpaceUsedLong(*this);
 }
 
-uint64_t Message::GetInvariantPerBuild(uint64_t salt) {
-  return salt;
-}
-
 namespace internal {
 void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
                                 size_t size, const void* message,

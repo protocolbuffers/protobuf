@@ -411,9 +411,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   size_t MaybeComputeUnknownFieldsSize(size_t total_size,
                                        internal::CachedSize* cached_size) const;
 
-
- protected:
-  static uint64_t GetInvariantPerBuild(uint64_t salt);
 };
 
 namespace internal {
