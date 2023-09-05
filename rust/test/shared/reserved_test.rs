@@ -36,6 +36,16 @@ fn test_reserved_keyword_in_accessors() {
     let msg = Reserved::new();
     let res = msg.r#for();
     assert_eq!(res, 0);
+    unsafe {
+        let x = 1;
+    }
+
+    let z = 2;
+    unsafe {
+        let mut p = 3;
+        let zz = &mut p as *mut i32;
+        *zz = 5;
+    }
 }
 
 #[test]
