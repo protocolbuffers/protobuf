@@ -201,6 +201,8 @@ bootstrap_cc_library(
     hdrs = [
         "upb/reflection/def.h",
         "upb/reflection/def.hpp",
+        "upb/reflection/enum_def.h",
+        "upb/reflection/field_def.h",
         "upb/reflection/message.h",
         "upb/reflection/message.hpp",
     ],
