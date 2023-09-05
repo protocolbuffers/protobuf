@@ -123,6 +123,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   AddSerializableAttribute(printer);
 
+  printer->Print("[global::System.Diagnostics.DebuggerDisplay(\"{ToString(),nq}\")]\n");
   printer->Print(
     vars,
     "$access_level$ sealed partial class $class_name$ : ");
