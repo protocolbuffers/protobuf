@@ -53,8 +53,8 @@ enum {
 };
 
 /* Encodes the given |msg| to JSON format.  The message's reflection is given in
- * |m|.  The symtab in |symtab| is used to find extensions (if NULL, extensions
- * will not be printed).
+ * |m|.  The DefPool in |ext_pool| is used to find extensions (if NULL,
+ * extensions will not be printed).
  *
  * Output is placed in the given buffer, and always NULL-terminated.  The output
  * size (excluding NULL) is returned.  This means that a return value >= |size|
