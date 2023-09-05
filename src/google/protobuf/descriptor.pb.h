@@ -9918,6 +9918,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     kEditionFieldNumber = 13,
     kOptionsFieldNumber = 8,
     kSourceCodeInfoFieldNumber = 9,
+    kEditionEnumFieldNumber = 14,
   };
   // repeated string dependency = 3;
   int dependency_size() const;
@@ -10153,13 +10154,24 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   ::google::protobuf::SourceCodeInfo* _internal_mutable_source_code_info();
 
   public:
+  // optional .google.protobuf.Edition edition_enum = 14;
+  bool has_edition_enum() const;
+  void clear_edition_enum() ;
+  ::google::protobuf::Edition edition_enum() const;
+  void set_edition_enum(::google::protobuf::Edition value);
+
+  private:
+  ::google::protobuf::Edition _internal_edition_enum() const;
+  void _internal_set_edition_enum(::google::protobuf::Edition value);
+
+  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorProto)
  private:
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      4, 13, 6,
+      4, 14, 7,
       86, 2>
       _table_;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
@@ -10181,6 +10193,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     ::google::protobuf::internal::ArenaStringPtr edition_;
     ::google::protobuf::FileOptions* options_;
     ::google::protobuf::SourceCodeInfo* source_code_info_;
+    int edition_enum_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -11290,6 +11303,35 @@ inline void FileDescriptorProto::set_allocated_edition(std::string* value) {
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.edition)
+}
+
+// optional .google.protobuf.Edition edition_enum = 14;
+inline bool FileDescriptorProto::has_edition_enum() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
+  return value;
+}
+inline void FileDescriptorProto::clear_edition_enum() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.edition_enum_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000040u;
+}
+inline ::google::protobuf::Edition FileDescriptorProto::edition_enum() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.edition_enum)
+  return _internal_edition_enum();
+}
+inline void FileDescriptorProto::set_edition_enum(::google::protobuf::Edition value) {
+  _internal_set_edition_enum(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.edition_enum)
+}
+inline ::google::protobuf::Edition FileDescriptorProto::_internal_edition_enum() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  return static_cast<::google::protobuf::Edition>(_impl_.edition_enum_);
+}
+inline void FileDescriptorProto::_internal_set_edition_enum(::google::protobuf::Edition value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  assert(::google::protobuf::Edition_IsValid(value));
+  _impl_._has_bits_[0] |= 0x00000040u;
+  _impl_.edition_enum_ = value;
 }
 
 // -------------------------------------------------------------------

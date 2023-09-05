@@ -112,6 +112,9 @@ message FileDescriptorProto {
   // The edition of the proto file, which is an opaque string.
   // TODO(b/297898292) Deprecate and remove this field in favor of enums.
   optional string edition = 13;
+
+  // The edition of the proto file.
+  optional Edition edition_enum = 14;
 }
 
 // Describes a message type.
