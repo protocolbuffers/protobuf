@@ -293,7 +293,7 @@ PROTOBUF_NOINLINE bool SourceContext::IsInitialized() const {
 ::_pbi::CachedSize* SourceContext::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void SourceContext::InternalSwap(SourceContext* other) {
+void SourceContext::InternalSwap(SourceContext* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();

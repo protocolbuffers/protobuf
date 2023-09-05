@@ -510,7 +510,7 @@ PROTOBUF_NOINLINE bool DoubleValue::IsInitialized() const {
 ::_pbi::CachedSize* DoubleValue::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void DoubleValue::InternalSwap(DoubleValue* other) {
+void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -691,7 +691,7 @@ PROTOBUF_NOINLINE bool FloatValue::IsInitialized() const {
 ::_pbi::CachedSize* FloatValue::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void FloatValue::InternalSwap(FloatValue* other) {
+void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -858,7 +858,7 @@ PROTOBUF_NOINLINE bool Int64Value::IsInitialized() const {
 ::_pbi::CachedSize* Int64Value::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Int64Value::InternalSwap(Int64Value* other) {
+void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -1025,7 +1025,7 @@ PROTOBUF_NOINLINE bool UInt64Value::IsInitialized() const {
 ::_pbi::CachedSize* UInt64Value::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void UInt64Value::InternalSwap(UInt64Value* other) {
+void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -1192,7 +1192,7 @@ PROTOBUF_NOINLINE bool Int32Value::IsInitialized() const {
 ::_pbi::CachedSize* Int32Value::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Int32Value::InternalSwap(Int32Value* other) {
+void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -1359,7 +1359,7 @@ PROTOBUF_NOINLINE bool UInt32Value::IsInitialized() const {
 ::_pbi::CachedSize* UInt32Value::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void UInt32Value::InternalSwap(UInt32Value* other) {
+void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -1525,7 +1525,7 @@ PROTOBUF_NOINLINE bool BoolValue::IsInitialized() const {
 ::_pbi::CachedSize* BoolValue::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void BoolValue::InternalSwap(BoolValue* other) {
+void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -1714,7 +1714,7 @@ PROTOBUF_NOINLINE bool StringValue::IsInitialized() const {
 ::_pbi::CachedSize* StringValue::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void StringValue::InternalSwap(StringValue* other) {
+void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -1901,7 +1901,7 @@ PROTOBUF_NOINLINE bool BytesValue::IsInitialized() const {
 ::_pbi::CachedSize* BytesValue::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void BytesValue::InternalSwap(BytesValue* other) {
+void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();

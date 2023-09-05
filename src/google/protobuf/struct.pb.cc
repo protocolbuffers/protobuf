@@ -418,7 +418,7 @@ PROTOBUF_NOINLINE bool Struct::IsInitialized() const {
 ::_pbi::CachedSize* Struct::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Struct::InternalSwap(Struct* other) {
+void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.fields_.InternalSwap(&other->_impl_.fields_);
@@ -821,7 +821,7 @@ PROTOBUF_NOINLINE bool Value::IsInitialized() const {
 ::_pbi::CachedSize* Value::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Value::InternalSwap(Value* other) {
+void Value::InternalSwap(Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_.kind_, other->_impl_.kind_);
@@ -996,7 +996,7 @@ PROTOBUF_NOINLINE bool ListValue::IsInitialized() const {
 ::_pbi::CachedSize* ListValue::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void ListValue::InternalSwap(ListValue* other) {
+void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.values_.InternalSwap(&other->_impl_.values_);

@@ -801,7 +801,7 @@ PROTOBUF_NOINLINE bool Type::IsInitialized() const {
 ::_pbi::CachedSize* Type::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Type::InternalSwap(Type* other) {
+void Type::InternalSwap(Type* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -1279,7 +1279,7 @@ PROTOBUF_NOINLINE bool Field::IsInitialized() const {
 ::_pbi::CachedSize* Field::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Field::InternalSwap(Field* other) {
+void Field::InternalSwap(Field* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -1660,7 +1660,7 @@ PROTOBUF_NOINLINE bool Enum::IsInitialized() const {
 ::_pbi::CachedSize* Enum::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Enum::InternalSwap(Enum* other) {
+void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -1916,7 +1916,7 @@ PROTOBUF_NOINLINE bool EnumValue::IsInitialized() const {
 ::_pbi::CachedSize* EnumValue::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void EnumValue::InternalSwap(EnumValue* other) {
+void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -2165,7 +2165,7 @@ PROTOBUF_NOINLINE bool Option::IsInitialized() const {
 ::_pbi::CachedSize* Option::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Option::InternalSwap(Option* other) {
+void Option::InternalSwap(Option* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();

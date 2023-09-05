@@ -295,7 +295,7 @@ PROTOBUF_NOINLINE bool Timestamp::IsInitialized() const {
 ::_pbi::CachedSize* Timestamp::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Timestamp::InternalSwap(Timestamp* other) {
+void Timestamp::InternalSwap(Timestamp* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::google::protobuf::internal::memswap<

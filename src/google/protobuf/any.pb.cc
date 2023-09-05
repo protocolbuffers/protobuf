@@ -360,7 +360,7 @@ PROTOBUF_NOINLINE bool Any::IsInitialized() const {
 ::_pbi::CachedSize* Any::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Any::InternalSwap(Any* other) {
+void Any::InternalSwap(Any* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();

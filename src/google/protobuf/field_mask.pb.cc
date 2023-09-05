@@ -277,7 +277,7 @@ PROTOBUF_NOINLINE bool FieldMask::IsInitialized() const {
 ::_pbi::CachedSize* FieldMask::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void FieldMask::InternalSwap(FieldMask* other) {
+void FieldMask::InternalSwap(FieldMask* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.paths_.InternalSwap(&other->_impl_.paths_);

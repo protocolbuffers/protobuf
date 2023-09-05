@@ -623,7 +623,7 @@ PROTOBUF_NOINLINE bool Api::IsInitialized() const {
 ::_pbi::CachedSize* Api::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Api::InternalSwap(Api* other) {
+void Api::InternalSwap(Api* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -1012,7 +1012,7 @@ PROTOBUF_NOINLINE bool Method::IsInitialized() const {
 ::_pbi::CachedSize* Method::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Method::InternalSwap(Method* other) {
+void Method::InternalSwap(Method* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
@@ -1254,7 +1254,7 @@ PROTOBUF_NOINLINE bool Mixin::IsInitialized() const {
 ::_pbi::CachedSize* Mixin::AccessCachedSize() const {
   return &_impl_._cached_size_;
 }
-void Mixin::InternalSwap(Mixin* other) {
+void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
