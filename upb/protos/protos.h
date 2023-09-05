@@ -102,21 +102,6 @@ class Ptr final {
   Proxy<T> p_;
 };
 
-namespace internal {
-struct PrivateAccess {
-  template <typename T>
-  static auto* GetInternalMsg(T&& message) {
-    return message->msg();
-  }
-};
-
-template <typename T>
-auto* GetInternalMsg(T&& message) {
-  return PrivateAccess::GetInternalMsg(std::forward<T>(message));
-}
-
-}  // namespace internal
-
 inline absl::string_view UpbStrToStringView(upb_StringView str) {
   return absl::string_view(str.data, str.size);
 }
@@ -163,6 +148,26 @@ absl::Status MessageEncodeError(upb_EncodeStatus status,
                                 SourceLocation loc = SourceLocation::current());
 
 namespace internal {
+struct PrivateAccess {
+  template <typename T>
+  static auto* GetInternalMsg(T&& message) {
+    return message->msg();
+  }
+  template <typename T>
+  static auto Proxy(void* p, upb_Arena* arena) {
+    return typename T::Proxy(p, arena);
+  }
+  template <typename T>
+  static auto CProxy(const void* p, upb_Arena* arena) {
+    return typename T::CProxy(p, arena);
+  }
+};
+
+template <typename T>
+auto* GetInternalMsg(T&& message) {
+  return PrivateAccess::GetInternalMsg(std::forward<T>(message));
+}
+
 template <typename T>
 T CreateMessage() {
   return T();
@@ -174,8 +179,8 @@ typename T::Proxy CreateMessageProxy(void* msg, upb_Arena* arena) {
 }
 
 template <typename T>
-typename T::CProxy CreateMessage(upb_Message* msg, upb_Arena* arena) {
-  return typename T::CProxy(msg, arena);
+typename T::CProxy CreateMessage(const upb_Message* msg, upb_Arena* arena) {
+  return PrivateAccess::CProxy<T>(msg, arena);
 }
 
 class ExtensionMiniTableProvider {
@@ -269,11 +274,11 @@ void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
 }
 
 template <typename T>
-typename T::Proxy CloneMessage(Ptr<T> message, upb::Arena& arena) {
-  return typename T::Proxy(
+typename T::Proxy CloneMessage(Ptr<T> message, upb_Arena* arena) {
+  return internal::PrivateAccess::Proxy<T>(
       ::protos::internal::DeepClone(internal::GetInternalMsg(message),
-                                    T::minitable(), arena.ptr()),
-      arena.ptr());
+                                    T::minitable(), arena),
+      arena);
 }
 
 template <typename T>
