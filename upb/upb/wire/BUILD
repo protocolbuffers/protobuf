@@ -73,7 +73,7 @@ cc_library(
         "//:message",
         "//:message_accessors_internal",
         "//:message_internal",
-        "//:message_rep_internal",
+        "//:message_internal_types",
         "//:mini_table",
         "//:port",
         "@utf8_range",

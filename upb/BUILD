@@ -24,13 +24,13 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load("@rules_python//python:defs.bzl", "py_binary")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library_copts",
     "upb_proto_reflection_library",
 )
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load(
     "//upbc:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
@@ -380,14 +380,14 @@ alias(
 )
 
 alias(
-    name = "message_promote",
-    actual = "//upb/message:promote",
+    name = "message_internal_types",
+    actual = "//upb/message:internal_types",
     visibility = ["//visibility:public"],
 )
 
 alias(
-    name = "message_rep_internal",
-    actual = "//upb/message:rep_internal",
+    name = "message_promote",
+    actual = "//upb/message:promote",
     visibility = ["//visibility:public"],
 )
 
@@ -552,7 +552,7 @@ upb_amalgamation(
         ":message",
         ":message_accessors",
         ":message_internal",
-        ":message_rep_internal",
+        ":message_internal_types",
         ":message_tagged_ptr",
         ":message_types",
         ":mini_descriptor",
@@ -600,7 +600,7 @@ upb_amalgamation(
         ":message",
         ":message_accessors",
         ":message_internal",
-        ":message_rep_internal",
+        ":message_internal_types",
         ":message_tagged_ptr",
         ":message_types",
         ":mini_descriptor",
@@ -649,7 +649,7 @@ upb_amalgamation(
         ":message",
         ":message_accessors",
         ":message_internal",
-        ":message_rep_internal",
+        ":message_internal_types",
         ":message_tagged_ptr",
         ":message_types",
         ":mini_descriptor",
