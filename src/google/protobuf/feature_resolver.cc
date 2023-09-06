@@ -134,8 +134,7 @@ absl::Status ValidateExtension(const Descriptor& feature_set,
   return absl::OkStatus();
 }
 
-void CollectEditions(const Descriptor& descriptor, Edition minimum_edition,
-                     Edition maximum_edition,
+void CollectEditions(const Descriptor& descriptor, Edition maximum_edition,
                      absl::btree_set<Edition>& editions) {
   for (int i = 0; i < descriptor.field_count(); ++i) {
     for (const auto& def : descriptor.field(i)->options().edition_defaults()) {
@@ -221,6 +220,10 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
     const Descriptor* feature_set,
     absl::Span<const FieldDescriptor* const> extensions,
     Edition minimum_edition, Edition maximum_edition) {
+  if (minimum_edition > maximum_edition) {
+    return Error("Invalid edition range, edition ", minimum_edition,
+                 " is newer than edition ", maximum_edition);
+  }
   // Find and validate the FeatureSet in the pool.
   if (feature_set == nullptr) {
     return Error(
@@ -236,10 +239,14 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
 
   // Collect all the editions with unique defaults.
   absl::btree_set<Edition> editions;
-  CollectEditions(*feature_set, minimum_edition, maximum_edition, editions);
+  CollectEditions(*feature_set, maximum_edition, editions);
   for (const auto* extension : extensions) {
-    CollectEditions(*extension->message_type(), minimum_edition,
-                    maximum_edition, editions);
+    CollectEditions(*extension->message_type(), maximum_edition, editions);
+  }
+  if (editions.empty() || *editions.begin() > minimum_edition) {
+    // Always insert the minimum edition to make sure the full range is covered
+    // in valid defaults.
+    editions.insert(minimum_edition);
   }
 
   // Fill the default spec.

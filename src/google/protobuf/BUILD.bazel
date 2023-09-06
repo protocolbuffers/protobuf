@@ -685,6 +685,7 @@ filegroup(
         "unittest_features.proto",
         "unittest_import.proto",
         "unittest_import_public.proto",
+        "unittest_invalid_features.proto",
         "unittest_lite_imports_nonlite.proto",
         "unittest_mset.proto",
         "unittest_mset_wire_format.proto",
