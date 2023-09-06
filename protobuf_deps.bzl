@@ -19,8 +19,7 @@ PROTOBUF_MAVEN_ARTIFACTS = [
 
 def _github_archive(repo, commit, **kwargs):
     repo_name = repo.split("/")[-1]
-    http_archive(
-        urls = [repo + "/archive/" + commit + ".zip"],
+    http_archive( urls = [repo + "/archive/" + commit + ".zip"],
         strip_prefix = repo_name + "-" + commit,
         **kwargs
     )
@@ -150,7 +149,7 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "ea4e825d22c9ae0031d59ec5e86dc85bb50cbbcb",
-            sha256 = "a3a422235d6c2a68130a4fd21d88f5ccb6c3347dcfddd5ec5de0f23247b249df",
+            commit = "42cd08932e364a4cde35033b73f15c30250d7c2e",
+            sha256 = "c67dd28e641e26c1c2ac295f1a693b864e8b074c683e7b9ef89f7aa8cf5db77a",
             patches = ["@com_google_protobuf//build_defs:upb.patch"],
         )
