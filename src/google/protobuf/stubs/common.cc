@@ -260,6 +260,13 @@ void LogFinisher::operator=(LogMessage& other) {
   other.Finish();
 }
 
+#ifdef GOOGLE_LOG_DISABLE
+// This is never instantiated, it's just used for
+// PROTOBUF_EAT_STREAM_PARAMETERS to have an object of the correct type on the
+// LHS of the unused part of the ternary operator.
+std::ostream* g_swallow_stream;
+#endif  // GOOGLE_LOG_DISABLE
+
 }  // namespace internal
 
 LogHandler* SetLogHandler(LogHandler* new_func) {

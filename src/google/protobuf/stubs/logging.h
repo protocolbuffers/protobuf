@@ -36,6 +36,10 @@
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/stringpiece.h>
 
+#ifdef GOOGLE_LOG_DISABLE
+#include <iostream>
+#endif  // GOOGLE_LOG_DISABLE
+
 #include <google/protobuf/port_def.inc>
 
 // ===================================================================
@@ -100,6 +104,28 @@ class PROTOBUF_EXPORT LogMessage {
   std::string message_;
 };
 
+#ifdef GOOGLE_LOG_DISABLE
+// This class is used to explicitly ignore values in the conditional
+// logging macros.  This avoids compiler warnings like "value computed
+// is not used" and "statement has no effect".
+class PROTOBUF_EXPORT LogMessageVoidify {
+ public:
+  LogMessageVoidify() = default;
+  // This has to be an operator with a precedence lower than << but
+  // higher than ?:
+  void operator&(std::ostream&) { }
+};
+
+PROTOBUF_EXPORT extern std::ostream* g_swallow_stream;
+
+// Macro which uses but does not evaluate expr and any stream parameters. Note
+// that g_swallow_stream is used instead of an arbitrary GOOGLE_LOG() stream to
+// avoid the creation of an object with a non-trivial destructor (LogMessage).
+#define PROTOBUF_EAT_STREAM_PARAMETERS \
+  true ? (void)0              \
+       : ::google::protobuf::internal::LogMessageVoidify() & (*::google::protobuf::internal::g_swallow_stream)
+#endif  // GOOGLE_LOG_DISABLE
+
 // Used to make the entire "LOG(BLAH) << etc." expression have a void return
 // type and print a newline after each message.
 class PROTOBUF_EXPORT LogFinisher {
@@ -141,10 +167,17 @@ inline bool IsOk(bool status) { return status; }
 #undef GOOGLE_DCHECK_GT
 #undef GOOGLE_DCHECK_GE
 
-#define GOOGLE_LOG(LEVEL)                          \
+// Allow disabling logging from client applications. For example, if
+// GOOGLE_LOG_DISABLE is defined, it simply drops all file paths and log
+// messages from the logs.
+#ifdef GOOGLE_LOG_DISABLE
+#define GOOGLE_LOG(LEVEL) PROTOBUF_EAT_STREAM_PARAMETERS
+#else // GOOGLE_LOG_DISABLE
+#define GOOGLE_LOG(LEVEL)                       \
   ::google::protobuf::internal::LogFinisher() = \
       ::google::protobuf::internal::LogMessage( \
           ::google::protobuf::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
+#endif  // !GOOGLE_LOG_DISABLE
 #define GOOGLE_LOG_IF(LEVEL, CONDITION) \
   !(CONDITION) ? (void)0 : GOOGLE_LOG(LEVEL)
 
