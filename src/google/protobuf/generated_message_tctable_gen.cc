@@ -80,14 +80,6 @@ bool GetEnumValidationRange(const EnumDescriptor* enum_type, int16_t& start,
   }
 }
 
-absl::string_view ParseFunctionValue(TcParseFunction function) {
-#define PROTOBUF_TC_PARSE_FUNCTION_X(value) #value,
-  static constexpr absl::string_view functions[] = {
-      {}, PROTOBUF_TC_PARSE_FUNCTION_LIST};
-#undef PROTOBUF_TC_PARSE_FUNCTION_X
-  return functions[static_cast<int>(function)];
-};
-
 enum class EnumRangeInfo {
   kNone,         // No contiguous range
   kContiguous,   // Has a contiguous range
@@ -238,8 +230,7 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
   }
 
   ABSL_CHECK(picked != TcParseFunction::kNone);
-  static constexpr absl::string_view ns = "::_pbi::TcParser::";
-  info.func_name = absl::StrCat(ns, ParseFunctionValue(picked));
+  info.func = picked;
   return info;
 
 #undef PROTOBUF_PICK_FUNCTION
@@ -393,8 +384,8 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
 
     TailCallTableInfo::FastFieldInfo& info = result[fast_idx];
     info.data = TailCallTableInfo::FastFieldInfo::NonField{
-        absl::StrCat("::_pbi::TcParser::FastEndG",
-                     *end_group_tag < 128 ? "1" : "2"),
+        *end_group_tag < 128 ? TcParseFunction::kFastEndG1
+                             : TcParseFunction::kFastEndG2,
         static_cast<uint16_t>(tag),
         static_cast<uint16_t>(*end_group_tag),
     };

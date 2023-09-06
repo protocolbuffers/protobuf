@@ -37,6 +37,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/log/absl_log.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/map.h"
@@ -379,7 +380,7 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_LIST_END_GROUP()
 
 #define PROTOBUF_TC_PARSE_FUNCTION_X(value) k##value,
-enum class TcParseFunction { kNone, PROTOBUF_TC_PARSE_FUNCTION_LIST };
+enum class TcParseFunction : uint8_t { kNone, PROTOBUF_TC_PARSE_FUNCTION_LIST };
 #undef PROTOBUF_TC_PARSE_FUNCTION_X
 
 // TcParser implements most of the parsing logic for tailcall tables.
