@@ -539,7 +539,11 @@ mod tests {
         fn set_absent_to_default<'a>(
             absent_mutator: Self::AbsentMutData<'a>,
         ) -> Self::PresentMutData<'a> {
-            absent_mutator.as_view().val().set_on_absent(Private, absent_mutator)
+            SettableValue::<VtableProxied>::set_on_absent(
+                absent_mutator.as_view().val(),
+                Private,
+                absent_mutator,
+            )
         }
     }
 
@@ -609,7 +613,7 @@ mod tests {
 
     impl SettableValue<VtableProxied> for View<'_, VtableProxied> {
         fn set_on(self, _private: Private, mutator: Mut<VtableProxied>) {
-            self.val().set_on(Private, mutator)
+            SettableValue::<VtableProxied>::set_on(self.val(), Private, mutator)
         }
 
         fn set_on_absent<'a>(
@@ -617,7 +621,7 @@ mod tests {
             _private: Private,
             absent_mutator: <VtableProxied as ProxiedWithPresence>::AbsentMutData<'a>,
         ) -> <VtableProxied as ProxiedWithPresence>::PresentMutData<'a> {
-            self.val().set_on_absent(Private, absent_mutator)
+            SettableValue::<VtableProxied>::set_on_absent(self.val(), Private, absent_mutator)
         }
     }
 

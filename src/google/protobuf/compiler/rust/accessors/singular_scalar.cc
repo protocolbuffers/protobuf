@@ -58,6 +58,7 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
            [&] {
              if (!field.desc().is_optional()) return;
              if (!field.desc().has_presence()) return;
+             // TODO(b/285309449): use Optional instead of Option
              field.Emit({}, R"rs(
                   pub fn r#$field$_opt(&self) -> Option<$Scalar$> {
                     if !unsafe { $hazzer_thunk$(self.inner.msg) } {
@@ -70,17 +71,56 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
           {"getter_thunk", Thunk(field, "get")},
           {"setter_thunk", Thunk(field, "set")},
           {"clearer_thunk", Thunk(field, "clear")},
+          {"field_setter",
+           [&] {
+             if (field.desc().has_presence()) {
+               field.Emit({}, R"rs(
+                  pub fn r#$field$_set(&mut self, val: Option<$Scalar$>) {
+                    match val {
+                      Some(val) => unsafe { $setter_thunk$(self.inner.msg, val) },
+                      None => unsafe { $clearer_thunk$(self.inner.msg) },
+                    }
+                  }
+                )rs");
+             }
+           }},
+          {"field_mutator_getter",
+           [&] {
+             if (field.desc().has_presence()) {
+               // TODO(b/285309449): implement mutator for fields with presence.
+               return;
+             } else {
+               field.Emit({}, R"rs(
+                  pub fn r#$field$_mut(&mut self) -> $pb$::PrimitiveMut<'_, $Scalar$> {
+                    static VTABLE: $pbi$::PrimitiveVTable<$Scalar$> =
+                      $pbi$::PrimitiveVTable::new(
+                        $pbi$::Private,
+                        $getter_thunk$,
+                        $setter_thunk$,
+                      );
+
+                      $pb$::PrimitiveMut::from_inner(
+                        $pbi$::Private,
+                        unsafe {
+                          $pbi$::RawVTableMutator::new(
+                            $pbi$::Private,
+                            $pbr$::MutatorMessageRef::new(
+                              $pbi$::Private, &mut self.inner
+                            ),
+                            &VTABLE,
+                          )
+                        },
+                      )
+                  }
+                )rs");
+             }
+           }},
       },
       R"rs(
           $getter$
           $getter_opt$
-
-          pub fn $field$_set(&mut self, val: Option<$Scalar$>) {
-            match val {
-              Some(val) => unsafe { $setter_thunk$(self.inner.msg, val) },
-              None => unsafe { $clearer_thunk$(self.inner.msg) },
-            }
-          }
+          $field_setter$
+          $field_mutator_getter$
         )rs");
 }
 
