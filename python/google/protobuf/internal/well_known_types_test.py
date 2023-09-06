@@ -26,12 +26,12 @@ from google.protobuf import unittest_pb2
 try:
   # New module in Python 3.9:
   import zoneinfo  # pylint:disable=g-import-not-at-top
-  _TZ_JAPAN = zoneinfo.ZoneInfo('Japan')
-  _TZ_PACIFIC = zoneinfo.ZoneInfo('US/Pacific')
+  _TZ_JAPAN = zoneinfo.ZoneInfo('Asia/Tokyo')
+  _TZ_PACIFIC = zoneinfo.ZoneInfo('America/Los_Angeles')
   has_zoneinfo = True
 except ImportError:
-  _TZ_JAPAN = datetime.timezone(datetime.timedelta(hours=9), 'Japan')
-  _TZ_PACIFIC = datetime.timezone(datetime.timedelta(hours=-8), 'US/Pacific')
+  _TZ_JAPAN = datetime.timezone(datetime.timedelta(hours=9), 'Asia/Tokyo')
+  _TZ_PACIFIC = datetime.timezone(datetime.timedelta(hours=-8), 'America/Los_Angeles')
   has_zoneinfo = False
 
 
