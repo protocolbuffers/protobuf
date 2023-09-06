@@ -73,17 +73,13 @@ class TestGenerator : public CodeGenerator {
     feature_extensions_ = extensions;
   }
 
-  absl::string_view GetMinimumEdition() const override {
-    return minimum_edition_;
-  }
-  void set_minimum_edition(absl::string_view minimum_edition) {
+  Edition GetMinimumEdition() const override { return minimum_edition_; }
+  void set_minimum_edition(Edition minimum_edition) {
     minimum_edition_ = minimum_edition;
   }
 
-  absl::string_view GetMaximumEdition() const override {
-    return maximum_edition_;
-  }
-  void set_maximum_edition(absl::string_view maximum_edition) {
+  Edition GetMaximumEdition() const override { return maximum_edition_; }
+  void set_maximum_edition(Edition maximum_edition) {
     maximum_edition_ = maximum_edition;
   }
 
@@ -92,8 +88,8 @@ class TestGenerator : public CodeGenerator {
   using CodeGenerator::GetUnresolvedSourceFeatures;
 
  private:
-  absl::string_view minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
-  absl::string_view maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
+  Edition minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
+  Edition maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
   std::vector<const FieldDescriptor*> feature_extensions_ = {
       GetExtensionReflection(pb::test)};
 };
@@ -286,12 +282,12 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsInvalidExtension) {
 TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
   TestGenerator generator;
   generator.set_feature_extensions({});
-  generator.set_minimum_edition("2020");
-  generator.set_maximum_edition("2024");
+  generator.set_minimum_edition(EDITION_1_TEST_ONLY);
+  generator.set_maximum_edition(EDITION_99999_TEST_ONLY);
   EXPECT_THAT(generator.BuildFeatureSetDefaults(),
               IsOkAndHolds(EqualsProto(R"pb(
                 defaults {
-                  edition: "2023"
+                  edition_enum: EDITION_2023
                   features {
                     field_presence: EXPLICIT
                     enum_type: OPEN
@@ -300,8 +296,8 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                     json_format: ALLOW
                   }
                 }
-                minimum_edition: "2020"
-                maximum_edition: "2024"
+                minimum_edition_enum: EDITION_1_TEST_ONLY
+                maximum_edition_enum: EDITION_99999_TEST_ONLY
               )pb")));
 }
 

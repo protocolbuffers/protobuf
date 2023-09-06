@@ -1494,25 +1494,25 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
 TEST_F(CommandLineInterfaceTest, InvalidMinimumEditionError) {
   CreateTempFile("foo.proto", R"schema(edition = "2023";)schema");
 
-  mock_generator_->set_minimum_edition("2022");
+  mock_generator_->set_minimum_edition(EDITION_1_TEST_ONLY);
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
       "--experimental_editions foo.proto");
   ExpectErrorSubstring(
-      "generator --test_out specifies a minimum edition 2022 which is not the "
-      "protoc minimum 2023");
+      "generator --test_out specifies a minimum edition 1_TEST_ONLY which is "
+      "not the protoc minimum 2023");
 }
 
 TEST_F(CommandLineInterfaceTest, InvalidMaximumEditionError) {
   CreateTempFile("foo.proto", R"schema(edition = "2023";)schema");
 
-  mock_generator_->set_maximum_edition("2123");
+  mock_generator_->set_maximum_edition(EDITION_99999_TEST_ONLY);
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
       "--experimental_editions foo.proto");
   ExpectErrorSubstring(
-      "generator --test_out specifies a maximum edition 2123 which is not "
-      "the protoc maximum 2023");
+      "generator --test_out specifies a maximum edition 99999_TEST_ONLY which "
+      "is not the protoc maximum 2023");
 }
 
 TEST_F(CommandLineInterfaceTest, InvalidFeatureExtensionError) {

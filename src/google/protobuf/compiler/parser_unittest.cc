@@ -295,7 +295,7 @@ TEST_F(ParserTest, RegressionNestedOpenBraceDoNotStackOverflow) {
       input,
       "0:10: Unexpected end of string.\n"
       "0:10: Invalid control characters encountered in text.\n"
-      "0:12: Expected top-level statement (e.g. \"message\").\n");
+      "0:8: Unknown edition \"a\".\n");
 }
 
 // ===================================================================
@@ -891,7 +891,7 @@ TEST_F(ParseMessageTest, ReservedIdentifiers) {
       "}\n",
 
       "syntax: \"editions\" "
-      "edition: \"2023\" "
+      "edition_enum: EDITION_2023 "
       "message_type {"
       "  name: \"TestMessage\""
       "  reserved_name: \"foo\""
@@ -1279,7 +1279,7 @@ TEST_F(ParseEnumTest, ReservedIdentifiers) {
       "}\n",
 
       "syntax: \"editions\" "
-      "edition: \"2023\" "
+      "edition_enum: EDITION_2023 "
       "enum_type {"
       "  name: \"TestEnum\""
       "  value { name:\"FOO\" number:0 }"
@@ -4067,7 +4067,7 @@ typedef ParserTest ParseEditionsTest;
 TEST_F(ParseEditionsTest, Editions) {
   ExpectParsesTo(
       R"schema(
-        edition = "super-cool";
+        edition = "2023";
         message A {
           int32 b = 1;
         })schema",
@@ -4081,7 +4081,16 @@ TEST_F(ParseEditionsTest, Editions) {
       "  }"
       "}"
       "syntax: \"editions\""
-      "edition: \"super-cool\"\n");
+      "edition_enum: EDITION_2023\n");
+}
+
+TEST_F(ParseEditionsTest, TestEdition) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "99998_TEST_ONLY";
+      )schema",
+      "syntax: \"editions\""
+      "edition_enum: EDITION_99998_TEST_ONLY\n");
 }
 
 TEST_F(ParseEditionsTest, ExtensionsParse) {
@@ -4107,7 +4116,7 @@ TEST_F(ParseEditionsTest, ExtensionsParse) {
       "  type: TYPE_STRING"
       "}"
       "syntax: \"editions\""
-      "edition: \"2023\"\n");
+      "edition_enum: EDITION_2023\n");
 }
 
 TEST_F(ParseEditionsTest, MapFeatures) {
@@ -4166,7 +4175,7 @@ TEST_F(ParseEditionsTest, MapFeatures) {
              }
            }
            syntax: "editions"
-           edition: "2023")pb");
+           edition_enum: EDITION_2023)pb");
 }
 
 TEST_F(ParseEditionsTest, EmptyEdition) {
@@ -4176,7 +4185,27 @@ TEST_F(ParseEditionsTest, EmptyEdition) {
         message A {
           optional int32 b = 1;
         })schema",
-      "1:18: A file's edition must be a nonempty string.\n");
+      "1:18: Unknown edition \"\".\n");
+}
+
+TEST_F(ParseEditionsTest, InvalidEdition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "2023_INVALID";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: Unknown edition \"2023_INVALID\".\n");
+}
+
+TEST_F(ParseEditionsTest, UnknownEdition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "UNKNOWN";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: Unknown edition \"UNKNOWN\".\n");
 }
 
 TEST_F(ParseEditionsTest, SyntaxEditions) {
@@ -4194,7 +4223,7 @@ TEST_F(ParseEditionsTest, MixedSyntaxAndEdition) {
   ExpectHasErrors(
       R"schema(
         syntax = "proto2";
-        edition = "super-cool";
+        edition = "2023";
         message A {
           optional int32 b = 1;
         })schema",
@@ -4204,7 +4233,7 @@ TEST_F(ParseEditionsTest, MixedSyntaxAndEdition) {
 TEST_F(ParseEditionsTest, MixedEditionAndSyntax) {
   ExpectHasErrors(
       R"schema(
-        edition = "super-cool";
+        edition = "2023";
         syntax = "proto2";
         message A {
           int32 b = 1;

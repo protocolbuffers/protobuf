@@ -553,7 +553,7 @@ class PROTOBUF_EXPORT Parser {
   bool require_syntax_identifier_;
   bool stop_after_syntax_identifier_;
   std::string syntax_identifier_;
-  std::string edition_;
+  Edition edition_ = Edition::EDITION_UNKNOWN;
 
   // Leading doc comments for the next declaration.  These are not complete
   // yet; use ConsumeEndOfDeclaration() to get the complete comments.

@@ -64,12 +64,12 @@ class PROTOBUF_EXPORT FeatureResolver {
   static absl::StatusOr<FeatureSetDefaults> CompileDefaults(
       const Descriptor* feature_set,
       absl::Span<const FieldDescriptor* const> extensions,
-      absl::string_view minimum_edition, absl::string_view maximum_edition);
+      Edition minimum_edition, Edition maximum_edition);
 
   // Creates a new FeatureResolver at a specific edition.  This calculates the
   // default feature set for that edition, using the output of CompileDefaults.
   static absl::StatusOr<FeatureResolver> Create(
-      absl::string_view edition, const FeatureSetDefaults& defaults);
+      Edition edition, const FeatureSetDefaults& defaults);
 
   // Creates a new feature set using inheritance and default behavior. This is
   // designed to be called recursively, and the parent feature set is expected

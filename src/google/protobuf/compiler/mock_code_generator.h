@@ -129,25 +129,21 @@ class MockCodeGenerator : public CodeGenerator {
     feature_extensions_ = extensions;
   }
 
-  absl::string_view GetMinimumEdition() const override {
-    return minimum_edition_;
-  }
-  void set_minimum_edition(absl::string_view minimum_edition) {
+  Edition GetMinimumEdition() const override { return minimum_edition_; }
+  void set_minimum_edition(Edition minimum_edition) {
     minimum_edition_ = minimum_edition;
   }
 
-  absl::string_view GetMaximumEdition() const override {
-    return maximum_edition_;
-  }
-  void set_maximum_edition(absl::string_view maximum_edition) {
+  Edition GetMaximumEdition() const override { return maximum_edition_; }
+  void set_maximum_edition(Edition maximum_edition) {
     maximum_edition_ = maximum_edition;
   }
 
  private:
   std::string name_;
   uint64_t suppressed_features_ = 0;
-  absl::string_view minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
-  absl::string_view maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
+  Edition minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
+  Edition maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
   std::vector<const FieldDescriptor*> feature_extensions_ = {
       GetExtensionReflection(pb::test)};
 
