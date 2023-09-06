@@ -31,15 +31,15 @@ fn test_default_accessors() {
 #[test]
 fn test_optional_fixed32_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_fixed32_opt(), None);
+    assert_eq!(msg.optional_fixed32_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_fixed32(), 0);
 
     msg.optional_fixed32_set(Some(99));
-    assert_eq!(msg.optional_fixed32_opt(), Some(99));
+    assert_eq!(msg.optional_fixed32_opt(), Optional::Set(99));
     assert_eq!(msg.optional_fixed32(), 99);
 
     msg.optional_fixed32_set(None);
-    assert_eq!(msg.optional_fixed32_opt(), None);
+    assert_eq!(msg.optional_fixed32_opt(), Optional::Unset(0));
 
     assert_eq!(msg.optional_fixed32(), 0);
 }
@@ -47,30 +47,30 @@ fn test_optional_fixed32_accessors() {
 #[test]
 fn test_optional_fixed64_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_fixed64_opt(), None);
+    assert_eq!(msg.optional_fixed64_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_fixed64(), 0);
 
     msg.optional_fixed64_set(Some(2000));
-    assert_eq!(msg.optional_fixed64_opt(), Some(2000));
+    assert_eq!(msg.optional_fixed64_opt(), Optional::Set(2000));
     assert_eq!(msg.optional_fixed64(), 2000);
 
     msg.optional_fixed64_set(None);
-    assert_eq!(msg.optional_fixed64_opt(), None);
+    assert_eq!(msg.optional_fixed64_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_fixed64(), 0);
 }
 
 #[test]
 fn test_optional_int32_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_int32_opt(), None);
+    assert_eq!(msg.optional_int32_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_int32(), 0);
 
     msg.optional_int32_set(Some(1));
-    assert_eq!(msg.optional_int32_opt(), Some(1));
+    assert_eq!(msg.optional_int32_opt(), Optional::Set(1));
     assert_eq!(msg.optional_int32(), 1);
 
     msg.optional_int32_set(None);
-    assert_eq!(msg.optional_int32_opt(), None);
+    assert_eq!(msg.optional_int32_opt(), Optional::Unset(0));
 
     assert_eq!(msg.optional_int32(), 0);
 }
@@ -78,118 +78,118 @@ fn test_optional_int32_accessors() {
 #[test]
 fn test_optional_int64_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_int64_opt(), None);
+    assert_eq!(msg.optional_int64_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_int64(), 0);
 
     msg.optional_int64_set(Some(42));
-    assert_eq!(msg.optional_int64_opt(), Some(42));
+    assert_eq!(msg.optional_int64_opt(), Optional::Set(42));
     assert_eq!(msg.optional_int64(), 42);
 
     msg.optional_int64_set(None);
-    assert_eq!(msg.optional_int64_opt(), None);
+    assert_eq!(msg.optional_int64_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_int64(), 0);
 }
 
 #[test]
 fn test_optional_sint32_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_sint32_opt(), None);
+    assert_eq!(msg.optional_sint32_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_sint32(), 0);
 
     msg.optional_sint32_set(Some(-22));
-    assert_eq!(msg.optional_sint32_opt(), Some(-22));
+    assert_eq!(msg.optional_sint32_opt(), Optional::Set(-22));
     assert_eq!(msg.optional_sint32(), -22);
 
     msg.optional_sint32_set(None);
-    assert_eq!(msg.optional_sint32_opt(), None);
+    assert_eq!(msg.optional_sint32_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_sint32(), 0);
 }
 
 #[test]
 fn test_optional_sint64_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_sint64_opt(), None);
+    assert_eq!(msg.optional_sint64_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_sint64(), 0);
 
     msg.optional_sint64_set(Some(7000));
-    assert_eq!(msg.optional_sint64_opt(), Some(7000));
+    assert_eq!(msg.optional_sint64_opt(), Optional::Set(7000));
     assert_eq!(msg.optional_sint64(), 7000);
 
     msg.optional_sint64_set(None);
-    assert_eq!(msg.optional_sint64_opt(), None);
+    assert_eq!(msg.optional_sint64_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_sint64(), 0);
 }
 
 #[test]
 fn test_optional_uint32_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_uint32_opt(), None);
+    assert_eq!(msg.optional_uint32_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_uint32(), 0);
 
     msg.optional_uint32_set(Some(9001));
-    assert_eq!(msg.optional_uint32_opt(), Some(9001));
+    assert_eq!(msg.optional_uint32_opt(), Optional::Set(9001));
     assert_eq!(msg.optional_uint32(), 9001);
 
     msg.optional_uint32_set(None);
-    assert_eq!(msg.optional_uint32_opt(), None);
+    assert_eq!(msg.optional_uint32_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_uint32(), 0);
 }
 
 #[test]
 fn test_optional_uint64_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_uint64_opt(), None);
+    assert_eq!(msg.optional_uint64_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_uint64(), 0);
 
     msg.optional_uint64_set(Some(42));
-    assert_eq!(msg.optional_uint64_opt(), Some(42));
+    assert_eq!(msg.optional_uint64_opt(), Optional::Set(42));
     assert_eq!(msg.optional_uint64(), 42);
 
     msg.optional_uint64_set(None);
-    assert_eq!(msg.optional_uint64_opt(), None);
+    assert_eq!(msg.optional_uint64_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_uint64(), 0);
 }
 
 #[test]
 fn test_optional_float_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_float_opt(), None);
+    assert_eq!(msg.optional_float_opt(), Optional::Unset(0.0));
     assert_eq!(msg.optional_float(), 0.0);
 
     msg.optional_float_set(Some(3.14));
-    assert_eq!(msg.optional_float_opt(), Some(3.14));
+    assert_eq!(msg.optional_float_opt(), Optional::Set(3.14));
     assert_eq!(msg.optional_float(), 3.14);
 
     msg.optional_float_set(None);
-    assert_eq!(msg.optional_float_opt(), None);
+    assert_eq!(msg.optional_float_opt(), Optional::Unset(0.0));
     assert_eq!(msg.optional_float(), 0.0);
 }
 
 #[test]
 fn test_optional_double_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_double_opt(), None);
+    assert_eq!(msg.optional_double_opt(), Optional::Unset(0.0));
     assert_eq!(msg.optional_double(), 0.0);
 
     msg.optional_double_set(Some(-10.99));
-    assert_eq!(msg.optional_double_opt(), Some(-10.99));
+    assert_eq!(msg.optional_double_opt(), Optional::Set(-10.99));
     assert_eq!(msg.optional_double(), -10.99);
 
     msg.optional_double_set(None);
-    assert_eq!(msg.optional_double_opt(), None);
+    assert_eq!(msg.optional_double_opt(), Optional::Unset(0.0));
     assert_eq!(msg.optional_double(), 0.0);
 }
 
 #[test]
 fn test_optional_bool_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_eq!(msg.optional_bool_opt(), None);
+    assert_eq!(msg.optional_bool_opt(), Optional::Unset(false));
 
     msg.optional_bool_set(Some(true));
-    assert_eq!(msg.optional_bool_opt(), Some(true));
+    assert_eq!(msg.optional_bool_opt(), Optional::Set(true));
 
     msg.optional_bool_set(None);
-    assert_eq!(msg.optional_bool_opt(), None);
+    assert_eq!(msg.optional_bool_opt(), Optional::Unset(false));
 }
 
 #[test]
@@ -377,16 +377,16 @@ fn test_oneof_accessors() {
     assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::not_set);
 
     msg.oneof_uint32_set(Some(7));
-    assert_eq!(msg.oneof_uint32_opt(), Some(7));
+    assert_eq!(msg.oneof_uint32_opt(), Optional::Set(7));
     assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::OneofUint32(7));
 
     msg.oneof_uint32_set(None);
-    assert_eq!(msg.oneof_uint32_opt(), None);
+    assert_eq!(msg.oneof_uint32_opt(), Optional::Unset(0));
     assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::not_set);
 
     msg.oneof_uint32_set(Some(7));
     msg.oneof_bytes_mut().set(b"");
-    assert_eq!(msg.oneof_uint32_opt(), None);
+    assert_eq!(msg.oneof_uint32_opt(), Optional::Unset(0));
     // This should show it set to the OneofBytes but its not supported yet.
     assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::not_set);
 }

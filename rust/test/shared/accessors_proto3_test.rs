@@ -188,16 +188,16 @@ fn test_oneof_accessors() {
     assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::not_set);
 
     msg.oneof_uint32_set(Some(7));
-    assert_eq!(msg.oneof_uint32_opt(), Some(7));
+    assert_eq!(msg.oneof_uint32_opt(), Optional::Set(7));
     assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::OneofUint32(7));
 
     msg.oneof_uint32_set(None);
-    assert_eq!(msg.oneof_uint32_opt(), None);
+    assert_eq!(msg.oneof_uint32_opt(), Optional::Unset(0));
     assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::not_set);
 
     msg.oneof_uint32_set(Some(7));
     msg.oneof_bytes_mut().set(b"");
-    assert_eq!(msg.oneof_uint32_opt(), None);
+    assert_eq!(msg.oneof_uint32_opt(), Optional::Unset(0));
 
     // This should show it set to the OneofBytes but its not supported yet.
     assert_eq!(msg.oneof_field(), TestAllTypes_::OneofField::not_set);

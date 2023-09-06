@@ -35,13 +35,13 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
            [&] {
              if (!field.desc().is_optional()) return;
              if (!field.desc().has_presence()) return;
-             // TODO(b/285309449): use Optional instead of Option
              field.Emit({}, R"rs(
-                  pub fn r#$field$_opt(&self) -> Option<$Scalar$> {
+                  pub fn r#$field$_opt(&self) -> $pb$::Optional<$Scalar$> {
                     if !unsafe { $hazzer_thunk$(self.inner.msg) } {
-                      return None;
+                      return $pb$::Optional::Unset(<$Scalar$>::default());
                     }
-                    Some(unsafe { $getter_thunk$(self.inner.msg) })
+                    let value = unsafe { $getter_thunk$(self.inner.msg) };
+                    $pb$::Optional::Set(value)
                   }
                   )rs");
            }},
