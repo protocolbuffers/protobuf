@@ -21,5 +21,6 @@ The following topics are in this repository:
 
 *   [What are Protobuf Editions?](what-are-protobuf-editions.md)
 *   [Life of an Edition](life-of-an-edition.md)
-*   [Editions: Life of a FeatureSet](editions-life-of-a-featureset.md)
-*   [Protobuf Design: Options Attributes](protobuf-design-options-attributes.md)
+*   [Protobuf Editions Design: Features](protobuf-editions-design-features.md)
+*   [Editions: Life of a Featureset](editions-life-of-a-featureset.md)
+*   [Edition Naming](edition-naming.md)
