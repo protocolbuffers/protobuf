@@ -459,7 +459,15 @@ public final class Timestamps {
         checkedSubtract(to.getNanos(), from.getNanos()));
   }
 
-  /** Add a duration to a timestamp. */
+  /**
+   * Add a duration to a timestamp.
+   *
+   * <p>Do not use this method for new code. Instead, convert to {@link java.time.Instant} and
+   * {@link java.time.Duration} using {@link #toJavaInstant} and {@link Durations#toJavaDuration},
+   * do the arithmetic there, and convert back using {@link #toProtoTimestamp}.
+   *
+   * <p>This method will be deprecated once most uses have been eliminated.
+   */
   public static Timestamp add(Timestamp start, Duration length) {
     checkValid(start);
     Durations.checkValid(length);
@@ -468,7 +476,15 @@ public final class Timestamps {
         checkedAdd(start.getNanos(), length.getNanos()));
   }
 
-  /** Subtract a duration from a timestamp. */
+  /**
+   * Subtract a duration from a timestamp.
+   *
+   * <p>Do not use this method for new code. Instead, convert to {@link java.time.Instant} and
+   * {@link java.time.Duration} using {@link #toJavaInstant} and {@link Durations#toJavaDuration},
+   * do the arithmetic there, and convert back using {@link #toProtoTimestamp}.
+   *
+   * <p>This method will be deprecated once most uses have been eliminated.
+   */
   public static Timestamp subtract(Timestamp start, Duration length) {
     checkValid(start);
     Durations.checkValid(length);

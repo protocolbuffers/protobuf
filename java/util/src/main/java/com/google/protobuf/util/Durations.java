@@ -445,7 +445,15 @@ public final class Durations {
 
   // Math operations
 
-  /** Add two durations. */
+  /**
+   * Add two durations.
+   *
+   * <p>Do not use this method for new code. Instead, convert to {@link java.time.Duration} using
+   * {@link #toJavaDuration}, do the arithmetic there, and convert back using {@link
+   * #toProtoDuration}.
+   *
+   * <p>This method will be deprecated once most uses have been eliminated.
+   */
   public static Duration add(Duration d1, Duration d2) {
     checkValid(d1);
     checkValid(d2);
@@ -453,7 +461,15 @@ public final class Durations {
         checkedAdd(d1.getSeconds(), d2.getSeconds()), checkedAdd(d1.getNanos(), d2.getNanos()));
   }
 
-  /** Subtract a duration from another. */
+  /**
+   * Subtract a duration from another.
+   *
+   * <p>Do not use this method for new code. Instead, convert to {@link java.time.Duration} using
+   * {@link #toJavaDuration}, do the arithmetic there, and convert back using {@link
+   * #toProtoDuration}.
+   *
+   * <p>This method will be deprecated once most uses have been eliminated.
+   */
   public static Duration subtract(Duration d1, Duration d2) {
     checkValid(d1);
     checkValid(d2);
