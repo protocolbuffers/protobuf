@@ -43,49 +43,51 @@ class MtDataEncoder {
   MtDataEncoder() : appender_(&encoder_) {}
 
   bool StartMessage(uint64_t msg_mod) {
-    return appender_([=](char* buf) {
+    return appender_([this, msg_mod](char* buf) {
       return upb_MtDataEncoder_StartMessage(&encoder_, buf, msg_mod);
     });
   }
 
   bool PutField(upb_FieldType type, uint32_t field_num, uint64_t field_mod) {
-    return appender_([=](char* buf) {
+    return appender_([this, type, field_num, field_mod](char* buf) {
       return upb_MtDataEncoder_PutField(&encoder_, buf, type, field_num,
                                         field_mod);
     });
   }
 
   bool StartOneof() {
-    return appender_([=](char* buf) {
+    return appender_([this](char* buf) {
       return upb_MtDataEncoder_StartOneof(&encoder_, buf);
     });
   }
 
   bool PutOneofField(uint32_t field_num) {
-    return appender_([=](char* buf) {
+    return appender_([this, field_num](char* buf) {
       return upb_MtDataEncoder_PutOneofField(&encoder_, buf, field_num);
     });
   }
 
   bool StartEnum() {
-    return appender_(
-        [=](char* buf) { return upb_MtDataEncoder_StartEnum(&encoder_, buf); });
+    return appender_([this](char* buf) {
+      return upb_MtDataEncoder_StartEnum(&encoder_, buf);
+    });
   }
 
   bool PutEnumValue(uint32_t enum_value) {
-    return appender_([=](char* buf) {
+    return appender_([this, enum_value](char* buf) {
       return upb_MtDataEncoder_PutEnumValue(&encoder_, buf, enum_value);
     });
   }
 
   bool EndEnum() {
-    return appender_(
-        [=](char* buf) { return upb_MtDataEncoder_EndEnum(&encoder_, buf); });
+    return appender_([this](char* buf) {
+      return upb_MtDataEncoder_EndEnum(&encoder_, buf);
+    });
   }
 
   bool EncodeExtension(upb_FieldType type, uint32_t field_num,
                        uint64_t field_mod) {
-    return appender_([=](char* buf) {
+    return appender_([this, type, field_num, field_mod](char* buf) {
       return upb_MtDataEncoder_EncodeExtension(&encoder_, buf, type, field_num,
                                                field_mod);
     });
@@ -93,14 +95,14 @@ class MtDataEncoder {
 
   bool EncodeMap(upb_FieldType key_type, upb_FieldType val_type,
                  uint64_t key_mod, uint64_t val_mod) {
-    return appender_([=](char* buf) {
+    return appender_([this, key_type, val_type, key_mod, val_mod](char* buf) {
       return upb_MtDataEncoder_EncodeMap(&encoder_, buf, key_type, val_type,
                                          key_mod, val_mod);
     });
   }
 
   bool EncodeMessageSet() {
-    return appender_([=](char* buf) {
+    return appender_([this](char* buf) {
       return upb_MtDataEncoder_EncodeMessageSet(&encoder_, buf);
     });
   }
