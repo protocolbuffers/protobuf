@@ -35,8 +35,10 @@
 #ifndef UPB_MESSAGE_MESSAGE_H_
 #define UPB_MESSAGE_MESSAGE_H_
 
+#include <stddef.h>
+
 #include "upb/mem/arena.h"
-#include "upb/message/types.h"
+#include "upb/message/types.h"  // IWYU pragma: export
 #include "upb/mini_table/message.h"
 
 // Must be last.

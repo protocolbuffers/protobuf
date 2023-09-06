@@ -34,7 +34,7 @@ import sys
 import re
 import os
 
-INCLUDE_RE = re.compile('^#include "([^"]*)"$')
+INCLUDE_RE = re.compile('^#include "([^"]*)"')
 
 def parse_include(line):
   match = INCLUDE_RE.match(line)
