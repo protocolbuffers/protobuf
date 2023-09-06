@@ -24,4 +24,5 @@ The following topics are in this repository:
 *   [Protobuf Editions Design: Features](protobuf-editions-design-features.md)
 *   [Editions: Life of a Featureset](editions-life-of-a-featureset.md)
 *   [Protobuf Editions for Schema Producers](protobuf-editions-for-schema-producers.md)
+*   [Stricter Schemas with Editions](stricter-schemas-with-editions.md)
 *   [Edition Naming](edition-naming.md)
