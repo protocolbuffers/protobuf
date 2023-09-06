@@ -36,8 +36,8 @@ bzl_library(
     srcs = ["upb_cc_proto_library.bzl"],
     visibility = ["//visibility:public"],
     deps = [
-        "@bazel_skylib//lib:paths",
         "//bazel:upb_proto_library_bzl",
+        "@bazel_skylib//lib:paths",
         "@bazel_tools//tools/cpp:toolchain_utils.bzl",
     ],
 )
