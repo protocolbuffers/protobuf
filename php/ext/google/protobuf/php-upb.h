@@ -1998,6 +1998,8 @@ typedef struct {
 #ifndef UPB_MESSAGE_MESSAGE_H_
 #define UPB_MESSAGE_MESSAGE_H_
 
+#include <stddef.h>
+
 
 // Must be last.
 
