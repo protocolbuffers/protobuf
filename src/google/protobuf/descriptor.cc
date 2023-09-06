@@ -2818,7 +2818,7 @@ void FileDescriptor::CopyHeadingTo(FileDescriptorProto* proto) const {
     proto->set_syntax(FileDescriptorLegacy::SyntaxName(syntax));
   }
   if (syntax == FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
-    proto->set_edition_enum(edition());
+    proto->set_edition(edition());
   }
 
   if (&options() != &FileOptions::default_instance()) {
@@ -5596,7 +5596,7 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
   alloc.PlanArray<FileDescriptorTables>(1);
   alloc.PlanArray<std::string>(2);  // name + package
   if (proto.has_options()) alloc.PlanArray<FileOptions>(1);
-  if (proto.has_edition_enum()) {
+  if (proto.has_edition()) {
     alloc.PlanArray<FeatureSet>(1);
     if (HasFeatures(proto.options())) {
       alloc.PlanArray<FeatureSet>(1);
@@ -5703,14 +5703,14 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   FileDescriptor* result = alloc.AllocateArray<FileDescriptor>(1);
   file_ = result;
 
-  if (proto.has_edition_enum()) {
+  if (proto.has_edition()) {
     const FeatureSetDefaults& defaults =
         pool_->feature_set_defaults_spec_ == nullptr
             ? GetCppFeatureSetDefaults()
             : *pool_->feature_set_defaults_spec_;
 
     absl::StatusOr<FeatureResolver> feature_resolver =
-        FeatureResolver::Create(proto.edition_enum(), defaults);
+        FeatureResolver::Create(proto.edition(), defaults);
     if (!feature_resolver.ok()) {
       AddError(
           proto.name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
@@ -5753,8 +5753,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       return absl::StrCat("Unrecognized syntax: ", proto.syntax());
     });
   }
-  if (proto.has_edition_enum()) {
-    file_->edition_ = proto.edition_enum();
+  if (proto.has_edition()) {
+    file_->edition_ = proto.edition();
   } else {
     file_->edition_ = Edition::EDITION_UNKNOWN;
   }

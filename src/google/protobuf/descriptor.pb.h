@@ -1531,25 +1531,25 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kEditionFieldNumber = 1,
+    kEditionDeprecatedFieldNumber = 1,
     kValueFieldNumber = 2,
-    kEditionEnumFieldNumber = 3,
+    kEditionFieldNumber = 3,
   };
-  // optional string edition = 1;
-  bool has_edition() const;
-  void clear_edition() ;
-  const std::string& edition() const;
+  // optional string edition_deprecated = 1;
+  bool has_edition_deprecated() const;
+  void clear_edition_deprecated() ;
+  const std::string& edition_deprecated() const;
   template <typename Arg_ = const std::string&, typename... Args_>
-  void set_edition(Arg_&& arg, Args_... args);
-  std::string* mutable_edition();
-  PROTOBUF_NODISCARD std::string* release_edition();
-  void set_allocated_edition(std::string* ptr);
+  void set_edition_deprecated(Arg_&& arg, Args_... args);
+  std::string* mutable_edition_deprecated();
+  PROTOBUF_NODISCARD std::string* release_edition_deprecated();
+  void set_allocated_edition_deprecated(std::string* ptr);
 
   private:
-  const std::string& _internal_edition() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition(
+  const std::string& _internal_edition_deprecated() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition_deprecated(
       const std::string& value);
-  std::string* _internal_mutable_edition();
+  std::string* _internal_mutable_edition_deprecated();
 
   public:
   // optional string value = 2;
@@ -1569,15 +1569,15 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   std::string* _internal_mutable_value();
 
   public:
-  // optional .google.protobuf.Edition edition_enum = 3;
-  bool has_edition_enum() const;
-  void clear_edition_enum() ;
-  ::google::protobuf::Edition edition_enum() const;
-  void set_edition_enum(::google::protobuf::Edition value);
+  // optional .google.protobuf.Edition edition = 3;
+  bool has_edition() const;
+  void clear_edition() ;
+  ::google::protobuf::Edition edition() const;
+  void set_edition(::google::protobuf::Edition value);
 
   private:
-  ::google::protobuf::Edition _internal_edition_enum() const;
-  void _internal_set_edition_enum(::google::protobuf::Edition value);
+  ::google::protobuf::Edition _internal_edition() const;
+  void _internal_set_edition(::google::protobuf::Edition value);
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldOptions.EditionDefault)
@@ -1587,7 +1587,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       2, 3, 1,
-      64, 2>
+      75, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1604,9 +1604,9 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
                               ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::internal::ArenaStringPtr edition_;
+    ::google::protobuf::internal::ArenaStringPtr edition_deprecated_;
     ::google::protobuf::internal::ArenaStringPtr value_;
-    int edition_enum_;
+    int edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -3499,25 +3499,25 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kEditionFieldNumber = 1,
+    kEditionDeprecatedFieldNumber = 1,
     kFeaturesFieldNumber = 2,
-    kEditionEnumFieldNumber = 3,
+    kEditionFieldNumber = 3,
   };
-  // optional string edition = 1;
-  bool has_edition() const;
-  void clear_edition() ;
-  const std::string& edition() const;
+  // optional string edition_deprecated = 1;
+  bool has_edition_deprecated() const;
+  void clear_edition_deprecated() ;
+  const std::string& edition_deprecated() const;
   template <typename Arg_ = const std::string&, typename... Args_>
-  void set_edition(Arg_&& arg, Args_... args);
-  std::string* mutable_edition();
-  PROTOBUF_NODISCARD std::string* release_edition();
-  void set_allocated_edition(std::string* ptr);
+  void set_edition_deprecated(Arg_&& arg, Args_... args);
+  std::string* mutable_edition_deprecated();
+  PROTOBUF_NODISCARD std::string* release_edition_deprecated();
+  void set_allocated_edition_deprecated(std::string* ptr);
 
   private:
-  const std::string& _internal_edition() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition(
+  const std::string& _internal_edition_deprecated() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition_deprecated(
       const std::string& value);
-  std::string* _internal_mutable_edition();
+  std::string* _internal_mutable_edition_deprecated();
 
   public:
   // optional .google.protobuf.FeatureSet features = 2;
@@ -3535,15 +3535,15 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   ::google::protobuf::FeatureSet* _internal_mutable_features();
 
   public:
-  // optional .google.protobuf.Edition edition_enum = 3;
-  bool has_edition_enum() const;
-  void clear_edition_enum() ;
-  ::google::protobuf::Edition edition_enum() const;
-  void set_edition_enum(::google::protobuf::Edition value);
+  // optional .google.protobuf.Edition edition = 3;
+  bool has_edition() const;
+  void clear_edition() ;
+  ::google::protobuf::Edition edition() const;
+  void set_edition(::google::protobuf::Edition value);
 
   private:
-  ::google::protobuf::Edition _internal_edition_enum() const;
-  void _internal_set_edition_enum(::google::protobuf::Edition value);
+  ::google::protobuf::Edition _internal_edition() const;
+  void _internal_set_edition(::google::protobuf::Edition value);
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
@@ -3553,7 +3553,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       2, 3, 2,
-      75, 2>
+      86, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -3570,9 +3570,9 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
                               ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::internal::ArenaStringPtr edition_;
+    ::google::protobuf::internal::ArenaStringPtr edition_deprecated_;
     ::google::protobuf::FeatureSet* features_;
-    int edition_enum_;
+    int edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -6549,10 +6549,10 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
 
   enum : int {
     kDefaultsFieldNumber = 1,
-    kMinimumEditionFieldNumber = 2,
-    kMaximumEditionFieldNumber = 3,
-    kMinimumEditionEnumFieldNumber = 4,
-    kMaximumEditionEnumFieldNumber = 5,
+    kMinimumEditionDeprecatedFieldNumber = 2,
+    kMaximumEditionDeprecatedFieldNumber = 3,
+    kMinimumEditionFieldNumber = 4,
+    kMaximumEditionFieldNumber = 5,
   };
   // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
   int defaults_size() const;
@@ -6572,60 +6572,60 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* add_defaults();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault >&
       defaults() const;
-  // optional string minimum_edition = 2;
+  // optional string minimum_edition_deprecated = 2;
+  bool has_minimum_edition_deprecated() const;
+  void clear_minimum_edition_deprecated() ;
+  const std::string& minimum_edition_deprecated() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_minimum_edition_deprecated(Arg_&& arg, Args_... args);
+  std::string* mutable_minimum_edition_deprecated();
+  PROTOBUF_NODISCARD std::string* release_minimum_edition_deprecated();
+  void set_allocated_minimum_edition_deprecated(std::string* ptr);
+
+  private:
+  const std::string& _internal_minimum_edition_deprecated() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_minimum_edition_deprecated(
+      const std::string& value);
+  std::string* _internal_mutable_minimum_edition_deprecated();
+
+  public:
+  // optional string maximum_edition_deprecated = 3;
+  bool has_maximum_edition_deprecated() const;
+  void clear_maximum_edition_deprecated() ;
+  const std::string& maximum_edition_deprecated() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_maximum_edition_deprecated(Arg_&& arg, Args_... args);
+  std::string* mutable_maximum_edition_deprecated();
+  PROTOBUF_NODISCARD std::string* release_maximum_edition_deprecated();
+  void set_allocated_maximum_edition_deprecated(std::string* ptr);
+
+  private:
+  const std::string& _internal_maximum_edition_deprecated() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_maximum_edition_deprecated(
+      const std::string& value);
+  std::string* _internal_mutable_maximum_edition_deprecated();
+
+  public:
+  // optional .google.protobuf.Edition minimum_edition = 4;
   bool has_minimum_edition() const;
   void clear_minimum_edition() ;
-  const std::string& minimum_edition() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_minimum_edition(Arg_&& arg, Args_... args);
-  std::string* mutable_minimum_edition();
-  PROTOBUF_NODISCARD std::string* release_minimum_edition();
-  void set_allocated_minimum_edition(std::string* ptr);
+  ::google::protobuf::Edition minimum_edition() const;
+  void set_minimum_edition(::google::protobuf::Edition value);
 
   private:
-  const std::string& _internal_minimum_edition() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_minimum_edition(
-      const std::string& value);
-  std::string* _internal_mutable_minimum_edition();
+  ::google::protobuf::Edition _internal_minimum_edition() const;
+  void _internal_set_minimum_edition(::google::protobuf::Edition value);
 
   public:
-  // optional string maximum_edition = 3;
+  // optional .google.protobuf.Edition maximum_edition = 5;
   bool has_maximum_edition() const;
   void clear_maximum_edition() ;
-  const std::string& maximum_edition() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_maximum_edition(Arg_&& arg, Args_... args);
-  std::string* mutable_maximum_edition();
-  PROTOBUF_NODISCARD std::string* release_maximum_edition();
-  void set_allocated_maximum_edition(std::string* ptr);
+  ::google::protobuf::Edition maximum_edition() const;
+  void set_maximum_edition(::google::protobuf::Edition value);
 
   private:
-  const std::string& _internal_maximum_edition() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_maximum_edition(
-      const std::string& value);
-  std::string* _internal_mutable_maximum_edition();
-
-  public:
-  // optional .google.protobuf.Edition minimum_edition_enum = 4;
-  bool has_minimum_edition_enum() const;
-  void clear_minimum_edition_enum() ;
-  ::google::protobuf::Edition minimum_edition_enum() const;
-  void set_minimum_edition_enum(::google::protobuf::Edition value);
-
-  private:
-  ::google::protobuf::Edition _internal_minimum_edition_enum() const;
-  void _internal_set_minimum_edition_enum(::google::protobuf::Edition value);
-
-  public:
-  // optional .google.protobuf.Edition maximum_edition_enum = 5;
-  bool has_maximum_edition_enum() const;
-  void clear_maximum_edition_enum() ;
-  ::google::protobuf::Edition maximum_edition_enum() const;
-  void set_maximum_edition_enum(::google::protobuf::Edition value);
-
-  private:
-  ::google::protobuf::Edition _internal_maximum_edition_enum() const;
-  void _internal_set_maximum_edition_enum(::google::protobuf::Edition value);
+  ::google::protobuf::Edition _internal_maximum_edition() const;
+  void _internal_set_maximum_edition(::google::protobuf::Edition value);
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSetDefaults)
@@ -6635,7 +6635,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 5, 3,
-      73, 2>
+      95, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -6653,10 +6653,10 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault > defaults_;
-    ::google::protobuf::internal::ArenaStringPtr minimum_edition_;
-    ::google::protobuf::internal::ArenaStringPtr maximum_edition_;
-    int minimum_edition_enum_;
-    int maximum_edition_enum_;
+    ::google::protobuf::internal::ArenaStringPtr minimum_edition_deprecated_;
+    ::google::protobuf::internal::ArenaStringPtr maximum_edition_deprecated_;
+    int minimum_edition_;
+    int maximum_edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -10123,10 +10123,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     kNameFieldNumber = 1,
     kPackageFieldNumber = 2,
     kSyntaxFieldNumber = 12,
-    kEditionFieldNumber = 13,
+    kEditionDeprecatedFieldNumber = 13,
     kOptionsFieldNumber = 8,
     kSourceCodeInfoFieldNumber = 9,
-    kEditionEnumFieldNumber = 14,
+    kEditionFieldNumber = 14,
   };
   // repeated string dependency = 3;
   int dependency_size() const;
@@ -10315,21 +10315,21 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   std::string* _internal_mutable_syntax();
 
   public:
-  // optional string edition = 13;
-  bool has_edition() const;
-  void clear_edition() ;
-  const std::string& edition() const;
+  // optional string edition_deprecated = 13;
+  bool has_edition_deprecated() const;
+  void clear_edition_deprecated() ;
+  const std::string& edition_deprecated() const;
   template <typename Arg_ = const std::string&, typename... Args_>
-  void set_edition(Arg_&& arg, Args_... args);
-  std::string* mutable_edition();
-  PROTOBUF_NODISCARD std::string* release_edition();
-  void set_allocated_edition(std::string* ptr);
+  void set_edition_deprecated(Arg_&& arg, Args_... args);
+  std::string* mutable_edition_deprecated();
+  PROTOBUF_NODISCARD std::string* release_edition_deprecated();
+  void set_allocated_edition_deprecated(std::string* ptr);
 
   private:
-  const std::string& _internal_edition() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition(
+  const std::string& _internal_edition_deprecated() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition_deprecated(
       const std::string& value);
-  std::string* _internal_mutable_edition();
+  std::string* _internal_mutable_edition_deprecated();
 
   public:
   // optional .google.protobuf.FileOptions options = 8;
@@ -10362,15 +10362,15 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   ::google::protobuf::SourceCodeInfo* _internal_mutable_source_code_info();
 
   public:
-  // optional .google.protobuf.Edition edition_enum = 14;
-  bool has_edition_enum() const;
-  void clear_edition_enum() ;
-  ::google::protobuf::Edition edition_enum() const;
-  void set_edition_enum(::google::protobuf::Edition value);
+  // optional .google.protobuf.Edition edition = 14;
+  bool has_edition() const;
+  void clear_edition() ;
+  ::google::protobuf::Edition edition() const;
+  void set_edition(::google::protobuf::Edition value);
 
   private:
-  ::google::protobuf::Edition _internal_edition_enum() const;
-  void _internal_set_edition_enum(::google::protobuf::Edition value);
+  ::google::protobuf::Edition _internal_edition() const;
+  void _internal_set_edition(::google::protobuf::Edition value);
 
   public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorProto)
@@ -10380,7 +10380,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       4, 14, 7,
-      86, 2>
+      97, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -10407,10 +10407,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr package_;
     ::google::protobuf::internal::ArenaStringPtr syntax_;
-    ::google::protobuf::internal::ArenaStringPtr edition_;
+    ::google::protobuf::internal::ArenaStringPtr edition_deprecated_;
     ::google::protobuf::FileOptions* options_;
     ::google::protobuf::SourceCodeInfo* source_code_info_;
-    int edition_enum_;
+    int edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -11458,104 +11458,104 @@ inline void FileDescriptorProto::set_allocated_syntax(std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.syntax)
 }
 
-// optional string edition = 13;
-inline bool FileDescriptorProto::has_edition() const {
+// optional string edition_deprecated = 13;
+inline bool FileDescriptorProto::has_edition_deprecated() const {
   bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
-inline void FileDescriptorProto::clear_edition() {
+inline void FileDescriptorProto::clear_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.edition_.ClearToEmpty();
+  _impl_.edition_deprecated_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
-inline const std::string& FileDescriptorProto::edition() const
+inline const std::string& FileDescriptorProto::edition_deprecated() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.edition)
-  return _internal_edition();
+  // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.edition_deprecated)
+  return _internal_edition_deprecated();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_edition(Arg_&& arg,
+inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_edition_deprecated(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
-  _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.edition)
+  _impl_.edition_deprecated_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.edition_deprecated)
 }
-inline std::string* FileDescriptorProto::mutable_edition() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_edition();
-  // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.edition)
+inline std::string* FileDescriptorProto::mutable_edition_deprecated() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_edition_deprecated();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.edition_deprecated)
   return _s;
 }
-inline const std::string& FileDescriptorProto::_internal_edition() const {
+inline const std::string& FileDescriptorProto::_internal_edition_deprecated() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return _impl_.edition_.Get();
+  return _impl_.edition_deprecated_.Get();
 }
-inline void FileDescriptorProto::_internal_set_edition(const std::string& value) {
+inline void FileDescriptorProto::_internal_set_edition_deprecated(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
-  _impl_.edition_.Set(value, GetArenaForAllocation());
+  _impl_.edition_deprecated_.Set(value, GetArenaForAllocation());
 }
-inline std::string* FileDescriptorProto::_internal_mutable_edition() {
+inline std::string* FileDescriptorProto::_internal_mutable_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
-  return _impl_.edition_.Mutable( GetArenaForAllocation());
+  return _impl_.edition_deprecated_.Mutable( GetArenaForAllocation());
 }
-inline std::string* FileDescriptorProto::release_edition() {
+inline std::string* FileDescriptorProto::release_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.edition)
+  // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.edition_deprecated)
   if ((_impl_._has_bits_[0] & 0x00000008u) == 0) {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000008u;
-  auto* released = _impl_.edition_.Release();
+  auto* released = _impl_.edition_deprecated_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.edition_.Set("", GetArenaForAllocation());
+  _impl_.edition_deprecated_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
-inline void FileDescriptorProto::set_allocated_edition(std::string* value) {
+inline void FileDescriptorProto::set_allocated_edition_deprecated(std::string* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000008u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000008u;
   }
-  _impl_.edition_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.edition_deprecated_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.edition_.IsDefault()) {
-          _impl_.edition_.Set("", GetArenaForAllocation());
+        if (_impl_.edition_deprecated_.IsDefault()) {
+          _impl_.edition_deprecated_.Set("", GetArenaForAllocation());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.edition)
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.edition_deprecated)
 }
 
-// optional .google.protobuf.Edition edition_enum = 14;
-inline bool FileDescriptorProto::has_edition_enum() const {
+// optional .google.protobuf.Edition edition = 14;
+inline bool FileDescriptorProto::has_edition() const {
   bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
   return value;
 }
-inline void FileDescriptorProto::clear_edition_enum() {
+inline void FileDescriptorProto::clear_edition() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.edition_enum_ = 0;
+  _impl_.edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000040u;
 }
-inline ::google::protobuf::Edition FileDescriptorProto::edition_enum() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.edition_enum)
-  return _internal_edition_enum();
+inline ::google::protobuf::Edition FileDescriptorProto::edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.edition)
+  return _internal_edition();
 }
-inline void FileDescriptorProto::set_edition_enum(::google::protobuf::Edition value) {
-  _internal_set_edition_enum(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.edition_enum)
+inline void FileDescriptorProto::set_edition(::google::protobuf::Edition value) {
+  _internal_set_edition(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.edition)
 }
-inline ::google::protobuf::Edition FileDescriptorProto::_internal_edition_enum() const {
+inline ::google::protobuf::Edition FileDescriptorProto::_internal_edition() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return static_cast<::google::protobuf::Edition>(_impl_.edition_enum_);
+  return static_cast<::google::protobuf::Edition>(_impl_.edition_);
 }
-inline void FileDescriptorProto::_internal_set_edition_enum(::google::protobuf::Edition value) {
+inline void FileDescriptorProto::_internal_set_edition(::google::protobuf::Edition value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::Edition_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000040u;
-  _impl_.edition_enum_ = value;
+  _impl_.edition_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -16276,104 +16276,104 @@ MessageOptions::_internal_mutable_uninterpreted_option() {
 
 // FieldOptions_EditionDefault
 
-// optional string edition = 1;
-inline bool FieldOptions_EditionDefault::has_edition() const {
+// optional string edition_deprecated = 1;
+inline bool FieldOptions_EditionDefault::has_edition_deprecated() const {
   bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
   return value;
 }
-inline void FieldOptions_EditionDefault::clear_edition() {
+inline void FieldOptions_EditionDefault::clear_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.edition_.ClearToEmpty();
+  _impl_.edition_deprecated_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& FieldOptions_EditionDefault::edition() const
+inline const std::string& FieldOptions_EditionDefault::edition_deprecated() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.EditionDefault.edition)
-  return _internal_edition();
+  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.EditionDefault.edition_deprecated)
+  return _internal_edition_deprecated();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FieldOptions_EditionDefault::set_edition(Arg_&& arg,
+inline PROTOBUF_ALWAYS_INLINE void FieldOptions_EditionDefault::set_edition_deprecated(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.EditionDefault.edition)
+  _impl_.edition_deprecated_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.EditionDefault.edition_deprecated)
 }
-inline std::string* FieldOptions_EditionDefault::mutable_edition() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_edition();
-  // @@protoc_insertion_point(field_mutable:google.protobuf.FieldOptions.EditionDefault.edition)
+inline std::string* FieldOptions_EditionDefault::mutable_edition_deprecated() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_edition_deprecated();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FieldOptions.EditionDefault.edition_deprecated)
   return _s;
 }
-inline const std::string& FieldOptions_EditionDefault::_internal_edition() const {
+inline const std::string& FieldOptions_EditionDefault::_internal_edition_deprecated() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return _impl_.edition_.Get();
+  return _impl_.edition_deprecated_.Get();
 }
-inline void FieldOptions_EditionDefault::_internal_set_edition(const std::string& value) {
+inline void FieldOptions_EditionDefault::_internal_set_edition_deprecated(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.edition_.Set(value, GetArenaForAllocation());
+  _impl_.edition_deprecated_.Set(value, GetArenaForAllocation());
 }
-inline std::string* FieldOptions_EditionDefault::_internal_mutable_edition() {
+inline std::string* FieldOptions_EditionDefault::_internal_mutable_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.edition_.Mutable( GetArenaForAllocation());
+  return _impl_.edition_deprecated_.Mutable( GetArenaForAllocation());
 }
-inline std::string* FieldOptions_EditionDefault::release_edition() {
+inline std::string* FieldOptions_EditionDefault::release_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.EditionDefault.edition)
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.EditionDefault.edition_deprecated)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.edition_.Release();
+  auto* released = _impl_.edition_deprecated_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.edition_.Set("", GetArenaForAllocation());
+  _impl_.edition_deprecated_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
-inline void FieldOptions_EditionDefault::set_allocated_edition(std::string* value) {
+inline void FieldOptions_EditionDefault::set_allocated_edition_deprecated(std::string* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.edition_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.edition_deprecated_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.edition_.IsDefault()) {
-          _impl_.edition_.Set("", GetArenaForAllocation());
+        if (_impl_.edition_deprecated_.IsDefault()) {
+          _impl_.edition_deprecated_.Set("", GetArenaForAllocation());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.EditionDefault.edition)
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.EditionDefault.edition_deprecated)
 }
 
-// optional .google.protobuf.Edition edition_enum = 3;
-inline bool FieldOptions_EditionDefault::has_edition_enum() const {
+// optional .google.protobuf.Edition edition = 3;
+inline bool FieldOptions_EditionDefault::has_edition() const {
   bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
-inline void FieldOptions_EditionDefault::clear_edition_enum() {
+inline void FieldOptions_EditionDefault::clear_edition() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.edition_enum_ = 0;
+  _impl_.edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-inline ::google::protobuf::Edition FieldOptions_EditionDefault::edition_enum() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.EditionDefault.edition_enum)
-  return _internal_edition_enum();
+inline ::google::protobuf::Edition FieldOptions_EditionDefault::edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.EditionDefault.edition)
+  return _internal_edition();
 }
-inline void FieldOptions_EditionDefault::set_edition_enum(::google::protobuf::Edition value) {
-  _internal_set_edition_enum(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.EditionDefault.edition_enum)
+inline void FieldOptions_EditionDefault::set_edition(::google::protobuf::Edition value) {
+  _internal_set_edition(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.EditionDefault.edition)
 }
-inline ::google::protobuf::Edition FieldOptions_EditionDefault::_internal_edition_enum() const {
+inline ::google::protobuf::Edition FieldOptions_EditionDefault::_internal_edition() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return static_cast<::google::protobuf::Edition>(_impl_.edition_enum_);
+  return static_cast<::google::protobuf::Edition>(_impl_.edition_);
 }
-inline void FieldOptions_EditionDefault::_internal_set_edition_enum(::google::protobuf::Edition value) {
+inline void FieldOptions_EditionDefault::_internal_set_edition(::google::protobuf::Edition value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::Edition_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.edition_enum_ = value;
+  _impl_.edition_ = value;
 }
 
 // optional string value = 2;
@@ -18526,104 +18526,104 @@ inline void FeatureSet::_internal_set_json_format(::google::protobuf::FeatureSet
 
 // FeatureSetDefaults_FeatureSetEditionDefault
 
-// optional string edition = 1;
-inline bool FeatureSetDefaults_FeatureSetEditionDefault::has_edition() const {
+// optional string edition_deprecated = 1;
+inline bool FeatureSetDefaults_FeatureSetEditionDefault::has_edition_deprecated() const {
   bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
   return value;
 }
-inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_edition() {
+inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.edition_.ClearToEmpty();
+  _impl_.edition_deprecated_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& FeatureSetDefaults_FeatureSetEditionDefault::edition() const
+inline const std::string& FeatureSetDefaults_FeatureSetEditionDefault::edition_deprecated() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
-  return _internal_edition();
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition_deprecated)
+  return _internal_edition_deprecated();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FeatureSetDefaults_FeatureSetEditionDefault::set_edition(Arg_&& arg,
+inline PROTOBUF_ALWAYS_INLINE void FeatureSetDefaults_FeatureSetEditionDefault::set_edition_deprecated(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
+  _impl_.edition_deprecated_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition_deprecated)
 }
-inline std::string* FeatureSetDefaults_FeatureSetEditionDefault::mutable_edition() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_edition();
-  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
+inline std::string* FeatureSetDefaults_FeatureSetEditionDefault::mutable_edition_deprecated() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_edition_deprecated();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition_deprecated)
   return _s;
 }
-inline const std::string& FeatureSetDefaults_FeatureSetEditionDefault::_internal_edition() const {
+inline const std::string& FeatureSetDefaults_FeatureSetEditionDefault::_internal_edition_deprecated() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return _impl_.edition_.Get();
+  return _impl_.edition_deprecated_.Get();
 }
-inline void FeatureSetDefaults_FeatureSetEditionDefault::_internal_set_edition(const std::string& value) {
+inline void FeatureSetDefaults_FeatureSetEditionDefault::_internal_set_edition_deprecated(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.edition_.Set(value, GetArenaForAllocation());
+  _impl_.edition_deprecated_.Set(value, GetArenaForAllocation());
 }
-inline std::string* FeatureSetDefaults_FeatureSetEditionDefault::_internal_mutable_edition() {
+inline std::string* FeatureSetDefaults_FeatureSetEditionDefault::_internal_mutable_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.edition_.Mutable( GetArenaForAllocation());
+  return _impl_.edition_deprecated_.Mutable( GetArenaForAllocation());
 }
-inline std::string* FeatureSetDefaults_FeatureSetEditionDefault::release_edition() {
+inline std::string* FeatureSetDefaults_FeatureSetEditionDefault::release_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
+  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition_deprecated)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.edition_.Release();
+  auto* released = _impl_.edition_deprecated_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.edition_.Set("", GetArenaForAllocation());
+  _impl_.edition_deprecated_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
-inline void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_edition(std::string* value) {
+inline void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_edition_deprecated(std::string* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.edition_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.edition_deprecated_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.edition_.IsDefault()) {
-          _impl_.edition_.Set("", GetArenaForAllocation());
+        if (_impl_.edition_deprecated_.IsDefault()) {
+          _impl_.edition_deprecated_.Set("", GetArenaForAllocation());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition_deprecated)
 }
 
-// optional .google.protobuf.Edition edition_enum = 3;
-inline bool FeatureSetDefaults_FeatureSetEditionDefault::has_edition_enum() const {
+// optional .google.protobuf.Edition edition = 3;
+inline bool FeatureSetDefaults_FeatureSetEditionDefault::has_edition() const {
   bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
-inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_edition_enum() {
+inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_edition() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.edition_enum_ = 0;
+  _impl_.edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-inline ::google::protobuf::Edition FeatureSetDefaults_FeatureSetEditionDefault::edition_enum() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition_enum)
-  return _internal_edition_enum();
+inline ::google::protobuf::Edition FeatureSetDefaults_FeatureSetEditionDefault::edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
+  return _internal_edition();
 }
-inline void FeatureSetDefaults_FeatureSetEditionDefault::set_edition_enum(::google::protobuf::Edition value) {
-  _internal_set_edition_enum(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition_enum)
+inline void FeatureSetDefaults_FeatureSetEditionDefault::set_edition(::google::protobuf::Edition value) {
+  _internal_set_edition(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
 }
-inline ::google::protobuf::Edition FeatureSetDefaults_FeatureSetEditionDefault::_internal_edition_enum() const {
+inline ::google::protobuf::Edition FeatureSetDefaults_FeatureSetEditionDefault::_internal_edition() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return static_cast<::google::protobuf::Edition>(_impl_.edition_enum_);
+  return static_cast<::google::protobuf::Edition>(_impl_.edition_);
 }
-inline void FeatureSetDefaults_FeatureSetEditionDefault::_internal_set_edition_enum(::google::protobuf::Edition value) {
+inline void FeatureSetDefaults_FeatureSetEditionDefault::_internal_set_edition(::google::protobuf::Edition value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::Edition_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.edition_enum_ = value;
+  _impl_.edition_ = value;
 }
 
 // optional .google.protobuf.FeatureSet features = 2;
@@ -18776,204 +18776,204 @@ FeatureSetDefaults::_internal_mutable_defaults() {
   return &_impl_.defaults_;
 }
 
-// optional string minimum_edition = 2;
-inline bool FeatureSetDefaults::has_minimum_edition() const {
+// optional string minimum_edition_deprecated = 2;
+inline bool FeatureSetDefaults::has_minimum_edition_deprecated() const {
   bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
   return value;
 }
-inline void FeatureSetDefaults::clear_minimum_edition() {
+inline void FeatureSetDefaults::clear_minimum_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.minimum_edition_.ClearToEmpty();
+  _impl_.minimum_edition_deprecated_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& FeatureSetDefaults::minimum_edition() const
+inline const std::string& FeatureSetDefaults::minimum_edition_deprecated() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.minimum_edition)
-  return _internal_minimum_edition();
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.minimum_edition_deprecated)
+  return _internal_minimum_edition_deprecated();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FeatureSetDefaults::set_minimum_edition(Arg_&& arg,
+inline PROTOBUF_ALWAYS_INLINE void FeatureSetDefaults::set_minimum_edition_deprecated(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.minimum_edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.minimum_edition)
+  _impl_.minimum_edition_deprecated_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.minimum_edition_deprecated)
 }
-inline std::string* FeatureSetDefaults::mutable_minimum_edition() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_minimum_edition();
-  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.minimum_edition)
+inline std::string* FeatureSetDefaults::mutable_minimum_edition_deprecated() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_minimum_edition_deprecated();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.minimum_edition_deprecated)
   return _s;
 }
-inline const std::string& FeatureSetDefaults::_internal_minimum_edition() const {
+inline const std::string& FeatureSetDefaults::_internal_minimum_edition_deprecated() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return _impl_.minimum_edition_.Get();
+  return _impl_.minimum_edition_deprecated_.Get();
 }
-inline void FeatureSetDefaults::_internal_set_minimum_edition(const std::string& value) {
+inline void FeatureSetDefaults::_internal_set_minimum_edition_deprecated(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.minimum_edition_.Set(value, GetArenaForAllocation());
+  _impl_.minimum_edition_deprecated_.Set(value, GetArenaForAllocation());
 }
-inline std::string* FeatureSetDefaults::_internal_mutable_minimum_edition() {
+inline std::string* FeatureSetDefaults::_internal_mutable_minimum_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.minimum_edition_.Mutable( GetArenaForAllocation());
+  return _impl_.minimum_edition_deprecated_.Mutable( GetArenaForAllocation());
 }
-inline std::string* FeatureSetDefaults::release_minimum_edition() {
+inline std::string* FeatureSetDefaults::release_minimum_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSetDefaults.minimum_edition)
+  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSetDefaults.minimum_edition_deprecated)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.minimum_edition_.Release();
+  auto* released = _impl_.minimum_edition_deprecated_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.minimum_edition_.Set("", GetArenaForAllocation());
+  _impl_.minimum_edition_deprecated_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
-inline void FeatureSetDefaults::set_allocated_minimum_edition(std::string* value) {
+inline void FeatureSetDefaults::set_allocated_minimum_edition_deprecated(std::string* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.minimum_edition_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.minimum_edition_deprecated_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.minimum_edition_.IsDefault()) {
-          _impl_.minimum_edition_.Set("", GetArenaForAllocation());
+        if (_impl_.minimum_edition_deprecated_.IsDefault()) {
+          _impl_.minimum_edition_deprecated_.Set("", GetArenaForAllocation());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.minimum_edition)
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.minimum_edition_deprecated)
 }
 
-// optional string maximum_edition = 3;
-inline bool FeatureSetDefaults::has_maximum_edition() const {
+// optional string maximum_edition_deprecated = 3;
+inline bool FeatureSetDefaults::has_maximum_edition_deprecated() const {
   bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
   return value;
 }
-inline void FeatureSetDefaults::clear_maximum_edition() {
+inline void FeatureSetDefaults::clear_maximum_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.maximum_edition_.ClearToEmpty();
+  _impl_.maximum_edition_deprecated_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline const std::string& FeatureSetDefaults::maximum_edition() const
+inline const std::string& FeatureSetDefaults::maximum_edition_deprecated() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.maximum_edition)
-  return _internal_maximum_edition();
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.maximum_edition_deprecated)
+  return _internal_maximum_edition_deprecated();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void FeatureSetDefaults::set_maximum_edition(Arg_&& arg,
+inline PROTOBUF_ALWAYS_INLINE void FeatureSetDefaults::set_maximum_edition_deprecated(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.maximum_edition_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.maximum_edition)
+  _impl_.maximum_edition_deprecated_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.maximum_edition_deprecated)
 }
-inline std::string* FeatureSetDefaults::mutable_maximum_edition() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_maximum_edition();
-  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.maximum_edition)
+inline std::string* FeatureSetDefaults::mutable_maximum_edition_deprecated() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_maximum_edition_deprecated();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.maximum_edition_deprecated)
   return _s;
 }
-inline const std::string& FeatureSetDefaults::_internal_maximum_edition() const {
+inline const std::string& FeatureSetDefaults::_internal_maximum_edition_deprecated() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return _impl_.maximum_edition_.Get();
+  return _impl_.maximum_edition_deprecated_.Get();
 }
-inline void FeatureSetDefaults::_internal_set_maximum_edition(const std::string& value) {
+inline void FeatureSetDefaults::_internal_set_maximum_edition_deprecated(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.maximum_edition_.Set(value, GetArenaForAllocation());
+  _impl_.maximum_edition_deprecated_.Set(value, GetArenaForAllocation());
 }
-inline std::string* FeatureSetDefaults::_internal_mutable_maximum_edition() {
+inline std::string* FeatureSetDefaults::_internal_mutable_maximum_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  return _impl_.maximum_edition_.Mutable( GetArenaForAllocation());
+  return _impl_.maximum_edition_deprecated_.Mutable( GetArenaForAllocation());
 }
-inline std::string* FeatureSetDefaults::release_maximum_edition() {
+inline std::string* FeatureSetDefaults::release_maximum_edition_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSetDefaults.maximum_edition)
+  // @@protoc_insertion_point(field_release:google.protobuf.FeatureSetDefaults.maximum_edition_deprecated)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000002u;
-  auto* released = _impl_.maximum_edition_.Release();
+  auto* released = _impl_.maximum_edition_deprecated_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.maximum_edition_.Set("", GetArenaForAllocation());
+  _impl_.maximum_edition_deprecated_.Set("", GetArenaForAllocation());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
-inline void FeatureSetDefaults::set_allocated_maximum_edition(std::string* value) {
+inline void FeatureSetDefaults::set_allocated_maximum_edition_deprecated(std::string* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
-  _impl_.maximum_edition_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.maximum_edition_deprecated_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.maximum_edition_.IsDefault()) {
-          _impl_.maximum_edition_.Set("", GetArenaForAllocation());
+        if (_impl_.maximum_edition_deprecated_.IsDefault()) {
+          _impl_.maximum_edition_deprecated_.Set("", GetArenaForAllocation());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.maximum_edition)
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FeatureSetDefaults.maximum_edition_deprecated)
 }
 
-// optional .google.protobuf.Edition minimum_edition_enum = 4;
-inline bool FeatureSetDefaults::has_minimum_edition_enum() const {
+// optional .google.protobuf.Edition minimum_edition = 4;
+inline bool FeatureSetDefaults::has_minimum_edition() const {
   bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
-inline void FeatureSetDefaults::clear_minimum_edition_enum() {
+inline void FeatureSetDefaults::clear_minimum_edition() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.minimum_edition_enum_ = 0;
+  _impl_.minimum_edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
-inline ::google::protobuf::Edition FeatureSetDefaults::minimum_edition_enum() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.minimum_edition_enum)
-  return _internal_minimum_edition_enum();
+inline ::google::protobuf::Edition FeatureSetDefaults::minimum_edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.minimum_edition)
+  return _internal_minimum_edition();
 }
-inline void FeatureSetDefaults::set_minimum_edition_enum(::google::protobuf::Edition value) {
-  _internal_set_minimum_edition_enum(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.minimum_edition_enum)
+inline void FeatureSetDefaults::set_minimum_edition(::google::protobuf::Edition value) {
+  _internal_set_minimum_edition(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.minimum_edition)
 }
-inline ::google::protobuf::Edition FeatureSetDefaults::_internal_minimum_edition_enum() const {
+inline ::google::protobuf::Edition FeatureSetDefaults::_internal_minimum_edition() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return static_cast<::google::protobuf::Edition>(_impl_.minimum_edition_enum_);
+  return static_cast<::google::protobuf::Edition>(_impl_.minimum_edition_);
 }
-inline void FeatureSetDefaults::_internal_set_minimum_edition_enum(::google::protobuf::Edition value) {
+inline void FeatureSetDefaults::_internal_set_minimum_edition(::google::protobuf::Edition value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::Edition_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.minimum_edition_enum_ = value;
+  _impl_.minimum_edition_ = value;
 }
 
-// optional .google.protobuf.Edition maximum_edition_enum = 5;
-inline bool FeatureSetDefaults::has_maximum_edition_enum() const {
+// optional .google.protobuf.Edition maximum_edition = 5;
+inline bool FeatureSetDefaults::has_maximum_edition() const {
   bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
-inline void FeatureSetDefaults::clear_maximum_edition_enum() {
+inline void FeatureSetDefaults::clear_maximum_edition() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.maximum_edition_enum_ = 0;
+  _impl_.maximum_edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
-inline ::google::protobuf::Edition FeatureSetDefaults::maximum_edition_enum() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.maximum_edition_enum)
-  return _internal_maximum_edition_enum();
+inline ::google::protobuf::Edition FeatureSetDefaults::maximum_edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSetDefaults.maximum_edition)
+  return _internal_maximum_edition();
 }
-inline void FeatureSetDefaults::set_maximum_edition_enum(::google::protobuf::Edition value) {
-  _internal_set_maximum_edition_enum(value);
-  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.maximum_edition_enum)
+inline void FeatureSetDefaults::set_maximum_edition(::google::protobuf::Edition value) {
+  _internal_set_maximum_edition(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.maximum_edition)
 }
-inline ::google::protobuf::Edition FeatureSetDefaults::_internal_maximum_edition_enum() const {
+inline ::google::protobuf::Edition FeatureSetDefaults::_internal_maximum_edition() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return static_cast<::google::protobuf::Edition>(_impl_.maximum_edition_enum_);
+  return static_cast<::google::protobuf::Edition>(_impl_.maximum_edition_);
 }
-inline void FeatureSetDefaults::_internal_set_maximum_edition_enum(::google::protobuf::Edition value) {
+inline void FeatureSetDefaults::_internal_set_maximum_edition(::google::protobuf::Edition value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::Edition_IsValid(value));
   _impl_._has_bits_[0] |= 0x00000008u;
-  _impl_.maximum_edition_enum_ = value;
+  _impl_.maximum_edition_ = value;
 }
 
 // -------------------------------------------------------------------
