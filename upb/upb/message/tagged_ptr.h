@@ -33,7 +33,7 @@
 
 #include <stdint.h>
 
-#include "upb/message/types.h"
+#include "upb/message/types.h"  // IWYU pragma: export
 
 // Must be last.
 #include "upb/port/def.inc"
