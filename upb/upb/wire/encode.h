@@ -33,8 +33,11 @@
 #ifndef UPB_WIRE_ENCODE_H_
 #define UPB_WIRE_ENCODE_H_
 
-#include "upb/upb/message/message.h"
-#include "upb/upb/wire/types.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/upb/port/def.inc"

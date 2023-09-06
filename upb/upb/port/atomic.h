@@ -35,8 +35,10 @@
 
 #ifdef UPB_USE_C11_ATOMICS
 
+// IWYU pragma: begin_exports
 #include <stdatomic.h>
 #include <stdbool.h>
+// IWYU pragma: end_exports
 
 #define upb_Atomic_Init(addr, val) atomic_init(addr, val)
 #define upb_Atomic_Load(addr, order) atomic_load_explicit(addr, order)

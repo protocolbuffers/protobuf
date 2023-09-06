@@ -141,6 +141,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":accessors",
+        ":accessors_internal",
         ":internal",
         ":message",
         ":types",
@@ -150,9 +151,12 @@ cc_library(
         "//upb:eps_copy_input_stream",
         "//upb:hash",
         "//upb:mem",
+        "//upb:message_tagged_ptr",
         "//upb:mini_table",
+        "//upb:mini_table_internal",
         "//upb:port",
         "//upb:wire",
+        "//upb:wire_internal",
         "//upb:wire_reader",
     ],
 )

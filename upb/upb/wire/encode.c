@@ -32,15 +32,33 @@
 
 #include "upb/upb/wire/encode.h"
 
+#include <setjmp.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
+#include "upb/upb/base/descriptor_constants.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/collections/array.h"
 #include "upb/upb/collections/internal/array.h"
+#include "upb/upb/collections/internal/map.h"
+#include "upb/upb/collections/internal/map_entry.h"
 #include "upb/upb/collections/internal/map_sorter.h"
+#include "upb/upb/hash/common.h"
+#include "upb/upb/hash/str_table.h"
+#include "upb/upb/mem/arena.h"
 #include "upb/upb/message/internal/accessors.h"
 #include "upb/upb/message/internal/extension.h"
+#include "upb/upb/message/message.h"
+#include "upb/upb/message/tagged_ptr.h"
+#include "upb/upb/mini_table/field.h"
+#include "upb/upb/mini_table/internal/field.h"
+#include "upb/upb/mini_table/internal/message.h"
+#include "upb/upb/mini_table/message.h"
 #include "upb/upb/mini_table/sub.h"
-#include "upb/upb/wire/internal/common.h"
+#include "upb/upb/wire/internal/constants.h"
 #include "upb/upb/wire/internal/swap.h"
+#include "upb/upb/wire/types.h"
 
 // Must be last.
 #include "upb/upb/port/def.inc"

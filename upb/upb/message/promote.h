@@ -80,6 +80,7 @@ typedef struct {
 } upb_FindUnknownRet;
 
 // Finds first occurrence of unknown data by tag id in message.
+// A depth_limit of zero means to just use the upb default depth limit.
 upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
                                              uint32_t field_number,
                                              int depth_limit);
