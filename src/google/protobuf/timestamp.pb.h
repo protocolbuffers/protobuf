@@ -77,16 +77,14 @@ class PROTOBUF_EXPORT Timestamp final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Timestamp(::google::protobuf::internal::ConstantInitialized);
 
-  Timestamp(const Timestamp& from);
+  Timestamp(::google::protobuf::Arena* arena, const Timestamp& from);
+  inline Timestamp(const Timestamp& from)
+      : Timestamp(nullptr, from) {}
   Timestamp(Timestamp&& from) noexcept
     : Timestamp() {
     *this = ::std::move(from);
   }
 
-  inline Timestamp(::google::protobuf::Arena* arena, const Timestamp& from)
-    : Timestamp(arena) {
-    MergeFrom(from);
-  }
   inline Timestamp& operator=(const Timestamp& from) {
     CopyFrom(from);
     return *this;
@@ -235,10 +233,19 @@ class PROTOBUF_EXPORT Timestamp final :
       1, 2, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::int64_t seconds_;
     ::int32_t nanos_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;

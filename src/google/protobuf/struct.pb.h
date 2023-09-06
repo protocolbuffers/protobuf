@@ -122,16 +122,14 @@ class PROTOBUF_EXPORT ListValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR ListValue(::google::protobuf::internal::ConstantInitialized);
 
-  ListValue(const ListValue& from);
+  ListValue(::google::protobuf::Arena* arena, const ListValue& from);
+  inline ListValue(const ListValue& from)
+      : ListValue(nullptr, from) {}
   ListValue(ListValue&& from) noexcept
     : ListValue() {
     *this = ::std::move(from);
   }
 
-  inline ListValue(::google::protobuf::Arena* arena, const ListValue& from)
-    : ListValue(arena) {
-    MergeFrom(from);
-  }
   inline ListValue& operator=(const ListValue& from) {
     CopyFrom(from);
     return *this;
@@ -277,10 +275,19 @@ class PROTOBUF_EXPORT ListValue final :
       0, 1, 1,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value > values_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -297,16 +304,14 @@ class PROTOBUF_EXPORT Struct final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Struct(::google::protobuf::internal::ConstantInitialized);
 
-  Struct(const Struct& from);
+  Struct(::google::protobuf::Arena* arena, const Struct& from);
+  inline Struct(const Struct& from)
+      : Struct(nullptr, from) {}
   Struct(Struct&& from) noexcept
     : Struct() {
     *this = ::std::move(from);
   }
 
-  inline Struct(::google::protobuf::Arena* arena, const Struct& from)
-    : Struct(arena) {
-    MergeFrom(from);
-  }
   inline Struct& operator=(const Struct& from) {
     CopyFrom(from);
     return *this;
@@ -450,10 +455,19 @@ class PROTOBUF_EXPORT Struct final :
       0, 1, 2,
       37, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::MapField<Struct_FieldsEntry_DoNotUse, std::string, ::google::protobuf::Value,
                       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
                       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>
@@ -499,16 +513,14 @@ class PROTOBUF_EXPORT Value final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Value(::google::protobuf::internal::ConstantInitialized);
 
-  Value(const Value& from);
+  Value(::google::protobuf::Arena* arena, const Value& from);
+  inline Value(const Value& from)
+      : Value(nullptr, from) {}
   Value(Value&& from) noexcept
     : Value() {
     *this = ::std::move(from);
   }
 
-  inline Value(::google::protobuf::Arena* arena, const Value& from)
-    : Value(arena) {
-    MergeFrom(from);
-  }
   inline Value& operator=(const Value& from) {
     CopyFrom(from);
     return *this;
@@ -750,10 +762,19 @@ class PROTOBUF_EXPORT Value final :
       0, 6, 2,
       42, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     union KindUnion {
       constexpr KindUnion() : _constinit_{} {}
         ::google::protobuf::internal::ConstantInitialized _constinit_;

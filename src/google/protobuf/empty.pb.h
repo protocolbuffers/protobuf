@@ -77,16 +77,14 @@ class PROTOBUF_EXPORT Empty final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Empty(::google::protobuf::internal::ConstantInitialized);
 
-  Empty(const Empty& from);
+  Empty(::google::protobuf::Arena* arena, const Empty& from);
+  inline Empty(const Empty& from)
+      : Empty(nullptr, from) {}
   Empty(Empty&& from) noexcept
     : Empty() {
     *this = ::std::move(from);
   }
 
-  inline Empty(::google::protobuf::Arena* arena, const Empty& from)
-    : Empty(arena) {
-    MergeFrom(from);
-  }
   inline Empty& operator=(const Empty& from) {
     CopyFrom(from);
     return *this;
@@ -192,10 +190,19 @@ class PROTOBUF_EXPORT Empty final :
  private:
   class _Internal;
 
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   friend struct ::TableStruct_google_2fprotobuf_2fempty_2eproto;

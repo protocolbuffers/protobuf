@@ -77,16 +77,14 @@ class PROTOBUF_EXPORT SourceContext final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR SourceContext(::google::protobuf::internal::ConstantInitialized);
 
-  SourceContext(const SourceContext& from);
+  SourceContext(::google::protobuf::Arena* arena, const SourceContext& from);
+  inline SourceContext(const SourceContext& from)
+      : SourceContext(nullptr, from) {}
   SourceContext(SourceContext&& from) noexcept
     : SourceContext() {
     *this = ::std::move(from);
   }
 
-  inline SourceContext(::google::protobuf::Arena* arena, const SourceContext& from)
-    : SourceContext(arena) {
-    MergeFrom(from);
-  }
   inline SourceContext& operator=(const SourceContext& from) {
     CopyFrom(from);
     return *this;
@@ -230,10 +228,19 @@ class PROTOBUF_EXPORT SourceContext final :
       0, 1, 0,
       47, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ArenaStringPtr file_name_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER

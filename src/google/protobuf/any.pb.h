@@ -77,16 +77,14 @@ class PROTOBUF_EXPORT Any final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Any(::google::protobuf::internal::ConstantInitialized);
 
-  Any(const Any& from);
+  Any(::google::protobuf::Arena* arena, const Any& from);
+  inline Any(const Any& from)
+      : Any(nullptr, from) {}
   Any(Any&& from) noexcept
     : Any() {
     *this = ::std::move(from);
   }
 
-  inline Any(::google::protobuf::Arena* arena, const Any& from)
-    : Any(arena) {
-    MergeFrom(from);
-  }
   inline Any& operator=(const Any& from) {
     CopyFrom(from);
     return *this;
@@ -282,10 +280,19 @@ class PROTOBUF_EXPORT Any final :
       1, 2, 0,
       36, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ArenaStringPtr type_url_;
     ::google::protobuf::internal::ArenaStringPtr value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;

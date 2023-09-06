@@ -22,15 +22,17 @@ namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
-        template <typename>
+
+inline constexpr SourceContext::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : file_name_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR SourceContext::SourceContext(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.file_name_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct SourceContextDefaultTypeInternal {
   PROTOBUF_CONSTEXPR SourceContextDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~SourceContextDefaultTypeInternal() {}
@@ -126,35 +128,32 @@ SourceContext::SourceContext(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceContext)
 }
-SourceContext::SourceContext(const SourceContext& from) : ::google::protobuf::Message() {
+inline PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
+    const Impl_& from)
+      : file_name_(arena, from.file_name_),
+        _cached_size_{0} {}
+
+SourceContext::SourceContext(
+    ::google::protobuf::Arena* arena,
+    const SourceContext& from)
+    : ::google::protobuf::Message(arena) {
   SourceContext* const _this = this;
   (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.file_name_){},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  _impl_.file_name_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        _impl_.file_name_.Set("", GetArenaForAllocation());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (!from._internal_file_name().empty()) {
-    _this->_impl_.file_name_.Set(from._internal_file_name(), _this->GetArenaForAllocation());
-  }
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
 }
+inline PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : file_name_(arena),
+        _cached_size_{0} {}
+
 inline void SourceContext::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.file_name_){},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
-  _impl_.file_name_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        _impl_.file_name_.Set("", GetArenaForAllocation());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 SourceContext::~SourceContext() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceContext)
@@ -164,6 +163,7 @@ SourceContext::~SourceContext() {
 inline void SourceContext::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_name_.Destroy();
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void SourceContext::Clear() {

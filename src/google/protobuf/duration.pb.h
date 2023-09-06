@@ -77,16 +77,14 @@ class PROTOBUF_EXPORT Duration final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Duration(::google::protobuf::internal::ConstantInitialized);
 
-  Duration(const Duration& from);
+  Duration(::google::protobuf::Arena* arena, const Duration& from);
+  inline Duration(const Duration& from)
+      : Duration(nullptr, from) {}
   Duration(Duration&& from) noexcept
     : Duration() {
     *this = ::std::move(from);
   }
 
-  inline Duration(::google::protobuf::Arena* arena, const Duration& from)
-    : Duration(arena) {
-    MergeFrom(from);
-  }
   inline Duration& operator=(const Duration& from) {
     CopyFrom(from);
     return *this;
@@ -235,10 +233,19 @@ class PROTOBUF_EXPORT Duration final :
       1, 2, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::int64_t seconds_;
     ::int32_t nanos_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;

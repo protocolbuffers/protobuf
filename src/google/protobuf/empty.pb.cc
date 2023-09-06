@@ -116,7 +116,10 @@ Empty::Empty(::google::protobuf::Arena* arena)
     : ::google::protobuf::internal::ZeroFieldsBase(arena) {
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Empty)
 }
-Empty::Empty(const Empty& from) : ::google::protobuf::internal::ZeroFieldsBase() {
+Empty::Empty(
+    ::google::protobuf::Arena* arena,
+    const Empty& from)
+    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
   Empty* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(

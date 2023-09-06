@@ -77,16 +77,14 @@ class PROTOBUF_EXPORT FieldMask final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FieldMask(::google::protobuf::internal::ConstantInitialized);
 
-  FieldMask(const FieldMask& from);
+  FieldMask(::google::protobuf::Arena* arena, const FieldMask& from);
+  inline FieldMask(const FieldMask& from)
+      : FieldMask(nullptr, from) {}
   FieldMask(FieldMask&& from) noexcept
     : FieldMask() {
     *this = ::std::move(from);
   }
 
-  inline FieldMask(::google::protobuf::Arena* arena, const FieldMask& from)
-    : FieldMask(arena) {
-    MergeFrom(from);
-  }
   inline FieldMask& operator=(const FieldMask& from) {
     CopyFrom(from);
     return *this;
@@ -242,10 +240,19 @@ class PROTOBUF_EXPORT FieldMask final :
       0, 1, 0,
       39, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::RepeatedPtrField<std::string> paths_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER

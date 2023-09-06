@@ -101,16 +101,14 @@ class PROTOBUF_EXPORT UInt64Value final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR UInt64Value(::google::protobuf::internal::ConstantInitialized);
 
-  UInt64Value(const UInt64Value& from);
+  UInt64Value(::google::protobuf::Arena* arena, const UInt64Value& from);
+  inline UInt64Value(const UInt64Value& from)
+      : UInt64Value(nullptr, from) {}
   UInt64Value(UInt64Value&& from) noexcept
     : UInt64Value() {
     *this = ::std::move(from);
   }
 
-  inline UInt64Value(::google::protobuf::Arena* arena, const UInt64Value& from)
-    : UInt64Value(arena) {
-    MergeFrom(from);
-  }
   inline UInt64Value& operator=(const UInt64Value& from) {
     CopyFrom(from);
     return *this;
@@ -248,10 +246,19 @@ class PROTOBUF_EXPORT UInt64Value final :
       0, 1, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::uint64_t value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -268,16 +275,14 @@ class PROTOBUF_EXPORT UInt32Value final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR UInt32Value(::google::protobuf::internal::ConstantInitialized);
 
-  UInt32Value(const UInt32Value& from);
+  UInt32Value(::google::protobuf::Arena* arena, const UInt32Value& from);
+  inline UInt32Value(const UInt32Value& from)
+      : UInt32Value(nullptr, from) {}
   UInt32Value(UInt32Value&& from) noexcept
     : UInt32Value() {
     *this = ::std::move(from);
   }
 
-  inline UInt32Value(::google::protobuf::Arena* arena, const UInt32Value& from)
-    : UInt32Value(arena) {
-    MergeFrom(from);
-  }
   inline UInt32Value& operator=(const UInt32Value& from) {
     CopyFrom(from);
     return *this;
@@ -415,10 +420,19 @@ class PROTOBUF_EXPORT UInt32Value final :
       0, 1, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::uint32_t value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -435,16 +449,14 @@ class PROTOBUF_EXPORT StringValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR StringValue(::google::protobuf::internal::ConstantInitialized);
 
-  StringValue(const StringValue& from);
+  StringValue(::google::protobuf::Arena* arena, const StringValue& from);
+  inline StringValue(const StringValue& from)
+      : StringValue(nullptr, from) {}
   StringValue(StringValue&& from) noexcept
     : StringValue() {
     *this = ::std::move(from);
   }
 
-  inline StringValue(::google::protobuf::Arena* arena, const StringValue& from)
-    : StringValue(arena) {
-    MergeFrom(from);
-  }
   inline StringValue& operator=(const StringValue& from) {
     CopyFrom(from);
     return *this;
@@ -588,10 +600,19 @@ class PROTOBUF_EXPORT StringValue final :
       0, 1, 0,
       41, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ArenaStringPtr value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -608,16 +629,14 @@ class PROTOBUF_EXPORT Int64Value final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Int64Value(::google::protobuf::internal::ConstantInitialized);
 
-  Int64Value(const Int64Value& from);
+  Int64Value(::google::protobuf::Arena* arena, const Int64Value& from);
+  inline Int64Value(const Int64Value& from)
+      : Int64Value(nullptr, from) {}
   Int64Value(Int64Value&& from) noexcept
     : Int64Value() {
     *this = ::std::move(from);
   }
 
-  inline Int64Value(::google::protobuf::Arena* arena, const Int64Value& from)
-    : Int64Value(arena) {
-    MergeFrom(from);
-  }
   inline Int64Value& operator=(const Int64Value& from) {
     CopyFrom(from);
     return *this;
@@ -755,10 +774,19 @@ class PROTOBUF_EXPORT Int64Value final :
       0, 1, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::int64_t value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -775,16 +803,14 @@ class PROTOBUF_EXPORT Int32Value final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Int32Value(::google::protobuf::internal::ConstantInitialized);
 
-  Int32Value(const Int32Value& from);
+  Int32Value(::google::protobuf::Arena* arena, const Int32Value& from);
+  inline Int32Value(const Int32Value& from)
+      : Int32Value(nullptr, from) {}
   Int32Value(Int32Value&& from) noexcept
     : Int32Value() {
     *this = ::std::move(from);
   }
 
-  inline Int32Value(::google::protobuf::Arena* arena, const Int32Value& from)
-    : Int32Value(arena) {
-    MergeFrom(from);
-  }
   inline Int32Value& operator=(const Int32Value& from) {
     CopyFrom(from);
     return *this;
@@ -922,10 +948,19 @@ class PROTOBUF_EXPORT Int32Value final :
       0, 1, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::int32_t value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -942,16 +977,14 @@ class PROTOBUF_EXPORT FloatValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FloatValue(::google::protobuf::internal::ConstantInitialized);
 
-  FloatValue(const FloatValue& from);
+  FloatValue(::google::protobuf::Arena* arena, const FloatValue& from);
+  inline FloatValue(const FloatValue& from)
+      : FloatValue(nullptr, from) {}
   FloatValue(FloatValue&& from) noexcept
     : FloatValue() {
     *this = ::std::move(from);
   }
 
-  inline FloatValue(::google::protobuf::Arena* arena, const FloatValue& from)
-    : FloatValue(arena) {
-    MergeFrom(from);
-  }
   inline FloatValue& operator=(const FloatValue& from) {
     CopyFrom(from);
     return *this;
@@ -1089,10 +1122,19 @@ class PROTOBUF_EXPORT FloatValue final :
       0, 1, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     float value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -1109,16 +1151,14 @@ class PROTOBUF_EXPORT DoubleValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR DoubleValue(::google::protobuf::internal::ConstantInitialized);
 
-  DoubleValue(const DoubleValue& from);
+  DoubleValue(::google::protobuf::Arena* arena, const DoubleValue& from);
+  inline DoubleValue(const DoubleValue& from)
+      : DoubleValue(nullptr, from) {}
   DoubleValue(DoubleValue&& from) noexcept
     : DoubleValue() {
     *this = ::std::move(from);
   }
 
-  inline DoubleValue(::google::protobuf::Arena* arena, const DoubleValue& from)
-    : DoubleValue(arena) {
-    MergeFrom(from);
-  }
   inline DoubleValue& operator=(const DoubleValue& from) {
     CopyFrom(from);
     return *this;
@@ -1256,10 +1296,19 @@ class PROTOBUF_EXPORT DoubleValue final :
       0, 1, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     double value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -1276,16 +1325,14 @@ class PROTOBUF_EXPORT BytesValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR BytesValue(::google::protobuf::internal::ConstantInitialized);
 
-  BytesValue(const BytesValue& from);
+  BytesValue(::google::protobuf::Arena* arena, const BytesValue& from);
+  inline BytesValue(const BytesValue& from)
+      : BytesValue(nullptr, from) {}
   BytesValue(BytesValue&& from) noexcept
     : BytesValue() {
     *this = ::std::move(from);
   }
 
-  inline BytesValue(::google::protobuf::Arena* arena, const BytesValue& from)
-    : BytesValue(arena) {
-    MergeFrom(from);
-  }
   inline BytesValue& operator=(const BytesValue& from) {
     CopyFrom(from);
     return *this;
@@ -1429,10 +1476,19 @@ class PROTOBUF_EXPORT BytesValue final :
       0, 1, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ArenaStringPtr value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -1449,16 +1505,14 @@ class PROTOBUF_EXPORT BoolValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR BoolValue(::google::protobuf::internal::ConstantInitialized);
 
-  BoolValue(const BoolValue& from);
+  BoolValue(::google::protobuf::Arena* arena, const BoolValue& from);
+  inline BoolValue(const BoolValue& from)
+      : BoolValue(nullptr, from) {}
   BoolValue(BoolValue&& from) noexcept
     : BoolValue() {
     *this = ::std::move(from);
   }
 
-  inline BoolValue(::google::protobuf::Arena* arena, const BoolValue& from)
-    : BoolValue(arena) {
-    MergeFrom(from);
-  }
   inline BoolValue& operator=(const BoolValue& from) {
     CopyFrom(from);
     return *this;
@@ -1596,10 +1650,19 @@ class PROTOBUF_EXPORT BoolValue final :
       0, 1, 0,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     bool value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER

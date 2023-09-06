@@ -22,13 +22,16 @@ namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
-        template <typename>
+
+inline constexpr Timestamp::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : seconds_{::int64_t{0}},
+        nanos_{0},
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR Timestamp::Timestamp(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.seconds_)*/ ::int64_t{0},
-      /*decltype(_impl_.nanos_)*/ 0,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct TimestampDefaultTypeInternal {
   PROTOBUF_CONSTEXPR TimestampDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~TimestampDefaultTypeInternal() {}
@@ -125,19 +128,24 @@ Timestamp::Timestamp(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
 }
-Timestamp::Timestamp(const Timestamp& from)
-    : ::google::protobuf::Message(), _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:google.protobuf.Timestamp)
+Timestamp::Timestamp(
+    ::google::protobuf::Arena* arena, const Timestamp& from)
+    : Timestamp(arena) {
+  MergeFrom(from);
 }
+inline PROTOBUF_NDEBUG_INLINE Timestamp::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _cached_size_{0} {}
+
 inline void Timestamp::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.seconds_){::int64_t{0}},
-      decltype(_impl_.nanos_){0},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char *>(&_impl_) +
+               offsetof(Impl_, seconds_),
+           0,
+           offsetof(Impl_, nanos_) -
+               offsetof(Impl_, seconds_) +
+               sizeof(Impl_::nanos_));
 }
 Timestamp::~Timestamp() {
   // @@protoc_insertion_point(destructor:google.protobuf.Timestamp)
@@ -146,6 +154,7 @@ Timestamp::~Timestamp() {
 }
 inline void Timestamp::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void Timestamp::Clear() {

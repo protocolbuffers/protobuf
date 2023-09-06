@@ -22,12 +22,15 @@ namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
-        template <typename>
+
+inline constexpr FieldMask::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : paths_{},
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR FieldMask::FieldMask(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.paths_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct FieldMaskDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FieldMaskDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FieldMaskDefaultTypeInternal() {}
@@ -123,24 +126,32 @@ FieldMask::FieldMask(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldMask)
 }
-FieldMask::FieldMask(const FieldMask& from) : ::google::protobuf::Message() {
+inline PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
+    const Impl_& from)
+      : paths_{visibility, arena, from.paths_},
+        _cached_size_{0} {}
+
+FieldMask::FieldMask(
+    ::google::protobuf::Arena* arena,
+    const FieldMask& from)
+    : ::google::protobuf::Message(arena) {
   FieldMask* const _this = this;
   (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.paths_){from._impl_.paths_},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
+inline PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : paths_{visibility, arena},
+        _cached_size_{0} {}
+
 inline void FieldMask::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.paths_){arena},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 FieldMask::~FieldMask() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldMask)
@@ -149,7 +160,7 @@ FieldMask::~FieldMask() {
 }
 inline void FieldMask::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-  _internal_mutable_paths()->~RepeatedPtrField();
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void FieldMask::Clear() {

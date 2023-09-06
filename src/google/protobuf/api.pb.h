@@ -85,16 +85,14 @@ class PROTOBUF_EXPORT Mixin final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Mixin(::google::protobuf::internal::ConstantInitialized);
 
-  Mixin(const Mixin& from);
+  Mixin(::google::protobuf::Arena* arena, const Mixin& from);
+  inline Mixin(const Mixin& from)
+      : Mixin(nullptr, from) {}
   Mixin(Mixin&& from) noexcept
     : Mixin() {
     *this = ::std::move(from);
   }
 
-  inline Mixin(::google::protobuf::Arena* arena, const Mixin& from)
-    : Mixin(arena) {
-    MergeFrom(from);
-  }
   inline Mixin& operator=(const Mixin& from) {
     CopyFrom(from);
     return *this;
@@ -255,10 +253,19 @@ class PROTOBUF_EXPORT Mixin final :
       1, 2, 0,
       38, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr root_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -276,16 +283,14 @@ class PROTOBUF_EXPORT Method final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Method(::google::protobuf::internal::ConstantInitialized);
 
-  Method(const Method& from);
+  Method(::google::protobuf::Arena* arena, const Method& from);
+  inline Method(const Method& from)
+      : Method(nullptr, from) {}
   Method(Method&& from) noexcept
     : Method() {
     *this = ::std::move(from);
   }
 
-  inline Method(::google::protobuf::Arena* arena, const Method& from)
-    : Method(arena) {
-    MergeFrom(from);
-  }
   inline Method& operator=(const Method& from) {
     CopyFrom(from);
     return *this;
@@ -515,10 +520,19 @@ class PROTOBUF_EXPORT Method final :
       3, 7, 1,
       68, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr request_type_url_;
@@ -541,16 +555,14 @@ class PROTOBUF_EXPORT Api final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Api(::google::protobuf::internal::ConstantInitialized);
 
-  Api(const Api& from);
+  Api(::google::protobuf::Arena* arena, const Api& from);
+  inline Api(const Api& from)
+      : Api(nullptr, from) {}
   Api(Api&& from) noexcept
     : Api() {
     *this = ::std::move(from);
   }
 
-  inline Api(::google::protobuf::Arena* arena, const Api& from)
-    : Api(arena) {
-    MergeFrom(from);
-  }
   inline Api& operator=(const Api& from) {
     CopyFrom(from);
     return *this;
@@ -795,10 +807,19 @@ class PROTOBUF_EXPORT Api final :
       3, 7, 4,
       39, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method > methods_;
