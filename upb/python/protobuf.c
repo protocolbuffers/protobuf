@@ -39,6 +39,8 @@
 #include "python/repeated.h"
 #include "python/unknown_fields.h"
 
+static upb_Arena* PyUpb_NewArena(void);
+
 static void PyUpb_ModuleDealloc(void* module) {
   PyUpb_ModuleState* s = PyModule_GetState(module);
   PyUpb_WeakMap_Free(s->obj_cache);
@@ -125,7 +127,7 @@ struct PyUpb_WeakMap {
 };
 
 PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
-  upb_Arena* arena = upb_Arena_New();
+  upb_Arena* arena = PyUpb_NewArena();
   PyUpb_WeakMap* map = upb_Arena_Malloc(arena, sizeof(*map));
   map->arena = arena;
   upb_inttable_init(&map->table, map->arena);
@@ -224,10 +226,54 @@ typedef struct {
   upb_Arena* arena;
 } PyUpb_Arena;
 
+// begin:google_only
+// static upb_alloc* global_alloc = &upb_alloc_global;
+// end:google_only
+
+// begin:github_only
+#ifdef __GLIBC__
+#include <malloc.h>  // malloc_trim()
+#endif
+
+// A special allocator that calls malloc_trim() periodically to release
+// memory to the OS.  Without this call, we appear to leak memory, at least
+// as measured in RSS.
+//
+// We opt not to use this instead of PyMalloc (which would also solve the
+// problem) because the latter requires the GIL to be held.  This would make
+// our messages unsafe to share with other languages that could free at
+// unpredictable
+// times.
+static void* upb_trim_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
+                                size_t size) {
+  (void)alloc;
+  (void)oldsize;
+  if (size == 0) {
+    free(ptr);
+#ifdef __GLIBC__
+    static int count = 0;
+    if (++count == 10000) {
+      malloc_trim(0);
+      count = 0;
+    }
+#endif
+    return NULL;
+  } else {
+    return realloc(ptr, size);
+  }
+}
+static upb_alloc trim_alloc = {&upb_trim_allocfunc};
+static const upb_alloc* global_alloc = &trim_alloc;
+// end:github_only
+
+static upb_Arena* PyUpb_NewArena(void) {
+  return upb_Arena_Init(NULL, 0, global_alloc);
+}
+
 PyObject* PyUpb_Arena_New(void) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyUpb_Arena* arena = (void*)PyType_GenericAlloc(state->arena_type, 0);
-  arena->arena = upb_Arena_New();
+  arena->arena = PyUpb_NewArena();
   return &arena->ob_base;
 }
 
