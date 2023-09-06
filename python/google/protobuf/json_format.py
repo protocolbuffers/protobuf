@@ -49,7 +49,6 @@ import json
 import math
 from operator import methodcaller
 import re
-import sys
 
 from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
@@ -57,7 +56,6 @@ from google.protobuf import message_factory
 from google.protobuf import symbol_database
 
 
-_TIMESTAMPFOMAT = '%Y-%m-%dT%H:%M:%S'
 _INT_TYPES = frozenset([descriptor.FieldDescriptor.CPPTYPE_INT32,
                         descriptor.FieldDescriptor.CPPTYPE_UINT32,
                         descriptor.FieldDescriptor.CPPTYPE_INT64,
