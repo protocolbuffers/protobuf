@@ -700,6 +700,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_features.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_public.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_invalid_features.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies_custom_option.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies_enum.proto
