@@ -85,6 +85,13 @@ typedef struct PyDescriptorPool {
   // use the one passed while creating message classes. And remove this member.
   PyMessageFactory* py_message_factory;
 
+  // The preferred MessageFactory to be used by `GetOptions()` on descriptors.
+  //
+  // This is normally the same as `py_message_factory`, but can be pointed to a
+  // different one (e.g. `GetDefaultDescriptorPool()->py_message_factory`) if
+  // desired by the caller.
+  PyMessageFactory* py_message_factory_for_options;
+
   // Cache the options for any kind of descriptor.
   // Descriptor pointers are owned by the DescriptorPool above.
   // Python objects are owned by the map.

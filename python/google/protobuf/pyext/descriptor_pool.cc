@@ -126,6 +126,7 @@ static PyDescriptorPool* _CreateDescriptorPool() {
     Py_DECREF(cpool);
     return nullptr;
   }
+  cpool->py_message_factory_for_options = cpool->py_message_factory;
 
   PyObject_GC_Track(cpool);
 
@@ -159,7 +160,7 @@ static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
 }
 
 static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
-    DescriptorDatabase* database,
+    DescriptorDatabase* database, bool create_options_from_default_pool,
     bool use_deprecated_legacy_json_field_conflicts) {
   PyDescriptorPool* cpool = _CreateDescriptorPool();
   if (cpool == nullptr) {
@@ -182,6 +183,10 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
   }
   cpool->pool = pool;
   cpool->is_owned = true;
+  if (create_options_from_default_pool) {
+    cpool->py_message_factory_for_options =
+        GetDefaultDescriptorPool()->py_message_factory;
+  }
 
   if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
     // Should never happen -- would indicate an internal error / bug.
@@ -195,11 +200,17 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
 // The public DescriptorPool constructor.
 static PyObject* New(PyTypeObject* type,
                      PyObject* args, PyObject* kwargs) {
+  int create_options_from_default_pool = 1;
   int use_deprecated_legacy_json_field_conflicts = 0;
-  static const char* kwlist[] = {"descriptor_db", nullptr};
+  static const char* kwlist[] = {
+      "descriptor_db",
+      "create_options_from_default_pool",
+      nullptr,
+  };
   PyObject* py_database = nullptr;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O",
-                                   const_cast<char**>(kwlist), &py_database)) {
+                                   const_cast<char**>(kwlist), &py_database,
+                                   &create_options_from_default_pool)) {
     return nullptr;
   }
   DescriptorDatabase* database = nullptr;
@@ -207,7 +218,8 @@ static PyObject* New(PyTypeObject* type,
     database = new PyDescriptorDatabase(py_database);
   }
   return reinterpret_cast<PyObject*>(PyDescriptorPool_NewWithDatabase(
-      database, use_deprecated_legacy_json_field_conflicts));
+      database, create_options_from_default_pool,
+      use_deprecated_legacy_json_field_conflicts));
 }
 
 static void Dealloc(PyObject* pself) {
@@ -817,6 +829,8 @@ PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool) {
   cpool->is_owned = false;
   cpool->is_mutable = false;
   cpool->underlay = nullptr;
+  cpool->py_message_factory_for_options =
+      GetDefaultDescriptorPool()->py_message_factory;
 
   if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
     // Should never happen -- We already checked the existence above.

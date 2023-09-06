@@ -120,12 +120,24 @@ class DescriptorPool(object):
 
   if _USE_C_DESCRIPTORS:
 
-   def __new__(cls, descriptor_db=None):
+   def __new__(
+       cls,
+       descriptor_db=None,
+       *,
+       create_options_from_default_pool=True,
+   ):
      # pylint: disable=protected-access
-     return descriptor._message.DescriptorPool(descriptor_db)
+     return descriptor._message.DescriptorPool(
+         descriptor_db,
+         create_options_from_default_pool=create_options_from_default_pool,
+     )
 
   def __init__(
-      self, descriptor_db=None, use_deprecated_legacy_json_field_conflicts=False
+      self,
+      descriptor_db=None,
+      *,
+      create_options_from_default_pool=True,
+      use_deprecated_legacy_json_field_conflicts=False,
   ):
     """Initializes a Pool of proto buffs.
 
@@ -143,6 +155,7 @@ class DescriptorPool(object):
 
     self._internal_db = descriptor_database.DescriptorDatabase()
     self._descriptor_db = descriptor_db
+    self._create_options_from_default_pool = create_options_from_default_pool
     self._descriptors = {}
     self._enum_descriptors = {}
     self._service_descriptors = {}

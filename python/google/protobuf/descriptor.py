@@ -180,6 +180,13 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
       raise RuntimeError('Unknown options class name %s!' %
                          (self._options_class_name))
 
+    pool = self.pool if isinstance(self, FileDescriptor) else self.file.pool
+    if not pool._create_options_from_default_pool:
+      from google.protobuf import message_factory
+      options_class = message_factory.GetMessageClass(
+          pool.FindMessageTypeByName(options_class.DESCRIPTOR.full_name)
+      )
+
     if self._serialized_options is None:
       with _lock:
         self._options = options_class()
