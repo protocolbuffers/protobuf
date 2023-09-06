@@ -111,16 +111,14 @@ class PROTOBUF_EXPORT CppFeatures final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR CppFeatures(::google::protobuf::internal::ConstantInitialized);
 
-  CppFeatures(const CppFeatures& from);
+  CppFeatures(::google::protobuf::Arena* arena, const CppFeatures& from);
+  inline CppFeatures(const CppFeatures& from)
+      : CppFeatures(nullptr, from) {}
   CppFeatures(CppFeatures&& from) noexcept
     : CppFeatures() {
     *this = ::std::move(from);
   }
 
-  inline CppFeatures(::google::protobuf::Arena* arena, const CppFeatures& from)
-    : CppFeatures(arena) {
-    MergeFrom(from);
-  }
   inline CppFeatures& operator=(const CppFeatures& from) {
     CopyFrom(from);
     return *this;
@@ -293,10 +291,19 @@ class PROTOBUF_EXPORT CppFeatures final :
       1, 2, 1,
       0, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOBUF_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     bool legacy_closed_enum_;

@@ -21,14 +21,16 @@ namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace pb {
-        template <typename>
+
+inline constexpr CppFeatures::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : _cached_size_{0},
+        legacy_closed_enum_{false},
+        utf8_validation_{static_cast< ::pb::CppFeatures_Utf8Validation >(0)} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR CppFeatures::CppFeatures(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_._has_bits_)*/ {},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_.legacy_closed_enum_)*/ false,
-      /*decltype(_impl_.utf8_validation_)*/ 0,
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct CppFeaturesDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CppFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CppFeaturesDefaultTypeInternal() {}
@@ -160,20 +162,24 @@ CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.CppFeatures)
 }
-CppFeatures::CppFeatures(const CppFeatures& from)
-    : ::google::protobuf::Message(), _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:pb.CppFeatures)
+CppFeatures::CppFeatures(
+    ::google::protobuf::Arena* arena, const CppFeatures& from)
+    : CppFeatures(arena) {
+  MergeFrom(from);
 }
+inline PROTOBUF_NDEBUG_INLINE CppFeatures::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _cached_size_{0} {}
+
 inline void CppFeatures::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_._has_bits_){},
-      /*decltype(_impl_._cached_size_)*/ {},
-      decltype(_impl_.legacy_closed_enum_){false},
-      decltype(_impl_.utf8_validation_){0},
-  };
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char *>(&_impl_) +
+               offsetof(Impl_, legacy_closed_enum_),
+           0,
+           offsetof(Impl_, utf8_validation_) -
+               offsetof(Impl_, legacy_closed_enum_) +
+               sizeof(Impl_::utf8_validation_));
 }
 CppFeatures::~CppFeatures() {
   // @@protoc_insertion_point(destructor:pb.CppFeatures)
@@ -182,6 +188,7 @@ CppFeatures::~CppFeatures() {
 }
 inline void CppFeatures::SharedDtor() {
   ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void CppFeatures::Clear() {

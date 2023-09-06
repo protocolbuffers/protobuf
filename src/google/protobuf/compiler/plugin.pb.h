@@ -127,16 +127,14 @@ class PROTOC_EXPORT Version final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Version(::google::protobuf::internal::ConstantInitialized);
 
-  Version(const Version& from);
+  Version(::google::protobuf::Arena* arena, const Version& from);
+  inline Version(const Version& from)
+      : Version(nullptr, from) {}
   Version(Version&& from) noexcept
     : Version() {
     *this = ::std::move(from);
   }
 
-  inline Version(::google::protobuf::Arena* arena, const Version& from)
-    : Version(arena) {
-    MergeFrom(from);
-  }
   inline Version& operator=(const Version& from) {
     CopyFrom(from);
     return *this;
@@ -317,10 +315,19 @@ class PROTOC_EXPORT Version final :
       2, 4, 0,
       47, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOC_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr suffix_;
@@ -341,16 +348,14 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse_File(::google::protobuf::internal::ConstantInitialized);
 
-  CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from);
+  CodeGeneratorResponse_File(::google::protobuf::Arena* arena, const CodeGeneratorResponse_File& from);
+  inline CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from)
+      : CodeGeneratorResponse_File(nullptr, from) {}
   CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept
     : CodeGeneratorResponse_File() {
     *this = ::std::move(from);
   }
 
-  inline CodeGeneratorResponse_File(::google::protobuf::Arena* arena, const CodeGeneratorResponse_File& from)
-    : CodeGeneratorResponse_File(arena) {
-    MergeFrom(from);
-  }
   inline CodeGeneratorResponse_File& operator=(const CodeGeneratorResponse_File& from) {
     CopyFrom(from);
     return *this;
@@ -547,10 +552,19 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
       2, 4, 1,
       86, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOC_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -571,16 +585,14 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse(::google::protobuf::internal::ConstantInitialized);
 
-  CodeGeneratorResponse(const CodeGeneratorResponse& from);
+  CodeGeneratorResponse(::google::protobuf::Arena* arena, const CodeGeneratorResponse& from);
+  inline CodeGeneratorResponse(const CodeGeneratorResponse& from)
+      : CodeGeneratorResponse(nullptr, from) {}
   CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept
     : CodeGeneratorResponse() {
     *this = ::std::move(from);
   }
 
-  inline CodeGeneratorResponse(::google::protobuf::Arena* arena, const CodeGeneratorResponse& from)
-    : CodeGeneratorResponse(arena) {
-    MergeFrom(from);
-  }
   inline CodeGeneratorResponse& operator=(const CodeGeneratorResponse& from) {
     CopyFrom(from);
     return *this;
@@ -779,10 +791,19 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
       2, 3, 1,
       60, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOC_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File > file_;
@@ -802,16 +823,14 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorRequest(::google::protobuf::internal::ConstantInitialized);
 
-  CodeGeneratorRequest(const CodeGeneratorRequest& from);
+  CodeGeneratorRequest(::google::protobuf::Arena* arena, const CodeGeneratorRequest& from);
+  inline CodeGeneratorRequest(const CodeGeneratorRequest& from)
+      : CodeGeneratorRequest(nullptr, from) {}
   CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept
     : CodeGeneratorRequest() {
     *this = ::std::move(from);
   }
 
-  inline CodeGeneratorRequest(::google::protobuf::Arena* arena, const CodeGeneratorRequest& from)
-    : CodeGeneratorRequest(arena) {
-    MergeFrom(from);
-  }
   inline CodeGeneratorRequest& operator=(const CodeGeneratorRequest& from) {
     CopyFrom(from);
     return *this;
@@ -1039,10 +1058,19 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
       3, 5, 3,
       79, 2>
       _table_;
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  struct Impl_ {
+  struct PROTOC_EXPORT Impl_ {
+
+        inline explicit constexpr Impl_(
+            ::google::protobuf::internal::ConstantInitialized) noexcept;
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena);
+        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                              ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField<std::string> file_to_generate_;
