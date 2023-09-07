@@ -25,4 +25,5 @@ The following topics are in this repository:
 *   [Editions: Life of a Featureset](editions-life-of-a-featureset.md)
 *   [Protobuf Editions for Schema Producers](protobuf-editions-for-schema-producers.md)
 *   [Stricter Schemas with Editions](stricter-schemas-with-editions.md)
+*   [Edition Zero Feature: Enum Field Closedness](edition-zero-feature-enum-field-closedness.md)
 *   [Edition Naming](edition-naming.md)
