@@ -134,7 +134,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Build Wheels
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
           image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple@sha256:bb1d14738449916d489c1cbb062508c4dca5bd265ea3e67a2628ae40912b9b00
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
