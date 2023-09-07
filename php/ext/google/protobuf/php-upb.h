@@ -10259,7 +10259,11 @@ extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 #endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_ */
 // end:github_only
 
-typedef enum { kUpb_Syntax_Proto2 = 2, kUpb_Syntax_Proto3 = 3 } upb_Syntax;
+typedef enum {
+  kUpb_Syntax_Proto2 = 2,
+  kUpb_Syntax_Proto3 = 3,
+  kUpb_Syntax_Editions = 99
+} upb_Syntax;
 
 // Forward declarations for circular references.
 typedef struct upb_DefPool upb_DefPool;
@@ -10587,7 +10591,7 @@ bool upb_FileDef_HasOptions(const upb_FileDef* f);
 UPB_API const char* upb_FileDef_Name(const upb_FileDef* f);
 const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f);
 const char* upb_FileDef_Package(const upb_FileDef* f);
-const char* upb_FileDef_Edition(const upb_FileDef* f);
+UPB_DESC(Edition) upb_FileDef_Edition(const upb_FileDef* f);
 UPB_API const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f);
 
 const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i);
