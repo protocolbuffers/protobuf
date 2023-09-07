@@ -3603,17 +3603,22 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
   auto it = chunks.begin();
   auto end = chunks.end();
   int cached_has_word_index = -1;
+  bool has_default_split_check = false;
   while (it != end) {
     auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
-    bool has_haswords_check = MaybeEmitHaswordsCheck(
-        it, next, options_, has_bit_indices_, cached_has_word_index, "", p);
-    bool has_default_split_check = !it->fields.empty() && it->should_split;
-    if (has_default_split_check) {
-      // Some fields are cleared without checking has_bit. So we add the
-      // condition here to avoid writing to the default split instance.
-      format("if (!IsSplitMessageDefault()) {\n");
-      format.Indent();
+    if (!has_default_split_check) {
+      has_default_split_check = !it->fields.empty() && it->should_split;
+      if (has_default_split_check) {
+        // Some fields are cleared without checking has_bit. So we add the
+        // condition here to avoid writing to the default split instance.
+        format("if (PROTOBUF_PREDICT_FALSE(!IsSplitMessageDefault())) {\n");
+        format.Indent();
+      }
     }
+    bool has_haswords_check =
+        !has_default_split_check &&
+        MaybeEmitHaswordsCheck(it, next, options_, has_bit_indices_,
+                               cached_has_word_index, "", p);
     while (it != next) {
       const std::vector<const FieldDescriptor*>& fields = it->fields;
       bool chunk_is_split = it->should_split;
@@ -3714,10 +3719,6 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       ++it;
     }
 
-    if (has_default_split_check) {
-      format.Outdent();
-      format("}\n");
-    }
     if (has_haswords_check) {
       p->Outdent();
       p->Emit(R"cc(
@@ -3728,6 +3729,11 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       cached_has_word_index = -1;
     }
   }
+  if (has_default_split_check) {
+    format.Outdent();
+    format("}\n");
+  }
+
   // Step 4: Unions.
   for (auto oneof : OneOfRange(descriptor_)) {
     format("clear_$1$();\n", oneof->name());
