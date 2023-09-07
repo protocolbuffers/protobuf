@@ -528,12 +528,8 @@ static google_protobuf_FileDescriptorProto* filedef_toproto(upb_ToProto_Context*
     }
   }
 
-  const char* edition = upb_FileDef_Edition(f);
-  if (edition != NULL) {
-    size_t n = strlen(edition);
-    if (n != 0) {
-      google_protobuf_FileDescriptorProto_set_edition(proto, strviewdup(ctx, edition));
-    }
+  if (upb_FileDef_Syntax(f) == kUpb_Syntax_Editions) {
+    google_protobuf_FileDescriptorProto_set_edition_enum(proto, upb_FileDef_Edition(f));
   }
 
   if (upb_FileDef_Syntax(f) == kUpb_Syntax_Proto3) {
