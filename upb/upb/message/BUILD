@@ -209,8 +209,6 @@ cc_library(
     deps = [],
 )
 
-# TODO(salo): Move these proto library targets to //third_party/protobuf/BUILD
-# after we have the monorepo.
 proto_library(
     name = "message_test_proto",
     testonly = 1,
@@ -242,8 +240,8 @@ cc_test(
         "//:mini_table",
         "//:port",
         "//:wire",
-        "//upb/test:test_messages_proto2_upb_proto",
-        "//upb/test:test_messages_proto3_upb_proto",
+        "//third_party/protobuf:test_messages_proto2_upb_proto",
+        "//third_party/protobuf:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
@@ -264,8 +262,8 @@ cc_test(
         "//:mem",
         "//:mini_table",
         "//:wire",
-        "//upb/test:test_messages_proto2_upb_proto",
-        "//upb/test:test_messages_proto3_upb_proto",
+        "//third_party/protobuf:test_messages_proto2_upb_proto",
+        "//third_party/protobuf:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
@@ -287,8 +285,8 @@ cc_test(
         "//:mini_table",
         "//:port",
         "//:wire",
-        "//upb/test:test_messages_proto2_upb_proto",
-        "//upb/test:test_messages_proto3_upb_proto",
+        "//third_party/protobuf:test_messages_proto2_upb_proto",
+        "//third_party/protobuf:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
@@ -309,8 +307,8 @@ cc_test(
         "//:mem",
         "//:reflection",
         "//:wire",
+        "//third_party/protobuf:test_messages_proto3_upb_proto",
         "//upb/test:fuzz_util",
-        "//upb/test:test_messages_proto3_upb_proto",
         "@com_google_googletest//:gtest_main",
     ],
 )

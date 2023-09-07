@@ -108,20 +108,6 @@ upb_proto_reflection_library(
 )
 
 upb_proto_library(
-    name = "test_messages_proto2_upb_proto",
-    testonly = 1,
-    visibility = ["//:__subpackages__"],
-    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto2_proto"],
-)
-
-upb_proto_library(
-    name = "test_messages_proto3_upb_proto",
-    testonly = 1,
-    visibility = ["//:__subpackages__"],
-    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
-)
-
-upb_proto_library(
     name = "timestamp_upb_proto",
     deps = ["@com_google_protobuf//:timestamp_proto"],
 )
@@ -182,13 +168,13 @@ cc_test(
     ],
     deps = [
         ":empty_upb_proto_reflection",
-        ":test_messages_proto2_upb_proto",
-        ":test_messages_proto3_upb_proto",
         ":test_upb_proto",
         "//:base",
         "//:collections",
         "//:mem",
         "//:port",
+        "//third_party/protobuf:test_messages_proto2_upb_proto",
+        "//third_party/protobuf:test_messages_proto3_upb_proto",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -200,12 +186,12 @@ cc_test(
     ],
     deps = [
         ":empty_upb_proto_reflection",
-        ":test_messages_proto2_upb_proto",
-        ":test_messages_proto3_upb_proto",
         ":test_upb_proto",
         "//:mini_table",
         "//:mini_table_internal",
         "//:port",
+        "//third_party/protobuf:test_messages_proto2_upb_proto",
+        "//third_party/protobuf:test_messages_proto3_upb_proto",
         "@com_google_googletest//:gtest_main",
     ],
 )
