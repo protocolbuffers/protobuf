@@ -34,7 +34,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: acozzette/protobuf-ci/bazel-docker@1eda1076b2efcc9309f6af7825ce9a1cd9752288
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -53,7 +53,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: acozzette/protobuf-ci/bazel-docker@1eda1076b2efcc9309f6af7825ce9a1cd9752288
         with:
           image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-518b4fcd8d0ded2484c94f02e835526cacfdac2d"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -76,7 +76,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: acozzette/protobuf-ci/bazel@1eda1076b2efcc9309f6af7825ce9a1cd9752288
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
@@ -97,7 +97,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: acozzette/protobuf-ci/bazel@1eda1076b2efcc9309f6af7825ce9a1cd9752288
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
@@ -114,7 +114,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: acozzette/protobuf-ci/bazel-docker@1eda1076b2efcc9309f6af7825ce9a1cd9752288
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -134,7 +134,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Build Wheels
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: acozzette/protobuf-ci/bazel-docker@1eda1076b2efcc9309f6af7825ce9a1cd9752288
         with:
           image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple@sha256:bb1d14738449916d489c1cbb062508c4dca5bd265ea3e67a2628ae40912b9b00
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
