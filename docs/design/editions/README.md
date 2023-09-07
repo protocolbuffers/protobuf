@@ -25,4 +25,5 @@ The following topics are in this repository:
 *   [Editions: Life of a Featureset](editions-life-of-a-featureset.md)
 *   [Protobuf Editions for Schema Producers](protobuf-editions-for-schema-producers.md)
 *   [Stricter Schemas with Editions](stricter-schemas-with-editions.md)
+*   [C++ APIs for Edition Zero](cpp-apis-for-edition-zero.md)
 *   [Edition Naming](edition-naming.md)
