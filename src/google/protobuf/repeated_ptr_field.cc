@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
+#include <string>
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
@@ -166,8 +167,92 @@ void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
   delete message;
 }
 
-}  // namespace internal
+template <>
+void RepeatedPtrFieldBase::MergeFrom<std::string>(
+    const RepeatedPtrFieldBase& from) {
+  ABSL_DCHECK_NE(&from, this);
+  int length = from.current_size_;
+  auto dst = reinterpret_cast<std::string**>(InternalExtend(length));
+  auto src = reinterpret_cast<std::string* const*>(from.elements());
+  auto end = src + length;
+  auto end_assign = src + std::min(ClearedCount(), length);
+  for (; src < end_assign; ++dst, ++src) {
+    (*dst)->assign(**src);
+  }
+  if (Arena* const arena = arena_) {
+    for (; src < end; ++dst, ++src) {
+      *dst = Arena::Create<std::string>(arena, **src);
+    }
+  } else {
+    for (; src < end; ++dst, ++src) {
+      *dst = new std::string(**src);
+    }
+  }
+  ExchangeCurrentSize(current_size_ + length);
+  if (current_size_ > allocated_size()) {
+    rep()->allocated_size = current_size_;
+  }
+}
 
+
+int RepeatedPtrFieldBase::MergeIntoClearedMessages(
+    const RepeatedPtrFieldBase& from) {
+  auto dst = reinterpret_cast<MessageLite**>(elements() + current_size_);
+  auto src = reinterpret_cast<MessageLite* const*>(from.elements());
+  int count = std::min(ClearedCount(), from.current_size_);
+  for (int i = 0; i < count; ++i) {
+    dst[i]->CheckTypeAndMergeFrom(*src[i]);
+  }
+  return count;
+}
+
+void RepeatedPtrFieldBase::MergeFromConcreteMessage(
+    const RepeatedPtrFieldBase& from, CopyFn copy_fn) {
+  ABSL_DCHECK_NE(&from, this);
+  int length = from.current_size_;
+  auto dst = reinterpret_cast<MessageLite**>(InternalExtend(length));
+  auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
+  auto end = src + length;
+  if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
+    int recycled = MergeIntoClearedMessages(from);
+    dst += recycled;
+    src += recycled;
+  }
+  Arena* arena = GetOwningArena();
+  for (; src < end; ++src, ++dst) {
+    *dst = copy_fn(arena, **src);
+  }
+  ExchangeCurrentSize(current_size_ + length);
+  if (current_size_ > allocated_size()) {
+    rep()->allocated_size = current_size_;
+  }
+}
+
+template <>
+void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
+    const RepeatedPtrFieldBase& from) {
+  ABSL_DCHECK_NE(&from, this);
+  int length = from.current_size_;
+  auto dst = reinterpret_cast<MessageLite**>(InternalExtend(length));
+  auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
+  auto end = src + length;
+  if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
+    int recycled = MergeIntoClearedMessages(from);
+    dst += recycled;
+    src += recycled;
+  }
+  Arena* arena = GetOwningArena();
+  for (; src < end; ++src, ++dst) {
+    *dst = (*src)->New(arena);
+    (*dst)->CheckTypeAndMergeFrom(**src);
+  }
+  ExchangeCurrentSize(current_size_ + length);
+  if (current_size_ > allocated_size()) {
+    rep()->allocated_size = current_size_;
+  }
+}
+
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
