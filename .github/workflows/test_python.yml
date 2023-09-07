@@ -40,7 +40,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: acozzette/protobuf-ci/bazel-docker@38a49d67a743816be50ab370d45aa8bc6310ad5d
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -85,7 +85,7 @@ jobs:
           source venv/bin/activate
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: acozzette/protobuf-ci/bazel@38a49d67a743816be50ab370d45aa8bc6310ad5d
         env:
           KOKORO_PYTHON_VERSION: ${{ matrix.version }}
         with:

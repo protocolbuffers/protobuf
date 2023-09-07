@@ -22,7 +22,7 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Package extension
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: acozzette/protobuf-ci/bazel@38a49d67a743816be50ab370d45aa8bc6310ad5d
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_ext/${{ matrix.version }}
