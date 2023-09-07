@@ -278,7 +278,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // messages which will be merged.  Repeated fields will be concatenated.
   // The given message must be of the same type as this message (i.e. the
   // exact same class).
-  virtual void MergeFrom(const Message& from);
+  void MergeFrom(const Message& from);
 
   // Verifies that IsInitialized() returns true.  ABSL_CHECK-fails otherwise,
   // with a nice error message.
