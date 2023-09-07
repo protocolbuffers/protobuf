@@ -108,6 +108,14 @@ class RepeatedFieldProxy
   static constexpr bool kIsConst = std::is_const_v<T>;
 
  public:
+  using value_type = std::remove_const_t<T>;
+  using size_type = size_t;
+  using difference_type = ptrdiff_t;
+  using iterator = internal::Iterator<MessageIteratorPolicy<T>>;
+  using reference = typename iterator::reference;
+  using pointer = typename iterator::pointer;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+
   explicit RepeatedFieldProxy(const upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyBase<T>(arr, arena) {}
   RepeatedFieldProxy(upb_Array* arr, upb_Arena* arena)
@@ -152,6 +160,15 @@ class RepeatedFieldProxy
     upb_Array_Append(this->arr_, message_value, this->arena_);
     T moved_msg = std::move(msg);
   }
+
+  iterator begin() const {
+    return iterator({static_cast<upb_Message**>(
+                         const_cast<void*>(upb_Array_DataPtr(this->arr_))),
+                     this->arena_});
+  }
+  iterator end() const { return begin() + this->size(); }
+  reverse_iterator rbegin() const { return reverse_iterator(end()); }
+  reverse_iterator rend() const { return reverse_iterator(begin()); }
 
  private:
   friend class ::protos::Ptr<T>;

@@ -54,7 +54,7 @@ cc_library(
         "//:collections_internal",
         "//:mem",
         "//:message_copy",
-        "//:mini_table",
+        "//:message_types",
         "//:port",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/strings",
