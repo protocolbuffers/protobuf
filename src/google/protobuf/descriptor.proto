@@ -934,11 +934,7 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = {
-      edition: "2023",
-      edition_enum: EDITION_2023,
-      value: "EXPLICIT"
-    }
+    edition_defaults = { edition_enum: EDITION_2023, value: "EXPLICIT" }
   ];
 
   enum EnumType {
@@ -950,11 +946,7 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = {
-      edition: "2023",
-      edition_enum: EDITION_2023,
-      value: "OPEN"
-    }
+    edition_defaults = { edition_enum: EDITION_2023, value: "OPEN" }
   ];
 
   enum RepeatedFieldEncoding {
@@ -966,11 +958,7 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = {
-      edition: "2023",
-      edition_enum: EDITION_2023,
-      value: "PACKED"
-    }
+    edition_defaults = { edition_enum: EDITION_2023, value: "PACKED" }
   ];
 
   enum MessageEncoding {
@@ -982,11 +970,7 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = {
-      edition: "2023",
-      edition_enum: EDITION_2023,
-      value: "LENGTH_PREFIXED"
-    }
+    edition_defaults = { edition_enum: EDITION_2023, value: "LENGTH_PREFIXED" }
   ];
 
   enum JsonFormat {
@@ -999,11 +983,7 @@ message FeatureSet {
     targets = TARGET_TYPE_MESSAGE,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = {
-      edition: "2023",
-      edition_enum: EDITION_2023,
-      value: "ALLOW"
-    }
+    edition_defaults = { edition_enum: EDITION_2023, value: "ALLOW" }
   ];
 
   reserved 4, 999;
