@@ -25,4 +25,5 @@ The following topics are in this repository:
 *   [Editions: Life of a Featureset](editions-life-of-a-featureset.md)
 *   [Protobuf Editions for Schema Producers](protobuf-editions-for-schema-producers.md)
 *   [Stricter Schemas with Editions](stricter-schemas-with-editions.md)
+*   [Java Lite For Editions](java-lite-for-editions.md)
 *   [Edition Naming](edition-naming.md)
