@@ -740,11 +740,11 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Type::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Type::MergeImpl
+    Type::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*Type::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Type::GetClassData() const {
+  return &_class_data_;
+}
 
 void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Type*>(&to_msg);
@@ -1171,11 +1171,11 @@ const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Field::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Field::MergeImpl
+    Field::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*Field::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Field::GetClassData() const {
+  return &_class_data_;
+}
 
 void Field::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Field*>(&to_msg);
@@ -1551,11 +1551,11 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Enum::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Enum::MergeImpl
+    Enum::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*Enum::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Enum::GetClassData() const {
+  return &_class_data_;
+}
 
 void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Enum*>(&to_msg);
@@ -1812,11 +1812,11 @@ const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData EnumValue::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    EnumValue::MergeImpl
+    EnumValue::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*EnumValue::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* EnumValue::GetClassData() const {
+  return &_class_data_;
+}
 
 void EnumValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<EnumValue*>(&to_msg);
@@ -2059,11 +2059,11 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Option::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Option::MergeImpl
+    Option::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*Option::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Option::GetClassData() const {
+  return &_class_data_;
+}
 
 void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Option*>(&to_msg);

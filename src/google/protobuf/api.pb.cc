@@ -560,11 +560,11 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Api::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Api::MergeImpl
+    Api::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*Api::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Api::GetClassData() const {
+  return &_class_data_;
+}
 
 void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Api*>(&to_msg);
@@ -927,11 +927,11 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Method::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Method::MergeImpl
+    Method::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*Method::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Method::GetClassData() const {
+  return &_class_data_;
+}
 
 void Method::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Method*>(&to_msg);
@@ -1170,11 +1170,11 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Mixin::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Mixin::MergeImpl
+    Mixin::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*Mixin::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Mixin::GetClassData() const {
+  return &_class_data_;
+}
 
 void Mixin::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Mixin*>(&to_msg);

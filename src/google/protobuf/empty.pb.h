@@ -177,9 +177,6 @@ class PROTOBUF_EXPORT Empty final :
   explicit Empty(::google::protobuf::Arena* arena);
   public:
 
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
-
   ::google::protobuf::Metadata GetMetadata() const final;
 
   // nested types ----------------------------------------------------

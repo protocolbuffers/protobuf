@@ -305,11 +305,11 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Any::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Any::MergeImpl
+    Any::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*Any::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Any::GetClassData() const {
+  return &_class_data_;
+}
 
 void Any::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Any*>(&to_msg);

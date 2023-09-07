@@ -259,11 +259,11 @@ const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData SourceContext::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    SourceContext::MergeImpl
+    SourceContext::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*SourceContext::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* SourceContext::GetClassData() const {
+  return &_class_data_;
+}
 
 void SourceContext::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<SourceContext*>(&to_msg);

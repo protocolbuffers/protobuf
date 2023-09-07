@@ -498,11 +498,11 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> DoubleValue::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData DoubleValue::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    DoubleValue::MergeImpl
+    DoubleValue::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*DoubleValue::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* DoubleValue::GetClassData() const {
+  return &_class_data_;
+}
 
 void DoubleValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<DoubleValue*>(&to_msg);
@@ -681,11 +681,11 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> FloatValue::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData FloatValue::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FloatValue::MergeImpl
+    FloatValue::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*FloatValue::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FloatValue::GetClassData() const {
+  return &_class_data_;
+}
 
 void FloatValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FloatValue*>(&to_msg);
@@ -855,11 +855,11 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int64Value::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Int64Value::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Int64Value::MergeImpl
+    Int64Value::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*Int64Value::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Int64Value::GetClassData() const {
+  return &_class_data_;
+}
 
 void Int64Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Int64Value*>(&to_msg);
@@ -1024,11 +1024,11 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt64Value::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData UInt64Value::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    UInt64Value::MergeImpl
+    UInt64Value::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*UInt64Value::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* UInt64Value::GetClassData() const {
+  return &_class_data_;
+}
 
 void UInt64Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<UInt64Value*>(&to_msg);
@@ -1193,11 +1193,11 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int32Value::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Int32Value::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Int32Value::MergeImpl
+    Int32Value::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*Int32Value::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Int32Value::GetClassData() const {
+  return &_class_data_;
+}
 
 void Int32Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Int32Value*>(&to_msg);
@@ -1362,11 +1362,11 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt32Value::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData UInt32Value::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    UInt32Value::MergeImpl
+    UInt32Value::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*UInt32Value::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* UInt32Value::GetClassData() const {
+  return &_class_data_;
+}
 
 void UInt32Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<UInt32Value*>(&to_msg);
@@ -1530,11 +1530,11 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BoolValue::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData BoolValue::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    BoolValue::MergeImpl
+    BoolValue::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*BoolValue::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* BoolValue::GetClassData() const {
+  return &_class_data_;
+}
 
 void BoolValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<BoolValue*>(&to_msg);
@@ -1717,11 +1717,11 @@ const ::_pbi::TcParseTable<0, 1, 0, 41, 2> StringValue::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData StringValue::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    StringValue::MergeImpl
+    StringValue::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*StringValue::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* StringValue::GetClassData() const {
+  return &_class_data_;
+}
 
 void StringValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<StringValue*>(&to_msg);
@@ -1902,11 +1902,11 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BytesValue::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData BytesValue::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    BytesValue::MergeImpl
+    BytesValue::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*BytesValue::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* BytesValue::GetClassData() const {
+  return &_class_data_;
+}
 
 void BytesValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<BytesValue*>(&to_msg);

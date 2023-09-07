@@ -256,11 +256,11 @@ const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData FieldMask::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FieldMask::MergeImpl
+    FieldMask::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*FieldMask::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FieldMask::GetClassData() const {
+  return &_class_data_;
+}
 
 void FieldMask::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FieldMask*>(&to_msg);

@@ -131,13 +131,6 @@ Empty::Empty(
 
 
 
-const ::google::protobuf::Message::ClassData Empty::_class_data_ = {
-    ::google::protobuf::internal::ZeroFieldsBase::CopyImpl,
-    ::google::protobuf::internal::ZeroFieldsBase::MergeImpl,
-};
-const ::google::protobuf::Message::ClassData*Empty::GetClassData() const { return &_class_data_; }
-
-
 
 
 
