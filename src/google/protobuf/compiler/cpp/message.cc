@@ -1616,7 +1616,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "\n");
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    if (HasGeneratedMethods(descriptor_->file(), options_)) {
+    if (HasGeneratedMethods(descriptor_->file(), options_) &&
+        !HasSimpleBaseClass(descriptor_, options_)) {
       format(
           "static const ClassData _class_data_;\n"
           "const ::$proto_ns$::Message::ClassData*"
@@ -3928,48 +3929,33 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
 
 void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
   Formatter format(p);
-  if (!HasSimpleBaseClass(descriptor_, options_)) {
-    if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      // We don't override the generalized MergeFrom (aka that which
-      // takes in the Message base class as a parameter); instead we just
-      // let the base Message::MergeFrom take care of it.  The base MergeFrom
-      // knows how to quickly confirm the types exactly match, and if so, will
-      // use GetClassData() to retrieve the address of MergeImpl, which calls
-      // the fast MergeFrom overload.  Most callers avoid all this by passing
-      // a "from" message that is the same type as the message being merged
-      // into, rather than a generic Message.
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    // We don't override the generalized MergeFrom (aka that which
+    // takes in the Message base class as a parameter); instead we just
+    // let the base Message::MergeFrom take care of it.  The base MergeFrom
+    // knows how to quickly confirm the types exactly match, and if so, will
+    // use GetClassData() to retrieve the address of MergeImpl, which calls
+    // the fast MergeFrom overload.  Most callers avoid all this by passing
+    // a "from" message that is the same type as the message being merged
+    // into, rather than a generic Message.
 
-      format(
-          "const ::$proto_ns$::Message::ClassData "
-          "$classname$::_class_data_ = {\n"
-          "    ::$proto_ns$::Message::CopyWithSourceCheck,\n"
-          "    $classname$::MergeImpl\n"
-          "};\n"
-          "const ::$proto_ns$::Message::ClassData*"
-          "$classname$::GetClassData() const { return &_class_data_; }\n"
-          "\n");
-    } else {
-      // Generate CheckTypeAndMergeFrom().
-      format(
-          "void $classname$::CheckTypeAndMergeFrom(\n"
-          "    const ::$proto_ns$::MessageLite& from) {\n"
-          "  MergeFrom(*::_pbi::DownCast<const $classname$*>(\n"
-          "      &from));\n"
-          "}\n");
-    }
+    p->Emit(R"cc(
+      const ::$proto_ns$::Message::ClassData $classname$::_class_data_ = {
+          $classname$::MergeImpl,
+      };
+      const ::$proto_ns$::Message::ClassData* $classname$::GetClassData() const {
+        return &_class_data_;
+      }
+    )cc");
   } else {
-    // In the simple case, we just define ClassData that vectors back to the
-    // simple implementation of Copy and Merge.
+    // Generate CheckTypeAndMergeFrom().
     format(
-        "const ::$proto_ns$::Message::ClassData "
-        "$classname$::_class_data_ = {\n"
-        "    $superclass$::CopyImpl,\n"
-        "    $superclass$::MergeImpl,\n"
-        "};\n"
-        "const ::$proto_ns$::Message::ClassData*"
-        "$classname$::GetClassData() const { return &_class_data_; }\n"
-        "\n"
-        "\n");
+        "void $classname$::CheckTypeAndMergeFrom(\n"
+        "    const ::$proto_ns$::MessageLite& from) {\n"
+        "  MergeFrom(*::_pbi::DownCast<const $classname$*>(\n"
+        "      &from));\n"
+        "}\n");
   }
 }
 

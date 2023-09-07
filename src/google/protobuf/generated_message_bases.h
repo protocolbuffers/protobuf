@@ -72,6 +72,8 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
   ZeroFieldsBase& operator=(const ZeroFieldsBase&) = delete;
   ~ZeroFieldsBase() override;
 
+  const ClassData* GetClassData() const final;
+
   static void MergeImpl(Message& to, const Message& from);
   static void CopyImpl(Message& to, const Message& from);
   void InternalSwap(ZeroFieldsBase* other);

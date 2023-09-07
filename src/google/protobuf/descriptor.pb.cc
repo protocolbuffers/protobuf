@@ -2481,11 +2481,11 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData FileDescriptorSet::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FileDescriptorSet::MergeImpl
+    FileDescriptorSet::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*FileDescriptorSet::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FileDescriptorSet::GetClassData() const {
+  return &_class_data_;
+}
 
 void FileDescriptorSet::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FileDescriptorSet*>(&to_msg);
@@ -3052,11 +3052,11 @@ constexpr ::_pbi::TcParseTable<4, 14, 7, 86, 2> FileDescriptorProto::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData FileDescriptorProto::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FileDescriptorProto::MergeImpl
+    FileDescriptorProto::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*FileDescriptorProto::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FileDescriptorProto::GetClassData() const {
+  return &_class_data_;
+}
 
 void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FileDescriptorProto*>(&to_msg);
@@ -3389,11 +3389,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
 }
 
 const ::google::protobuf::Message::ClassData DescriptorProto_ExtensionRange::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    DescriptorProto_ExtensionRange::MergeImpl
+    DescriptorProto_ExtensionRange::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*DescriptorProto_ExtensionRange::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* DescriptorProto_ExtensionRange::GetClassData() const {
+  return &_class_data_;
+}
 
 void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<DescriptorProto_ExtensionRange*>(&to_msg);
@@ -3620,11 +3620,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_ta
 }
 
 const ::google::protobuf::Message::ClassData DescriptorProto_ReservedRange::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    DescriptorProto_ReservedRange::MergeImpl
+    DescriptorProto_ReservedRange::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*DescriptorProto_ReservedRange::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* DescriptorProto_ReservedRange::GetClassData() const {
+  return &_class_data_;
+}
 
 void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<DescriptorProto_ReservedRange*>(&to_msg);
@@ -4071,11 +4071,11 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData DescriptorProto::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    DescriptorProto::MergeImpl
+    DescriptorProto::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*DescriptorProto::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* DescriptorProto::GetClassData() const {
+  return &_class_data_;
+}
 
 void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<DescriptorProto*>(&to_msg);
@@ -4439,11 +4439,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 71, 2> ExtensionRangeOptions_Declaration
 }
 
 const ::google::protobuf::Message::ClassData ExtensionRangeOptions_Declaration::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    ExtensionRangeOptions_Declaration::MergeImpl
+    ExtensionRangeOptions_Declaration::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*ExtensionRangeOptions_Declaration::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* ExtensionRangeOptions_Declaration::GetClassData() const {
+  return &_class_data_;
+}
 
 void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<ExtensionRangeOptions_Declaration*>(&to_msg);
@@ -4763,11 +4763,11 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
 }
 
 const ::google::protobuf::Message::ClassData ExtensionRangeOptions::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    ExtensionRangeOptions::MergeImpl
+    ExtensionRangeOptions::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*ExtensionRangeOptions::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* ExtensionRangeOptions::GetClassData() const {
+  return &_class_data_;
+}
 
 void ExtensionRangeOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<ExtensionRangeOptions*>(&to_msg);
@@ -5293,11 +5293,11 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
 }
 
 const ::google::protobuf::Message::ClassData FieldDescriptorProto::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FieldDescriptorProto::MergeImpl
+    FieldDescriptorProto::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*FieldDescriptorProto::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FieldDescriptorProto::GetClassData() const {
+  return &_class_data_;
+}
 
 void FieldDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FieldDescriptorProto*>(&to_msg);
@@ -5592,11 +5592,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData OneofDescriptorProto::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    OneofDescriptorProto::MergeImpl
+    OneofDescriptorProto::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*OneofDescriptorProto::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* OneofDescriptorProto::GetClassData() const {
+  return &_class_data_;
+}
 
 void OneofDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<OneofDescriptorProto*>(&to_msg);
@@ -5818,11 +5818,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRa
 }
 
 const ::google::protobuf::Message::ClassData EnumDescriptorProto_EnumReservedRange::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    EnumDescriptorProto_EnumReservedRange::MergeImpl
+    EnumDescriptorProto_EnumReservedRange::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*EnumDescriptorProto_EnumReservedRange::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* EnumDescriptorProto_EnumReservedRange::GetClassData() const {
+  return &_class_data_;
+}
 
 void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<EnumDescriptorProto_EnumReservedRange*>(&to_msg);
@@ -6146,11 +6146,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData EnumDescriptorProto::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    EnumDescriptorProto::MergeImpl
+    EnumDescriptorProto::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*EnumDescriptorProto::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* EnumDescriptorProto::GetClassData() const {
+  return &_class_data_;
+}
 
 void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<EnumDescriptorProto*>(&to_msg);
@@ -6441,11 +6441,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
 }
 
 const ::google::protobuf::Message::ClassData EnumValueDescriptorProto::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    EnumValueDescriptorProto::MergeImpl
+    EnumValueDescriptorProto::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*EnumValueDescriptorProto::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* EnumValueDescriptorProto::GetClassData() const {
+  return &_class_data_;
+}
 
 void EnumValueDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<EnumValueDescriptorProto*>(&to_msg);
@@ -6730,11 +6730,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
 }
 
 const ::google::protobuf::Message::ClassData ServiceDescriptorProto::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    ServiceDescriptorProto::MergeImpl
+    ServiceDescriptorProto::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*ServiceDescriptorProto::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* ServiceDescriptorProto::GetClassData() const {
+  return &_class_data_;
+}
 
 void ServiceDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<ServiceDescriptorProto*>(&to_msg);
@@ -7109,11 +7109,11 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
 }
 
 const ::google::protobuf::Message::ClassData MethodDescriptorProto::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    MethodDescriptorProto::MergeImpl
+    MethodDescriptorProto::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*MethodDescriptorProto::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* MethodDescriptorProto::GetClassData() const {
+  return &_class_data_;
+}
 
 void MethodDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<MethodDescriptorProto*>(&to_msg);
@@ -7938,11 +7938,11 @@ constexpr ::_pbi::TcParseTable<5, 22, 3, 202, 12> FileOptions::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData FileOptions::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FileOptions::MergeImpl
+    FileOptions::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*FileOptions::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FileOptions::GetClassData() const {
+  return &_class_data_;
+}
 
 void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FileOptions*>(&to_msg);
@@ -8409,11 +8409,11 @@ constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData MessageOptions::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    MessageOptions::MergeImpl
+    MessageOptions::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*MessageOptions::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* MessageOptions::GetClassData() const {
+  return &_class_data_;
+}
 
 void MessageOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<MessageOptions*>(&to_msg);
@@ -8707,11 +8707,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 64, 2> FieldOptions_EditionDefault::_tab
 }
 
 const ::google::protobuf::Message::ClassData FieldOptions_EditionDefault::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FieldOptions_EditionDefault::MergeImpl
+    FieldOptions_EditionDefault::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*FieldOptions_EditionDefault::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FieldOptions_EditionDefault::GetClassData() const {
+  return &_class_data_;
+}
 
 void FieldOptions_EditionDefault::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FieldOptions_EditionDefault*>(&to_msg);
@@ -9235,11 +9235,11 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData FieldOptions::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FieldOptions::MergeImpl
+    FieldOptions::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*FieldOptions::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FieldOptions::GetClassData() const {
+  return &_class_data_;
+}
 
 void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FieldOptions*>(&to_msg);
@@ -9535,11 +9535,11 @@ constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData OneofOptions::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    OneofOptions::MergeImpl
+    OneofOptions::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*OneofOptions::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* OneofOptions::GetClassData() const {
+  return &_class_data_;
+}
 
 void OneofOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<OneofOptions*>(&to_msg);
@@ -9870,11 +9870,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData EnumOptions::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    EnumOptions::MergeImpl
+    EnumOptions::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*EnumOptions::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* EnumOptions::GetClassData() const {
+  return &_class_data_;
+}
 
 void EnumOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<EnumOptions*>(&to_msg);
@@ -10205,11 +10205,11 @@ constexpr ::_pbi::TcParseTable<3, 4, 2, 0, 7> EnumValueOptions::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData EnumValueOptions::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    EnumValueOptions::MergeImpl
+    EnumValueOptions::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*EnumValueOptions::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* EnumValueOptions::GetClassData() const {
+  return &_class_data_;
+}
 
 void EnumValueOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<EnumValueOptions*>(&to_msg);
@@ -10506,11 +10506,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData ServiceOptions::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    ServiceOptions::MergeImpl
+    ServiceOptions::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*ServiceOptions::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* ServiceOptions::GetClassData() const {
+  return &_class_data_;
+}
 
 void ServiceOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<ServiceOptions*>(&to_msg);
@@ -10840,11 +10840,11 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData MethodOptions::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    MethodOptions::MergeImpl
+    MethodOptions::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*MethodOptions::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* MethodOptions::GetClassData() const {
+  return &_class_data_;
+}
 
 void MethodOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<MethodOptions*>(&to_msg);
@@ -11098,11 +11098,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_ta
 }
 
 const ::google::protobuf::Message::ClassData UninterpretedOption_NamePart::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    UninterpretedOption_NamePart::MergeImpl
+    UninterpretedOption_NamePart::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*UninterpretedOption_NamePart::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* UninterpretedOption_NamePart::GetClassData() const {
+  return &_class_data_;
+}
 
 void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<UninterpretedOption_NamePart*>(&to_msg);
@@ -11480,11 +11480,11 @@ constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData UninterpretedOption::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    UninterpretedOption::MergeImpl
+    UninterpretedOption::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*UninterpretedOption::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* UninterpretedOption::GetClassData() const {
+  return &_class_data_;
+}
 
 void UninterpretedOption::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<UninterpretedOption*>(&to_msg);
@@ -11831,11 +11831,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 5, 0, 2> FeatureSet::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData FeatureSet::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FeatureSet::MergeImpl
+    FeatureSet::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*FeatureSet::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FeatureSet::GetClassData() const {
+  return &_class_data_;
+}
 
 void FeatureSet::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FeatureSet*>(&to_msg);
@@ -12129,11 +12129,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 75, 2> FeatureSetDefaults_FeatureSetEdit
 }
 
 const ::google::protobuf::Message::ClassData FeatureSetDefaults_FeatureSetEditionDefault::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl
+    FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
+  return &_class_data_;
+}
 
 void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FeatureSetDefaults_FeatureSetEditionDefault*>(&to_msg);
@@ -12476,11 +12476,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 73, 2> FeatureSetDefaults::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData FeatureSetDefaults::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FeatureSetDefaults::MergeImpl
+    FeatureSetDefaults::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*FeatureSetDefaults::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FeatureSetDefaults::GetClassData() const {
+  return &_class_data_;
+}
 
 void FeatureSetDefaults::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FeatureSetDefaults*>(&to_msg);
@@ -12832,11 +12832,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
 }
 
 const ::google::protobuf::Message::ClassData SourceCodeInfo_Location::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    SourceCodeInfo_Location::MergeImpl
+    SourceCodeInfo_Location::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*SourceCodeInfo_Location::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* SourceCodeInfo_Location::GetClassData() const {
+  return &_class_data_;
+}
 
 void SourceCodeInfo_Location::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<SourceCodeInfo_Location*>(&to_msg);
@@ -13032,11 +13032,11 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData SourceCodeInfo::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    SourceCodeInfo::MergeImpl
+    SourceCodeInfo::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*SourceCodeInfo::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* SourceCodeInfo::GetClassData() const {
+  return &_class_data_;
+}
 
 void SourceCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<SourceCodeInfo*>(&to_msg);
@@ -13352,11 +13352,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
 }
 
 const ::google::protobuf::Message::ClassData GeneratedCodeInfo_Annotation::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    GeneratedCodeInfo_Annotation::MergeImpl
+    GeneratedCodeInfo_Annotation::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*GeneratedCodeInfo_Annotation::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* GeneratedCodeInfo_Annotation::GetClassData() const {
+  return &_class_data_;
+}
 
 void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<GeneratedCodeInfo_Annotation*>(&to_msg);
@@ -13559,11 +13559,11 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData GeneratedCodeInfo::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    GeneratedCodeInfo::MergeImpl
+    GeneratedCodeInfo::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*GeneratedCodeInfo::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* GeneratedCodeInfo::GetClassData() const {
+  return &_class_data_;
+}
 
 void GeneratedCodeInfo::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<GeneratedCodeInfo*>(&to_msg);

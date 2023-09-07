@@ -117,6 +117,11 @@ void ZeroFieldsBase::InternalSwap(ZeroFieldsBase* other) {
   _internal_metadata_.Swap<UnknownFieldSet>(&other->_internal_metadata_);
 }
 
+const Message::ClassData* ZeroFieldsBase::GetClassData() const {
+  static constexpr ClassData data = {&MergeImpl};
+  return &data;
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
