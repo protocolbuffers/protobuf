@@ -542,11 +542,11 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Version::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Version::MergeImpl
+    Version::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*Version::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Version::GetClassData() const {
+  return &_class_data_;
+}
 
 void Version::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Version*>(&to_msg);
@@ -887,11 +887,11 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData CodeGeneratorRequest::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    CodeGeneratorRequest::MergeImpl
+    CodeGeneratorRequest::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*CodeGeneratorRequest::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* CodeGeneratorRequest::GetClassData() const {
+  return &_class_data_;
+}
 
 void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<CodeGeneratorRequest*>(&to_msg);
@@ -1217,11 +1217,11 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
 }
 
 const ::google::protobuf::Message::ClassData CodeGeneratorResponse_File::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    CodeGeneratorResponse_File::MergeImpl
+    CodeGeneratorResponse_File::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*CodeGeneratorResponse_File::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* CodeGeneratorResponse_File::GetClassData() const {
+  return &_class_data_;
+}
 
 void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<CodeGeneratorResponse_File*>(&to_msg);
@@ -1490,11 +1490,11 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData CodeGeneratorResponse::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    CodeGeneratorResponse::MergeImpl
+    CodeGeneratorResponse::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*CodeGeneratorResponse::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* CodeGeneratorResponse::GetClassData() const {
+  return &_class_data_;
+}
 
 void CodeGeneratorResponse::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<CodeGeneratorResponse*>(&to_msg);

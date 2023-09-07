@@ -102,9 +102,14 @@ void Message::CopyFrom(const Message& from) {
 
   auto* class_to = GetClassData();
   auto* class_from = from.GetClassData();
-  auto* copy_to_from = class_to ? class_to->copy_to_from : nullptr;
 
-  if (class_to == nullptr || class_to != class_from) {
+  if (class_from != nullptr && class_from == class_to) {
+    // Fail if "from" is a descendant of "to" as such copy is not allowed.
+    ABSL_DCHECK(!internal::IsDescendant(*this, from))
+        << "Source of CopyFrom cannot be a descendant of the target.";
+    Clear();
+    class_to->merge_to_from(*this, from);
+  } else {
     const Descriptor* descriptor = GetDescriptor();
     ABSL_CHECK_EQ(from.GetDescriptor(), descriptor)
         << ": Tried to copy from a message with a different type. "
@@ -113,20 +118,11 @@ void Message::CopyFrom(const Message& from) {
         << ", "
            "from: "
         << from.GetDescriptor()->full_name();
-    copy_to_from = [](Message& to, const Message& from) {
-      ReflectionOps::Copy(from, &to);
-    };
+    ReflectionOps::Copy(from, this);
   }
-  copy_to_from(*this, from);
 }
 
 void Message::CopyWithSourceCheck(Message& to, const Message& from) {
-  // Fail if "from" is a descendant of "to" as such copy is not allowed.
-  ABSL_DCHECK(!internal::IsDescendant(to, from))
-      << "Source of CopyFrom cannot be a descendant of the target.";
-
-  to.Clear();
-  to.GetClassData()->merge_to_from(to, from);
 }
 
 std::string Message::GetTypeName() const {

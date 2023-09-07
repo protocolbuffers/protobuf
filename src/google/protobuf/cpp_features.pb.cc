@@ -308,11 +308,11 @@ const ::_pbi::TcParseTable<1, 2, 1, 0, 2> CppFeatures::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData CppFeatures::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    CppFeatures::MergeImpl
+    CppFeatures::MergeImpl,
 };
-const ::google::protobuf::Message::ClassData*CppFeatures::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* CppFeatures::GetClassData() const {
+  return &_class_data_;
+}
 
 void CppFeatures::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<CppFeatures*>(&to_msg);
