@@ -174,11 +174,6 @@ TEST(FuzzTest, FileNameEmbeddedNull) {
   RoundTripDescriptor(ParseTextProtoOrDie(R"pb(file { name: "\000" })pb"));
 }
 
-TEST(FuzzTest, EditionEmbeddedNull) {
-  RoundTripDescriptor(
-      ParseTextProtoOrDie(R"pb(file { name: "n" edition: "\000" })pb"));
-}
-
 TEST(FuzzTest, DuplicateOneofIndex) {
   RoundTripDescriptor(ParseTextProtoOrDie(
       R"pb(file {
