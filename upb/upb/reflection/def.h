@@ -31,6 +31,7 @@
 #ifndef UPB_REFLECTION_DEF_H_
 #define UPB_REFLECTION_DEF_H_
 
+// IWYU pragma: begin_exports
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/enum_def.h"
 #include "upb/reflection/enum_value_def.h"
@@ -41,5 +42,6 @@
 #include "upb/reflection/method_def.h"
 #include "upb/reflection/oneof_def.h"
 #include "upb/reflection/service_def.h"
+// IWYU pragma: end_exports
 
 #endif /* UPB_REFLECTION_DEF_H_ */
