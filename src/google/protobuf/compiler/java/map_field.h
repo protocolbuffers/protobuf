@@ -43,7 +43,7 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
   explicit ImmutableMapFieldGenerator(const FieldDescriptor* descriptor,
                                       int messageBitIndex, int builderBitIndex,
                                       Context* context);
-  ~ImmutableMapFieldGenerator() override;
+  ~ImmutableMapFieldGenerator() override = default;
 
   // implements ImmutableFieldGenerator ---------------------------------------
   int GetMessageBitIndex() const override;
@@ -75,7 +75,10 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
   absl::flat_hash_map<absl::string_view, std::string> variables_;
   ClassNameResolver* name_resolver_;
   Context* context_;
+  void SetMessageVariables(const FieldGeneratorInfo* info);
   void GenerateMapGetters(io::Printer* printer) const;
+  void GenerateMessageMapBuilderMembers(io::Printer* printer) const;
+  void GenerateMessageMapGetters(io::Printer* printer) const;
 };
 
 }  // namespace java
