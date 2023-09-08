@@ -8,10 +8,10 @@ local_repository(
     path = "..",
 )
 
-upb_deps()
-
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
+
+upb_deps()
 
 load("@utf8_range//:workspace_deps.bzl", "utf8_range_deps")
 utf8_range_deps()
