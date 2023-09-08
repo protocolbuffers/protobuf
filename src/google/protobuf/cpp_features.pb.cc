@@ -309,6 +309,7 @@ const ::_pbi::TcParseTable<1, 2, 1, 0, 2> CppFeatures::_table_ = {
 
 const ::google::protobuf::Message::ClassData CppFeatures::_class_data_ = {
     CppFeatures::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* CppFeatures::GetClassData() const {
   return &_class_data_;

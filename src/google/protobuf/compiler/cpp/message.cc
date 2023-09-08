@@ -1564,20 +1564,19 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
   switch (NeedsArenaDestructor()) {
     case ArenaDtorNeeds::kOnDemand:
-      format(
-          "private:\n"
-          "static void ArenaDtor(void* object);\n"
-          "inline void OnDemandRegisterArenaDtor(::$proto_ns$::Arena* arena) "
-          "override {\n"
-          "  if (arena == nullptr || ($inlined_string_donated_array$[0] & "
-          "0x1u) "
-          "== "
-          "0) {\n"
-          "   return;\n"
-          "  }\n"
-          "  $inlined_string_donated_array$[0] &= 0xFFFFFFFEu;\n"
-          "  arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);\n"
-          "}\n");
+      p->Emit(R"cc(
+        private:
+        static void ArenaDtor(void* object);
+        static void OnDemandRegisterArenaDtor(MessageLite& msg,
+                                              ::$proto_ns$::Arena& arena) {
+          auto& this_ = static_cast<$classname$&>(msg);
+          if ((this_.$inlined_string_donated_array$[0] & 0x1u) == 0) {
+            return;
+          }
+          this_.$inlined_string_donated_array$[0] &= 0xFFFFFFFEu;
+          arena.OwnCustomDestructor(&this_, &$classname$::ArenaDtor);
+        }
+      )cc");
       break;
     case ArenaDtorNeeds::kRequired:
       format(
@@ -3917,14 +3916,30 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
     // a "from" message that is the same type as the message being merged
     // into, rather than a generic Message.
 
-    p->Emit(R"cc(
-      const ::$proto_ns$::Message::ClassData $classname$::_class_data_ = {
-          $classname$::MergeImpl,
-      };
-      const ::$proto_ns$::Message::ClassData* $classname$::GetClassData() const {
-        return &_class_data_;
-      }
-    )cc");
+    p->Emit(
+        {
+            {"on_demand_register_arena_dtor",
+             [&] {
+               if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
+                 p->Emit(R"cc(
+                   $classname$::OnDemandRegisterArenaDtor,
+                 )cc");
+               } else {
+                 p->Emit(R"cc(
+                   nullptr,  // OnDemandRegisterArenaDtor
+                 )cc");
+               }
+             }},
+        },
+        R"cc(
+          const ::$proto_ns$::Message::ClassData $classname$::_class_data_ = {
+              $classname$::MergeImpl,
+              $on_demand_register_arena_dtor$,
+          };
+          const ::$proto_ns$::Message::ClassData* $classname$::GetClassData() const {
+            return &_class_data_;
+          }
+        )cc");
   } else {
     // Generate CheckTypeAndMergeFrom().
     format(

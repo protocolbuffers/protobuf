@@ -492,7 +492,7 @@ class PROTOBUF_EXPORT MessageLite {
     return nullptr;
   }
 
-  virtual void OnDemandRegisterArenaDtor(Arena* /*arena*/) {}
+  void OnDemandRegisterArenaDtor(Arena* arena);
 
  protected:
   // Message implementations require access to internally visible API.
@@ -524,6 +524,23 @@ class PROTOBUF_EXPORT MessageLite {
   // Returns the arena, used for allocating internal objects(e.g., child
   // messages, etc), or owning incoming objects (e.g., set allocated).
   Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
+
+  struct ClassData {
+    // Note: The order of arguments in the functions is chosen so that it has
+    // the same ABI as the member function that calls them. Eg the `this`
+    // pointer becomes the first argument in the free function.
+    void (*merge_to_from)(Message& to, const Message& from_msg);
+    void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
+  };
+
+  // GetClassData() returns a pointer to a ClassData struct which
+  // exists in global memory and is unique to each subclass.  This uniqueness
+  // property is used in order to quickly determine whether two messages are
+  // of the same type.
+  //
+  // This is a work in progress. Currently only SPEED messages return an
+  // instance. In the future all message types will return one.
+  virtual const ClassData* GetClassData() const;
 
   internal::InternalMetadata _internal_metadata_;
 

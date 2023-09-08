@@ -2481,6 +2481,7 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
 
 const ::google::protobuf::Message::ClassData FileDescriptorSet::_class_data_ = {
     FileDescriptorSet::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* FileDescriptorSet::GetClassData() const {
   return &_class_data_;
@@ -3052,6 +3053,7 @@ constexpr ::_pbi::TcParseTable<4, 14, 7, 86, 2> FileDescriptorProto::_table_ = {
 
 const ::google::protobuf::Message::ClassData FileDescriptorProto::_class_data_ = {
     FileDescriptorProto::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* FileDescriptorProto::GetClassData() const {
   return &_class_data_;
@@ -3389,6 +3391,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
 
 const ::google::protobuf::Message::ClassData DescriptorProto_ExtensionRange::_class_data_ = {
     DescriptorProto_ExtensionRange::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* DescriptorProto_ExtensionRange::GetClassData() const {
   return &_class_data_;
@@ -3620,6 +3623,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_ta
 
 const ::google::protobuf::Message::ClassData DescriptorProto_ReservedRange::_class_data_ = {
     DescriptorProto_ReservedRange::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* DescriptorProto_ReservedRange::GetClassData() const {
   return &_class_data_;
@@ -4071,6 +4075,7 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
 
 const ::google::protobuf::Message::ClassData DescriptorProto::_class_data_ = {
     DescriptorProto::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* DescriptorProto::GetClassData() const {
   return &_class_data_;
@@ -4439,6 +4444,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 71, 2> ExtensionRangeOptions_Declaration
 
 const ::google::protobuf::Message::ClassData ExtensionRangeOptions_Declaration::_class_data_ = {
     ExtensionRangeOptions_Declaration::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* ExtensionRangeOptions_Declaration::GetClassData() const {
   return &_class_data_;
@@ -4763,6 +4769,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
 
 const ::google::protobuf::Message::ClassData ExtensionRangeOptions::_class_data_ = {
     ExtensionRangeOptions::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* ExtensionRangeOptions::GetClassData() const {
   return &_class_data_;
@@ -5293,6 +5300,7 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
 
 const ::google::protobuf::Message::ClassData FieldDescriptorProto::_class_data_ = {
     FieldDescriptorProto::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* FieldDescriptorProto::GetClassData() const {
   return &_class_data_;
@@ -5592,6 +5600,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
 
 const ::google::protobuf::Message::ClassData OneofDescriptorProto::_class_data_ = {
     OneofDescriptorProto::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* OneofDescriptorProto::GetClassData() const {
   return &_class_data_;
@@ -5818,6 +5827,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRa
 
 const ::google::protobuf::Message::ClassData EnumDescriptorProto_EnumReservedRange::_class_data_ = {
     EnumDescriptorProto_EnumReservedRange::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* EnumDescriptorProto_EnumReservedRange::GetClassData() const {
   return &_class_data_;
@@ -6146,6 +6156,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
 
 const ::google::protobuf::Message::ClassData EnumDescriptorProto::_class_data_ = {
     EnumDescriptorProto::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* EnumDescriptorProto::GetClassData() const {
   return &_class_data_;
@@ -6441,6 +6452,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
 
 const ::google::protobuf::Message::ClassData EnumValueDescriptorProto::_class_data_ = {
     EnumValueDescriptorProto::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* EnumValueDescriptorProto::GetClassData() const {
   return &_class_data_;
@@ -6730,6 +6742,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
 
 const ::google::protobuf::Message::ClassData ServiceDescriptorProto::_class_data_ = {
     ServiceDescriptorProto::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* ServiceDescriptorProto::GetClassData() const {
   return &_class_data_;
@@ -7109,6 +7122,7 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
 
 const ::google::protobuf::Message::ClassData MethodDescriptorProto::_class_data_ = {
     MethodDescriptorProto::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* MethodDescriptorProto::GetClassData() const {
   return &_class_data_;
@@ -7938,6 +7952,7 @@ constexpr ::_pbi::TcParseTable<5, 22, 3, 202, 12> FileOptions::_table_ = {
 
 const ::google::protobuf::Message::ClassData FileOptions::_class_data_ = {
     FileOptions::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* FileOptions::GetClassData() const {
   return &_class_data_;
@@ -8409,6 +8424,7 @@ constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
 
 const ::google::protobuf::Message::ClassData MessageOptions::_class_data_ = {
     MessageOptions::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* MessageOptions::GetClassData() const {
   return &_class_data_;
@@ -8707,6 +8723,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 64, 2> FieldOptions_EditionDefault::_tab
 
 const ::google::protobuf::Message::ClassData FieldOptions_EditionDefault::_class_data_ = {
     FieldOptions_EditionDefault::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* FieldOptions_EditionDefault::GetClassData() const {
   return &_class_data_;
@@ -9235,6 +9252,7 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
 
 const ::google::protobuf::Message::ClassData FieldOptions::_class_data_ = {
     FieldOptions::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* FieldOptions::GetClassData() const {
   return &_class_data_;
@@ -9535,6 +9553,7 @@ constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
 
 const ::google::protobuf::Message::ClassData OneofOptions::_class_data_ = {
     OneofOptions::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* OneofOptions::GetClassData() const {
   return &_class_data_;
@@ -9870,6 +9889,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
 
 const ::google::protobuf::Message::ClassData EnumOptions::_class_data_ = {
     EnumOptions::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* EnumOptions::GetClassData() const {
   return &_class_data_;
@@ -10205,6 +10225,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 2, 0, 7> EnumValueOptions::_table_ = {
 
 const ::google::protobuf::Message::ClassData EnumValueOptions::_class_data_ = {
     EnumValueOptions::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* EnumValueOptions::GetClassData() const {
   return &_class_data_;
@@ -10506,6 +10527,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
 
 const ::google::protobuf::Message::ClassData ServiceOptions::_class_data_ = {
     ServiceOptions::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* ServiceOptions::GetClassData() const {
   return &_class_data_;
@@ -10840,6 +10862,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
 
 const ::google::protobuf::Message::ClassData MethodOptions::_class_data_ = {
     MethodOptions::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* MethodOptions::GetClassData() const {
   return &_class_data_;
@@ -11098,6 +11121,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_ta
 
 const ::google::protobuf::Message::ClassData UninterpretedOption_NamePart::_class_data_ = {
     UninterpretedOption_NamePart::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* UninterpretedOption_NamePart::GetClassData() const {
   return &_class_data_;
@@ -11480,6 +11504,7 @@ constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
 
 const ::google::protobuf::Message::ClassData UninterpretedOption::_class_data_ = {
     UninterpretedOption::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* UninterpretedOption::GetClassData() const {
   return &_class_data_;
@@ -11831,6 +11856,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 5, 0, 2> FeatureSet::_table_ = {
 
 const ::google::protobuf::Message::ClassData FeatureSet::_class_data_ = {
     FeatureSet::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* FeatureSet::GetClassData() const {
   return &_class_data_;
@@ -12129,6 +12155,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 75, 2> FeatureSetDefaults_FeatureSetEdit
 
 const ::google::protobuf::Message::ClassData FeatureSetDefaults_FeatureSetEditionDefault::_class_data_ = {
     FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
   return &_class_data_;
@@ -12476,6 +12503,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 73, 2> FeatureSetDefaults::_table_ = {
 
 const ::google::protobuf::Message::ClassData FeatureSetDefaults::_class_data_ = {
     FeatureSetDefaults::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* FeatureSetDefaults::GetClassData() const {
   return &_class_data_;
@@ -12832,6 +12860,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
 
 const ::google::protobuf::Message::ClassData SourceCodeInfo_Location::_class_data_ = {
     SourceCodeInfo_Location::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* SourceCodeInfo_Location::GetClassData() const {
   return &_class_data_;
@@ -13032,6 +13061,7 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
 
 const ::google::protobuf::Message::ClassData SourceCodeInfo::_class_data_ = {
     SourceCodeInfo::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* SourceCodeInfo::GetClassData() const {
   return &_class_data_;
@@ -13352,6 +13382,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
 
 const ::google::protobuf::Message::ClassData GeneratedCodeInfo_Annotation::_class_data_ = {
     GeneratedCodeInfo_Annotation::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* GeneratedCodeInfo_Annotation::GetClassData() const {
   return &_class_data_;
@@ -13559,6 +13590,7 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
 
 const ::google::protobuf::Message::ClassData GeneratedCodeInfo::_class_data_ = {
     GeneratedCodeInfo::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* GeneratedCodeInfo::GetClassData() const {
   return &_class_data_;

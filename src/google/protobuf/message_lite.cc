@@ -44,6 +44,18 @@
 namespace google {
 namespace protobuf {
 
+void MessageLite::OnDemandRegisterArenaDtor(Arena* arena) {
+  if (arena == nullptr) return;
+  auto* data = GetClassData();
+  if (data != nullptr && data->on_demand_register_arena_dtor != nullptr) {
+    data->on_demand_register_arena_dtor(*this, *arena);
+  }
+}
+
+const MessageLite::ClassData* MessageLite::GetClassData() const {
+  return nullptr;
+}
+
 std::string MessageLite::InitializationErrorString() const {
   return "(cannot determine missing fields for lite message)";
 }
