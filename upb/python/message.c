@@ -1216,7 +1216,7 @@ static PyObject* PyUpb_Message_MergeInternal(PyObject* self, PyObject* arg,
   if (!serialized) return NULL;
   PyObject* ret = PyUpb_Message_MergeFromString(self, serialized);
   Py_DECREF(serialized);
-  Py_DECREF(ret);
+  Py_XDECREF(ret);
   Py_RETURN_NONE;
 }
 
