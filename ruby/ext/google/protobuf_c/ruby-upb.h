@@ -10709,6 +10709,7 @@ void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter);
 #ifndef UPB_REFLECTION_DEF_H_
 #define UPB_REFLECTION_DEF_H_
 
+// IWYU pragma: begin_exports
 
 // IWYU pragma: private, include "upb/reflection/def.h"
 
@@ -11340,6 +11341,7 @@ const UPB_DESC(ServiceOptions) *
 
 
 #endif /* UPB_REFLECTION_SERVICE_DEF_H_ */
+// IWYU pragma: end_exports
 
 #endif /* UPB_REFLECTION_DEF_H_ */
 
