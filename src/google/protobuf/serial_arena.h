@@ -35,6 +35,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstdint>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -122,10 +123,6 @@ class PROTOBUF_EXPORT SerialArena {
   }
   uint64_t SpaceUsed() const;
 
-  bool HasSpace(size_t n) const {
-    return n <= static_cast<size_t>(limit_ - ptr());
-  }
-
   // See comments on `cached_blocks_` member for details.
   PROTOBUF_ALWAYS_INLINE void* TryAllocateFromCachedBlock(size_t size) {
     if (PROTOBUF_PREDICT_FALSE(size < 16)) return nullptr;
@@ -161,10 +158,11 @@ class PROTOBUF_EXPORT SerialArena {
       }
     }
 
-    if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) {
-      return AllocateAlignedFallback(n);
+    void* ptr;
+    if (PROTOBUF_PREDICT_TRUE(MaybeAllocateAligned(n, &ptr))) {
+      return ptr;
     }
-    return AllocateFromExisting(n);
+    return AllocateAlignedFallback(n);
   }
 
  private:
@@ -182,13 +180,6 @@ class PROTOBUF_EXPORT SerialArena {
     return (a <= ArenaAlignDefault::align)
                ? ArenaAlignDefault::CeilDefaultAligned(p)
                : ArenaAlignAs(a).CeilDefaultAligned(p);
-  }
-
-  void* AllocateFromExisting(size_t n) {
-    PROTOBUF_UNPOISON_MEMORY_REGION(ptr(), n);
-    void* ret = ptr();
-    set_ptr(static_cast<char*>(ret) + n);
-    return ret;
   }
 
   // See comments on `cached_blocks_` member for details.
@@ -246,8 +237,17 @@ class PROTOBUF_EXPORT SerialArena {
   bool MaybeAllocateAligned(size_t n, void** out) {
     ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
-    if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) return false;
-    *out = AllocateFromExisting(n);
+    char* ret = ptr();
+    // ret + n may point out of the block bounds, or ret may be nullptr.
+    // Both computations have undefined behavior when done on pointers,
+    // so do them on uintptr_t instead.
+    uintptr_t next = reinterpret_cast<uintptr_t>(ret) + n;
+    if (PROTOBUF_PREDICT_FALSE(next > reinterpret_cast<uintptr_t>(limit_))) {
+      return false;
+    }
+    PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
+    *out = ret;
+    set_ptr(reinterpret_cast<char*>(next));
     return true;
   }
 
@@ -262,17 +262,26 @@ class PROTOBUF_EXPORT SerialArena {
   PROTOBUF_ALWAYS_INLINE
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
                                    void (*destructor)(void*)) {
-    size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
-    if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
+    n = ArenaAlignDefault::Ceil(n);
+    char* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
+    // See the comment in MaybeAllocateAligned re uintptr_t.
+    uintptr_t next = reinterpret_cast<uintptr_t>(ret) + n;
+    if (PROTOBUF_PREDICT_FALSE(next + cleanup::Size(destructor) >
+                               reinterpret_cast<uintptr_t>(limit_))) {
       return AllocateAlignedWithCleanupFallback(n, align, destructor);
     }
-    return AllocateFromExistingWithCleanupFallback(n, align, destructor);
+    PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
+    set_ptr(reinterpret_cast<char*>(next));
+    AddCleanupFromExisting(ret, destructor);
+    ABSL_DCHECK_GE(limit_, ptr());
+    return ret;
   }
 
   PROTOBUF_ALWAYS_INLINE
   void AddCleanup(void* elem, void (*destructor)(void*)) {
     size_t required = cleanup::Size(destructor);
-    if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
+    size_t has = static_cast<size_t>(limit_ - ptr());
+    if (PROTOBUF_PREDICT_FALSE(required > has)) {
       return AddCleanupFallback(elem, destructor);
     }
     AddCleanupFromExisting(elem, destructor);
@@ -285,17 +294,6 @@ class PROTOBUF_EXPORT SerialArena {
  private:
   bool MaybeAllocateString(void*& p);
   ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlockFallback();
-
-  void* AllocateFromExistingWithCleanupFallback(size_t n, size_t align,
-                                                void (*destructor)(void*)) {
-    n = AlignUpTo(n, align);
-    PROTOBUF_UNPOISON_MEMORY_REGION(ptr(), n);
-    void* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
-    set_ptr(ptr() + n);
-    ABSL_DCHECK_GE(limit_, ptr());
-    AddCleanupFromExisting(ret, destructor);
-    return ret;
-  }
 
   PROTOBUF_ALWAYS_INLINE
   void AddCleanupFromExisting(void* elem, void (*destructor)(void*)) {

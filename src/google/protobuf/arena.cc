@@ -217,7 +217,10 @@ SizedPtr SerialArena::Free(Deallocator deallocator) {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedFallback(size_t n) {
   AllocateNewBlock(n);
-  return AllocateFromExisting(n);
+  void* ret;
+  bool res = MaybeAllocateAligned(n, &ret);
+  ABSL_DCHECK(res);
+  return ret;
 }
 
 PROTOBUF_NOINLINE
@@ -250,7 +253,7 @@ void* SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
   size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
   AllocateNewBlock(required);
-  return AllocateFromExistingWithCleanupFallback(n, align, destructor);
+  return AllocateAlignedWithCleanup(n, align, destructor);
 }
 
 PROTOBUF_NOINLINE
