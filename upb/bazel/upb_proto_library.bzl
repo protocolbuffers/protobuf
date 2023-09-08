@@ -472,6 +472,9 @@ upb_proto_library = rule(
     provides = [CcInfo],
 )
 
+# Temporary alias, see b/291827469.
+upb_c_proto_library = upb_proto_library
+
 # upb_proto_reflection_library() ###############################################
 
 _upb_proto_reflection_library_aspect = aspect(
