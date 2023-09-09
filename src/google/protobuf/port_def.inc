@@ -1090,6 +1090,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // for (int i = 0; i < file_->public_dependency_count(); ++i)
 //   for (int i = 0; i < public_dep->message_type_count(); ++i)
 #pragma clang diagnostic ignored "-Wshadow"
+#pragma clang diagnostic ignored "-Wextra-semi"
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
