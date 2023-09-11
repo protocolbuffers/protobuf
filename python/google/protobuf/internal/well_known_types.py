@@ -193,23 +193,22 @@ class Timestamp(object):
 
   def FromNanoseconds(self, nanos):
     """Converts nanoseconds since epoch to Timestamp."""
+    if not isinstance(nanos, int):
+      raise TypeError(f'nanos must be an integer but {type(nanos)} provided.')
     self.seconds = nanos // _NANOS_PER_SECOND
     self.nanos = nanos % _NANOS_PER_SECOND
 
   def FromMicroseconds(self, micros):
     """Converts microseconds since epoch to Timestamp."""
-    self.seconds = micros // _MICROS_PER_SECOND
-    self.nanos = (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND
+    self.FromNanoseconds(int(micros * _NANOS_PER_MICROSECOND))
 
   def FromMilliseconds(self, millis):
     """Converts milliseconds since epoch to Timestamp."""
-    self.seconds = millis // _MILLIS_PER_SECOND
-    self.nanos = (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND
+    self.FromNanoseconds(int(millis * _NANOS_PER_MILLISECOND))
 
   def FromSeconds(self, seconds):
     """Converts seconds since epoch to Timestamp."""
-    self.seconds = seconds
-    self.nanos = 0
+    self.FromNanoseconds(int(seconds * _NANOS_PER_SECOND))
 
   def ToDatetime(self, tzinfo=None):
     """Converts Timestamp to a datetime.
@@ -339,25 +338,22 @@ class Duration(object):
 
   def FromNanoseconds(self, nanos):
     """Converts nanoseconds to Duration."""
+    if not isinstance(nanos, int):
+      raise TypeError(f'nanos must be an integer but {type(nanos)} provided.')
     self._NormalizeDuration(nanos // _NANOS_PER_SECOND,
                             nanos % _NANOS_PER_SECOND)
 
   def FromMicroseconds(self, micros):
     """Converts microseconds to Duration."""
-    self._NormalizeDuration(
-        micros // _MICROS_PER_SECOND,
-        (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND)
+    self.FromNanoseconds(int(micros * _NANOS_PER_MICROSECOND))
 
   def FromMilliseconds(self, millis):
     """Converts milliseconds to Duration."""
-    self._NormalizeDuration(
-        millis // _MILLIS_PER_SECOND,
-        (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND)
+    self.FromNanoseconds(int(millis * _NANOS_PER_MILLISECOND))
 
   def FromSeconds(self, seconds):
     """Converts seconds to Duration."""
-    self.seconds = seconds
-    self.nanos = 0
+    self.FromNanoseconds(int(seconds * _NANOS_PER_SECOND))
 
   def ToTimedelta(self):
     """Converts Duration to timedelta."""
