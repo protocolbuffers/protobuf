@@ -408,10 +408,6 @@ class PROTOBUF_EXPORT TcParser final {
   //    the function is used as a way to get a UnknownFieldOps vtable, returned
   //    via the `const char*` return type. See `GetUnknownFieldOps()`
 
-  static bool MustFallbackToGeneric(PROTOBUF_TC_PARAM_NO_DATA_DECL) {
-    return ptr == nullptr;
-  }
-
   static const char* GenericFallback(PROTOBUF_TC_PARAM_DECL);
   static const char* GenericFallbackLite(PROTOBUF_TC_PARAM_DECL);
   static const char* ReflectionFallback(PROTOBUF_TC_PARAM_DECL);
