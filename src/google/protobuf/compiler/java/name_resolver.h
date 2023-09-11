@@ -102,6 +102,7 @@ class ClassNameResolver {
   std::string GetJavaImmutableClassName(const ServiceDescriptor* descriptor);
   std::string GetKotlinFactoryName(const Descriptor* descriptor);
   std::string GetKotlinExtensionsClassName(const Descriptor* descriptor);
+  std::string GetKotlinExtensionsClassNameEscaped(const Descriptor* descriptor);
   std::string GetJavaMutableClassName(const Descriptor* descriptor);
   std::string GetJavaMutableClassName(const EnumDescriptor* descriptor);
   std::string GetJavaMutableClassName(const ServiceDescriptor* descriptor);

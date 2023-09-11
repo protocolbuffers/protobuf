@@ -1316,8 +1316,7 @@ void ImmutableMessageGenerator::GenerateTopLevelKotlinMembers(
       "message",
       EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)),
       "message_kt",
-      EscapeKotlinKeywords(
-          name_resolver_->GetKotlinExtensionsClassName(descriptor_)));
+      name_resolver_->GetKotlinExtensionsClassNameEscaped(descriptor_));
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     if (IsMapEntry(descriptor_->nested_type(i))) continue;

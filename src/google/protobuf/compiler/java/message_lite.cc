@@ -841,8 +841,7 @@ void ImmutableMessageLiteGenerator::GenerateTopLevelKotlinMembers(
       "message",
       EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)),
       "message_kt",
-      EscapeKotlinKeywords(
-          name_resolver_->GetKotlinExtensionsClassName(descriptor_)));
+      name_resolver_->GetKotlinExtensionsClassNameEscaped(descriptor_));
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     if (IsMapEntry(descriptor_->nested_type(i))) continue;
@@ -853,7 +852,8 @@ void ImmutableMessageLiteGenerator::GenerateTopLevelKotlinMembers(
   GenerateKotlinOrNull(printer);
 }
 
-void ImmutableMessageLiteGenerator::GenerateKotlinOrNull(io::Printer* printer) const {
+void ImmutableMessageLiteGenerator::GenerateKotlinOrNull(
+    io::Printer* printer) const {
   // Generate getFieldOrNull getters for all optional message fields.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);

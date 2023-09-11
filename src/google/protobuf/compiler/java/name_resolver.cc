@@ -342,6 +342,21 @@ std::string ClassNameResolver::GetKotlinExtensionsClassName(
                           descriptor->file(), true, true, true);
 }
 
+std::string ClassNameResolver::GetKotlinExtensionsClassNameEscaped(
+    const Descriptor* descriptor) {
+  std::string name_without_package = ClassNameWithoutPackageKotlin(descriptor);
+  std::string full_name = GetClassFullName(
+      name_without_package, descriptor->file(), true, true, true);
+  std::string name_without_package_suffix =
+      absl::StrCat(".", name_without_package, "Kt");
+  size_t package_end = full_name.rfind(name_without_package_suffix);
+  if (package_end != std::string::npos) {
+    return absl::StrCat("`", full_name.substr(0, package_end), "`",
+                        name_without_package_suffix);
+  }
+  return full_name;
+}
+
 std::string ClassNameResolver::GetJavaMutableClassName(
     const Descriptor* descriptor) {
   return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, false),
