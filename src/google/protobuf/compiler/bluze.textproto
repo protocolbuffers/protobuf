@@ -1,0 +1,232 @@
+# proto-file: devtools/blueprint/blueprint_file.proto
+# proto-message: BlueprintFile
+# DO NOT EDIT! Regenerate the contents by running go/bluze after changing any BUILD file or the Blueprint.
+# Override the default values in protobuf_protoc.blueprint instead.
+
+buildable_unit: {
+  name: "protobuf_protoc"
+  build_pattern: "//third_party/protobuf/compiler/..."
+  test_pattern: "//third_party/protobuf/compiler/..."
+  test_tag_filter: "-nofastbuild"
+  build_tag_filter: "-nofastbuild"
+  enable_coverage: true
+  enable_presubmit: true
+  enable_continuous_build: true
+  continuous_build_email: {
+    build_cop_email_id: "protobuf-team+buildgardener@google.com"
+  }
+  enable_release: false
+}
+buildable_unit: {
+  name: "protobuf_protoc.opt"
+  test_pattern: "//third_party/protobuf/compiler/..."
+  test_tag_filter: "-noopt"
+  build_flag: "--compilation_mode=opt"
+  enable_coverage: false
+  enable_presubmit: false
+  enable_continuous_build: false
+  continuous_build_email: {
+    build_cop_email_id: "protobuf-team+buildgardener@google.com"
+  }
+  enable_release: false
+  [tap.tap_settings]: {
+    on_demand: true
+    on_demand_frequency: EVERY_4_HOURS
+  }
+}
+buildable_unit: {
+  name: "protobuf_protoc.arm"
+  build_pattern: "//third_party/protobuf/compiler/..."
+  test_pattern: "//third_party/protobuf/compiler/..."
+  test_tag_filter: "-nofastbuild"
+  test_tag_filter: "-not_run:arm"
+  test_tag_filter: "-not_build:arm"
+  test_tag_filter: "-bzl_test"
+  test_tag_filter: "-android_cc_test"
+  test_tag_filter: "-ios"
+  test_tag_filter: "-non_compile_test"
+  test_tag_filter: "-requires-gpu-nvidia"
+  test_tag_filter: "-requires-gpu-nvidia:2"
+  test_tag_filter: "-requires-gpu-sm35"
+  test_tag_filter: "-requires-gpu-sm50"
+  test_tag_filter: "-requires-gpu-sm60"
+  test_tag_filter: "-requires-gpu-sm60-only"
+  test_tag_filter: "-requires-gpu-sm70"
+  test_tag_filter: "-requires-gpu-sm70-only"
+  test_tag_filter: "-requires-gpu-sm80"
+  test_tag_filter: "-requires-gpu-sm80-only"
+  test_tag_filter: "-requires-dragonfish"
+  test_tag_filter: "-requires-dragonfish:4"
+  test_tag_filter: "-requires-jellyfish"
+  test_tag_filter: "-requires-jellyfish:4"
+  test_tag_filter: "-requires-seastar"
+  test_tag_filter: "-requires-puffylite"
+  test_tag_filter: "-requires-puffylite:8"
+  test_tag_filter: "-requires-pufferfish"
+  test_tag_filter: "-requires-pufferfish:4"
+  test_tag_filter: "-requires-viperlite"
+  test_tag_filter: "-requires-viperlite:8"
+  test_tag_filter: "-local"
+  test_tag_filter: "-manual"
+  test_tag_filter: "-exclusive"
+  test_tag_filter: "-requires-kvm"
+  test_lang_filter: "-borgcfg"
+  test_lang_filter: "-jsunit"
+  build_tag_filter: "-nofastbuild"
+  build_tag_filter: "-not_run:arm"
+  build_tag_filter: "-not_build:arm"
+  build_tag_filter: "-bzl_test"
+  build_tag_filter: "-android_cc_test"
+  build_tag_filter: "-ios"
+  build_flag: "--cpu=arm"
+  enable_coverage: false
+  enable_presubmit: true
+  enable_continuous_build: true
+  continuous_build_email: {
+    build_cop_email_id: "protobuf-team+buildgardener@google.com"
+  }
+  enable_release: false
+  tools: {
+    auto_file_bugs_for_flakes: false
+  }
+}
+buildable_unit: {
+  name: "protobuf_protoc_release"
+  test_pattern: "//third_party/protobuf/compiler/..."
+  mpm_pattern: "//third_party/protobuf/compiler:mpm"
+  build_flag: "--config=release_no_debug"
+  build_flag: "--fat_mpm_cpu=k8,haswell,arm"
+  enable_release: true
+}
+golden_changelist: {
+  tap_build: "protobuf_protoc"
+  tap_project_name: "protobuf_protoc"
+}
+golden_changelist: {
+  tap_build: "protobuf_protoc.arm"
+  tap_project_name: "protobuf_protoc.arm"
+}
+golden_changelist: {
+  tap_build: "protobuf_protoc.opt"
+  tap_project_name: "protobuf_protoc.opt"
+}
+releasable_units: {
+  name: "protobuf_protoc"
+  buildable_unit_names: "protobuf_protoc_release"
+  deployment_environments: {
+    name: "prod"
+    mpm_label: "live"
+  }
+  deployment_environments: {
+    name: "qa"
+    mpm_label: "qa"
+  }
+  [devtools_blueprint.ext.releasable_unit.rapid_config]: {
+    default_create_candidate_workflow: {
+      name: "Create Candidate"
+      process_type: CREATE_CANDIDATE
+      config_path: "google3/releasetools/rapid/workflows/contrib/create_candidate_in_prod.pp"
+    }
+    workflow: {
+      name: "Deploy to qa"
+      process_type: WORKFLOW
+      parameter: {
+        name: "environment"
+        value: "qa"
+        modifiable: false
+      }
+      config_path: "google3/devtools/blueprint/bluze/public/workflows/package_qa.pp"
+    }
+    workflow: {
+      name: "Deploy to prod"
+      process_type: WORKFLOW
+      parameter: {
+        name: "submit_to_head_mpm_name"
+        value: "net/proto2/tools/internal/protoc_minimal"
+        modifiable: false
+      }
+      parameter: {
+        name: "submit_files_cc"
+        value: "{launched_by},protobuf-team@google.com"
+        modifiable: false
+      }
+      parameter: {
+        name: "submit_files_description"
+        value: "Release http://rapid/{candidate} to Piper"
+        modifiable: false
+      }
+      parameter: {
+        name: "environment"
+        value: "prod"
+      }
+      parameter: {
+        name: "relnotes_emails"
+        value: "protobuf-team+rapid@google.com"
+      }
+      parameter: {
+        name: "mpm_architectures"
+        value: "X86"
+        value: "ARM"
+        is_multi_value: true
+        modifiable: false
+      }
+      parameter: {
+        name: "mpm_rename_mappings"
+        value: ".*\\.sig:{dirname}/{basename_no_ext}.{arch_blaze}.sig"
+        is_multi_value: true
+        modifiable: false
+      }
+      config_path: "google3/devtools/blueprint/bluze/public/workflows/piper_prod.pp"
+    }
+    grant_settings: {
+      source: BLUEPRINT_ONLY
+    }
+  }
+}
+[devtools_blueprint.ext.blueprint_file.rapid_config]: {
+  subscription: {
+    subject_format: "${project}: ${release} ${workflow_name} failed"
+    keyword_filter: "e:category=FAILURE"
+    email_address: "protobuf-team+rapid@google.com"
+    notify_all_proposal_actors: false
+  }
+  default_create_candidate_workflow: {
+    name: "Create Candidate"
+    process_type: CREATE_CANDIDATE
+    config_path: "google3/releasetools/rapid/workflows/contrib/create_candidate_in_prod.pp"
+  }
+  automation_rule: {
+    name: "daily protobuf_protoc release"
+    schedule: {
+      timespec: "? 3 * * Mon-Fri"
+    }
+    create_release_and_candidate: {
+      create_candidate_workflow: {
+        name: "Create Candidate"
+        property: ABANDON_RELEASE_ON_FAILURE
+        property: ABORT_CANDIDATE_ON_FAILURE
+        property: ABORT_BLOCKED_WORKFLOWS_ON_FAILURE
+      }
+      tag: "auto"
+      golden_source: TAP
+      chained_workflow: {
+        name: "Deploy to qa"
+        argument: {
+          name: "environment"
+          value: "qa"
+        }
+      }
+      max_hours_from_head: 24
+    }
+    suspendable: true
+  }
+  project_settings: {
+    release_naming_pattern: "${project}_${date|fmt=yyyyMMdd}_${date|fmt=HHmm}"
+  }
+  grant_settings: {
+    source: BLUEPRINT_ONLY
+  }
+  runner_config: {
+    runner_user: "protobuf-build-releaser"
+  }
+}
