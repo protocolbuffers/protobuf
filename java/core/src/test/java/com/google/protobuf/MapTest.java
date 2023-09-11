@@ -550,6 +550,17 @@ public class MapTest {
   }
 
   @Test
+  public void testPutBuilderIfAbsent() {
+    TestMap.Builder builder = TestMap.newBuilder();
+    MessageValue.Builder subBuilder = builder.putInt32ToMessageFieldBuilderIfAbsent(1);
+    assertThat(builder.putInt32ToMessageFieldBuilderIfAbsent(1)).isSameInstanceAs(subBuilder);
+    subBuilder.setValue(11);
+    assertThat(builder.getInt32ToMessageFieldOrThrow(1).getValue()).isEqualTo(11);
+    builder.putInt32ToMessageFieldBuilderIfAbsent(1).setValue(22);
+    assertThat(builder.getInt32ToMessageFieldOrThrow(1).getValue()).isEqualTo(22);
+  }
+
+  @Test
   public void testSerializeAndParse() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValuesUsingAccessors(builder);
