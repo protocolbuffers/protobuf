@@ -31,7 +31,7 @@
 // Shamelessly copied from the protobuf compiler's subprocess.cc
 // except this version passes strings instead of Messages.
 
-#include "upbc/subprocess.h"
+#include "upb/upbc/subprocess.h"
 
 #include <algorithm>
 #include <cstring>
@@ -48,7 +48,7 @@
 #include "absl/strings/substitute.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 namespace upbc {
 

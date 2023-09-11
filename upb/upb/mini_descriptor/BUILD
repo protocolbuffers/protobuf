@@ -1,5 +1,5 @@
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
     "UPB_DEFAULT_CPPOPTS",
 )
@@ -20,11 +20,11 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
-        "//:base",
-        "//:mem",
-        "//:mini_table",
-        "//:mini_table_internal",
-        "//:port",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:mini_table",
+        "//upb:mini_table_internal",
+        "//upb:port",
     ],
 )
 
@@ -45,9 +45,9 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//:base",
-        "//:base_internal",
-        "//:port",
+        "//upb:base",
+        "//upb:base_internal",
+        "//upb:port",
     ],
 )
 
@@ -58,14 +58,14 @@ cc_test(
     deps = [
         ":internal",
         ":mini_descriptor",
-        "//:base",
-        "//:mem",
-        "//:message_accessors_internal",
-        "//:mini_table",
-        "//:wire",
+        "//:protobuf",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:message_accessors_internal",
+        "//upb:mini_table",
+        "//upb:wire",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -79,8 +79,8 @@ filegroup(
         ],
     ),
     visibility = [
-        "//cmake:__pkg__",
-        "//python/dist:__pkg__",
+        "//upb/cmake:__pkg__",
+        "//upb/python/dist:__pkg__",
     ]
 )
 # end:github_only

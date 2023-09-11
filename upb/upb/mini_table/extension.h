@@ -31,13 +31,13 @@
 #ifndef UPB_MINI_TABLE_EXTENSION_H_
 #define UPB_MINI_TABLE_EXTENSION_H_
 
-#include "upb/mini_table/internal/extension.h"
+#include "upb/upb/mini_table/internal/extension.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef struct upb_MiniTableExtension upb_MiniTableExtension;
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_EXTENSION_H_ */

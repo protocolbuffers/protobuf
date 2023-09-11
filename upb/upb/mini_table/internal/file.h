@@ -31,12 +31,12 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_FILE_H_
 #define UPB_MINI_TABLE_INTERNAL_FILE_H_
 
-#include "upb/mini_table/internal/enum.h"
-#include "upb/mini_table/internal/extension.h"
-#include "upb/mini_table/internal/message.h"
+#include "upb/upb/mini_table/internal/enum.h"
+#include "upb/upb/mini_table/internal/extension.h"
+#include "upb/upb/mini_table/internal/message.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 struct upb_MiniTableFile {
   const struct upb_MiniTable** msgs;
@@ -47,6 +47,6 @@ struct upb_MiniTableFile {
   int ext_count;
 };
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_INTERNAL_FILE_H_ */

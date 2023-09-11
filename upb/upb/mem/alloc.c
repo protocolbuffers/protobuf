@@ -28,12 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/mem/alloc.h"
+#include "upb/upb/mem/alloc.h"
 
 #include <stdlib.h>
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
                                   size_t size) {

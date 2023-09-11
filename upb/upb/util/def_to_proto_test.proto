@@ -32,9 +32,9 @@ syntax = "proto2";
 
 package pkg;
 
-import public "upb/util/def_to_proto_public_import_test.proto";
+import public "upb/upb/util/def_to_proto_public_import_test.proto";
 
-import "upb/util/def_to_proto_regular_import_test.proto";
+import "upb/upb/util/def_to_proto_regular_import_test.proto";
 
 option optimize_for = CODE_SIZE;
 option go_package = "foo_go_package";

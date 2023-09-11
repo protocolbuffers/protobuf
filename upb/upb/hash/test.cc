@@ -41,12 +41,12 @@
 
 #include "gtest/gtest.h"
 #include "absl/container/flat_hash_map.h"
-#include "upb/hash/int_table.h"
-#include "upb/hash/str_table.h"
-#include "upb/mem/arena.hpp"
+#include "upb/upb/hash/int_table.h"
+#include "upb/upb/hash/str_table.h"
+#include "upb/upb/mem/arena.hpp"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 using std::vector;
 

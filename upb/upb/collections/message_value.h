@@ -29,17 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Users should include array.h or map.h instead.
-// IWYU pragma: private, include "upb/collections/array.h"
+// IWYU pragma: private, include "upb/upb/collections/array.h"
 
 #ifndef UPB_MESSAGE_VALUE_H_
 #define UPB_MESSAGE_VALUE_H_
 
-#include "upb/base/string_view.h"
-#include "upb/message/tagged_ptr.h"
-#include "upb/mini_table/message.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/message/tagged_ptr.h"
+#include "upb/upb/mini_table/message.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef struct upb_Array upb_Array;
 typedef struct upb_Map upb_Map;
@@ -70,6 +70,6 @@ typedef union {
   upb_Message* msg;
 } upb_MutableMessageValue;
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MESSAGE_VALUE_H_ */

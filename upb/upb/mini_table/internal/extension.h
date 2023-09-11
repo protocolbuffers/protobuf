@@ -31,11 +31,11 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
 #define UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
 
-#include "upb/mini_table/internal/field.h"
-#include "upb/mini_table/internal/sub.h"
+#include "upb/upb/mini_table/internal/field.h"
+#include "upb/upb/mini_table/internal/sub.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 struct upb_MiniTableExtension {
   // Do not move this field. We need to be able to alias pointers.
@@ -45,6 +45,6 @@ struct upb_MiniTableExtension {
   union upb_MiniTableSub sub;  // NULL unless submessage or proto2 enum
 };
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_INTERNAL_EXTENSION_H_ */

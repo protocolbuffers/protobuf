@@ -34,7 +34,7 @@
 #include <stdarg.h>
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #define _kUpb_Status_MaxMessage 127
 
@@ -64,6 +64,6 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_BASE_STATUS_H_ */

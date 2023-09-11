@@ -36,7 +36,7 @@ with the actual list of files before we actually run the script.
 
 from __future__ import absolute_import
 
-from cmake import staleness_test_lib
+from upb.cmake import staleness_test_lib
 import unittest
 import sys
 

@@ -31,10 +31,10 @@
 #ifndef UPB_MESSAGE_ACCESSORS_SPLIT64_H_
 #define UPB_MESSAGE_ACCESSORS_SPLIT64_H_
 
-#include "upb/message/accessors.h"
+#include "upb/upb/message/accessors.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,6 +84,6 @@ UPB_API_INLINE bool upb_Message_SetUInt64Split(upb_Message* msg,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_MESSAGE_ACCESSORS_SPLIT64_H_

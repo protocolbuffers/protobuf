@@ -173,8 +173,8 @@ class MyMessage(_message.Message):
 
 To use reflection-based access:
 
-1. Load and access descriptor data using the interfaces in upb/reflection/def.h.
-2. Access message data using the interfaces in upb/reflection/message.h.
+1. Load and access descriptor data using the interfaces in upb/upb/reflection/def.h.
+2. Access message data using the interfaces in upb/upb/reflection/message.h.
 
 ### MiniTables
 
@@ -234,8 +234,8 @@ APIs to do this do not exist yet.
 
 To use MiniTable-based access:
 
-1. Load and access MiniDescriptors data using the interfaces in upb/mini_descriptor/decode.h.
-2. Access message data using the interfaces in upb/message/accessors.h.
+1. Load and access MiniDescriptors data using the interfaces in upb/upb/mini_descriptor/decode.h.
+2. Access message data using the interfaces in upb/upb/message/accessors.h.
 
 ## Memory Management
 

@@ -31,12 +31,12 @@
 #ifndef UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
 #define UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
 
-#include "upb/base/status.h"
-#include "upb/mem/arena.h"
-#include "upb/mini_table/enum.h"
+#include "upb/upb/base/status.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/mini_table/enum.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,6 +61,6 @@ UPB_API_INLINE upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_

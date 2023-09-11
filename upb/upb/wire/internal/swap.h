@@ -34,7 +34,7 @@
 #include <stdint.h>
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,6 +63,6 @@ UPB_INLINE uint64_t _upb_BigEndian_Swap64(uint64_t val) {
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_WIRE_INTERNAL_SWAP_H_ */

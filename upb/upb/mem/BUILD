@@ -5,7 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
     name = "mem",
@@ -18,7 +18,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
-        "//:port",
+        "//upb:port",
     ],
 )
 
@@ -34,9 +34,9 @@ cc_library(
         "internal/arena.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__pkg__"],
+    visibility = ["//upb:__pkg__"],
     deps = [
-        "//:port",
+        "//upb:port",
     ],
 )
 
@@ -44,8 +44,8 @@ cc_test(
     name = "arena_test",
     srcs = ["arena_test.cc"],
     deps = [
-        "//:mem",
-        "//:port",
+        "//upb:mem",
+        "//upb:port",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/random:distributions",
         "@com_google_absl//absl/synchronization",
@@ -64,8 +64,8 @@ filegroup(
         ],
     ),
     visibility = [
-        "//cmake:__pkg__",
-        "//python/dist:__pkg__",
+        "//upb/cmake:__pkg__",
+        "//upb/python/dist:__pkg__",
     ]
 )
 # end:github_only

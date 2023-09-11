@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "protos_generator/gen_enums.h"
+#include "upb/protos_generator/gen_enums.h"
 
 #include <algorithm>
 #include <limits>
@@ -37,8 +37,8 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
-#include "protos_generator/gen_utils.h"
-#include "protos_generator/names.h"
+#include "upb/protos_generator/gen_utils.h"
+#include "upb/protos_generator/names.h"
 
 namespace protos_generator {
 

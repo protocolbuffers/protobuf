@@ -31,8 +31,8 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_SUB_H_
 #define UPB_MINI_TABLE_INTERNAL_SUB_H_
 
-#include "upb/mini_table/internal/enum.h"
-#include "upb/mini_table/internal/message.h"
+#include "upb/upb/mini_table/internal/enum.h"
+#include "upb/upb/mini_table/internal/message.h"
 
 union upb_MiniTableSub {
   const struct upb_MiniTable* submsg;

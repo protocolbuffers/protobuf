@@ -33,10 +33,10 @@
 
 #include <stdint.h>
 
-#include "upb/base/internal/log2.h"
+#include "upb/upb/base/internal/log2.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,6 +81,6 @@ UPB_INLINE const char* _upb_Base92_DecodeVarint(const char* ptr,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_

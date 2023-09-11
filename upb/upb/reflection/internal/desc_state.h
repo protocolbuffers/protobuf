@@ -31,11 +31,11 @@
 #ifndef UPB_REFLECTION_DESC_STATE_INTERNAL_H_
 #define UPB_REFLECTION_DESC_STATE_INTERNAL_H_
 
-#include "upb/mem/arena.h"
-#include "upb/mini_descriptor/internal/encode.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/mini_descriptor/internal/encode.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // Manages the storage for mini descriptor strings as they are being encoded.
 // TODO(b/234740652): Move some of this state directly into the encoder, maybe.
@@ -62,6 +62,6 @@ bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_DESC_STATE_INTERNAL_H_ */

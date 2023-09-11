@@ -28,16 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "python/protobuf.h"
+#include "upb/python/protobuf.h"
 
-#include "python/descriptor.h"
-#include "python/descriptor_containers.h"
-#include "python/descriptor_pool.h"
-#include "python/extension_dict.h"
-#include "python/map.h"
-#include "python/message.h"
-#include "python/repeated.h"
-#include "python/unknown_fields.h"
+#include "upb/python/descriptor.h"
+#include "upb/python/descriptor_containers.h"
+#include "upb/python/descriptor_pool.h"
+#include "upb/python/extension_dict.h"
+#include "upb/python/map.h"
+#include "upb/python/message.h"
+#include "upb/python/repeated.h"
+#include "upb/python/unknown_fields.h"
 
 static upb_Arena* PyUpb_NewArena(void);
 

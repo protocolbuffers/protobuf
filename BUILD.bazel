@@ -294,13 +294,13 @@ alias(
 alias(
     name = "python_srcs",
     actual = "//python:python_srcs",
-    visibility = ["@upb//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
 )
 
 alias(
     name = "python_test_srcs",
     actual = "//python:python_test_srcs",
-    visibility = ["@upb//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
 )
 
 alias(

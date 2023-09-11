@@ -32,8 +32,8 @@
 #define UPB_PROTOS_GENERATOR_ACCESSORS_H_
 
 #include "google/protobuf/descriptor.h"
-#include "protos_generator/gen_utils.h"
-#include "protos_generator/output.h"
+#include "upb/protos_generator/gen_utils.h"
+#include "upb/protos_generator/output.h"
 
 namespace protos_generator {
 

@@ -34,7 +34,7 @@
 #include <stdint.h>
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,6 +53,6 @@ const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_LEX_ATOI_H_ */

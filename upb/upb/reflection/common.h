@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// IWYU pragma: private, include "upb/reflection/def.h"
+// IWYU pragma: private, include "upb/upb/reflection/def.h"
 
 // Declarations common to all public def types.
 

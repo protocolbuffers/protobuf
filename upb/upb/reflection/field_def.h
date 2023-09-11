@@ -28,16 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// IWYU pragma: private, include "upb/reflection/def.h"
+// IWYU pragma: private, include "upb/upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_FIELD_DEF_H_
 #define UPB_REFLECTION_FIELD_DEF_H_
 
-#include "upb/base/string_view.h"
-#include "upb/reflection/common.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/reflection/common.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // Maximum field number allowed for FieldDefs.
 // This is an inherent limit of the protobuf wire format.
@@ -91,6 +91,6 @@ UPB_API upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_FIELD_DEF_H_ */

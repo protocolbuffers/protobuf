@@ -31,12 +31,12 @@
 #ifndef UPB_COLLECTIONS_ARRAY_H_
 #define UPB_COLLECTIONS_ARRAY_H_
 
-#include "upb/base/descriptor_constants.h"
-#include "upb/collections/message_value.h"
-#include "upb/mem/arena.h"
+#include "upb/upb/base/descriptor_constants.h"
+#include "upb/upb/collections/message_value.h"
+#include "upb/upb/mem/arena.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,6 +89,6 @@ UPB_API void* upb_Array_MutableDataPtr(upb_Array* arr);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_COLLECTIONS_ARRAY_H_ */

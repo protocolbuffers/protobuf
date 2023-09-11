@@ -59,10 +59,10 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "upb/reflection/def.hpp"
+#include "upb/upb/reflection/def.hpp"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 namespace upbc {
 
@@ -207,6 +207,6 @@ class Plugin {
 
 }  // namespace upbc
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_UPBC_PLUGIN_H_

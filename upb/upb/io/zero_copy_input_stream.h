@@ -31,10 +31,10 @@
 #ifndef UPB_IO_ZERO_COPY_INPUT_STREAM_H_
 #define UPB_IO_ZERO_COPY_INPUT_STREAM_H_
 
-#include "upb/base/status.h"
+#include "upb/upb/base/status.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -127,6 +127,6 @@ upb_ZeroCopyInputStream_ByteCount(const upb_ZeroCopyInputStream* z) {
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_IO_ZERO_COPY_INPUT_STREAM_H_ */

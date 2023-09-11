@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/text/encode.h"
+#include "upb/upb/text/encode.h"
 
 #include <ctype.h>
 #include <float.h>
@@ -36,17 +36,17 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "upb/collections/internal/map_sorter.h"
-#include "upb/collections/map.h"
-#include "upb/lex/round_trip.h"
-#include "upb/port/vsnprintf_compat.h"
-#include "upb/reflection/message.h"
-#include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/reader.h"
-#include "upb/wire/types.h"
+#include "upb/upb/collections/internal/map_sorter.h"
+#include "upb/upb/collections/map.h"
+#include "upb/upb/lex/round_trip.h"
+#include "upb/upb/port/vsnprintf_compat.h"
+#include "upb/upb/reflection/message.h"
+#include "upb/upb/wire/eps_copy_input_stream.h"
+#include "upb/upb/wire/reader.h"
+#include "upb/upb/wire/types.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef struct {
   char *buf, *ptr, *end;

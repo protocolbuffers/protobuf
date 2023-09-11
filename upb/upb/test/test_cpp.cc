@@ -40,15 +40,15 @@
 #include "google/protobuf/timestamp.upb.h"
 #include "google/protobuf/timestamp.upbdefs.h"
 #include "gtest/gtest.h"
-#include "upb/json/decode.h"
-#include "upb/json/encode.h"
-#include "upb/reflection/def.h"
-#include "upb/reflection/def.hpp"
-#include "upb/test/test_cpp.upb.h"
-#include "upb/test/test_cpp.upbdefs.h"
+#include "upb/upb/json/decode.h"
+#include "upb/upb/json/encode.h"
+#include "upb/upb/reflection/def.h"
+#include "upb/upb/reflection/def.hpp"
+#include "upb/upb/test/test_cpp.upb.h"
+#include "upb/upb/test/test_cpp.upbdefs.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 TEST(Cpp, Iteration) {
   upb::DefPool defpool;

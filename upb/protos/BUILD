@@ -6,16 +6,16 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
 load(
-    "//protos/bazel:upb_cc_proto_library.bzl",
+    "//upb/protos/bazel:upb_cc_proto_library.bzl",
     "upb_cc_proto_library_copts",
 )
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
@@ -31,13 +31,13 @@ cc_library(
     deps = [
         ":protos",
         ":protos_traits",
-        "//:base",
-        "//:collections",
-        "//:collections_internal",
-        "//:mem",
-        "//:message_copy",
-        "//:message_types",
-        "//:port",
+        "//upb:base",
+        "//upb:collections",
+        "//upb:collections_internal",
+        "//upb:mem",
+        "//upb:message_copy",
+        "//upb:message_types",
+        "//upb:port",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/strings",
     ],
@@ -55,16 +55,16 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":protos_extension_lock",
-        "//:base",
-        "//:mem",
-        "//:message_accessors_internal",
-        "//:message_copy",
-        "//:message_internal",
-        "//:message_promote",
-        "//:message_types",
-        "//:mini_table",
-        "//:wire",
-        "//:wire_types",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:message_accessors_internal",
+        "//upb:message_copy",
+        "//upb:message_internal",
+        "//upb:message_promote",
+        "//upb:message_types",
+        "//upb:mini_table",
+        "//upb:wire",
+        "//upb:wire_types",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
@@ -89,9 +89,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":protos",
-        "//:mem",
-        "//:message",
-        "//:mini_table",
+        "//upb:mem",
+        "//upb:message",
+        "//upb:mini_table",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings:str_format",
@@ -105,7 +105,7 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//:message",
+        "//upb:message",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/synchronization",
     ],
@@ -123,8 +123,8 @@ cc_library(
         ":protos",
         ":protos_internal",
         ":repeated_field",
-        "//:mem",
-        "//:message",
+        "//upb:mem",
+        "//upb:message",
     ],
 )
 
@@ -134,9 +134,9 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":protos_internal",
-        "//:mem",
-        "//protos_generator/tests:test_model_upb_cc_proto",
-        "//protos_generator/tests:test_model_upb_proto",
+        "//upb:mem",
+        "//upb/protos_generator/tests:test_model_upb_cc_proto",
+        "//upb/protos_generator/tests:test_model_upb_proto",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -160,10 +160,10 @@ cc_test(
     name = "protos_extension_lock_test",
     srcs = ["protos_extension_lock_test.cc"],
     deps = [
-        "//:mem",
-        "//protos",
-        "//protos:protos_extension_lock",
-        "//protos_generator/tests:test_model_upb_cc_proto",
+        "//upb:mem",
+        "//upb/protos",
+        "//upb/protos:protos_extension_lock",
+        "//upb/protos_generator/tests:test_model_upb_cc_proto",
         "@com_google_absl//absl/hash",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_googletest//:gtest_main",

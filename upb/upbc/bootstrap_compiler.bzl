@@ -1,17 +1,17 @@
 """Macros that implement bootstrapping for the upb code generator."""
 
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
 )
 load(
-    "//cmake:build_defs.bzl",
+    "//upb/cmake:build_defs.bzl",
     "staleness_test",
 )
 
 _stages = ["_stage0", "_stage1", ""]
-_protoc = "@com_google_protobuf//:protoc"
-_upbc_base = "//upbc:protoc-gen-upb"
+_protoc = "//:protoc"
+_upbc_base = "//upb/upbc:protoc-gen-upb"
 
 # begin:google_only
 # _is_google3 = True
@@ -28,7 +28,7 @@ def _upbc(stage):
 
 def bootstrap_cc_library(name, visibility, deps, bootstrap_deps, **kwargs):
     for stage in _stages:
-        stage_visibility = visibility if stage == "" else ["//upbc:__pkg__"]
+        stage_visibility = visibility if stage == "" else ["//upb/upbc:__pkg__"]
         native.cc_library(
             name = name + stage,
             deps = deps + [dep + stage for dep in bootstrap_deps],
@@ -115,12 +115,12 @@ def bootstrap_upb_proto_library(
         srcs = _generated_srcs_for_suffix(base_dir + "stage0", oss_src_files, ".upb.c"),
         hdrs = _generated_srcs_for_suffix(base_dir + "stage0", oss_src_files, ".upb.h"),
         includes = [base_dir + "stage0"],
-        visibility = ["//upbc:__pkg__"],
+        visibility = ["//upb/upbc:__pkg__"],
         # This macro signals to the runtime that it must use OSS APIs for descriptor.proto/plugin.proto.
         defines = ["UPB_BOOTSTRAP_STAGE0"],
         deps = [
-            "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-            "//:mini_table",
+            "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+            "//upb:mini_table",
         ] + [dep + "_stage0" for dep in deps],
         **kwargs
     )
@@ -137,7 +137,7 @@ def bootstrap_upb_proto_library(
               "--plugin=protoc-gen-upb=$(location " + _upbc(0) + ") " + _extra_proto_path +
               "--upb_out=$(@D)/" + base_dir + "stage1 " +
               " ".join(src_files),
-        visibility = ["//upbc:__pkg__"],
+        visibility = ["//upb/upbc:__pkg__"],
         tools = [
             _protoc,
             _upbc(0),
@@ -150,9 +150,9 @@ def bootstrap_upb_proto_library(
         srcs = _generated_srcs_for_suffix(base_dir + "stage1", src_files, ".upb.c"),
         hdrs = _generated_srcs_for_suffix(base_dir + "stage1", src_files, ".upb.h"),
         includes = [base_dir + "stage1"],
-        visibility = ["//upbc:__pkg__"],
+        visibility = ["//upb/upbc:__pkg__"],
         deps = [
-            "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+            "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         ] + [dep + "_stage1" for dep in deps],
         **kwargs
     )

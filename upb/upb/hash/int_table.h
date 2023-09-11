@@ -31,10 +31,10 @@
 #ifndef UPB_HASH_INT_TABLE_H_
 #define UPB_HASH_INT_TABLE_H_
 
-#include "upb/hash/common.h"
+#include "upb/upb/hash/common.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef struct {
   upb_table t;              // For entries that don't fit in the array part.
@@ -100,6 +100,6 @@ void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_HASH_INT_TABLE_H_ */

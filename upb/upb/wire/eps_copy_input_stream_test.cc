@@ -28,14 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/upb/wire/eps_copy_input_stream.h"
 
 #include <string.h>
 
 #include <string>
 
 #include "gtest/gtest.h"
-#include "upb/mem/arena.hpp"
+#include "upb/upb/mem/arena.hpp"
 // begin:google_only
 // #include "testing/fuzzing/fuzztest.h"
 // end:google_only

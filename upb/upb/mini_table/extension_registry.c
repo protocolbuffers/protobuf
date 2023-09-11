@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/mini_table/extension_registry.h"
+#include "upb/upb/mini_table/extension_registry.h"
 
-#include "upb/hash/str_table.h"
-#include "upb/mini_table/extension.h"
+#include "upb/upb/hash/str_table.h"
+#include "upb/upb/mini_table/extension.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #define EXTREG_KEY_SIZE (sizeof(upb_MiniTable*) + sizeof(uint32_t))
 

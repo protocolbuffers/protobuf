@@ -29,9 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "gtest/gtest.h"
-#include "upb/reflection/def.hpp"
-#include "upb/test/proto3_test.upb.h"
-#include "upb/test/proto3_test.upbdefs.h"
+#include "upb/upb/reflection/def.hpp"
+#include "upb/upb/test/proto3_test.upb.h"
+#include "upb/upb/test/proto3_test.upbdefs.h"
 
 TEST(Proto3Test, SyntheticOneofExtension) {
   upb::DefPool defpool;

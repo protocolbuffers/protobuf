@@ -5,7 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
     name = "hash",
@@ -20,10 +20,10 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//:base",
-        "//:base_internal",
-        "//:mem",
-        "//:port",
+        "//upb:base",
+        "//upb:base_internal",
+        "//upb:mem",
+        "//upb:port",
     ],
 )
 
@@ -32,8 +32,8 @@ cc_test(
     srcs = ["test.cc"],
     deps = [
         ":hash",
-        "//:mem",
-        "//:port",
+        "//upb:mem",
+        "//upb:port",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_googletest//:gtest_main",
     ],
@@ -49,8 +49,8 @@ filegroup(
         ],
     ),
     visibility = [
-        "//cmake:__pkg__",
-        "//python/dist:__pkg__",
+        "//upb/cmake:__pkg__",
+        "//upb/python/dist:__pkg__",
     ]
 )
 # end:github_only

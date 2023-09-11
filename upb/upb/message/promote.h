@@ -31,12 +31,12 @@
 #ifndef UPB_MESSAGE_PROMOTE_H_
 #define UPB_MESSAGE_PROMOTE_H_
 
-#include "upb/collections/array.h"
-#include "upb/message/internal/extension.h"
-#include "upb/wire/decode.h"
+#include "upb/upb/collections/array.h"
+#include "upb/upb/message/internal/extension.h"
+#include "upb/upb/wire/decode.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -177,6 +177,6 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_MESSAGE_PROMOTE_H_

@@ -47,10 +47,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "upb/mem/alloc.h"
+#include "upb/upb/mem/alloc.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef struct upb_Arena upb_Arena;
 
@@ -147,6 +147,6 @@ UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MEM_ARENA_H_ */

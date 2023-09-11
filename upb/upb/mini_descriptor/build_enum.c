@@ -28,14 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/mini_descriptor/build_enum.h"
+#include "upb/upb/mini_descriptor/build_enum.h"
 
-#include "upb/mini_descriptor/internal/decoder.h"
-#include "upb/mini_descriptor/internal/wire_constants.h"
-#include "upb/mini_table/internal/enum.h"
+#include "upb/upb/mini_descriptor/internal/decoder.h"
+#include "upb/upb/mini_descriptor/internal/wire_constants.h"
+#include "upb/upb/mini_table/internal/enum.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef struct {
   upb_MdDecoder base;

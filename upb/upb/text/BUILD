@@ -5,7 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
     name = "text",
@@ -18,15 +18,15 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//:collections",
-        "//:collections_internal",
-        "//:eps_copy_input_stream",
-        "//:lex",
-        "//:port",
-        "//:reflection",
-        "//:wire",
-        "//:wire_reader",
-        "//:wire_types",
+        "//upb:collections",
+        "//upb:collections_internal",
+        "//upb:eps_copy_input_stream",
+        "//upb:lex",
+        "//upb:port",
+        "//upb:reflection",
+        "//upb:wire",
+        "//upb:wire_reader",
+        "//upb:wire_types",
     ],
 )
 
@@ -40,8 +40,8 @@ filegroup(
         ],
     ),
     visibility = [
-        "//cmake:__pkg__",
-        "//python/dist:__pkg__",
+        "//upb/cmake:__pkg__",
+        "//upb/python/dist:__pkg__",
     ]
 )
 # end:github_only

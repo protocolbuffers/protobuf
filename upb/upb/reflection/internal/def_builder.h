@@ -31,12 +31,12 @@
 #ifndef UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
 #define UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
 
-#include "upb/reflection/common.h"
-#include "upb/reflection/def_type.h"
-#include "upb/reflection/internal/def_pool.h"
+#include "upb/upb/reflection/common.h"
+#include "upb/upb/reflection/def_type.h"
+#include "upb/upb/reflection/internal/def_pool.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
@@ -155,6 +155,6 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_ */

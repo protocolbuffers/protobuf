@@ -36,12 +36,12 @@
 
 #include <string.h>
 
-#include "upb/base/internal/log2.h"
-#include "upb/hash/int_table.h"
-#include "upb/hash/str_table.h"
+#include "upb/upb/base/internal/log2.h"
+#include "upb/upb/hash/int_table.h"
+#include "upb/upb/hash/str_table.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #define UPB_MAXARRSIZE 16  // 2**16 = 64k.
 

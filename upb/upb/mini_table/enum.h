@@ -31,10 +31,10 @@
 #ifndef UPB_MINI_TABLE_ENUM_H_
 #define UPB_MINI_TABLE_ENUM_H_
 
-#include "upb/mini_table/internal/enum.h"
+#include "upb/upb/mini_table/internal/enum.h"
 
 // Must be last
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef struct upb_MiniTableEnum upb_MiniTableEnum;
 
@@ -48,6 +48,6 @@ UPB_INLINE bool upb_MiniTableEnum_CheckValue(const struct upb_MiniTableEnum* e,
   return status == _kUpb_FastEnumCheck_ValueIsInEnum ? true : false;
 }
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_ENUM_H_ */

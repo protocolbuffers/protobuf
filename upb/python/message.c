@@ -28,18 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "python/message.h"
+#include "upb/python/message.h"
 
-#include "python/convert.h"
-#include "python/descriptor.h"
-#include "python/extension_dict.h"
-#include "python/map.h"
-#include "python/repeated.h"
-#include "upb/message/copy.h"
-#include "upb/reflection/def.h"
-#include "upb/reflection/message.h"
-#include "upb/text/encode.h"
-#include "upb/util/required_fields.h"
+#include "upb/python/convert.h"
+#include "upb/python/descriptor.h"
+#include "upb/python/extension_dict.h"
+#include "upb/python/map.h"
+#include "upb/python/repeated.h"
+#include "upb/upb/message/copy.h"
+#include "upb/upb/reflection/def.h"
+#include "upb/upb/reflection/message.h"
+#include "upb/upb/text/encode.h"
+#include "upb/upb/util/required_fields.h"
 
 static const upb_MessageDef* PyUpb_MessageMeta_GetMsgdef(PyObject* cls);
 static PyObject* PyUpb_MessageMeta_GetAttr(PyObject* self, PyObject* name);

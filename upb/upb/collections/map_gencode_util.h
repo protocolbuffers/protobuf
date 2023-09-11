@@ -33,10 +33,10 @@
 #ifndef UPB_COLLECTIONS_MAP_GENCODE_UTIL_H_
 #define UPB_COLLECTIONS_MAP_GENCODE_UTIL_H_
 
-#include "upb/collections/internal/map.h"
+#include "upb/upb/collections/internal/map.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,6 +76,6 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_COLLECTIONS_MAP_GENCODE_UTIL_H_ */

@@ -46,13 +46,13 @@
 // end:github_only
 
 #include "absl/container/flat_hash_map.h"
-#include "upb/base/status.hpp"
-#include "upb/mini_descriptor/decode.h"
-#include "upb/reflection/def.h"
-#include "upb/reflection/def.hpp"
+#include "upb/upb/base/status.hpp"
+#include "upb/upb/mini_descriptor/decode.h"
+#include "upb/upb/reflection/def.h"
+#include "upb/upb/reflection/def.hpp"
 
 // Must be last
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 namespace upbc {
 
@@ -124,6 +124,6 @@ class DefPoolPair {
 
 }  // namespace upbc
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPBC_FILE_LAYOUT_H

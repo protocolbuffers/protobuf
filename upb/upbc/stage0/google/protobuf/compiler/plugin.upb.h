@@ -9,9 +9,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H_
 #define GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H_
 
-#include "upb/generated_code_support.h"
+#include "upb/upb/generated_code_support.h"
 // Must be last. 
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -687,6 +687,6 @@ extern const upb_MiniTableFile google_protobuf_compiler_plugin_proto_upb_file_la
 }  /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  /* GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H_ */

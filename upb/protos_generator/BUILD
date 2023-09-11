@@ -6,12 +6,12 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
@@ -28,9 +28,9 @@ cc_binary(
         ":generator",
         ":names",
         ":output",
-        "//upbc:file_layout",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//src/google/protobuf/compiler:code_generator",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+        "//upb/upbc:file_layout",
     ],
 )
 
@@ -55,13 +55,13 @@ cc_library(
         ":gen_utils",
         ":names",
         ":output",
-        "//upbc:common",
-        "//upbc:file_layout",
-        "//upbc:keywords",
-        "//upbc:names",
+        "//:protobuf",
+        "//upb/upbc:common",
+        "//upb/upbc:file_layout",
+        "//upb/upbc:keywords",
+        "//upb/upbc:names",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
-        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -71,9 +71,9 @@ cc_library(
     hdrs = ["output.h"],
     visibility = ["//visibility:private"],
     deps = [
+        "//:protobuf",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
-        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -83,9 +83,9 @@ cc_library(
     hdrs = ["gen_utils.h"],
     visibility = ["//visibility:public"],
     deps = [
+        "//:protobuf",
+        "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/strings",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//src/google/protobuf/compiler:code_generator",
     ],
 )
 
@@ -96,6 +96,6 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         ":output",
-        "//upbc:keywords",
+        "//upb/upbc:keywords",
     ],
 )

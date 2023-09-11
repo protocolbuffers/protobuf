@@ -33,9 +33,9 @@
 
 #include <stdbool.h>
 
-#include "python/descriptor.h"
-#include "python/python_api.h"
-#include "upb/hash/int_table.h"
+#include "upb/python/descriptor.h"
+#include "upb/python/python_api.h"
+#include "upb/upb/hash/int_table.h"
 
 // begin:github_only
 #define PYUPB_PROTOBUF_PUBLIC_PACKAGE "google.protobuf"

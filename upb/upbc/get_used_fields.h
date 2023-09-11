@@ -31,12 +31,12 @@
 #ifndef UPBC_GET_USED_FIELDS
 #define UPBC_GET_USED_FIELDS
 
-#include "upb/base/status.h"
-#include "upb/base/string_view.h"
-#include "upb/mem/arena.h"
+#include "upb/upb/base/status.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/mem/arena.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,6 +52,6 @@ UPB_API upb_StringView upbdev_GetUsedFields(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPBC_GET_USED_FIELDS

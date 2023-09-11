@@ -28,18 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/io/tokenizer.h"
+#include "upb/upb/io/tokenizer.h"
 
 #include "gtest/gtest.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
-#include "upb/io/chunked_input_stream.h"
-#include "upb/io/string.h"
-#include "upb/lex/unicode.h"
-#include "upb/mem/arena.hpp"
+#include "upb/upb/io/chunked_input_stream.h"
+#include "upb/upb/io/string.h"
+#include "upb/upb/lex/unicode.h"
+#include "upb/upb/mem/arena.hpp"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 namespace proto2 {
 namespace io {

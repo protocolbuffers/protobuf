@@ -50,7 +50,7 @@
  * domain of [u]int64 values.
  */
 
-#include "lua/upb.h"
+#include "upb/lua/upb.h"
 
 #include <float.h>
 #include <math.h>
@@ -59,7 +59,7 @@
 #include <string.h>
 
 #include "lauxlib.h"
-#include "upb/message/message.h"
+#include "upb/upb/message/message.h"
 
 /* Lua compatibility code *****************************************************/
 

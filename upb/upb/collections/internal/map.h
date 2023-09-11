@@ -33,13 +33,13 @@
 #ifndef UPB_COLLECTIONS_INTERNAL_MAP_H_
 #define UPB_COLLECTIONS_INTERNAL_MAP_H_
 
-#include "upb/base/string_view.h"
-#include "upb/collections/map.h"
-#include "upb/hash/str_table.h"
-#include "upb/mem/arena.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/collections/map.h"
+#include "upb/upb/hash/str_table.h"
+#include "upb/upb/mem/arena.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 struct upb_Map {
   // Size of key and val, based on the map type.
@@ -168,6 +168,6 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_COLLECTIONS_INTERNAL_MAP_H_ */

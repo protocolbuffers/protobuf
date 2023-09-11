@@ -31,10 +31,10 @@
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
 
-#include "upb/base/descriptor_constants.h"
+#include "upb/upb/base/descriptor_constants.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef enum {
   kUpb_EncodedType_Double = 0,
@@ -89,6 +89,6 @@ enum {
   kUpb_EncodedVersion_MessageSetV1 = '&',
 };
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_

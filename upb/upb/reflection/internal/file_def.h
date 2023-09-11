@@ -31,10 +31,10 @@
 #ifndef UPB_REFLECTION_FILE_DEF_INTERNAL_H_
 #define UPB_REFLECTION_FILE_DEF_INTERNAL_H_
 
-#include "upb/reflection/file_def.h"
+#include "upb/upb/reflection/file_def.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,6 +55,6 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_FILE_DEF_INTERNAL_H_ */

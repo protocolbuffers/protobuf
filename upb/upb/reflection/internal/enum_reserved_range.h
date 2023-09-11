@@ -31,10 +31,10 @@
 #ifndef UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_
 #define UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_
 
-#include "upb/reflection/enum_reserved_range.h"
+#include "upb/upb/reflection/enum_reserved_range.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,6 +53,6 @@ upb_EnumReservedRange* _upb_EnumReservedRanges_New(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_ */

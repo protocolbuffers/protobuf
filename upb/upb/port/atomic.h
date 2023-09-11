@@ -31,7 +31,7 @@
 #ifndef UPB_PORT_ATOMIC_H_
 #define UPB_PORT_ATOMIC_H_
 
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef UPB_USE_C11_ATOMICS
 
@@ -99,6 +99,6 @@ UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
 
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_PORT_ATOMIC_H_

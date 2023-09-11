@@ -18,24 +18,24 @@ def py_extension(name, srcs, copts, deps = [], **kwargs):
         copts = copts + ["-fvisibility=hidden"],
         linkopts = selects.with_or({
             (
-                "//python/dist:osx_x86_64",
-                "//python/dist:osx_aarch64",
+                "//upb/python/dist:osx_x86_64",
+                "//upb/python/dist:osx_aarch64",
             ): ["-undefined", "dynamic_lookup"],
-            "//python/dist:windows_x86_32": ["-static-libgcc"],
+            "//upb/python/dist:windows_x86_32": ["-static-libgcc"],
             "//conditions:default": [],
         }),
         linkshared = True,
         linkstatic = True,
         deps = deps + select({
-            "//python:limited_api_3.7": ["@python-3.7.0//:python_headers"],
-            "//python:full_api_3.7_win32": ["@nuget_python_i686_3.7.0//:python_full_api"],
-            "//python:full_api_3.7_win64": ["@nuget_python_x86-64_3.7.0//:python_full_api"],
-            "//python:full_api_3.8_win32": ["@nuget_python_i686_3.8.0//:python_full_api"],
-            "//python:full_api_3.8_win64": ["@nuget_python_x86-64_3.8.0//:python_full_api"],
-            "//python:full_api_3.9_win32": ["@nuget_python_i686_3.9.0//:python_full_api"],
-            "//python:full_api_3.9_win64": ["@nuget_python_x86-64_3.9.0//:python_full_api"],
-            "//python:limited_api_3.10_win32": ["@nuget_python_i686_3.10.0//:python_limited_api"],
-            "//python:limited_api_3.10_win64": ["@nuget_python_x86-64_3.10.0//:python_limited_api"],
+            "//upb/python:limited_api_3.7": ["@python-3.7.0//:python_headers"],
+            "//upb/python:full_api_3.7_win32": ["@nuget_python_i686_3.7.0//:python_full_api"],
+            "//upb/python:full_api_3.7_win64": ["@nuget_python_x86-64_3.7.0//:python_full_api"],
+            "//upb/python:full_api_3.8_win32": ["@nuget_python_i686_3.8.0//:python_full_api"],
+            "//upb/python:full_api_3.8_win64": ["@nuget_python_x86-64_3.8.0//:python_full_api"],
+            "//upb/python:full_api_3.9_win32": ["@nuget_python_i686_3.9.0//:python_full_api"],
+            "//upb/python:full_api_3.9_win64": ["@nuget_python_x86-64_3.9.0//:python_full_api"],
+            "//upb/python:limited_api_3.10_win32": ["@nuget_python_i686_3.10.0//:python_limited_api"],
+            "//upb/python:limited_api_3.10_win64": ["@nuget_python_x86-64_3.10.0//:python_limited_api"],
             "//conditions:default": ["@system_python//:python_headers"],
         }),
         **kwargs
@@ -49,12 +49,12 @@ def py_extension(name, srcs, copts, deps = [], **kwargs):
         srcs = [":" + name + "_binary"],
         outs = [output_file],
         cmd = "cp $< $@",
-        visibility = ["//python:__subpackages__"],
+        visibility = ["//upb/python:__subpackages__"],
     )
 
     native.py_library(
         name = name,
         data = [output_file],
         imports = ["."],
-        visibility = ["//python:__subpackages__"],
+        visibility = ["//upb/python:__subpackages__"],
     )

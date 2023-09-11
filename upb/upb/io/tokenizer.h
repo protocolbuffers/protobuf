@@ -33,13 +33,13 @@
 #ifndef UPB_IO_TOKENIZER_H_
 #define UPB_IO_TOKENIZER_H_
 
-#include "upb/base/status.h"
-#include "upb/base/string_view.h"
-#include "upb/io/zero_copy_input_stream.h"
-#include "upb/mem/arena.h"
+#include "upb/upb/base/status.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/io/zero_copy_input_stream.h"
+#include "upb/upb/mem/arena.h"
 
 // Must be included last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -151,6 +151,6 @@ upb_StringView upb_Parse_String(const char* text, upb_Arena* arena);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_IO_TOKENIZER_H_

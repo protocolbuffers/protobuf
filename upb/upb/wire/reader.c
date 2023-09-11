@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/wire/reader.h"
+#include "upb/upb/wire/reader.h"
 
-#include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/types.h"
+#include "upb/upb/wire/eps_copy_input_stream.h"
+#include "upb/upb/wire/types.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 UPB_NOINLINE _upb_WireReader_ReadLongVarintRet
 _upb_WireReader_ReadLongVarint(const char* ptr, uint64_t val) {

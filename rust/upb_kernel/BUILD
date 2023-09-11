@@ -8,6 +8,6 @@ cc_library(
         "//rust:__subpackages__",
     ],
     deps = [
-        "@upb//:upb",
+        "//upb",
     ],
 )

@@ -28,16 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upbc/code_generator_request.h"
+#include "upb/upbc/code_generator_request.h"
 
 #include <inttypes.h>
 
 #include "google/protobuf/compiler/plugin.upb.h"
-#include "upb/mini_descriptor/decode.h"
-#include "upb/reflection/def.h"
+#include "upb/upb/mini_descriptor/decode.h"
+#include "upb/upb/reflection/def.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 /******************************************************************************/
 

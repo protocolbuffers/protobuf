@@ -36,14 +36,14 @@
 #ifndef UPB_WIRE_INTERNAL_DECODE_H_
 #define UPB_WIRE_INTERNAL_DECODE_H_
 
-#include "upb/mem/internal/arena.h"
-#include "upb/message/internal/message.h"
-#include "upb/wire/decode.h"
-#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/upb/mem/internal/arena.h"
+#include "upb/upb/message/internal/message.h"
+#include "upb/upb/wire/decode.h"
+#include "upb/upb/wire/eps_copy_input_stream.h"
 #include "utf8_range.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #define DECODE_NOGROUP (uint32_t) - 1
 
@@ -161,6 +161,6 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   return tag;
 }
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_WIRE_INTERNAL_DECODE_H_ */

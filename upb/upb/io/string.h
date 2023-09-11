@@ -41,11 +41,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "upb/mem/arena.h"
-#include "upb/port/vsnprintf_compat.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/port/vsnprintf_compat.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -165,6 +165,6 @@ UPB_INLINE bool upb_String_PushBack(upb_String* s, char ch) {
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_IO_STRING_H_ */

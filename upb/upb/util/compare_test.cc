@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/util/compare.h"
+#include "upb/upb/util/compare.h"
 
 #include <stdint.h>
 
@@ -38,8 +38,8 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "upb/wire/internal/swap.h"
-#include "upb/wire/types.h"
+#include "upb/upb/wire/internal/swap.h"
+#include "upb/upb/wire/types.h"
 
 struct UnknownField;
 

@@ -5,7 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
     name = "collections",
@@ -17,9 +17,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
-        "//:base",
-        "//:mem",
-        "//:port",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:port",
     ],
 )
 
@@ -43,15 +43,15 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//:base",
-        "//:base_internal",
-        "//:hash",
-        "//:mem",
-        "//:message_internal",
-        "//:message_internal_types",
-        "//:message_tagged_ptr",
-        "//:mini_table",
-        "//:port",
+        "//upb:base",
+        "//upb:base_internal",
+        "//upb:hash",
+        "//upb:mem",
+        "//upb:message_internal",
+        "//upb:message_internal_types",
+        "//upb:message_tagged_ptr",
+        "//upb:mini_table",
+        "//upb:port",
     ],
 )
 
@@ -64,7 +64,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":collections",
-        "//:port",
+        "//upb:port",
     ],
 )
 
@@ -73,8 +73,8 @@ cc_test(
     srcs = ["array_test.cc"],
     deps = [
         ":collections",
-        "//:base",
-        "//:mem",
+        "//upb:base",
+        "//upb:mem",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -84,8 +84,8 @@ cc_test(
     srcs = ["map_test.cc"],
     deps = [
         ":collections",
-        "//:base",
-        "//:mem",
+        "//upb:base",
+        "//upb:mem",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -100,8 +100,8 @@ filegroup(
         ],
     ),
     visibility = [
-        "//cmake:__pkg__",
-        "//python/dist:__pkg__",
+        "//upb/cmake:__pkg__",
+        "//upb/python/dist:__pkg__",
     ]
 )
 # end:github_only

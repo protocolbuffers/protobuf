@@ -31,10 +31,10 @@
 #ifndef UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_
 #define UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_
 
-#include "upb/reflection/message_reserved_range.h"
+#include "upb/upb/reflection/message_reserved_range.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,6 +53,6 @@ upb_MessageReservedRange* _upb_MessageReservedRanges_New(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_ */

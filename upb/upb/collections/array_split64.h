@@ -31,10 +31,10 @@
 #ifndef UPB_COLLECTIONS_ARRAY_SPLIT64_H_
 #define UPB_COLLECTIONS_ARRAY_SPLIT64_H_
 
-#include "upb/collections/array.h"
+#include "upb/upb/collections/array.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -88,6 +88,6 @@ UPB_API_INLINE bool upb_Array_AppendUInt64Split(upb_Array* array, uint32_t hi,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_COLLECTIONS_ARRAY_SPLIT64_H_ */

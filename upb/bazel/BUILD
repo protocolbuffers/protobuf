@@ -9,20 +9,20 @@ load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
 
 exports_files(
     ["workspace_deps.bzl"],
-    visibility = ["//cmake:__pkg__"],
+    visibility = ["//upb/cmake:__pkg__"],
 )
 
 py_binary(
     name = "amalgamate",
     srcs = ["amalgamate.py"],
-    visibility = ["//:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 
 # py_proto_library() is private rule, only intended for internal use by upb.

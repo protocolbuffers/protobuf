@@ -28,14 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/io/tokenizer.h"
+#include "upb/upb/io/tokenizer.h"
 
-#include "upb/io/string.h"
-#include "upb/lex/strtod.h"
-#include "upb/lex/unicode.h"
+#include "upb/upb/io/string.h"
+#include "upb/upb/lex/strtod.h"
+#include "upb/upb/lex/unicode.h"
 
 // Must be included last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef enum {
   // Started a line comment.

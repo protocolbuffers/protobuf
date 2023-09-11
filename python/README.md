@@ -21,8 +21,8 @@ If for some reason you wish to build the packages directly from this repo, you
 can use the following Bazel commands:
 
 ```
-$ bazel build @upb//python/dist:source_wheel
-$ bazel build @upb//python/dist:binary_wheel
+$ bazel build //upb/python/dist:source_wheel
+$ bazel build //upb/python/dist:binary_wheel
 ```
 
 The binary wheel will build against whatever version of Python is installed on
@@ -49,7 +49,7 @@ following values:
     better performance than any of the previous backends, and it is now the
     default. It is distributed in our PyPI packages, and requires no special
     installation. The code for this module lives in
-    [@upb/python](https://github.com/protocolbuffers/upb/tree/main/python).
+    [upb/python](https://github.com/protocolbuffers/protobuf/tree/main/upb/python).
 1.  **cpp**: This extension module wraps the C++ protobuf library. It is
     deprecated and is no longer released in our PyPI packages, however it is
     still used in some legacy cases where apps want to perform zero-copy message

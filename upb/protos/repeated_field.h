@@ -37,17 +37,17 @@
 
 #include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
-#include "protos/protos.h"
-#include "protos/protos_traits.h"
-#include "protos/repeated_field_iterator.h"
-#include "upb/base/string_view.h"
-#include "upb/collections/array.h"
-#include "upb/collections/internal/array.h"
-#include "upb/mem/arena.h"
-#include "upb/message/copy.h"
+#include "upb/protos/protos.h"
+#include "upb/protos/protos_traits.h"
+#include "upb/protos/repeated_field_iterator.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/collections/array.h"
+#include "upb/upb/collections/internal/array.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/message/copy.h"
 
 // Must be last:
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 namespace protos {
 
@@ -321,6 +321,6 @@ class RepeatedField {
 
 }  // namespace protos
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_PROTOS_REPEATED_FIELD_H_

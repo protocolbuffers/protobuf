@@ -28,12 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/mem/internal/arena.h"
+#include "upb/upb/mem/internal/arena.h"
 
-#include "upb/port/atomic.h"
+#include "upb/upb/port/atomic.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 struct _upb_MemBlock {
   // Atomic only for the benefit of SpaceAllocated().

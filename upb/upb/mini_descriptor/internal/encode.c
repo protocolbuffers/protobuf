@@ -28,15 +28,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/mini_descriptor/internal/encode.h"
+#include "upb/upb/mini_descriptor/internal/encode.h"
 
-#include "upb/base/internal/log2.h"
-#include "upb/mini_descriptor/internal/base92.h"
-#include "upb/mini_descriptor/internal/modifiers.h"
-#include "upb/mini_descriptor/internal/wire_constants.h"
+#include "upb/upb/base/internal/log2.h"
+#include "upb/upb/mini_descriptor/internal/base92.h"
+#include "upb/upb/mini_descriptor/internal/modifiers.h"
+#include "upb/upb/mini_descriptor/internal/wire_constants.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef struct {
   uint64_t present_values_mask;

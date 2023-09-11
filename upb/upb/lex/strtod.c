@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/lex/strtod.h"
+#include "upb/upb/lex/strtod.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // Determine the locale-specific radix character by calling sprintf() to print
 // the number 1.5, then stripping off the digits.  As far as I can tell, this

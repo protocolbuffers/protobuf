@@ -32,8 +32,8 @@ syntax = "proto2";
 
 package upb_test;
 
-import "upb/test/test.proto";
-import "upb/test/test_cpp.proto";
+import "upb/upb/test/test.proto";
+import "upb/upb/test/test_cpp.proto";
 
 message ContainsImported {
   optional MessageName message_name = 1;

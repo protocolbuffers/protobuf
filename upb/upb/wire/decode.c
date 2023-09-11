@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/wire/decode.h"
+#include "upb/upb/wire/decode.h"
 
 #include <assert.h>
 #include <stdbool.h>
@@ -36,23 +36,23 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "upb/base/descriptor_constants.h"
-#include "upb/collections/internal/array.h"
-#include "upb/collections/internal/map.h"
-#include "upb/collections/internal/map_entry.h"
-#include "upb/mem/internal/arena.h"
-#include "upb/message/internal/accessors.h"
-#include "upb/mini_table/sub.h"
-#include "upb/port/atomic.h"
-#include "upb/wire/encode.h"
-#include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/internal/common.h"
-#include "upb/wire/internal/decode.h"
-#include "upb/wire/internal/swap.h"
-#include "upb/wire/reader.h"
+#include "upb/upb/base/descriptor_constants.h"
+#include "upb/upb/collections/internal/array.h"
+#include "upb/upb/collections/internal/map.h"
+#include "upb/upb/collections/internal/map_entry.h"
+#include "upb/upb/mem/internal/arena.h"
+#include "upb/upb/message/internal/accessors.h"
+#include "upb/upb/mini_table/sub.h"
+#include "upb/upb/port/atomic.h"
+#include "upb/upb/wire/encode.h"
+#include "upb/upb/wire/eps_copy_input_stream.h"
+#include "upb/upb/wire/internal/common.h"
+#include "upb/upb/wire/internal/decode.h"
+#include "upb/upb/wire/internal/swap.h"
+#include "upb/upb/wire/reader.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // A few fake field types for our tables.
 enum {

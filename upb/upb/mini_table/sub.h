@@ -31,7 +31,7 @@
 #ifndef UPB_MINI_TABLE_SUB_H_
 #define UPB_MINI_TABLE_SUB_H_
 
-#include "upb/mini_table/internal/sub.h"
+#include "upb/upb/mini_table/internal/sub.h"
 
 typedef union upb_MiniTableSub upb_MiniTableSub;
 

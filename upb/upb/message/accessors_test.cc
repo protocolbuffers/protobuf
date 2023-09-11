@@ -34,23 +34,23 @@
  * accessed through reflective APIs exposed through mini table accessors.
  */
 
-#include "upb/message/accessors.h"
+#include "upb/upb/message/accessors.h"
 
 #include <string>
 
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
-#include "upb/base/string_view.h"
-#include "upb/collections/array.h"
-#include "upb/mini_descriptor/decode.h"
-#include "upb/mini_descriptor/internal/encode.hpp"
-#include "upb/mini_descriptor/internal/modifiers.h"
-#include "upb/test/test.upb.h"
-#include "upb/wire/decode.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/collections/array.h"
+#include "upb/upb/mini_descriptor/decode.h"
+#include "upb/upb/mini_descriptor/internal/encode.hpp"
+#include "upb/upb/mini_descriptor/internal/modifiers.h"
+#include "upb/upb/test/test.upb.h"
+#include "upb/upb/wire/decode.h"
 
 // Must be last
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 namespace {
 

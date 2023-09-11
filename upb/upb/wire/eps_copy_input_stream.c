@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/upb/wire/eps_copy_input_stream.h"
 
 static const char* _upb_EpsCopyInputStream_NoOpCallback(
     upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {

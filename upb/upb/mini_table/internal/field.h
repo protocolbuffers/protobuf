@@ -33,10 +33,10 @@
 
 #include <stdint.h>
 
-#include "upb/base/descriptor_constants.h"
+#include "upb/upb/base/descriptor_constants.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 struct upb_MiniTableField {
   uint32_t number;
@@ -132,6 +132,6 @@ UPB_INLINE bool upb_IsSubMessage(const struct upb_MiniTableField* field) {
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_INTERNAL_FIELD_H_ */

@@ -35,12 +35,12 @@
 
 #include <stdlib.h>
 
-#include "upb/collections/internal/map.h"
-#include "upb/collections/internal/map_entry.h"
-#include "upb/message/internal/extension.h"
+#include "upb/upb/collections/internal/map.h"
+#include "upb/upb/collections/internal/map_entry.h"
+#include "upb/upb/message/internal/extension.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -107,6 +107,6 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_ */

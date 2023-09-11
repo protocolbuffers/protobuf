@@ -32,7 +32,7 @@ syntax = "proto3";
 
 package protos_generator.test;
 
-import public "protos_generator/tests/test_enum.proto";
+import public "upb/protos_generator/tests/test_enum.proto";
 
 message ChildModel1 {
   optional bool child_b1 = 44;

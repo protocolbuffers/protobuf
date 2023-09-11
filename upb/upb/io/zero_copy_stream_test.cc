@@ -38,10 +38,10 @@
 // the output.
 
 #include "gtest/gtest.h"
-#include "upb/base/status.hpp"
-#include "upb/io/chunked_input_stream.h"
-#include "upb/io/chunked_output_stream.h"
-#include "upb/mem/arena.hpp"
+#include "upb/upb/base/status.hpp"
+#include "upb/upb/io/chunked_input_stream.h"
+#include "upb/upb/io/chunked_output_stream.h"
+#include "upb/upb/mem/arena.hpp"
 
 namespace upb {
 namespace {

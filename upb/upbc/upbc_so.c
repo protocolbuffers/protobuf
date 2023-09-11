@@ -30,5 +30,5 @@
 
 // These headers form a spanning tree for the upbc defs needed by FFI layers.
 
-#include "upbc/get_used_fields.h"
-#include "upbc/upbdev.h"
+#include "upb/upbc/get_used_fields.h"
+#include "upb/upbc/upbdev.h"

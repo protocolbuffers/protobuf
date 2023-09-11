@@ -7,14 +7,14 @@
 
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library_copts",
     "upb_proto_reflection_library",
 )
 load(
-    "//upbc:bootstrap_compiler.bzl",
+    "//upb/upbc:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
     "bootstrap_upb_proto_library",
 )
@@ -26,13 +26,13 @@ load(
 
 # begin:github_only
 load(
-    "//bazel:amalgamation.bzl",
+    "//upb/bazel:amalgamation.bzl",
     "upb_amalgamation",
 )
 # end:github_only
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 #
 # license(
 #     name = "license",
@@ -49,7 +49,7 @@ exports_files(
         "BUILD",
         "WORKSPACE",
     ],
-    visibility = ["//cmake:__pkg__"],
+    visibility = ["//upb/cmake:__pkg__"],
 )
 
 config_setting(
@@ -66,7 +66,7 @@ bool_flag(
 
 config_setting(
     name = "fasttable_enabled_setting",
-    flag_values = {"//:fasttable_enabled": "true"},
+    flag_values = {"//upb:fasttable_enabled": "true"},
     visibility = ["//visibility:public"],
 )
 
@@ -109,7 +109,7 @@ cc_library(
     hdrs = ["upb/generated_code_support.h"],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/port:inc",
+        "//upb/upb/port:inc",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -133,7 +133,7 @@ cc_library(
     name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/port:inc",
+        "//upb/upb/port:inc",
     ],
     visibility = ["//visibility:public"],
 )
@@ -146,7 +146,7 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/port:inc",
+        "//upb/upb/port:inc",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -164,16 +164,16 @@ bootstrap_upb_proto_library(
     google3_src_files = ["net/proto2/proto/descriptor.proto"],
     google3_src_rules = ["//net/proto2/proto:descriptor_proto_source"],
     oss_src_files = ["google/protobuf/descriptor.proto"],
-    oss_src_rules = ["@com_google_protobuf//:descriptor_proto_srcs"],
+    oss_src_rules = ["//:descriptor_proto_srcs"],
     oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
-    proto_lib_deps = ["@com_google_protobuf//:descriptor_proto"],
+    proto_lib_deps = ["//:descriptor_proto"],
     visibility = ["//visibility:public"],
 )
 
 upb_proto_reflection_library(
     name = "descriptor_upb_proto_reflection",
     visibility = ["//visibility:public"],
-    deps = ["@com_google_protobuf//:descriptor_proto"],
+    deps = ["//:descriptor_proto"],
 )
 
 # TODO(b/232091617): Once we can delete the deprecated forwarding headers
@@ -273,196 +273,196 @@ bootstrap_cc_library(
 
 alias(
     name = "base",
-    actual = "//upb/base",
+    actual = "//upb/upb/base",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "base_internal",
-    actual = "//upb/base:internal",
+    actual = "//upb/upb/base:internal",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "collections",
-    actual = "//upb/collections",
+    actual = "//upb/upb/collections",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "collections_internal",
-    actual = "//upb/collections:internal",
+    actual = "//upb/upb/collections:internal",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "collections_split64",
-    actual = "//upb/collections:split64",
+    actual = "//upb/upb/collections:split64",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "hash",
-    actual = "//upb/hash",
+    actual = "//upb/upb/hash",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "json",
-    actual = "//upb/json",
+    actual = "//upb/upb/json",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "lex",
-    actual = "//upb/lex",
+    actual = "//upb/upb/lex",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "mem",
-    actual = "//upb/mem",
+    actual = "//upb/upb/mem",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "mem_internal",
-    actual = "//upb/mem:internal",
-    visibility = ["//:__subpackages__"],
+    actual = "//upb/upb/mem:internal",
+    visibility = ["//upb:__subpackages__"],
 )
 
 alias(
     name = "message",
-    actual = "//upb/message",
+    actual = "//upb/upb/message",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_accessors",
-    actual = "//upb/message:accessors",
+    actual = "//upb/upb/message:accessors",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_accessors_internal",
-    actual = "//upb/message:accessors_internal",
-    visibility = ["//:friends"],
+    actual = "//upb/upb/message:accessors_internal",
+    visibility = ["//upb:friends"],
 )
 
 alias(
     name = "message_copy",
-    actual = "//upb/message:copy",
+    actual = "//upb/upb/message:copy",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_internal",
-    actual = "//upb/message:internal",
+    actual = "//upb/upb/message:internal",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_internal_types",
-    actual = "//upb/message:internal_types",
+    actual = "//upb/upb/message:internal_types",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_promote",
-    actual = "//upb/message:promote",
+    actual = "//upb/upb/message:promote",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_split64",
-    actual = "//upb/message:split64",
+    actual = "//upb/upb/message:split64",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_tagged_ptr",
-    actual = "//upb/message:tagged_ptr",
-    visibility = ["//:friends"],
+    actual = "//upb/upb/message:tagged_ptr",
+    visibility = ["//upb:friends"],
 )
 
 alias(
     name = "message_types",
-    actual = "//upb/message:types",
+    actual = "//upb/upb/message:types",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "mini_descriptor",
-    actual = "//upb/mini_descriptor",
+    actual = "//upb/upb/mini_descriptor",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "mini_descriptor_internal",
-    actual = "//upb/mini_descriptor:internal",
-    visibility = ["//:__subpackages__"],
+    actual = "//upb/upb/mini_descriptor:internal",
+    visibility = ["//upb:__subpackages__"],
 )
 
 alias(
     name = "mini_table",
-    actual = "//upb/mini_table",
-    visibility = ["//:friends"],
+    actual = "//upb/upb/mini_table",
+    visibility = ["//upb:friends"],
 )
 
 # begin:google_only
 # alias(
 #     name = "mini_table_compat",
-#     actual = "//upb/mini_table:compat",
+#     actual = "//upb/upb/mini_table:compat",
 #     compatible_with = ["//buildenv/target:non_prod"],
-#     visibility = ["//:friends"],
+#     visibility = ["//upb:friends"],
 # )
 # end:google_only
 
 alias(
     name = "mini_table_internal",
-    actual = "//upb/mini_table:internal",
+    actual = "//upb/upb/mini_table:internal",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "port",
-    actual = "//upb/port",
+    actual = "//upb/upb/port",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "text",
-    actual = "//upb/text",
+    actual = "//upb/upb/text",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "wire",
-    actual = "//upb/wire",
+    actual = "//upb/upb/wire",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "wire_internal",
-    actual = "//upb/wire:internal",
+    actual = "//upb/upb/wire:internal",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "wire_reader",
-    actual = "//upb/wire:reader",
+    actual = "//upb/upb/wire:reader",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "wire_types",
-    actual = "//upb/wire:types",
+    actual = "//upb/upb/wire:types",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "eps_copy_input_stream",
-    actual = "//upb/wire:eps_copy_input_stream",
+    actual = "//upb/upb/wire:eps_copy_input_stream",
     visibility = ["//visibility:public"],
 )
 
@@ -664,7 +664,7 @@ exports_files(
         "third_party/lunit/console.lua",
         "third_party/lunit/lunit.lua",
     ],
-    visibility = ["//lua:__pkg__"],
+    visibility = ["//upb/lua:__pkg__"],
 )
 
 filegroup(
@@ -681,8 +681,8 @@ filegroup(
         ],
     ),
     visibility = [
-        "//cmake:__pkg__",
-        "//python/dist:__pkg__",
+        "//upb/cmake:__pkg__",
+        "//upb/python/dist:__pkg__",
     ]
 )
 # end:github_only
@@ -720,7 +720,7 @@ filegroup(
 #         "upb_UnknownToMessage_Status",
 #         "upb_WireType",
 #     ],
-#     visibility = ["//:__subpackages__"],
+#     visibility = ["//upb:__subpackages__"],
 # )
 #
 # end:google_only

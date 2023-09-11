@@ -28,11 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/collections/map.h"
+#include "upb/upb/collections/map.h"
 
 #include "gtest/gtest.h"
-#include "upb/base/string_view.h"
-#include "upb/mem/arena.hpp"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/mem/arena.hpp"
 
 TEST(MapTest, DeleteRegression) {
   upb::Arena arena;

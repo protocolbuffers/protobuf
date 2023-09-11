@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/mini_descriptor/internal/encode.hpp"
+#include "upb/upb/mini_descriptor/internal/encode.hpp"
 
 #include <string_view>
 #include <vector>
@@ -37,14 +37,14 @@
 #include "gtest/gtest.h"
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/descriptor.h"
-#include "upb/base/status.hpp"
-#include "upb/mem/arena.hpp"
-#include "upb/message/internal/accessors.h"
-#include "upb/mini_descriptor/decode.h"
-#include "upb/mini_descriptor/internal/base92.h"
-#include "upb/mini_descriptor/internal/modifiers.h"
-#include "upb/mini_table/enum.h"
-#include "upb/wire/decode.h"
+#include "upb/upb/base/status.hpp"
+#include "upb/upb/mem/arena.hpp"
+#include "upb/upb/message/internal/accessors.h"
+#include "upb/upb/mini_descriptor/decode.h"
+#include "upb/upb/mini_descriptor/internal/base92.h"
+#include "upb/upb/mini_descriptor/internal/modifiers.h"
+#include "upb/upb/mini_table/enum.h"
+#include "upb/upb/wire/decode.h"
 
 // begin:google_only
 // #include "testing/fuzzing/fuzztest.h"

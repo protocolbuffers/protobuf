@@ -28,21 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/message/promote.h"
+#include "upb/upb/message/promote.h"
 
-#include "upb/collections/array.h"
-#include "upb/collections/internal/array.h"
-#include "upb/collections/map.h"
-#include "upb/message/accessors.h"
-#include "upb/message/message.h"
-#include "upb/mini_table/field.h"
-#include "upb/wire/decode.h"
-#include "upb/wire/encode.h"
-#include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/reader.h"
+#include "upb/upb/collections/array.h"
+#include "upb/upb/collections/internal/array.h"
+#include "upb/upb/collections/map.h"
+#include "upb/upb/message/accessors.h"
+#include "upb/upb/message/message.h"
+#include "upb/upb/mini_table/field.h"
+#include "upb/upb/wire/decode.h"
+#include "upb/upb/wire/encode.h"
+#include "upb/upb/wire/eps_copy_input_stream.h"
+#include "upb/upb/wire/reader.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // Parses unknown data by merging into existing base_message or creating a
 // new message usingg mini_table.

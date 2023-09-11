@@ -33,11 +33,11 @@
 #ifndef UPB_WIRE_ENCODE_H_
 #define UPB_WIRE_ENCODE_H_
 
-#include "upb/message/message.h"
-#include "upb/wire/types.h"
+#include "upb/upb/message/message.h"
+#include "upb/upb/wire/types.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -91,6 +91,6 @@ UPB_API upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_WIRE_ENCODE_H_ */

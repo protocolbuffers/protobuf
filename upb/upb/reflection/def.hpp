@@ -36,15 +36,15 @@
 #include <string>
 #include <vector>
 
-#include "upb/base/status.hpp"
-#include "upb/mem/arena.hpp"
-#include "upb/reflection/def.h"
-#include "upb/reflection/internal/def_pool.h"
-#include "upb/reflection/internal/enum_def.h"
-#include "upb/reflection/message.h"
+#include "upb/upb/base/status.hpp"
+#include "upb/upb/mem/arena.hpp"
+#include "upb/upb/reflection/def.h"
+#include "upb/upb/reflection/internal/def_pool.h"
+#include "upb/upb/reflection/internal/enum_def.h"
+#include "upb/upb/reflection/message.h"
 
 // Must be last
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 namespace upb {
 
@@ -623,6 +623,6 @@ inline EnumDefPtr FieldDefPtr::enum_subdef() const {
 
 }  // namespace upb
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_REFLECTION_DEF_HPP_

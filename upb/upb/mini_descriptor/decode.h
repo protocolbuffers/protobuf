@@ -31,22 +31,22 @@
 #ifndef UPB_MINI_TABLE_DECODE_H_
 #define UPB_MINI_TABLE_DECODE_H_
 
-#include "upb/base/status.h"
-#include "upb/mem/arena.h"
-#include "upb/mini_table/extension.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/message.h"
-#include "upb/mini_table/sub.h"
+#include "upb/upb/base/status.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/mini_table/extension.h"
+#include "upb/upb/mini_table/field.h"
+#include "upb/upb/mini_table/message.h"
+#include "upb/upb/mini_table/sub.h"
 
 // Export the newer headers, for legacy users.  New users should include the
 // more specific headers directly.
 // IWYU pragma: begin_exports
-#include "upb/mini_descriptor/build_enum.h"
-#include "upb/mini_descriptor/link.h"
+#include "upb/upb/mini_descriptor/build_enum.h"
+#include "upb/upb/mini_descriptor/link.h"
 // IWYU pragma: end_exports
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef enum {
   kUpb_MiniTablePlatform_32Bit,
@@ -138,6 +138,6 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_DECODE_H_ */

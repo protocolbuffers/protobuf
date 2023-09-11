@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/mini_table/internal/message.h"
+#include "upb/upb/mini_table/internal/message.h"
 
 const struct upb_MiniTable _kUpb_MiniTable_Empty = {
     .subs = NULL,

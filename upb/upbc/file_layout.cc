@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upbc/file_layout.h"
+#include "upb/upbc/file_layout.h"
 
 #include <string>
 #include <unordered_set>
 
-#include "upb/mini_table/internal/extension.h"
-#include "upbc/common.h"
+#include "upb/upb/mini_table/internal/extension.h"
+#include "upb/upbc/common.h"
 
 namespace upbc {
 

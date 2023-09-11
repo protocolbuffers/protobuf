@@ -10,7 +10,7 @@
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//upb/bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 
 # begin:google_only
 # load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
@@ -229,17 +229,17 @@ def _upb_cc_proto_library_aspect_impl(target, ctx):
 _upb_cc_proto_library_aspect = aspect(
     attrs = {
         "_ccopts": attr.label(
-            default = "//protos:upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
+            default = "//upb/protos:upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
         ),
         "_gen_upbprotos": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//protos_generator:protoc-gen-upb-protos",
+            default = "//upb/protos_generator:protoc-gen-upb-protos",
         ),
         "_protoc": attr.label(
             executable = True,
             cfg = "exec",
-            default = "@com_google_protobuf//:protoc",
+            default = "//:protoc",
         ),
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",
@@ -247,12 +247,12 @@ _upb_cc_proto_library_aspect = aspect(
         "_upbprotos": attr.label_list(
             default = [
                 # TODO: Add dependencies for cc runtime (absl/string etc..)
-                "//:generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-                "//protos:generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+                "//upb:generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+                "//upb/protos:generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
                 "@com_google_absl//absl/strings",
                 "@com_google_absl//absl/status:statusor",
-                "//protos",
-                "//protos:repeated_field",
+                "//upb/protos",
+                "//upb/protos:repeated_field",
             ],
         ),
     },
@@ -283,7 +283,7 @@ upb_cc_proto_library = rule(
             providers = [ProtoInfo],
         ),
         "_ccopts": attr.label(
-            default = "//protos:upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
+            default = "//upb/protos:upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
         ),
     },
 )

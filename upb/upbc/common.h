@@ -35,7 +35,7 @@
 
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
-#include "upb/reflection/def.hpp"
+#include "upb/upb/reflection/def.hpp"
 
 namespace upbc {
 

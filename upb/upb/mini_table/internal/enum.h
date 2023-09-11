@@ -34,7 +34,7 @@
 #include <stdint.h>
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 struct upb_MiniTableEnum {
   uint32_t mask_limit;   // Limit enum value that can be tested with mask.
@@ -76,6 +76,6 @@ UPB_INLINE bool _upb_MiniTable_CheckEnumValueSlow(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_INTERNAL_ENUM_H_ */

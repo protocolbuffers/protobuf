@@ -30,7 +30,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""A tool to convert {WORKSPACE, BUILD} -> CMakeLists.txt.
+"""A tool to convert BUILD -> CMakeLists.txt.
 
 This tool is very upb-specific at the moment, and should not be seen as a
 generic Bazel -> CMake converter.
@@ -236,92 +236,14 @@ class BuildFileFunctions(object):
     pass
 
 
-class WorkspaceFileFunctions(object):
-  def __init__(self, converter):
-    self.converter = converter
-
-  def load(self, *args, **kwargs):
-    pass
-
-  def workspace(self, **kwargs):
-    self.converter.prelude += "project(%s)\n" % (kwargs["name"])
-    self.converter.prelude += "set(CMAKE_C_STANDARD 99)\n"
-
-  def maybe(self, rule, **kwargs):
-    if kwargs["name"] == "utf8_range":
-      self.converter.utf8_range_commit = kwargs["commit"]
-    pass
-
-  def http_archive(self, **kwargs):
-    pass
-
-  def git_repository(self, **kwargs):
-    pass
-
-  def new_git_repository(self, **kwargs):
-    pass
-
-  def bazel_version_repository(self, **kwargs):
-    pass
-
-  def protobuf_deps(self):
-    pass
-
-  def utf8_range_deps(self):
-    pass
-
-  def pip_parse(self, **kwargs):
-    pass
-
-  def rules_fuzzing_dependencies(self):
-    pass
-
-  def rules_fuzzing_init(self):
-    pass
-
-  def rules_pkg_dependencies(self):
-    pass
-
-  def system_python(self, **kwargs):
-    pass
-
-  def register_system_python(self, **kwargs):
-    pass
-
-  def register_toolchains(self, toolchain):
-    pass
-
-  def python_source_archive(self, **kwargs):
-    pass
-
-  def python_nuget_package(self, **kwargs):
-    pass
-
-  def install_deps(self):
-    pass
-
-  def fuzzing_py_install_deps(self):
-    pass
-
-  def googletest_deps(self):
-    pass
-
-  def local_repository(self, **kwargs):
-    pass
-
-
 class Converter(object):
   def __init__(self):
-    self.prelude = ""
     self.toplevel = ""
     self.if_lua = ""
-    self.utf8_range_commit = ""
 
   def convert(self):
     return self.template % {
-        "prelude": converter.prelude,
         "toplevel": converter.toplevel,
-        "utf8_range_commit": converter.utf8_range_commit,
     }
 
   template = textwrap.dedent("""\
@@ -329,7 +251,8 @@ class Converter(object):
 
     cmake_minimum_required(VERSION 3.10...3.24)
 
-    %(prelude)s
+    project(upb)
+    set(CMAKE_C_STANDARD 99)
 
     # Prevent CMake from setting -rdynamic on Linux (!!).
     SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
@@ -366,7 +289,7 @@ class Converter(object):
     endif()
 
     if(NOT TARGET utf8_range)
-      if(EXISTS ../external/utf8_range)
+      if(EXISTS ../../external/utf8_range)
         # utf8_range is already installed
         include_directories(../external/utf8_range)
       elseif(EXISTS ../../utf8_range)
@@ -376,7 +299,7 @@ class Converter(object):
         FetchContent_Declare(
           utf8_range
           GIT_REPOSITORY "https://github.com/protocolbuffers/utf8_range.git"
-          GIT_TAG "%(utf8_range_commit)s"
+          GIT_TAG "d863bc33e15cba6d873c878dcca9e6fe52b2f8cb"
         )
         FetchContent_GetProperties(utf8_range)
         if(NOT utf8_range_POPULATED)
@@ -412,12 +335,9 @@ def GetDict(obj):
 
 globs = GetDict(converter)
 
-workspace_dict = GetDict(WorkspaceFileFunctions(converter))
-# We take all file paths as command-line arguments to ensure that we can find
-# each file regardless of how exactly Bazel was invoked.
-exec(open(sys.argv[1]).read(), workspace_dict)  # workspace_deps.bzl
-exec(open(sys.argv[2]).read(), workspace_dict)  # WORKSPACE
-exec(open(sys.argv[3]).read(), GetDict(BuildFileFunctions(converter)))  # BUILD
+# We take the BUILD path as a command-line argument to ensure that we can find
+# it regardless of how exactly Bazel was invoked.
+exec(open(sys.argv[1]).read(), GetDict(BuildFileFunctions(converter)))  # BUILD
 
-with open(sys.argv[4], "w") as f:
+with open(sys.argv[2], "w") as f:
   f.write(converter.convert())

@@ -38,15 +38,15 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/dynamic_message.h"
-#include "benchmarks/descriptor.pb.h"
-#include "benchmarks/descriptor.upb.h"
-#include "benchmarks/descriptor.upbdefs.h"
-#include "benchmarks/descriptor_sv.pb.h"
-#include "upb/base/internal/log2.h"
-#include "upb/mem/arena.h"
-#include "upb/reflection/def.hpp"
+#include "upb/benchmarks/descriptor.pb.h"
+#include "upb/benchmarks/descriptor.upb.h"
+#include "upb/benchmarks/descriptor.upbdefs.h"
+#include "upb/benchmarks/descriptor_sv.pb.h"
+#include "upb/upb/base/internal/log2.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/reflection/def.hpp"
 
-upb_StringView descriptor = benchmarks_descriptor_proto_upbdefinit.descriptor;
+upb_StringView descriptor = upb_benchmarks_descriptor_proto_upbdefinit.descriptor;
 namespace protobuf = ::google::protobuf;
 
 // A buffer big enough to parse descriptor.proto without going to heap.

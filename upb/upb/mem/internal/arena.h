@@ -31,10 +31,10 @@
 #ifndef UPB_MEM_INTERNAL_ARENA_H_
 #define UPB_MEM_INTERNAL_ARENA_H_
 
-#include "upb/mem/arena.h"
+#include "upb/upb/mem/arena.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef struct _upb_MemBlock _upb_MemBlock;
 
@@ -112,6 +112,6 @@ UPB_INLINE bool upb_Arena_HasInitialBlock(upb_Arena* arena) {
   return arena->block_alloc & 0x1;
 }
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MEM_INTERNAL_ARENA_H_ */

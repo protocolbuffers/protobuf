@@ -31,11 +31,11 @@
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
 
-#include "upb/base/status.h"
-#include "upb/mini_descriptor/internal/base92.h"
+#include "upb/upb/base/status.h"
+#include "upb/upb/mini_descriptor/internal/base92.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // upb_MdDecoder: used internally for decoding MiniDescriptors for messages,
 // extensions, and enums.
@@ -71,6 +71,6 @@ UPB_INLINE const char* upb_MdDecoder_DecodeBase92Varint(
   return ptr;
 }
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
