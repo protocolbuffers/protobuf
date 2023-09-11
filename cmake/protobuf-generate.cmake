@@ -108,6 +108,12 @@ function(protobuf_generate)
     foreach(DIR ${_protobuf_include_path})
       if(NOT DIR STREQUAL "-I")
         file(RELATIVE_PATH _rel_dir ${DIR} ${_abs_dir})
+        if(_rel_dir STREQUAL _abs_dir)
+          # When there is no relative path from DIR to _abs_dir (e.g. due to
+          # different drive letters on Windows), _rel_dir is equal to _abs_dir.
+          # Therefore, DIR is not a suitable include path and must be skipped.
+          continue()
+        endif()
         string(FIND "${_rel_dir}" "../" _is_in_parent_folder)
         if (NOT ${_is_in_parent_folder} EQUAL 0)
           set(_suitable_include_found TRUE)
