@@ -57,17 +57,19 @@ namespace Google.Protobuf.Test.Reflection
                 message.Declaration.LeadingDetachedComments);
         }
 
-        // Note: this test is somewhat brittle; a change earlier in the proto will break it.
         [Test]
         public void MessageLocations()
         {
             var message = unitTestProto3Descriptor.FindTypeByName<MessageDescriptor>("CommentMessage");
             Assert.NotNull(message.Declaration);
-            Assert.AreEqual(386, message.Declaration.StartLine);
             Assert.AreEqual(1, message.Declaration.StartColumn);
 
-            Assert.AreEqual(401, message.Declaration.EndLine);
             Assert.AreEqual(2, message.Declaration.EndColumn);
+
+            // This is slightly brittle, but allows a reasonable amount of change.
+            var diff = message.Declaration.EndLine - message.Declaration.StartLine;
+            Assert.That(diff, Is.GreaterThanOrEqualTo(10));
+            Assert.That(diff, Is.LessThanOrEqualTo(50));
         }
 
         [Test]
