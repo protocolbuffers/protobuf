@@ -30,5 +30,6 @@ The following topics are in this repository:
 *   [Edition Zero: Converged Semantics](edition-zero-converged-semantics.md)
 *   [Edition Zero Feature: Enum Field Closedness](edition-zero-feature-enum-field-closedness.md)
 *   [C++ APIs for Edition Zero](cpp-apis-for-edition-zero.md)
+*   [Java Lite For Editions](java-lite-for-editions.md)
 *   [Edition Evolution](edition-evolution.md)
 *   [Edition Naming](edition-naming.md)
