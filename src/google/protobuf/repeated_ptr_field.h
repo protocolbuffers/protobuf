@@ -1037,7 +1037,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   // Unlike std::vector, adding an element to a RepeatedPtrField doesn't always
   // make a new element; it might re-use an element left over from when the
-  // field was Clear()'d or reize()'d smaller.  For this reason, Add() is the
+  // field was Clear()'d or resize()'d smaller.  For this reason, Add() is the
   // fastest API for adding a new element.
   pointer Add() ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
