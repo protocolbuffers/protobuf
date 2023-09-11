@@ -92,6 +92,8 @@ pub struct RawVTableMutator<'msg, T: ProxiedWithRawVTable + ?Sized> {
     vtable: &'static T::VTable,
 }
 
+impl<'msg, T: ProxiedWithRawVTable + ?Sized> Copy for RawVTableMutator<'msg, T> {}
+
 // These use manual impls instead of derives to avoid unnecessary bounds on `T`.
 // This problem is referred to as "perfect derive".
 // https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
@@ -100,7 +102,6 @@ impl<'msg, T: ProxiedWithRawVTable + ?Sized> Clone for RawVTableMutator<'msg, T>
         *self
     }
 }
-impl<'msg, T: ProxiedWithRawVTable + ?Sized> Copy for RawVTableMutator<'msg, T> {}
 
 impl<'msg, T: ProxiedWithRawVTable + ?Sized> Debug for RawVTableMutator<'msg, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -146,6 +147,11 @@ unsafe impl<'msg, T: ProxiedWithRawOptionalVTable + ?Sized> Sync
 {
 }
 
+impl<'msg, T: ProxiedWithRawOptionalVTable + ?Sized> Copy
+    for RawVTableOptionalMutatorData<'msg, T>
+{
+}
+
 // These use manual impls instead of derives to avoid unnecessary bounds on `T`.
 // This problem is referred to as "perfect derive".
 // https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
@@ -155,10 +161,6 @@ impl<'msg, T: ProxiedWithRawOptionalVTable + ?Sized> Clone
     fn clone(&self) -> Self {
         *self
     }
-}
-impl<'msg, T: ProxiedWithRawOptionalVTable + ?Sized> Copy
-    for RawVTableOptionalMutatorData<'msg, T>
-{
 }
 
 impl<'msg, T: ProxiedWithRawOptionalVTable + ?Sized> Debug
