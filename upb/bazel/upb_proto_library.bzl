@@ -413,25 +413,25 @@ def _get_upb_proto_library_aspect_provides():
 upb_proto_library_aspect = aspect(
     attrs = {
         "_copts": attr.label(
-            default = "//:upb_proto_library_copts__for_generated_code_only_do_not_use",
+            default = "//upb:upb_proto_library_copts__for_generated_code_only_do_not_use",
         ),
         "_gen_upb": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//upbc:protoc-gen-upb_stage1",
+            default = "//upb/upbc:protoc-gen-upb_stage1",
         ),
         "_protoc": attr.label(
             executable = True,
             cfg = "exec",
-            default = "@com_google_protobuf//:protoc",
+            default = "//:protoc",
         ),
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",
         ),
         "_upb": attr.label_list(default = [
-            "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+            "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         ]),
-        "_fasttable_enabled": attr.label(default = "//:fasttable_enabled"),
+        "_fasttable_enabled": attr.label(default = "//upb:fasttable_enabled"),
     },
     implementation = upb_proto_library_aspect_impl,
     provides = _get_upb_proto_library_aspect_provides(),
@@ -462,24 +462,24 @@ upb_c_proto_library = upb_proto_library
 _upb_proto_reflection_library_aspect = aspect(
     attrs = {
         "_copts": attr.label(
-            default = "//:upb_proto_library_copts__for_generated_code_only_do_not_use",
+            default = "//upb:upb_proto_library_copts__for_generated_code_only_do_not_use",
         ),
         "_gen_upbdefs": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//upbc:protoc-gen-upbdefs",
+            default = "//upb/upbc:protoc-gen-upbdefs",
         ),
         "_protoc": attr.label(
             executable = True,
             cfg = "exec",
-            default = "@com_google_protobuf//:protoc",
+            default = "//:protoc",
         ),
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",
         ),
         "_upbdefs": attr.label_list(
             default = [
-                "//:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+                "//upb:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
             ],
         ),
     },

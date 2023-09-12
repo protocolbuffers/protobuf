@@ -33,10 +33,10 @@
 
 #include <stdint.h>
 
-#include "upb/base/descriptor_constants.h"
+#include "upb/upb/base/descriptor_constants.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // If the input buffer has at least this many bytes available, the encoder call
 // is guaranteed to succeed (as long as field number order is maintained).
@@ -110,6 +110,6 @@ char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_ */

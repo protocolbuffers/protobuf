@@ -39,14 +39,14 @@
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
-#include "upb/base/status.h"
-#include "upb/base/string_view.h"
-#include "upb/collections/array.h"
-#include "upb/mem/arena.hpp"
-#include "upb/test/test.upb.h"
+#include "upb/upb/base/status.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/collections/array.h"
+#include "upb/upb/mem/arena.hpp"
+#include "upb/upb/test/test.upb.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #if !defined(MIN)
 #define MIN(x, y) ((x) < (y) ? (x) : (y))

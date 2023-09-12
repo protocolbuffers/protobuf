@@ -5,10 +5,10 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:py_proto_library.bzl", "py_proto_library")
+load("//upb/bazel:py_proto_library.bzl", "py_proto_library")
 load(":dist.bzl", "py_dist", "py_dist_module")
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("@com_google_protobuf//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
+load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
@@ -18,36 +18,36 @@ licenses(["notice"])
 
 py_dist_module(
     name = "message_mod",
-    extension = "//python:_message_binary",
+    extension = "//upb/python:_message_binary",
     module_name = "google._upb._message",
 )
 
 py_proto_library(
     name = "well_known_proto_py_pb2",
     deps = [
-        "@com_google_protobuf//:any_proto",
-        "@com_google_protobuf//:api_proto",
-        "@com_google_protobuf//:descriptor_proto",
-        "@com_google_protobuf//:duration_proto",
-        "@com_google_protobuf//:empty_proto",
-        "@com_google_protobuf//:field_mask_proto",
-        "@com_google_protobuf//:source_context_proto",
-        "@com_google_protobuf//:struct_proto",
-        "@com_google_protobuf//:timestamp_proto",
-        "@com_google_protobuf//:type_proto",
-        "@com_google_protobuf//:wrappers_proto",
+        "//:any_proto",
+        "//:api_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
     ],
 )
 
 py_proto_library(
     name = "plugin_py_pb2",
-    deps = ["@com_google_protobuf//:compiler_plugin_proto"],
+    deps = ["//:compiler_plugin_proto"],
 )
 
 config_setting(
     name = "linux_aarch64_release",
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "True",
+        "//toolchain:release": "True",
     },
     values = {"cpu": "linux-aarch_64"},
 )
@@ -59,14 +59,14 @@ config_setting(
         "@platforms//cpu:aarch64",
     ],
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "False",
+        "//toolchain:release": "False",
     },
 )
 
 config_setting(
     name = "linux_x86_64_release",
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "True",
+        "//toolchain:release": "True",
     },
     values = {"cpu": "linux-x86_64"},
 )
@@ -78,14 +78,14 @@ config_setting(
         "@platforms//cpu:x86_64",
     ],
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "False",
+        "//toolchain:release": "False",
     },
 )
 
 config_setting(
     name = "osx_x86_64_release",
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "True",
+        "//toolchain:release": "True",
     },
     values = {"cpu": "osx-x86_64"},
 )
@@ -97,7 +97,7 @@ config_setting(
         "@platforms//cpu:x86_64",
     ],
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "False",
+        "//toolchain:release": "False",
     },
 )
 
@@ -112,7 +112,7 @@ selects.config_setting_group(
 config_setting(
     name = "osx_aarch64_release",
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "True",
+        "//toolchain:release": "True",
     },
     values = {"cpu": "osx-aarch_64"},
 )
@@ -124,7 +124,7 @@ config_setting(
         "@platforms//cpu:aarch64",
     ],
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "False",
+        "//toolchain:release": "False",
     },
 )
 
@@ -144,7 +144,7 @@ config_setting(
 config_setting(
     name = "windows_x86_32_release",
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "True",
+        "//toolchain:release": "True",
     },
     values = {"cpu": "win32"},
 )
@@ -156,7 +156,7 @@ config_setting(
         "@platforms//cpu:x86_32",
     ],
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "False",
+        "//toolchain:release": "False",
     },
 )
 
@@ -171,7 +171,7 @@ selects.config_setting_group(
 config_setting(
     name = "windows_x86_64_release",
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "True",
+        "//toolchain:release": "True",
     },
     values = {"cpu": "win64"},
 )
@@ -183,7 +183,7 @@ config_setting(
         "@platforms//cpu:x86_64",
     ],
     flag_values = {
-        "@com_google_protobuf//toolchain:release": "False",
+        "//toolchain:release": "False",
     },
 )
 
@@ -199,8 +199,8 @@ pkg_files(
     name = "generated_wkt",
     srcs = [
         ":well_known_proto_py_pb2",
-        "//:descriptor_upb_proto",
-        "//:descriptor_upb_proto_reflection",
+        "//upb:descriptor_upb_proto",
+        "//upb:descriptor_upb_proto_reflection",
     ],
     prefix = "google/protobuf",
 )
@@ -233,21 +233,21 @@ pkg_files(
 pkg_files(
     name = "filegroup_source_files",
     srcs = [
-        "//:LICENSE",
-        "//:source_files",
-        "//python:message_srcs",
-        "//upb/base:source_files",
-        "//upb/collections:source_files",
-        "//upb/hash:source_files",
-        "//upb/lex:source_files",
-        "//upb/mem:source_files",
-        "//upb/message:source_files",
-        "//upb/mini_descriptor:source_files",
-        "//upb/mini_table:source_files",
-        "//upb/port:source_files",
-        "//upb/text:source_files",
-        "//upb/util:source_files",
-        "//upb/wire:source_files",
+        "//upb:LICENSE",
+        "//upb:source_files",
+        "//upb/python:message_srcs",
+        "//upb/upb/base:source_files",
+        "//upb/upb/collections:source_files",
+        "//upb/upb/hash:source_files",
+        "//upb/upb/lex:source_files",
+        "//upb/upb/mem:source_files",
+        "//upb/upb/message:source_files",
+        "//upb/upb/mini_descriptor:source_files",
+        "//upb/upb/mini_table:source_files",
+        "//upb/upb/port:source_files",
+        "//upb/upb/text:source_files",
+        "//upb/upb/util:source_files",
+        "//upb/upb/wire:source_files",
     ],
     strip_prefix = strip_prefix.from_root(""),
 )
@@ -262,7 +262,7 @@ pkg_tar(
         ":generated_wkt",
         ":generated_wkt_compiler",
         ":utf8_range_source_files",
-        "@com_google_protobuf//python:python_source_files",
+        "//python:python_source_files",
     ],
     extension = "tar.gz",
     package_dir = "protobuf",
@@ -295,9 +295,9 @@ genrule(
 py_wheel(
     name = "binary_wheel",
     abi = select({
-        "//python:full_api_3.7": "cp37m",
-        "//python:full_api_3.8": "cp38",
-        "//python:full_api_3.9": "cp39",
+        "//upb/python:full_api_3.7": "cp37m",
+        "//upb/python:full_api_3.8": "cp38",
+        "//upb/python:full_api_3.9": "cp39",
         "//conditions:default": "abi3",
     }),
     author = "protobuf@googlegroups.com",
@@ -312,7 +312,7 @@ py_wheel(
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
-        "//:LICENSE": "LICENSE",
+        "//upb:LICENSE": "LICENSE",
     },
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
@@ -329,10 +329,10 @@ py_wheel(
     }),
     python_requires = ">=3.7",
     python_tag = selects.with_or({
-        ("//python:limited_api_3.7", "//python:full_api_3.7"): "cp37",
-        "//python:full_api_3.8": "cp38",
-        "//python:full_api_3.9": "cp39",
-        "//python:limited_api_3.10": "cp310",
+        ("//upb/python:limited_api_3.7", "//upb/python:full_api_3.7"): "cp37",
+        "//upb/python:full_api_3.8": "cp38",
+        "//upb/python:full_api_3.9": "cp39",
+        "//upb/python:limited_api_3.10": "cp310",
         "//conditions:default": "cp" + SYSTEM_PYTHON_VERSION,
     }),
     strip_path_prefixes = [
@@ -349,7 +349,7 @@ py_wheel(
         ":message_mod",
         ":plugin_py_pb2",
         ":well_known_proto_py_pb2",
-        "@com_google_protobuf//:python_srcs",
+        "//:python_srcs",
     ],
 )
 
@@ -368,7 +368,7 @@ py_wheel(
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
-        "//:LICENSE": "LICENSE",
+        "//upb:LICENSE": "LICENSE",
     },
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
@@ -387,7 +387,7 @@ py_wheel(
     deps = [
         ":plugin_py_pb2",
         ":well_known_proto_py_pb2",
-        "@com_google_protobuf//:python_srcs",
+        "//:python_srcs",
     ],
 )
 
@@ -397,7 +397,7 @@ py_wheel(
     abi = "none",
     distribution = "protobuftests",
     extra_distinfo_files = {
-        "//:LICENSE": "LICENSE",
+        "//upb:LICENSE": "LICENSE",
     },
     platform = "any",
     python_tag = "py3",
@@ -411,11 +411,11 @@ py_wheel(
     }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
-        "//python/pb_unit_tests:test_files",
-        "@com_google_protobuf//:python_common_test_protos",
-        "@com_google_protobuf//:python_specific_test_protos",
-        "@com_google_protobuf//:python_test_srcs",
-        "@com_google_protobuf//src/google/protobuf:testdata",
+        "//:python_common_test_protos",
+        "//:python_specific_test_protos",
+        "//:python_test_srcs",
+        "//src/google/protobuf:testdata",
+        "//upb/python/pb_unit_tests:test_files",
     ],
 )
 

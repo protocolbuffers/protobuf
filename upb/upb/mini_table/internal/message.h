@@ -31,11 +31,11 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 #define UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 
-#include "upb/message/types.h"
-#include "upb/mini_table/internal/field.h"
+#include "upb/upb/message/types.h"
+#include "upb/upb/mini_table/internal/field.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 struct upb_Decoder;
 typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
@@ -106,6 +106,6 @@ UPB_INLINE uint64_t upb_MiniTable_requiredmask(const struct upb_MiniTable* l) {
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_INTERNAL_MESSAGE_H_ */

@@ -29,7 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "gtest/gtest.h"
-#include "upb/test/test_import_empty_srcs.upb.h"
+#include "upb/upb/test/test_import_empty_srcs.upb.h"
 
 TEST(Test, Reexport) {
   // This test really just ensures that compilation succeeds.

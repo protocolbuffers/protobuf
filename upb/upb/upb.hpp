@@ -34,8 +34,8 @@
 #define UPB_HPP_
 
 // IWYU pragma: begin_exports
-#include "upb/base/status.hpp"
-#include "upb/mem/arena.hpp"
+#include "upb/upb/base/status.hpp"
+#include "upb/upb/mem/arena.hpp"
 // IWYU pragma: end_exports
 
 #endif  // UPB_HPP_

@@ -1,5 +1,5 @@
 #include <stddef.h>
-#include "upb/generated_code_support.h"
+#include "upb/upb/generated_code_support.h"
 #include "google/protobuf/compiler/plugin.upb.h"
 
 #include "google/protobuf/descriptor.upb.h"

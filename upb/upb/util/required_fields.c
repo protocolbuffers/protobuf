@@ -28,17 +28,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/util/required_fields.h"
+#include "upb/upb/util/required_fields.h"
 
 #include <inttypes.h>
 #include <stdarg.h>
 
-#include "upb/collections/map.h"
-#include "upb/port/vsnprintf_compat.h"
-#include "upb/reflection/message.h"
+#include "upb/upb/collections/map.h"
+#include "upb/upb/port/vsnprintf_compat.h"
+#include "upb/upb/reflection/message.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 ////////////////////////////////////////////////////////////////////////////////
 // upb_FieldPath_ToText()

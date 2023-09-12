@@ -41,15 +41,15 @@
 #include "conformance/conformance.upbdefs.h"
 #include "google/protobuf/test_messages_proto2.upbdefs.h"
 #include "google/protobuf/test_messages_proto3.upbdefs.h"
-#include "upb/json/decode.h"
-#include "upb/json/encode.h"
-#include "upb/reflection/message.h"
-#include "upb/text/encode.h"
-#include "upb/wire/decode.h"
-#include "upb/wire/encode.h"
+#include "upb/upb/json/decode.h"
+#include "upb/upb/json/encode.h"
+#include "upb/upb/reflection/message.h"
+#include "upb/upb/text/encode.h"
+#include "upb/upb/wire/decode.h"
+#include "upb/upb/wire/encode.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 int test_count = 0;
 bool verbose = false; /* Set to true to get req/resp printed on stderr. */

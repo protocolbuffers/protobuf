@@ -33,7 +33,7 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "protos_generator/output.h"
+#include "upb/protos_generator/output.h"
 
 namespace protos_generator {
 namespace protobuf = ::google::protobuf;

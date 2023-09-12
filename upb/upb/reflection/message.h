@@ -31,11 +31,11 @@
 #ifndef UPB_REFLECTION_MESSAGE_H_
 #define UPB_REFLECTION_MESSAGE_H_
 
-#include "upb/collections/map.h"
-#include "upb/reflection/common.h"
+#include "upb/upb/collections/map.h"
+#include "upb/upb/reflection/common.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -102,6 +102,6 @@ UPB_API bool upb_Message_DiscardUnknown(upb_Message* msg,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_MESSAGE_H_ */

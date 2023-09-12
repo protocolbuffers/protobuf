@@ -33,8 +33,8 @@
 
 #include <stdbool.h>
 
-#include "python/python_api.h"
-#include "upb/reflection/def.h"
+#include "upb/python/python_api.h"
+#include "upb/upb/reflection/def.h"
 
 typedef enum {
   kPyUpb_Descriptor = 0,

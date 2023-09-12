@@ -31,11 +31,11 @@
 #ifndef UPB_MESSAGE_COPY_H_
 #define UPB_MESSAGE_COPY_H_
 
-#include "upb/collections/message_value.h"
-#include "upb/message/internal/message.h"
+#include "upb/upb/collections/message_value.h"
+#include "upb/upb/message/internal/message.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,6 +64,6 @@ bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_MESSAGE_COPY_H_

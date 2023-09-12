@@ -31,14 +31,14 @@
 #ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
 #define UPB_MESSAGE_INTERNAL_EXTENSION_H_
 
-#include "upb/base/descriptor_constants.h"
-#include "upb/base/string_view.h"
-#include "upb/mem/arena.h"
-#include "upb/message/message.h"
-#include "upb/mini_table/extension.h"
+#include "upb/upb/base/descriptor_constants.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/message/message.h"
+#include "upb/upb/mini_table/extension.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // The internal representation of an extension is self-describing: it contains
 // enough information that we can serialize it to binary format without needing
@@ -81,6 +81,6 @@ const upb_Message_Extension* _upb_Message_Getext(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MESSAGE_INTERNAL_EXTENSION_H_ */

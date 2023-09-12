@@ -34,7 +34,7 @@
 #include <stdint.h>
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,6 +77,6 @@ int upb_Unicode_ToUTF8(uint32_t cp, char* out);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_LEX_UNICODE_H_ */

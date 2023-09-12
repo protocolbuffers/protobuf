@@ -32,8 +32,8 @@
 #include <string>
 
 #include "google/protobuf/compiler/plugin.upb.h"
-#include "upbc/subprocess.h"
-#include "upbc/upbdev.h"
+#include "upb/upbc/subprocess.h"
+#include "upb/upbc/upbdev.h"
 
 static constexpr char kDefaultPlugin[] = "protoc_dart_plugin";
 

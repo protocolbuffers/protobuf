@@ -28,15 +28,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/internal/service_def.h"
+#include "upb/upb/reflection/internal/service_def.h"
 
-#include "upb/reflection/def_type.h"
-#include "upb/reflection/internal/def_builder.h"
-#include "upb/reflection/internal/file_def.h"
-#include "upb/reflection/internal/method_def.h"
+#include "upb/upb/reflection/def_type.h"
+#include "upb/upb/reflection/internal/def_builder.h"
+#include "upb/upb/reflection/internal/file_def.h"
+#include "upb/upb/reflection/internal/method_def.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 struct upb_ServiceDef {
   const UPB_DESC(ServiceOptions) * opts;

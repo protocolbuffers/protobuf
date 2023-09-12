@@ -28,14 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/internal/enum_reserved_range.h"
+#include "upb/upb/reflection/internal/enum_reserved_range.h"
 
-#include "upb/reflection/enum_def.h"
-#include "upb/reflection/field_def.h"
-#include "upb/reflection/internal/def_builder.h"
+#include "upb/upb/reflection/enum_def.h"
+#include "upb/upb/reflection/field_def.h"
+#include "upb/upb/reflection/internal/def_builder.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 struct upb_EnumReservedRange {
   int32_t start;

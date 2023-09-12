@@ -19,10 +19,10 @@ jobs:
         config:
           - { name: "Fastbuild" }
           - { name: "Optimized", flags: "-c opt" }
-          - { name: "FastTable", flags: "--@upb//:fasttable_enabled=true" }
-          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-@upb//benchmarks:benchmark -@upb//python/..." }
-          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-@upb//benchmarks:benchmark -@upb//python/... -@upb//lua/..." }
-          - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-@upb//benchmarks:benchmark -@upb//python/..." }
+          - { name: "FastTable", flags: "--//upb:fasttable_enabled=true" }
+          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//upb/benchmarks:benchmark -//upb/python/..." }
+          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//upb/benchmarks:benchmark -//upb/python/... -//upb/lua/..." }
+          - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//upb/benchmarks:benchmark -//upb/python/..." }
           # TODO: b/297027295 - Add 32-bit ASAN test
 
     name: ${{ matrix.config.name }}
@@ -39,7 +39,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
-          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 @upb//... ${{ matrix.config.flags }}
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //upb/... ${{ matrix.config.flags }}
           exclude-targets: ${{ matrix.config.exclude-targets }}
 
   linux-gcc:
@@ -58,12 +58,7 @@ jobs:
           image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-518b4fcd8d0ded2484c94f02e835526cacfdac2d"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-gcc"
-          # The other test runs use the protobuf workspace. For this one let's
-          # cd into upb and use its workspace instead, to make sure we cover
-          # that use case.
-          bash: >-
-            cd upb &&
-            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //...
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //upb/...
 
   windows:
     strategy:
@@ -80,7 +75,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
-          bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 @upb//upb/... @upb//upbc/... @upb//python/... @upb//protos/... @upb//protos_generator/...
+          bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/upb/... //upb/upbc/... //upb/python/... //upb/protos/... //upb/protos_generator/...
 
   macos:
     strategy:
@@ -101,7 +96,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
-          bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} @upb//...
+          bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} //upb/...
 
   no-python:
     strategy:
@@ -123,4 +118,4 @@ jobs:
             which python3 &&
             mv `which python3` /tmp &&
             ! which python3 &&
-            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 @upb//python/... -- -@upb//python/dist:source_wheel
+            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //upb/python/... -- -//upb/python/dist:source_wheel

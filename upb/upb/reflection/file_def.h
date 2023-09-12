@@ -28,15 +28,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// IWYU pragma: private, include "upb/reflection/def.h"
+// IWYU pragma: private, include "upb/upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_FILE_DEF_H_
 #define UPB_REFLECTION_FILE_DEF_H_
 
-#include "upb/reflection/common.h"
+#include "upb/upb/reflection/common.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,6 +75,6 @@ int upb_FileDef_WeakDependencyCount(const upb_FileDef* f);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_FILE_DEF_H_ */

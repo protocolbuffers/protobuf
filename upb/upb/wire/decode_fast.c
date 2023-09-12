@@ -38,14 +38,14 @@
 // field type (eg. oneof boolean field with a 1 byte tag) and then dispatch
 // to the specialized function as quickly as possible.
 
-#include "upb/wire/decode_fast.h"
+#include "upb/upb/wire/decode_fast.h"
 
-#include "upb/collections/internal/array.h"
-#include "upb/message/internal/types.h"
-#include "upb/wire/internal/decode.h"
+#include "upb/upb/collections/internal/array.h"
+#include "upb/upb/message/internal/types.h"
+#include "upb/upb/wire/internal/decode.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #if UPB_FASTTABLE
 

@@ -28,15 +28,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/message/message.h"
+#include "upb/upb/message/message.h"
 
 #include <math.h>
 
-#include "upb/base/internal/log2.h"
-#include "upb/message/internal/message.h"
+#include "upb/upb/base/internal/log2.h"
+#include "upb/upb/message/internal/message.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 const float kUpb_FltInfinity = INFINITY;
 const double kUpb_Infinity = INFINITY;

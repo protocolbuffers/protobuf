@@ -28,10 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/def_type.h"
+#include "upb/upb/reflection/def_type.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 upb_deftype_t _upb_DefType_Type(upb_value v) {
   const uintptr_t num = (uintptr_t)upb_value_getconstptr(v);

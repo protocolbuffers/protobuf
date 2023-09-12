@@ -33,13 +33,13 @@
 #ifndef UPB_WIRE_DECODE_H_
 #define UPB_WIRE_DECODE_H_
 
-#include "upb/mem/arena.h"
-#include "upb/message/message.h"
-#include "upb/mini_table/extension_registry.h"
-#include "upb/wire/types.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/message/message.h"
+#include "upb/upb/mini_table/extension_registry.h"
+#include "upb/upb/wire/types.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -147,6 +147,6 @@ UPB_API upb_DecodeStatus upb_Decode(const char* buf, size_t size,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_WIRE_DECODE_H_ */

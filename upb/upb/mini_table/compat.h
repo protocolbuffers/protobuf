@@ -31,10 +31,10 @@
 #ifndef UPB_MINI_TABLE_COMPAT_H_
 #define UPB_MINI_TABLE_COMPAT_H_
 
-#include "upb/mini_table/message.h"
+#include "upb/upb/mini_table/message.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // upb does not support mixing minitables from different sources but these
 // functions are still used by some existing users so for now we make them
@@ -56,6 +56,6 @@ bool upb_MiniTable_Equals(const upb_MiniTable* src, const upb_MiniTable* dst);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_COMPAT_H_ */

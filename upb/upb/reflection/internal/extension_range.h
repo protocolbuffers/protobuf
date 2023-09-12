@@ -31,10 +31,10 @@
 #ifndef UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
 #define UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
 
-#include "upb/reflection/extension_range.h"
+#include "upb/upb/reflection/extension_range.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,6 +52,6 @@ upb_ExtensionRange* _upb_ExtensionRanges_New(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_ */

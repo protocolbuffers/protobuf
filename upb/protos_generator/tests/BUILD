@@ -6,15 +6,15 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
 )
 load(
-    "//protos/bazel:upb_cc_proto_library.bzl",
+    "//upb/protos/bazel:upb_cc_proto_library.bzl",
     "upb_cc_proto_library",
 )
 load(
@@ -23,7 +23,7 @@ load(
 )
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
@@ -63,14 +63,14 @@ proto_library(
 upb_proto_library(
     name = "test_model_upb_proto",
     visibility = [
-        "//protos:__pkg__",
+        "//upb/protos:__pkg__",
     ],
     deps = [":test_model_proto"],
 )
 
 upb_cc_proto_library(
     name = "test_model_upb_cc_proto",
-    visibility = ["//protos:__pkg__"],
+    visibility = ["//upb/protos:__pkg__"],
     deps = [":test_model_proto"],
 )
 
@@ -133,8 +133,8 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-        "//protos",
-        "//:mem",
-        "//protos:repeated_field",
+        "//upb/protos",
+        "//upb:mem",
+        "//upb/protos:repeated_field",
     ],
 )

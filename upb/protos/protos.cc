@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "protos/protos.h"
+#include "upb/protos/protos.h"
 
 #include <atomic>
 #include <cstddef>
@@ -37,18 +37,18 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "protos/protos_extension_lock.h"
-#include "upb/mem/arena.h"
-#include "upb/message/copy.h"
-#include "upb/message/internal/extension.h"
-#include "upb/message/promote.h"
-#include "upb/message/types.h"
-#include "upb/mini_table/extension.h"
-#include "upb/mini_table/extension_registry.h"
-#include "upb/mini_table/message.h"
-#include "upb/wire/decode.h"
-#include "upb/wire/encode.h"
-#include "upb/wire/types.h"
+#include "upb/protos/protos_extension_lock.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/message/copy.h"
+#include "upb/upb/message/internal/extension.h"
+#include "upb/upb/message/promote.h"
+#include "upb/upb/message/types.h"
+#include "upb/upb/mini_table/extension.h"
+#include "upb/upb/mini_table/extension_registry.h"
+#include "upb/upb/mini_table/message.h"
+#include "upb/upb/wire/decode.h"
+#include "upb/upb/wire/encode.h"
+#include "upb/upb/wire/types.h"
 
 namespace protos {
 

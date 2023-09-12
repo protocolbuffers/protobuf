@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
 )
 
@@ -21,11 +21,11 @@ load(
 #     ],
 #     compatible_with = ["//buildenv/target:non_prod"],
 #     copts = UPB_DEFAULT_COPTS,
-#     visibility = ["//:__pkg__"],
+#     visibility = ["//upb:__pkg__"],
 #     deps = [
 #         ":mini_table",
-#         "//:base",
-#         "//:port",
+#         "//upb:base",
+#         "//upb:port",
 #     ],
 # )
 # end:google_only
@@ -49,11 +49,11 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
-        "//:base",
-        "//:hash",
-        "//:mem",
-        "//:message_types",
-        "//:port",
+        "//upb:base",
+        "//upb:hash",
+        "//upb:mem",
+        "//upb:message_types",
+        "//upb:port",
     ],
 )
 
@@ -72,9 +72,9 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//:base",
-        "//:message_types",
-        "//:port",
+        "//upb:base",
+        "//upb:message_types",
+        "//upb:port",
     ],
 )
 
@@ -88,8 +88,8 @@ filegroup(
         ],
     ),
     visibility = [
-        "//cmake:__pkg__",
-        "//python/dist:__pkg__",
+        "//upb/cmake:__pkg__",
+        "//upb/python/dist:__pkg__",
     ]
 )
 # end:github_only

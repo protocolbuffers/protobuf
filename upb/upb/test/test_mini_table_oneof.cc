@@ -31,12 +31,12 @@
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/message.h"
-#include "upb/test/test.upb.h"
+#include "upb/upb/mini_table/field.h"
+#include "upb/upb/mini_table/message.h"
+#include "upb/upb/test/test.upb.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 TEST(MiniTableOneofTest, OneOfIteratorProto2) {
   constexpr int oneof_first_field_number = 111;

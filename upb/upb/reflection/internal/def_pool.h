@@ -31,11 +31,11 @@
 #ifndef UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 #define UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 
-#include "upb/mini_descriptor/decode.h"
-#include "upb/reflection/def_pool.h"
+#include "upb/upb/mini_descriptor/decode.h"
+#include "upb/upb/reflection/def_pool.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,6 +75,6 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_DEF_POOL_INTERNAL_H_ */

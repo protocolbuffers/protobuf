@@ -52,11 +52,11 @@
 
 #include <string.h>
 
-#include "upb/base/string_view.h"
-#include "upb/mem/arena.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/mem/arena.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -198,6 +198,6 @@ uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_HASH_COMMON_H_ */

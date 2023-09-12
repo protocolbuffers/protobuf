@@ -8,7 +8,7 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
@@ -18,7 +18,7 @@ bzl_library(
     srcs = ["upb_cc_proto_library.bzl"],
     visibility = ["//visibility:public"],
     deps = [
-        "//bazel:upb_proto_library_bzl",
+        "//upb/bazel:upb_proto_library_bzl",
         "@bazel_skylib//lib:paths",
         "@bazel_tools//tools/cpp:toolchain_utils.bzl",
     ],

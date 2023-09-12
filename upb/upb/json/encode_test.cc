@@ -28,15 +28,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/json/encode.h"
+#include "upb/upb/json/encode.h"
 
 #include "google/protobuf/struct.upb.h"
 #include "gtest/gtest.h"
-#include "upb/base/status.hpp"
-#include "upb/json/test.upb.h"
-#include "upb/json/test.upbdefs.h"
-#include "upb/mem/arena.hpp"
-#include "upb/reflection/def.hpp"
+#include "upb/upb/base/status.hpp"
+#include "upb/upb/json/test.upb.h"
+#include "upb/upb/json/test.upbdefs.h"
+#include "upb/upb/mem/arena.hpp"
+#include "upb/upb/reflection/def.hpp"
 
 static std::string JsonEncode(const upb_test_Box* msg, int options) {
   upb::Arena a;

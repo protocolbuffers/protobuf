@@ -46,7 +46,7 @@ internal_py_proto_library(
     srcs_version = "PY2AND3",
     visibility = [
         "//:__pkg__",
-        "@upb//:__subpackages__",
+        "//upb:__subpackages__",
     ],
 )
 
@@ -152,7 +152,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = [
         "//:__pkg__",
-        "@upb//:__subpackages__",
+        "//upb:__subpackages__",
     ],
 )
 
@@ -170,7 +170,7 @@ py_library(
     srcs_version = "PY3",
     visibility = [
         "//:__pkg__",
-        "@upb//:__subpackages__",
+        "//upb:__subpackages__",
     ],
 )
 
@@ -437,7 +437,7 @@ pkg_files(
         "tox.ini",
     ],
     strip_prefix = "",
-    visibility = ["@upb//:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
 )
 
 pkg_files(

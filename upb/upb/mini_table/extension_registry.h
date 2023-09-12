@@ -31,12 +31,12 @@
 #ifndef UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
 #define UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
 
-#include "upb/mem/arena.h"
-#include "upb/mini_table/extension.h"
-#include "upb/mini_table/message.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/mini_table/extension.h"
+#include "upb/upb/mini_table/message.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -103,6 +103,6 @@ UPB_API const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_EXTENSION_REGISTRY_H_ */

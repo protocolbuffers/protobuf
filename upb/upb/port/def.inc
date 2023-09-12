@@ -35,17 +35,17 @@
  *
  * The correct usage is:
  *
- *   #include "upb/foobar.h"
- *   #include "upb/baz.h"
+ *   #include "upb/upb/foobar.h"
+ *   #include "upb/upb/baz.h"
  *
  *   // MUST be last included header.
- *   #include "upb/port/def.inc"
+ *   #include "upb/upb/port/def.inc"
  *
  *   // Code for this file.
  *   // <...>
  *
  *   // Can be omitted for .c files, required for .h.
- *   #include "upb/port/undef.inc"
+ *   #include "upb/upb/port/undef.inc"
  *
  * This file is private and must not be included by users!
  */

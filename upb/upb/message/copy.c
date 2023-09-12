@@ -28,22 +28,22 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/message/copy.h"
+#include "upb/upb/message/copy.h"
 
 #include <stdbool.h>
 #include <string.h>
 
-#include "upb/base/descriptor_constants.h"
-#include "upb/base/string_view.h"
-#include "upb/mem/arena.h"
-#include "upb/message/accessors.h"
-#include "upb/message/internal/message.h"
-#include "upb/message/message.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
+#include "upb/upb/base/descriptor_constants.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/message/accessors.h"
+#include "upb/upb/message/internal/message.h"
+#include "upb/upb/message/message.h"
+#include "upb/upb/mini_table/field.h"
+#include "upb/upb/mini_table/internal/field.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 static bool upb_MessageField_IsMap(const upb_MiniTableField* field) {
   return upb_FieldMode_Get(field) == kUpb_FieldMode_Map;

@@ -28,14 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/mini_table/compat.h"
+#include "upb/upb/mini_table/compat.h"
 
-#include "upb/base/descriptor_constants.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/message.h"
+#include "upb/upb/base/descriptor_constants.h"
+#include "upb/upb/mini_table/field.h"
+#include "upb/upb/mini_table/message.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 static bool upb_deep_check(const upb_MiniTable* src, const upb_MiniTable* dst,
                            bool eq) {

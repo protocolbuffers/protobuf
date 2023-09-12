@@ -11,7 +11,7 @@ load("@pip_deps//:requirements.bzl", "requirement")
 # end:github_only
 
 # begin:google_only
-# package(default_applicable_licenses = ["//:license"])
+# package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
@@ -41,8 +41,8 @@ py_test(
     main = "numpy_test_wrapper.py",
     deps = [
       requirement("numpy"),
-      "@com_google_protobuf//python/google/protobuf/internal/numpy:numpy_test",
-      "//python:_message",
+      "//python/google/protobuf/internal/numpy:numpy_test",
+      "//upb/python:_message",
     ],
     target_compatible_with = select({
       "@system_python//:supported": [],
@@ -79,6 +79,6 @@ filegroup(
     name = "test_files",
     srcs = glob(["*.py"]),
     visibility = [
-        "//python/dist:__pkg__",  # Scheuklappen: keep
+        "//upb/python/dist:__pkg__",  # Scheuklappen: keep
     ],
 )

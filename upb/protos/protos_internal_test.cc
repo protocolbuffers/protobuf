@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "protos/protos_internal.h"
+#include "upb/protos/protos_internal.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "protos_generator/tests/test_model.upb.h"
-#include "protos_generator/tests/test_model.upb.proto.h"
-#include "upb/mem/arena.h"
+#include "upb/protos_generator/tests/test_model.upb.h"
+#include "upb/protos_generator/tests/test_model.upb.proto.h"
+#include "upb/upb/mem/arena.h"
 
 namespace protos::testing {
 namespace {

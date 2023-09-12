@@ -28,16 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/test/fuzz_util.h"
+#include "upb/upb/test/fuzz_util.h"
 
-#include "upb/base/status.hpp"
-#include "upb/message/message.h"
-#include "upb/mini_descriptor/decode.h"
-#include "upb/mini_table/extension.h"
-#include "upb/mini_table/extension_registry.h"
+#include "upb/upb/base/status.hpp"
+#include "upb/upb/message/message.h"
+#include "upb/upb/mini_descriptor/decode.h"
+#include "upb/upb/mini_table/extension.h"
+#include "upb/upb/mini_table/extension_registry.h"
 
 // Must be last
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 namespace upb {
 namespace fuzz {

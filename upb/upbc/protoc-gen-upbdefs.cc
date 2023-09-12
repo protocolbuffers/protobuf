@@ -31,11 +31,11 @@
 #include <memory>
 
 #include "google/protobuf/descriptor.upb.h"
-#include "upb/reflection/def.hpp"
-#include "upb/util/def_to_proto.h"
-#include "upbc/common.h"
-#include "upbc/file_layout.h"
-#include "upbc/plugin.h"
+#include "upb/upb/reflection/def.hpp"
+#include "upb/upb/util/def_to_proto.h"
+#include "upb/upbc/common.h"
+#include "upb/upbc/file_layout.h"
+#include "upb/upbc/plugin.h"
 
 namespace upbc {
 namespace {
@@ -67,17 +67,17 @@ void WriteDefHeader(upb::FileDefPtr file, Output& output) {
   output(
       "#ifndef $0_UPBDEFS_H_\n"
       "#define $0_UPBDEFS_H_\n\n"
-      "#include \"upb/reflection/def.h\"\n"
-      "#include \"upb/reflection/internal/def_pool.h\"\n"
-      "#include \"upb/port/def.inc\"\n"
+      "#include \"upb/upb/reflection/def.h\"\n"
+      "#include \"upb/upb/reflection/internal/def_pool.h\"\n"
+      "#include \"upb/upb/port/def.inc\"\n"
       "#ifdef __cplusplus\n"
       "extern \"C\" {\n"
       "#endif\n\n",
       ToPreproc(file.name()));
 
-  output("#include \"upb/reflection/def.h\"\n");
+  output("#include \"upb/upb/reflection/def.h\"\n");
   output("\n");
-  output("#include \"upb/port/def.inc\"\n");
+  output("#include \"upb/upb/port/def.inc\"\n");
   output("\n");
 
   output("extern _upb_DefPool_Init $0;\n", DefInitSymbol(file));
@@ -92,7 +92,7 @@ void WriteDefHeader(upb::FileDefPtr file, Output& output) {
       "}  /* extern \"C\" */\n"
       "#endif\n"
       "\n"
-      "#include \"upb/port/undef.inc\"\n"
+      "#include \"upb/upb/port/undef.inc\"\n"
       "\n"
       "#endif  /* $0_UPBDEFS_H_ */\n",
       ToPreproc(file.name()));
@@ -101,7 +101,7 @@ void WriteDefHeader(upb::FileDefPtr file, Output& output) {
 void WriteDefSource(upb::FileDefPtr file, Output& output) {
   EmitFileWarning(file.name(), output);
 
-  output("#include \"upb/reflection/def.h\"\n");
+  output("#include \"upb/upb/reflection/def.h\"\n");
   output("#include \"$0\"\n", DefHeaderFilename(file));
   output("#include \"$0\"\n", HeaderFilename(file));
   output("\n");

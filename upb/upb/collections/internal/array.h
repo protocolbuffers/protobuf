@@ -33,10 +33,10 @@
 
 #include <string.h>
 
-#include "upb/collections/array.h"
+#include "upb/upb/collections/array.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -133,6 +133,6 @@ UPB_INLINE void _upb_array_detach(const void* msg, size_t ofs) {
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_COLLECTIONS_INTERNAL_ARRAY_H_ */

@@ -28,16 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/util/compare.h"
+#include "upb/upb/util/compare.h"
 
 #include <stdlib.h>
 
-#include "upb/base/string_view.h"
-#include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/reader.h"
-#include "upb/wire/types.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/wire/eps_copy_input_stream.h"
+#include "upb/upb/wire/reader.h"
+#include "upb/upb/wire/types.h"
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 struct upb_UnknownFields;
 typedef struct upb_UnknownFields upb_UnknownFields;

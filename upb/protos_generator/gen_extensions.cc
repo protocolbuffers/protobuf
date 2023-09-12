@@ -28,11 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "protos_generator/gen_extensions.h"
+#include "upb/protos_generator/gen_extensions.h"
 
 #include "absl/strings/str_cat.h"
-#include "protos_generator/gen_utils.h"
-#include "protos_generator/names.h"
+#include "upb/protos_generator/gen_utils.h"
+#include "upb/protos_generator/names.h"
 
 namespace protos_generator {
 

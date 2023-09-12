@@ -41,16 +41,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "upb/hash/common.h"
-#include "upb/message/internal/extension.h"
-#include "upb/message/internal/types.h"
-#include "upb/message/message.h"
-#include "upb/mini_table/extension.h"
-#include "upb/mini_table/extension_registry.h"
-#include "upb/mini_table/message.h"
+#include "upb/upb/hash/common.h"
+#include "upb/upb/message/internal/extension.h"
+#include "upb/upb/message/internal/types.h"
+#include "upb/upb/message/message.h"
+#include "upb/upb/mini_table/extension.h"
+#include "upb/upb/mini_table/extension_registry.h"
+#include "upb/upb/mini_table/message.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -125,6 +125,6 @@ bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MESSAGE_INTERNAL_H_ */

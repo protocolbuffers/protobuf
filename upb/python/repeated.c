@@ -28,11 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "python/repeated.h"
+#include "upb/python/repeated.h"
 
-#include "python/convert.h"
-#include "python/message.h"
-#include "python/protobuf.h"
+#include "upb/python/convert.h"
+#include "upb/python/message.h"
+#include "upb/python/protobuf.h"
 
 static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
                                                          PyObject* value);

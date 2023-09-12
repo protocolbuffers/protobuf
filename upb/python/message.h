@@ -33,8 +33,8 @@
 
 #include <stdbool.h>
 
-#include "python/protobuf.h"
-#include "upb/reflection/message.h"
+#include "upb/python/protobuf.h"
+#include "upb/upb/reflection/message.h"
 
 // Removes the wrapper object for this field from the unset subobject cache.
 void PyUpb_Message_CacheDelete(PyObject* _self, const upb_FieldDef* f);

@@ -31,10 +31,10 @@
 #ifndef UPB_HASH_STR_TABLE_H_
 #define UPB_HASH_STR_TABLE_H_
 
-#include "upb/hash/common.h"
+#include "upb/upb/hash/common.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef struct {
   upb_table t;
@@ -160,6 +160,6 @@ bool upb_strtable_iter_isequal(const upb_strtable_iter* i1,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_HASH_STR_TABLE_H_ */

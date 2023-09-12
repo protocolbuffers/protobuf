@@ -28,16 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/internal/def_builder.h"
+#include "upb/upb/reflection/internal/def_builder.h"
 
 #include <string.h>
 
-#include "upb/reflection/def_pool.h"
-#include "upb/reflection/def_type.h"
-#include "upb/reflection/field_def.h"
+#include "upb/upb/reflection/def_pool.h"
+#include "upb/upb/reflection/def_type.h"
+#include "upb/upb/reflection/field_def.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 /* The upb core does not generally have a concept of default instances. However
  * for descriptor options we make an exception since the max size is known and

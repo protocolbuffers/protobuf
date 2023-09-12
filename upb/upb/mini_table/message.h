@@ -31,12 +31,12 @@
 #ifndef UPB_MINI_TABLE_MESSAGE_H_
 #define UPB_MINI_TABLE_MESSAGE_H_
 
-#include "upb/mini_table/enum.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/message.h"
+#include "upb/upb/mini_table/enum.h"
+#include "upb/upb/mini_table/field.h"
+#include "upb/upb/mini_table/internal/message.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -103,6 +103,6 @@ bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_MESSAGE_H_ */

@@ -27,7 +27,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#include "protos_generator/gen_repeated_fields.h"
+#include "upb/protos_generator/gen_repeated_fields.h"
 
 #include <string>
 #include <vector>
@@ -35,15 +35,15 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "protos_generator/gen_accessors.h"
-#include "protos_generator/gen_enums.h"
-#include "protos_generator/gen_extensions.h"
-#include "protos_generator/gen_utils.h"
-#include "protos_generator/names.h"
-#include "protos_generator/output.h"
-#include "upbc/common.h"
-#include "upbc/file_layout.h"
-#include "upbc/names.h"
+#include "upb/protos_generator/gen_accessors.h"
+#include "upb/protos_generator/gen_enums.h"
+#include "upb/protos_generator/gen_extensions.h"
+#include "upb/protos_generator/gen_utils.h"
+#include "upb/protos_generator/names.h"
+#include "upb/protos_generator/output.h"
+#include "upb/upbc/common.h"
+#include "upb/upbc/file_layout.h"
+#include "upb/upbc/names.h"
 
 namespace protos_generator {
 namespace protobuf = ::google::protobuf;

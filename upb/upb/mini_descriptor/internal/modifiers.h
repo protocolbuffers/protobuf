@@ -32,7 +32,7 @@
 #define UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 typedef enum {
   kUpb_FieldModifier_IsRepeated = 1 << 0,
@@ -48,6 +48,6 @@ typedef enum {
   kUpb_MessageModifier_IsExtendable = 1 << 2,
 } kUpb_MessageModifier;
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_

@@ -4,7 +4,7 @@
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "pkg_filegroup", "strip_prefix")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@upb//cmake:build_defs.bzl", "staleness_test")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//conformance:defs.bzl", "conformance_test")
 load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION", "PROTOC_VERSION")
@@ -85,14 +85,14 @@ conformance_test(
 
 genrule(
     name = "copy_php_amalgamation_h",
-    srcs = ["@upb//:php-upb.h"],
+    srcs = ["//upb:php-upb.h"],
     outs = ["generated-in/ext/google/protobuf/php-upb.h"],
     cmd = "cp $< $@",
 )
 
 genrule(
     name = "copy_php_amalgamation_c",
-    srcs = ["@upb//:php-upb.c"],
+    srcs = ["//upb:php-upb.c"],
     outs = ["generated-in/ext/google/protobuf/php-upb.c"],
     cmd = "cp $< $@",
 )

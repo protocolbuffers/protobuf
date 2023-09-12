@@ -31,12 +31,12 @@
 #ifndef UPBC_CODE_GENERATOR_REQUEST_H_
 #define UPBC_CODE_GENERATOR_REQUEST_H_
 
-#include "upb/mem/arena.h"
-#include "upb/reflection/def.h"
-#include "upbc/code_generator_request.upb.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/reflection/def.h"
+#include "upb/upbc/code_generator_request.upb.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,6 +50,6 @@ upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPBC_CODE_GENERATOR_REQUEST_H_ */

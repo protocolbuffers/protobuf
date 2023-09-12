@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/mem/arena.h"
+#include "upb/upb/mem/arena.h"
 
 #include <array>
 #include <atomic>
@@ -42,7 +42,7 @@
 #include "absl/synchronization/notification.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 namespace {
 

@@ -33,10 +33,10 @@
 
 #include <string.h>
 
-#include "upb/mem/arena.h"
+#include "upb/upb/mem/arena.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -423,6 +423,6 @@ static UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_WIRE_EPS_COPY_INPUT_STREAM_H_

@@ -31,10 +31,10 @@
 #ifndef UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
 #define UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
 
-#include "upb/reflection/enum_value_def.h"
+#include "upb/upb/reflection/enum_value_def.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,6 +55,6 @@ const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_ */

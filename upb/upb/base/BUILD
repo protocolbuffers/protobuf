@@ -5,7 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
     name = "base",
@@ -21,7 +21,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//:port",
+        "//upb:port",
     ],
 )
 
@@ -32,7 +32,7 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
-    deps = ["//:port"],
+    deps = ["//upb:port"],
 )
 
 # begin:github_only
@@ -46,8 +46,8 @@ filegroup(
         ],
     ),
     visibility = [
-        "//cmake:__pkg__",
-        "//python/dist:__pkg__",
+        "//upb/cmake:__pkg__",
+        "//upb/python/dist:__pkg__",
     ]
 )
 # end:github_only

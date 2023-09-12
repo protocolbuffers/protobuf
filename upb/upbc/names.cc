@@ -28,14 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upbc/names.h"
+#include "upb/upbc/names.h"
 
 #include <string>
 
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "upb/reflection/def.hpp"
+#include "upb/upb/reflection/def.hpp"
 
 namespace upbc {
 

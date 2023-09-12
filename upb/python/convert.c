@@ -28,16 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "python/convert.h"
+#include "upb/python/convert.h"
 
-#include "python/message.h"
-#include "python/protobuf.h"
-#include "upb/collections/map.h"
-#include "upb/reflection/message.h"
-#include "upb/util/compare.h"
+#include "upb/python/message.h"
+#include "upb/python/protobuf.h"
+#include "upb/upb/collections/map.h"
+#include "upb/upb/reflection/message.h"
+#include "upb/upb/util/compare.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
                         PyObject* arena) {
@@ -443,4 +443,4 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
          kUpb_UnknownCompareResult_Equal;
 }
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"

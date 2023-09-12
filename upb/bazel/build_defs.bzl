@@ -29,13 +29,13 @@ _DEFAULT_COPTS.extend([
 # end:github_only
 
 UPB_DEFAULT_CPPOPTS = select({
-    "//:windows": [],
+    "//upb:windows": [],
     "//conditions:default": _DEFAULT_CPPOPTS,
 })
 
 UPB_DEFAULT_COPTS = select({
-    "//:windows": [],
-    "//:fasttable_enabled_setting": ["-std=gnu99", "-DUPB_ENABLE_FASTTABLE"],
+    "//upb:windows": [],
+    "//upb:fasttable_enabled_setting": ["-std=gnu99", "-DUPB_ENABLE_FASTTABLE"],
     "//conditions:default": _DEFAULT_COPTS,
 })
 

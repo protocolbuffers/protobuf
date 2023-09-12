@@ -31,10 +31,10 @@
 #ifndef UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_
 #define UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_
 
-#include "upb/reflection/message_def.h"
+#include "upb/upb/reflection/message_def.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,6 +61,6 @@ upb_MessageDef* _upb_MessageDefs_New(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_ */

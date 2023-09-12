@@ -28,12 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/collections/internal/map_sorter.h"
+#include "upb/upb/collections/internal/map_sorter.h"
 
-#include "upb/base/internal/log2.h"
+#include "upb/upb/base/internal/log2.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 static void _upb_mapsorter_getkeys(const void* _a, const void* _b, void* a_key,
                                    void* b_key, size_t size) {

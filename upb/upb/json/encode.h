@@ -31,10 +31,10 @@
 #ifndef UPB_JSON_ENCODE_H_
 #define UPB_JSON_ENCODE_H_
 
-#include "upb/reflection/def.h"
+#include "upb/upb/reflection/def.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,6 +68,6 @@ UPB_API size_t upb_JsonEncode(const upb_Message* msg, const upb_MessageDef* m,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_JSONENCODE_H_ */

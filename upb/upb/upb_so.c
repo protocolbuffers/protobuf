@@ -30,8 +30,8 @@
 
 // These headers form a spanning tree for the upb defs needed by FFI layers.
 
-#include "upb/collections/array_split64.h"
-#include "upb/collections/map.h"
-#include "upb/message/accessors_split64.h"
-#include "upb/message/message.h"
-#include "upb/mini_descriptor/decode.h"
+#include "upb/upb/collections/array_split64.h"
+#include "upb/upb/collections/map.h"
+#include "upb/upb/message/accessors_split64.h"
+#include "upb/upb/message/message.h"
+#include "upb/upb/mini_descriptor/decode.h"

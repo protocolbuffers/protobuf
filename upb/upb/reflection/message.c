@@ -28,24 +28,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/message.h"
+#include "upb/upb/reflection/message.h"
 
 #include <string.h>
 
-#include "upb/collections/map.h"
-#include "upb/hash/common.h"
-#include "upb/message/accessors.h"
-#include "upb/message/message.h"
-#include "upb/mini_table/field.h"
-#include "upb/reflection/def.h"
-#include "upb/reflection/def_pool.h"
-#include "upb/reflection/def_type.h"
-#include "upb/reflection/internal/field_def.h"
-#include "upb/reflection/message_def.h"
-#include "upb/reflection/oneof_def.h"
+#include "upb/upb/collections/map.h"
+#include "upb/upb/hash/common.h"
+#include "upb/upb/message/accessors.h"
+#include "upb/upb/message/message.h"
+#include "upb/upb/mini_table/field.h"
+#include "upb/upb/reflection/def.h"
+#include "upb/upb/reflection/def_pool.h"
+#include "upb/upb/reflection/def_type.h"
+#include "upb/upb/reflection/internal/field_def.h"
+#include "upb/upb/reflection/message_def.h"
+#include "upb/upb/reflection/oneof_def.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 bool upb_Message_HasFieldByDef(const upb_Message* msg, const upb_FieldDef* f) {
   UPB_ASSERT(upb_FieldDef_HasPresence(f));

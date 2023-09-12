@@ -39,14 +39,14 @@
 #include <string.h>
 
 #include "lauxlib.h"
-#include "lua/upb.h"
-#include "upb/collections/map.h"
-#include "upb/json/decode.h"
-#include "upb/json/encode.h"
-#include "upb/message/message.h"
-#include "upb/port/def.inc"
-#include "upb/reflection/message.h"
-#include "upb/text/encode.h"
+#include "upb/lua/upb.h"
+#include "upb/upb/collections/map.h"
+#include "upb/upb/json/decode.h"
+#include "upb/upb/json/encode.h"
+#include "upb/upb/message/message.h"
+#include "upb/upb/port/def.inc"
+#include "upb/upb/reflection/message.h"
+#include "upb/upb/text/encode.h"
 
 /*
  * Message/Map/Array objects.  These objects form a directed graph: a message

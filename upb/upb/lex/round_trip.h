@@ -32,7 +32,7 @@
 #define UPB_LEX_ROUND_TRIP_H_
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // Encodes a float or double that is round-trippable, but as short as possible.
 // These routines are not fully optimal (not guaranteed to be shortest), but are
@@ -53,6 +53,6 @@ void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_LEX_ROUND_TRIP_H_ */

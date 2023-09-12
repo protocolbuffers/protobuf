@@ -32,7 +32,7 @@
 #define UPB_BASE_DESCRIPTOR_CONSTANTS_H_
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 // The types a field can have. Note that this list is not identical to the
 // types defined in descriptor.proto, which gives INT32 and SINT32 separate
@@ -102,6 +102,6 @@ UPB_INLINE bool upb_FieldType_IsPackable(upb_FieldType type) {
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_BASE_DESCRIPTOR_CONSTANTS_H_ */

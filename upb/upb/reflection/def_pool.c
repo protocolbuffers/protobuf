@@ -28,21 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/internal/def_pool.h"
+#include "upb/upb/reflection/internal/def_pool.h"
 
-#include "upb/hash/int_table.h"
-#include "upb/hash/str_table.h"
-#include "upb/reflection/def_type.h"
-#include "upb/reflection/internal/def_builder.h"
-#include "upb/reflection/internal/enum_def.h"
-#include "upb/reflection/internal/enum_value_def.h"
-#include "upb/reflection/internal/field_def.h"
-#include "upb/reflection/internal/file_def.h"
-#include "upb/reflection/internal/message_def.h"
-#include "upb/reflection/internal/service_def.h"
+#include "upb/upb/hash/int_table.h"
+#include "upb/upb/hash/str_table.h"
+#include "upb/upb/reflection/def_type.h"
+#include "upb/upb/reflection/internal/def_builder.h"
+#include "upb/upb/reflection/internal/enum_def.h"
+#include "upb/upb/reflection/internal/enum_value_def.h"
+#include "upb/upb/reflection/internal/field_def.h"
+#include "upb/upb/reflection/internal/file_def.h"
+#include "upb/upb/reflection/internal/message_def.h"
+#include "upb/upb/reflection/internal/service_def.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 struct upb_DefPool {
   upb_Arena* arena;

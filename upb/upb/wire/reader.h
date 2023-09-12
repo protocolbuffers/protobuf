@@ -31,12 +31,12 @@
 #ifndef UPB_WIRE_READER_H_
 #define UPB_WIRE_READER_H_
 
-#include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/internal/swap.h"
-#include "upb/wire/types.h"
+#include "upb/upb/wire/eps_copy_input_stream.h"
+#include "upb/upb/wire/internal/swap.h"
+#include "upb/upb/wire/types.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -225,6 +225,6 @@ UPB_INLINE const char* upb_WireReader_SkipValue(
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_WIRE_READER_H_

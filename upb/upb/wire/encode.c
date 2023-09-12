@@ -30,20 +30,20 @@
 
 // We encode backwards, to avoid pre-computing lengths (one-pass encode).
 
-#include "upb/wire/encode.h"
+#include "upb/upb/wire/encode.h"
 
 #include <string.h>
 
-#include "upb/collections/internal/array.h"
-#include "upb/collections/internal/map_sorter.h"
-#include "upb/message/internal/accessors.h"
-#include "upb/message/internal/extension.h"
-#include "upb/mini_table/sub.h"
-#include "upb/wire/internal/common.h"
-#include "upb/wire/internal/swap.h"
+#include "upb/upb/collections/internal/array.h"
+#include "upb/upb/collections/internal/map_sorter.h"
+#include "upb/upb/message/internal/accessors.h"
+#include "upb/upb/message/internal/extension.h"
+#include "upb/upb/mini_table/sub.h"
+#include "upb/upb/wire/internal/common.h"
+#include "upb/upb/wire/internal/swap.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #define UPB_PB_VARINT_MAX_LEN 10
 

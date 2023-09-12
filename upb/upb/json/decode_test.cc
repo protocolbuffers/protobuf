@@ -28,14 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/json/decode.h"
+#include "upb/upb/json/decode.h"
 
 #include "google/protobuf/struct.upb.h"
 #include "gtest/gtest.h"
-#include "upb/json/test.upb.h"
-#include "upb/json/test.upbdefs.h"
-#include "upb/mem/arena.hpp"
-#include "upb/reflection/def.hpp"
+#include "upb/upb/json/test.upb.h"
+#include "upb/upb/json/test.upbdefs.h"
+#include "upb/upb/mem/arena.hpp"
+#include "upb/upb/reflection/def.hpp"
 
 static upb_test_Box* JsonDecode(const char* json, upb_Arena* a) {
   upb::Status status;

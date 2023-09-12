@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "python/map.h"
+#include "upb/python/map.h"
 
-#include "python/convert.h"
-#include "python/message.h"
-#include "python/protobuf.h"
-#include "upb/collections/map.h"
-#include "upb/reflection/def.h"
+#include "upb/python/convert.h"
+#include "upb/python/message.h"
+#include "upb/python/protobuf.h"
+#include "upb/upb/collections/map.h"
+#include "upb/upb/reflection/def.h"
 
 // -----------------------------------------------------------------------------
 // MapContainer

@@ -40,10 +40,10 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/util/field_comparator.h"
-#include "upb/base/status.hpp"
-#include "upb/mem/arena.hpp"
-#include "upb/reflection/def.hpp"
-#include "upb/util/def_to_proto.h"
+#include "upb/upb/base/status.hpp"
+#include "upb/upb/mem/arena.hpp"
+#include "upb/upb/reflection/def.hpp"
+#include "upb/upb/util/def_to_proto.h"
 
 namespace upb_test {
 

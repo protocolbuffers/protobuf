@@ -33,7 +33,7 @@
 
 #include <memory>
 
-#include "upb/mem/arena.h"
+#include "upb/upb/mem/arena.h"
 
 namespace upb {
 

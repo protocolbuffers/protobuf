@@ -28,26 +28,26 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/reflection/internal/field_def.h"
+#include "upb/upb/reflection/internal/field_def.h"
 
 #include <ctype.h>
 #include <errno.h>
 
-#include "upb/mini_descriptor/decode.h"
-#include "upb/mini_descriptor/internal/modifiers.h"
-#include "upb/reflection/def.h"
-#include "upb/reflection/def_pool.h"
-#include "upb/reflection/def_type.h"
-#include "upb/reflection/internal/def_builder.h"
-#include "upb/reflection/internal/desc_state.h"
-#include "upb/reflection/internal/enum_def.h"
-#include "upb/reflection/internal/enum_value_def.h"
-#include "upb/reflection/internal/file_def.h"
-#include "upb/reflection/internal/message_def.h"
-#include "upb/reflection/internal/oneof_def.h"
+#include "upb/upb/mini_descriptor/decode.h"
+#include "upb/upb/mini_descriptor/internal/modifiers.h"
+#include "upb/upb/reflection/def.h"
+#include "upb/upb/reflection/def_pool.h"
+#include "upb/upb/reflection/def_type.h"
+#include "upb/upb/reflection/internal/def_builder.h"
+#include "upb/upb/reflection/internal/desc_state.h"
+#include "upb/upb/reflection/internal/enum_def.h"
+#include "upb/upb/reflection/internal/enum_value_def.h"
+#include "upb/upb/reflection/internal/file_def.h"
+#include "upb/upb/reflection/internal/message_def.h"
+#include "upb/upb/reflection/internal/oneof_def.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #define UPB_FIELD_TYPE_UNSPECIFIED 0
 

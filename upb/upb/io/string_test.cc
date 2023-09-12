@@ -28,12 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/io/string.h"
+#include "upb/upb/io/string.h"
 
 #include <string.h>
 
 #include "gtest/gtest.h"
-#include "upb/mem/arena.hpp"
+#include "upb/upb/mem/arena.hpp"
 
 TEST(StringTest, Append) {
   upb::Arena arena;

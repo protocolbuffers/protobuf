@@ -34,7 +34,7 @@
 #include <string.h>
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #define UPB_STRINGVIEW_INIT(ptr, len) \
   { ptr, len }
@@ -76,6 +76,6 @@ UPB_INLINE bool upb_StringView_IsEqual(upb_StringView a, upb_StringView b) {
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_BASE_STRING_VIEW_H_ */

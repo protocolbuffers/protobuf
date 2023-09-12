@@ -31,13 +31,13 @@
 #ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 #define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 
-#include "upb/collections/internal/map.h"
-#include "upb/message/internal/extension.h"
-#include "upb/message/internal/message.h"
-#include "upb/mini_table/internal/field.h"
+#include "upb/upb/collections/internal/map.h"
+#include "upb/upb/message/internal/extension.h"
+#include "upb/upb/message/internal/message.h"
+#include "upb/upb/mini_table/internal/field.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #if defined(__GNUC__) && !defined(__clang__)
 // GCC raises incorrect warnings in these functions.  It thinks that we are
@@ -385,6 +385,6 @@ UPB_INLINE upb_Map* _upb_Message_GetOrCreateMutableMap(
 #pragma GCC diagnostic pop
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_MESSAGE_INTERNAL_ACCESSORS_H_

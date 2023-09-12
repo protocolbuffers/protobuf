@@ -31,10 +31,10 @@
 #ifndef UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
 #define UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
 
-#include "upb/reflection/field_def.h"
+#include "upb/upb/reflection/field_def.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,6 +74,6 @@ const upb_FieldDef** _upb_FieldDefs_Sorted(const upb_FieldDef* f, int n,
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_FIELD_DEF_INTERNAL_H_ */

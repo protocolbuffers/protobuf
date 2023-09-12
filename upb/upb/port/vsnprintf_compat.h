@@ -32,7 +32,7 @@
 #define UPB_PORT_VSNPRINTF_COMPAT_H_
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 UPB_INLINE int _upb_vsnprintf(char* buf, size_t size, const char* fmt,
                               va_list ap) {
@@ -48,6 +48,6 @@ UPB_INLINE int _upb_vsnprintf(char* buf, size_t size, const char* fmt,
 #endif
 }
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPB_PORT_VSNPRINTF_COMPAT_H_

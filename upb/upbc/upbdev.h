@@ -31,12 +31,12 @@
 #ifndef UPBC_UPBDEV_H_
 #define UPBC_UPBDEV_H_
 
-#include "upb/base/status.h"
-#include "upb/base/string_view.h"
-#include "upb/mem/arena.h"
+#include "upb/upb/base/status.h"
+#include "upb/upb/base/string_view.h"
+#include "upb/upb/mem/arena.h"
 
 // Must be last.
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,6 +66,6 @@ UPB_API void upbdev_Status_Clear(upb_Status* status);
 } /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  // UPBC_UPBDEV_H_

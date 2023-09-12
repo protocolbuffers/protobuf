@@ -33,7 +33,7 @@
 #include <lualib.h>
 #include <signal.h>
 
-#include "lua/upb.h"
+#include "upb/lua/upb.h"
 
 lua_State* L;
 
@@ -53,13 +53,13 @@ const char* init =
     "package.preload['lupb'] = ... "
     "package.path = '"
     "./?.lua;"
-    "./third_party/lunit/?.lua;"
+    "./upb/third_party/lunit/?.lua;"
     "external/com_google_protobuf/?.lua;"
     "external/com_google_protobuf/src/?.lua;"
     "bazel-bin/?.lua;"
     "bazel-bin/external/com_google_protobuf/src/?.lua;"
     "bazel-bin/external/com_google_protobuf/?.lua;"
-    "lua/?.lua;"
+    "upb/lua/?.lua;"
     // These additional paths handle the case where this test is invoked from
     // the protobuf repo's Bazel workspace.
     "external/upb/?.lua;"
