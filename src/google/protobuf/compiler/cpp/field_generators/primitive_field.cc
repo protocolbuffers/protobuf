@@ -474,30 +474,40 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
       return _internal_$name$().Get(index);
     }
+  )cc");
+  p->Emit(R"cc(
     inline void $Msg$::set_$name$(int index, $Type$ value) {
       $annotate_set$;
       _internal_mutable_$name$()->Set(index, value);
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
+  )cc");
+  p->Emit(R"cc(
     inline void $Msg$::add_$name$($Type$ value) {
       $TsanDetectConcurrentMutation$;
       _internal_mutable_$name$()->Add(value);
       $annotate_add$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
-    inline const $pb$::RepeatedField<$Type$>& $Msg$::$name$() const {
+  )cc");
+  p->Emit(R"cc(
+    inline const $pb$::RepeatedField<$Type$>& $Msg$::$name$() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_list$;
       // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
       return _internal_$name$();
     }
-    inline $pb$::RepeatedField<$Type$>* $Msg$::mutable_$name$() {
+  )cc");
+  p->Emit(R"cc(
+    inline $pb$::RepeatedField<$Type$>* $Msg$::mutable_$name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       $TsanDetectConcurrentMutation$;
       return _internal_mutable_$name$();
     }
-
   )cc");
+
   if (should_split()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedField<$Type$>& $Msg$::_internal_$name$()
