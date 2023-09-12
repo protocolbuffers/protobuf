@@ -1,7 +1,0 @@
-exports_files(
-    [
-        "console.lua",
-        "lunit.lua",
-    ],
-    visibility = ["//upb/lua:__pkg__"],
-)
