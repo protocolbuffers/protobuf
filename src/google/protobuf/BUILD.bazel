@@ -7,6 +7,7 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load("//:protobuf.bzl", "internal_gen_well_known_cc_protos")
 
 package(
     default_visibility = [
@@ -85,10 +86,9 @@ proto_library(
 
 # Generate code for the well-known types on demand.
 # This needs to be done in a separate genrule because we publish protoc and the
-# C++ runtime with the WKT code linked in.  We need to use a stripped down
-# compiler and runtime library to generate them, and cc_proto_library doesn't
-# support swapping out the compiler binary (even though a custom runtime can
-# be passed to proto_lang_toolchain).
+# C++ runtime with the WKT code linked in.  We avoid using cc_proto_library
+# because it breaks if a Bazel workspace is built with a proto_lang_toolchain
+# that blocks any of the protos for the well known types.
 #
 # TODO(b/246826624) We still check in generated pb.h and pb.cc files purely to
 # support CMake builds.  These aren't used at all by Bazel and will be removed
@@ -107,17 +107,11 @@ WELL_KNOWN_TYPES = [
     "wrappers",
 ]
 
-proto_library(
-    name = "wkt_proto",
-    strip_import_prefix = "/src",
-    visibility = ["//visibility:private"],
-    deps = [wkt + "_proto" for wkt in WELL_KNOWN_TYPES],
-)
-
-cc_proto_library(
+internal_gen_well_known_cc_protos(
     name = "wkt_cc_proto",
-    visibility = ["//pkg:__pkg__"],
-    deps = ["wkt_proto"],
+    cc_deps = [":protobuf_nowkt"],
+    include_prefix = "google/protobuf",
+    deps = [wkt + "_proto" for wkt in WELL_KNOWN_TYPES],
 )
 
 # When we generate code for the well-known types, we put the resulting files in

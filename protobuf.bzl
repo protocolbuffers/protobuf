@@ -335,6 +335,110 @@ internal_gen_well_known_protos_java = rule(
     },
 )
 
+def _internal_gen_well_known_cc_protos(ctx, extension = ".pb.cc"):
+    args = ctx.actions.args()
+
+    deps = [d[ProtoInfo] for d in ctx.attr.deps]
+
+    out_files = []
+    for dep in deps:
+        for src in dep.direct_sources:
+            out_file = ctx.actions.declare_file("{}{}".format(src.basename.removesuffix(".proto"), extension))
+            out_files.append(out_file)
+
+    args.add("--cpp_out", out_files[0].dirname.removesuffix("google/protobuf"))
+
+    descriptors = depset(
+        transitive = [dep.transitive_descriptor_sets for dep in deps],
+    )
+    args.add_joined(
+        "--descriptor_set_in",
+        descriptors,
+        join_with = ctx.configuration.host_path_separator,
+    )
+
+    for dep in deps:
+        if "." == dep.proto_source_root:
+            args.add_all([src.path for src in dep.direct_sources])
+        else:
+            source_root = dep.proto_source_root
+            offset = len(source_root) + 1  # + '/'.
+            args.add_all([src.path[offset:] for src in dep.direct_sources])
+
+    ctx.actions.run(
+        executable = ctx.executable._protoc,
+        inputs = descriptors,
+        outputs = out_files,
+        arguments = [args],
+        mnemonic = "ProtoCompile",
+        use_default_shell_env = True,
+    )
+
+    return [
+        DefaultInfo(
+            files = depset(out_files),
+        ),
+    ]
+
+def _internal_gen_well_known_cc_protos_sources_impl(ctx):
+    return _internal_gen_well_known_cc_protos(ctx)
+
+_internal_gen_well_known_cc_protos_sources = rule(
+    implementation = _internal_gen_well_known_cc_protos_sources_impl,
+    attrs = {
+        "deps": attr.label_list(
+            mandatory = True,
+            providers = [ProtoInfo],
+        ),
+        "_protoc": attr.label(
+            executable = True,
+            cfg = "exec",
+            default = "//:protoc",
+        ),
+    },
+)
+
+def _internal_gen_well_known_cc_protos_headers_impl(ctx):
+    return _internal_gen_well_known_cc_protos(ctx, extension = ".pb.h")
+
+_internal_gen_well_known_cc_protos_headers = rule(
+    implementation = _internal_gen_well_known_cc_protos_headers_impl,
+    attrs = {
+        "deps": attr.label_list(
+            mandatory = True,
+            providers = [ProtoInfo],
+        ),
+        "_protoc": attr.label(
+            executable = True,
+            cfg = "exec",
+            default = "//:protoc",
+        ),
+    },
+)
+
+def internal_gen_well_known_cc_protos(
+        name,
+        deps = [],
+        cc_deps = [],
+        **kwargs):
+    _internal_gen_well_known_cc_protos_sources(
+        name = name + "_sources",
+        deps = deps,
+    )
+
+    _internal_gen_well_known_cc_protos_headers(
+        name = name + "_headers",
+        deps = deps,
+    )
+
+    native.cc_library(
+        name = name,
+        srcs = [name + "_sources"],
+        hdrs = [name + "_headers"],
+        deps = cc_deps,
+        **kwargs
+    )
+
 def _internal_gen_kt_protos(ctx):
     args = ctx.actions.args()
 
