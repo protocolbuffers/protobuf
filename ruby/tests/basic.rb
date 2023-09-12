@@ -717,7 +717,7 @@ module BasicTest
     myString = Class.new(String)
 
     m = proto_module::TestMessage.new(
-      optional_string: str,
+      optional_string: myString.new(str),
     )
 
     assert_equal str, m.optional_string
