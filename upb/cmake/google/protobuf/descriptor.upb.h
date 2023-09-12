@@ -9,9 +9,9 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
 #define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
 
-#include "upb/generated_code_support.h"
+#include "upb/upb/generated_code_support.h"
 // Must be last. 
-#include "upb/port/def.inc"
+#include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -6508,6 +6508,6 @@ extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 }  /* extern "C" */
 #endif
 
-#include "upb/port/undef.inc"
+#include "upb/upb/port/undef.inc"
 
 #endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_ */

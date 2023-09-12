@@ -5,7 +5,6 @@ cmake_minimum_required(VERSION 3.10...3.24)
 project(upb)
 set(CMAKE_C_STANDARD 99)
 
-
 # Prevent CMake from setting -rdynamic on Linux (!!).
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
@@ -41,7 +40,7 @@ if(UPB_ENABLE_UBSAN)
 endif()
 
 if(NOT TARGET utf8_range)
-  if(EXISTS ../external/utf8_range)
+  if(EXISTS ../../external/utf8_range)
     # utf8_range is already installed
     include_directories(../external/utf8_range)
   elseif(EXISTS ../../utf8_range)
@@ -51,7 +50,7 @@ if(NOT TARGET utf8_range)
     FetchContent_Declare(
       utf8_range
       GIT_REPOSITORY "https://github.com/protocolbuffers/utf8_range.git"
-      GIT_TAG "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f"
+      GIT_TAG "d863bc33e15cba6d873c878dcca9e6fe52b2f8cb"
     )
     FetchContent_GetProperties(utf8_range)
     if(NOT utf8_range_POPULATED)
