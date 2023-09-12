@@ -53,7 +53,7 @@ const char* init =
     "package.preload['lupb'] = ... "
     "package.path = '"
     "./?.lua;"
-    "./third_party/lunit/?.lua;"
+    "./upb/third_party/lunit/?.lua;"
     "external/com_google_protobuf/?.lua;"
     "external/com_google_protobuf/src/?.lua;"
     "bazel-bin/?.lua;"
