@@ -274,6 +274,13 @@ void GenerateRs(Context<Descriptor> msg) {
           _phantom: $Phantom$<&'a ()>,
         }
 
+        impl<'a> $Msg$View<'a> {
+          #[doc(hidden)]
+          pub fn new(_private: $pbi$::Private, msg: $pbi$::RawMessage) -> Self {
+            Self { msg, _phantom: std::marker::PhantomData }
+          }
+        }
+
         // SAFETY:
         // - `$Msg$View` does not perform any mutation.
         // - While a `$Msg$View` exists, a `$Msg$Mut` can't exist to mutate

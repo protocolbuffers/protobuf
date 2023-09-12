@@ -10,9 +10,11 @@
 #include <string>
 
 #include "absl/log/absl_log.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -148,10 +150,19 @@ std::string RustInternalModuleName(Context<FileDescriptor> file) {
 }
 
 std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg) {
+  std::string name = msg.desc().full_name();
   if (msg.desc().file()->package().empty()) {
-    return msg.desc().name();
+    return name;
   }
-  return absl::StrCat(RustModule(msg), "::", msg.desc().name());
+  // when computing the relative path, we don't want the package name, so we
+  // strip that out
+  name =
+      std::string(absl::StripPrefix(name, msg.desc().file()->package() + "."));
+  // proto nesting is marked with periods in .proto files -- this gets
+  // translated to delimiting via _:: in terra rust
+  absl::StrReplaceAll({{".", "_::"}}, &name);
+
+  return absl::StrCat(RustModule(msg), "::", name);
 }
 
 std::string FieldInfoComment(Context<FieldDescriptor> field) {
