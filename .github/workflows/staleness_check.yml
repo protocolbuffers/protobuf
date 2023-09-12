@@ -21,14 +21,14 @@ jobs:
         branch: [main, 22.x, 23.x, 24.x]
         os: [{ name: Linux, value: ubuntu-latest}]
 
-    name: Test staleness ${{ matrix.os.name }} ${{ inputs.safe-checkout && 'PR' || matrix.branch }}
+    name: Test staleness ${{ matrix.os.name }} ${{ github.head_ref && 'PR' || matrix.branch }}
     runs-on: ${{ matrix.os.value }}
     if: ${{ github.event.repository.full_name == 'protocolbuffers/protobuf' }}
     steps:
-      - name: Checkout ${{ inputs.safe-checkout && 'PR' || matrix.branch }}
+      - name: Checkout ${{ github.head_ref && 'PR' || matrix.branch }}
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
-          ref: ${{ inputs.safe-checkout || matrix.branch }}
+          ref: ${{ github.head_ref || matrix.branch }}
 
       - name: Mark runs associated with commits
         if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}

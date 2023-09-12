@@ -121,8 +121,9 @@ jobs:
             flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
           - name: C++17
             flags: -DCMAKE_CXX_STANDARD=17
-          - name: C++20
-            flags: -DCMAKE_CXX_STANDARD=20
+          # TODO(b/300096720) Re-enable this.
+          #- name: C++20
+          #  flags: -DCMAKE_CXX_STANDARD=20
 
     name: Linux CMake ${{ matrix.name}}
     runs-on: ubuntu-latest
@@ -140,7 +141,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-e6272cdfe97c6df307e17b83f3a7a70844f6fc08
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-e508da4f6a96f1baeca8aafa4d835c48295691b3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ matrix.flags}} ${{ env.CCACHE_CMAKE_FLAGS }}
@@ -165,7 +166,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-e508da4f6a96f1baeca8aafa4d835c48295691b3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }} -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package \&\&
@@ -194,7 +195,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-e508da4f6a96f1baeca8aafa4d835c48295691b3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }}
@@ -264,7 +265,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-e508da4f6a96f1baeca8aafa4d835c48295691b3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ env.CCACHE_CMAKE_FLAGS }}
