@@ -206,10 +206,14 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // deleting.
   SizedPtr Free(size_t* space_allocated);
 
+  // ThreadCache is accessed very frequently, so we align it such that it's
+  // located within a single cache line.
+  static constexpr size_t kThreadCacheAlignment = 32;
+
 #ifdef _MSC_VER
 #pragma warning(disable : 4324)
 #endif
-  struct alignas(kCacheAlignment) ThreadCache {
+  struct alignas(kThreadCacheAlignment) ThreadCache {
     // Number of per-thread lifecycle IDs to reserve. Must be power of two.
     // To reduce contention on a global atomic, each thread reserves a batch of
     // IDs.  The following number is calculated based on a stress test with
@@ -223,6 +227,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     uint64_t last_lifecycle_id_seen{static_cast<uint64_t>(-1)};
     SerialArena* last_serial_arena{nullptr};
   };
+  static_assert(sizeof(ThreadCache) <= kThreadCacheAlignment,
+                "ThreadCache may span several cache lines");
 
   // Lifecycle_id can be highly contended variable in a situation of lots of
   // arena creation. Make sure that other global variables are not sharing the
