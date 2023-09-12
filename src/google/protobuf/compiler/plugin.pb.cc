@@ -543,6 +543,7 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
 
 const ::google::protobuf::Message::ClassData Version::_class_data_ = {
     Version::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Version::GetClassData() const {
   return &_class_data_;
@@ -888,6 +889,7 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
 
 const ::google::protobuf::Message::ClassData CodeGeneratorRequest::_class_data_ = {
     CodeGeneratorRequest::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* CodeGeneratorRequest::GetClassData() const {
   return &_class_data_;
@@ -1218,6 +1220,7 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
 
 const ::google::protobuf::Message::ClassData CodeGeneratorResponse_File::_class_data_ = {
     CodeGeneratorResponse_File::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* CodeGeneratorResponse_File::GetClassData() const {
   return &_class_data_;
@@ -1491,6 +1494,7 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
 
 const ::google::protobuf::Message::ClassData CodeGeneratorResponse::_class_data_ = {
     CodeGeneratorResponse::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* CodeGeneratorResponse::GetClassData() const {
   return &_class_data_;

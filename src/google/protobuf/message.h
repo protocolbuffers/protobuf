@@ -362,25 +362,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // to implement GetDescriptor() and GetReflection() above.
   virtual Metadata GetMetadata() const = 0;
 
-  struct ClassData {
-    // Note: The order of arguments (to, then from) is chosen so that the ABI
-    // of this function is the same as the MergeFrom method.  That is, the
-    // hidden "this" parameter comes first.
-    void (*merge_to_from)(Message& to, const Message& from_msg);
-  };
-  // GetClassData() returns a pointer to a ClassData struct which
-  // exists in global memory and is unique to each subclass.  This uniqueness
-  // property is used in order to quickly determine whether two messages are
-  // of the same type.
-  // TODO(jorg): change to pure virtual
-  virtual const ClassData* GetClassData() const { return nullptr; }
-
-  // CopyWithSourceCheck calls Clear() and then MergeFrom(), and in debug
-  // builds, checks that calling Clear() on the destination message doesn't
-  // alter the source.  It assumes the messages are known to be of the same
-  // type, and thus uses GetClassData().
-  static void CopyWithSourceCheck(Message& to, const Message& from);
-
   inline explicit Message(Arena* arena) : MessageLite(arena) {}
   size_t ComputeUnknownFieldsSize(size_t total_size,
                                   internal::CachedSize* cached_size) const;
