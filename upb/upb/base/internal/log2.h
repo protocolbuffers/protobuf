@@ -6,8 +6,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_BASE_LOG2_H_
-#define UPB_BASE_LOG2_H_
+#ifndef UPB_BASE_INTERNAL_LOG2_H_
+#define UPB_BASE_INTERNAL_LOG2_H_
 
 // Must be last.
 #include "upb/upb/port/def.inc"
@@ -35,4 +35,4 @@ UPB_INLINE int upb_Log2CeilingSize(int x) { return 1 << upb_Log2Ceiling(x); }
 
 #include "upb/upb/port/undef.inc"
 
-#endif /* UPB_BASE_LOG2_H_ */
+#endif /* UPB_BASE_INTERNAL_LOG2_H_ */

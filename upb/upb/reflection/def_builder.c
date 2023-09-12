@@ -35,6 +35,7 @@
 #include "upb/upb/reflection/def_pool.h"
 #include "upb/upb/reflection/def_type.h"
 #include "upb/upb/reflection/field_def.h"
+#include "upb/upb/reflection/internal/strdup2.h"
 
 // Must be last.
 #include "upb/upb/port/def.inc"

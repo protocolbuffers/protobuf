@@ -45,6 +45,7 @@
 #include "upb/upb/reflection/internal/file_def.h"
 #include "upb/upb/reflection/internal/message_def.h"
 #include "upb/upb/reflection/internal/oneof_def.h"
+#include "upb/upb/reflection/internal/strdup2.h"
 
 // Must be last.
 #include "upb/upb/port/def.inc"
