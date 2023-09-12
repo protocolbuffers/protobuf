@@ -1070,7 +1070,8 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                 // TODO(b/281513105): figure out if early return breaks tracking
                 if (ShouldSplit(field, options_)) {
                   p->Emit(R"cc(
-                    if (IsSplitMessageDefault()) return;
+                    if (PROTOBUF_PREDICT_TRUE(IsSplitMessageDefault()))
+                      return;
                   )cc");
                 }
                 field_generators_.get(field).GenerateClearingCode(p);
@@ -2069,7 +2070,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   if (ShouldSplit(descriptor_, options_)) {
     format(
         "void $classname$::PrepareSplitMessageForWrite() {\n"
-        "  if (IsSplitMessageDefault()) {\n"
+        "  if (PROTOBUF_PREDICT_TRUE(IsSplitMessageDefault())) {\n"
         "    void* chunk = $pbi$::CreateSplitMessageGeneric("
         "GetArenaForAllocation(), &$1$, sizeof(Impl_::Split), this, &$2$);\n"
         "    $split$ = reinterpret_cast<Impl_::Split*>(chunk);\n"
@@ -2677,7 +2678,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
                       [&] { emit_field_dtors(/* split_fields= */ true); }},
                  },
                  R"cc(
-                   if (!IsSplitMessageDefault()) {
+                   if (PROTOBUF_PREDICT_FALSE(!IsSplitMessageDefault())) {
                      auto* $cached_split_ptr$ = $split$;
                      $split_field_dtors_impl$;
                      delete $cached_split_ptr$;
@@ -2753,6 +2754,16 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
       field_generators_.get(field).GenerateArenaDestructorCode(p);
     }
   };
+  bool needs_arena_dtor_split = false;
+  for (const auto* field : optimized_order_) {
+    if (!ShouldSplit(field, options_)) continue;
+    if (field_generators_.get(field).NeedsArenaDestructor() >
+        ArenaDtorNeeds::kNone) {
+      needs_arena_dtor_split = true;
+      break;
+    }
+  }
+
   // This code is placed inside a static method, rather than an ordinary one,
   // since that simplifies Arena's destructor list (ordinary function pointers
   // rather than member function pointers). _this is the object being
@@ -2763,13 +2774,17 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
           {"split_field_dtors",
            [&] {
              if (!ShouldSplit(descriptor_, options_)) return;
+             if (!needs_arena_dtor_split) {
+               return;
+             }
              p->Emit(
                  {
                      {"split_field_dtors_impl",
                       [&] { emit_field_dtors(/* split_fields= */ true); }},
                  },
                  R"cc(
-                   if (!_this->IsSplitMessageDefault()) {
+                   if (PROTOBUF_PREDICT_FALSE(
+                           !_this->IsSplitMessageDefault())) {
                      $split_field_dtors_impl$;
                    }
                  )cc");
@@ -2970,7 +2985,7 @@ void MessageGenerator::GenerateCopyConstructorBody(io::Printer* p) const {
   }
 
   if (ShouldSplit(descriptor_, options_)) {
-    format("if (!from.IsSplitMessageDefault()) {\n");
+    format("if (PROTOBUF_PREDICT_FALSE(!from.IsSplitMessageDefault())) {\n");
     format.Indent();
     format("_this->PrepareSplitMessageForWrite();\n");
     // TODO(b/122856539): cache the split pointers.
@@ -3605,7 +3620,6 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
     auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
     bool has_haswords_check = MaybeEmitHaswordsCheck(
         it, next, options_, has_bit_indices_, cached_has_word_index, "", p);
-
     bool has_default_split_check = !it->fields.empty() && it->should_split;
     if (has_default_split_check) {
       // Some fields are cleared without checking has_bit. So we add the
@@ -3727,7 +3741,6 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       cached_has_word_index = -1;
     }
   }
-
   // Step 4: Unions.
   for (auto oneof : OneOfRange(descriptor_)) {
     format("clear_$1$();\n", oneof->name());
@@ -3982,7 +3995,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
   if (ShouldSplit(descriptor_, options_)) {
     format(
-        "if (!from.IsSplitMessageDefault()) {\n"
+        "if (PROTOBUF_PREDICT_FALSE(!from.IsSplitMessageDefault())) {\n"
         "  _this->PrepareSplitMessageForWrite();\n"
         "}\n");
   }
