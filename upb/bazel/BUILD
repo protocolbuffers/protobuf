@@ -34,12 +34,29 @@ bzl_library(
 )
 
 bzl_library(
-    name = "upb_proto_library_bzl",
-    srcs = ["upb_proto_library.bzl"],
-    visibility = ["//visibility:public"],
+    name = "upb_proto_library_internal_bzl",
+    srcs = [
+        "upb_proto_library_internal/aspect.bzl",
+        "upb_proto_library_internal/cc_library_func.bzl",
+        "upb_proto_library_internal/copts.bzl",
+        "upb_proto_library_internal/rule.bzl",
+    ],
     deps = [
         "@bazel_skylib//lib:paths",
         "@bazel_tools//tools/cpp:toolchain_utils.bzl",
+    ],
+)
+
+bzl_library(
+    name = "upb_proto_library_bzl",
+    srcs = [
+        "upb_c_proto_library.bzl",
+        "upb_proto_library.bzl",
+        "upb_proto_reflection_library.bzl",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":upb_proto_library_internal_bzl",
         "@rules_proto//proto:defs",
     ],
 )
