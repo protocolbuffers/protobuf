@@ -827,7 +827,7 @@ inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& St
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.fields_.GetMap();
 }
-inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::fields() const {
+inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::fields() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_map:google.protobuf.Struct.fields)
   return _internal_fields();
 }
@@ -835,7 +835,7 @@ inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _impl_.fields_.MutableMap();
 }
-inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::mutable_fields() {
+inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::mutable_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_map:google.protobuf.Struct.fields)
   return _internal_mutable_fields();
 }
