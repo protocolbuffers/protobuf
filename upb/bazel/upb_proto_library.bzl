@@ -188,16 +188,6 @@ def _merge_generated_srcs(srcs):
 
 UpbWrappedCcInfo = provider("Provider for cc_info for protos", fields = ["cc_info", "cc_info_with_thunks"])
 
-def _merge_wrapped_cc_infos(infos, cc_infos):
-    return UpbWrappedCcInfo(
-        cc_info = cc_common.merge_cc_infos(
-            direct_cc_infos = cc_infos + [info.cc_info for info in infos],
-        ),
-        cc_info_with_thunks = cc_common.merge_cc_infos(
-            direct_cc_infos = [info.cc_info_with_thunks for info in infos],
-        ),
-    )
-
 _UpbDefsWrappedCcInfo = provider("Provider for cc_info for protos", fields = ["cc_info"])
 _UpbWrappedGeneratedSrcsInfo = provider("Provider for generated sources", fields = ["srcs"])
 _WrappedDefsGeneratedSrcsInfo = provider(
@@ -295,20 +285,18 @@ def _generate_name(ctx, generator, thunks = False):
         return ctx.rule.attr.name + "." + generator + ".thunks"
     return ctx.rule.attr.name + "." + generator
 
-def _get_dep_cc_info(target, ctx, generator):
-    deps = ctx.rule.attr.deps + getattr(ctx.attr, "_" + generator)
-    dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
-    dep_ccinfos += [dep[_UpbDefsWrappedCcInfo].cc_info for dep in deps if _UpbDefsWrappedCcInfo in dep]
-
-    dep_wrapped_infos = [dep[UpbWrappedCcInfo] for dep in deps if UpbWrappedCcInfo in dep]
+def _get_dep_cc_infos(target, ctx, generator):
+    aspect_deps = getattr(ctx.attr, "_" + generator)
+    rule_deps = ctx.rule.attr.deps
+    dep_ccinfos = [dep[CcInfo] for dep in aspect_deps]
     if generator == "upbdefs":
-        if UpbWrappedCcInfo not in target:
-            fail("Target should have UpbWrappedCcInfo provider")
-        dep_wrapped_infos.append(target[UpbWrappedCcInfo])
+        dep_ccinfos += [dep[_UpbDefsWrappedCcInfo].cc_info for dep in rule_deps]
+        dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
+    else:
+        dep_ccinfos += [dep[UpbWrappedCcInfo].cc_info for dep in rule_deps]
+    return dep_ccinfos
 
-    return _merge_wrapped_cc_infos(dep_wrapped_infos, dep_ccinfos)
-
-def _compile_upb_protos(ctx, files, generator, dep_wrapped_ccinfo, cc_provider):
+def _compile_upb_protos(ctx, files, generator, dep_ccinfos, cc_provider):
     cc_info = _cc_library_func(
         ctx = ctx,
         name = _generate_name(ctx, generator),
@@ -316,7 +304,7 @@ def _compile_upb_protos(ctx, files, generator, dep_wrapped_ccinfo, cc_provider):
         srcs = files.srcs,
         includes = files.includes,
         copts = ctx.attr._copts[UpbProtoLibraryCoptsInfo].copts,
-        dep_ccinfos = [dep_wrapped_ccinfo.cc_info],
+        dep_ccinfos = dep_ccinfos,
     )
 
     if files.thunks:
@@ -327,7 +315,7 @@ def _compile_upb_protos(ctx, files, generator, dep_wrapped_ccinfo, cc_provider):
             srcs = files.thunks,
             includes = files.includes,
             copts = ctx.attr._copts[UpbProtoLibraryCoptsInfo].copts,
-            dep_ccinfos = [dep_wrapped_ccinfo.cc_info, cc_info],
+            dep_ccinfos = dep_ccinfos + [cc_info],
         )
         return cc_provider(
             cc_info = cc_info,
@@ -356,13 +344,15 @@ def _get_hint_providers(ctx, generator):
     return []
 
 def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider, provide_cc_shared_library_hints = True):
-    dep_wrapped_ccinfo = _get_dep_cc_info(target, ctx, generator)
+    dep_ccinfos = _get_dep_cc_infos(target, ctx, generator)
     if not getattr(ctx.rule.attr, "srcs", []):
         # This target doesn't declare any sources, reexport all its deps instead.
         # This is known as an "alias library":
         #    https://bazel.build/reference/be/protocol-buffer#proto_library.srcs
         files = _merge_generated_srcs([dep[file_provider].srcs for dep in ctx.rule.attr.deps])
-        wrapped_cc_info = dep_wrapped_ccinfo
+        wrapped_cc_info = UpbWrappedCcInfo(
+            cc_info = cc_common.merge_cc_infos(direct_cc_infos = dep_ccinfos),
+        )
     else:
         proto_info = target[ProtoInfo]
         files = _generate_upb_protos(
@@ -375,7 +365,7 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider, p
             ctx,
             files,
             generator,
-            dep_wrapped_ccinfo,
+            dep_ccinfos,
             cc_provider,
         )
 
