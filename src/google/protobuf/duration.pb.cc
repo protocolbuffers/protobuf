@@ -268,6 +268,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Duration::_table_ = {
 
 const ::google::protobuf::Message::ClassData Duration::_class_data_ = {
     Duration::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Duration::GetClassData() const {
   return &_class_data_;

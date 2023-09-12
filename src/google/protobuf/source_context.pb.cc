@@ -260,6 +260,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
 
 const ::google::protobuf::Message::ClassData SourceContext::_class_data_ = {
     SourceContext::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* SourceContext::GetClassData() const {
   return &_class_data_;

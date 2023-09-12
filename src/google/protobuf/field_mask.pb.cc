@@ -257,6 +257,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
 
 const ::google::protobuf::Message::ClassData FieldMask::_class_data_ = {
     FieldMask::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* FieldMask::GetClassData() const {
   return &_class_data_;

@@ -741,6 +741,7 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
 
 const ::google::protobuf::Message::ClassData Type::_class_data_ = {
     Type::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Type::GetClassData() const {
   return &_class_data_;
@@ -1172,6 +1173,7 @@ const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
 
 const ::google::protobuf::Message::ClassData Field::_class_data_ = {
     Field::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Field::GetClassData() const {
   return &_class_data_;
@@ -1552,6 +1554,7 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
 
 const ::google::protobuf::Message::ClassData Enum::_class_data_ = {
     Enum::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Enum::GetClassData() const {
   return &_class_data_;
@@ -1813,6 +1816,7 @@ const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
 
 const ::google::protobuf::Message::ClassData EnumValue::_class_data_ = {
     EnumValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* EnumValue::GetClassData() const {
   return &_class_data_;
@@ -2060,6 +2064,7 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
 
 const ::google::protobuf::Message::ClassData Option::_class_data_ = {
     Option::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Option::GetClassData() const {
   return &_class_data_;

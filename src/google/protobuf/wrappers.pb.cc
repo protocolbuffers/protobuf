@@ -499,6 +499,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> DoubleValue::_table_ = {
 
 const ::google::protobuf::Message::ClassData DoubleValue::_class_data_ = {
     DoubleValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* DoubleValue::GetClassData() const {
   return &_class_data_;
@@ -682,6 +683,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> FloatValue::_table_ = {
 
 const ::google::protobuf::Message::ClassData FloatValue::_class_data_ = {
     FloatValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* FloatValue::GetClassData() const {
   return &_class_data_;
@@ -856,6 +858,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int64Value::_table_ = {
 
 const ::google::protobuf::Message::ClassData Int64Value::_class_data_ = {
     Int64Value::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Int64Value::GetClassData() const {
   return &_class_data_;
@@ -1025,6 +1028,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt64Value::_table_ = {
 
 const ::google::protobuf::Message::ClassData UInt64Value::_class_data_ = {
     UInt64Value::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* UInt64Value::GetClassData() const {
   return &_class_data_;
@@ -1194,6 +1198,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int32Value::_table_ = {
 
 const ::google::protobuf::Message::ClassData Int32Value::_class_data_ = {
     Int32Value::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Int32Value::GetClassData() const {
   return &_class_data_;
@@ -1363,6 +1368,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt32Value::_table_ = {
 
 const ::google::protobuf::Message::ClassData UInt32Value::_class_data_ = {
     UInt32Value::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* UInt32Value::GetClassData() const {
   return &_class_data_;
@@ -1531,6 +1537,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BoolValue::_table_ = {
 
 const ::google::protobuf::Message::ClassData BoolValue::_class_data_ = {
     BoolValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* BoolValue::GetClassData() const {
   return &_class_data_;
@@ -1718,6 +1725,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 41, 2> StringValue::_table_ = {
 
 const ::google::protobuf::Message::ClassData StringValue::_class_data_ = {
     StringValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* StringValue::GetClassData() const {
   return &_class_data_;
@@ -1903,6 +1911,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BytesValue::_table_ = {
 
 const ::google::protobuf::Message::ClassData BytesValue::_class_data_ = {
     BytesValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* BytesValue::GetClassData() const {
   return &_class_data_;

@@ -306,6 +306,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
 
 const ::google::protobuf::Message::ClassData Any::_class_data_ = {
     Any::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Any::GetClassData() const {
   return &_class_data_;

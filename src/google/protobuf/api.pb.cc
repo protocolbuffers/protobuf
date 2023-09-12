@@ -561,6 +561,7 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
 
 const ::google::protobuf::Message::ClassData Api::_class_data_ = {
     Api::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Api::GetClassData() const {
   return &_class_data_;
@@ -928,6 +929,7 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
 
 const ::google::protobuf::Message::ClassData Method::_class_data_ = {
     Method::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Method::GetClassData() const {
   return &_class_data_;
@@ -1171,6 +1173,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
 
 const ::google::protobuf::Message::ClassData Mixin::_class_data_ = {
     Mixin::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Mixin::GetClassData() const {
   return &_class_data_;

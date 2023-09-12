@@ -268,6 +268,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Timestamp::_table_ = {
 
 const ::google::protobuf::Message::ClassData Timestamp::_class_data_ = {
     Timestamp::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
 const ::google::protobuf::Message::ClassData* Timestamp::GetClassData() const {
   return &_class_data_;
