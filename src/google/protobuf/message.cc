@@ -99,10 +99,6 @@ void Message::CopyFrom(const Message& from) {
   }
 }
 
-std::string Message::GetTypeName() const {
-  return GetDescriptor()->full_name();
-}
-
 void Message::Clear() { ReflectionOps::Clear(this); }
 
 bool Message::IsInitialized() const {

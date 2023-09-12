@@ -146,10 +146,6 @@ class MapEntry : public Message {
 
   // implements MessageLite =========================================
 
-  // MapEntry is for implementation only and this function isn't called
-  // anywhere. Just provide a fake implementation here for MessageLite.
-  std::string GetTypeName() const override { return ""; }
-
   size_t SpaceUsedLong() const final {
     size_t size = sizeof(Derived);
     size += KeyTypeHandler::SpaceUsedInMapEntryLong(this->key_);

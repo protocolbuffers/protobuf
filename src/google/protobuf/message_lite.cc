@@ -44,6 +44,18 @@
 namespace google {
 namespace protobuf {
 
+std::string MessageLite::GetTypeName() const {
+  auto* data = GetClassData();
+  // For LITE messages, the type name is a char[] just beyond ClassData.
+  if (data != nullptr && !data->has_descriptor_methods) {
+    return reinterpret_cast<const char*>(data) + sizeof(ClassData);
+  }
+  // For !LITE messages, we use the descriptor method function.
+  auto* getter = internal::descriptor_methods.get_type_name.load(
+      std::memory_order_relaxed);
+  return getter ? getter(*this) : "";
+}
+
 void MessageLite::OnDemandRegisterArenaDtor(Arena* arena) {
   if (arena == nullptr) return;
   auto* data = GetClassData();

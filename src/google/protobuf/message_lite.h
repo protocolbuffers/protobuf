@@ -211,7 +211,7 @@ class PROTOBUF_EXPORT MessageLite {
   // Basic Operations ------------------------------------------------
 
   // Get the name of this message type, e.g. "foo.bar.BazProto".
-  virtual std::string GetTypeName() const = 0;
+  std::string GetTypeName() const;
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
@@ -531,6 +531,9 @@ class PROTOBUF_EXPORT MessageLite {
     // pointer becomes the first argument in the free function.
     void (*merge_to_from)(Message& to, const Message& from_msg);
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
+    // LITE objects (ie !has_descriptor_methods) collocate their name as a
+    // char[] just beyond the ClassData.
+    bool has_descriptor_methods;
   };
 
   // GetClassData() returns a pointer to a ClassData struct which
@@ -538,7 +541,7 @@ class PROTOBUF_EXPORT MessageLite {
   // property is used in order to quickly determine whether two messages are
   // of the same type.
   //
-  // This is a work in progress. Currently only SPEED messages return an
+  // This is a work in progress. Currently only LITE/SPEED messages return an
   // instance. In the future all message types will return one.
   virtual const ClassData* GetClassData() const;
 
@@ -682,6 +685,13 @@ T* OnShutdownDelete(T* p) {
   OnShutdownRun([](const void* pp) { delete static_cast<const T*>(pp); }, p);
   return p;
 }
+
+// We inject a single vtable for the descriptor based methods that we use from
+// MessageLite to avoid having to put these pointers on each message's tables.
+struct DescriptorMethods {
+  std::atomic<std::string (*)(const MessageLite&)> get_type_name;
+};
+extern DescriptorMethods descriptor_methods;
 
 }  // namespace internal
 
