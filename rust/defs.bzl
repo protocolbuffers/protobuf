@@ -13,7 +13,7 @@ load(
 
 visibility([
     "//experimental/...",
-    "//rust/...",
+    "//src/google/protobuf/...",
 ])
 
 def rust_proto_library(name, deps, visibility = [], **args):
