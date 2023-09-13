@@ -35,7 +35,6 @@
 #include "upb/upb/collections/array.h"
 #include "upb/upb/collections/internal/array.h"
 #include "upb/upb/collections/map_gencode_util.h"
-#include "upb/upb/collections/message_value.h"
 #include "upb/upb/message/accessors.h"
 #include "upb/upb/message/internal/accessors.h"
 #include "upb/upb/message/internal/extension.h"

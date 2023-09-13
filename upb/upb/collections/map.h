@@ -31,8 +31,10 @@
 #ifndef UPB_COLLECTIONS_MAP_H_
 #define UPB_COLLECTIONS_MAP_H_
 
+#include <stddef.h>
+
 #include "upb/upb/base/descriptor_constants.h"
-#include "upb/upb/collections/message_value.h"
+#include "upb/upb/collections/types.h"  // IWYU pragma: export
 #include "upb/upb/mem/arena.h"
 
 // Must be last.

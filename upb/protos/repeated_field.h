@@ -35,16 +35,15 @@
 #include <iterator>
 #include <type_traits>
 
-#include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
 #include "upb/protos/protos.h"
 #include "upb/protos/protos_traits.h"
 #include "upb/protos/repeated_field_iterator.h"
 #include "upb/upb/base/string_view.h"
 #include "upb/upb/collections/array.h"
-#include "upb/upb/collections/internal/array.h"
 #include "upb/upb/mem/arena.h"
 #include "upb/upb/message/copy.h"
+#include "upb/upb/message/types.h"
 
 // Must be last:
 #include "upb/upb/port/def.inc"

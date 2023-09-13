@@ -301,6 +301,12 @@ alias(
 )
 
 alias(
+    name = "collections_types",
+    actual = "//upb/upb/collections:types",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "hash",
     actual = "//upb/upb/hash",
     visibility = ["//visibility:public"],
@@ -522,7 +528,9 @@ upb_amalgamation(
     libs = [
         ":base",
         ":base_internal",
+        ":collections",
         ":collections_internal",
+        ":collections_types",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
@@ -568,7 +576,9 @@ upb_amalgamation(
     libs = [
         ":base",
         ":base_internal",
+        ":collections",
         ":collections_internal",
+        ":collections_types",
         ":descriptor_upb_proto_reflection",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
@@ -618,7 +628,9 @@ upb_amalgamation(
     libs = [
         ":base",
         ":base_internal",
+        ":collections",
         ":collections_internal",
+        ":collections_types",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",

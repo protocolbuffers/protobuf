@@ -31,7 +31,8 @@
 #ifndef UPB_MESSAGE_COPY_H_
 #define UPB_MESSAGE_COPY_H_
 
-#include "upb/upb/collections/message_value.h"
+#include "upb/upb/collections/types.h"
+#include "upb/upb/mem/arena.h"
 #include "upb/upb/message/internal/message.h"
 
 // Must be last.

@@ -69,7 +69,7 @@ cc_library(
         ":message",
         ":types",
         "//upb:base",
-        "//upb:collections_internal",
+        "//upb:collections_types",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:mini_table_internal",
@@ -156,6 +156,7 @@ cc_library(
         "//upb:wire",
         "//upb:wire_internal",
         "//upb:wire_reader",
+        "//upb:wire_types",
     ],
 )
 
