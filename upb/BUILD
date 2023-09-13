@@ -210,6 +210,8 @@ bootstrap_cc_library(
         "upb/reflection/extension_range.c",
         "upb/reflection/field_def.c",
         "upb/reflection/file_def.c",
+        "upb/reflection/internal/strdup2.c",
+        "upb/reflection/internal/strdup2.h",
         "upb/reflection/message.c",
         "upb/reflection/message_def.c",
         "upb/reflection/message_reserved_range.c",
