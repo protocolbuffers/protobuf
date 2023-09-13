@@ -30,6 +30,8 @@
 
 #include "upb/upb/reflection/def_type.h"
 
+#include "upb/upb/hash/value.h"
+
 // Must be last.
 #include "upb/upb/port/def.inc"
 

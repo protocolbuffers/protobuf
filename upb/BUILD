@@ -259,6 +259,7 @@ bootstrap_cc_library(
     deps = [
         ":base",
         ":collections",
+        ":collections_internal",
         ":hash",
         ":mem",
         ":message",

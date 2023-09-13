@@ -30,17 +30,18 @@
 
 #include "upb/upb/reflection/message.h"
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "upb/upb/collections/map.h"
-#include "upb/upb/hash/common.h"
+#include "upb/upb/collections/message_value.h"
+#include "upb/upb/mem/arena.h"
 #include "upb/upb/message/accessors.h"
 #include "upb/upb/message/message.h"
 #include "upb/upb/mini_table/field.h"
 #include "upb/upb/reflection/def.h"
 #include "upb/upb/reflection/def_pool.h"
-#include "upb/upb/reflection/def_type.h"
-#include "upb/upb/reflection/internal/field_def.h"
 #include "upb/upb/reflection/message_def.h"
 #include "upb/upb/reflection/oneof_def.h"
 

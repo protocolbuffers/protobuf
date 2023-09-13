@@ -11,11 +11,15 @@ cc_library(
     name = "hash",
     srcs = [
         "common.c",
+        "tabent.h",
+        "tabkey.h",
+        "table.h",
+        "tabval.h",
     ],
     hdrs = [
-        "common.h",
         "int_table.h",
         "str_table.h",
+        "value.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],

@@ -28,41 +28,36 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
-#define UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
+#ifndef UPB_HASH_TABENT_H_
+#define UPB_HASH_TABENT_H_
 
-#include <stdint.h>
+#include "upb/upb/hash/tabkey.h"
+#include "upb/upb/hash/tabval.h"
 
-#include "upb/upb/base/string_view.h"
-#include "upb/upb/hash/value.h"
-#include "upb/upb/message/internal/types.h"
+// Must be last.
+#include "upb/upb/port/def.inc"
 
-// Map entries aren't actually stored for map fields, they are only used during
-// parsing. For parsing, it helps a lot if all map entry messages have the same
-// layout. The layout code in mini_table/decode.c will ensure that all map
-// entries have this layout.
-//
-// Note that users can and do create map entries directly, which will also use
-// this layout.
-//
-// NOTE: sync with wire/decode.c.
-typedef struct {
-  // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
-  // and the uint64_t helps make this clear.
-  uint64_t hasbits;
-  union {
-    upb_StringView str;  // For str/bytes.
-    upb_value val;       // For all other types.
-  } k;
-  union {
-    upb_StringView str;  // For str/bytes.
-    upb_value val;       // For all other types.
-  } v;
-} upb_MapEntryData;
+typedef struct upb_tabent {
+  upb_tabkey key;
+  upb_tabval val;
 
-typedef struct {
-  upb_Message_Internal internal;
-  upb_MapEntryData data;
-} upb_MapEntry;
+  // Internal chaining. This is const so we can create static initializers for
+  // tables. We cast away const sometimes, but *only* when the containing
+  // upb_table is known to be non-const. This requires a bit of care, but
+  // the subtlety is confined to table.c
+  const struct upb_tabent* next;
+} upb_tabent;
 
-#endif  // UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->key == 0; }
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/upb/port/undef.inc"
+
+#endif /* UPB_HASH_TABENT_H_ */

@@ -34,11 +34,20 @@
  * Implementation is heavily inspired by Lua's ltable.c.
  */
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "upb/upb/base/internal/log2.h"
+#include "upb/upb/base/string_view.h"
 #include "upb/upb/hash/int_table.h"
 #include "upb/upb/hash/str_table.h"
+#include "upb/upb/hash/tabent.h"
+#include "upb/upb/hash/tabkey.h"
+#include "upb/upb/hash/table.h"
+#include "upb/upb/hash/tabval.h"
+#include "upb/upb/hash/value.h"
+#include "upb/upb/mem/arena.h"
 
 // Must be last.
 #include "upb/upb/port/def.inc"
@@ -421,7 +430,7 @@ const uint64_t kWyhashSalt[5] = {
     0x082EFA98EC4E6C89ULL, 0x452821E638D01377ULL,
 };
 
-uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed) {
+static uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed) {
   return Wyhash(p, n, seed, kWyhashSalt);
 }
 

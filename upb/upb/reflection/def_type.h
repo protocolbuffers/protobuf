@@ -31,7 +31,9 @@
 #ifndef UPB_REFLECTION_DEF_TYPE_H_
 #define UPB_REFLECTION_DEF_TYPE_H_
 
-#include "upb/upb/hash/common.h"
+#include <stddef.h>
+
+#include "upb/upb/hash/value.h"
 
 // Must be last.
 #include "upb/upb/port/def.inc"

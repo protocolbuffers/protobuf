@@ -31,7 +31,13 @@
 #ifndef UPB_HASH_INT_TABLE_H_
 #define UPB_HASH_INT_TABLE_H_
 
-#include "upb/upb/hash/common.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "upb/upb/hash/table.h"
+#include "upb/upb/hash/tabval.h"
+#include "upb/upb/hash/value.h"
+#include "upb/upb/mem/arena.h"
 
 // Must be last.
 #include "upb/upb/port/def.inc"

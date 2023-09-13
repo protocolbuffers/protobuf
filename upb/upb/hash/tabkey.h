@@ -28,41 +28,48 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
-#define UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
+#ifndef UPB_HASH_TABKEY_H_
+#define UPB_HASH_TABKEY_H_
 
 #include <stdint.h>
+#include <string.h>
 
 #include "upb/upb/base/string_view.h"
-#include "upb/upb/hash/value.h"
-#include "upb/upb/message/internal/types.h"
 
-// Map entries aren't actually stored for map fields, they are only used during
-// parsing. For parsing, it helps a lot if all map entry messages have the same
-// layout. The layout code in mini_table/decode.c will ensure that all map
-// entries have this layout.
-//
-// Note that users can and do create map entries directly, which will also use
-// this layout.
-//
-// NOTE: sync with wire/decode.c.
-typedef struct {
-  // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
-  // and the uint64_t helps make this clear.
-  uint64_t hasbits;
-  union {
-    upb_StringView str;  // For str/bytes.
-    upb_value val;       // For all other types.
-  } k;
-  union {
-    upb_StringView str;  // For str/bytes.
-    upb_value val;       // For all other types.
-  } v;
-} upb_MapEntryData;
+// Must be last.
+#include "upb/upb/port/def.inc"
 
-typedef struct {
-  upb_Message_Internal internal;
-  upb_MapEntryData data;
-} upb_MapEntry;
+/* Either:
+ *   1. an actual integer key, or
+ *   2. a pointer to a string prefixed by its uint32_t length, owned by us.
+ *
+ * ...depending on whether this is a string table or an int table.  We would
+ * make this a union of those two types, but C89 doesn't support statically
+ * initializing a non-first union member. */
+typedef uintptr_t upb_tabkey;
 
-#endif  // UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE char* upb_tabstr(upb_tabkey key, uint32_t* len) {
+  char* mem = (char*)key;
+  if (len) memcpy(len, mem, sizeof(*len));
+  return mem + sizeof(*len);
+}
+
+UPB_INLINE upb_StringView upb_tabstrview(upb_tabkey key) {
+  upb_StringView ret;
+  uint32_t len;
+  ret.data = upb_tabstr(key, &len);
+  ret.size = len;
+  return ret;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/upb/port/undef.inc"
+
+#endif /* UPB_HASH_TABKEY_H_ */
