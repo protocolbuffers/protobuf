@@ -1533,10 +1533,6 @@ typedef struct {
   uint64_t val;
 } upb_value;
 
-/* Variant that works with a length-delimited rather than NULL-delimited string,
- * as supported by strtable. */
-char* upb_strdup2(const char* s, size_t len, upb_Arena* a);
-
 UPB_INLINE void _upb_value_setval(upb_value* v, uint64_t val) { v->val = val; }
 
 /* For each value ctype, define the following set of functions:
@@ -2175,8 +2171,8 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
 
 #endif /* UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_ */
 
-#ifndef UPB_BASE_LOG2_H_
-#define UPB_BASE_LOG2_H_
+#ifndef UPB_BASE_INTERNAL_LOG2_H_
+#define UPB_BASE_INTERNAL_LOG2_H_
 
 // Must be last.
 
@@ -2202,7 +2198,7 @@ UPB_INLINE int upb_Log2CeilingSize(int x) { return 1 << upb_Log2Ceiling(x); }
 #endif
 
 
-#endif /* UPB_BASE_LOG2_H_ */
+#endif /* UPB_BASE_INTERNAL_LOG2_H_ */
 
 #ifndef UPB_REFLECTION_DEF_H_
 #define UPB_REFLECTION_DEF_H_
@@ -12633,6 +12629,29 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
 
 
 #endif /* UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_INTERNAL_STRDUP2_H_
+#define UPB_REFLECTION_INTERNAL_STRDUP2_H_
+
+#include <stddef.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Variant that works with a length-delimited rather than NULL-delimited string,
+// as supported by strtable.
+char* upb_strdup2(const char* s, size_t len, upb_Arena* a);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_INTERNAL_STRDUP2_H_ */
 
 #ifndef UPB_REFLECTION_ENUM_DEF_INTERNAL_H_
 #define UPB_REFLECTION_ENUM_DEF_INTERNAL_H_

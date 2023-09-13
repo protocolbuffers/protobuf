@@ -2148,23 +2148,6 @@ static int log2ceil(uint64_t v) {
   return UPB_MIN(UPB_MAXARRSIZE, ret);
 }
 
-char* upb_strdup2(const char* s, size_t len, upb_Arena* a) {
-  size_t n;
-  char* p;
-
-  /* Prevent overflow errors. */
-  if (len == SIZE_MAX) return NULL;
-  /* Always null-terminate, even if binary data; but don't rely on the input to
-   * have a null-terminating byte since it may be a raw binary buffer. */
-  n = len + 1;
-  p = upb_Arena_Malloc(a, n);
-  if (p) {
-    if (len != 0) memcpy(p, s, len);
-    p[len] = 0;
-  }
-  return p;
-}
-
 /* A type to represent the lookup key of either a strtable or an inttable. */
 typedef union {
   uintptr_t num;
@@ -9959,6 +9942,30 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
         _upb_DefPool_ExtReg(ctx->symtab), file->ext_layouts, file->ext_count);
     if (!ok) _upb_DefBuilder_OomErr(ctx);
   }
+}
+
+
+#include <string.h>
+
+
+// Must be last.
+
+char* upb_strdup2(const char* s, size_t len, upb_Arena* a) {
+  size_t n;
+  char* p;
+
+  // Prevent overflow errors.
+  if (len == SIZE_MAX) return NULL;
+
+  // Always null-terminate, even if binary data; but don't rely on the input to
+  // have a null-terminating byte since it may be a raw binary buffer.
+  n = len + 1;
+  p = upb_Arena_Malloc(a, n);
+  if (p) {
+    if (len != 0) memcpy(p, s, len);
+    p[len] = 0;
+  }
+  return p;
 }
 
 
