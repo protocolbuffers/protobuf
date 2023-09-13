@@ -41,7 +41,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "upb/upb/hash/common.h"
 #include "upb/upb/message/internal/extension.h"
 #include "upb/upb/message/internal/types.h"
 #include "upb/upb/message/message.h"
