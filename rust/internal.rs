@@ -97,3 +97,9 @@ impl PtrAndLen {
         }
     }
 }
+
+impl From<&[u8]> for PtrAndLen {
+    fn from(slice: &[u8]) -> Self {
+        Self { ptr: slice.as_ptr(), len: slice.len() }
+    }
+}

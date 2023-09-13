@@ -171,7 +171,7 @@ void SingularString::InExternC(Context<FieldDescriptor> field) const {
              R"rs(
           $hazzer$
           fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::PtrAndLen;
-          fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: *const u8, len: usize);
+          fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $pbi$::PtrAndLen);
           fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
         )rs");
 }
@@ -199,10 +199,10 @@ void SingularString::InThunkCc(Context<FieldDescriptor> field) const {
                $hazzer$;
                ::google::protobuf::rust_internal::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
                  absl::string_view val = msg->$field$();
-                 return google::protobuf::rust_internal::PtrAndLen(val.data(), val.size());
+                 return ::google::protobuf::rust_internal::PtrAndLen(val.data(), val.size());
                }
-               void $setter_thunk$($QualifiedMsg$* msg, const char* ptr, ::std::size_t size) {
-                 msg->set_$field$(absl::string_view(ptr, size));
+               void $setter_thunk$($QualifiedMsg$* msg, ::google::protobuf::rust_internal::PtrAndLen s) {
+                 msg->set_$field$(absl::string_view(s.ptr, s.len));
                }
              )cc");
 }

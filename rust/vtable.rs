@@ -299,7 +299,7 @@ impl_raw_vtable_mutator_get_set!(bool, f32, f64, i32, i64, u32, u64);
 #[doc(hidden)]
 #[derive(Debug)]
 pub struct BytesMutVTable {
-    pub(crate) setter: unsafe extern "C" fn(msg: RawMessage, val: *const u8, len: usize),
+    pub(crate) setter: unsafe extern "C" fn(msg: RawMessage, val: PtrAndLen),
     pub(crate) getter: unsafe extern "C" fn(msg: RawMessage) -> PtrAndLen,
 }
 
@@ -316,7 +316,7 @@ impl BytesMutVTable {
     pub const fn new(
         _private: Private,
         getter: unsafe extern "C" fn(msg: RawMessage) -> PtrAndLen,
-        setter: unsafe extern "C" fn(msg: RawMessage, val: *const u8, len: usize),
+        setter: unsafe extern "C" fn(msg: RawMessage, val: PtrAndLen),
     ) -> Self {
         Self { getter, setter }
     }
@@ -330,7 +330,7 @@ impl BytesOptionalMutVTable {
     pub const unsafe fn new(
         _private: Private,
         getter: unsafe extern "C" fn(msg: RawMessage) -> PtrAndLen,
-        setter: unsafe extern "C" fn(msg: RawMessage, val: *const u8, len: usize),
+        setter: unsafe extern "C" fn(msg: RawMessage, val: PtrAndLen),
         clearer: unsafe extern "C" fn(msg: RawMessage),
         default: &'static [u8],
     ) -> Self {
@@ -355,7 +355,7 @@ impl<'msg> RawVTableMutator<'msg, [u8]> {
         let val = copy_bytes_in_arena_if_needed_by_runtime(self.msg_ref, val);
         // SAFETY:
         // - `msg_ref` is valid for `'msg` as promised by the caller of `new`.
-        unsafe { (self.vtable.setter)(self.msg_ref.msg(), val.as_ptr(), val.len()) }
+        unsafe { (self.vtable.setter)(self.msg_ref.msg(), val.into()) }
     }
 
     pub(crate) fn truncate(&self, len: usize) {
@@ -385,7 +385,7 @@ impl<'msg> RawVTableOptionalMutatorData<'msg, [u8]> {
         let val = copy_bytes_in_arena_if_needed_by_runtime(self.msg_ref, val);
         // SAFETY:
         // - `msg_ref` is valid for `'msg` as promised by the caller.
-        unsafe { (self.vtable.base.setter)(self.msg_ref.msg(), val.as_ptr(), val.len()) }
+        unsafe { (self.vtable.base.setter)(self.msg_ref.msg(), val.into()) }
         self
     }
 
