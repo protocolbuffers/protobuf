@@ -8,11 +8,8 @@
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
-load(
-    "//upb/bazel:upb_proto_library.bzl",
-    "upb_proto_library_copts",
-    "upb_proto_reflection_library",
-)
+load("//upb/bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
+load("//upb/bazel:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
 load(
     "//upb/upbc:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
