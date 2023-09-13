@@ -33,3 +33,4 @@ The following topics are in this repository:
 *   [Java Lite For Editions](java-lite-for-editions.md)
 *   [Edition Evolution](edition-evolution.md)
 *   [Edition Naming](edition-naming.md)
+*   [Editions Feature Visibility](editions-feature-visibility.md)
