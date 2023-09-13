@@ -19,3 +19,4 @@ The following topics are in this repository:
 
 *   [Prototiller Requirements for Editions](prototiller-reqs-for-editions.md)
 *   [Prototiller Requirements for Edition Zero](prototiller-reqs-for-edition-zero.md)
+*   [Editions Tooling](editions-tooling.md)
