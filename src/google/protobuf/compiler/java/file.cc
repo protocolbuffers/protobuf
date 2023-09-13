@@ -17,6 +17,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/enum.h"
@@ -29,6 +30,7 @@
 #include "google/protobuf/compiler/java/service.h"
 #include "google/protobuf/compiler/java/shared_code_generator.h"
 #include "google/protobuf/compiler/retention.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
@@ -244,6 +246,10 @@ void FileGenerator::Generate(io::Printer* printer) {
       "// source: $filename$\n"
       "\n",
       "filename", file_->name());
+  if (options_.opensource_runtime) {
+    printer->Print("// Protobuf Java Version: $protobuf_java_version$\n",
+                   "protobuf_java_version", internal::kProtoJavaVersionString);
+  }
   if (!java_package_.empty()) {
     printer->Print(
         "package $package$;\n"
