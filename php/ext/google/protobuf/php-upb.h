@@ -12628,29 +12628,6 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
 
 #endif /* UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_ */
 
-#ifndef UPB_REFLECTION_INTERNAL_STRDUP2_H_
-#define UPB_REFLECTION_INTERNAL_STRDUP2_H_
-
-#include <stddef.h>
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Variant that works with a length-delimited rather than NULL-delimited string,
-// as supported by strtable.
-char* upb_strdup2(const char* s, size_t len, upb_Arena* a);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_INTERNAL_STRDUP2_H_ */
-
 #ifndef UPB_REFLECTION_ENUM_DEF_INTERNAL_H_
 #define UPB_REFLECTION_ENUM_DEF_INTERNAL_H_
 
@@ -12920,6 +12897,29 @@ upb_EnumReservedRange* _upb_EnumReservedRanges_New(
 
 
 #endif /* UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_INTERNAL_STRDUP2_H_
+#define UPB_REFLECTION_INTERNAL_STRDUP2_H_
+
+#include <stddef.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Variant that works with a length-delimited rather than NULL-delimited string,
+// as supported by strtable.
+char* upb_strdup2(const char* s, size_t len, upb_Arena* a);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_INTERNAL_STRDUP2_H_ */
 
 #ifndef UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
 #define UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
