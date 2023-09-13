@@ -7,10 +7,10 @@
 
 #include "google/protobuf/compiler/cpp/file.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <vector>
 
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
@@ -49,6 +49,9 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestUnpackedExtensions",
       "TestReservedFields",
       "TestRequiredOneof.NestedMessage",
+      "TestRequiredNoMaskMulti",
+      "TestRequiredEnumNoMask",
+      "TestRequiredEnumMulti",
       "TestRequiredEnum",
       "TestRepeatedString",
       "TestRepeatedScalarDifferentTagSizes",
@@ -193,16 +196,18 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
   EXPECT_TRUE(kExpectedDescriptorCount == actual_descriptor_order.size())
       << "Expected: " << kExpectedDescriptorCount
       << ", got: " << actual_descriptor_order.size();
-  for (size_t i = 0; i < actual_descriptor_order.size(); ++i) {
-    bool found = false;
+
+  auto limit =
+      std::min(kExpectedDescriptorCount, actual_descriptor_order.size());
+  for (auto i = 0u; i < limit; ++i) {
     const Descriptor* desc = actual_descriptor_order[i];
-    for (size_t j = 0; j < kExpectedDescriptorCount; ++j) {
-      if (absl::EndsWith(desc->full_name(), kExpectedDescriptorOrder[j])) {
-        found = true;
-        break;
-      }
+    bool match = absl::EndsWith(desc->full_name(), kExpectedDescriptorOrder[i]);
+    EXPECT_TRUE(match) << "failed to match; expected "
+                       << kExpectedDescriptorOrder[i] << ", got "
+                       << desc->full_name();
+    if (!match) {
+      break;
     }
-    EXPECT_TRUE(found) << "Descriptor " << desc->full_name() << " not found!";
   }
 }
 

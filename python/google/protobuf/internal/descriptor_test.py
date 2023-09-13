@@ -37,6 +37,7 @@ message NestedMessage {
     FOREIGN_FOO = 4;
     FOREIGN_BAR = 5;
     FOREIGN_BAZ = 6;
+    FOREIGN_BAX = 32;
   }
   optional int32 bb = 1;
 }
@@ -72,6 +73,7 @@ class DescriptorTest(unittest.TestCase):
     enum_proto.value.add(name='FOREIGN_FOO', number=4)
     enum_proto.value.add(name='FOREIGN_BAR', number=5)
     enum_proto.value.add(name='FOREIGN_BAZ', number=6)
+    enum_proto.value.add(name='FOREIGN_BAX', number=32)
 
     file_proto.message_type.add(name='ResponseMessage')
     service_proto = file_proto.service.add(name='DescriptorTestService')
@@ -870,6 +872,10 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
       value: <
         name: 'FOREIGN_BAZ'
         number: 6
+      >
+      value: <
+        name: 'FOREIGN_BAX'
+        number: 32
       >
       """
 
