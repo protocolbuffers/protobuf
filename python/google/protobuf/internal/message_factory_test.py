@@ -10,6 +10,7 @@
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import unittest
+import gc
 
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
@@ -292,6 +293,30 @@ class MessageFactoryTest(unittest.TestCase):
       message = meta_class()
       nested_des = message.DESCRIPTOR.nested_types_by_name['Nested']
       nested_msg = nested_des._concrete_class()
+
+  def testOndemandCreateMetaClass(self):
+    def loadFile():
+      f = descriptor_pb2.FileDescriptorProto.FromString(
+        factory_test1_pb2.DESCRIPTOR.serialized_pb)
+      return message_factory.GetMessages([f])
+
+    messages = loadFile()
+    data = factory_test1_pb2.Factory1Message()
+    data.map_field['hello'] = 'welcome'
+    # Force GC to collect. UPB python will clean up the map entry class.
+    # cpp extension and pure python will still keep the map entry class.
+    gc.collect()
+    message = messages['google.protobuf.python.internal.Factory1Message']()
+    message.ParseFromString(data.SerializeToString())
+    value = message.map_field
+    values = [
+        # The entry class will be created on demand in upb python.
+        value.GetEntryClass()(key=k, value=value[k]) for k in sorted(value)
+    ]
+    gc.collect()
+    self.assertEqual(1, len(values))
+    self.assertEqual('hello', values[0].key)
+    self.assertEqual('welcome', values[0].value)
 
 if __name__ == '__main__':
   unittest.main()

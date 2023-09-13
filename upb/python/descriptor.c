@@ -232,6 +232,25 @@ PyObject* PyUpb_Descriptor_Get(const upb_MessageDef* m) {
 
 PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m) {
   PyObject* ret = PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(m));
+  if (ret) return ret;
+
+  // On demand create the clss if not exist. However, if users repeatedly
+  // create and destroy a class, it could trigger a loop. This is not an
+  // issue now, but if we see CPU waste for repeatedly create and destroy
+  // in the future, we could make PyUpb_Descriptor_Get() append the descriptor
+  // to an internal list in DescriptorPool, let the pool keep descriptors alive.
+  PyObject* py_descriptor = PyUpb_Descriptor_Get(m);
+  if (py_descriptor == NULL) return NULL;
+  const char* name = upb_MessageDef_Name(m);
+  PyObject* dict = PyDict_New();
+  if (dict == NULL) goto err;
+  int status = PyDict_SetItemString(dict, "DESCRIPTOR", py_descriptor);
+  if (status < 0) goto err;
+  ret = PyUpb_MessageMeta_DoCreateClass(py_descriptor, name, dict);
+
+err:
+  Py_XDECREF(py_descriptor);
+  Py_XDECREF(dict);
   return ret;
 }
 
@@ -503,7 +522,7 @@ static PyObject* PyUpb_Descriptor_GetFullName(PyObject* self, void* closure) {
 static PyObject* PyUpb_Descriptor_GetConcreteClass(PyObject* self,
                                                    void* closure) {
   const upb_MessageDef* msgdef = PyUpb_Descriptor_GetDef(self);
-  return PyUpb_Descriptor_GetClass(msgdef);
+  return PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(msgdef));
 }
 
 static PyObject* PyUpb_Descriptor_GetFile(PyObject* self, void* closure) {
