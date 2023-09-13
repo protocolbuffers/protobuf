@@ -39,7 +39,7 @@ cc_import(
     hdrs = glob(["**/*.h"]),
     shared_library = "python{0}.dll",
     interface_library = "libs/python{0}.lib",
-    visibility = ["@upb//python:__pkg__"],
+    visibility = ["@com_google_protobuf//upb/python:__pkg__"],
 )
 
 cc_import(
@@ -47,7 +47,7 @@ cc_import(
     hdrs = glob(["**/*.h"]),
     shared_library = "python{1}.dll",
     interface_library = "libs/python{1}.lib",
-    visibility = ["@upb//python:__pkg__"],
+    visibility = ["@com_google_protobuf//upb/python:__pkg__"],
 )
 """
 
