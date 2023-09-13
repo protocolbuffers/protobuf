@@ -452,7 +452,6 @@ UPB_INLINE bool upb_FieldType_IsPackable(upb_FieldType type) {
 #ifndef UPB_MESSAGE_VALUE_H_
 #define UPB_MESSAGE_VALUE_H_
 
-
 #ifndef UPB_BASE_STRING_VIEW_H_
 #define UPB_BASE_STRING_VIEW_H_
 
