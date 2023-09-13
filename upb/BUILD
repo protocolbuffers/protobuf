@@ -197,7 +197,6 @@ bootstrap_cc_library(
 bootstrap_cc_library(
     name = "reflection_internal",
     srcs = [
-        "upb/reflection/def_builder.c",
         "upb/reflection/def_pool.c",
         "upb/reflection/def_type.c",
         "upb/reflection/desc_state.c",
@@ -207,6 +206,8 @@ bootstrap_cc_library(
         "upb/reflection/extension_range.c",
         "upb/reflection/field_def.c",
         "upb/reflection/file_def.c",
+        "upb/reflection/internal/def_builder.c",
+        "upb/reflection/internal/def_builder.h",
         "upb/reflection/internal/strdup2.c",
         "upb/reflection/internal/strdup2.h",
         "upb/reflection/message.c",
@@ -228,7 +229,6 @@ bootstrap_cc_library(
         "upb/reflection/extension_range.h",
         "upb/reflection/field_def.h",
         "upb/reflection/file_def.h",
-        "upb/reflection/internal/def_builder.h",
         "upb/reflection/internal/def_pool.h",
         "upb/reflection/internal/desc_state.h",
         "upb/reflection/internal/enum_def.h",
@@ -471,9 +471,9 @@ cc_test(
     name = "def_builder_test",
     srcs = [
         "upb/reflection/common.h",
-        "upb/reflection/def_builder_test.cc",
         "upb/reflection/def_type.h",
         "upb/reflection/internal/def_builder.h",
+        "upb/reflection/internal/def_builder_test.cc",
     ],
     deps = [
         ":descriptor_upb_proto",
