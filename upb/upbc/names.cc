@@ -35,7 +35,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "upb/upb/reflection/def.hpp"
+#include "upb/reflection/def.hpp"
 
 namespace upbc {
 

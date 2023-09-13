@@ -32,9 +32,9 @@
 
 #include "upb/python/message.h"
 #include "upb/python/protobuf.h"
-#include "upb/upb/wire/eps_copy_input_stream.h"
-#include "upb/upb/wire/reader.h"
-#include "upb/upb/wire/types.h"
+#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/reader.h"
+#include "upb/wire/types.h"
 
 // -----------------------------------------------------------------------------
 // UnknownFieldSet

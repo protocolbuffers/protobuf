@@ -31,7 +31,7 @@
 #include "upb/upbc/common.h"
 
 #include "absl/strings/str_replace.h"
-#include "upb/upb/reflection/def.hpp"
+#include "upb/reflection/def.hpp"
 
 namespace upbc {
 

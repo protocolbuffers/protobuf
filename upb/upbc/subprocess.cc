@@ -48,7 +48,7 @@
 #include "absl/strings/substitute.h"
 
 // Must be last.
-#include "upb/upb/port/def.inc"
+#include "upb/port/def.inc"
 
 namespace upbc {
 

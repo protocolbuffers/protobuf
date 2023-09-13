@@ -32,7 +32,7 @@
 
 #include "upb/python/message.h"
 #include "upb/python/protobuf.h"
-#include "upb/upb/reflection/def.h"
+#include "upb/reflection/def.h"
 
 // -----------------------------------------------------------------------------
 // ExtensionDict

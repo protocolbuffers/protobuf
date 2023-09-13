@@ -224,8 +224,8 @@ py_extension(
         "//upb:text",
         "//upb:wire_reader",
         "//upb:wire_types",
-        "//upb/upb/util:compare",
-        "//upb/upb/util:def_to_proto",
-        "//upb/upb/util:required_fields",
+        "//upb/util:compare",
+        "//upb/util:def_to_proto",
+        "//upb/util:required_fields",
     ],
 )

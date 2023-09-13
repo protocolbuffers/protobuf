@@ -37,14 +37,14 @@
 
 #include "absl/strings/string_view.h"
 #include "upb/protos/protos.h"
-#include "upb/upb/base/string_view.h"
-#include "upb/upb/collections/array.h"
-#include "upb/upb/mem/arena.h"
-#include "upb/upb/message/copy.h"
+#include "upb/base/string_view.h"
+#include "upb/collections/array.h"
+#include "upb/mem/arena.h"
+#include "upb/message/copy.h"
 
 // Must be last:
-#include "upb/upb/message/types.h"
-#include "upb/upb/port/def.inc"
+#include "upb/message/types.h"
+#include "upb/port/def.inc"
 
 namespace protos {
 namespace internal {

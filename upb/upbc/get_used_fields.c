@@ -32,14 +32,14 @@
 
 #include "google/protobuf/descriptor.upb.h"
 #include "google/protobuf/compiler/plugin.upb.h"
-#include "upb/upb/reflection/def_pool.h"
-#include "upb/upb/reflection/field_def.h"
-#include "upb/upb/reflection/message.h"
-#include "upb/upb/reflection/message_def.h"
-#include "upb/upb/wire/decode.h"
+#include "upb/reflection/def_pool.h"
+#include "upb/reflection/field_def.h"
+#include "upb/reflection/message.h"
+#include "upb/reflection/message_def.h"
+#include "upb/wire/decode.h"
 
 // Must be last.
-#include "upb/upb/port/def.inc"
+#include "upb/port/def.inc"
 
 #define upbdev_Err(...)           \
   {                               \

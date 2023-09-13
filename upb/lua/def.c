@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/upb/reflection/def.h"
+#include "upb/reflection/def.h"
 
 #include <float.h>
 #include <math.h>
@@ -37,7 +37,7 @@
 
 #include "lauxlib.h"
 #include "upb/lua/upb.h"
-#include "upb/upb/reflection/message.h"
+#include "upb/reflection/message.h"
 
 #define LUPB_ENUMDEF "lupb.enumdef"
 #define LUPB_ENUMVALDEF "lupb.enumvaldef"

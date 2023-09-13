@@ -33,11 +33,11 @@
 #include <inttypes.h>
 
 #include "google/protobuf/compiler/plugin.upb.h"
-#include "upb/upb/mini_descriptor/decode.h"
-#include "upb/upb/reflection/def.h"
+#include "upb/mini_descriptor/decode.h"
+#include "upb/reflection/def.h"
 
 // Must be last.
-#include "upb/upb/port/def.inc"
+#include "upb/port/def.inc"
 
 /******************************************************************************/
 

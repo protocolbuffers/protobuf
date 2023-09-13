@@ -33,8 +33,8 @@
 #include "upb/python/convert.h"
 #include "upb/python/message.h"
 #include "upb/python/protobuf.h"
-#include "upb/upb/collections/map.h"
-#include "upb/upb/reflection/def.h"
+#include "upb/collections/map.h"
+#include "upb/reflection/def.h"
 
 // -----------------------------------------------------------------------------
 // MapContainer

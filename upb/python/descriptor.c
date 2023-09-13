@@ -35,8 +35,8 @@
 #include "upb/python/descriptor_pool.h"
 #include "upb/python/message.h"
 #include "upb/python/protobuf.h"
-#include "upb/upb/reflection/def.h"
-#include "upb/upb/util/def_to_proto.h"
+#include "upb/reflection/def.h"
+#include "upb/util/def_to_proto.h"
 
 // -----------------------------------------------------------------------------
 // DescriptorBase

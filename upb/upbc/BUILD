@@ -268,7 +268,7 @@ cc_binary(
         ":plugin",
         "//upb:descriptor_upb_proto",
         "//upb:reflection",
-        "//upb/upb/util:def_to_proto",
+        "//upb/util:def_to_proto",
     ],
 )
 

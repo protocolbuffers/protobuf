@@ -49,17 +49,17 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "upb/upb/base/descriptor_constants.h"
-#include "upb/upb/base/string_view.h"
-#include "upb/upb/reflection/def.hpp"
-#include "upb/upb/wire/types.h"
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
+#include "upb/reflection/def.hpp"
+#include "upb/wire/types.h"
 #include "upb/upbc/common.h"
 #include "upb/upbc/file_layout.h"
 #include "upb/upbc/names.h"
 #include "upb/upbc/plugin.h"
 
 // Must be last.
-#include "upb/upb/port/def.inc"
+#include "upb/port/def.inc"
 
 namespace upbc {
 namespace {
@@ -852,7 +852,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   output(
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
-      "#include \"upb/upb/generated_code_support.h\"\n",
+      "#include \"upb/generated_code_support.h\"\n",
       ToPreproc(file.name()));
 
   for (int i = 0; i < file.public_dependency_count(); i++) {
@@ -867,7 +867,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   output(
       "// Must be last. \n"
-      "#include \"upb/upb/port/def.inc\"\n"
+      "#include \"upb/port/def.inc\"\n"
       "\n"
       "#ifdef __cplusplus\n"
       "extern \"C\" {\n"
@@ -985,7 +985,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
       "}  /* extern \"C\" */\n"
       "#endif\n"
       "\n"
-      "#include \"upb/upb/port/undef.inc\"\n"
+      "#include \"upb/port/undef.inc\"\n"
       "\n"
       "#endif  /* $0_UPB_H_ */\n",
       ToPreproc(file.name()));
@@ -1548,7 +1548,7 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
 
   output(
       "#include <stddef.h>\n"
-      "#include \"upb/upb/generated_code_support.h\"\n"
+      "#include \"upb/generated_code_support.h\"\n"
       "#include \"$0\"\n",
       HeaderFilename(file));
 
@@ -1559,7 +1559,7 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
   output(
       "\n"
       "// Must be last.\n"
-      "#include \"upb/upb/port/def.inc\"\n"
+      "#include \"upb/port/def.inc\"\n"
       "\n");
 
   int msg_count = WriteMessages(pools, file, options, output);
@@ -1575,7 +1575,7 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
   output("  $0,\n", ext_count);
   output("};\n\n");
 
-  output("#include \"upb/upb/port/undef.inc\"\n");
+  output("#include \"upb/port/undef.inc\"\n");
   output("\n");
 }
 
@@ -1640,7 +1640,7 @@ void WriteMiniDescriptorSource(const DefPoolPair& pools, upb::FileDefPtr file,
                                const Options& options, Output& output) {
   output(
       "#include <stddef.h>\n"
-      "#include \"upb/upb/generated_code_support.h\"\n"
+      "#include \"upb/generated_code_support.h\"\n"
       "#include \"$0\"\n\n",
       HeaderFilename(file));
 

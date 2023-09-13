@@ -33,7 +33,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "upb/upb/mini_table/internal/extension.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/upbc/common.h"
 
 namespace upbc {

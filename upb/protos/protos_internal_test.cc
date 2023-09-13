@@ -34,7 +34,7 @@
 #include "gtest/gtest.h"
 #include "upb/protos_generator/tests/test_model.upb.h"
 #include "upb/protos_generator/tests/test_model.upb.proto.h"
-#include "upb/upb/mem/arena.h"
+#include "upb/mem/arena.h"
 
 namespace protos::testing {
 namespace {

@@ -158,7 +158,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
     }
   }
 
-  output("#include \"upb/upb/port/def.inc\"\n");
+  output("#include \"upb/port/def.inc\"\n");
 
   const std::vector<const protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
@@ -190,7 +190,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
 
   WriteEndNamespace(file, output);
 
-  output("\n#include \"upb/upb/port/undef.inc\"\n\n");
+  output("\n#include \"upb/port/undef.inc\"\n\n");
   // End of "C" section.
 
   output("#endif  /* $0_UPB_PROTO_H_ */\n", ToPreproc(file->name()));
@@ -213,7 +213,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
   for (int i = 0; i < file->dependency_count(); i++) {
     output("#include \"$0\"\n", CppHeaderFilename(file->dependency(i)));
   }
-  output("#include \"upb/upb/port/def.inc\"\n");
+  output("#include \"upb/port/def.inc\"\n");
 
   WriteStartNamespace(file, output);
   WriteMessageImplementations(file, output);
@@ -222,7 +222,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
   WriteExtensionIdentifiers(this_file_exts, output);
   WriteEndNamespace(file, output);
 
-  output("#include \"upb/upb/port/undef.inc\"\n\n");
+  output("#include \"upb/port/undef.inc\"\n\n");
 }
 
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
