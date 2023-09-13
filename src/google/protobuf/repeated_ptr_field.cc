@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
+#include <utility>
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
@@ -123,6 +124,21 @@ void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
   ++r->allocated_size;
   r->elements[ExchangeCurrentSize(current_size_ + 1)] = obj;
   return obj;
+}
+
+void* RepeatedPtrFieldBase::UnsafeArenaReleaseLastHelper() {
+  ABSL_DCHECK_GT(current_size_, 0);
+  ExchangeCurrentSize(current_size_ - 1);
+  if (using_sso()) {
+    return std::exchange(tagged_rep_or_elem_, nullptr);
+  }
+  int allocated_size = --rep()->allocated_size;
+  if (current_size_ < allocated_size) {
+    // There are cleared elements on the end; replace the removed element
+    // with the last allocated element.
+    return std::exchange(element_at(current_size_), element_at(allocated_size));
+  }
+  return element_at(current_size_);
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {

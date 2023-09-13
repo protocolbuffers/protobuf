@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <iterator>
 #include <limits>
 #include <string>
@@ -149,6 +150,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename Handler>
   using Value = typename Handler::Type;
 
+  static constexpr int kSSOCapacity = 1;
+
+ protected:
   // We use the same Handler for all Message types to deduplicate generated
   // code.
   template <typename Handler>
@@ -156,9 +160,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       std::is_base_of<MessageLite, Value<Handler>>::value,
       internal::GenericTypeHandler<MessageLite>, Handler>::type;
 
-  static constexpr int kSSOCapacity = 1;
-
- protected:
   constexpr RepeatedPtrFieldBase()
       : arena_(nullptr),
         current_size_(0),
@@ -207,7 +208,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  Value<TypeHandler>* Add(const Value<TypeHandler>* prototype = nullptr) {
+  Value<TypeHandler>* Add() {
+    if (current_size_ < allocated_size()) {
+      return cast<TypeHandler>(
+          element_at(ExchangeCurrentSize(current_size_ + 1)));
+    }
+    auto* result = TypeHandler::New(arena_);
+    return cast<TypeHandler>(AddOutOfLineHelper(result));
+  }
+
+  template <typename TypeHandler>
+  Value<TypeHandler>* Add(const Value<TypeHandler>* prototype) {
     if (current_size_ < allocated_size()) {
       return cast<TypeHandler>(
           element_at(ExchangeCurrentSize(current_size_ + 1)));
@@ -225,12 +236,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
           std::move(value);
       return;
     }
-    if (allocated_size() == total_size_) {
-      Reserve(total_size_ + 1);
-    }
-    if (!using_sso()) ++rep()->allocated_size;
-    auto* result = TypeHandler::New(arena_, std::move(value));
-    element_at(ExchangeCurrentSize(current_size_ + 1)) = result;
+    AddOutOfLineHelper(TypeHandler::New(arena_, std::move(value)));
   }
 
   template <typename TypeHandler>
@@ -323,13 +329,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // or other calls to `AddAllocatedForParse`.
   template <typename TypeHandler>
   void AddAllocatedForParse(Value<TypeHandler>* value) {
-    ABSL_DCHECK_EQ(current_size_, allocated_size());
-    if (current_size_ == total_size_) {
-      // The array is completely full with no cleared objects, so grow it.
-      InternalExtend(1);
-    }
-    element_at(current_size_++) = value;
-    if (!using_sso()) ++rep()->allocated_size;
+    ABSL_DCHECK_EQ(size(), allocated_size());
+    AddOutOfLineHelper(value);
   }
 
  protected:
@@ -353,7 +354,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void Reserve(int new_size);  // implemented in the cc file
 
   template <typename TypeHandler>
-  static inline Value<TypeHandler>* copy(Value<TypeHandler>* value) {
+  static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
     using H = CommonHandler<TypeHandler>;
     auto* new_value = H::NewFromPrototype(value, nullptr);
     H::Merge(*value, new_value);
@@ -470,20 +471,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // arena.
   template <typename TypeHandler>
   Value<TypeHandler>* UnsafeArenaReleaseLast() {
-    ABSL_DCHECK_GT(current_size_, 0);
-    ExchangeCurrentSize(current_size_ - 1);
-    auto* result = cast<TypeHandler>(element_at(current_size_));
-    if (using_sso()) {
-      tagged_rep_or_elem_ = nullptr;
-    } else {
-      --rep()->allocated_size;
-      if (current_size_ < allocated_size()) {
-        // There are cleared elements on the end; replace the removed element
-        // with the last allocated element.
-        element_at(current_size_) = element_at(allocated_size());
-      }
-    }
-    return result;
+    return cast<TypeHandler>(UnsafeArenaReleaseLastHelper());
   }
 
   int ClearedCount() const { return allocated_size() - current_size_; }
@@ -539,7 +527,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       elems[ExchangeCurrentSize(current_size_ + 1)] = value;
       if (!using_sso()) ++rep()->allocated_size;
     } else {
-      AddAllocatedSlowWithCopy<TypeHandler>(value, element_arena, arena);
+      using H = CommonHandler<TypeHandler>;
+      AddAllocatedSlowWithCopy<H>(value, element_arena, arena);
     }
   }
 
@@ -810,6 +799,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // array, including potentially resizing the array with Reserve if
   // needed
   void* AddOutOfLineHelper(void* obj);
+
+  void* UnsafeArenaReleaseLastHelper();
 
   // A few notes on internal representation:
   //
@@ -1466,8 +1457,11 @@ inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
   ABSL_DCHECK_GE(start, 0);
   ABSL_DCHECK_GE(num, 0);
   ABSL_DCHECK_LE(start + num, size());
+  void** subrange = raw_mutable_data() + start;
+  Arena* arena = GetOwningArena();
   for (int i = 0; i < num; ++i) {
-    RepeatedPtrFieldBase::Delete<TypeHandler>(start + i);
+    using H = CommonHandler<TypeHandler>;
+    H::Delete(static_cast<Element*>(subrange[i]), arena);
   }
   UnsafeArenaExtractSubrange(start, num, nullptr);
 }
@@ -1500,15 +1494,15 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
   }
 
   Arena* arena = GetOwningArena();
+  auto* extracted = data() + start;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   // Always copy.
   for (int i = 0; i < num; ++i) {
-    elements[i] = copy<TypeHandler>(
-        RepeatedPtrFieldBase::Mutable<TypeHandler>(i + start));
+    elements[i] = copy<TypeHandler>(extracted[i]);
   }
   if (arena == nullptr) {
     for (int i = 0; i < num; ++i) {
-      delete RepeatedPtrFieldBase::Mutable<TypeHandler>(i + start);
+      delete extracted[i];
     }
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -1516,13 +1510,10 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
   // returned elements are heap-allocated. Otherwise, just forward it.
   if (arena != nullptr) {
     for (int i = 0; i < num; ++i) {
-      elements[i] = copy<TypeHandler>(
-          RepeatedPtrFieldBase::Mutable<TypeHandler>(i + start));
+      elements[i] = copy<TypeHandler>(extracted[i]);
     }
   } else {
-    for (int i = 0; i < num; ++i) {
-      elements[i] = RepeatedPtrFieldBase::Mutable<TypeHandler>(i + start);
-    }
+    memcpy(elements, extracted, num * sizeof(Element*));
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   CloseGap(start, num);
@@ -1553,9 +1544,7 @@ inline void RepeatedPtrField<Element>::UnsafeArenaExtractSubrange(
   if (num > 0) {
     // Save the values of the removed elements if requested.
     if (elements != nullptr) {
-      for (int i = 0; i < num; ++i) {
-        elements[i] = RepeatedPtrFieldBase::Mutable<TypeHandler>(i + start);
-      }
+      memcpy(elements, data() + start, num * sizeof(Element*));
     }
     CloseGap(start, num);
   }
