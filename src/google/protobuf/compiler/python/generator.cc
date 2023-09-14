@@ -343,6 +343,8 @@ void Generator::PrintTopBoilerplate() const {
     printer_->Print("# Protobuf Python Version: $protobuf_python_version$\n",
                     "protobuf_python_version",
                     internal::kProtoPythonVersionString);
+  } else {
+    printer_->Print("# Protobuf Python Version: Google Internal\n");
   }
   printer_->Print("\"\"\"Generated protocol buffer code.\"\"\"\n");
   if (!opensource_runtime_) {

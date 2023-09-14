@@ -60,6 +60,9 @@ void SharedCodeGenerator::Generate(
         "// source: $filename$\n"
         "\n",
         "filename", file_->name());
+    if (!options_.opensource_runtime) {
+      printer->Print("// Protobuf Java Version: Google Internal\n");
+    }
     if (!java_package.empty()) {
       printer->Print(
           "package $package$;\n"

@@ -249,6 +249,8 @@ void FileGenerator::Generate(io::Printer* printer) {
   if (options_.opensource_runtime) {
     printer->Print("// Protobuf Java Version: $protobuf_java_version$\n",
                    "protobuf_java_version", internal::kProtoJavaVersionString);
+  } else {
+    printer->Print("// Protobuf Java Version: Google Internal\n");
   }
   if (!java_package_.empty()) {
     printer->Print(
