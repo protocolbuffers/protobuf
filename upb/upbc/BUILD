@@ -11,6 +11,10 @@ load(
     "UPB_DEFAULT_CPPOPTS",
 )
 load(
+    "//upb/bazel:upb_minitable_proto_library.bzl",
+    "upb_minitable_proto_library",
+)
+load(
     "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_reflection_library",
@@ -43,6 +47,12 @@ upb_proto_library(
 
 upb_proto_reflection_library(
     name = "code_generator_request_upb_proto_reflection",
+    visibility = ["//upb:friends"],
+    deps = [":code_generator_request"],
+)
+
+upb_minitable_proto_library(
+    name = "code_generator_request_upb_minitable_proto",
     visibility = ["//upb:friends"],
     deps = [":code_generator_request"],
 )
@@ -92,6 +102,9 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//upb/protos_generator:__pkg__"],
     deps = [
+        "//upb:mini_table",
+        "//upb:mini_table_internal",
+        "//upb:port",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -225,6 +238,34 @@ cc_library(
 bootstrap_cc_binary(
     name = "protoc-gen-upb",
     srcs = ["protoc-gen-upb.cc"],
+    bootstrap_deps = [
+        ":common",
+        ":file_layout",
+        ":names",
+        ":plugin",
+        ":plugin_upb_proto",
+        "//upb:descriptor_upb_proto",
+        "//upb:reflection",
+    ],
+    copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//upb:base",
+        "//upb:mem",
+        "//upb:mini_table_internal",
+        "//upb:port",
+        "//upb:wire_types",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+bootstrap_cc_binary(
+    name = "protoc-gen-upb_minitable",
+    srcs = ["protoc-gen-upb_minitable.cc"],
     bootstrap_deps = [
         ":common",
         ":file_layout",

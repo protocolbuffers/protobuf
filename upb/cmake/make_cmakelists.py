@@ -187,6 +187,9 @@ class BuildFileFunctions(object):
   def upb_proto_library(self, **kwargs):
     pass
 
+  def upb_minitable_proto_library(self, **kwargs):
+    pass
+
   def upb_proto_library_copts(self, **kwargs):
     pass
 

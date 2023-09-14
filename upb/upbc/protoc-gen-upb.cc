@@ -68,25 +68,6 @@ struct Options {
   bool bootstrap = false;
 };
 
-// Returns fields in order of "hotness", eg. how frequently they appear in
-// serialized payloads. Ideally this will use a profile. When we don't have
-// that, we assume that fields with smaller numbers are used more frequently.
-inline std::vector<upb::FieldDefPtr> FieldHotnessOrder(
-    upb::MessageDefPtr message) {
-  std::vector<upb::FieldDefPtr> fields;
-  size_t field_count = message.field_count();
-  fields.reserve(field_count);
-  for (size_t i = 0; i < field_count; i++) {
-    fields.push_back(message.field(i));
-  }
-  std::sort(fields.begin(), fields.end(),
-            [](upb::FieldDefPtr a, upb::FieldDefPtr b) {
-              return std::make_pair(!a.is_required(), a.number()) <
-                     std::make_pair(!b.is_required(), b.number());
-            });
-  return fields;
-}
-
 std::string SourceFilename(upb::FileDefPtr file) {
   return StripExtension(file.name()) + ".upb.c";
 }
@@ -130,10 +111,6 @@ std::string ExtensionIdentBase(upb::FieldDefPtr ext) {
 std::string ExtensionLayout(upb::FieldDefPtr ext) {
   return absl::StrCat(ExtensionIdentBase(ext), "_", ext.name(), "_ext");
 }
-
-const char* kEnumsInit = "enums_layout";
-const char* kExtensionsInit = "extensions_layout";
-const char* kMessagesInit = "messages_layout";
 
 std::string EnumValueSymbol(upb::EnumValDefPtr value) {
   return ToCIdent(value.full_name());
@@ -300,7 +277,9 @@ void DumpEnumValues(upb::EnumDefPtr desc, Output& output) {
   }
 }
 
-std::string GetFieldRep(const DefPoolPair& pools, upb::FieldDefPtr field);
+std::string GetFieldRep(const DefPoolPair& pools, upb::FieldDefPtr field) {
+  return upbc::GetFieldRep(pools.GetField32(field), pools.GetField64(field));
+}
 
 void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
                                Output& output) {
@@ -859,7 +838,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
     if (i == 0) {
       output("/* Public Imports. */\n");
     }
-    output("#include \"$0\"\n", HeaderFilename(file.public_dependency(i)));
+    output("#include \"$0\"\n", CApiHeaderFilename(file.public_dependency(i)));
     if (i == file.public_dependency_count() - 1) {
       output("\n");
     }
@@ -991,311 +970,6 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
       ToPreproc(file.name()));
 }
 
-typedef std::pair<std::string, uint64_t> TableEntry;
-
-uint32_t GetWireTypeForField(upb::FieldDefPtr field) {
-  if (field.packed()) return kUpb_WireType_Delimited;
-  switch (field.type()) {
-    case kUpb_FieldType_Double:
-    case kUpb_FieldType_Fixed64:
-    case kUpb_FieldType_SFixed64:
-      return kUpb_WireType_64Bit;
-    case kUpb_FieldType_Float:
-    case kUpb_FieldType_Fixed32:
-    case kUpb_FieldType_SFixed32:
-      return kUpb_WireType_32Bit;
-    case kUpb_FieldType_Int64:
-    case kUpb_FieldType_UInt64:
-    case kUpb_FieldType_Int32:
-    case kUpb_FieldType_Bool:
-    case kUpb_FieldType_UInt32:
-    case kUpb_FieldType_Enum:
-    case kUpb_FieldType_SInt32:
-    case kUpb_FieldType_SInt64:
-      return kUpb_WireType_Varint;
-    case kUpb_FieldType_Group:
-      return kUpb_WireType_StartGroup;
-    case kUpb_FieldType_Message:
-    case kUpb_FieldType_String:
-    case kUpb_FieldType_Bytes:
-      return kUpb_WireType_Delimited;
-  }
-  UPB_UNREACHABLE();
-}
-
-uint32_t MakeTag(uint32_t field_number, uint32_t wire_type) {
-  return field_number << 3 | wire_type;
-}
-
-size_t WriteVarint32ToArray(uint64_t val, char* buf) {
-  size_t i = 0;
-  do {
-    uint8_t byte = val & 0x7fU;
-    val >>= 7;
-    if (val) byte |= 0x80U;
-    buf[i++] = byte;
-  } while (val);
-  return i;
-}
-
-uint64_t GetEncodedTag(upb::FieldDefPtr field) {
-  uint32_t wire_type = GetWireTypeForField(field);
-  uint32_t unencoded_tag = MakeTag(field.number(), wire_type);
-  char tag_bytes[10] = {0};
-  WriteVarint32ToArray(unencoded_tag, tag_bytes);
-  uint64_t encoded_tag = 0;
-  memcpy(&encoded_tag, tag_bytes, sizeof(encoded_tag));
-  // TODO: byte-swap for big endian.
-  return encoded_tag;
-}
-
-int GetTableSlot(upb::FieldDefPtr field) {
-  uint64_t tag = GetEncodedTag(field);
-  if (tag > 0x7fff) {
-    // Tag must fit within a two-byte varint.
-    return -1;
-  }
-  return (tag & 0xf8) >> 3;
-}
-
-bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
-                       TableEntry& ent) {
-  const upb_MiniTable* mt = pools.GetMiniTable64(field.containing_type());
-  const upb_MiniTableField* mt_f =
-      upb_MiniTable_FindFieldByNumber(mt, field.number());
-  std::string type = "";
-  std::string cardinality = "";
-  switch (upb_MiniTableField_Type(mt_f)) {
-    case kUpb_FieldType_Bool:
-      type = "b1";
-      break;
-    case kUpb_FieldType_Enum:
-      if (upb_MiniTableField_IsClosedEnum(mt_f)) {
-        // We don't have the means to test proto2 enum fields for valid values.
-        return false;
-      }
-      [[fallthrough]];
-    case kUpb_FieldType_Int32:
-    case kUpb_FieldType_UInt32:
-      type = "v4";
-      break;
-    case kUpb_FieldType_Int64:
-    case kUpb_FieldType_UInt64:
-      type = "v8";
-      break;
-    case kUpb_FieldType_Fixed32:
-    case kUpb_FieldType_SFixed32:
-    case kUpb_FieldType_Float:
-      type = "f4";
-      break;
-    case kUpb_FieldType_Fixed64:
-    case kUpb_FieldType_SFixed64:
-    case kUpb_FieldType_Double:
-      type = "f8";
-      break;
-    case kUpb_FieldType_SInt32:
-      type = "z4";
-      break;
-    case kUpb_FieldType_SInt64:
-      type = "z8";
-      break;
-    case kUpb_FieldType_String:
-      type = "s";
-      break;
-    case kUpb_FieldType_Bytes:
-      type = "b";
-      break;
-    case kUpb_FieldType_Message:
-      type = "m";
-      break;
-    default:
-      return false;  // Not supported yet.
-  }
-
-  switch (upb_FieldMode_Get(mt_f)) {
-    case kUpb_FieldMode_Map:
-      return false;  // Not supported yet (ever?).
-    case kUpb_FieldMode_Array:
-      if (mt_f->mode & kUpb_LabelFlags_IsPacked) {
-        cardinality = "p";
-      } else {
-        cardinality = "r";
-      }
-      break;
-    case kUpb_FieldMode_Scalar:
-      if (mt_f->presence < 0) {
-        cardinality = "o";
-      } else {
-        cardinality = "s";
-      }
-      break;
-  }
-
-  uint64_t expected_tag = GetEncodedTag(field);
-
-  // Data is:
-  //
-  //                  48                32                16                 0
-  // |--------|--------|--------|--------|--------|--------|--------|--------|
-  // |   offset (16)   |case offset (16) |presence| submsg |  exp. tag (16)  |
-  // |--------|--------|--------|--------|--------|--------|--------|--------|
-  //
-  // - |presence| is either hasbit index or field number for oneofs.
-
-  uint64_t data = static_cast<uint64_t>(mt_f->offset) << 48 | expected_tag;
-
-  if (field.IsSequence()) {
-    // No hasbit/oneof-related fields.
-  }
-  if (field.real_containing_oneof()) {
-    uint64_t case_offset = ~mt_f->presence;
-    if (case_offset > 0xffff || field.number() > 0xff) return false;
-    data |= field.number() << 24;
-    data |= case_offset << 32;
-  } else {
-    uint64_t hasbit_index = 63;  // No hasbit (set a high, unused bit).
-    if (mt_f->presence) {
-      hasbit_index = mt_f->presence;
-      if (hasbit_index > 31) return false;
-    }
-    data |= hasbit_index << 24;
-  }
-
-  if (field.ctype() == kUpb_CType_Message) {
-    uint64_t idx = mt_f->UPB_PRIVATE(submsg_index);
-    if (idx > 255) return false;
-    data |= idx << 16;
-
-    std::string size_ceil = "max";
-    size_t size = SIZE_MAX;
-    if (field.message_type().file() == field.file()) {
-      // We can only be guaranteed the size of the sub-message if it is in the
-      // same file as us.  We could relax this to increase the speed of
-      // cross-file sub-message parsing if we are comfortable requiring that
-      // users compile all messages at the same time.
-      const upb_MiniTable* sub_mt = pools.GetMiniTable64(field.message_type());
-      size = sub_mt->size + 8;
-    }
-    std::vector<size_t> breaks = {64, 128, 192, 256};
-    for (auto brk : breaks) {
-      if (size <= brk) {
-        size_ceil = std::to_string(brk);
-        break;
-      }
-    }
-    ent.first = absl::Substitute("upb_p$0$1_$2bt_max$3b", cardinality, type,
-                                 expected_tag > 0xff ? "2" : "1", size_ceil);
-
-  } else {
-    ent.first = absl::Substitute("upb_p$0$1_$2bt", cardinality, type,
-                                 expected_tag > 0xff ? "2" : "1");
-  }
-  ent.second = data;
-  return true;
-}
-
-std::vector<TableEntry> FastDecodeTable(upb::MessageDefPtr message,
-                                        const DefPoolPair& pools) {
-  std::vector<TableEntry> table;
-  for (const auto field : FieldHotnessOrder(message)) {
-    TableEntry ent;
-    int slot = GetTableSlot(field);
-    // std::cerr << "table slot: " << field->number() << ": " << slot << "\n";
-    if (slot < 0) {
-      // Tag can't fit in the table.
-      continue;
-    }
-    if (!TryFillTableEntry(pools, field, ent)) {
-      // Unsupported field type or offset, hasbit index, etc. doesn't fit.
-      continue;
-    }
-    while ((size_t)slot >= table.size()) {
-      size_t size = std::max(static_cast<size_t>(1), table.size() * 2);
-      table.resize(size, TableEntry{"_upb_FastDecoder_DecodeGeneric", 0});
-    }
-    if (table[slot].first != "_upb_FastDecoder_DecodeGeneric") {
-      // A hotter field already filled this slot.
-      continue;
-    }
-    table[slot] = ent;
-  }
-  return table;
-}
-
-std::string ArchDependentSize(int64_t size32, int64_t size64) {
-  if (size32 == size64) return absl::StrCat(size32);
-  return absl::Substitute("UPB_SIZE($0, $1)", size32, size64);
-}
-
-std::string GetFieldRep(const upb_MiniTableField* field32,
-                        const upb_MiniTableField* field64) {
-  switch (_upb_MiniTableField_GetRep(field32)) {
-    case kUpb_FieldRep_1Byte:
-      return "kUpb_FieldRep_1Byte";
-      break;
-    case kUpb_FieldRep_4Byte: {
-      if (_upb_MiniTableField_GetRep(field64) == kUpb_FieldRep_4Byte) {
-        return "kUpb_FieldRep_4Byte";
-      } else {
-        assert(_upb_MiniTableField_GetRep(field64) == kUpb_FieldRep_8Byte);
-        return "UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte)";
-      }
-      break;
-    }
-    case kUpb_FieldRep_StringView:
-      return "kUpb_FieldRep_StringView";
-      break;
-    case kUpb_FieldRep_8Byte:
-      return "kUpb_FieldRep_8Byte";
-      break;
-  }
-  UPB_UNREACHABLE();
-}
-
-std::string GetFieldRep(const DefPoolPair& pools, upb::FieldDefPtr field) {
-  return GetFieldRep(pools.GetField32(field), pools.GetField64(field));
-}
-
-// Returns the field mode as a string initializer.
-//
-// We could just emit this as a number (and we may yet go in that direction) but
-// for now emitting symbolic constants gives this better readability and
-// debuggability.
-std::string GetModeInit(const upb_MiniTableField* field32,
-                        const upb_MiniTableField* field64) {
-  std::string ret;
-  uint8_t mode32 = field32->mode;
-  switch (mode32 & kUpb_FieldMode_Mask) {
-    case kUpb_FieldMode_Map:
-      ret = "(int)kUpb_FieldMode_Map";
-      break;
-    case kUpb_FieldMode_Array:
-      ret = "(int)kUpb_FieldMode_Array";
-      break;
-    case kUpb_FieldMode_Scalar:
-      ret = "(int)kUpb_FieldMode_Scalar";
-      break;
-    default:
-      break;
-  }
-
-  if (mode32 & kUpb_LabelFlags_IsPacked) {
-    absl::StrAppend(&ret, " | (int)kUpb_LabelFlags_IsPacked");
-  }
-
-  if (mode32 & kUpb_LabelFlags_IsExtension) {
-    absl::StrAppend(&ret, " | (int)kUpb_LabelFlags_IsExtension");
-  }
-
-  if (mode32 & kUpb_LabelFlags_IsAlternate) {
-    absl::StrAppend(&ret, " | (int)kUpb_LabelFlags_IsAlternate");
-  }
-
-  absl::StrAppend(&ret, " | ((int)", GetFieldRep(field32, field64),
-                  " << kUpb_FieldRep_Shift)");
-  return ret;
-}
-
 std::string FieldInitializer(upb::FieldDefPtr field,
                              const upb_MiniTableField* field64,
                              const upb_MiniTableField* field32,
@@ -1306,14 +980,7 @@ std::string FieldInitializer(upb::FieldDefPtr field,
         "*upb_MiniTable_FindFieldByNumber($0, $1)",
         MessageMiniTableRef(field.containing_type(), options), field.number());
   } else {
-    return absl::Substitute(
-        "{$0, $1, $2, $3, $4, $5}", field64->number,
-        ArchDependentSize(field32->offset, field64->offset),
-        ArchDependentSize(field32->presence, field64->presence),
-        field64->UPB_PRIVATE(submsg_index) == kUpb_NoSub
-            ? "kUpb_NoSub"
-            : absl::StrCat(field64->UPB_PRIVATE(submsg_index)).c_str(),
-        field64->UPB_PRIVATE(descriptortype), GetModeInit(field32, field64));
+    return upbc::FieldInitializer(field, field64, field32);
   }
 }
 
@@ -1321,262 +988,6 @@ std::string FieldInitializer(const DefPoolPair& pools, upb::FieldDefPtr field,
                              const Options& options) {
   return FieldInitializer(field, pools.GetField64(field),
                           pools.GetField32(field), options);
-}
-
-// Writes a single field into a .upb.c source file.
-void WriteMessageField(upb::FieldDefPtr field,
-                       const upb_MiniTableField* field64,
-                       const upb_MiniTableField* field32,
-                       const Options& options, Output& output) {
-  output("  $0,\n", FieldInitializer(field, field64, field32, options));
-}
-
-std::string GetSub(upb::FieldDefPtr field) {
-  if (auto message_def = field.message_type()) {
-    return absl::Substitute("{.submsg = &$0}", MessageInitName(message_def));
-  }
-
-  if (auto enum_def = field.enum_subdef()) {
-    if (enum_def.is_closed()) {
-      return absl::Substitute("{.subenum = &$0}", EnumInit(enum_def));
-    }
-  }
-
-  return std::string("{.submsg = NULL}");
-}
-
-// Writes a single message into a .upb.c source file.
-void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
-                  const Options& options, Output& output) {
-  std::string msg_name = ToCIdent(message.full_name());
-  std::string fields_array_ref = "NULL";
-  std::string submsgs_array_ref = "NULL";
-  std::string subenums_array_ref = "NULL";
-  const upb_MiniTable* mt_32 = pools.GetMiniTable32(message);
-  const upb_MiniTable* mt_64 = pools.GetMiniTable64(message);
-  std::map<int, std::string> subs;
-
-  for (int i = 0; i < mt_64->field_count; i++) {
-    const upb_MiniTableField* f = &mt_64->fields[i];
-    uint32_t index = f->UPB_PRIVATE(submsg_index);
-    if (index != kUpb_NoSub) {
-      auto pair =
-          subs.emplace(index, GetSub(message.FindFieldByNumber(f->number)));
-      ABSL_CHECK(pair.second);
-    }
-  }
-
-  if (!subs.empty()) {
-    std::string submsgs_array_name = msg_name + "_submsgs";
-    submsgs_array_ref = "&" + submsgs_array_name + "[0]";
-    output("static const upb_MiniTableSub $0[$1] = {\n", submsgs_array_name,
-           subs.size());
-
-    int i = 0;
-    for (const auto& pair : subs) {
-      ABSL_CHECK(pair.first == i++);
-      output("  $0,\n", pair.second);
-    }
-
-    output("};\n\n");
-  }
-
-  if (mt_64->field_count > 0) {
-    std::string fields_array_name = msg_name + "__fields";
-    fields_array_ref = "&" + fields_array_name + "[0]";
-    output("static const upb_MiniTableField $0[$1] = {\n", fields_array_name,
-           mt_64->field_count);
-    for (int i = 0; i < mt_64->field_count; i++) {
-      WriteMessageField(message.FindFieldByNumber(mt_64->fields[i].number),
-                        &mt_64->fields[i], &mt_32->fields[i], options, output);
-    }
-    output("};\n\n");
-  }
-
-  std::vector<TableEntry> table;
-  uint8_t table_mask = -1;
-
-  table = FastDecodeTable(message, pools);
-
-  if (table.size() > 1) {
-    assert((table.size() & (table.size() - 1)) == 0);
-    table_mask = (table.size() - 1) << 3;
-  }
-
-  std::string msgext = "kUpb_ExtMode_NonExtendable";
-
-  if (message.extension_range_count()) {
-    if (UPB_DESC(MessageOptions_message_set_wire_format)(message.options())) {
-      msgext = "kUpb_ExtMode_IsMessageSet";
-    } else {
-      msgext = "kUpb_ExtMode_Extendable";
-    }
-  }
-
-  output("const upb_MiniTable $0 = {\n", MessageInitName(message));
-  output("  $0,\n", submsgs_array_ref);
-  output("  $0,\n", fields_array_ref);
-  output("  $0, $1, $2, $3, UPB_FASTTABLE_MASK($4), $5,\n",
-         ArchDependentSize(mt_32->size, mt_64->size), mt_64->field_count,
-         msgext, mt_64->dense_below, table_mask, mt_64->required_count);
-  if (!table.empty()) {
-    output("  UPB_FASTTABLE_INIT({\n");
-    for (const auto& ent : table) {
-      output("    {0x$1, &$0},\n", ent.first,
-             absl::StrCat(absl::Hex(ent.second, absl::kZeroPad16)));
-    }
-    output("  })\n");
-  }
-  output("};\n\n");
-}
-
-void WriteEnum(upb::EnumDefPtr e, Output& output) {
-  std::string values_init = "{\n";
-  const upb_MiniTableEnum* mt = e.mini_table();
-  uint32_t value_count = (mt->mask_limit / 32) + mt->value_count;
-  for (uint32_t i = 0; i < value_count; i++) {
-    absl::StrAppend(&values_init, "                0x", absl::Hex(mt->data[i]),
-                    ",\n");
-  }
-  values_init += "    }";
-
-  output(
-      R"cc(
-        const upb_MiniTableEnum $0 = {
-            $1,
-            $2,
-            $3,
-        };
-      )cc",
-      EnumInit(e), mt->mask_limit, mt->value_count, values_init);
-  output("\n");
-}
-
-int WriteEnums(const DefPoolPair& pools, upb::FileDefPtr file, Output& output) {
-  if (file.syntax() != kUpb_Syntax_Proto2) return 0;
-
-  std::vector<upb::EnumDefPtr> this_file_enums = SortedEnums(file);
-
-  for (const auto e : this_file_enums) {
-    WriteEnum(e, output);
-  }
-
-  if (!this_file_enums.empty()) {
-    output("static const upb_MiniTableEnum *$0[$1] = {\n", kEnumsInit,
-           this_file_enums.size());
-    for (const auto e : this_file_enums) {
-      output("  &$0,\n", EnumInit(e));
-    }
-    output("};\n");
-    output("\n");
-  }
-
-  return this_file_enums.size();
-}
-
-int WriteMessages(const DefPoolPair& pools, upb::FileDefPtr file,
-                  const Options& options, Output& output) {
-  std::vector<upb::MessageDefPtr> file_messages = SortedMessages(file);
-
-  if (file_messages.empty()) return 0;
-
-  for (auto message : file_messages) {
-    WriteMessage(message, pools, options, output);
-  }
-
-  output("static const upb_MiniTable *$0[$1] = {\n", kMessagesInit,
-         file_messages.size());
-  for (auto message : file_messages) {
-    output("  &$0,\n", MessageInitName(message));
-  }
-  output("};\n");
-  output("\n");
-  return file_messages.size();
-}
-
-void WriteExtension(upb::FieldDefPtr ext, const DefPoolPair& pools,
-                    const Options& options, Output& output) {
-  output("$0,\n", FieldInitializer(pools, ext, options));
-  output("  &$0,\n", MessageInitName(ext.containing_type()));
-  output("  $0,\n", GetSub(ext));
-}
-
-int WriteExtensions(const DefPoolPair& pools, upb::FileDefPtr file,
-                    const Options& options, Output& output) {
-  auto exts = SortedExtensions(file);
-
-  if (exts.empty()) return 0;
-
-  // Order by full name for consistent ordering.
-  std::map<std::string, upb::MessageDefPtr> forward_messages;
-
-  for (auto ext : exts) {
-    forward_messages[ext.containing_type().full_name()] = ext.containing_type();
-    if (ext.message_type()) {
-      forward_messages[ext.message_type().full_name()] = ext.message_type();
-    }
-  }
-
-  for (const auto& decl : forward_messages) {
-    ForwardDeclareMiniTableInit(decl.second, options, output);
-  }
-
-  for (auto ext : exts) {
-    output("const upb_MiniTableExtension $0 = {\n  ", ExtensionLayout(ext));
-    WriteExtension(ext, pools, options, output);
-    output("\n};\n");
-  }
-
-  output(
-      "\n"
-      "static const upb_MiniTableExtension *$0[$1] = {\n",
-      kExtensionsInit, exts.size());
-
-  for (auto ext : exts) {
-    output("  &$0,\n", ExtensionLayout(ext));
-  }
-
-  output(
-      "};\n"
-      "\n");
-  return exts.size();
-}
-
-void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
-                          const Options& options, Output& output) {
-  EmitFileWarning(file.name(), output);
-
-  output(
-      "#include <stddef.h>\n"
-      "#include \"upb/upb/generated_code_support.h\"\n"
-      "#include \"$0\"\n",
-      HeaderFilename(file));
-
-  for (int i = 0; i < file.dependency_count(); i++) {
-    output("#include \"$0\"\n", HeaderFilename(file.dependency(i)));
-  }
-
-  output(
-      "\n"
-      "// Must be last.\n"
-      "#include \"upb/upb/port/def.inc\"\n"
-      "\n");
-
-  int msg_count = WriteMessages(pools, file, options, output);
-  int ext_count = WriteExtensions(pools, file, options, output);
-  int enum_count = WriteEnums(pools, file, output);
-
-  output("const upb_MiniTableFile $0 = {\n", FileLayoutName(file));
-  output("  $0,\n", msg_count ? kMessagesInit : "NULL");
-  output("  $0,\n", enum_count ? kEnumsInit : "NULL");
-  output("  $0,\n", ext_count ? kExtensionsInit : "NULL");
-  output("  $0,\n", msg_count);
-  output("  $0,\n", enum_count);
-  output("  $0,\n", ext_count);
-  output("};\n\n");
-
-  output("#include \"upb/upb/port/undef.inc\"\n");
-  output("\n");
 }
 
 void WriteMessageMiniDescriptorInitializer(upb::MessageDefPtr msg,
@@ -1642,10 +1053,10 @@ void WriteMiniDescriptorSource(const DefPoolPair& pools, upb::FileDefPtr file,
       "#include <stddef.h>\n"
       "#include \"upb/upb/generated_code_support.h\"\n"
       "#include \"$0\"\n\n",
-      HeaderFilename(file));
+      CApiHeaderFilename(file));
 
   for (int i = 0; i < file.dependency_count(); i++) {
-    output("#include \"$0\"\n", HeaderFilename(file.dependency(i)));
+    output("#include \"$0\"\n", CApiHeaderFilename(file.dependency(i)));
   }
 
   output(
@@ -1668,24 +1079,21 @@ void WriteMiniDescriptorSource(const DefPoolPair& pools, upb::FileDefPtr file,
   }
 }
 
-void WriteSource(const DefPoolPair& pools, upb::FileDefPtr file,
-                 const Options& options, Output& output) {
-  if (options.bootstrap) {
-    WriteMiniDescriptorSource(pools, file, options, output);
-  } else {
-    WriteMiniTableSource(pools, file, options, output);
-  }
-}
-
 void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
                   const Options& options, Plugin* plugin) {
   Output h_output;
   WriteHeader(pools, file, options, h_output);
-  plugin->AddOutputFile(HeaderFilename(file), h_output.output());
+  plugin->AddOutputFile(CApiHeaderFilename(file), h_output.output());
 
-  Output c_output;
-  WriteSource(pools, file, options, c_output);
-  plugin->AddOutputFile(SourceFilename(file), c_output.output());
+  if (options.bootstrap) {
+    Output c_output;
+    WriteMiniDescriptorSource(pools, file, options, c_output);
+    plugin->AddOutputFile(SourceFilename(file), c_output.output());
+  } else {
+    // TODO: remove once we can figure out how to make both Blaze and Bazel
+    // happy with header-only libraries.
+    plugin->AddOutputFile(SourceFilename(file), "\n");
+  }
 }
 
 bool ParseOptions(Plugin* plugin, Options* options) {

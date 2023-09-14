@@ -1,5 +1,6 @@
 """upb_c_proto_library() exposes upb's generated C API for protobuf (foo.upb.h)"""
 
+load("//upb/bazel:upb_minitable_proto_library.bzl", "UpbMinitableCcInfo", "upb_minitable_proto_library_aspect")
 load("//upb/bazel:upb_proto_library_internal/aspect.bzl", "upb_proto_aspect_impl")
 load("//upb/bazel:upb_proto_library_internal/cc_library_func.bzl", "upb_use_cpp_toolchain")
 load("//upb/bazel:upb_proto_library_internal/rule.bzl", "upb_proto_rule_impl")
@@ -20,23 +21,10 @@ def _upb_c_proto_library_aspect_impl(target, ctx):
         ctx = ctx,
         generator = "upb",
         cc_provider = UpbWrappedCcInfo,
-        dep_cc_provider = None,
+        dep_cc_provider = UpbMinitableCcInfo,
         file_provider = _UpbWrappedGeneratedSrcsInfo,
+        provide_cc_shared_library_hints = False,
     )
-
-def _get_upb_c_proto_library_aspect_provides():
-    provides = [
-        UpbWrappedCcInfo,
-        _UpbWrappedGeneratedSrcsInfo,
-    ]
-
-    if hasattr(cc_common, "CcSharedLibraryHintInfo"):
-        provides.append(cc_common.CcSharedLibraryHintInfo)
-    elif hasattr(cc_common, "CcSharedLibraryHintInfo_6_X_getter_do_not_use"):
-        # This branch can be deleted once 6.X is not supported by upb rules
-        provides.append(cc_common.CcSharedLibraryHintInfo_6_X_getter_do_not_use)
-
-    return provides
 
 upb_c_proto_library_aspect = aspect(
     attrs = {
@@ -59,10 +47,14 @@ upb_c_proto_library_aspect = aspect(
         "_upb": attr.label_list(default = [
             "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         ]),
-        "_fasttable_enabled": attr.label(default = "//upb:fasttable_enabled"),
     },
     implementation = _upb_c_proto_library_aspect_impl,
-    provides = _get_upb_c_proto_library_aspect_provides(),
+    requires = [upb_minitable_proto_library_aspect],
+    required_aspect_providers = [UpbMinitableCcInfo],
+    provides = [
+        UpbWrappedCcInfo,
+        _UpbWrappedGeneratedSrcsInfo,
+    ],
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = upb_use_cpp_toolchain(),

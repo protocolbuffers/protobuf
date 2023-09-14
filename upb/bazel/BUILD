@@ -51,6 +51,7 @@ bzl_library(
     name = "upb_proto_library_bzl",
     srcs = [
         "upb_c_proto_library.bzl",
+        "upb_minitable_proto_library.bzl",
         "upb_proto_library.bzl",
         "upb_proto_reflection_library.bzl",
     ],

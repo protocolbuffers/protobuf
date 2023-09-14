@@ -8,6 +8,7 @@
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
 load("//upb/bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
 load("//upb/bazel:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
 load(
@@ -170,6 +171,12 @@ bootstrap_upb_proto_library(
 upb_proto_reflection_library(
     name = "descriptor_upb_proto_reflection",
     visibility = ["//visibility:public"],
+    deps = ["//:descriptor_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "descriptor_upb_minitable_proto",
+    visibility = ["//upb:__subpackages__"],
     deps = ["//:descriptor_proto"],
 )
 
@@ -523,6 +530,7 @@ upb_amalgamation(
         ":base",
         ":base_internal",
         ":collections_internal",
+        ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
@@ -569,6 +577,7 @@ upb_amalgamation(
         ":base",
         ":base_internal",
         ":collections_internal",
+        ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto_reflection",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
@@ -619,6 +628,7 @@ upb_amalgamation(
         ":base",
         ":base_internal",
         ":collections_internal",
+        ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
