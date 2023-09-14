@@ -149,6 +149,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename Handler>
   using Value = typename Handler::Type;
 
+  static constexpr int kSSOCapacity = 1;
+
+ protected:
   // We use the same Handler for all Message types to deduplicate generated
   // code.
   template <typename Handler>
@@ -156,9 +159,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       std::is_base_of<MessageLite, Value<Handler>>::value,
       internal::GenericTypeHandler<MessageLite>, Handler>::type;
 
-  static constexpr int kSSOCapacity = 1;
-
- protected:
   constexpr RepeatedPtrFieldBase()
       : arena_(nullptr),
         current_size_(0),
@@ -353,7 +353,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void Reserve(int new_size);  // implemented in the cc file
 
   template <typename TypeHandler>
-  static inline Value<TypeHandler>* copy(Value<TypeHandler>* value) {
+  static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
     using H = CommonHandler<TypeHandler>;
     auto* new_value = H::NewFromPrototype(value, nullptr);
     H::Merge(*value, new_value);
@@ -1466,8 +1466,11 @@ inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
   ABSL_DCHECK_GE(start, 0);
   ABSL_DCHECK_GE(num, 0);
   ABSL_DCHECK_LE(start + num, size());
+  void** subrange = raw_mutable_data() + start;
+  Arena* arena = GetOwningArena();
   for (int i = 0; i < num; ++i) {
-    RepeatedPtrFieldBase::Delete<TypeHandler>(start + i);
+    using H = CommonHandler<TypeHandler>;
+    H::Delete(static_cast<Element*>(subrange[i]), arena);
   }
   UnsafeArenaExtractSubrange(start, num, nullptr);
 }
@@ -1494,37 +1497,31 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
   ABSL_DCHECK_NE(elements, nullptr)
       << "Releasing elements without transferring ownership is an unsafe "
          "operation.  Use UnsafeArenaExtractSubrange.";
-  if (elements == nullptr) {
-    CloseGap(start, num);
-    return;
-  }
-
-  Arena* arena = GetOwningArena();
+  if (elements != nullptr) {
+    Arena* arena = GetOwningArena();
+    auto* extracted = data() + start;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  // Always copy.
-  for (int i = 0; i < num; ++i) {
-    elements[i] = copy<TypeHandler>(
-        RepeatedPtrFieldBase::Mutable<TypeHandler>(i + start));
-  }
-  if (arena == nullptr) {
+    // Always copy.
     for (int i = 0; i < num; ++i) {
-      delete RepeatedPtrFieldBase::Mutable<TypeHandler>(i + start);
+      elements[i] = copy<TypeHandler>(extracted[i]);
     }
-  }
+    if (arena == nullptr) {
+      for (int i = 0; i < num; ++i) {
+        delete extracted[i];
+      }
+    }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  // If we're on an arena, we perform a copy for each element so that the
-  // returned elements are heap-allocated. Otherwise, just forward it.
-  if (arena != nullptr) {
-    for (int i = 0; i < num; ++i) {
-      elements[i] = copy<TypeHandler>(
-          RepeatedPtrFieldBase::Mutable<TypeHandler>(i + start));
+    // If we're on an arena, we perform a copy for each element so that the
+    // returned elements are heap-allocated. Otherwise, just forward it.
+    if (arena != nullptr) {
+      for (int i = 0; i < num; ++i) {
+        elements[i] = copy<TypeHandler>(extracted[i]);
+      }
+    } else {
+      memcpy(elements, extracted, num * sizeof(Element*));
     }
-  } else {
-    for (int i = 0; i < num; ++i) {
-      elements[i] = RepeatedPtrFieldBase::Mutable<TypeHandler>(i + start);
-    }
-  }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  }
   CloseGap(start, num);
 }
 
@@ -1553,9 +1550,7 @@ inline void RepeatedPtrField<Element>::UnsafeArenaExtractSubrange(
   if (num > 0) {
     // Save the values of the removed elements if requested.
     if (elements != nullptr) {
-      for (int i = 0; i < num; ++i) {
-        elements[i] = RepeatedPtrFieldBase::Mutable<TypeHandler>(i + start);
-      }
+      memcpy(elements, data() + start, num * sizeof(Element*));
     }
     CloseGap(start, num);
   }
