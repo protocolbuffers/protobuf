@@ -28,11 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPB_WIRE_INTERNAL_COMMON_H_
-#define UPB_WIRE_INTERNAL_COMMON_H_
+#ifndef UPB_WIRE_INTERNAL_CONSTANTS_H_
+#define UPB_WIRE_INTERNAL_CONSTANTS_H_
 
-// Must be last.
-#include "upb/upb/port/def.inc"
+#define kUpb_WireFormat_DefaultDepthLimit 100
 
 // MessageSet wire format is:
 //   message MessageSet {
@@ -48,6 +47,4 @@ enum {
   kUpb_MsgSet_Message = 3,
 };
 
-#include "upb/upb/port/undef.inc"
-
-#endif /* UPB_WIRE_INTERNAL_COMMON_H_ */
+#endif /* UPB_WIRE_INTERNAL_CONSTANTS_H_ */

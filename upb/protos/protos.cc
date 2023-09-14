@@ -48,7 +48,6 @@
 #include "upb/upb/mini_table/message.h"
 #include "upb/upb/wire/decode.h"
 #include "upb/upb/wire/encode.h"
-#include "upb/upb/wire/types.h"
 
 namespace protos {
 
@@ -139,9 +138,8 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid) {
   MessageLock msg_lock(msg);
   return _upb_Message_Getext(msg, eid) != nullptr ||
-         upb_MiniTable_FindUnknown(msg, eid->field.number,
-                                   kUpb_WireFormat_DefaultDepthLimit)
-                 .status == kUpb_FindUnknown_Ok;
+         upb_MiniTable_FindUnknown(msg, eid->field.number, 0).status ==
+             kUpb_FindUnknown_Ok;
 }
 
 const upb_Message_Extension* GetOrPromoteExtension(
@@ -150,7 +148,7 @@ const upb_Message_Extension* GetOrPromoteExtension(
   const upb_Message_Extension* ext = _upb_Message_Getext(msg, eid);
   if (ext == nullptr) {
     upb_GetExtension_Status ext_status = upb_MiniTable_GetOrPromoteExtension(
-        (upb_Message*)msg, eid, kUpb_WireFormat_DefaultDepthLimit, arena, &ext);
+        (upb_Message*)msg, eid, 0, arena, &ext);
     if (ext_status != kUpb_GetExtension_Ok) {
       ext = nullptr;
     }

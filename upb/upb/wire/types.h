@@ -31,8 +31,6 @@
 #ifndef UPB_WIRE_TYPES_H_
 #define UPB_WIRE_TYPES_H_
 
-#define kUpb_WireFormat_DefaultDepthLimit 100
-
 // A list of types as they are encoded on the wire.
 typedef enum {
   kUpb_WireType_Varint = 0,

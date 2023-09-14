@@ -33,7 +33,7 @@
 
 #include "upb/upb/wire/eps_copy_input_stream.h"
 #include "upb/upb/wire/internal/swap.h"
-#include "upb/upb/wire/types.h"
+#include "upb/upb/wire/types.h"  // IWYU pragma: export
 
 // Must be last.
 #include "upb/upb/port/def.inc"
