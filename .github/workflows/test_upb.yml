@@ -123,7 +123,7 @@ jobs:
   build_wheels:
     name: Build Wheels
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -147,3 +147,124 @@ jobs:
           name: requirements
           # Tests shouldn't have access to the whole upb repo, upload the one file we need
           path: upb/python/requirements.txt
+
+  test_wheels:
+    name: Test Wheels
+    needs: build_wheels
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          # Linux and Mac use the limited API, so all Python versions will use
+          # a single wheel. As a result we can just test the oldest and newest
+          # supported Python versions and assume this gives us sufficient test
+          # coverage.
+          - { os: ubuntu-18, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: ubuntu-20, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: macos-12, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: ubuntu-18, python-version: "3.8", architecture: x64, type: 'source' }
+          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'source' }
+          - { os: ubuntu-20, python-version: "3.11", architecture: x64, type: 'source' }
+          - { os: macos-12, python-version: "3.11", architecture: x64, type: 'source' }
+
+          # Windows uses the full API up until Python 3.10, so each of these
+          # jobs tests a distinct binary wheel.
+          - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.9", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary' }
+    runs-on: ${{ matrix.os }}
+    if: ${{ github.event_name != 'pull_request_target' }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download Wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: python-wheels
+          path: wheels
+      - name: Download Requirements
+        uses: actions/download-artifact@v3
+        with:
+          name: requirements
+          path: requirements
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.architecture }}
+      - name: Setup Python venv
+        run: |
+          python -m pip install --upgrade pip
+          python -m venv env
+          # Windows uses 'Scripts' instead of 'bin'
+          source env/bin/activate || source env/Scripts/activate
+          echo "VIRTUAL ENV:" $VIRTUAL_ENV
+      - name: Install tzdata
+        run: pip install tzdata
+        # Only needed on Windows, Linux ships with tzdata.
+        if: ${{ contains(matrix.os, 'windows') }}
+      - name: Install requirements
+        run: pip install -r requirements/requirements.txt
+      - name: Install Protobuf Binary Wheel
+        run: pip install -vvv --no-index --find-links wheels protobuf
+        if: ${{ matrix.type == 'binary' }}
+      - name: Install Protobuf Source Wheel
+        run: |
+          cd wheels
+          tar -xzvf *.tar.gz
+          cd protobuf-*/
+          pip install .
+        if: ${{ matrix.type == 'source' }}
+      - name: Test that module is importable
+        run: python -v -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'
+      - name: Install Protobuf Test Wheel
+        run: pip install -vvv --no-index --find-links wheels protobuftests
+      - name: Run the unit tests
+        run: |
+          TESTS=$(pip show -f protobuftests | grep pb_unit_tests.*py$ | sed 's,/,.,g' | sed 's,\\,.,g' | sed -E 's,.py$,,g')
+          for test in $TESTS; do
+            python -m unittest -v $test
+          done
+
+  test_pure_python_wheels:
+    name: Test Pure Python Wheels
+    needs: build_wheels
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        python-version: ["3.8", "3.11"]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request_target' }}
+    steps:
+      - name: Download Wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: python-wheels
+          path: wheels
+      - name: Delete Binary Wheels
+        run: find wheels -type f | grep -v none-any | xargs rm
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Setup Python venv
+        run: |
+          python -m pip install --upgrade pip
+          python -m venv env
+          source env/bin/activate
+          echo "VIRTUAL ENV:" $VIRTUAL_ENV
+      - name: Install numpy
+        run: pip install numpy
+      - name: Install Protobuf Wheels
+        run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
+      - name: Run the unit tests
+        run: |
+          TESTS=$(pip show -f protobuftests | grep _test.py | sed 's,/,.,g' | sed -E 's,.py$,,g')
+          for test in $TESTS; do
+            python -m unittest -v $test
+          done
