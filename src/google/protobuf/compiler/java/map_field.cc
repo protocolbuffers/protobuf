@@ -877,10 +877,11 @@ void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
       "    entry = $value_type$.newBuilder();\n"
       "    builderMap.put(key, entry);\n"
       "  }\n"
-      "  if (entry instanceof $value_builder_type$) { return "
-      "($value_builder_type$) entry; }\n"
-      "  return ($value_builder_type$) builderMap.put(key, "
-      "(($value_type$) entry).toBuilder());\n"
+      "  if (entry instanceof $value_type$) {\n"
+      "    entry = (($value_type$) entry).toBuilder();\n"
+      "    builderMap.put(key, entry);\n"
+      "  }\n"
+      "  return ($value_builder_type$) entry;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
