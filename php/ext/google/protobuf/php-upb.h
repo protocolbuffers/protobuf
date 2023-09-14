@@ -3420,23 +3420,9 @@ typedef struct upb_MiniTableFile upb_MiniTableFile;
 #ifndef UPB_WIRE_DECODE_H_
 #define UPB_WIRE_DECODE_H_
 
+#include <stddef.h>
+#include <stdint.h>
 
-#ifndef UPB_WIRE_TYPES_H_
-#define UPB_WIRE_TYPES_H_
-
-#define kUpb_WireFormat_DefaultDepthLimit 100
-
-// A list of types as they are encoded on the wire.
-typedef enum {
-  kUpb_WireType_Varint = 0,
-  kUpb_WireType_64Bit = 1,
-  kUpb_WireType_Delimited = 2,
-  kUpb_WireType_StartGroup = 3,
-  kUpb_WireType_EndGroup = 4,
-  kUpb_WireType_32Bit = 5
-} upb_WireType;
-
-#endif /* UPB_WIRE_TYPES_H_ */
 
 // Must be last.
 
@@ -3691,6 +3677,9 @@ TAGBYTES(r)
 
 #ifndef UPB_WIRE_ENCODE_H_
 #define UPB_WIRE_ENCODE_H_
+
+#include <stddef.h>
+#include <stdint.h>
 
 
 // Must be last.
@@ -11938,8 +11927,10 @@ UPB_INLINE bool upb_Arena_HasInitialBlock(upb_Arena* arena) {
 
 #ifdef UPB_USE_C11_ATOMICS
 
+// IWYU pragma: begin_exports
 #include <stdatomic.h>
 #include <stdbool.h>
+// IWYU pragma: end_exports
 
 #define upb_Atomic_Init(addr, val) atomic_init(addr, val)
 #define upb_Atomic_Load(addr, order) atomic_load_explicit(addr, order)
@@ -12045,6 +12036,21 @@ UPB_INLINE uint64_t _upb_BigEndian_Swap64(uint64_t val) {
 
 
 #endif /* UPB_WIRE_INTERNAL_SWAP_H_ */
+
+#ifndef UPB_WIRE_TYPES_H_
+#define UPB_WIRE_TYPES_H_
+
+// A list of types as they are encoded on the wire.
+typedef enum {
+  kUpb_WireType_Varint = 0,
+  kUpb_WireType_64Bit = 1,
+  kUpb_WireType_Delimited = 2,
+  kUpb_WireType_StartGroup = 3,
+  kUpb_WireType_EndGroup = 4,
+  kUpb_WireType_32Bit = 5
+} upb_WireType;
+
+#endif /* UPB_WIRE_TYPES_H_ */
 
 // Must be last.
 
@@ -13046,10 +13052,10 @@ upb_MethodDef* _upb_MethodDefs_New(
 
 #endif /* UPB_REFLECTION_METHOD_DEF_INTERNAL_H_ */
 
-#ifndef UPB_WIRE_INTERNAL_COMMON_H_
-#define UPB_WIRE_INTERNAL_COMMON_H_
+#ifndef UPB_WIRE_INTERNAL_CONSTANTS_H_
+#define UPB_WIRE_INTERNAL_CONSTANTS_H_
 
-// Must be last.
+#define kUpb_WireFormat_DefaultDepthLimit 100
 
 // MessageSet wire format is:
 //   message MessageSet {
@@ -13065,8 +13071,7 @@ enum {
   kUpb_MsgSet_Message = 3,
 };
 
-
-#endif /* UPB_WIRE_INTERNAL_COMMON_H_ */
+#endif /* UPB_WIRE_INTERNAL_CONSTANTS_H_ */
 
 /*
  * Internal implementation details of the decoder that are shared between
