@@ -31,7 +31,12 @@
 #ifndef UPB_REFLECTION_MESSAGE_H_
 #define UPB_REFLECTION_MESSAGE_H_
 
+#include <stddef.h>
+
 #include "upb/upb/collections/map.h"
+#include "upb/upb/mem/arena.h"
+#include "upb/upb/message/types.h"
+#include "upb/upb/message/value.h"  // IWYU pragma: export
 #include "upb/upb/reflection/common.h"
 
 // Must be last.

@@ -32,6 +32,7 @@
 #define UPB_MESSAGE_PROMOTE_H_
 
 #include "upb/upb/collections/array.h"
+#include "upb/upb/collections/map.h"
 #include "upb/upb/message/internal/extension.h"
 #include "upb/upb/wire/decode.h"
 

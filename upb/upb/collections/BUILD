@@ -19,6 +19,7 @@ cc_library(
         ":internal",
         "//upb:base",
         "//upb:mem",
+        "//upb:message_value",
         "//upb:port",
     ],
 )
@@ -38,7 +39,6 @@ cc_library(
         "internal/map_entry.h",
         "internal/map_sorter.h",
         "map_gencode_util.h",
-        "message_value.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -49,8 +49,8 @@ cc_library(
         "//upb:mem",
         "//upb:message_internal",
         "//upb:message_internal_types",
-        "//upb:message_tagged_ptr",
-        "//upb:mini_table",
+        "//upb:message_types",
+        "//upb:message_value",
         "//upb:port",
     ],
 )
