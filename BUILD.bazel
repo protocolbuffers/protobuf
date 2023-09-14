@@ -198,6 +198,14 @@ cc_binary(
 # C++ runtime
 ################################################################################
 
+# Expose the runtime for the proto_lang_toolchain so that it can also be used in
+# a user-defined proto_lang_toolchain.
+alias(
+  name = "protobuf_nowkt",
+  actual = "//src/google/protobuf:protobuf_nowkt",
+  visibility = ["//visibility:public"],
+)
+
 # The "lite" runtime works for .proto files that specify the option:
 #     optimize_for = LITE_RUNTIME;
 #
