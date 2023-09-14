@@ -28,6 +28,7 @@ uint64_t shared_Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
   if (encode_status == kUpb_EncodeStatus_Ok) {
     uint64_t ret = _upb_Hash(data, size, seed);
     upb_Arena_Free(arena);
+    fprintf(stderr, "****** %s() %lx\n", __func__, ret);
     return ret;
   } else {
     upb_Arena_Free(arena);
