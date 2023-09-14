@@ -699,7 +699,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Grows the flat_capacity_.
   // If flat_capacity_ > kMaximumFlatCapacity, converts to LargeMap.
   void GrowCapacity(size_t minimum_new_capacity);
-  static constexpr uint16_t kMaximumFlatCapacity = 256;
+  static constexpr uint16_t kMaximumFlatCapacity = 4;
   bool is_large() const { return static_cast<int16_t>(flat_size_) < 0; }
 
   // Removes a key from the ExtensionSet.
