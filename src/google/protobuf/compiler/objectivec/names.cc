@@ -17,6 +17,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
@@ -884,6 +885,222 @@ std::string FieldNameCapitalized(const FieldDescriptor* field) {
     result[0] = absl::ascii_toupper(result[0]);
   }
   return result;
+}
+
+namespace {
+
+enum class FragmentNameMode : int { kCommon, kMapKey, kObjCGenerics };
+std::string FragmentName(const FieldDescriptor* field,
+                         FragmentNameMode mode = FragmentNameMode::kCommon) {
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SFIXED32:
+      return "Int32";
+
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+      return "UInt32";
+
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_SFIXED64:
+      return "Int64";
+
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+      return "UInt64";
+
+    case FieldDescriptor::TYPE_FLOAT:
+      return "Float";
+
+    case FieldDescriptor::TYPE_DOUBLE:
+      return "Double";
+
+    case FieldDescriptor::TYPE_BOOL:
+      return "Bool";
+
+    case FieldDescriptor::TYPE_STRING: {
+      switch (mode) {
+        case FragmentNameMode::kCommon:
+          return "Object";
+        case FragmentNameMode::kMapKey:
+          return "String";
+        case FragmentNameMode::kObjCGenerics:
+          return "NSString*";
+      }
+    }
+
+    case FieldDescriptor::TYPE_BYTES:
+      return (mode == FragmentNameMode::kObjCGenerics ? "NSData*" : "Object");
+
+    case FieldDescriptor::TYPE_ENUM:
+      return "Enum";
+
+    case FieldDescriptor::TYPE_GROUP:
+    case FieldDescriptor::TYPE_MESSAGE:
+      return (mode == FragmentNameMode::kObjCGenerics
+                  ? absl::StrCat(ClassName(field->message_type()), "*")
+                  : "Object");
+  }
+
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
+  ABSL_LOG(FATAL) << "Can't get here.";
+}
+
+std::string FieldObjCTypeInternal(const FieldDescriptor* field,
+                                  bool* out_is_ptr, std::string* out_generics) {
+  if (field->is_map()) {
+    *out_is_ptr = true;
+    const FieldDescriptor* key_field = field->message_type()->map_key();
+    const FieldDescriptor* value_field = field->message_type()->map_value();
+
+    bool value_is_object;
+    switch (value_field->type()) {
+      case FieldDescriptor::TYPE_STRING:
+      case FieldDescriptor::TYPE_BYTES:
+      case FieldDescriptor::TYPE_GROUP:
+      case FieldDescriptor::TYPE_MESSAGE: {
+        value_is_object = true;
+        break;
+      }
+      default:
+        value_is_object = false;
+        break;
+    }
+
+    if (value_is_object && key_field->type() == FieldDescriptor::TYPE_STRING) {
+      if (out_generics) {
+        *out_generics = absl::StrCat(
+            "<NSString*, ",
+            FragmentName(value_field, FragmentNameMode::kObjCGenerics), ">");
+      }
+      return "NSMutableDictionary";
+    }
+
+    if (value_is_object && out_generics) {
+      *out_generics = absl::StrCat(
+          "<", FragmentName(value_field, FragmentNameMode::kObjCGenerics), ">");
+    }
+    return absl::StrCat("GPB",
+                        FragmentName(key_field, FragmentNameMode::kMapKey),
+                        FragmentName(value_field), "Dictionary");
+  }
+
+  if (field->is_repeated()) {
+    *out_is_ptr = true;
+
+    switch (field->type()) {
+      case FieldDescriptor::TYPE_STRING:
+      case FieldDescriptor::TYPE_BYTES:
+      case FieldDescriptor::TYPE_GROUP:
+      case FieldDescriptor::TYPE_MESSAGE: {
+        if (out_generics) {
+          *out_generics = absl::StrCat(
+              "<", FragmentName(field, FragmentNameMode::kObjCGenerics), ">");
+        }
+        return "NSMutableArray";
+      }
+      default:
+        return absl::StrCat("GPB", FragmentName(field), "Array");
+    }
+  }
+
+  // Single field
+
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SFIXED32: {
+      *out_is_ptr = false;
+      return "int32_t";
+    }
+
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_FIXED32: {
+      *out_is_ptr = false;
+      return "uint32_t";
+    }
+
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_SFIXED64: {
+      *out_is_ptr = false;
+      return "int64_t";
+    }
+
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_FIXED64: {
+      *out_is_ptr = false;
+      return "uint64_t";
+    }
+
+    case FieldDescriptor::TYPE_FLOAT: {
+      *out_is_ptr = false;
+      return "float";
+    }
+
+    case FieldDescriptor::TYPE_DOUBLE: {
+      *out_is_ptr = false;
+      return "double";
+    }
+
+    case FieldDescriptor::TYPE_BOOL: {
+      *out_is_ptr = false;
+      return "BOOL";
+    }
+
+    case FieldDescriptor::TYPE_STRING: {
+      *out_is_ptr = true;
+      return "NSString";
+    }
+
+    case FieldDescriptor::TYPE_BYTES: {
+      *out_is_ptr = true;
+      return "NSData";
+    }
+
+    case FieldDescriptor::TYPE_ENUM: {
+      *out_is_ptr = false;
+      return EnumName(field->enum_type());
+    }
+
+    case FieldDescriptor::TYPE_GROUP:
+    case FieldDescriptor::TYPE_MESSAGE: {
+      *out_is_ptr = true;
+      return ClassName(field->message_type());
+    }
+  }
+
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
+  ABSL_LOG(FATAL) << "Can't get here.";
+}
+
+}  // namespace
+
+std::string FieldObjCType(const FieldDescriptor* field,
+                          FieldObjCTypeOptions options) {
+  std::string generics;
+  bool is_ptr;
+  std::string base_type = FieldObjCTypeInternal(
+      field, &is_ptr,
+      ((options & kFieldObjCTypeOptions_OmitLightweightGenerics) != 0)
+          ? nullptr
+          : &generics);
+
+  if (!is_ptr) {
+    if ((options & kFieldObjCTypeOptions_IncludeSpaceAfterBasicTypes) != 0) {
+      return absl::StrCat(base_type, " ");
+    }
+    return base_type;
+  }
+
+  if ((options & kFieldObjCTypeOptions_IncludeSpaceBeforeStar) != 0) {
+    return absl::StrCat(base_type, generics, " *");
+  }
+  return absl::StrCat(base_type, generics, "*");
 }
 
 std::string OneofEnumName(const OneofDescriptor* descriptor) {
