@@ -58,6 +58,10 @@ void SetCommonFieldVariables(
   (*variables)["field_number_name"] =
       absl::StrCat(classname, "_FieldNumber_", capitalized_name);
   (*variables)["field_number"] = absl::StrCat(descriptor->number());
+  (*variables)["property_type"] = FieldObjCType(
+      descriptor, static_cast<FieldObjCTypeOptions>(
+                      kFieldObjCTypeOptions_IncludeSpaceAfterBasicTypes |
+                      kFieldObjCTypeOptions_IncludeSpaceBeforeStar));
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
   (*variables)["deprecated_attribute"] =
       GetOptionalDeprecatedAttribute(descriptor);
@@ -148,44 +152,35 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
 }  // namespace
 
 FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field) {
-  FieldGenerator* result = nullptr;
   if (field->is_repeated()) {
     switch (GetObjectiveCType(field)) {
       case OBJECTIVECTYPE_MESSAGE: {
         if (field->is_map()) {
-          result = new MapFieldGenerator(field);
+          return new MapFieldGenerator(field);
         } else {
-          result = new RepeatedMessageFieldGenerator(field);
+          return new RepeatedMessageFieldGenerator(field);
         }
-        break;
       }
       case OBJECTIVECTYPE_ENUM:
-        result = new RepeatedEnumFieldGenerator(field);
-        break;
+        return new RepeatedEnumFieldGenerator(field);
       default:
-        result = new RepeatedPrimitiveFieldGenerator(field);
-        break;
-    }
-  } else {
-    switch (GetObjectiveCType(field)) {
-      case OBJECTIVECTYPE_MESSAGE: {
-        result = new MessageFieldGenerator(field);
-        break;
-      }
-      case OBJECTIVECTYPE_ENUM:
-        result = new EnumFieldGenerator(field);
-        break;
-      default:
-        if (IsReferenceType(field)) {
-          result = new PrimitiveObjFieldGenerator(field);
-        } else {
-          result = new PrimitiveFieldGenerator(field);
-        }
-        break;
+        return new RepeatedPrimitiveFieldGenerator(field);
     }
   }
-  result->FinishInitialization();
-  return result;
+
+  switch (GetObjectiveCType(field)) {
+    case OBJECTIVECTYPE_MESSAGE: {
+      return new MessageFieldGenerator(field);
+    }
+    case OBJECTIVECTYPE_ENUM:
+      return new EnumFieldGenerator(field);
+    default:
+      if (IsReferenceType(field)) {
+        return new PrimitiveObjFieldGenerator(field);
+      } else {
+        return new PrimitiveFieldGenerator(field);
+      }
+  }
 }
 
 FieldGenerator::FieldGenerator(const FieldDescriptor* descriptor)
@@ -275,14 +270,6 @@ bool FieldGenerator::WantsHasProperty() const {
   return descriptor_->has_presence() && !descriptor_->real_containing_oneof();
 }
 
-void FieldGenerator::FinishInitialization() {
-  // If "property_type" wasn't set, make it "storage_type".
-  if ((variables_.find("property_type") == variables_.end()) &&
-      (variables_.find("storage_type") != variables_.end())) {
-    variables_["property_type"] = variable("storage_type");
-  }
-}
-
 SingleFieldGenerator::SingleFieldGenerator(const FieldDescriptor* descriptor)
     : FieldGenerator(descriptor) {
   // Nothing
@@ -301,7 +288,7 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
       {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
       R"objc(
         $comments$
-        @property(nonatomic, readwrite) $property_type$ $name$$ deprecated_attribute$;
+        @property(nonatomic, readwrite) $property_type$$name$$ deprecated_attribute$;
       )objc");
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
@@ -354,7 +341,7 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
       {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
       R"objc(
         $comments$
-        @property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$ *$name$$storage_attribute$$ deprecated_attribute$;
+        @property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$$name$$storage_attribute$$ deprecated_attribute$;
       )objc");
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
@@ -366,7 +353,7 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Emit(R"objc(
-      - ($property_type$ *)$name$ GPB_METHOD_FAMILY_NONE$ deprecated_attribute$;
+      - ($property_type$)$name$ GPB_METHOD_FAMILY_NONE$ deprecated_attribute$;
     )objc");
   }
   printer->Emit("\n");
@@ -375,13 +362,6 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
 RepeatedFieldGenerator::RepeatedFieldGenerator(
     const FieldDescriptor* descriptor)
     : ObjCObjFieldGenerator(descriptor) {}
-
-void RepeatedFieldGenerator::FinishInitialization() {
-  FieldGenerator::FinishInitialization();
-  if (variables_.find("array_property_type") == variables_.end()) {
-    variables_["array_property_type"] = variable("array_storage_type");
-  }
-}
 
 void RepeatedFieldGenerator::GenerateFieldStorageDeclaration(
     io::Printer* printer) const {
@@ -410,7 +390,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
       R"objc(
         $comments$
         $array_comment$
-        @property(nonatomic, readwrite, strong, null_resettable) $array_property_type$ *$name$$storage_attribute$$ deprecated_attribute$;
+        @property(nonatomic, readwrite, strong, null_resettable) $property_type$$name$$storage_attribute$$ deprecated_attribute$;
         /** The number of items in @c $name$ without causing the container to be created. */
         @property(nonatomic, readonly) NSUInteger $name$_Count$ deprecated_attribute$;
       )objc");
@@ -418,7 +398,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Emit(R"objc(
-      - ($array_property_type$ *)$name$ GPB_METHOD_FAMILY_NONE$ deprecated_attribute$;
+      - ($property_type$)$name$ GPB_METHOD_FAMILY_NONE$ deprecated_attribute$;
     )objc");
   }
   printer->Emit("\n");

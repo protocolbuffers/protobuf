@@ -35,8 +35,6 @@ void SetMessageVariables(
   (*variables)["type"] = message_type;
   (*variables)["containing_class"] = containing_class;
   (*variables)["storage_type"] = message_type;
-  (*variables)["group_or_message"] =
-      (descriptor->type() == FieldDescriptor::TYPE_GROUP) ? "Group" : "Message";
   (*variables)["dataTypeSpecific_value"] = ObjCClass(message_type);
 }
 
@@ -79,10 +77,7 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
     const FieldDescriptor* descriptor)
     : RepeatedFieldGenerator(descriptor) {
   SetMessageVariables(descriptor, &variables_);
-  std::string storage_type = variables_["storage_type"];
   variables_["array_storage_type"] = "NSMutableArray";
-  variables_["array_property_type"] =
-      absl::StrCat("NSMutableArray<", storage_type, "*>");
 }
 
 void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(

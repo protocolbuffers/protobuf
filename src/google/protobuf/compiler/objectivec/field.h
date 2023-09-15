@@ -82,7 +82,6 @@ class FieldGenerator {
  protected:
   explicit FieldGenerator(const FieldDescriptor* descriptor);
 
-  virtual void FinishInitialization();
   bool WantsHasProperty() const;
 
   const FieldDescriptor* descriptor_;
@@ -140,7 +139,6 @@ class RepeatedFieldGenerator : public ObjCObjFieldGenerator {
 
  protected:
   explicit RepeatedFieldGenerator(const FieldDescriptor* descriptor);
-  void FinishInitialization() override;
 };
 
 // Convenience class which constructs FieldGenerators for a Descriptor.

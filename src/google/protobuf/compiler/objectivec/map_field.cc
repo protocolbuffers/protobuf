@@ -110,19 +110,10 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
   if ((GetObjectiveCType(key_descriptor) == OBJECTIVECTYPE_STRING) &&
       value_is_object_type) {
     variables_["array_storage_type"] = "NSMutableDictionary";
-    variables_["array_property_type"] =
-        absl::StrCat("NSMutableDictionary<NSString*, ",
-                     value_field_generator_->variable("storage_type"), "*>");
   } else {
-    std::string class_name =
+    variables_["array_storage_type"] =
         absl::StrCat("GPB", MapEntryTypeName(key_descriptor, true),
                      MapEntryTypeName(value_descriptor, false), "Dictionary");
-    variables_["array_storage_type"] = class_name;
-    if (value_is_object_type) {
-      variables_["array_property_type"] =
-          absl::StrCat(class_name, "<",
-                       value_field_generator_->variable("storage_type"), "*>");
-    }
   }
 
   variables_["dataTypeSpecific_name"] =
