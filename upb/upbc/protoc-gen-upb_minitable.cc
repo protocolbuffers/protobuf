@@ -137,9 +137,13 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   const std::vector<upb::MessageDefPtr> this_file_messages =
       SortedMessages(file);
+  const std::vector<upb::FieldDefPtr> this_file_exts = SortedExtensions(file);
 
   for (auto message : this_file_messages) {
     output("extern const upb_MiniTable $0;\n", MessageInitName(message));
+  }
+  for (auto ext : this_file_exts) {
+    output("extern const upb_MiniTableExtension $0;\n", ExtensionLayout(ext));
   }
 
   output("\n");
@@ -409,8 +413,7 @@ std::string FieldInitializer(const DefPoolPair& pools, upb::FieldDefPtr field) {
 // Writes a single field into a .upb.c source file.
 void WriteMessageField(upb::FieldDefPtr field,
                        const upb_MiniTableField* field64,
-                       const upb_MiniTableField* field32,
-                       Output& output) {
+                       const upb_MiniTableField* field32, Output& output) {
   output("  $0,\n", upbc::FieldInitializer(field, field64, field32));
 }
 
