@@ -1,6 +1,6 @@
 """upb_c_proto_reflection_library() exposes upb reflection for protobuf (foo.upbdefs.h)"""
 
-load("//upb/bazel:upb_c_proto_library.bzl", "UpbWrappedCcInfo", "upb_c_proto_library_aspect")
+load("//upb/bazel:upb_minitable_proto_library.bzl", "UpbMinitableCcInfo", "upb_minitable_proto_library_aspect")
 load("//upb/bazel:upb_proto_library_internal/aspect.bzl", "upb_proto_aspect_impl")
 load("//upb/bazel:upb_proto_library_internal/cc_library_func.bzl", "upb_use_cpp_toolchain")
 load("//upb/bazel:upb_proto_library_internal/rule.bzl", "upb_proto_rule_impl")
@@ -18,7 +18,7 @@ def _upb_proto_reflection_library_aspect_impl(target, ctx):
         ctx = ctx,
         generator = "upbdefs",
         cc_provider = _UpbDefsWrappedCcInfo,
-        dep_cc_provider = UpbWrappedCcInfo,
+        dep_cc_provider = UpbMinitableCcInfo,
         file_provider = _WrappedDefsGeneratedSrcsInfo,
         provide_cc_shared_library_hints = False,
     )
@@ -41,19 +41,16 @@ _upb_proto_reflection_library_aspect = aspect(
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",
         ),
-        "_upbdefs": attr.label_list(
-            default = [
-                "//upb:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-            ],
-        ),
+        "_upbdefs": attr.label_list(default = [
+            "//upb:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        ]),
     },
     implementation = _upb_proto_reflection_library_aspect_impl,
+    requires = [upb_minitable_proto_library_aspect],
+    required_aspect_providers = [UpbMinitableCcInfo],
     provides = [
         _UpbDefsWrappedCcInfo,
         _WrappedDefsGeneratedSrcsInfo,
-    ],
-    required_aspect_providers = [
-        UpbWrappedCcInfo,
     ],
     attr_aspects = ["deps"],
     fragments = ["cpp"],
@@ -69,10 +66,7 @@ upb_proto_reflection_library = rule(
     implementation = _upb_proto_reflection_library_rule_impl,
     attrs = {
         "deps": attr.label_list(
-            aspects = [
-                upb_c_proto_library_aspect,
-                _upb_proto_reflection_library_aspect,
-            ],
+            aspects = [_upb_proto_reflection_library_aspect],
             allow_rules = ["proto_library"],
             providers = [ProtoInfo],
         ),

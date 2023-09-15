@@ -103,7 +103,7 @@ void WriteDefSource(upb::FileDefPtr file, Output& output) {
 
   output("#include \"upb/upb/reflection/def.h\"\n");
   output("#include \"$0\"\n", DefHeaderFilename(file));
-  output("#include \"$0\"\n", HeaderFilename(file));
+  output("#include \"$0\"\n", MiniTableHeaderFilename(file));
   output("\n");
 
   for (int i = 0; i < file.dependency_count(); i++) {

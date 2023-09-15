@@ -31,7 +31,7 @@ def staleness_test(name, outs, generated_pattern, target_files = None, tags = []
 
     # Filter out non-existing rules so Blaze doesn't error out before we even
     # run the test.
-    existing_outs = native.glob(include = outs)
+    existing_outs = native.glob(include = outs, allow_empty = True)
 
     # The file list contains a few extra bits of information at the end.
     # These get unpacked by the Config class in staleness_test_lib.py.

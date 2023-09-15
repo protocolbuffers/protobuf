@@ -82,10 +82,20 @@ std::string ToPreproc(absl::string_view str);
 void EmitFileWarning(absl::string_view name, Output& output);
 std::string MessageName(upb::MessageDefPtr descriptor);
 std::string FileLayoutName(upb::FileDefPtr file);
-std::string HeaderFilename(upb::FileDefPtr file);
+std::string MiniTableHeaderFilename(upb::FileDefPtr file);
+std::string CApiHeaderFilename(upb::FileDefPtr file);
 
 std::string MessageInit(absl::string_view full_name);
 std::string EnumInit(upb::EnumDefPtr descriptor);
+
+std::string FieldInitializer(upb::FieldDefPtr field,
+                             const upb_MiniTableField* field64,
+                             const upb_MiniTableField* field32);
+std::string ArchDependentSize(int64_t size32, int64_t size64);
+std::string GetModeInit(const upb_MiniTableField* field32,
+                        const upb_MiniTableField* field64);
+std::string GetFieldRep(const upb_MiniTableField* field32,
+                        const upb_MiniTableField* field64);
 
 }  // namespace upbc
 

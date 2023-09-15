@@ -101,7 +101,7 @@ def _generate_upb_protos(ctx, generator, proto_info, proto_sources):
     args.use_param_file(param_file_arg = "@%s")
     args.set_param_file_format("multiline")
 
-    args.add("--" + generator + "_out=" + _get_real_root(ctx, srcs[0]))
+    args.add("--" + generator + "_out=" + _get_real_root(ctx, hdrs[0]))
     args.add("--plugin=protoc-gen-" + generator + "=" + tool.path)
     args.add("--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]))
     args.add_all(proto_sources, map_each = _get_real_short_path)
@@ -180,7 +180,7 @@ def _compile_upb_protos(ctx, files, generator, dep_ccinfos, cc_provider):
             cc_info = cc_info,
         )
 
-_GENERATORS = ["upb", "upbdefs"]
+_GENERATORS = ["upb", "upbdefs", "upb_minitable"]
 
 def _get_hint_providers(ctx, generator):
     if generator not in _GENERATORS:
