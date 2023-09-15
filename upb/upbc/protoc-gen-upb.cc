@@ -1090,9 +1090,12 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
     WriteMiniDescriptorSource(pools, file, options, c_output);
     plugin->AddOutputFile(SourceFilename(file), c_output.output());
   } else {
-    // TODO: remove once we can figure out how to make both Blaze and Bazel
-    // happy with header-only libraries.
+    // TODO(b/300637173): remove once we can figure out how to make both Blaze
+    // and Bazel happy with header-only libraries.
+
+    // begin:github_only
     plugin->AddOutputFile(SourceFilename(file), "\n");
+    // end:github_only
   }
 }
 

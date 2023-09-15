@@ -90,7 +90,12 @@ def _generate_upb_protos(ctx, generator, proto_info, proto_sources):
 
     ext = "." + generator
     tool = getattr(ctx.executable, "_gen_" + generator)
-    srcs = [_generate_output_file(ctx, name, ext + ".c") for name in proto_sources]
+    srcs = []
+    if not (generator == "upb" and _is_google3):
+        # TODO(b/300637173): The OSS build should also exclude this file for the upb generator,
+        # as it is empty and unnecessary.  We only added it to make the OSS build happy on
+        # Windows and macOS.
+        srcs += [_generate_output_file(ctx, name, ext + ".c") for name in proto_sources]
     hdrs = [_generate_output_file(ctx, name, ext + ".h") for name in proto_sources]
     thunks = []
     if generator == "upb":

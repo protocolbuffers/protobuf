@@ -50,9 +50,8 @@ def _generated_srcs_for_suffix(prefix, srcs, suffix):
 def _generated_srcs_for_generator(prefix, srcs, generator):
     ret = _generated_srcs_for_suffix(prefix, srcs, ".{}.h".format(generator))
 
-    # if not (generator == "upb" and prefix.endswith("stage1")):
-    #     ret += _generated_srcs_for_suffix(prefix, srcs, ".{}.c".format(generator))
-    ret += _generated_srcs_for_suffix(prefix, srcs, ".{}.c".format(generator))
+    if not (generator == "upb" and prefix.endswith("stage1")):
+        ret += _generated_srcs_for_suffix(prefix, srcs, ".{}.c".format(generator))
     return ret
 
 def _generated_srcs(prefix, srcs):
