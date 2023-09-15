@@ -2097,6 +2097,7 @@ const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout = {
 
 
 
+
 static const char* _upb_EpsCopyInputStream_NoOpCallback(
     upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
   return new_start;
