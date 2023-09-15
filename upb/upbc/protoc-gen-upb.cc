@@ -825,53 +825,10 @@ void ForwardDeclareMiniTableInit(upb::MessageDefPtr message,
   }
 }
 
-void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
-                 const Options& options, Output& output) {
-  EmitFileWarning(file.name(), output);
-  output(
-      "#ifndef $0_UPB_H_\n"
-      "#define $0_UPB_H_\n\n"
-      "#include \"upb/upb/generated_code_support.h\"\n",
-      ToPreproc(file.name()));
-
-  for (int i = 0; i < file.public_dependency_count(); i++) {
-    if (i == 0) {
-      output("/* Public Imports. */\n");
-    }
-    output("#include \"$0\"\n", CApiHeaderFilename(file.public_dependency(i)));
-    if (i == file.public_dependency_count() - 1) {
-      output("\n");
-    }
-  }
-
-  output(
-      "// Must be last. \n"
-      "#include \"upb/upb/port/def.inc\"\n"
-      "\n"
-      "#ifdef __cplusplus\n"
-      "extern \"C\" {\n"
-      "#endif\n"
-      "\n");
-
-  const std::vector<upb::MessageDefPtr> this_file_messages =
-      SortedMessages(file);
-  const std::vector<upb::FieldDefPtr> this_file_exts = SortedExtensions(file);
-
-  // Forward-declare types defined in this file.
-  for (auto message : this_file_messages) {
-    output("typedef struct $0 $0;\n", ToCIdent(message.full_name()));
-  }
-  for (auto message : this_file_messages) {
-    ForwardDeclareMiniTableInit(message, options, output);
-  }
-  for (auto ext : this_file_exts) {
-    output("extern const upb_MiniTableExtension $0;\n", ExtensionLayout(ext));
-  }
-
-  // Forward-declare types not in this file, but used as submessages.
-  // Order by full name for consistent ordering.
+std::vector<upb::MessageDefPtr> SortedForwardMessages(
+    const std::vector<upb::MessageDefPtr>& this_file_messages,
+    const std::vector<upb::FieldDefPtr>& this_file_exts) {
   std::map<std::string, upb::MessageDefPtr> forward_messages;
-
   for (auto message : this_file_messages) {
     for (int i = 0; i < message.field_count(); i++) {
       upb::FieldDefPtr field = message.field(i);
@@ -888,18 +845,86 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
           ext.containing_type();
     }
   }
+  std::vector<upb::MessageDefPtr> ret;
+  ret.reserve(forward_messages.size());
   for (const auto& pair : forward_messages) {
-    output("struct $0;\n", MessageName(pair.second));
+    ret.push_back(pair.second);
   }
-  for (const auto& pair : forward_messages) {
-    ForwardDeclareMiniTableInit(pair.second, options, output);
+  return ret;
+}
+
+void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
+                 const Options& options, Output& output) {
+  const std::vector<upb::MessageDefPtr> this_file_messages =
+      SortedMessages(file);
+  const std::vector<upb::FieldDefPtr> this_file_exts = SortedExtensions(file);
+  std::vector<upb::EnumDefPtr> this_file_enums = SortedEnums(file);
+  std::vector<upb::MessageDefPtr> forward_messages =
+      SortedForwardMessages(this_file_messages, this_file_exts);
+
+  EmitFileWarning(file.name(), output);
+  output(
+      "#ifndef $0_UPB_H_\n"
+      "#define $0_UPB_H_\n\n"
+      "#include \"upb/upb/generated_code_support.h\"\n\n",
+      ToPreproc(file.name()));
+
+  for (int i = 0; i < file.public_dependency_count(); i++) {
+    if (i == 0) {
+      output("/* Public Imports. */\n");
+    }
+    output("#include \"$0\"\n", CApiHeaderFilename(file.public_dependency(i)));
+  }
+  if (file.public_dependency_count() > 0) {
+    output("\n");
+  }
+
+  if (!options.bootstrap) {
+    output("#include \"$0\"\n\n", MiniTableHeaderFilename(file));
+    for (int i = 0; i < file.dependency_count(); i++) {
+      output("#include \"$0\"\n", MiniTableHeaderFilename(file.dependency(i)));
+    }
+    if (file.dependency_count() > 0) {
+      output("\n");
+    }
+  }
+
+  output(
+      "// Must be last.\n"
+      "#include \"upb/upb/port/def.inc\"\n"
+      "\n"
+      "#ifdef __cplusplus\n"
+      "extern \"C\" {\n"
+      "#endif\n"
+      "\n");
+
+  if (options.bootstrap) {
+    for (auto message : this_file_messages) {
+      output("extern const upb_MiniTable* $0();\n", MessageInitName(message));
+    }
+    for (auto message : forward_messages) {
+      output("extern const upb_MiniTable* $0();\n", MessageInitName(message));
+    }
+    for (auto enumdesc : this_file_enums) {
+      output("extern const upb_MiniTableEnum* $0();\n", EnumInit(enumdesc));
+    }
+    output("\n");
+  }
+
+  // Forward-declare types defined in this file.
+  for (auto message : this_file_messages) {
+    output("typedef struct $0 $0;\n", ToCIdent(message.full_name()));
+  }
+
+  // Forward-declare types not in this file, but used as submessages.
+  // Order by full name for consistent ordering.
+  for (auto msg : forward_messages) {
+    output("struct $0;\n", MessageName(msg));
   }
 
   if (!this_file_messages.empty()) {
     output("\n");
   }
-
-  std::vector<upb::EnumDefPtr> this_file_enums = SortedEnums(file);
 
   for (auto enumdesc : this_file_enums) {
     output("typedef enum {\n");
@@ -909,16 +934,6 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   output("\n");
 
-  if (file.syntax() == kUpb_Syntax_Proto2) {
-    for (const auto enumdesc : this_file_enums) {
-      if (options.bootstrap) {
-        output("extern const upb_MiniTableEnum* $0();\n", EnumInit(enumdesc));
-      } else {
-        output("extern const upb_MiniTableEnum $0;\n", EnumInit(enumdesc));
-      }
-    }
-  }
-
   output("\n");
   for (auto message : this_file_messages) {
     GenerateMessageInHeader(message, pools, options, output);
@@ -927,8 +942,6 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   for (auto ext : this_file_exts) {
     GenerateExtensionInHeader(pools, ext, output);
   }
-
-  output("extern const upb_MiniTableFile $0;\n\n", FileLayoutName(file));
 
   if (absl::string_view(file.name()) == "google/protobuf/descriptor.proto" ||
       absl::string_view(file.name()) == "net/proto2/proto/descriptor.proto") {
