@@ -739,12 +739,14 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Type::_class_data_ = {
-    Type::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Type::GetClassData() const {
-  return &_class_data_;
+const ::google::protobuf::MessageLite::ClassData*
+Type::GetClassData() const {
+  static constexpr ::google::protobuf::MessageLite::ClassData data = {
+      Type::MergeImpl,
+       nullptr,  // OnDemandRegisterArenaDtor
+          true,
+  };
+  return &data;
 }
 
 void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
@@ -1171,12 +1173,14 @@ const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Field::_class_data_ = {
-    Field::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Field::GetClassData() const {
-  return &_class_data_;
+const ::google::protobuf::MessageLite::ClassData*
+Field::GetClassData() const {
+  static constexpr ::google::protobuf::MessageLite::ClassData data = {
+      Field::MergeImpl,
+       nullptr,  // OnDemandRegisterArenaDtor
+          true,
+  };
+  return &data;
 }
 
 void Field::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
@@ -1552,12 +1556,14 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Enum::_class_data_ = {
-    Enum::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Enum::GetClassData() const {
-  return &_class_data_;
+const ::google::protobuf::MessageLite::ClassData*
+Enum::GetClassData() const {
+  static constexpr ::google::protobuf::MessageLite::ClassData data = {
+      Enum::MergeImpl,
+       nullptr,  // OnDemandRegisterArenaDtor
+          true,
+  };
+  return &data;
 }
 
 void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
@@ -1814,12 +1820,14 @@ const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData EnumValue::_class_data_ = {
-    EnumValue::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* EnumValue::GetClassData() const {
-  return &_class_data_;
+const ::google::protobuf::MessageLite::ClassData*
+EnumValue::GetClassData() const {
+  static constexpr ::google::protobuf::MessageLite::ClassData data = {
+      EnumValue::MergeImpl,
+       nullptr,  // OnDemandRegisterArenaDtor
+          true,
+  };
+  return &data;
 }
 
 void EnumValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
@@ -2062,12 +2070,14 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Option::_class_data_ = {
-    Option::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Option::GetClassData() const {
-  return &_class_data_;
+const ::google::protobuf::MessageLite::ClassData*
+Option::GetClassData() const {
+  static constexpr ::google::protobuf::MessageLite::ClassData data = {
+      Option::MergeImpl,
+       nullptr,  // OnDemandRegisterArenaDtor
+          true,
+  };
+  return &data;
 }
 
 void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {

@@ -258,12 +258,14 @@ const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData SourceContext::_class_data_ = {
-    SourceContext::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* SourceContext::GetClassData() const {
-  return &_class_data_;
+const ::google::protobuf::MessageLite::ClassData*
+SourceContext::GetClassData() const {
+  static constexpr ::google::protobuf::MessageLite::ClassData data = {
+      SourceContext::MergeImpl,
+       nullptr,  // OnDemandRegisterArenaDtor
+          true,
+  };
+  return &data;
 }
 
 void SourceContext::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {

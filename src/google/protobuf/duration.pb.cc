@@ -266,12 +266,14 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Duration::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Duration::_class_data_ = {
-    Duration::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Duration::GetClassData() const {
-  return &_class_data_;
+const ::google::protobuf::MessageLite::ClassData*
+Duration::GetClassData() const {
+  static constexpr ::google::protobuf::MessageLite::ClassData data = {
+      Duration::MergeImpl,
+       nullptr,  // OnDemandRegisterArenaDtor
+          true,
+  };
+  return &data;
 }
 
 void Duration::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {

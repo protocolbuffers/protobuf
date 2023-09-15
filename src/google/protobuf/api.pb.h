@@ -198,10 +198,8 @@ class PROTOBUF_EXPORT Mixin final :
   }
   protected:
   explicit Mixin(::google::protobuf::Arena* arena);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -396,10 +394,8 @@ class PROTOBUF_EXPORT Method final :
   }
   protected:
   explicit Method(::google::protobuf::Arena* arena);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -668,10 +664,8 @@ class PROTOBUF_EXPORT Api final :
   }
   protected:
   explicit Api(::google::protobuf::Arena* arena);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
