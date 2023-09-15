@@ -10,25 +10,28 @@
 #define GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H_
 
 #include "upb/upb/generated_code_support.h"
-// Must be last. 
+
+// Must be last.
 #include "upb/upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct google_protobuf_compiler_Version google_protobuf_compiler_Version;
-typedef struct google_protobuf_compiler_CodeGeneratorRequest google_protobuf_compiler_CodeGeneratorRequest;
-typedef struct google_protobuf_compiler_CodeGeneratorResponse google_protobuf_compiler_CodeGeneratorResponse;
-typedef struct google_protobuf_compiler_CodeGeneratorResponse_File google_protobuf_compiler_CodeGeneratorResponse_File;
 extern const upb_MiniTable* google_protobuf_compiler_Version_msg_init();
 extern const upb_MiniTable* google_protobuf_compiler_CodeGeneratorRequest_msg_init();
 extern const upb_MiniTable* google_protobuf_compiler_CodeGeneratorResponse_msg_init();
 extern const upb_MiniTable* google_protobuf_compiler_CodeGeneratorResponse_File_msg_init();
-struct google_protobuf_FileDescriptorProto;
-struct google_protobuf_GeneratedCodeInfo;
 extern const upb_MiniTable* google_protobuf_FileDescriptorProto_msg_init();
 extern const upb_MiniTable* google_protobuf_GeneratedCodeInfo_msg_init();
+extern const upb_MiniTableEnum* google_protobuf_compiler_CodeGeneratorResponse_Feature_enum_init();
+
+typedef struct google_protobuf_compiler_Version google_protobuf_compiler_Version;
+typedef struct google_protobuf_compiler_CodeGeneratorRequest google_protobuf_compiler_CodeGeneratorRequest;
+typedef struct google_protobuf_compiler_CodeGeneratorResponse google_protobuf_compiler_CodeGeneratorResponse;
+typedef struct google_protobuf_compiler_CodeGeneratorResponse_File google_protobuf_compiler_CodeGeneratorResponse_File;
+struct google_protobuf_FileDescriptorProto;
+struct google_protobuf_GeneratedCodeInfo;
 
 typedef enum {
   google_protobuf_compiler_CodeGeneratorResponse_FEATURE_NONE = 0,
@@ -37,7 +40,6 @@ typedef enum {
 } google_protobuf_compiler_CodeGeneratorResponse_Feature;
 
 
-extern const upb_MiniTableEnum* google_protobuf_compiler_CodeGeneratorResponse_Feature_enum_init();
 
 /* google.protobuf.compiler.Version */
 
@@ -680,8 +682,6 @@ UPB_INLINE struct google_protobuf_GeneratedCodeInfo* google_protobuf_compiler_Co
   }
   return sub;
 }
-
-extern const upb_MiniTableFile google_protobuf_compiler_plugin_proto_upb_file_layout;
 
 #ifdef __cplusplus
 }  /* extern "C" */

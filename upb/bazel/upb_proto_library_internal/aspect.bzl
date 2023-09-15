@@ -152,7 +152,13 @@ def _get_dep_cc_infos(target, ctx, generator, cc_provider, dep_cc_provider):
     dep_ccinfos = [dep[CcInfo] for dep in aspect_deps]
     dep_ccinfos += [dep[cc_provider].cc_info for dep in rule_deps]
     if dep_cc_provider:
+        # This gives access to our direct sibling.  eg. foo.upb.h can #include "foo.upb_minitable.h"
         dep_ccinfos.append(target[dep_cc_provider].cc_info)
+
+        # This gives access to imports.  eg. foo.upb.h can #include "import1.upb_minitable.h"
+        # But not transitive imports, eg. foo.upb.h cannot #include "transitive_import1.upb_minitable.h"
+        dep_ccinfos += [dep[dep_cc_provider].cc_info for dep in rule_deps]
+
     return dep_ccinfos
 
 def _compile_upb_protos(ctx, files, generator, dep_ccinfos, cc_provider):
