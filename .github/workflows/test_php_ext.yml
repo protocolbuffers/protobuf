@@ -21,8 +21,13 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
 
+      - name: Print Bazelisk Cache
+        run: |
+          find ~/.cache/bazelisk || echo "Not found"
+          ls ~/.cache || echo "Not found"
+
       - name: Package extension
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@version-test
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_ext/${{ matrix.version }}
@@ -30,6 +35,11 @@ jobs:
             ./regenerate_stale_files.sh $BAZEL_FLAGS;
             bazel build //php:release $BAZEL_FLAGS;
             cp bazel-bin/php/protobuf-*.tgz .
+
+      - name: Print Bazelisk Cache
+        run: |
+          find ~/.cache/bazelisk || echo "Not found"
+          ls ~/.cache || echo "Not found"
 
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
