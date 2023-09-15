@@ -13,13 +13,16 @@
 #include <vector>
 
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/common.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
+
 namespace {
 
 class TestLineCollector : public LineConsumer {
@@ -154,6 +157,7 @@ TEST(ObjCHelper, ParseSimple_RejectLinesNoMessage) {
 }
 
 }  // namespace
+
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf

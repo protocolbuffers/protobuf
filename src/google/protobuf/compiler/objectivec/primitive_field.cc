@@ -12,7 +12,10 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -144,7 +147,7 @@ RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
   SetPrimitiveVariables(descriptor, &variables_);
 
   std::string base_name = PrimitiveArrayTypeName(descriptor);
-  if (base_name.length()) {
+  if (!base_name.empty()) {
     variables_["array_storage_type"] = absl::StrCat("GPB", base_name, "Array");
   } else {
     std::string storage_type = variables_["storage_type"];

@@ -5,31 +5,25 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <errno.h>
+#include <fcntl.h>
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
-#include <errno.h>
-#include <fcntl.h>
-#include <stdlib.h>
 
-#include <climits>
-#include <fstream>
-#include <iostream>
-#include <sstream>
+#include <cstring>
 #include <string>
-#include <vector>
 
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 
 #ifdef _WIN32
 #include "google/protobuf/io/io_win32.h"
 #endif
-
-// NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
-// error cases, so it seems to be ok to use as a back door for errors.
 
 namespace google {
 namespace protobuf {

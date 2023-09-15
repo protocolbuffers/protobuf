@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
 
+#include <cstdint>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -18,6 +19,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
+
 namespace {
 
 TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_RawStrings) {
@@ -83,12 +85,13 @@ TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_ByteCodes) {
 
   // Long name so multiple decode ops are needed.
 
-  // clang-format off
   input_for_decode =
-      "longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000";
+      "longFieldNameIsLoooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "ooooooooooooooooong1000";
   desired_output_for_decode =
-      "long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000";
-  // clang-format on
+      "long_field_name_is_"
+      "looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oong_1000";
   expected = std::string("\x04\xA5\xA4\xA2\xBF\x1F\x0E\x84\x0", 9);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
@@ -153,11 +156,12 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
   decode_data.AddString(3, "abcdefghIJ", "_AbcdefghIJ");
   decode_data.AddString(2, "abcdefghIJ", "Abcd_EfghIJ");
   decode_data.AddString(4, "abcdefghIJ", "ABCD__EfghI_j");
-  // clang-format off
   decode_data.AddString(1000,
-                        "longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000",
-                        "long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000");
-  // clang-format on
+                        "longFieldNameIsLoooooooooooooooooooooooooooooooooooooo"
+                        "ooooooooooooooooooooooooooooooooooong1000",
+                        "long_field_name_is_"
+                        "looooooooooooooooooooooooooooooooooooooooooooooooooooo"
+                        "oooooooooooooooooooong_1000");
 
   EXPECT_EQ(5, decode_data.num_entries());
 
@@ -220,6 +224,7 @@ TEST(ObjCHelperDeathTest, TextFormatDecodeData_Failures) {
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
 }  // namespace
+
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf

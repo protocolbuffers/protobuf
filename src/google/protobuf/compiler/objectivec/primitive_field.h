@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_PRIMITIVE_FIELD_H__
 
 #include "google/protobuf/compiler/objectivec/field.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {

@@ -8,23 +8,25 @@
 #include "google/protobuf/compiler/objectivec/names.h"
 
 #include <algorithm>
-#include <climits>
-#include <fstream>
+#include <cctype>
+#include <cstdlib>
 #include <iostream>
 #include <ostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/compiler/objectivec/nsobject_methods.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -300,7 +302,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
   bool first_segment_forces_upper = false;
   for (auto& value : values) {
     bool all_upper = UpperSegments().contains(value);
-    if (all_upper && (result.length() == 0)) {
+    if (all_upper && (result.empty())) {
       first_segment_forces_upper = true;
     }
     if (all_upper) {
@@ -310,8 +312,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
     }
     result += value;
   }
-  if ((result.length() != 0) && !first_capitalized &&
-      !first_segment_forces_upper) {
+  if ((!result.empty()) && !first_capitalized && !first_segment_forces_upper) {
     result[0] = absl::ascii_tolower(result[0]);
   }
   return result;
@@ -729,7 +730,7 @@ std::string FilePath(const FileDescriptor* file) {
   std::string basename;
   std::string directory;
   PathSplit(file->name(), &directory, &basename);
-  if (directory.length() > 0) {
+  if (!directory.empty()) {
     output = absl::StrCat(directory, "/");
   }
   basename = StripProto(basename);
@@ -879,7 +880,7 @@ std::string FieldNameCapitalized(const FieldDescriptor* field) {
   // Want the same suffix handling, so upcase the first letter of the other
   // name.
   std::string result = FieldName(field);
-  if (result.length() > 0) {
+  if (!result.empty()) {
     result[0] = absl::ascii_toupper(result[0]);
   }
   return result;
@@ -904,7 +905,7 @@ std::string OneofName(const OneofDescriptor* descriptor) {
 std::string OneofNameCapitalized(const OneofDescriptor* descriptor) {
   // Use the common handling and then up-case the first letter.
   std::string result = OneofName(descriptor);
-  if (result.length() > 0) {
+  if (!result.empty()) {
     result[0] = absl::ascii_toupper(result[0]);
   }
   return result;
@@ -920,7 +921,7 @@ std::string UnCamelCaseFieldName(absl::string_view name,
     worker = absl::StripSuffix(worker, "Array");
   }
   if (field->type() == FieldDescriptor::TYPE_GROUP) {
-    if (worker.length() > 0) {
+    if (!worker.empty()) {
       if (absl::ascii_islower(worker[0])) {
         std::string copy(worker);
         copy[0] = absl::ascii_toupper(worker[0]);

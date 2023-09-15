@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 
 // Must be included last

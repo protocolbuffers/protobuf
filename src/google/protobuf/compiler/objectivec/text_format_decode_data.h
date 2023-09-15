@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_TEXT_FORMAT_DECODE_DATA_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_TEXT_FORMAT_DECODE_DATA_H__
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <utility>

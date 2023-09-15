@@ -7,6 +7,9 @@
 
 #include "google/protobuf/compiler/objectivec/helpers.h"
 
+#include <climits>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -14,11 +17,13 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/stubs/common.h"
 
@@ -261,7 +266,7 @@ std::string DefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_STRING: {
       const bool has_default_value = field->has_default_value();
       absl::string_view default_string = field->default_value_string();
-      if (!has_default_value || default_string.length() == 0) {
+      if (!has_default_value || default_string.empty()) {
         // If the field is defined as being the empty string,
         // then we will just assign to nil, as the empty string is the
         // default for both strings and data.
