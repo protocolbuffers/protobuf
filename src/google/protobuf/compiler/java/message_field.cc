@@ -62,11 +62,7 @@ void SetMessageVariables(
            : ""});
   (*variables)["on_changed"] = "onChanged();";
   (*variables)["ver"] = GeneratedCodeVersionSuffix();
-  (*variables)["get_parser"] =
-      ExposePublicParser(descriptor->message_type()->file()) &&
-              context->options().opensource_runtime
-          ? "PARSER"
-          : "parser()";
+  (*variables)["get_parser"] = "parser()";
 
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
