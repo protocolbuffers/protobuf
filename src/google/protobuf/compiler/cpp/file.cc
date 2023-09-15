@@ -623,6 +623,9 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
   // TODO(gerbens) This is to include parse_context.h, we need a better way
   IncludeFile("third_party/protobuf/extension_set.h", p);
   IncludeFile("third_party/protobuf/wire_format_lite.h", p);
+  if (ShouldVerify(file_, options_, &scc_analyzer_)) {
+    IncludeFile("third_party/protobuf/wire_format_verify.h", p);
+  }
 
   // Unknown fields implementation in lite mode uses StringOutputStream
   if (!UseUnknownFieldSet(file_, options_) && !message_generators_.empty()) {
