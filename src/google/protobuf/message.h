@@ -267,10 +267,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // have already determined that an error exists by calling IsInitialized().
   void FindInitializationErrors(std::vector<std::string>* errors) const;
 
-  // Like FindInitializationErrors, but joins all the strings, delimited by
-  // commas, and returns them.
-  std::string InitializationErrorString() const override;
-
   // Clears all unknown fields from this message and all embedded messages.
   // Normally, if unknown tag numbers are encountered when parsing a message,
   // the tag and value are stored in the message's UnknownFieldSet and

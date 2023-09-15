@@ -1324,6 +1324,17 @@ TEST(LiteBasicTest, CodedInputStreamRollback) {
   }
 }
 
+TEST(LiteBasicTest, GetTypeName) {
+  EXPECT_EQ("protobuf_unittest.TestAllTypesLite",
+            protobuf_unittest::TestAllTypesLite().GetTypeName());
+}
+
+TEST(LiteBasicTest, InitializationErrorString) {
+  protobuf_unittest::TestRequiredLite message;
+  EXPECT_EQ("(cannot determine missing fields for lite message)",
+            message.InitializationErrorString());
+}
+
 }  // namespace
 }  // namespace protobuf
 }  // namespace google

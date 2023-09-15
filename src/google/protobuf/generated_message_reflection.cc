@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <type_traits>
 
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
@@ -25,6 +26,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.h"
@@ -38,6 +40,8 @@
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -91,6 +95,32 @@ void InitializeFileDescriptorDefaultInstances() {
       (InitializeFileDescriptorDefaultInstancesSlow(), std::true_type{});
   (void)init;
 #endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+}
+
+std::string GetTypeNameImpl(const MessageLite& msg) {
+  const auto* descriptor =
+      internal::DownCast<const Message&>(msg).GetDescriptor();
+  // Keep the preexisting behavior on MapEntry types to return an empty name.
+  if (descriptor->options().map_entry()) return "";
+  return descriptor->full_name();
+}
+
+std::string InitializationErrorStringImpl(const MessageLite& msg) {
+  std::vector<std::string> errors;
+  internal::DownCast<const Message&>(msg).FindInitializationErrors(&errors);
+  return absl::StrJoin(errors, ", ");
+}
+
+void InjectDescriptorMethods() {
+  // We do it here to make sure the code can be dropped if no !LITE proto
+  // instances exist in the binary.
+  static std::true_type inject_descriptor_methods =
+      (internal::descriptor_methods.get_type_name.store(
+           GetTypeNameImpl, std::memory_order_relaxed),
+       internal::descriptor_methods.initialization_error_string.store(
+           InitializationErrorStringImpl, std::memory_order_relaxed),
+       std::true_type{});
+  (void)inject_descriptor_methods;
 }
 
 bool ParseNamedEnum(const EnumDescriptor* descriptor, absl::string_view name,
@@ -3665,6 +3695,7 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   // Reflection refers to the default fields so make sure they are initialized.
   internal::InitProtobufDefaults();
   internal::InitializeFileDescriptorDefaultInstances();
+  internal::InjectDescriptorMethods();
 
   // Ensure all dependent descriptors are registered to the generated descriptor
   // pool and message factory.
@@ -3793,19 +3824,6 @@ bool IsDescendant(Message& root, const Message& message) {
 bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) {
   return field->is_repeated();
 }
-
-static std::string GetTypeNameImpl(const MessageLite& msg) {
-  const auto* descriptor = DownCast<const Message&>(msg).GetDescriptor();
-  // Keep the preexisting behavior on MapEntry types to return an empty name.
-  if (descriptor->options().map_entry()) return "";
-  return descriptor->full_name();
-}
-
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_PRAGMA_INIT_SEG
-    std::true_type inject_descriptor_methods =
-        (descriptor_methods.get_type_name.store(GetTypeNameImpl,
-                                                std::memory_order_relaxed),
-         std::true_type{});
 
 }  // namespace internal
 }  // namespace protobuf

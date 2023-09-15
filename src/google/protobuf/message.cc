@@ -19,7 +19,6 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.h"
@@ -107,12 +106,6 @@ bool Message::IsInitialized() const {
 
 void Message::FindInitializationErrors(std::vector<std::string>* errors) const {
   return ReflectionOps::FindInitializationErrors(*this, "", errors);
-}
-
-std::string Message::InitializationErrorString() const {
-  std::vector<std::string> errors;
-  FindInitializationErrors(&errors);
-  return absl::StrJoin(errors, ", ");
 }
 
 void Message::CheckInitialized() const {

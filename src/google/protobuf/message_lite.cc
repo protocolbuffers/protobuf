@@ -69,7 +69,14 @@ const MessageLite::ClassData* MessageLite::GetClassData() const {
 }
 
 std::string MessageLite::InitializationErrorString() const {
-  return "(cannot determine missing fields for lite message)";
+  auto* data = GetClassData();
+  // For LITE messages there is not much we can do.
+  if (data != nullptr && !data->has_descriptor_methods) {
+    return "(cannot determine missing fields for lite message)";
+  }
+  auto* getter = internal::descriptor_methods.initialization_error_string.load(
+      std::memory_order_relaxed);
+  return getter ? getter(*this) : "";
 }
 
 std::string MessageLite::DebugString() const {

@@ -235,7 +235,7 @@ class PROTOBUF_EXPORT MessageLite {
   // This is not implemented for Lite messages -- it just returns "(cannot
   // determine missing fields for lite message)".  However, it is implemented
   // for full messages.  See message.h.
-  virtual std::string InitializationErrorString() const;
+  std::string InitializationErrorString() const;
 
   // If |other| is the exact same class as this, calls MergeFrom(). Otherwise,
   // results are undefined (probably crash).
@@ -690,6 +690,7 @@ T* OnShutdownDelete(T* p) {
 // MessageLite to avoid having to put these pointers on each message's tables.
 struct DescriptorMethods {
   std::atomic<std::string (*)(const MessageLite&)> get_type_name;
+  std::atomic<std::string (*)(const MessageLite&)> initialization_error_string;
 };
 extern DescriptorMethods descriptor_methods;
 
