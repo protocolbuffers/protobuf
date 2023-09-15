@@ -12,14 +12,12 @@
 #include "google/protobuf/compiler/cpp/message.h"
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <cstdint>
 #include <functional>
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
