@@ -1586,25 +1586,20 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       break;
   }
 
+  if (!HasSimpleBaseClass(descriptor_, options_) &&
+      HasGeneratedMethods(descriptor_->file(), options_)) {
+    p->Emit(R"cc(
+      const ::$proto_ns$::MessageLite::ClassData* GetClassData() const final;
+    )cc");
+  }
+
   format(
       "public:\n"
       "\n");
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    if (HasGeneratedMethods(descriptor_->file(), options_) &&
-        !HasSimpleBaseClass(descriptor_, options_)) {
-      format(
-          "static const ClassData _class_data_;\n"
-          "const ::$proto_ns$::Message::ClassData*"
-          "GetClassData() const final;\n"
-          "\n");
-    }
     format(
         "::$proto_ns$::Metadata GetMetadata() const final;\n"
-        "\n");
-  } else {
-    format(
-        "std::string GetTypeName() const final;\n"
         "\n");
   }
 
@@ -2110,12 +2105,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
           "}\n",
           index_in_file_messages_);
     }
-  } else {
-    format(
-        "std::string $classname$::GetTypeName() const {\n"
-        "  return \"$full_name$\";\n"
-        "}\n"
-        "\n");
   }
 
   if (HasTracker(descriptor_, options_)) {
@@ -3917,18 +3906,26 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
 void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
   Formatter format(p);
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    // We don't override the generalized MergeFrom (aka that which
-    // takes in the Message base class as a parameter); instead we just
-    // let the base Message::MergeFrom take care of it.  The base MergeFrom
-    // knows how to quickly confirm the types exactly match, and if so, will
-    // use GetClassData() to retrieve the address of MergeImpl, which calls
-    // the fast MergeFrom overload.  Most callers avoid all this by passing
-    // a "from" message that is the same type as the message being merged
-    // into, rather than a generic Message.
 
+  const auto class_data_members = [&] {
     p->Emit(
         {
+            {"merge_impl",
+             [&] {
+               // TODO(sbenza): This check is not needed once we migrate
+               // CheckTypeAndMergeFrom to ClassData fully.
+               if (HasDescriptorMethods(descriptor_->file(), options_)) {
+                 p->Emit(
+                     R"cc(
+                       $classname$::MergeImpl,
+                     )cc");
+               } else {
+                 p->Emit(
+                     R"cc(
+                       nullptr,
+                     )cc");
+               }
+             }},
             {"on_demand_register_arena_dtor",
              [&] {
                if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
@@ -3941,17 +3938,51 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
                  )cc");
                }
              }},
+            {"has_descriptor_methods",
+             HasDescriptorMethods(descriptor_->file(), options_) ? "true"
+                                                                 : "false"},
         },
         R"cc(
-          const ::$proto_ns$::Message::ClassData $classname$::_class_data_ = {
-              $classname$::MergeImpl,
-              $on_demand_register_arena_dtor$,
-          };
-          const ::$proto_ns$::Message::ClassData* $classname$::GetClassData() const {
-            return &_class_data_;
+          $merge_impl$, $on_demand_register_arena_dtor$,
+              $has_descriptor_methods$,
+        )cc");
+  };
+
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    p->Emit({{"class_data_members", class_data_members}},
+            R"cc(
+              const ::$proto_ns$::MessageLite::ClassData*
+              $classname$::GetClassData() const {
+                static constexpr ::$proto_ns$::MessageLite::ClassData data = {
+                    $class_data_members$,
+                };
+                return &data;
+              }
+            )cc");
+  } else {
+    p->Emit(
+        {
+            {"class_data_members", class_data_members},
+            {"type_size", descriptor_->full_name().size() + 1},
+        },
+        R"cc(
+          const ::$proto_ns$::MessageLite::ClassData*
+          $classname$::GetClassData() const {
+            struct ClassData_ {
+              ::$proto_ns$::MessageLite::ClassData header;
+              char type_name[$type_size$];
+            };
+            static constexpr ClassData_ data = {
+                {
+                    $class_data_members$,
+                },
+                "$full_name$",
+            };
+
+            return &data.header;
           }
         )cc");
-  } else {
+
     // Generate CheckTypeAndMergeFrom().
     format(
         "void $classname$::CheckTypeAndMergeFrom(\n"

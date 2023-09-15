@@ -328,7 +328,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
 
-  std::string GetTypeName() const override;
   void Clear() override;
 
   // Returns whether all required fields have been set. Note that required
