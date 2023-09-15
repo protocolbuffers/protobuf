@@ -197,6 +197,8 @@ bootstrap_cc_library(
         ":base",
         ":collections",
         ":mem",
+        ":message_types",
+        ":message_value",
         ":port",
     ],
 )
@@ -267,6 +269,8 @@ bootstrap_cc_library(
         ":mem",
         ":message",
         ":message_accessors",
+        ":message_types",
+        ":message_value",
         ":mini_descriptor",
         ":mini_descriptor_internal",
         ":mini_table",
@@ -394,6 +398,12 @@ alias(
 alias(
     name = "message_types",
     actual = "//upb/upb/message:types",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "message_value",
+    actual = "//upb/upb/message:value",
     visibility = ["//visibility:public"],
 )
 
@@ -529,6 +539,7 @@ upb_amalgamation(
     libs = [
         ":base",
         ":base_internal",
+        ":collections",
         ":collections_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
@@ -544,6 +555,7 @@ upb_amalgamation(
         ":message_internal_types",
         ":message_tagged_ptr",
         ":message_types",
+        ":message_value",
         ":mini_descriptor",
         ":mini_descriptor_internal",
         ":mini_table",
@@ -576,6 +588,7 @@ upb_amalgamation(
     libs = [
         ":base",
         ":base_internal",
+        ":collections",
         ":collections_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto_reflection",
@@ -593,6 +606,7 @@ upb_amalgamation(
         ":message_internal_types",
         ":message_tagged_ptr",
         ":message_types",
+        ":message_value",
         ":mini_descriptor",
         ":mini_descriptor_internal",
         ":mini_table",
@@ -627,6 +641,7 @@ upb_amalgamation(
     libs = [
         ":base",
         ":base_internal",
+        ":collections",
         ":collections_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
@@ -643,6 +658,7 @@ upb_amalgamation(
         ":message_internal_types",
         ":message_tagged_ptr",
         ":message_types",
+        ":message_value",
         ":mini_descriptor",
         ":mini_descriptor_internal",
         ":mini_table",

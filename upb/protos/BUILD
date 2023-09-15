@@ -33,7 +33,6 @@ cc_library(
         ":protos_traits",
         "//upb:base",
         "//upb:collections",
-        "//upb:collections_internal",
         "//upb:mem",
         "//upb:message_copy",
         "//upb:message_types",

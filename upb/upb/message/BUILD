@@ -69,7 +69,7 @@ cc_library(
         ":message",
         ":types",
         "//upb:base",
-        "//upb:collections_internal",
+        "//upb:collections",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:mini_table_internal",
@@ -193,8 +193,20 @@ cc_library(
     deps = [],
 )
 
-# TODO(salo): Move these proto library targets to //third_party/protobuf/BUILD
-# after we have the monorepo.
+cc_library(
+    name = "value",
+    hdrs = [
+        "value.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":tagged_ptr",
+        ":types",
+        "//upb:base",
+    ],
+)
+
 proto_library(
     name = "message_test_proto",
     testonly = 1,
