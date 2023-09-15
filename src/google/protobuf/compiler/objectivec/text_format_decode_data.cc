@@ -7,12 +7,12 @@
 
 #include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
 
-#include <iostream>
-#include <ostream>
+#include <cstdint>
 #include <sstream>
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"

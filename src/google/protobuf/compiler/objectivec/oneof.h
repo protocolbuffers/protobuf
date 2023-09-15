@@ -9,9 +9,9 @@
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ONEOF_H__
 
 #include <string>
-#include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 

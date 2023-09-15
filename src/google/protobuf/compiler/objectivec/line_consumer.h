@@ -9,8 +9,8 @@
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_LINE_CONSUMER_H__
 
 #include <string>
-#include <vector>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
 // Must be included last

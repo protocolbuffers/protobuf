@@ -13,6 +13,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
+
 namespace {
 
 TEST(ObjCHelper, IsRetainedName) {
@@ -108,6 +109,7 @@ TEST(ObjCHelper, IsCreateName) {
 // right things are happening.
 
 }  // namespace
+
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
