@@ -8,6 +8,7 @@
 #endregion
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Google.Protobuf.Reflection
@@ -17,6 +18,7 @@ namespace Google.Protobuf.Reflection
     /// These are constructed as required, and are not long-lived. Hand-written code should
     /// never need to use this type.
     /// </summary>
+    [DebuggerDisplay("ClrType = {ClrType}")]
     public sealed class GeneratedClrTypeInfo
     {
         private static readonly string[] EmptyNames = new string[0];

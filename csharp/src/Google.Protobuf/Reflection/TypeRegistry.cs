@@ -8,6 +8,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Google.Protobuf.Reflection
@@ -15,6 +16,8 @@ namespace Google.Protobuf.Reflection
     /// <summary>
     /// An immutable registry of types which can be looked up by their full name.
     /// </summary>
+    [DebuggerDisplay("Count = {fullNameToMessageMap.Count}")]
+    [DebuggerTypeProxy(typeof(TypeRegistryDebugView))]
     public sealed class TypeRegistry
     {
         /// <summary>
@@ -155,6 +158,19 @@ namespace Google.Protobuf.Reflection
             {
                 return new TypeRegistry(types);
             }
+        }
+
+        private sealed class TypeRegistryDebugView
+        {
+            private readonly TypeRegistry list;
+
+            public TypeRegistryDebugView(TypeRegistry list)
+            {
+                this.list = list;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public KeyValuePair<string, MessageDescriptor>[] Items => list.fullNameToMessageMap.ToArray();
         }
     }
 }

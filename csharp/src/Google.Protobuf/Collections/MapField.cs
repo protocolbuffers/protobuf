@@ -11,6 +11,7 @@ using Google.Protobuf.Compatibility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security;
@@ -43,6 +44,8 @@ namespace Google.Protobuf.Collections
     /// in future versions.
     /// </para>
     /// </remarks>
+    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(MapField<,>.MapFieldDebugView))]
     public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary, IReadOnlyDictionary<TKey, TValue>
     {
         private static readonly EqualityComparer<TValue> ValueEqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<TValue>();
@@ -682,6 +685,19 @@ namespace Google.Protobuf.Collections
                     array.SetValue(item, index++);
                 }
             }
+        }
+
+        private sealed class MapFieldDebugView
+        {
+            private readonly MapField<TKey, TValue> map;
+
+            public MapFieldDebugView(MapField<TKey, TValue> map)
+            {
+                this.map = map;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public KeyValuePair<TKey, TValue>[] Items => map.list.ToArray();
         }
     }
 }
