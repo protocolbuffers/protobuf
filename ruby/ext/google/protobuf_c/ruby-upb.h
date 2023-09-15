@@ -4291,7 +4291,9 @@ void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter);
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
 #define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
 
-// Must be last. 
+
+
+// Must be last.
 
 #ifdef __cplusplus
 extern "C" {
@@ -4329,38 +4331,6 @@ typedef struct google_protobuf_SourceCodeInfo google_protobuf_SourceCodeInfo;
 typedef struct google_protobuf_SourceCodeInfo_Location google_protobuf_SourceCodeInfo_Location;
 typedef struct google_protobuf_GeneratedCodeInfo google_protobuf_GeneratedCodeInfo;
 typedef struct google_protobuf_GeneratedCodeInfo_Annotation google_protobuf_GeneratedCodeInfo_Annotation;
-extern const upb_MiniTable google_protobuf_FileDescriptorSet_msg_init;
-extern const upb_MiniTable google_protobuf_FileDescriptorProto_msg_init;
-extern const upb_MiniTable google_protobuf_DescriptorProto_msg_init;
-extern const upb_MiniTable google_protobuf_DescriptorProto_ExtensionRange_msg_init;
-extern const upb_MiniTable google_protobuf_DescriptorProto_ReservedRange_msg_init;
-extern const upb_MiniTable google_protobuf_ExtensionRangeOptions_msg_init;
-extern const upb_MiniTable google_protobuf_ExtensionRangeOptions_Declaration_msg_init;
-extern const upb_MiniTable google_protobuf_FieldDescriptorProto_msg_init;
-extern const upb_MiniTable google_protobuf_OneofDescriptorProto_msg_init;
-extern const upb_MiniTable google_protobuf_EnumDescriptorProto_msg_init;
-extern const upb_MiniTable google_protobuf_EnumDescriptorProto_EnumReservedRange_msg_init;
-extern const upb_MiniTable google_protobuf_EnumValueDescriptorProto_msg_init;
-extern const upb_MiniTable google_protobuf_ServiceDescriptorProto_msg_init;
-extern const upb_MiniTable google_protobuf_MethodDescriptorProto_msg_init;
-extern const upb_MiniTable google_protobuf_FileOptions_msg_init;
-extern const upb_MiniTable google_protobuf_MessageOptions_msg_init;
-extern const upb_MiniTable google_protobuf_FieldOptions_msg_init;
-extern const upb_MiniTable google_protobuf_FieldOptions_EditionDefault_msg_init;
-extern const upb_MiniTable google_protobuf_OneofOptions_msg_init;
-extern const upb_MiniTable google_protobuf_EnumOptions_msg_init;
-extern const upb_MiniTable google_protobuf_EnumValueOptions_msg_init;
-extern const upb_MiniTable google_protobuf_ServiceOptions_msg_init;
-extern const upb_MiniTable google_protobuf_MethodOptions_msg_init;
-extern const upb_MiniTable google_protobuf_UninterpretedOption_msg_init;
-extern const upb_MiniTable google_protobuf_UninterpretedOption_NamePart_msg_init;
-extern const upb_MiniTable google_protobuf_FeatureSet_msg_init;
-extern const upb_MiniTable google_protobuf_FeatureSetDefaults_msg_init;
-extern const upb_MiniTable google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault_msg_init;
-extern const upb_MiniTable google_protobuf_SourceCodeInfo_msg_init;
-extern const upb_MiniTable google_protobuf_SourceCodeInfo_Location_msg_init;
-extern const upb_MiniTable google_protobuf_GeneratedCodeInfo_msg_init;
-extern const upb_MiniTable google_protobuf_GeneratedCodeInfo_Annotation_msg_init;
 
 typedef enum {
   google_protobuf_EDITION_UNKNOWN = 0,
@@ -4485,22 +4455,6 @@ typedef enum {
 } google_protobuf_MethodOptions_IdempotencyLevel;
 
 
-extern const upb_MiniTableEnum google_protobuf_Edition_enum_init;
-extern const upb_MiniTableEnum google_protobuf_ExtensionRangeOptions_VerificationState_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FeatureSet_EnumType_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FeatureSet_FieldPresence_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FeatureSet_JsonFormat_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FeatureSet_MessageEncoding_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FeatureSet_RepeatedFieldEncoding_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Label_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Type_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldOptions_CType_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldOptions_JSType_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldOptions_OptionRetention_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldOptions_OptionTargetType_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FileOptions_OptimizeMode_enum_init;
-extern const upb_MiniTableEnum google_protobuf_GeneratedCodeInfo_Annotation_Semantic_enum_init;
-extern const upb_MiniTableEnum google_protobuf_MethodOptions_IdempotencyLevel_enum_init;
 
 /* google.protobuf.FileDescriptorSet */
 
@@ -10777,8 +10731,6 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_semantic(google
   const upb_MiniTableField field = {5, UPB_SIZE(16, 12), 4, 0, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)};
   _upb_Message_SetNonExtensionField(msg, &field, &value);
 }
-
-extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 
 /* Max size 32 is google.protobuf.FileOptions */
 /* Max size 64 is google.protobuf.FileOptions */
