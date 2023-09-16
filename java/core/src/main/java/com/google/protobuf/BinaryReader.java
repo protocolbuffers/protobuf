@@ -1490,27 +1490,27 @@ abstract class BinaryReader implements Reader {
       }
 
       int x;
-      if ((x = buffer[i++]) >= 0) {
+      if ((x = UnsafeUtil.getByte(buffer, i++)) >= 0) {
         pos = i;
         return x;
       } else if (limit - i < 9) {
         return (int) readVarint64SlowPath();
-      } else if ((x ^= (buffer[i++] << 7)) < 0) {
+      } else if ((x ^= (UnsafeUtil.getByte(buffer, i++) << 7)) < 0) {
         x ^= (~0 << 7);
-      } else if ((x ^= (buffer[i++] << 14)) >= 0) {
+      } else if ((x ^= (UnsafeUtil.getByte(buffer, i++) << 14)) >= 0) {
         x ^= (~0 << 7) ^ (~0 << 14);
-      } else if ((x ^= (buffer[i++] << 21)) < 0) {
+      } else if ((x ^= (UnsafeUtil.getByte(buffer, i++) << 21)) < 0) {
         x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21);
       } else {
-        int y = buffer[i++];
+        int y = UnsafeUtil.getByte(buffer, i++);
         x ^= y << 28;
         x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21) ^ (~0 << 28);
         if (y < 0
-            && buffer[i++] < 0
-            && buffer[i++] < 0
-            && buffer[i++] < 0
-            && buffer[i++] < 0
-            && buffer[i++] < 0) {
+            && UnsafeUtil.getByte(buffer, i++) < 0
+            && UnsafeUtil.getByte(buffer, i++) < 0
+            && UnsafeUtil.getByte(buffer, i++) < 0
+            && UnsafeUtil.getByte(buffer, i++) < 0
+            && UnsafeUtil.getByte(buffer, i++) < 0) {
           throw InvalidProtocolBufferException.malformedVarint();
         }
       }
@@ -1539,24 +1539,24 @@ abstract class BinaryReader implements Reader {
       final byte[] buffer = this.buffer;
       long x;
       int y;
-      if ((y = buffer[i++]) >= 0) {
+      if ((y = UnsafeUtil.getByte(buffer, i++)) >= 0) {
         pos = i;
         return y;
       } else if (limit - i < 9) {
         return readVarint64SlowPath();
-      } else if ((y ^= (buffer[i++] << 7)) < 0) {
+      } else if ((y ^= (UnsafeUtil.getByte(buffer, i++) << 7)) < 0) {
         x = y ^ (~0 << 7);
-      } else if ((y ^= (buffer[i++] << 14)) >= 0) {
+      } else if ((y ^= (UnsafeUtil.getByte(buffer, i++) << 14)) >= 0) {
         x = y ^ ((~0 << 7) ^ (~0 << 14));
-      } else if ((y ^= (buffer[i++] << 21)) < 0) {
+      } else if ((y ^= (UnsafeUtil.getByte(buffer, i++) << 21)) < 0) {
         x = y ^ ((~0 << 7) ^ (~0 << 14) ^ (~0 << 21));
-      } else if ((x = y ^ ((long) buffer[i++] << 28)) >= 0L) {
+      } else if ((x = y ^ ((long) UnsafeUtil.getByte(buffer, i++) << 28)) >= 0L) {
         x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28);
-      } else if ((x ^= ((long) buffer[i++] << 35)) < 0L) {
+      } else if ((x ^= ((long) UnsafeUtil.getByte(buffer, i++) << 35)) < 0L) {
         x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35);
-      } else if ((x ^= ((long) buffer[i++] << 42)) >= 0L) {
+      } else if ((x ^= ((long) UnsafeUtil.getByte(buffer, i++) << 42)) >= 0L) {
         x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35) ^ (~0L << 42);
-      } else if ((x ^= ((long) buffer[i++] << 49)) < 0L) {
+      } else if ((x ^= ((long) UnsafeUtil.getByte(buffer, i++) << 49)) < 0L) {
         x ^=
             (~0L << 7)
                 ^ (~0L << 14)
@@ -1566,7 +1566,7 @@ abstract class BinaryReader implements Reader {
                 ^ (~0L << 42)
                 ^ (~0L << 49);
       } else {
-        x ^= ((long) buffer[i++] << 56);
+        x ^= ((long) UnsafeUtil.getByte(buffer, i++) << 56);
         x ^=
             (~0L << 7)
                 ^ (~0L << 14)
@@ -1577,7 +1577,7 @@ abstract class BinaryReader implements Reader {
                 ^ (~0L << 49)
                 ^ (~0L << 56);
         if (x < 0L) {
-          if (buffer[i++] < 0L) {
+          if (UnsafeUtil.getByte(buffer, i++) < 0L) {
             throw InvalidProtocolBufferException.malformedVarint();
           }
         }
@@ -1602,7 +1602,7 @@ abstract class BinaryReader implements Reader {
       if (pos == limit) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
-      return buffer[pos++];
+      return UnsafeUtil.getByte(buffer, pos++);
     }
 
     private int readLittleEndian32() throws IOException {
