@@ -30,7 +30,6 @@
 
 #include "upb/protos/protos.h"
 
-#include <atomic>
 #include <cstddef>
 
 #include "absl/status/status.h"
@@ -110,33 +109,10 @@ upb_ExtensionRegistry* GetUpbExtensions(
   return extension_registry.registry_;
 }
 
-/**
- * MessageLock(msg) acquires lock on msg when constructed and releases it when
- * destroyed.
- */
-class MessageLock {
- public:
-  explicit MessageLock(const upb_Message* msg) : msg_(msg) {
-    UpbExtensionLocker locker =
-        upb_extension_locker_global.load(std::memory_order_acquire);
-    unlocker_ = (locker != nullptr) ? locker(msg) : nullptr;
-  }
-  MessageLock(const MessageLock&) = delete;
-  void operator=(const MessageLock&) = delete;
-  ~MessageLock() {
-    if (unlocker_ != nullptr) {
-      unlocker_(msg_);
-    }
-  }
-
- private:
-  const upb_Message* msg_;
-  UpbExtensionUnlocker unlocker_;
-};
-
 bool HasExtensionOrUnknown(const upb_Message* msg,
-                           const upb_MiniTableExtension* eid) {
-  MessageLock msg_lock(msg);
+                           const upb_MiniTableExtension* eid,
+                           const upb_Arena* arena) {
+  MessageLock msg_lock(arena);
   return _upb_Message_Getext(msg, eid) != nullptr ||
          upb_MiniTable_FindUnknown(msg, eid->field.number, 0).status ==
              kUpb_FindUnknown_Ok;
@@ -144,7 +120,7 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
 
 const upb_Message_Extension* GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena) {
-  MessageLock msg_lock(msg);
+  MessageLock msg_lock(arena);
   const upb_Message_Extension* ext = _upb_Message_Getext(msg, eid);
   if (ext == nullptr) {
     upb_GetExtension_Status ext_status = upb_MiniTable_GetOrPromoteExtension(
@@ -159,7 +135,7 @@ const upb_Message_Extension* GetOrPromoteExtension(
 absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
                                             const upb_MiniTable* mini_table,
                                             upb_Arena* arena, int options) {
-  MessageLock msg_lock(message);
+  MessageLock msg_lock(arena);
   size_t len;
   char* ptr;
   upb_EncodeStatus status =
@@ -172,13 +148,13 @@ absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
 
 void DeepCopy(upb_Message* target, const upb_Message* source,
               const upb_MiniTable* mini_table, upb_Arena* arena) {
-  MessageLock msg_lock(source);
+  MessageLock msg_lock(arena);
   upb_Message_DeepCopy(target, source, mini_table, arena);
 }
 
 upb_Message* DeepClone(const upb_Message* source,
                        const upb_MiniTable* mini_table, upb_Arena* arena) {
-  MessageLock msg_lock(source);
+  MessageLock msg_lock(arena);
   return upb_Message_DeepClone(source, mini_table, arena);
 }
 

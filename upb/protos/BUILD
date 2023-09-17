@@ -104,6 +104,7 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
+        "//upb:mem",
         "//upb:message",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/synchronization",

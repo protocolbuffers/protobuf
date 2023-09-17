@@ -30,6 +30,7 @@
 
 #include "upb/upb/mem/internal/arena.h"
 
+#include "upb/upb/mem/arena.h"
 #include "upb/upb/port/atomic.h"
 
 // Must be last.
@@ -85,6 +86,10 @@ static _upb_ArenaRoot _upb_Arena_FindRoot(upb_Arena* a) {
     poc = next_poc;
   }
   return (_upb_ArenaRoot){.root = a, .tagged_count = poc};
+}
+
+upb_Arena* upb_Arena_FindRootArena(upb_Arena* a) {
+  return _upb_Arena_FindRoot(a).root;
 }
 
 size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {

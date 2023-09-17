@@ -243,7 +243,8 @@ absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
                                             upb_Arena* arena, int options);
 
 bool HasExtensionOrUnknown(const upb_Message* msg,
-                           const upb_MiniTableExtension* eid);
+                           const upb_MiniTableExtension* eid,
+                           const upb_Arena* arena);
 
 const upb_Message_Extension* GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena);
@@ -349,7 +350,8 @@ ABSL_MUST_USE_RESULT bool HasExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   return ::protos::internal::HasExtensionOrUnknown(
-      ::protos::internal::GetInternalMsg(message), id.mini_table_ext());
+      ::protos::internal::GetInternalMsg(message), id.mini_table_ext(),
+      ::protos::internal::GetArena(message));
 }
 
 template <typename T, typename Extendee, typename Extension,

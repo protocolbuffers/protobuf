@@ -33,6 +33,8 @@
 
 #include <atomic>
 
+#include "upb/upb/mem/arena.h"
+
 namespace protos::internal {
 
 // TODO(b/295355754): Temporary locking api for cross-language
@@ -48,6 +50,22 @@ using UpbExtensionLocker = UpbExtensionUnlocker (*)(const void*);
 
 // TODO(b/295355754): Expose as function instead of global.
 extern std::atomic<UpbExtensionLocker> upb_extension_locker_global;
+
+/**
+ * MessageLock(arena) acquires lock on an arena when constructed and releases it
+ * when destroyed.
+ */
+class MessageLock {
+ public:
+  explicit MessageLock(const upb_Arena* arena);
+  MessageLock(const MessageLock&) = delete;
+  void operator=(const MessageLock&) = delete;
+  ~MessageLock();
+
+ private:
+  const upb_Arena* root_arena_;
+  internal::UpbExtensionUnlocker unlocker_;
+};
 
 }  // namespace protos::internal
 

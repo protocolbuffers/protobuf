@@ -62,6 +62,8 @@ typedef struct {
 extern "C" {
 #endif
 
+UPB_API upb_Arena* upb_Arena_FindRootArena(upb_Arena* a);
+
 // Creates an arena from the given initial block (if any -- n may be 0).
 // Additional blocks will be allocated from |alloc|.  If |alloc| is NULL, this
 // is a fixed-size arena and cannot grow.

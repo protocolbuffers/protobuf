@@ -32,8 +32,23 @@
 
 #include <atomic>
 
+#include "upb/upb/mem/arena.h"
+
 namespace protos::internal {
 
 std::atomic<UpbExtensionLocker> upb_extension_locker_global;
+
+MessageLock::MessageLock(const upb_Arena* arena)
+    : root_arena_(upb_Arena_FindRootArena(const_cast<upb_Arena*>(arena))) {
+  internal::UpbExtensionLocker locker =
+      internal::upb_extension_locker_global.load(std::memory_order_acquire);
+  unlocker_ = (locker != nullptr) ? locker(root_arena_) : nullptr;
+}
+
+MessageLock::~MessageLock() {
+  if (unlocker_ != nullptr) {
+    unlocker_(root_arena_);
+  }
+}
 
 }  // namespace protos::internal
