@@ -62,6 +62,11 @@ void SetCommonFieldVariables(
       descriptor, static_cast<FieldObjCTypeOptions>(
                       kFieldObjCTypeOptions_IncludeSpaceAfterBasicTypes |
                       kFieldObjCTypeOptions_IncludeSpaceBeforeStar));
+  (*variables)["storage_type"] = FieldObjCType(
+      descriptor, static_cast<FieldObjCTypeOptions>(
+                      kFieldObjCTypeOptions_IncludeSpaceAfterBasicTypes |
+                      kFieldObjCTypeOptions_OmitLightweightGenerics |
+                      kFieldObjCTypeOptions_IncludeSpaceBeforeStar));
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
   (*variables)["deprecated_attribute"] =
       GetOptionalDeprecatedAttribute(descriptor);
@@ -278,7 +283,7 @@ SingleFieldGenerator::SingleFieldGenerator(const FieldDescriptor* descriptor)
 void SingleFieldGenerator::GenerateFieldStorageDeclaration(
     io::Printer* printer) const {
   auto vars = printer->WithVars(variables_);
-  printer->Emit("$storage_type$ $name$;\n");
+  printer->Emit("$storage_type$$name$;\n");
 }
 
 void SingleFieldGenerator::GeneratePropertyDeclaration(
@@ -327,7 +332,7 @@ ObjCObjFieldGenerator::ObjCObjFieldGenerator(const FieldDescriptor* descriptor)
 void ObjCObjFieldGenerator::GenerateFieldStorageDeclaration(
     io::Printer* printer) const {
   auto vars = printer->WithVars(variables_);
-  printer->Emit("$storage_type$ *$name$;\n");
+  printer->Emit("$storage_type$$name$;\n");
 }
 
 void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
@@ -366,7 +371,7 @@ RepeatedFieldGenerator::RepeatedFieldGenerator(
 void RepeatedFieldGenerator::GenerateFieldStorageDeclaration(
     io::Printer* printer) const {
   auto vars = printer->WithVars(variables_);
-  printer->Emit("$array_storage_type$ *$name$;\n");
+  printer->Emit("$storage_type$$name$;\n");
 }
 
 void RepeatedFieldGenerator::GeneratePropertyImplementation(
