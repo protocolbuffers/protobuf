@@ -151,7 +151,7 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
   if (PROTOBUF_PREDICT_FALSE(overrun > limit_)) return {nullptr, true};
   ABSL_DCHECK(overrun != limit_);  // Guaranteed by caller.
   ABSL_DCHECK(overrun < limit_);   // Follows from above
-  // TODO(gerbens) Instead of this dcheck we could just assign, and remove
+  // TODO Instead of this dcheck we could just assign, and remove
   // updating the limit_end from PopLimit, ie.
   // limit_end_ = buffer_end_ + (std::min)(0, limit_);
   // if (ptr < limit_end_) return {ptr, false};

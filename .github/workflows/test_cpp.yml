@@ -122,7 +122,7 @@ jobs:
             flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
           - name: C++17
             flags: -DCMAKE_CXX_STANDARD=17
-          # TODO(b/300096720) Re-enable this.
+          # TODO Re-enable this.
           #- name: C++20
           #  flags: -DCMAKE_CXX_STANDARD=20
 

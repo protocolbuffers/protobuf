@@ -256,7 +256,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
         "    getDescriptor() {\n",
         "index_text", index_text);
 
-    // TODO(kenton):  Cache statically?  Note that we can't access descriptors
+    // TODO:  Cache statically?  Note that we can't access descriptors
     //   at module init time because it wouldn't work with descriptor.proto, but
     //   we can cache the value the first time getDescriptor() is called.
     if (descriptor_->containing_type() == NULL) {

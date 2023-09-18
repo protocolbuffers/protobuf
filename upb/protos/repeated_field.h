@@ -129,7 +129,7 @@ class RepeatedFieldProxy
         (upb_Message*)message_value.msg_val, this->arena_);
   }
 
-  // TODO(b:/280069986) : Audit/Finalize based on Iterator Design.
+  // TODO : Audit/Finalize based on Iterator Design.
   // T::Proxy [] operator specialization.
   template <int&... DeductionBlocker, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
@@ -304,7 +304,7 @@ class RepeatedField {
       kIsScalar, internal::RepeatedFieldScalarProxy<const T>,
       std::conditional_t<kIsString, internal::RepeatedFieldStringProxy<const T>,
                          internal::RepeatedFieldProxy<const T>>>;
-  // TODO(b/286451125): T supports incomplete type from fwd.h forwarding headers
+  // TODO: T supports incomplete type from fwd.h forwarding headers
   // We would like to reference T::CProxy. Validate forwarding header design.
   using ValueProxy = std::conditional_t<
       kIsScalar, T,

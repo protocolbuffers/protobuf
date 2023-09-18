@@ -90,7 +90,7 @@ void ReflectionClassGenerator::Generate(io::Printer* printer) {
     printer->Print("\n");
   }
 
-  // TODO(jtattermusch): add insertion point for services.
+  // TODO: add insertion point for services.
 
   if (!namespace_.empty()) {
     printer->Outdent();
@@ -151,7 +151,7 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
   printer->Print("string.Concat(\n");
   printer->Indent();
 
-  // TODO(jonskeet): Consider a C#-escaping format here instead of just Base64.
+  // TODO: Consider a C#-escaping format here instead of just Base64.
   std::string base64 = FileDescriptorToBase64(file_);
   while (base64.size() > 60) {
     printer->Print("\"$base64$\",\n", "base64", base64.substr(0, 60));

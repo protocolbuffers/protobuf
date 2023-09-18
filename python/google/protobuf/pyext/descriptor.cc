@@ -100,7 +100,7 @@ PyObject* PyString_FromCppString(const std::string& str) {
 //
 // From user code, descriptors still look immutable.
 //
-// TODO(amauryfa): Change the proto2 compiler to remove the assignments, and
+// TODO: Change the proto2 compiler to remove the assignments, and
 // remove this hack.
 bool _CalledFromGeneratedFile(int stacklevel) {
 #ifdef PYPY_VERSION
@@ -1603,7 +1603,7 @@ PyObject* PyFileDescriptor_FromDescriptorWithSerializedPb(
     Py_XINCREF(serialized_pb);
     cfile_descriptor->serialized_pb = serialized_pb;
   }
-  // TODO(amauryfa): In the case of a cached object, check that serialized_pb
+  // TODO: In the case of a cached object, check that serialized_pb
   // is the same as before.
 
   return py_descriptor;

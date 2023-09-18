@@ -220,7 +220,7 @@ extend TestAllExtensionsLite {
 
   optional string optional_string_piece_extension_lite = 24
       [ctype = STRING_PIECE];
-  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   optional string optional_cord_extension_lite = 25;
 
@@ -267,7 +267,7 @@ extend TestAllExtensionsLite {
 
   repeated string repeated_string_piece_extension_lite = 54
       [ctype = STRING_PIECE];
-  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   repeated string repeated_cord_extension_lite = 55;
 
@@ -300,7 +300,7 @@ extend TestAllExtensionsLite {
 
   optional string default_string_piece_extension_lite = 84
       [ctype = STRING_PIECE, default = "abc"];
-  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   optional string default_cord_extension_lite = 85 [default = "123"];
 

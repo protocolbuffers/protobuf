@@ -73,7 +73,7 @@ class PROTOBUF_EXPORT AnnotationCollector {
     AddAnnotation(begin_offset, end_offset, file_path, path);
   }
 
-  // TODO(gerbens) I don't see why we need virtuals here. Just a vector of
+  // TODO I don't see why we need virtuals here. Just a vector of
   // range, payload pairs stored in a context should suffice.
   virtual void AddAnnotationNew(Annotation&) {}
 };
@@ -363,7 +363,7 @@ class AnnotationProtoCollector : public AnnotationCollector {
 // `indent`, which is an RAII object much like the return value of `WithVars()`.
 //
 // # Old API
-// TODO(b/242326974): Delete this documentation.
+// TODO: Delete this documentation.
 //
 // Printer supports an older-style API that is in the process of being
 // re-written. The old documentation is reproduced here until all use-cases are
@@ -593,7 +593,7 @@ class PROTOBUF_EXPORT Printer {
   bool failed() const { return failed_; }
 
   // -- Old-style API below; to be deprecated and removed. --
-  // TODO(b/242326974): Deprecate these APIs.
+  // TODO: Deprecate these APIs.
 
   template <typename Map = absl::flat_hash_map<std::string, std::string>>
   void Print(const Map& vars, absl::string_view text);

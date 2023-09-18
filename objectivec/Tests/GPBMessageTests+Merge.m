@@ -22,7 +22,7 @@
 
 @implementation MessageMergeTests
 
-// TODO(thomasvl): Pull tests over from GPBMessageTests that are merge specific.
+// TODO: Pull tests over from GPBMessageTests that are merge specific.
 
 - (void)testProto3MergingAndZeroValues {
   // Proto2 covered in other tests.

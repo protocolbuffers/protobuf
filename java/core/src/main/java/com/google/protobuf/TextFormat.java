@@ -1692,7 +1692,7 @@ public final class TextFormat {
 
     private static final int BUFFER_SIZE = 4096;
 
-    // TODO(chrisn): See if working around java.io.Reader#read(CharBuffer)
+    // TODO: See if working around java.io.Reader#read(CharBuffer)
     // overhead is worthwhile
     private static StringBuilder toStringBuilder(final Readable input) throws IOException {
       final StringBuilder text = new StringBuilder();
@@ -2189,7 +2189,7 @@ public final class TextFormat {
       }
 
       if (field.isRepeated()) {
-        // TODO(b/29122459): If field.isMapField() and FORBID_SINGULAR_OVERWRITES mode,
+        // TODO: If field.isMapField() and FORBID_SINGULAR_OVERWRITES mode,
         //     check for duplicate map keys here.
         target.addRepeatedField(field, value);
       } else {

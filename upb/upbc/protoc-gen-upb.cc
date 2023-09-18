@@ -302,7 +302,7 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
       ExtensionLayout(ext));
 
   if (ext.IsSequence()) {
-    // TODO(b/259861668): We need generated accessors for repeated extensions.
+    // TODO: We need generated accessors for repeated extensions.
   } else {
     output(
         R"cc(
@@ -337,7 +337,7 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
 
 void GenerateMessageFunctionsInHeader(upb::MessageDefPtr message,
                                       const Options& options, Output& output) {
-  // TODO(b/235839510): The generated code here does not check the return values
+  // TODO: The generated code here does not check the return values
   // from upb_Encode(). How can we even fix this without breaking other things?
   output(
       R"cc(
@@ -419,7 +419,7 @@ void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
   } else if (field.IsMap()) {
     // Do nothing.
   } else if (field.IsSequence()) {
-    // TODO(b/259616267): remove.
+    // TODO: remove.
     output(
         R"cc(
           UPB_INLINE bool $0_has_$1(const $0* msg) {
@@ -1103,7 +1103,7 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
     WriteMiniDescriptorSource(pools, file, options, c_output);
     plugin->AddOutputFile(SourceFilename(file), c_output.output());
   } else {
-    // TODO(b/300637173): remove once we can figure out how to make both Blaze
+    // TODO: remove once we can figure out how to make both Blaze
     // and Bazel happy with header-only libraries.
 
     // begin:github_only

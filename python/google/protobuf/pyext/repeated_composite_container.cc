@@ -293,7 +293,7 @@ static PyObject* RichCompare(PyObject* pself, PyObject* other, int opid) {
     return nullptr;
   }
   if (opid == Py_EQ || opid == Py_NE) {
-    // TODO(anuraag): Don't make new lists just for this...
+    // TODO: Don't make new lists just for this...
     ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
     if (full_slice == nullptr) {
       return nullptr;

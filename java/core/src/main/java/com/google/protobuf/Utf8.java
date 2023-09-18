@@ -50,7 +50,7 @@ import java.util.Arrays;
  *
  * @author martinrb@google.com (Martin Buchholz)
  */
-// TODO(nathanmittler): Copy changes in this class back to Guava
+// TODO: Copy changes in this class back to Guava
 final class Utf8 {
 
   /**
@@ -354,7 +354,7 @@ final class Utf8 {
   }
 
   /** A processor of UTF-8 strings, providing methods for checking validity and encoding. */
-  // TODO(nathanmittler): Add support for Memory/MemoryBlock on Android.
+  // TODO: Add support for Memory/MemoryBlock on Android.
   abstract static class Processor {
     /**
      * Returns {@code true} if the given byte array slice is a well-formed UTF-8 byte sequence. The
@@ -520,7 +520,7 @@ final class Utf8 {
 
       for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1;
         do {
@@ -568,7 +568,7 @@ final class Utf8 {
             return incompleteStateFor(buffer, byte1, index, limit - index);
           }
 
-          // TODO(nathanmittler): Consider using getInt() to improve performance.
+          // TODO: Consider using getInt() to improve performance.
           int byte2 = buffer.get(index++);
           if (byte2 > (byte) 0xBF
               // Check that 1 <= plane <= 16.  Tricky optimized form of:
@@ -811,7 +811,7 @@ final class Utf8 {
             if (inIx + 1 == inLength || !isSurrogatePair(c, (low = in.charAt(++inIx)))) {
               throw new UnpairedSurrogateException(inIx, inLength);
             }
-            // TODO(nathanmittler): Consider using putInt() to improve performance.
+            // TODO: Consider using putInt() to improve performance.
             int codePoint = toCodePoint(c, low);
             out.put(outIx++, (byte) ((0xF << 4) | (codePoint >>> 18)));
             out.put(outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 12))));
@@ -823,7 +823,7 @@ final class Utf8 {
         // Successfully encoded the entire string.
         Java8Compatibility.position(out, outIx);
       } catch (IndexOutOfBoundsException e) {
-        // TODO(nathanmittler): Consider making the API throw IndexOutOfBoundsException instead.
+        // TODO: Consider making the API throw IndexOutOfBoundsException instead.
 
         // If we failed in the outer ASCII loop, outIx will not have been updated. In this case,
         // use inIx to determine the bad write index.
@@ -1651,7 +1651,7 @@ final class Utf8 {
 
       for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1 = 0;
         for (; remaining > 0 && (byte1 = UnsafeUtil.getByte(bytes, offset++)) >= 0; --remaining) {}
@@ -1725,7 +1725,7 @@ final class Utf8 {
 
       for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1 = 0;
         for (; remaining > 0 && (byte1 = UnsafeUtil.getByte(address++)) >= 0; --remaining) {}

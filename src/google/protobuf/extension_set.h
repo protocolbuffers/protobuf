@@ -173,7 +173,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   ExtensionSet(internal::InternalVisibility, Arena* arena)
       : ExtensionSet(arena) {}
 
-  // TODO(b/290091828): make constructor private, and migrate `ArenaInitialized`
+  // TODO: make constructor private, and migrate `ArenaInitialized`
   // to `InternalVisibility` overloaded constructor(s).
   explicit constexpr ExtensionSet(Arena* arena);
   ExtensionSet(ArenaInitialized, Arena* arena) : ExtensionSet(arena) {}
@@ -631,7 +631,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     // For packed fields, the size of the packed data is recorded here when
     // ByteSize() is called then used during serialization.
-    // TODO(kenton):  Use atomic<int> when C++ supports it.
+    // TODO:  Use atomic<int> when C++ supports it.
     mutable int cached_size;
 
     // The descriptor for this extension, if one exists and is known.  May be

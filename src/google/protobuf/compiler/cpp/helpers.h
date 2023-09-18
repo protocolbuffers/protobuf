@@ -732,7 +732,7 @@ inline std::string SimpleBaseClass(const Descriptor* desc,
   if (desc->field_count() == 0) {
     return "ZeroFieldsBase";
   }
-  // TODO(jorg): Support additional common message types with only one
+  // TODO: Support additional common message types with only one
   // or two fields
   return "";
 }

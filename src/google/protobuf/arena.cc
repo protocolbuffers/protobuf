@@ -48,7 +48,7 @@ ArenaBlock* SentryArenaBlock() {
   return const_cast<ArenaBlock*>(&kSentryArenaBlock);
 }
 #else
-// TODO(b/248322260) Remove this once we're not using GCC 4.9 for tests.
+// TODO Remove this once we're not using GCC 4.9 for tests.
 // There is a compiler bug in this version that causes the above constexpr to
 // fail.  This version is no longer in our support window, but we use it in
 // some of our aarch64 docker images.
@@ -254,7 +254,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
     AddSpaceUsed(used);
   }
 
-  // TODO(sbenza): Evaluate if pushing unused space into the cached blocks is a
+  // TODO: Evaluate if pushing unused space into the cached blocks is a
   // win. In preliminary testing showed increased memory savings as expected,
   // but with a CPU regression. The regression might have been an artifact of
   // the microbenchmark.
@@ -283,7 +283,7 @@ uint64_t SerialArena::SpaceUsed() const {
   // ThreadSafeArena::SpaceUsed).  However, worst-case space_used_ will have
   // stale data and the calculation will incorrectly assume 100%
   // usage of the *current* block.
-  // TODO(mkruskal) Consider eliminating this race in exchange for a possible
+  // TODO Consider eliminating this race in exchange for a possible
   // performance hit on ARM (see cl/455186837).
 
   uint64_t space_used = 0;

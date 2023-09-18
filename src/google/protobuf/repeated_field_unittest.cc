@@ -9,7 +9,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
-// TODO(kenton):  Improve this unittest to bring it up to the standards of
+// TODO:  Improve this unittest to bring it up to the standards of
 //   other proto2 unittests.
 
 #include "google/protobuf/repeated_field.h"

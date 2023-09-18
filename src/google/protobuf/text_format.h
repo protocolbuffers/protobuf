@@ -393,7 +393,7 @@ class PROTOBUF_EXPORT TextFormat {
     // this threshold.  This is useful when the proto message has very long
     // strings, e.g., dump of encoded image file.
     //
-    // NOTE(hfgong):  Setting a non-zero value breaks round-trip safe
+    // NOTE:  Setting a non-zero value breaks round-trip safe
     // property of TextFormat::Printer.  That is, from the printed message, we
     // cannot fully recover the original string field any more.
     void SetTruncateStringFieldLongerThan(

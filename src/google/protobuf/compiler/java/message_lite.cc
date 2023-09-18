@@ -71,7 +71,7 @@ void ImmutableMessageLiteGenerator::GenerateStaticVariables(
     io::Printer* printer, int* bytecode_estimate) {
   // Generate static members for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    // TODO(kenton):  Reuse MessageGenerator objects?
+    // TODO:  Reuse MessageGenerator objects?
     ImmutableMessageLiteGenerator(descriptor_->nested_type(i), context_)
         .GenerateStaticVariables(printer, bytecode_estimate);
   }
@@ -82,7 +82,7 @@ int ImmutableMessageLiteGenerator::GenerateStaticVariableInitializers(
   int bytecode_estimate = 0;
   // Generate static member initializers for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    // TODO(kenton):  Reuse MessageGenerator objects?
+    // TODO:  Reuse MessageGenerator objects?
     bytecode_estimate +=
         ImmutableMessageLiteGenerator(descriptor_->nested_type(i), context_)
             .GenerateStaticVariableInitializers(printer);
@@ -282,7 +282,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
         "    default: return null;\n"
         "  }\n"
         "}\n"
-        // TODO(b/135620659): Rename this to "getFieldNumber" or something to
+        // TODO: Rename this to "getFieldNumber" or something to
         // disambiguate it from actual proto enums.
         "public int getNumber() {\n"
         "  return this.value;\n"

@@ -86,7 +86,7 @@ PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
     // Note: this asm prevents the compiler (clang, specifically) from
     // believing (thanks to CSE) that it needs to dedicate a registeer both
     // to "table" and "&table->fast_entries".
-    // TODO(b/64614992): remove this asm
+    // TODO: remove this asm
     asm("" : "+r"(table));
 #endif
     ptr = TagDispatch(msg, ptr, ctx, TcFieldData::DefaultInit(), table - 1, 0);
@@ -654,7 +654,7 @@ const char* TcParser::PackedFixed(PROTOBUF_TC_PARAM_DECL) {
   SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<RepeatedField<LayoutType>>(msg, data.offset());
   int size = ReadSize(&ptr);
-  // TODO(dlj): add a tailcalling variant of ReadPackedFixed.
+  // TODO: add a tailcalling variant of ReadPackedFixed.
   return ctx->ReadPackedFixed(ptr, size,
                               static_cast<RepeatedField<LayoutType>*>(&field));
 }

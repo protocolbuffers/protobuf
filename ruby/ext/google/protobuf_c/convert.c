@@ -171,7 +171,7 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
       if (rb_obj_encoding(value) != bytes) {
         // Note: this will not duplicate underlying string data unless
         // necessary.
-        // TODO(haberman): is this really necessary to get raw bytes?
+        // TODO: is this really necessary to get raw bytes?
         value = rb_str_encode(value, bytes, 0, Qnil);
       }
 

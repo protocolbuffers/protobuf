@@ -16,7 +16,7 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-// TODO(jonskeet): Refactor repeated field support; all the implementations are
+// TODO: Refactor repeated field support; all the implementations are
 // *really* similar. We should probably have a RepeatedFieldGeneratorBase.
 class RepeatedEnumFieldGenerator : public FieldGeneratorBase {
  public:

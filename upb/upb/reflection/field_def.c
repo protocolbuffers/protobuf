@@ -815,7 +815,7 @@ static int _upb_FieldDef_Compare(const void* p1, const void* p2) {
 // for non-sorted lists of fields.
 const upb_FieldDef** _upb_FieldDefs_Sorted(const upb_FieldDef* f, int n,
                                            upb_Arena* a) {
-  // TODO(salo): Replace this arena alloc with a persistent scratch buffer.
+  // TODO: Replace this arena alloc with a persistent scratch buffer.
   upb_FieldDef** out = (upb_FieldDef**)upb_Arena_Malloc(a, n * sizeof(void*));
   if (!out) return NULL;
 

@@ -97,7 +97,7 @@ class MessageTest(unittest.TestCase):
     msg = message_module.TestAllTypes()
     self.assertRaises(TypeError, msg.FromString, 0)
     self.assertRaises(Exception, msg.FromString, '0')
-    # TODO(jieluo): Fix cpp extension to raise error instead of warning.
+    # TODO: Fix cpp extension to raise error instead of warning.
     # b/27494216
     end_tag = encoder.TagBytes(1, 4)
     if (api_implementation.Type() == 'python' or
@@ -548,7 +548,7 @@ class MessageTest(unittest.TestCase):
     """Check some different types with the default comparator."""
     message = message_module.TestAllTypes()
 
-    # TODO(mattp): would testing more scalar types strengthen test?
+    # TODO: would testing more scalar types strengthen test?
     message.repeated_int32.append(1)
     message.repeated_int32.append(3)
     message.repeated_int32.append(2)
@@ -1459,7 +1459,7 @@ class Proto2Test(unittest.TestCase):
     # This is still an incomplete proto - so serializing should fail
     self.assertRaises(message.EncodeError, unpickled_message.SerializeToString)
 
-  # TODO(haberman): this isn't really a proto2-specific test except that this
+  # TODO: this isn't really a proto2-specific test except that this
   # message has a required field in it.  Should probably be factored out so
   # that we can test the other parts with proto3.
   def testParsingMerge(self):
@@ -1983,7 +1983,7 @@ class Proto3Test(unittest.TestCase):
     self.assertIn(-456, msg2.map_int32_foreign_message)
     self.assertEqual(2, len(msg2.map_int32_foreign_message))
     msg2.map_int32_foreign_message[123].c = 1
-    # TODO(jieluo): Fix text format for message map.
+    # TODO: Fix text format for message map.
     self.assertIn(
         str(msg2.map_int32_foreign_message),
         ('{-456: , 123: c: 1\n}', '{123: c: 1\n, -456: }'))
@@ -2304,7 +2304,7 @@ class Proto3Test(unittest.TestCase):
   def testMapItems(self):
     # Map items used to have strange behaviors when use c extension. Because
     # [] may reorder the map and invalidate any existing iterators.
-    # TODO(jieluo): Check if [] reordering the map is a bug or intended
+    # TODO: Check if [] reordering the map is a bug or intended
     # behavior.
     msg = map_unittest_pb2.TestMap()
     msg.map_string_string['local_init_op'] = ''
@@ -2424,7 +2424,7 @@ class Proto3Test(unittest.TestCase):
 
     if api_implementation.Type() == 'cpp':
       # Need to keep the map reference because of b/27942626.
-      # TODO(jieluo): Remove it.
+      # TODO: Remove it.
       unused_map = msg.map_int32_all_types  # pylint: disable=unused-variable
     msg_value = msg.map_int32_all_types[2]
     msg.Clear()

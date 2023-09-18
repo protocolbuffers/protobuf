@@ -125,7 +125,7 @@ struct ArenaAlign {
   constexpr size_t Floor(size_t n) const { return (n & ~(align - 1)); }
 
   constexpr size_t Padded(size_t n) const {
-    // TODO(mvels): there are direct callers of AllocateAligned() that violate
+    // TODO: there are direct callers of AllocateAligned() that violate
     // `size` being a multiple of `align`: that should be an error / assert.
     //  ABSL_ASSERT(IsAligned(n));
     ABSL_ASSERT(ArenaAlignDefault::IsAligned(align));

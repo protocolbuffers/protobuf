@@ -462,7 +462,7 @@ TEST_F(DescriptorPoolTypeResolverSyntaxTest, SyntaxProto3) {
   Type type;
   ASSERT_TRUE(
       resolver_->ResolveMessageType(GetTypeUrl("test.MyMessage"), &type).ok());
-  // TODO(b/271206501) This should be proto3.
+  // TODO This should be proto3.
   EXPECT_EQ(type.syntax(), Syntax::SYNTAX_PROTO2);
   EXPECT_EQ(type.edition(), "");
 }

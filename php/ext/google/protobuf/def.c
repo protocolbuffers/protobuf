@@ -914,7 +914,7 @@ static void add_descriptor(upb_DefPool* symtab,
 
   if (upb_DefPool_FindFileByNameWithSize(symtab, name.data, name.size)) {
     // Already added.
-    // TODO(teboring): Re-enable this warning when aggregate metadata is
+    // TODO: Re-enable this warning when aggregate metadata is
     // deprecated.
     // zend_error(E_USER_WARNING,
     //            "proto descriptor was previously loaded (included in multiple

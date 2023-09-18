@@ -49,7 +49,7 @@ UPB_API upb_MiniTableEnum* upb_MiniDescriptor_BuildEnum(const char* data,
                                                         upb_Arena* arena,
                                                         upb_Status* status);
 
-// TODO(b/289057707): Deprecated name; update callers.
+// TODO: Deprecated name; update callers.
 UPB_API_INLINE upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data,
                                                           size_t len,
                                                           upb_Arena* arena,

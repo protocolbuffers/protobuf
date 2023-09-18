@@ -1397,7 +1397,7 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
   upb_EncodeStatus status =
       upb_Encode(any_msg, upb_MessageDef_MiniTable(any_m), 0, d->arena,
                  (char**)&encoded.str_val.data, &encoded.str_val.size);
-  // TODO(b/235839510): We should fail gracefully here on a bad return status.
+  // TODO: We should fail gracefully here on a bad return status.
   UPB_ASSERT(status == kUpb_EncodeStatus_Ok);
   upb_Message_SetFieldByDef(msg, value_f, encoded, d->arena);
 }

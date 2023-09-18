@@ -96,7 +96,7 @@ void EmitPubUseOfOwnMessages(Context<FileDescriptor>& primary_file,
     primary_file.Emit({{"mod", mod}, {"Msg", name}},
                       R"rs(
                         pub use crate::$mod$::$Msg$;
-                        // TODO(b/285309454) Address use for imported crates
+                        // TODO Address use for imported crates
                         pub use crate::$mod$::$Msg$View;
                       )rs");
   }
@@ -106,7 +106,7 @@ void EmitPubUseOfOwnMessages(Context<FileDescriptor>& primary_file,
 // `dep` into the `primary_file`.
 //
 // `dep` is a primary src of a dependency of the current `proto_library`.
-// TODO(b/270124215): Add support for public import of non-primary srcs of deps.
+// TODO: Add support for public import of non-primary srcs of deps.
 void EmitPubUseForImportedMessages(Context<FileDescriptor>& primary_file,
                                    const Context<FileDescriptor>& dep) {
   std::string crate_name = GetCrateName(dep);
@@ -133,7 +133,7 @@ void EmitPublicImports(
     // we don't need to emit `pub use` here, we already do it for all srcs in
     // RustGenerator::Generate. In other words, all srcs are implicitly publicly
     // imported into the primary file for Protobuf Rust.
-    // TODO(b/270124215): Handle the case where a non-primary src with the same
+    // TODO: Handle the case where a non-primary src with the same
     // declared package as the primary src publicly imports a file that the
     // primary doesn't.
     if (files.contains(dep_file)) continue;

@@ -66,7 +66,7 @@ int GetFixedSize(FieldDescriptor::Type type);
 std::string PROTOC_EXPORT GetEnumValueName(absl::string_view enum_name,
                                            absl::string_view enum_value_name);
 
-// TODO(jtattermusch): perhaps we could move this to strutil
+// TODO: perhaps we could move this to strutil
 std::string StringToBase64(absl::string_view input);
 
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);

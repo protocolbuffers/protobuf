@@ -54,7 +54,7 @@ GPB_INLINE void CheckFieldSize(uint64_t size) {
   // parse_context, delimited_message_util, message_lite, etc.).
   // https://protobuf.dev/programming-guides/encoding/#cheat-sheet
   if (size > 0x7fffffff) {
-    // TODO(thomasvl): Maybe a different error code for this, but adding one is a breaking
+    // TODO: Maybe a different error code for this, but adding one is a breaking
     // change so reuse an existing one.
     RaiseException(GPBCodedInputStreamErrorInvalidSize, nil);
   }

@@ -113,7 +113,7 @@ struct NoOpAccessListener {
 
   static void OnHasExtension(const MessageLite* msg, int extension_tag,
                              const void* field) {}
-  // TODO(b/190614678): Support clear in the proto compiler.
+  // TODO: Support clear in the proto compiler.
   static void OnClearExtension(const MessageLite* msg, int extension_tag,
                                const void* field) {}
   static void OnExtensionSize(const MessageLite* msg, int extension_tag,

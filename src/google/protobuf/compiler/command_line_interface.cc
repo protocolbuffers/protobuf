@@ -116,7 +116,7 @@ static const char* kDefaultDirectDependenciesViolationMsg =
     "File is imported but not declared in --direct_dependencies: %s";
 
 // Returns true if the text looks like a Windows-style absolute path, starting
-// with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with
+// with a drive letter.  Example:  "C:\foo".  TODO:  Share this with
 // copy in importer.cc?
 static bool IsWindowsAbsolutePath(const std::string& text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -238,7 +238,7 @@ bool IsInstalledProtoPath(absl::string_view path) {
 // type protos are installed.
 void AddDefaultProtoPaths(
     std::vector<std::pair<std::string, std::string>>* paths) {
-  // TODO(xiaofeng): The code currently only checks relative paths of where
+  // TODO: The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.
   std::string path_str;

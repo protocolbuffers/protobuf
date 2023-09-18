@@ -33,7 +33,7 @@ final class FieldInfo implements Comparable<FieldInfo> {
    */
   private final Class<?> oneofStoredType;
 
-  // TODO(liujisi): make map default entry lazy?
+  // TODO: make map default entry lazy?
   private final Object mapDefaultEntry;
 
   private final EnumVerifier enumVerifier;

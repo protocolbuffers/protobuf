@@ -110,7 +110,7 @@ message FileDescriptorProto {
   optional string syntax = 12;
 
   // The edition of the proto file, which is an opaque string.
-  // TODO(b/297898292) Deprecate and remove this field in favor of enums.
+  // TODO Deprecate and remove this field in favor of enums.
   optional string edition = 13;
 
   // The edition of the proto file.
@@ -197,7 +197,7 @@ message ExtensionRangeOptions {
   }
 
   // The verification state of the range.
-  // TODO(b/278783756): flip the default to DECLARATION once all empty ranges
+  // TODO: flip the default to DECLARATION once all empty ranges
   // are marked as UNVERIFIED.
   optional VerificationState verification = 3 [default = UNVERIFIED];
 
@@ -597,7 +597,7 @@ message MessageOptions {
   // This should only be used as a temporary measure against broken builds due
   // to the change in behavior for JSON field name conflicts.
   //
-  // TODO(b/261750190) This is legacy behavior we plan to remove once downstream
+  // TODO This is legacy behavior we plan to remove once downstream
   // teams have had time to migrate.
   optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
 
@@ -744,7 +744,7 @@ message FieldOptions {
   repeated OptionTargetType targets = 19;
 
   message EditionDefault {
-    // TODO(b/297898292) Deprecate and remove this field in favor of enums.
+    // TODO Deprecate and remove this field in favor of enums.
     optional string edition = 1;
     optional Edition edition_enum = 3;
     optional string value = 2;  // Textproto value.
@@ -793,7 +793,7 @@ message EnumOptions {
   // and strips underscored from the fields before comparison in proto3 only.
   // The new behavior takes `json_name` into account and applies to proto2 as
   // well.
-  // TODO(b/261750190) Remove this legacy behavior once downstream teams have
+  // TODO Remove this legacy behavior once downstream teams have
   // had time to migrate.
   optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
 
@@ -917,7 +917,7 @@ message UninterpretedOption {
 // ===================================================================
 // Features
 
-// TODO(b/274655146) Enums in C++ gencode (and potentially other languages) are
+// TODO Enums in C++ gencode (and potentially other languages) are
 // not well scoped.  This means that each of the feature enums below can clash
 // with each other.  The short names we've chosen maximize call-site
 // readability, but leave us very open to this scenario.  A future feature will
@@ -1004,14 +1004,14 @@ message FeatureSetDefaults {
   // the defaults at the closest matching edition ordered at or before it should
   // be used.  This field must be in strict ascending order by edition.
   message FeatureSetEditionDefault {
-    // TODO(b/297898292) Deprecate and remove this field in favor of enums.
+    // TODO Deprecate and remove this field in favor of enums.
     optional string edition = 1;
     optional Edition edition_enum = 3;
     optional FeatureSet features = 2;
   }
   repeated FeatureSetEditionDefault defaults = 1;
 
-  // TODO(b/297898292) Deprecate and remove these fields in favor of enums.
+  // TODO Deprecate and remove these fields in favor of enums.
   optional string minimum_edition = 2;
   optional string maximum_edition = 3;
 

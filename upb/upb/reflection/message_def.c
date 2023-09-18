@@ -72,7 +72,7 @@ struct upb_MessageDef {
   const upb_EnumDef* nested_enums;
   const upb_FieldDef* nested_exts;
 
-  // TODO(salo): These counters don't need anywhere near 32 bits.
+  // TODO: These counters don't need anywhere near 32 bits.
   int field_count;
   int real_oneof_count;
   int oneof_count;

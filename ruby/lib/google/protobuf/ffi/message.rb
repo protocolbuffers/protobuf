@@ -220,7 +220,7 @@ module Google
               if options.respond_to? :to_h
                 options options.to_h
               else
-                #TODO(jatl) can this error message be improve to include what was received?
+                #TODO can this error message be improve to include what was received?
                 raise ArgumentError.new "Expected hash arguments"
               end
             end
@@ -246,7 +246,7 @@ module Google
               if options.respond_to? :to_h
                 options = options.to_h
               else
-                #TODO(jatl) can this error message be improve to include what was received?
+                #TODO can this error message be improve to include what was received?
                 raise ArgumentError.new "Expected hash arguments"
               end
             end
@@ -297,7 +297,7 @@ module Google
             @descriptor.each do |field_descriptor|
               field_name = field_descriptor.name
               unless instance_methods(true).include?(field_name.to_sym)
-                #TODO(jatl) - at a high level, dispatching to either
+                #TODO - at a high level, dispatching to either
                 # index_internal or get_field would be logically correct, but slightly slower.
                 if field_descriptor.map?
                   define_method(field_name) do
@@ -426,7 +426,7 @@ module Google
             descriptor.each do |field_descriptor|
               next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(msg, field_descriptor)
               if field_descriptor.map?
-                # TODO(jatl) Adapted - from map#each_msg_val and map#inspect- can this be refactored to reduce echo without introducing a arena allocation?
+                # TODO Adapted - from map#each_msg_val and map#inspect- can this be refactored to reduce echo without introducing a arena allocation?
                 message_descriptor = field_descriptor.subtype
                 key_field_def = Google::Protobuf::FFI.get_field_by_number(message_descriptor, 1)
                 key_field_type = Google::Protobuf::FFI.get_type(key_field_def)
@@ -448,7 +448,7 @@ module Google
                 end
                 field_output << "#{field_descriptor.name}: {#{key_value_pairs.join(", ")}}"
               elsif field_descriptor.repeated?
-                # TODO(jatl) Adapted - from repeated_field#each - can this be refactored to reduce echo?
+                # TODO Adapted - from repeated_field#each - can this be refactored to reduce echo?
                 repeated_field_output = []
                 message_value = Google::Protobuf::FFI.get_message_value(msg, field_descriptor)
                 array = message_value[:array_val]
@@ -492,7 +492,7 @@ module Google
           def method_missing_internal(method_name, *args, mode: nil)
             raise ArgumentError.new "method_missing_internal called with invalid mode #{mode.inspect}" unless [:respond_to_missing?, :method_missing].include? mode
 
-            #TODO(jatl) not being allowed is not the same thing as not responding, but this is needed to pass tests
+            #TODO not being allowed is not the same thing as not responding, but this is needed to pass tests
             if method_name.to_s.end_with? '='
               if self.class.send(:oneof_field_names).include? method_name.to_s[0..-2].to_sym
                 return false if mode == :respond_to_missing?
@@ -513,7 +513,7 @@ module Google
             get_field field_descriptor unless field_descriptor.nil?
           end
 
-          #TODO(jatl) - well known types keeps us on our toes by overloading methods.
+          #TODO - well known types keeps us on our toes by overloading methods.
           # How much of the public API needs to be defended?
           def index_assign_internal(value, name: nil, field_descriptor: nil, wrap: false)
             raise FrozenError.new "can't modify frozen #{self.class}" if frozen?

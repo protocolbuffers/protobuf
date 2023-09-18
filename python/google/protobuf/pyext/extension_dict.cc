@@ -130,7 +130,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
 
   if (descriptor->label() != FieldDescriptor::LABEL_REPEATED &&
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    // TODO(plabatut): consider building the class on the fly!
+    // TODO: consider building the class on the fly!
     ContainerBase* sub_message = cmessage::InternalGetSubMessage(
         self->parent, descriptor);
     if (sub_message == nullptr) {

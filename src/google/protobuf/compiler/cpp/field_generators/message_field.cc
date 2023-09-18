@@ -265,7 +265,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           return $cast_field_$;
         }
         inline $Submsg$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-          //~ TODO(b/122856539): add tests to make sure all write accessors are
+          //~ TODO: add tests to make sure all write accessors are
           //~ able to prepare split message allocation.
           $PrepareSplitMessageForWrite$;
           $Submsg$* _msg = _internal_mutable_$name$();
@@ -433,7 +433,7 @@ void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
 
 void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
   if (opts_->opensource_runtime) {
-    // TODO(gerbens) Remove this when we don't need to destruct default
+    // TODO Remove this when we don't need to destruct default
     // instances.  In google3 a default instance will never get deleted so we
     // don't need to worry about that but in opensource protobuf default
     // instances are deleted in shutdown process and we need to take special
@@ -786,7 +786,7 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
-  // TODO(dlj): move insertion points
+  // TODO: move insertion points
   p->Emit(R"cc(
     inline $Submsg$* $Msg$::mutable_$name$(int index)
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -899,7 +899,7 @@ void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
-  // TODO(b/239716377): experiment with simplifying this to be
+  // TODO: experiment with simplifying this to be
   // `if (!from.empty()) { body(); }` for both split and non-split cases.
   auto body = [&] {
     p->Emit(R"cc(
@@ -930,7 +930,7 @@ void RepeatedMessage::GenerateConstructorCode(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
-  // TODO(b/291633281): For split repeated fields we might want to use type
+  // TODO: For split repeated fields we might want to use type
   // erasure to reduce binary size costs.
   if (should_split()) {
     p->Emit(R"cc(

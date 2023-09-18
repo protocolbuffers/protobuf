@@ -2635,7 +2635,7 @@ public final class TestUtil {
         break;
       case FOO_NOT_SET:
         break;
-        // TODO(b/18683919): go/enum-switch-lsc
+        // TODO: go/enum-switch-lsc
     }
   }
 

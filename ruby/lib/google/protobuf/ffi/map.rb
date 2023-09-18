@@ -55,7 +55,7 @@ module Google
       # message type.
       def self.new(key_type, value_type, value_typeclass = nil, init_hashmap = {})
         instance = allocate
-        # TODO(jatl) This argument mangling doesn't agree with the type signature,
+        # TODO This argument mangling doesn't agree with the type signature,
         # but does align with the text of the comments and is required to make unit tests pass.
         if init_hashmap.empty? and ![:enum, :message].include?(value_type)
           init_hashmap = value_typeclass
@@ -305,7 +305,7 @@ module Google
           end
         when Google::Protobuf::Map
           unless key_type == other.send(:key_type) and value_type == other.send(:value_type) and descriptor == other.descriptor
-            raise ArgumentError.new "Attempt to merge Map with mismatching types" #TODO(jatl) Improve error message by adding type information
+            raise ArgumentError.new "Attempt to merge Map with mismatching types" #TODO Improve error message by adding type information
           end
           arena.fuse(other.send(:arena))
           iter = ::FFI::MemoryPointer.new(:size_t, 1)
@@ -314,7 +314,7 @@ module Google
             Google::Protobuf::FFI.map_set(@map_ptr, key_message_value, value_message_value, arena)
           end
         else
-          raise ArgumentError.new "Unknown type merging into Map" #TODO(jatl) improve this error message by including type information
+          raise ArgumentError.new "Unknown type merging into Map" #TODO improve this error message by including type information
         end
         self
       end
@@ -327,12 +327,12 @@ module Google
         @name = name || 'Map'
 
         unless [:int32, :int64, :uint32, :uint64, :bool, :string, :bytes].include? key_type
-          raise ArgumentError.new "Invalid key type for map." #TODO(jatl) improve error message to include what type was passed
+          raise ArgumentError.new "Invalid key type for map." #TODO improve error message to include what type was passed
         end
         @key_type = key_type
 
         unless [:int32, :int64, :uint32, :uint64, :bool, :string, :bytes, :enum, :message].include? value_type
-          raise ArgumentError.new "Invalid value type for map." #TODO(jatl) improve error message to include what type was passed
+          raise ArgumentError.new "Invalid value type for map." #TODO improve error message to include what type was passed
         end
         @value_type = value_type
 

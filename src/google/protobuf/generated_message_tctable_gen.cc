@@ -271,7 +271,7 @@ bool IsFieldEligibleForFastParsing(
           GetEnumRangeInfo(field, rmax_value) == EnumRangeInfo::kNone) {
         // We can't use fast parsing for these entries because we can't specify
         // the validator.
-        // TODO(b/239592582): Implement a fast parser for these enums.
+        // TODO: Implement a fast parser for these enums.
         return false;
       }
       break;

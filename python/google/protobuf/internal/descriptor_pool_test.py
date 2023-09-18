@@ -122,7 +122,7 @@ class DescriptorPoolTestBase(object):
     self.assertEqual('google/protobuf/unittest.proto',
                      file_desc8.name)
 
-    # TODO(jieluo): Add tests for no package when b/13860351 is fixed.
+    # TODO: Add tests for no package when b/13860351 is fixed.
 
     self.assertRaises(KeyError, self.pool.FindFileContainingSymbol,
                       'google.protobuf.python.internal.Factory1Message.none_field')
@@ -217,7 +217,7 @@ class DescriptorPoolTestBase(object):
     self.assertRaises(TypeError, self.pool.FindExtensionByNumber, '')
     self.assertRaises(KeyError, self.pool.FindMethodByName, '')
 
-    # TODO(jieluo): Fix python to raise correct errors.
+    # TODO: Fix python to raise correct errors.
     if api_implementation.Type() == 'python':
       error_type = AttributeError
     else:
@@ -373,7 +373,7 @@ class DescriptorPoolTestBase(object):
       if api_implementation.Type() != 'python':
         # Cpp extension cannot call Add on a DescriptorPool
         # that uses a DescriptorDatabase.
-        # TODO(jieluo): Fix python and cpp extension diff.
+        # TODO: Fix python and cpp extension diff.
         return
     self.pool = descriptor_pool.DescriptorPool()
     file1 = self.pool.AddSerializedFile(
@@ -395,7 +395,7 @@ class DescriptorPoolTestBase(object):
       if api_implementation.Type() != 'python':
         # Cpp extension cannot call Add on a DescriptorPool
         # that uses a DescriptorDatabase.
-        # TODO(jieluo): Fix python and cpp extension diff.
+        # TODO: Fix python and cpp extension diff.
         return
     self.pool = descriptor_pool.DescriptorPool()
     file1_first = self.pool.AddSerializedFile(
@@ -425,7 +425,7 @@ class DescriptorPoolTestBase(object):
       if api_implementation.Type() != 'python':
         # Cpp extension cannot call Add on a DescriptorPool
         # that uses a DescriptorDatabase.
-        # TODO(jieluo): Fix python and cpp extension diff.
+        # TODO: Fix python and cpp extension diff.
         return
     # Then check the dynamic pool and its internal DescriptorDatabase.
     descriptor_proto = descriptor_pb2.FileDescriptorProto.FromString(
@@ -479,7 +479,7 @@ class DescriptorPoolTestBase(object):
       if api_implementation.Type() != 'python':
         # Cpp extension cannot call Add on a DescriptorPool
         # that uses a DescriptorDatabase.
-        # TODO(jieluo): Fix python and cpp extension diff.
+        # TODO: Fix python and cpp extension diff.
         return
     file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
     self.pool.Add(file_desc)
@@ -490,7 +490,7 @@ class DescriptorPoolTestBase(object):
       if api_implementation.Type() != 'python':
         # Cpp extension cannot call Add on a DescriptorPool
         # that uses a DescriptorDatabase.
-        # TODO(jieluo): Fix python and cpp extension diff.
+        # TODO: Fix python and cpp extension diff.
         return
     more_messages_desc = descriptor_pb2.FileDescriptorProto.FromString(
         more_messages_pb2.DESCRIPTOR.serialized_pb)
@@ -509,7 +509,7 @@ class DescriptorPoolTestBase(object):
       if api_implementation.Type() != 'python':
         # Cpp extension cannot call Add on a DescriptorPool
         # that uses a DescriptorDatabase.
-        # TODO(jieluo): Fix python and cpp extension diff.
+        # TODO: Fix python and cpp extension diff.
         return
     unittest_fd = descriptor_pb2.FileDescriptorProto.FromString(
         unittest_pb2.DESCRIPTOR.serialized_pb)
@@ -688,7 +688,7 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
     # file can not build. So when FindMessageTypeByName('ErrorMessage') was
     # called the first time, a KeyError will be raised but call the find
     # method later will return a descriptor which is not build.
-    # TODO(jieluo): fix pure python to revert the load if file can not be build
+    # TODO: fix pure python to revert the load if file can not be build
     if api_implementation.Type() != 'python':
       error_msg = ('Invalid proto descriptor for file "error_file":\\n  '
                    'collector.ErrorMessage.nested_message_field: "SubMessage" '

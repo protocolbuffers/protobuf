@@ -151,7 +151,7 @@ class SymbolDatabase():
     return self._classes[self.pool.FindMessageTypeByName(symbol)]
 
   def GetMessages(self, files):
-    # TODO(amauryfa): Fix the differences with MessageFactory.
+    # TODO: Fix the differences with MessageFactory.
     """Gets all registered messages from a specified file.
 
     Only messages already created and registered will be returned; (this is the

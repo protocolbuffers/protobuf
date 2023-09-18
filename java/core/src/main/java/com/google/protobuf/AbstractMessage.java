@@ -27,7 +27,7 @@ import java.util.Map;
  * @author kenton@google.com Kenton Varda
  */
 public abstract class AbstractMessage
-    // TODO(dweis): Update GeneratedMessage to parameterize with MessageType and BuilderType.
+    // TODO: Update GeneratedMessage to parameterize with MessageType and BuilderType.
     extends AbstractMessageLite implements Message {
 
   @Override
@@ -70,13 +70,13 @@ public abstract class AbstractMessage
     return MessageReflection.delimitWithCommas(findInitializationErrors());
   }
 
-  // TODO(jieluo): Clear it when all subclasses have implemented this method.
+  // TODO: Clear it when all subclasses have implemented this method.
   @Override
   public boolean hasOneof(OneofDescriptor oneof) {
     throw new UnsupportedOperationException("hasOneof() is not implemented.");
   }
 
-  // TODO(jieluo): Clear it when all subclasses have implemented this method.
+  // TODO: Clear it when all subclasses have implemented this method.
   @Override
   public FieldDescriptor getOneofFieldDescriptor(OneofDescriptor oneof) {
     throw new UnsupportedOperationException("getOneofFieldDescriptor() is not implemented.");
@@ -301,19 +301,19 @@ public abstract class AbstractMessage
       throw new UnsupportedOperationException("clone() should be implemented in subclasses.");
     }
 
-    /** TODO(jieluo): Clear it when all subclasses have implemented this method. */
+    /** TODO: Clear it when all subclasses have implemented this method. */
     @Override
     public boolean hasOneof(OneofDescriptor oneof) {
       throw new UnsupportedOperationException("hasOneof() is not implemented.");
     }
 
-    /** TODO(jieluo): Clear it when all subclasses have implemented this method. */
+    /** TODO: Clear it when all subclasses have implemented this method. */
     @Override
     public FieldDescriptor getOneofFieldDescriptor(OneofDescriptor oneof) {
       throw new UnsupportedOperationException("getOneofFieldDescriptor() is not implemented.");
     }
 
-    /** TODO(jieluo): Clear it when all subclasses have implemented this method. */
+    /** TODO: Clear it when all subclasses have implemented this method. */
     @Override
     public BuilderType clearOneof(OneofDescriptor oneof) {
       throw new UnsupportedOperationException("clearOneof() is not implemented.");

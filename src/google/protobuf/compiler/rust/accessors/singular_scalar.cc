@@ -64,7 +64,7 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
           {"field_mutator_getter",
            [&] {
              if (field.desc().has_presence()) {
-               // TODO(b/285309449): implement mutator for fields with presence.
+               // TODO: implement mutator for fields with presence.
                return;
              } else {
                field.Emit({}, R"rs(

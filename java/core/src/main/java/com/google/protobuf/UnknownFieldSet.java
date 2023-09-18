@@ -730,7 +730,7 @@ public final class UnknownFieldSet implements MessageLite {
      */
     public ByteString toByteString(int fieldNumber) {
       try {
-        // TODO(lukes): consider caching serialized size in a volatile long
+        // TODO: consider caching serialized size in a volatile long
         ByteString.CodedBuilder out =
             ByteString.newCodedBuilder(getSerializedSize(fieldNumber));
         writeTo(fieldNumber, out.getCodedOutput());

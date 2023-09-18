@@ -1654,7 +1654,7 @@ public class TextFormatTest {
 
     {
       // With overwrite forbidden, same behavior.
-      // TODO(b/29122459): Expect parse exception here.
+      // TODO: Expect parse exception here.
       TestMap.Builder builder = TestMap.newBuilder();
       PARSER_WITH_OVERWRITE_FORBIDDEN.merge(text, builder);
       TestMap map = builder.build();
@@ -1664,7 +1664,7 @@ public class TextFormatTest {
 
     {
       // With overwrite forbidden and a dynamic message, same behavior.
-      // TODO(b/29122459): Expect parse exception here.
+      // TODO: Expect parse exception here.
       Message.Builder builder = DynamicMessage.newBuilder(TestMap.getDescriptor());
       PARSER_WITH_OVERWRITE_FORBIDDEN.merge(text, builder);
       TestMap map =

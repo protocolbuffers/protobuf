@@ -47,7 +47,7 @@ namespace Google.Protobuf
         {
             // The "nextTag" logic is there only as an optimization for reading non-packed repeated / map
             // fields and is strictly speaking not necessary.
-            // TODO(jtattermusch): look into simplifying the ParseTag logic.
+            // TODO: look into simplifying the ParseTag logic.
             if (state.hasNextTag)
             {
                 state.lastTag = state.nextTag;

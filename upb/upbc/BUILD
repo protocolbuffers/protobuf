@@ -60,7 +60,7 @@ upb_minitable_proto_library(
 bootstrap_upb_proto_library(
     name = "plugin_upb_proto",
     base_dir = "",
-    # TODO(b/289127200): Export 'net/proto2/proto/descriptor.upb.h' and remove "-layering_check".
+    # TODO: Export 'net/proto2/proto/descriptor.upb.h' and remove "-layering_check".
     features = ["-layering_check"],
     google3_src_files = [
         "net/proto2/compiler/proto/profile.proto",

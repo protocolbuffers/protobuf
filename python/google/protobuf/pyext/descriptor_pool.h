@@ -58,7 +58,7 @@ typedef struct PyDescriptorPool {
   const DescriptorDatabase* database;
 
   // The preferred MessageFactory to be used by descriptors.
-  // TODO(amauryfa): Don't create the Factory from the DescriptorPool, but
+  // TODO: Don't create the Factory from the DescriptorPool, but
   // use the one passed while creating message classes. And remove this member.
   PyMessageFactory* py_message_factory;
 

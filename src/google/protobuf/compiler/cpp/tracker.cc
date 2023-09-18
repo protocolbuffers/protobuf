@@ -96,7 +96,7 @@ std::vector<Sub> GenerateTrackerCalls(
     }
 
     if (!call_str.empty()) {
-      // TODO(b/245791219): Until we migrate all of the C++ backend to use
+      // TODO: Until we migrate all of the C++ backend to use
       // Emit(), we need to include a newline here so that the line that follows
       // the annotation is on its own line.
       call_str.push_back('\n');
@@ -150,7 +150,7 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
       {
           Call("serialize", "OnSerialize"),
           Call("deserialize", "OnDeserialize"),
-          // TODO(danilak): Ideally annotate_reflection should not exist and we
+          // TODO: Ideally annotate_reflection should not exist and we
           // need to annotate all reflective calls on our own, however, as this
           // is a cause for side effects, i.e. reading values dynamically, we
           // want the users know that dynamic access can happen.
@@ -183,7 +183,7 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
                              "OnMutableListExtension"),
 
           // Generic accessors such as "clear".
-          // TODO(b/190614678): Generalize clear from both repeated and non
+          // TODO: Generalize clear from both repeated and non
           // repeated calls, currently their underlying memory interfaces are
           // very different. Or think of removing clear callback as no usages
           // are needed and no memory exist

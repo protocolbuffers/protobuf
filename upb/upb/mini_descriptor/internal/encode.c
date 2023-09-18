@@ -298,7 +298,7 @@ static char* upb_MtDataEncoder_FlushDenseEnumMask(upb_MtDataEncoder* e,
 
 char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
                                      uint32_t val) {
-  // TODO(b/229641772): optimize this encoding.
+  // TODO: optimize this encoding.
   upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
   UPB_ASSERT(val >= in->state.enum_state.last_written_value);
   uint32_t delta = val - in->state.enum_state.last_written_value;

@@ -394,7 +394,7 @@ class Message
                 }
                 break;
             case GPBType::STRING:
-                // TODO(teboring): Add utf-8 check.
+                // TODO: Add utf-8 check.
                 if (!GPBWire::readString($input, $value)) {
                     throw new GPBDecodeException(
                         "Unexpected EOF inside string field.");
@@ -428,7 +428,7 @@ class Message
                 }
                 break;
             case GPBType::ENUM:
-                // TODO(teboring): Check unknown enum value.
+                // TODO: Check unknown enum value.
                 if (!GPBWire::readInt32($input, $value)) {
                     throw new GPBDecodeException(
                         "Unexpected EOF inside enum field.");
@@ -1648,7 +1648,7 @@ class Message
                 $size += GPBWire::varint32Size($size);
                 break;
             case GPBType::GROUP:
-                // TODO(teboring): Add support.
+                // TODO: Add support.
                 user_error("Unsupported type.");
                 break;
             default:
@@ -1753,7 +1753,7 @@ class Message
                 $size += $value->jsonByteSize();
                 break;
 #             case GPBType::GROUP:
-#                 // TODO(teboring): Add support.
+#                 // TODO: Add support.
 #                 user_error("Unsupported type.");
 #                 break;
             default:

@@ -34,7 +34,7 @@ def do_test(request):
   if request.message_type == "conformance.FailureSet":
     failure_set = conformance_pb2.FailureSet()
     failures = []
-    # TODO(gerbens): Remove, this is a hack to detect if the old vs new
+    # TODO: Remove, this is a hack to detect if the old vs new
     # parser is used by the cpp code. Relying on a bug in the old parser.
     hack_proto = test_messages_proto2_pb2.TestAllTypesProto2()
     old_parser = True

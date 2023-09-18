@@ -328,7 +328,7 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
   upb_DecodeStatus decode_status;
 
   // If we parse without allowing unlinked objects, the parse will fail.
-  // TODO(haberman): re-enable this test once the old method of tree shaking is
+  // TODO: re-enable this test once the old method of tree shaking is
   // removed
   // upb_Message* fail_msg = _upb_Message_New(mini_table, arena.ptr());
   // decode_status =
@@ -515,7 +515,7 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessage) {
   upb_DecodeStatus decode_status;
 
   // If we parse without allowing unlinked objects, the parse will fail.
-  // TODO(haberman): re-enable this test once the old method of tree shaking is
+  // TODO: re-enable this test once the old method of tree shaking is
   // removed
   // upb_Message* fail_msg = _upb_Message_New(mini_table, arena.ptr());
   // decode_status =

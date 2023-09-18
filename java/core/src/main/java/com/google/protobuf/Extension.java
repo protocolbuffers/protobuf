@@ -7,7 +7,7 @@
 
 package com.google.protobuf;
 
-// TODO(chrisn): Change ContainingType to extend Message
+// TODO: Change ContainingType to extend Message
 /**
  * Interface that generated extensions implement.
  *
@@ -15,7 +15,7 @@ package com.google.protobuf;
  */
 public abstract class Extension<ContainingType extends MessageLite, Type>
     extends ExtensionLite<ContainingType, Type> {
-  // TODO(chrisn): Add package-private constructor.
+  // TODO: Add package-private constructor.
 
   /** {@inheritDoc} Overridden to return {@link Message} instead of {@link MessageLite}. */
   @Override

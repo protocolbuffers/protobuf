@@ -578,7 +578,7 @@ void MessageGenerator::GenerateWriteToBody(io::Printer* printer, bool use_write_
       "  _unknownFields.WriteTo(output);\n"
       "}\n");
 
-  // TODO(jonskeet): Memoize size of frozen messages?
+  // TODO: Memoize size of frozen messages?
 }
 
 void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
@@ -700,7 +700,7 @@ void MessageGenerator::GenerateMainParseLoop(io::Printer* printer, bool use_pars
     uint32_t tag = internal::WireFormatLite::MakeTag(field->number(), wt);
     // Handle both packed and unpacked repeated fields with the same Read*Array call;
     // the two generated cases are the packed and unpacked tags.
-    // TODO(jonskeet): Check that is_packable is equivalent to
+    // TODO: Check that is_packable is equivalent to
     // is_repeated && wt in { VARINT, FIXED32, FIXED64 }.
     // It looks like it is...
     if (field->is_packable()) {

@@ -115,7 +115,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
   // The descriptor for this type.
   printer->Print(
       vars,
-      // TODO(teboring): final needs to be added back. The way to fix it is to
+      // TODO: final needs to be added back. The way to fix it is to
       // generate methods that can construct the types, and then still declare
       // the types, and then init them in clinit with the new method calls.
       "$private$static $final$com.google.protobuf.Descriptors.Descriptor\n"
@@ -127,7 +127,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
 
   // Generate static members for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    // TODO(kenton):  Reuse MessageGenerator objects?
+    // TODO:  Reuse MessageGenerator objects?
     ImmutableMessageGenerator(descriptor_->nested_type(i), context_)
         .GenerateStaticVariables(printer, bytecode_estimate);
   }
@@ -163,7 +163,7 @@ int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
 
   // Generate static member initializers for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    // TODO(kenton):  Reuse MessageGenerator objects?
+    // TODO:  Reuse MessageGenerator objects?
     bytecode_estimate +=
         ImmutableMessageGenerator(descriptor_->nested_type(i), context_)
             .GenerateStaticVariableInitializers(printer);
@@ -224,7 +224,7 @@ int ImmutableMessageGenerator::GenerateFieldAccessorTableInitializer(
     bytecode_estimate += 6;
     printer->Print("\"$field_name$\", ", "field_name", info->capitalized_name);
   }
-  // TODO(b/286434301): Once cl/534906231 propagates, only consider real oneofs
+  // TODO: Once cl/534906231 propagates, only consider real oneofs
   // since proto reflection does not use this for synthetic oneofs.
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
@@ -415,7 +415,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     printer->Print(
         vars,
         "public enum ${$$oneof_capitalized_name$Case$}$\n"
-        // TODO(dweis): Remove EnumLite when we want to break compatibility with
+        // TODO: Remove EnumLite when we want to break compatibility with
         // 3.x users
         "    implements com.google.protobuf.Internal.EnumLite,\n"
         "        com.google.protobuf.AbstractMessage.InternalOneOfEnum {\n");
@@ -862,7 +862,7 @@ void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
       "\n");
 
   // Check that all required fields in this message are set.
-  // TODO(kenton):  We can optimize this when we switch to putting all the
+  // TODO:  We can optimize this when we switch to putting all the
   //   "has" fields into a single bitfield.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);

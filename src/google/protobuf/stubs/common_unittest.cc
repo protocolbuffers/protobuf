@@ -23,7 +23,7 @@ namespace google {
 namespace protobuf {
 namespace {
 
-// TODO(kenton):  More tests.
+// TODO:  More tests.
 
 #ifdef PACKAGE_VERSION  // only defined when using automake, not MSVC
 

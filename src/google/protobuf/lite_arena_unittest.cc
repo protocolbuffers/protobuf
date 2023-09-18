@@ -33,7 +33,7 @@ TEST_F(LiteArenaTest, MapNoHeapAllocation) {
   data.reserve(128 * 1024);
 
   {
-    // TODO(teboring): Enable no heap check when ArenaStringPtr is used in
+    // TODO: Enable no heap check when ArenaStringPtr is used in
     // Map.
     // internal::NoHeapChecker no_heap;
 

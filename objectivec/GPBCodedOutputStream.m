@@ -13,7 +13,7 @@
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
 
-// TODO(b/294836507): Consider using on other functions to reduce bloat when
+// TODO: Consider using on other functions to reduce bloat when
 // some compiler optimizations are enabled.
 #define GPB_NOINLINE __attribute__((noinline))
 

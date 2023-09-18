@@ -144,7 +144,7 @@ class RepeatedField final
   constexpr RepeatedField();
   RepeatedField(const RepeatedField& rhs) : RepeatedField(nullptr, rhs) {}
 
-  // TODO(b/290091828): make this constructor private
+  // TODO: make this constructor private
   explicit RepeatedField(Arena* arena);
 
   template <typename Iter,
@@ -970,7 +970,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
     if (current_size > 0) {
       Element* pnew = new_rep->elements();
       Element* pold = elements();
-      // TODO(b/263791665): add absl::is_trivially_relocatable<Element>
+      // TODO: add absl::is_trivially_relocatable<Element>
       if (std::is_trivial<Element>::value) {
         memcpy(static_cast<void*>(pnew), pold, current_size * sizeof(Element));
       } else {

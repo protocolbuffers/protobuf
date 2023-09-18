@@ -82,7 +82,7 @@ void EnumOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 }
 
 void EnumOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
-  // TODO(jonskeet): What about if we read the default value?
+  // TODO: What about if we read the default value?
   printer->Print(
     variables_,
     "$oneof_name$_ = input.ReadEnum();\n"

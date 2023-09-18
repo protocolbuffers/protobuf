@@ -128,7 +128,7 @@ void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
   const int number = upb_FieldDef_Number(f);
   const upb_value v = upb_value_constptr(f);
 
-  // TODO(salo): This lookup is unfortunate because we also perform it when
+  // TODO: This lookup is unfortunate because we also perform it when
   // inserting into the message's table. Unfortunately that step occurs after
   // this one and moving things around could be tricky so let's leave it for
   // a future refactoring.
@@ -137,7 +137,7 @@ void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
     _upb_DefBuilder_Errf(ctx, "oneof fields have the same number (%d)", number);
   }
 
-  // TODO(salo): More redundant work happening here.
+  // TODO: More redundant work happening here.
   const bool name_exists = upb_strtable_lookup2(&o->ntof, name, size, NULL);
   if (UPB_UNLIKELY(name_exists)) {
     _upb_DefBuilder_Errf(ctx, "oneof fields have the same name (%.*s)",

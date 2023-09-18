@@ -55,7 +55,7 @@ bool BitfieldTracksMutability(const FieldDescriptor* const descriptor) {
   if (!descriptor->is_repeated() || IsMapField(descriptor)) {
     return false;
   }
-  // TODO(b/255468704): update this to migrate repeated fields to use
+  // TODO: update this to migrate repeated fields to use
   // ProtobufList (which tracks immutability internally). That allows us to use
   // the presence bit to skip work on the repeated field if it is not populated.
   // Once all repeated fields are held in ProtobufLists, this method shouldn't
@@ -296,7 +296,7 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
     io::Printer* printer) {
   // Decide if we really need to have the "maybeForceBuilderInitialization()"
   // method.
-  // TODO(b/249158148): Remove the need for this entirely
+  // TODO: Remove the need for this entirely
   bool need_maybe_force_builder_init = false;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (descriptor_->field(i)->message_type() != nullptr &&
@@ -820,7 +820,7 @@ void MessageBuilderGenerator::GenerateIsInitialized(io::Printer* printer) {
   printer->Indent();
 
   // Check that all required fields in this message are set.
-  // TODO(kenton):  We can optimize this when we switch to putting all the
+  // TODO:  We can optimize this when we switch to putting all the
   //   "has" fields into a single bitfield.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);

@@ -18,7 +18,7 @@
 // process is run with a variety of block sizes for both the input and
 // the output.
 //
-// TODO(kenton):  Rewrite this test to bring it up to the standards of all
+// TODO:  Rewrite this test to bring it up to the standards of all
 //   the other proto2 tests.  May want to wait for gTest to implement
 //   "parametized tests" so that one set of tests can be used on all the
 //   implementations.

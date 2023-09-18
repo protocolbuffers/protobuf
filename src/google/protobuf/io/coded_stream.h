@@ -1402,7 +1402,7 @@ inline std::pair<uint32_t, bool> CodedInputStream::ReadTagWithCutoffNoLastTag(
   uint32_t first_byte_or_zero = 0;
   if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_)) {
     // Hot case: buffer_ non_empty, buffer_[0] in [1, 128).
-    // TODO(gpike): Is it worth rearranging this? E.g., if the number of fields
+    // TODO: Is it worth rearranging this? E.g., if the number of fields
     // is large enough then is it better to check for the two-byte case first?
     first_byte_or_zero = buffer_[0];
     if (static_cast<int8_t>(buffer_[0]) > 0) {

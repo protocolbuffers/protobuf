@@ -172,7 +172,7 @@ class PROTOBUF_EXPORT Parser {
   // LocationRecorder should refer to the declaration that was just parsed;
   // it will be populated with these comments.
   //
-  // TODO(kenton):  The LocationRecorder is const because historically locations
+  // TODO:  The LocationRecorder is const because historically locations
   //   have been passed around by const reference, for no particularly good
   //   reason.  We should probably go through and change them all to mutable
   //   pointer to make this more intuitive.
@@ -262,7 +262,7 @@ class PROTOBUF_EXPORT Parser {
     // will be swapped into place, so after this is called *leading and
     // *trailing will be empty.
     //
-    // TODO(kenton):  See comment on TryConsumeEndOfDeclaration(), above, for
+    // TODO:  See comment on TryConsumeEndOfDeclaration(), above, for
     //   why this is const.
     void AttachComments(std::string* leading, std::string* trailing,
                         std::vector<std::string>* detached_comments) const;

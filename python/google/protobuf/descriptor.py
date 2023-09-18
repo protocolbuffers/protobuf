@@ -23,7 +23,7 @@ if api_implementation.Type() != 'python':
   import os
   # pylint: disable=protected-access
   _message = api_implementation._c_module
-  # TODO(jieluo): Remove this import after fix api_implementation
+  # TODO: Remove this import after fix api_implementation
   if _message is None:
     from google.protobuf.pyext import _message
   _USE_C_DESCRIPTORS = True
@@ -196,7 +196,7 @@ class _NestedDescriptorBase(DescriptorBase):
     )
 
     self.name = name
-    # TODO(falk): Add function to calculate full_name instead of having it in
+    # TODO: Add function to calculate full_name instead of having it in
     #             memory?
     self.full_name = full_name
     self.containing_type = containing_type
@@ -296,7 +296,7 @@ class Descriptor(_NestedDescriptorBase):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindMessageTypeByName(full_name)
 
-  # NOTE(tmarek): The file argument redefining a builtin is nothing we can
+  # NOTE: The file argument redefining a builtin is nothing we can
   # fix right now since we don't know how many clients already rely on the
   # name of the argument.
   def __init__(self, name, full_name, filename, containing_type, fields,
@@ -394,13 +394,13 @@ class Descriptor(_NestedDescriptorBase):
     super(Descriptor, self).CopyToProto(proto)
 
 
-# TODO(robinson): We should have aggressive checking here,
+# TODO: We should have aggressive checking here,
 # for example:
 #   * If you specify a repeated field, you should not be allowed
 #     to specify a default value.
 #   * [Other examples here as needed].
 #
-# TODO(robinson): for this and other *Descriptor classes, we
+# TODO: for this and other *Descriptor classes, we
 # might also want to lock things down aggressively (e.g.,
 # prevent clients from setting the attributes).  Having
 # stronger invariants here in general will reduce the number
@@ -459,7 +459,7 @@ class FieldDescriptor(DescriptorBase):
   # Must be consistent with C++ FieldDescriptor::Type enum in
   # descriptor.h.
   #
-  # TODO(robinson): Find a way to eliminate this repetition.
+  # TODO: Find a way to eliminate this repetition.
   TYPE_DOUBLE         = 1
   TYPE_FLOAT          = 2
   TYPE_INT64          = 3
@@ -483,7 +483,7 @@ class FieldDescriptor(DescriptorBase):
   # Must be consistent with C++ FieldDescriptor::CppType enum in
   # descriptor.h.
   #
-  # TODO(robinson): Find a way to eliminate this repetition.
+  # TODO: Find a way to eliminate this repetition.
   CPPTYPE_INT32       = 1
   CPPTYPE_INT64       = 2
   CPPTYPE_UINT32      = 3
@@ -520,7 +520,7 @@ class FieldDescriptor(DescriptorBase):
   # Must be consistent with C++ FieldDescriptor::Label enum in
   # descriptor.h.
   #
-  # TODO(robinson): Find a way to eliminate this repetition.
+  # TODO: Find a way to eliminate this repetition.
   LABEL_OPTIONAL      = 1
   LABEL_REQUIRED      = 2
   LABEL_REPEATED      = 3
@@ -620,7 +620,7 @@ class FieldDescriptor(DescriptorBase):
     # self.containing_type is used here instead of self.file for legacy
     # compatibility. FieldDescriptor.file was added in cl/153110619
     # Some old/generated code didn't link file to FieldDescriptor.
-    # TODO(jieluo): remove syntax usage b/240619313
+    # TODO: remove syntax usage b/240619313
     return self.containing_type.syntax == 'proto2'
 
   @property

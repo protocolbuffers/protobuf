@@ -1132,7 +1132,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   Map(const Map& other) : Map(nullptr, other) {}
 
   // Internal Arena constructors: do not use!
-  // TODO(b/242814184): remove non internal ctors
+  // TODO: remove non internal ctors
   explicit Map(Arena* arena) : Base(arena) { StaticValidityCheck(); }
   Map(internal::InternalVisibility, Arena* arena) : Map(arena) {}
   Map(internal::InternalVisibility, Arena* arena, const Map& other)
@@ -1492,7 +1492,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     if (arena() == other.arena()) {
       InternalSwap(&other);
     } else {
-      // TODO(zuguang): optimize this. The temporary copy can be allocated
+      // TODO: optimize this. The temporary copy can be allocated
       // in the same arena as the other message, and the "other = copy" can
       // be replaced with the fast-path swap above.
       Map copy = *this;

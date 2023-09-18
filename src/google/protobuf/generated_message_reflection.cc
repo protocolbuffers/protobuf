@@ -386,7 +386,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
 
         case FieldDescriptor::CPPTYPE_STRING:
           switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other string reps.
+            default:  // TODO:  Support other string reps.
             case FieldOptions::STRING:
               total_size +=
                   GetRaw<RepeatedPtrField<std::string> >(message, field)
@@ -1044,7 +1044,7 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
 void Reflection::Swap(Message* message1, Message* message2) const {
   if (message1 == message2) return;
 
-  // TODO(kenton):  Other Reflection methods should probably check this too.
+  // TODO:  Other Reflection methods should probably check this too.
   ABSL_CHECK_EQ(message1->GetReflection(), this)
       << "First argument to Swap() (of type \""
       << message1->GetDescriptor()->full_name()
@@ -1099,7 +1099,7 @@ void Reflection::SwapFieldsImpl(
     const std::vector<const FieldDescriptor*>& fields) const {
   if (message1 == message2) return;
 
-  // TODO(kenton):  Other Reflection methods should probably check this too.
+  // TODO:  Other Reflection methods should probably check this too.
   ABSL_CHECK_EQ(message1->GetReflection(), this)
       << "First argument to SwapFields() (of type \""
       << message1->GetDescriptor()->full_name()
@@ -1428,7 +1428,7 @@ void Reflection::ClearField(Message* message,
 
       case FieldDescriptor::CPPTYPE_STRING: {
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
             MutableRaw<RepeatedPtrField<std::string> >(message, field)->Clear();
             break;
@@ -1478,7 +1478,7 @@ void Reflection::RemoveLast(Message* message,
 
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
             MutableRaw<RepeatedPtrField<std::string> >(message, field)
                 ->RemoveLast();
@@ -1974,7 +1974,7 @@ std::string Reflection::GetRepeatedString(const Message& message,
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
+      default:  // TODO:  Support other string reps.
       case FieldOptions::STRING:
         return GetRepeatedPtrField<std::string>(message, field, index);
     }
@@ -1990,7 +1990,7 @@ const std::string& Reflection::GetRepeatedStringReference(
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
+      default:  // TODO:  Support other string reps.
       case FieldOptions::STRING:
         return GetRepeatedPtrField<std::string>(message, field, index);
     }
@@ -2007,7 +2007,7 @@ void Reflection::SetRepeatedString(Message* message,
                                                     std::move(value));
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
+      default:  // TODO:  Support other string reps.
       case FieldOptions::STRING:
         MutableRepeatedField<std::string>(message, field, index)
             ->assign(std::move(value));
@@ -2025,7 +2025,7 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
                                             std::move(value), field);
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
+      default:  // TODO:  Support other string reps.
       case FieldOptions::STRING:
         AddField<std::string>(message, field)->assign(std::move(value));
         break;
@@ -2975,7 +2975,7 @@ void Reflection::ClearOneof(Message* message,
     ClearField(message, oneof_descriptor->field(0));
     return;
   }
-  // TODO(jieluo): Consider to cache the unused object instead of deleting
+  // TODO: Consider to cache the unused object instead of deleting
   // it. It will be much faster if an application switches a lot from
   // a few oneof fields.  Time/space tradeoff
   uint32_t oneof_case = GetOneofCase(*message, oneof_descriptor);
@@ -3488,7 +3488,7 @@ ReflectionSchema MigrationToReflectionSchema(
   // First 9 offsets are offsets to the special fields. The following offsets
   // are the proto fields.
   //
-  // TODO(congliu): Find a way to not encode sizeof_split_ in offsets.
+  // TODO: Find a way to not encode sizeof_split_ in offsets.
   result.offsets_ = offsets + migration_schema.offsets_index + 8;
   result.has_bit_indices_ = offsets + migration_schema.has_bit_indices_index;
   result.has_bits_offset_ = offsets[migration_schema.offsets_index + 0];

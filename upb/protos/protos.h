@@ -430,7 +430,7 @@ template <typename T, typename Extendee, typename Extension,
 absl::StatusOr<Ptr<const Extension>> GetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
-  // TODO(b/294089233): Fix const correctness issues.
+  // TODO: Fix const correctness issues.
   const upb_Message_Extension* ext = ::protos::internal::GetOrPromoteExtension(
       const_cast<upb_Message*>(internal::GetInternalMsg(message)),
       id.mini_table_ext(), ::protos::internal::GetArena(message));

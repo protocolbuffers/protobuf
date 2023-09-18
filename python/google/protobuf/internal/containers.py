@@ -95,7 +95,7 @@ class BaseContainer(Sequence[_T]):
     self._values.reverse()
 
 
-# TODO(slebedev): Remove this. BaseContainer does *not* conform to
+# TODO: Remove this. BaseContainer does *not* conform to
 # MutableSequence, only its subclasses do.
 collections.abc.MutableSequence.register(BaseContainer)
 
@@ -136,7 +136,7 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
 
   def extend(self, elem_seq: Iterable[_T]) -> None:
     """Extends by appending the given iterable. Similar to list.extend()."""
-# TODO(b/286557203): Change OSS to raise error too
+# TODO: Change OSS to raise error too
     if elem_seq is None:
       return
     try:
@@ -221,7 +221,7 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
         "Can't pickle repeated scalar fields, convert to list first")
 
 
-# TODO(slebedev): Constrain T to be a subtype of Message.
+# TODO: Constrain T to be a subtype of Message.
 class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
   """Simple, list-like container for holding repeated composite fields."""
 

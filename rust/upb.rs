@@ -177,7 +177,7 @@ impl fmt::Debug for SerializedData {
     }
 }
 
-// TODO(b/293919363): Investigate replacing this with direct access to UPB bits.
+// TODO: Investigate replacing this with direct access to UPB bits.
 pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;

@@ -55,7 +55,7 @@ using ::testing::IsEmpty;
 using ::testing::Not;
 using ::testing::SizeIs;
 
-// TODO(b/234474291): Use the gtest versions once that's available in OSS.
+// TODO: Use the gtest versions once that's available in OSS.
 MATCHER_P(IsOkAndHolds, inner,
           absl::StrCat("is OK and holds ", testing::PrintToString(inner))) {
   if (!arg.ok()) {

@@ -28,7 +28,7 @@ namespace csharp {
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, int presenceIndex, const Options *options)
     : FieldGeneratorBase(descriptor, presenceIndex, options) {
-  // TODO(jonskeet): Make this cleaner...
+  // TODO: Make this cleaner...
   is_value_type = descriptor->type() != FieldDescriptor::TYPE_STRING
       && descriptor->type() != FieldDescriptor::TYPE_BYTES;
   if (!is_value_type && !SupportsPresenceApi(descriptor_)) {

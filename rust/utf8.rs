@@ -8,7 +8,7 @@
 //! Lossy UTF-8 processing utilities.
 #![deny(unsafe_op_in_unsafe_fn)]
 
-// TODO(b/291781742): Replace this with the `std` versions once stable.
+// TODO: Replace this with the `std` versions once stable.
 // This is adapted from https://github.com/rust-lang/rust/blob/e8ee0b7/library/core/src/str/lossy.rs
 // The adaptations:
 // - remove `#[unstable]` attributes.

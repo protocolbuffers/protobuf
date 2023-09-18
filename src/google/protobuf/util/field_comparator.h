@@ -83,7 +83,7 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
     APPROXIMATE,  // Floats and doubles are compared using the
                   // MathUtil::AlmostEqual method or
                   // MathUtil::WithinFractionOrMargin method.
-    // TODO(ksroka): Introduce third value to differentiate uses of AlmostEqual
+    // TODO: Introduce third value to differentiate uses of AlmostEqual
     //               and WithinFractionOrMargin.
   };
 

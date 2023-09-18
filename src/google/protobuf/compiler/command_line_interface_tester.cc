@@ -67,7 +67,7 @@ void CommandLineInterfaceTester::RunProtocWithArgs(
     argv[i] = args[i].c_str();
   }
 
-  // TODO(jieluo): Cygwin doesn't work well if we try to capture stderr and
+  // TODO: Cygwin doesn't work well if we try to capture stderr and
   // stdout at the same time. Need to figure out why and add this capture back
   // for Cygwin.
 #if !defined(__CYGWIN__)

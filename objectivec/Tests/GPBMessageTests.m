@@ -66,7 +66,7 @@
 
 @implementation MessageTests
 
-// TODO(thomasvl): this should get split into a few files of logic junks, it is
+// TODO: this should get split into a few files of logic junks, it is
 // a jumble of things at the moment (and the testutils have a bunch of the real
 // assertions).
 

@@ -36,12 +36,12 @@ module Google
             begin
               string_value = value.to_s.encode("UTF-8")
             rescue Encoding::UndefinedConversionError
-              # TODO(jatl) - why not include the field name here?
+              # TODO - why not include the field name here?
               raise Encoding::UndefinedConversionError.new "String is invalid UTF-8"
             end
             return_value[:str_val][:size] = string_value.bytesize
             return_value[:str_val][:data] = Google::Protobuf::FFI.arena_malloc(arena, string_value.bytesize)
-            # TODO(jatl) - how important is it to still use arena malloc, versus the following?
+            # TODO - how important is it to still use arena malloc, versus the following?
             # buffer = ::FFI::MemoryPointer.new(:char, string_value.bytesize)
             # buffer.put_bytes(0, string_value)
             # return_value[:str_val][:data] = buffer
@@ -105,13 +105,13 @@ module Google
                 value.to_i
               when String, Symbol
                 enum_number = EnumDescriptor.send(:lookup_name, msg_or_enum_def, value.to_s)
-                #TODO(jatl) add the bad value to the error message after tests pass
+                #TODO add the bad value to the error message after tests pass
                 raise RangeError.new "Unknown symbol value for enum field '#{name}'." if enum_number.nil?
                 enum_number
               else
                 raise TypeError.new "Expected number or symbol type for enum field '#{name}'."
               end
-          #TODO(jatl) After all tests pass, improve error message across integer type by including actual offending value
+          #TODO After all tests pass, improve error message across integer type by including actual offending value
           when :int32
             raise TypeError.new "Expected number type for integral field '#{name}' (given #{value.class})." unless value.is_a? Numeric
             raise RangeError.new "Non-integral floating point value assigned to integer field '#{name}' (given #{value.class})." if value.floor != value
@@ -287,7 +287,7 @@ module Google
           new_message_value = Google::Protobuf::FFI::MessageValue.new
           case type
           when :string, :bytes
-            # TODO(jatl) - how important is it to still use arena malloc, versus using FFI MemoryPointers?
+            # TODO - how important is it to still use arena malloc, versus using FFI MemoryPointers?
             new_message_value[:str_val][:size] = message_value[:str_val][:size]
             new_message_value[:str_val][:data] = Google::Protobuf::FFI.arena_malloc(arena, message_value[:str_val][:size])
             raise NoMemoryError.new "Allocation failed" if  new_message_value[:str_val][:data].nil? or new_message_value[:str_val][:data].null?

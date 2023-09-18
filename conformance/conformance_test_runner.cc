@@ -235,7 +235,7 @@ int ForkPipeRunner::Run(int argc, char *argv[],
   return all_ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-// TODO(haberman): make this work on Windows, instead of using these
+// TODO: make this work on Windows, instead of using these
 // UNIX-specific APIs.
 //
 // There is a platform-agnostic API in
@@ -325,7 +325,7 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
       if (status == std::future_status::timeout) {
         ABSL_LOG(ERROR) << current_test_name_ << ": timeout from test program";
         kill(child_pid_, SIGQUIT);
-        // TODO(sandyzhang): Only log in flag-guarded mode, since reading output
+        // TODO: Only log in flag-guarded mode, since reading output
         // from SIGQUIT is slow and verbose.
         std::vector<char> err;
         err.resize(5000);

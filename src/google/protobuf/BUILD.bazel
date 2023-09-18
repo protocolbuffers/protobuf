@@ -90,7 +90,7 @@ proto_library(
 # support swapping out the compiler binary (even though a custom runtime can
 # be passed to proto_lang_toolchain).
 #
-# TODO(b/246826624) We still check in generated pb.h and pb.cc files purely to
+# TODO We still check in generated pb.h and pb.cc files purely to
 # support CMake builds.  These aren't used at all by Bazel and will be removed
 # in the future once CMake can generate them too.
 
@@ -154,7 +154,7 @@ staleness_test(
 
 # This is necessary for our generated cmake configs to pick up the checked in
 # WKT files.
-# TODO(b/246826624) Remove this once we generate WKT code from cmake.
+# TODO Remove this once we generate WKT code from cmake.
 cc_library(
     name = "cmake_wkt_cc_proto",
     srcs = ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
@@ -565,7 +565,7 @@ cc_library(
 # This provides just the header files for use in projects that need to build
 # shared libraries for dynamic loading. This target is available until Bazel
 # adds native support for such use cases.
-# TODO(keveman): Remove this target once the support gets added to Bazel.
+# TODO: Remove this target once the support gets added to Bazel.
 cc_library(
     name = "protobuf_headers",
     hdrs = glob([

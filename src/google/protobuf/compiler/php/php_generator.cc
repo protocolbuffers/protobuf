@@ -1655,7 +1655,7 @@ static void GenerateDocCommentBodyForLocation(
                              ? location.trailing_comments
                              : location.leading_comments;
   if (!comments.empty()) {
-    // TODO(teboring):  Ideally we should parse the comment text as Markdown and
+    // TODO:  Ideally we should parse the comment text as Markdown and
     //   write it back as HTML, but this requires a Markdown parser.  For now
     //   we just use the proto comments unchanged.
 

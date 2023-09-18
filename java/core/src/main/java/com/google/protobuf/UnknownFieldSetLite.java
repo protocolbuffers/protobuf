@@ -23,7 +23,7 @@ import java.util.Arrays;
 public final class UnknownFieldSetLite {
 
   // Arbitrarily chosen.
-  // TODO(dweis): Tune this number?
+  // TODO: Tune this number?
   private static final int MIN_CAPACITY = 8;
 
   private static final UnknownFieldSetLite DEFAULT_INSTANCE =
@@ -209,7 +209,7 @@ public final class UnknownFieldSetLite {
         }
         break;
       default:
-        // TODO(liujisi): Change writeTo to throw IOException?
+        // TODO: Change writeTo to throw IOException?
         throw new RuntimeException(InvalidProtocolBufferException.invalidWireType());
     }
   }

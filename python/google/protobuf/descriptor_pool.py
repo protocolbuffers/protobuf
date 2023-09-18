@@ -1259,7 +1259,7 @@ def _PrefixWithDot(name):
 
 
 if _USE_C_DESCRIPTORS:
-  # TODO(amauryfa): This pool could be constructed from Python code, when we
+  # TODO: This pool could be constructed from Python code, when we
   # support a flag like 'use_cpp_generated_pool=True'.
   # pylint: disable=protected-access
   _DEFAULT = descriptor._message.default_pool

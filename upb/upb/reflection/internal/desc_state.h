@@ -38,7 +38,7 @@
 #include "upb/upb/port/def.inc"
 
 // Manages the storage for mini descriptor strings as they are being encoded.
-// TODO(b/234740652): Move some of this state directly into the encoder, maybe.
+// TODO: Move some of this state directly into the encoder, maybe.
 typedef struct {
   upb_MtDataEncoder e;
   size_t bufsize;

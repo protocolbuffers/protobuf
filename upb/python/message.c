@@ -747,7 +747,7 @@ static void PyUpb_Message_SyncSubobjs(PyUpb_Message* self) {
 
   Py_DECREF(&self->ob_base);
 
-  // TODO(haberman): present fields need to be iterated too if they can reach
+  // TODO: present fields need to be iterated too if they can reach
   // a WeakMap.
 }
 
@@ -1267,7 +1267,7 @@ static PyObject* PyUpb_Message_SetInParent(PyObject* _self, PyObject* arg) {
 }
 
 static PyObject* PyUpb_Message_UnknownFields(PyObject* _self, PyObject* arg) {
-  // TODO(haberman): re-enable when unknown fields are added.
+  // TODO: re-enable when unknown fields are added.
   // return PyUpb_UnknownFields_New(_self);
   PyErr_SetString(PyExc_NotImplementedError, "unknown field accessor");
   return NULL;
@@ -1317,7 +1317,7 @@ static PyObject* PyUpb_Message_ParseFromString(PyObject* self, PyObject* arg) {
 }
 
 static PyObject* PyUpb_Message_ByteSize(PyObject* self, PyObject* args) {
-  // TODO(https://github.com/protocolbuffers/protobuf/issues/13759): At the
+  // TODO: At the
   // moment upb does not have a "byte size" function, so we just serialize to
   // string and get the size of the string.
   PyObject* subargs = PyTuple_New(0);
@@ -1664,7 +1664,7 @@ static PyGetSetDef PyUpb_Message_Getters[] = {
 static PyMethodDef PyUpb_Message_Methods[] = {
     {"__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
      "Makes a deep copy of the class."},
-    // TODO(https://github.com/protocolbuffers/protobuf/issues/13760)
+    // TODO
     //{ "__unicode__", (PyCFunction)ToUnicode, METH_NOARGS,
     //  "Outputs a unicode representation of the message." },
     {"ByteSize", (PyCFunction)PyUpb_Message_ByteSize, METH_NOARGS,
@@ -1976,7 +1976,7 @@ static PyType_Spec PyUpb_MessageMeta_Spec = {
     PYUPB_MODULE_NAME ".MessageMeta",  // tp_name
     0,  // To be filled in by size of base     // tp_basicsize
     0,  // tp_itemsize
-    // TODO(haberman): remove BASETYPE, Python should just use MessageMeta
+    // TODO: remove BASETYPE, Python should just use MessageMeta
     // directly instead of subclassing it.
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,  // tp_flags
     PyUpb_MessageMeta_Slots,

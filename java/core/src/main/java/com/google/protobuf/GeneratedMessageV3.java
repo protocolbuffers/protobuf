@@ -66,7 +66,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   /**
    * For use by generated code only.
    *
-   * <p>TODO(b/258340024): mark this private and final (breaking change)
+   * <p>TODO: mark this private and final (breaking change)
    */
   protected UnknownFieldSet unknownFields;
 
@@ -78,14 +78,14 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     unknownFields = builder.getUnknownFields();
   }
 
-  /** TODO(b/258340024): Remove this unnecessary intermediate implementation of this method. */
+  /** TODO: Remove this unnecessary intermediate implementation of this method. */
   @Override
   public Parser<? extends GeneratedMessageV3> getParserForType() {
     throw new UnsupportedOperationException("This is supposed to be overridden by subclasses.");
   }
 
   /**
-   * TODO(b/249158148): Stop using SingleFieldBuilder and remove this setting
+   * TODO: Stop using SingleFieldBuilder and remove this setting
    *
    * @see #setAlwaysUseFieldBuildersForTesting(boolean)
    */
@@ -99,7 +99,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    * tests can be reused to test the field builders. See {@link RepeatedFieldBuilder} and {@link
    * SingleFieldBuilder}.
    *
-   * <p>TODO(b/249158148): Stop using SingleFieldBuilder and remove this setting
+   * <p>TODO: Stop using SingleFieldBuilder and remove this setting
    */
   static void setAlwaysUseFieldBuildersForTesting(boolean useBuilders) {
     alwaysUseFieldBuilders = useBuilders;
@@ -117,7 +117,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   }
 
   /**
-   * TODO(b/248143958): This method should be removed. It enables parsing directly into an
+   * TODO: This method should be removed. It enables parsing directly into an
    * "immutable" message. Have to leave it for now to support old gencode.
    *
    * @deprecated use newBuilder().mergeFrom() instead
@@ -189,7 +189,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return result;
   }
 
-  // TODO(b/258342840): compute this at {@code build()} time in the Builder class.
+  // TODO: compute this at {@code build()} time in the Builder class.
   @Override
   public boolean isInitialized() {
     for (final FieldDescriptor field : getDescriptorForType().getFields()) {
@@ -278,13 +278,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return internalGetFieldAccessorTable().getField(field).getRepeated(this, index);
   }
 
-  // TODO(b/258340024): This method should be final.
+  // TODO: This method should be final.
   @Override
   public UnknownFieldSet getUnknownFields() {
     return unknownFields;
   }
 
-  // TODO(b/258348681): This should go away when Schema classes cannot modify immutable
+  // TODO: This should go away when Schema classes cannot modify immutable
   // GeneratedMessageV3 objects anymore.
   void setUnknownFields(UnknownFieldSet unknownFields) {
     this.unknownFields = unknownFields;
@@ -293,7 +293,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   /**
    * Called by subclasses to parse an unknown field.
    *
-   * <p>TODO(b/248153893) remove this method
+   * <p>TODO remove this method
    *
    * @return {@code true} unless the tag is an end-group tag.
    */
@@ -313,7 +313,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    * Delegates to parseUnknownField. This method is obsolete, but we must retain it for
    * compatibility with older generated code.
    *
-   * <p>TODO(b/248153893) remove this method
+   * <p>TODO remove this method
    */
   protected boolean parseUnknownFieldProto3(
       CodedInputStream input,
@@ -396,32 +396,32 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return IntArrayList.emptyList();
   }
 
-  // TODO(b/258340024): Unused. Remove.
+  // TODO: Unused. Remove.
   protected static IntList newIntList() {
     return new IntArrayList();
   }
 
-  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
+  // TODO: Redundant with makeMutableCopy(). Remove.
   protected static IntList mutableCopy(IntList list) {
     return makeMutableCopy(list);
   }
 
-  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
+  // TODO: Redundant with makeMutableCopy(). Remove.
   protected static LongList mutableCopy(LongList list) {
     return makeMutableCopy(list);
   }
 
-  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
+  // TODO: Redundant with makeMutableCopy(). Remove.
   protected static FloatList mutableCopy(FloatList list) {
     return makeMutableCopy(list);
   }
 
-  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
+  // TODO: Redundant with makeMutableCopy(). Remove.
   protected static DoubleList mutableCopy(DoubleList list) {
     return makeMutableCopy(list);
   }
 
-  // TODO(b/258340024): Redundant with makeMutableCopy(). Remove.
+  // TODO: Redundant with makeMutableCopy(). Remove.
   protected static BooleanList mutableCopy(BooleanList list) {
     return makeMutableCopy(list);
   }
@@ -430,7 +430,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return LongArrayList.emptyList();
   }
 
-  // TODO(b/258340024): Unused. Remove.
+  // TODO: Unused. Remove.
   protected static LongList newLongList() {
     return new LongArrayList();
   }
@@ -439,7 +439,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return FloatArrayList.emptyList();
   }
 
-  // TODO(b/258340024): Unused. Remove.
+  // TODO: Unused. Remove.
   protected static FloatList newFloatList() {
     return new FloatArrayList();
   }
@@ -448,7 +448,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return DoubleArrayList.emptyList();
   }
 
-  // TODO(b/258340024): Unused. Remove.
+  // TODO: Unused. Remove.
   protected static DoubleList newDoubleList() {
     return new DoubleArrayList();
   }
@@ -457,7 +457,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return BooleanArrayList.emptyList();
   }
 
-  // TODO(b/258340024): Unused. Remove.
+  // TODO: Unused. Remove.
   protected static BooleanList newBooleanList() {
     return new BooleanArrayList();
   }
@@ -524,25 +524,25 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   /**
    * Used by parsing constructors in generated classes.
    *
-   * <p>TODO(b/258340024): remove unused method (extensions should be immutable after build)
+   * <p>TODO: remove unused method (extensions should be immutable after build)
    */
   protected void makeExtensionsImmutable() {
     // Noop for messages without extensions.
   }
 
   /**
-   * TODO(xiaofeng): remove this after b/29368482 is fixed. We need to move this interface to
+   * TODO: remove this after b/29368482 is fixed. We need to move this interface to
    * AbstractMessage in order to versioning GeneratedMessageV3 but this move breaks binary
    * compatibility for AppEngine. After AppEngine is fixed we can exclude this from google3.
    *
-   * <p>TODO(b/258340024): Remove at breaking change since b/29368482 was fixed in 2020
+   * <p>TODO: Remove at breaking change since b/29368482 was fixed in 2020
    */
   protected interface BuilderParent extends AbstractMessage.BuilderParent {}
 
-  /** TODO(b/258340024): remove this together with GeneratedMessageV3.BuilderParent. */
+  /** TODO: remove this together with GeneratedMessageV3.BuilderParent. */
   protected abstract Message.Builder newBuilderForType(BuilderParent parent);
 
-  /** TODO(b/258340024): generated class should implement this directly */
+  /** TODO: generated class should implement this directly */
   @Override
   protected Message.Builder newBuilderForType(final AbstractMessage.BuilderParent parent) {
     return newBuilderForType(
@@ -940,7 +940,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       return internalGetMapField(fieldNumber);
     }
 
-    /** TODO(b/258340024): Remove, exists for compatibility with generated code. */
+    /** TODO: Remove, exists for compatibility with generated code. */
     @Deprecated
     @SuppressWarnings({"unused", "rawtypes"})
     protected MapField internalGetMapField(int fieldNumber) {
@@ -955,7 +955,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       return internalGetMutableMapField(fieldNumber);
     }
 
-    /** TODO(b/258340024): Remove, exists for compatibility with generated code. */
+    /** TODO: Remove, exists for compatibility with generated code. */
     @Deprecated
     @SuppressWarnings({"unused", "rawtypes"})
     protected MapField internalGetMutableMapField(int fieldNumber) {
@@ -989,50 +989,50 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
     /**
      * Check if a singular extension is present.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     <T> boolean hasExtension(
         Extension<MessageT, T> extension);
     /**
      * Check if a singular extension is present.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     <T> boolean hasExtension(
         GeneratedExtension<MessageT, T> extension);
     /**
      * Get the number of elements in a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     <T> int getExtensionCount(
         Extension<MessageT, List<T>> extension);
     /**
      * Get the number of elements in a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     <T> int getExtensionCount(
         GeneratedExtension<MessageT, List<T>> extension);
     /**
      * Get the value of an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     <T> T getExtension(
         Extension<MessageT, T> extension);
     /**
      * Get the value of an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     <T> T getExtension(
         GeneratedExtension<MessageT, T> extension);
     /**
      * Get one element of a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     <T> T getExtension(
         Extension<MessageT, List<T>> extension,
         int index);
     /**
      * Get one element of a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     <T> T getExtension(
         GeneratedExtension<MessageT, List<T>> extension,
@@ -1155,7 +1155,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
     /**
      * Check if a singular extension is present.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> boolean hasExtension(final Extension<MessageT, T> extension) {
@@ -1163,7 +1163,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Check if a singular extension is present.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> boolean hasExtension(
@@ -1172,7 +1172,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Get the number of elements in a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> int getExtensionCount(
@@ -1181,7 +1181,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Get the number of elements in a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> int getExtensionCount(
@@ -1190,7 +1190,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Get the value of an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> T getExtension(final Extension<MessageT, T> extension) {
@@ -1198,7 +1198,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Get the value of an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> T getExtension(
@@ -1207,7 +1207,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Get one element of a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> T getExtension(
@@ -1216,7 +1216,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Get one element of a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> T getExtension(
@@ -1229,13 +1229,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       return extensions.isInitialized();
     }
 
-    // TODO(b/258342840): compute this in the builder at {@code build()} time.
+    // TODO: compute this in the builder at {@code build()} time.
     @Override
     public boolean isInitialized() {
       return super.isInitialized() && extensionsAreInitialized();
     }
 
-    // TODO(b/248153893): remove mutating method from immutable type
+    // TODO: remove mutating method from immutable type
     @Override
     protected boolean parseUnknownField(
         CodedInputStream input,
@@ -1256,7 +1256,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
      * Delegates to parseUnknownField. This method is obsolete, but we must retain it for
      * compatibility with older generated code.
      *
-     * <p>TODO(b/248153893): remove mutating method from immutable type
+     * <p>TODO: remove mutating method from immutable type
      */
     @Override
     protected boolean parseUnknownFieldProto3(
@@ -1271,7 +1271,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     /**
      * Used by parsing constructors in generated classes.
      *
-     * <p>TODO(b/258340024): remove unused method (extensions should be immutable after build)
+     * <p>TODO: remove unused method (extensions should be immutable after build)
      */
     @Override
     protected void makeExtensionsImmutable() {
@@ -1312,7 +1312,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
               output.writeMessageSetExtension(descriptor.getNumber(), (Message) next.getValue());
             }
           } else {
-            // TODO(xiangl): Taken care of following code, it may cause
+            // TODO: Taken care of following code, it may cause
             // problem when we use LazyField for normal fields/extensions.
             // Due to the optional field can be duplicated at the end of
             // serialized bytes, which will make the serialized size change
@@ -1614,7 +1614,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
     /**
      * Check if a singular extension is present.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> boolean hasExtension(final Extension<MessageT, T> extension) {
@@ -1622,7 +1622,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Check if a singular extension is present.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> boolean hasExtension(
@@ -1631,7 +1631,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Get the number of elements in a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> int getExtensionCount(
@@ -1640,7 +1640,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Get the number of elements in a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> int getExtensionCount(
@@ -1649,14 +1649,14 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Get the value of an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> T getExtension(final Extension<MessageT, T> extension) {
       return getExtension((ExtensionLite<MessageT, T>) extension);
     }
     /** Get the value of an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> T getExtension(
@@ -1665,7 +1665,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Get the value of an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> T getExtension(
@@ -1674,7 +1674,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Get the value of an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     @Override
     public final <T> T getExtension(
@@ -1683,7 +1683,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Set the value of an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     public final <T> BuilderT setExtension(
         final Extension<MessageT, T> extension, final T value) {
@@ -1691,7 +1691,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Set the value of an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     public <T> BuilderT setExtension(
         final GeneratedExtension<MessageT, T> extension, final T value) {
@@ -1699,7 +1699,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Set the value of one element of a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     public final <T> BuilderT setExtension(
         final Extension<MessageT, List<T>> extension,
@@ -1708,7 +1708,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Set the value of one element of a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     public <T> BuilderT setExtension(
         final GeneratedExtension<MessageT, List<T>> extension,
@@ -1717,7 +1717,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Append a value to a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     public final <T> BuilderT addExtension(
         final Extension<MessageT, List<T>> extension, final T value) {
@@ -1725,7 +1725,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Append a value to a repeated extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     public <T> BuilderT addExtension(
         final GeneratedExtension<MessageT, List<T>> extension, final T value) {
@@ -1733,7 +1733,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Clear an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     public final <T> BuilderT clearExtension(
         final Extension<MessageT, T> extension) {
@@ -1741,7 +1741,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     }
     /**
      * Clears an extension.
-     * <p>TODO(b/258340024): handled by ExtensionLite version
+     * <p>TODO: handled by ExtensionLite version
      */
     public <T> BuilderT clearExtension(
         final GeneratedExtension<MessageT, T> extension) {
@@ -2043,7 +2043,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return internalGetMapField(fieldNumber);
   }
 
-  /** TODO(b/258340024): Remove, exists for compatibility with generated code. */
+  /** TODO: Remove, exists for compatibility with generated code. */
   @Deprecated
   @SuppressWarnings({"rawtypes", "unused"})
   protected MapField internalGetMapField(int fieldNumber) {
@@ -2311,7 +2311,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
       @Override
       public void clear(final Builder<?> builder) {
-        // TODO(b/230609037): remove the unused variable
+        // TODO: remove the unused variable
         Object unused = invokeOrDie(clearMethod, builder);
       }
     }
@@ -2430,7 +2430,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
         @Override
         public void set(final GeneratedMessageV3.Builder<?> builder, final Object value) {
-          // TODO(b/230609037): remove the unused variable
+          // TODO: remove the unused variable
           Object unused = invokeOrDie(setMethod, builder, value);
         }
 
@@ -2446,7 +2446,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
         @Override
         public void clear(final GeneratedMessageV3.Builder<?> builder) {
-          // TODO(b/230609037): remove the unused variable
+          // TODO: remove the unused variable
           Object unused = invokeOrDie(clearMethod, builder);
         }
       }
@@ -2660,13 +2660,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         @Override
         public void setRepeated(
             final GeneratedMessageV3.Builder<?> builder, final int index, final Object value) {
-          // TODO(b/230609037): remove the unused variable
+          // TODO: remove the unused variable
           Object unused = invokeOrDie(setRepeatedMethod, builder, index, value);
         }
 
         @Override
         public void addRepeated(final GeneratedMessageV3.Builder<?> builder, final Object value) {
-          // TODO(b/230609037): remove the unused variable
+          // TODO: remove the unused variable
           Object unused = invokeOrDie(addRepeatedMethod, builder, value);
         }
 
@@ -2682,7 +2682,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
         @Override
         public void clear(final GeneratedMessageV3.Builder<?> builder) {
-          // TODO(b/230609037): remove the unused variable
+          // TODO: remove the unused variable
           Object unused = invokeOrDie(clearMethod, builder);
         }
       }
@@ -2981,7 +2981,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       @Override
       public void set(final Builder<?> builder, final Object value) {
         if (supportUnknownEnumValue) {
-          // TODO(b/230609037): remove the unused variable
+          // TODO: remove the unused variable
           Object unused =
               invokeOrDie(setValueMethod, builder, ((EnumValueDescriptor) value).getNumber());
           return;
@@ -3069,7 +3069,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       @Override
       public void setRepeated(final Builder<?> builder, final int index, final Object value) {
         if (supportUnknownEnumValue) {
-          // TODO(b/230609037): remove the unused variable
+          // TODO: remove the unused variable
           Object unused =
               invokeOrDie(
                   setRepeatedValueMethod,
@@ -3084,7 +3084,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       @Override
       public void addRepeated(final Builder<?> builder, final Object value) {
         if (supportUnknownEnumValue) {
-          // TODO(b/230609037): remove the unused variable
+          // TODO: remove the unused variable
           Object unused =
               invokeOrDie(
                   addRepeatedValueMethod, builder, ((EnumValueDescriptor) value).getNumber());
@@ -3130,7 +3130,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       @Override
       public void set(GeneratedMessageV3.Builder<?> builder, Object value) {
         if (value instanceof ByteString) {
-          // TODO(b/230609037): remove the unused variable
+          // TODO: remove the unused variable
           Object unused = invokeOrDie(setBytesMethodBuilder, builder, value);
         } else {
           super.set(builder, value);

@@ -72,7 +72,7 @@ message TestFullKeyword {
   optional google.protobuf.internal.class field2 = 2;
 }
 
-// TODO(jieluo): Add keyword support for service.
+// TODO: Add keyword support for service.
 // service False {
 //   rpc Bar(class) returns (class);
 // }

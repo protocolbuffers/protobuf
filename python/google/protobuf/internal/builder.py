@@ -92,7 +92,7 @@ def AddHelpersToExtensions(file_des):
   Args:
     file_des: FileDescriptor of the .proto file
   """
-  # TODO(b/279930766): Remove this on-op
+  # TODO: Remove this on-op
   return
 
 

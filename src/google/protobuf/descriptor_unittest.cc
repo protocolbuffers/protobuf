@@ -2289,7 +2289,7 @@ TEST_F(ExtensionDescriptorTest, DuplicateFieldNumber) {
                FieldDescriptorProto::LABEL_OPTIONAL,
                FieldDescriptorProto::TYPE_INT32);
   // Currently we only generate a warning for conflicting extension numbers.
-  // TODO(xiaofeng): Change it to an error.
+  // TODO: Change it to an error.
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
 }
 
@@ -3321,7 +3321,7 @@ TEST(CustomOptions, OptionLocations) {
   const OneofDescriptor* oneof = message->FindOneofByName("AnOneof");
   const FieldDescriptor* map_field = message->FindFieldByName("map_field");
   const EnumDescriptor* enm = message->FindEnumTypeByName("AnEnum");
-  // TODO(benjy): Support EnumValue options, once the compiler does.
+  // TODO: Support EnumValue options, once the compiler does.
   const ServiceDescriptor* service =
       file->FindServiceByName("TestServiceWithCustomOptions");
   const MethodDescriptor* method = service->FindMethodByName("Foo");
@@ -11379,7 +11379,7 @@ class SourceLocationTest : public testing::Test {
   static constexpr int kAFieldNumber = 1;
 };
 
-// TODO(adonovan): implement support for option fields and for
+// TODO: implement support for option fields and for
 // subparts of declarations.
 
 TEST_F(SourceLocationTest, GetSourceLocation) {

@@ -135,7 +135,7 @@ void SetMessageVariables(
   variables->insert(
       {"type_parameters", absl::StrCat((*variables)["boxed_key_type"], ", ",
                                        (*variables)["boxed_value_type"])});
-  // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
+  // TODO: Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";

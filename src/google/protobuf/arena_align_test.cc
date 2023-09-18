@@ -139,7 +139,7 @@ TEST(ArenaAlign, Padded) {
   EXPECT_THAT(align_64.Padded(64), Eq(64 + 64 - ArenaAlignDefault::align));
   EXPECT_THAT(align_64.Padded(128), Eq(128 + 64 - ArenaAlignDefault::align));
 #if GTEST_HAS_DEATH_TEST
-  // TODO(mvels): there are direct callers of AllocateAligned() that violate
+  // TODO: there are direct callers of AllocateAligned() that violate
   // `size` being a multiple of `align`: that should be an error / assert.
   //  EXPECT_DEBUG_DEATH(align_64.Padded(16), ".*");
   EXPECT_DEBUG_DEATH(ArenaAlignAs(2).Padded(8), ".*");

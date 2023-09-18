@@ -25,7 +25,7 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
   // here we defer unit tests with messages that have import inside their
   // pkg name e.g. unittest_import.proto
   if (absl::StrContains(prefix, "import")) {
-    // TODO(b/285309454): Handle imports correctly, default to $Msg$View for now
+    // TODO: Handle imports correctly, default to $Msg$View for now
     prefix = field.desc().containing_type()->name();
   }
   field.Emit(

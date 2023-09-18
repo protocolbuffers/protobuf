@@ -433,7 +433,7 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /** Write a {@code string} field to the stream. */
-  // TODO(dweis): Document behavior on ill-formed UTF-16 input.
+  // TODO: Document behavior on ill-formed UTF-16 input.
   // Abstract to avoid overhead of additional virtual method calls.
   public abstract void writeStringNoTag(String value) throws IOException;
 
@@ -818,7 +818,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     try {
       length = Utf8.encodedLength(value);
     } catch (UnpairedSurrogateException e) {
-      // TODO(dweis): Consider using nio Charset methods instead.
+      // TODO: Consider using nio Charset methods instead.
       final byte[] bytes = value.getBytes(Internal.UTF_8);
       length = bytes.length;
     }
@@ -966,7 +966,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     // Unfortunately there does not appear to be any way to tell Java to encode
     // UTF-8 directly into our buffer, so we have to let it create its own byte
     // array and then copy.
-    // TODO(dweis): Consider using nio Charset methods instead.
+    // TODO: Consider using nio Charset methods instead.
     final byte[] bytes = value.getBytes(Internal.UTF_8);
     try {
       writeUInt32NoTag(bytes.length);
@@ -1456,7 +1456,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         // Roll back the change - we fall back to inefficient path.
         position = oldPosition;
 
-        // TODO(nathanmittler): We should throw an IOException here instead.
+        // TODO: We should throw an IOException here instead.
         inefficientWriteStringNoTag(value, e);
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(e);
@@ -1792,7 +1792,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         // Roll back the change and convert to an IOException.
         Java8Compatibility.position(buffer, startPos);
 
-        // TODO(nathanmittler): We should throw an IOException here instead.
+        // TODO: We should throw an IOException here instead.
         inefficientWriteStringNoTag(value, e);
       } catch (IllegalArgumentException e) {
         // Thrown by buffer.position() if out of range.
@@ -2151,7 +2151,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         position = prevPos;
         repositionBuffer(position);
 
-        // TODO(nathanmittler): We should throw an IOException here instead.
+        // TODO: We should throw an IOException here instead.
         inefficientWriteStringNoTag(value, e);
       } catch (IllegalArgumentException e) {
         // Thrown by buffer.position() if out of range.
@@ -2600,7 +2600,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         totalBytesWritten -= position - oldPosition;
         position = oldPosition;
 
-        // TODO(nathanmittler): We should throw an IOException here instead.
+        // TODO: We should throw an IOException here instead.
         inefficientWriteStringNoTag(value, e);
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(e);

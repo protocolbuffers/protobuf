@@ -9,7 +9,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
-// TODO(ksroka): Move some of these tests to field_comparator_test.cc.
+// TODO: Move some of these tests to field_comparator_test.cc.
 
 #include "google/protobuf/util/message_differencer.h"
 
@@ -3568,7 +3568,7 @@ TEST_F(ComparisonTest, MapEntryPartialEmptyKeyTest) {
 
   util::MessageDifferencer differencer;
   differencer.set_scope(util::MessageDifferencer::PARTIAL);
-  // TODO(jieluo): Remove the round trip
+  // TODO: Remove the round trip
   std::string serialized_value;
   map1.SerializeToString(&serialized_value);
   map1.ParseFromString(serialized_value);

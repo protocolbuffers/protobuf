@@ -190,7 +190,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual(3, message.ByteSize())
 
     message = message_module.TestAllTypes(repeated_int32=[12])
-    # TODO(jieluo): Add this test back for proto3
+    # TODO: Add this test back for proto3
     if message_module is unittest_pb2:
       self.assertEqual(3, message.ByteSize())
 
@@ -353,7 +353,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertRaises(TypeError, setattr, proto, 'optional_bool', 'foo')
     self.assertRaises(TypeError, setattr, proto, 'optional_float', 'foo')
     self.assertRaises(TypeError, setattr, proto, 'optional_double', 'foo')
-    # TODO(jieluo): Fix type checking difference for python and c extension
+    # TODO: Fix type checking difference for python and c extension
     if (api_implementation.Type() == 'python' or
         (sys.version_info.major, sys.version_info.minor) >= (3, 10)):
       self.assertRaises(TypeError, setattr, proto, 'optional_bool', 1.1)
@@ -481,7 +481,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual(0xffffffffffff, proto.optional_uint64)
     proto.optional_uint64 = 0xffffffffffffffff
     self.assertEqual(0xffffffffffffffff, proto.optional_uint64)
-    # TODO(robinson): Test all other scalar field types.
+    # TODO: Test all other scalar field types.
 
   def testEnums(self, message_module):
     proto = message_module.TestAllTypes()
@@ -784,7 +784,7 @@ class ReflectionTest(unittest.TestCase):
     messages.remove(messages[0])
     self.assertEqual(len(messages), 0)
 
-    # TODO(anuraag): Implement deepcopy for extension dict
+    # TODO: Implement deepcopy for extension dict
 
   def testDisconnectingBeforeClear(self, message_module):
     proto = message_module.TestAllTypes()
@@ -1157,7 +1157,7 @@ class Proto2ReflectionTest(unittest.TestCase):
     proto.ClearField('optional_int32')
     self.assertEqual(0, proto.optional_int32)
     self.assertFalse(proto.HasField('optional_int32'))
-    # TODO(robinson): Test all other scalar field types.
+    # TODO: Test all other scalar field types.
 
   def testRepeatedScalars(self):
     proto = unittest_pb2.TestAllTypes()
@@ -2456,11 +2456,11 @@ class ByteSizeTest(unittest.TestCase):
 
     self.assertEqual(2, len(repeated_nested_message))
     del repeated_nested_message[0:1]
-    # TODO(jieluo): Fix cpp extension bug when delete repeated message.
+    # TODO: Fix cpp extension bug when delete repeated message.
     if api_implementation.Type() == 'python':
       self.assertEqual(1, len(repeated_nested_message))
     del repeated_nested_message[-1]
-    # TODO(jieluo): Fix cpp extension bug when delete repeated message.
+    # TODO: Fix cpp extension bug when delete repeated message.
     if api_implementation.Type() == 'python':
       self.assertEqual(0, len(repeated_nested_message))
 
@@ -3339,7 +3339,7 @@ class ClassAPITest(unittest.TestCase):
   # conflicting message descriptors.
   def testParsingFlatClassWithExplicitClassDeclaration(self):
     """Test that the generated class can parse a flat message."""
-    # TODO(xiaofeng): This test fails with cpp implementation in the call
+    # TODO: This test fails with cpp implementation in the call
     # of six.with_metaclass(). The other two callsites of with_metaclass
     # in this file are both excluded from cpp test, so it might be expected
     # to fail. Need someone more familiar with the python code to take a

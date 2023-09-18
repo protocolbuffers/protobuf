@@ -35,7 +35,7 @@
 
 namespace protos::internal {
 
-// TODO(b/295355754): Temporary locking api for cross-language
+// TODO: Temporary locking api for cross-language
 // concurrency issue around extension api that uses lazy promotion
 // from unknown data to upb_MiniTableExtension. Will be replaced by
 // a core runtime solution in the future.
@@ -46,7 +46,7 @@ namespace protos::internal {
 using UpbExtensionUnlocker = void (*)(const void*);
 using UpbExtensionLocker = UpbExtensionUnlocker (*)(const void*);
 
-// TODO(b/295355754): Expose as function instead of global.
+// TODO: Expose as function instead of global.
 extern std::atomic<UpbExtensionLocker> upb_extension_locker_global;
 
 }  // namespace protos::internal

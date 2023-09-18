@@ -1143,7 +1143,7 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
   EXPECT_TRUE(::protos::HasExtension(&parsed_model, theme));
 }
 
-// TODO(b/288491350) : Add BUILD rule to test failures below.
+// TODO : Add BUILD rule to test failures below.
 #ifdef TEST_CLEAR_MESSAGE_FAILURE
 TEST(CppGeneratedCode, ClearConstMessageShouldFail) {
   // Fill model.

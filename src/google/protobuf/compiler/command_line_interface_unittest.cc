@@ -674,7 +674,7 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
       "--descriptor_set_in=$tmpdir/foo.bin "
       "import_custom_unknown_options.proto");
 
-  // TODO(jieluo): Fix this test. This test case only happens when
+  // TODO: Fix this test. This test case only happens when
   // CommandLineInterface::Run() is used instead of invoke protoc combined
   // with descriptor_set_in, and same custom options are defined in both
   // generated pool and descriptor_set_in. There's no such uages for now but
@@ -938,7 +938,7 @@ TEST_F(CommandLineInterfaceTest,
       "--proto_path=$tmpdir unused.proto bar.proto foo.proto");
   // Reporting unused imports here is unfair, since it's unactionable. Notice
   // the lack of a line number.
-  // TODO(b/144853061): If the file with unused import is from the descriptor
+  // TODO: If the file with unused import is from the descriptor
   // set and not from the file system, suppress the warning.
   ExpectWarningSubstring("bar.proto: warning: Import unused.proto is unused.");
 }
@@ -2316,7 +2316,7 @@ TEST_F(CommandLineInterfaceTest, DescriptorSetOptionRetentionOverride) {
 }
 
 #ifdef _WIN32
-// TODO(teboring): Figure out how to write test on windows.
+// TODO: Figure out how to write test on windows.
 #else
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileGivenTwoInputs) {
   CreateTempFile("foo.proto",
@@ -2363,7 +2363,7 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
   File::ChangeWorkingDirectory(current_working_directory);
 }
 #else  // !PROTOBUF_OPENSOURCE
-// TODO(teboring): Figure out how to change and get working directory in
+// TODO: Figure out how to change and get working directory in
 // google3.
 #endif  // !PROTOBUF_OPENSOURCE
 
@@ -3225,7 +3225,7 @@ TEST_F(CommandLineInterfaceTest, PrintFreeFieldNumbers) {
 
   ExpectNoErrors();
 
-  // TODO(jieluo): Cygwin doesn't work well if we try to capture stderr and
+  // TODO: Cygwin doesn't work well if we try to capture stderr and
   // stdout at the same time. Need to figure out why and add this test back
   // for Cygwin.
 #if !defined(__CYGWIN__)

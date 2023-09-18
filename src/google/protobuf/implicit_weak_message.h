@@ -44,7 +44,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   ImplicitWeakMessage(internal::InternalVisibility, Arena* arena)
       : ImplicitWeakMessage(arena) {}
 
-  // TODO(b/290091828): make this constructor private
+  // TODO: make this constructor private
   explicit ImplicitWeakMessage(Arena* arena)
       : MessageLite(arena), data_(new std::string) {}
 
@@ -147,7 +147,7 @@ struct WeakRepeatedPtrField {
                        const WeakRepeatedPtrField& rhs)
       : WeakRepeatedPtrField(arena, rhs) {}
 
-  // TODO(b/290091828): make this constructor private
+  // TODO: make this constructor private
   explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
 
   ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }

@@ -92,7 +92,7 @@ class PROTOC_EXPORT CodeGenerator {
 
   // This must be kept in sync with plugin.proto. See that file for
   // documentation on each value.
-  // TODO(b/291092901) Use CodeGeneratorResponse.Feature here.
+  // TODO Use CodeGeneratorResponse.Feature here.
   enum Feature {
     FEATURE_PROTO3_OPTIONAL = 1,
     FEATURE_SUPPORTS_EDITIONS = 2,

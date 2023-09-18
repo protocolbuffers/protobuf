@@ -67,7 +67,7 @@ void ExtensionSet::AppendToList(
     }
 
     if (has) {
-      // TODO(kenton): Looking up each field by number is somewhat unfortunate.
+      // TODO: Looking up each field by number is somewhat unfortunate.
       //   Is there a better way?  The problem is that descriptors are lazily-
       //   initialized, so they might not even be constructed until
       //   AppendToList() is called.

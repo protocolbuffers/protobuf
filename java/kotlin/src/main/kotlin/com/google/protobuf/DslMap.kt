@@ -61,4 +61,4 @@ constructor(private val delegate: Map<K, V>) : Map<K, V> by delegate {
   override fun toString(): String = delegate.toString()
 }
 
-// TODO(lowasser): investigate making this an inline class
+// TODO: investigate making this an inline class

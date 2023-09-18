@@ -522,7 +522,7 @@ static void jsonenc_listvalue(jsonenc* e, const upb_Message* msg,
 
 static void jsonenc_value(jsonenc* e, const upb_Message* msg,
                           const upb_MessageDef* m) {
-  /* TODO(haberman): do we want a reflection method to get oneof case? */
+  /* TODO: do we want a reflection method to get oneof case? */
   size_t iter = kUpb_Message_Begin;
   const upb_FieldDef* f;
   upb_MessageValue val;

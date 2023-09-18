@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /** A reader of fields from a serialized protobuf message. */
-// TODO(nathanmittler): Refactor to allow the reader to allocate properly sized lists.
+// TODO: Refactor to allow the reader to allocate properly sized lists.
 @ExperimentalApi
 @CheckReturnValue
 interface Reader {
@@ -27,7 +27,7 @@ interface Reader {
   /**
    * Gets the field number for the current field being read.
    *
-   * <p>TODO(liujisi): Rename it to make it more explicit about the side effect on the underlying
+   * <p>TODO: Rename it to make it more explicit about the side effect on the underlying
    * buffer.
    *
    * @return the current field number or {@link #READ_DONE} if the end of input has been reached.
@@ -112,7 +112,7 @@ interface Reader {
    */
   String readStringRequireUtf8() throws IOException;
 
-  // TODO(yilunchong): the lack of other opinions for whether to expose this on the interface
+  // TODO: the lack of other opinions for whether to expose this on the interface
   <T> T readMessageBySchemaWithCheck(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
       throws IOException;
 
@@ -131,7 +131,7 @@ interface Reader {
   @Deprecated
   <T> T readGroup(Class<T> clazz, ExtensionRegistryLite extensionRegistry) throws IOException;
 
-  // TODO(yilunchong): the lack of other opinions for whether to expose this on the interface
+  // TODO: the lack of other opinions for whether to expose this on the interface
   @Deprecated
   <T> T readGroupBySchemaWithCheck(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
       throws IOException;

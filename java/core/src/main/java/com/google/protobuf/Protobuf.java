@@ -24,7 +24,7 @@ final class Protobuf {
 
   private final SchemaFactory schemaFactory;
 
-  // TODO(nathanmittler): Consider using ClassValue instead.
+  // TODO: Consider using ClassValue instead.
   private final ConcurrentMap<Class<?>, Schema<?>> schemaCache =
       new ConcurrentHashMap<Class<?>, Schema<?>>();
 

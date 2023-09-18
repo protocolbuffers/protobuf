@@ -578,7 +578,7 @@ class DefPool {
   std::unique_ptr<upb_DefPool, decltype(&upb_DefPool_Free)> ptr_;
 };
 
-// TODO(b/236632406): This typedef is deprecated. Delete it.
+// TODO: This typedef is deprecated. Delete it.
 using SymbolTable = DefPool;
 
 inline FileDefPtr FieldDefPtr::file() const {

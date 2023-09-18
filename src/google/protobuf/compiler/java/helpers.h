@@ -74,7 +74,7 @@ std::string UniqueFileScopeIdentifier(const Descriptor* descriptor);
 // Gets the unqualified class name for the file.  For each .proto file, there
 // will be one Java class containing all the immutable messages and another
 // Java class containing all the mutable messages.
-// TODO(xiaofeng): remove the default value after updating client code.
+// TODO: remove the default value after updating client code.
 std::string FileClassName(const FileDescriptor* file, bool immutable = true);
 
 // Returns the file's Java package name.
@@ -340,7 +340,7 @@ inline bool HasHasbit(const FieldDescriptor* descriptor) {
 
 // Whether generate classes expose public PARSER instances.
 inline bool ExposePublicParser(const FileDescriptor* descriptor) {
-  // TODO(liujisi): Mark the PARSER private in 3.1.x releases.
+  // TODO: Mark the PARSER private in 3.1.x releases.
   return FileDescriptorLegacy(descriptor).syntax() ==
          FileDescriptorLegacy::Syntax::SYNTAX_PROTO2;
 }
@@ -349,7 +349,7 @@ inline bool ExposePublicParser(const FileDescriptor* descriptor) {
 // but in the message and can be queried using additional getters that return
 // ints.
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
-  // TODO(b/279034699): Check Java legacy_enum_field_treated_as_closed feature.
+  // TODO: Check Java legacy_enum_field_treated_as_closed feature.
   return !field->legacy_enum_field_treated_as_closed();
 }
 

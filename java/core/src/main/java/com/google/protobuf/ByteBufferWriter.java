@@ -25,18 +25,18 @@ final class ByteBufferWriter {
    * Minimum size for a cached buffer. This prevents us from allocating buffers that are too small
    * to be easily reused.
    */
-  // TODO(nathanmittler): tune this property or allow configuration?
+  // TODO: tune this property or allow configuration?
   private static final int MIN_CACHED_BUFFER_SIZE = 1024;
 
   /**
    * Maximum size for a cached buffer. If a larger buffer is required, it will be allocated but not
    * cached.
    */
-  // TODO(nathanmittler): tune this property or allow configuration?
+  // TODO: tune this property or allow configuration?
   private static final int MAX_CACHED_BUFFER_SIZE = 16 * 1024;
 
   /** The fraction of the requested buffer size under which the buffer will be reallocated. */
-  // TODO(nathanmittler): tune this property or allow configuration?
+  // TODO: tune this property or allow configuration?
   private static final float BUFFER_REALLOCATION_THRESHOLD = 0.5f;
 
   /**
@@ -74,7 +74,7 @@ final class ByteBufferWriter {
         output.write(buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining());
       } else if (!writeToChannel(buffer, output)) {
         // Read all of the data from the buffer to an array.
-        // TODO(nathanmittler): Consider performance improvements for other "known" stream types.
+        // TODO: Consider performance improvements for other "known" stream types.
         final byte[] array = getOrCreateBuffer(buffer.remaining());
         while (buffer.hasRemaining()) {
           int length = min(buffer.remaining(), array.length);

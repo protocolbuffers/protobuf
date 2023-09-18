@@ -366,14 +366,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>** mutable_data() {
-    // TODO(kenton):  Breaks C++ aliasing rules.  We should probably remove this
+    // TODO:  Breaks C++ aliasing rules.  We should probably remove this
     //   method entirely.
     return reinterpret_cast<Value<TypeHandler>**>(raw_mutable_data());
   }
 
   template <typename TypeHandler>
   const Value<TypeHandler>* const* data() const {
-    // TODO(kenton):  Breaks C++ aliasing rules.  We should probably remove this
+    // TODO:  Breaks C++ aliasing rules.  We should probably remove this
     //   method entirely.
     return reinterpret_cast<const Value<TypeHandler>* const*>(raw_data());
   }
@@ -669,7 +669,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename T>
   friend struct google::protobuf::WeakRepeatedPtrField;
 
-  friend class internal::TcParser;  // TODO(jorg): Remove this friend.
+  friend class internal::TcParser;  // TODO: Remove this friend.
 
   // The reflection implementation needs to call protected methods directly,
   // reinterpreting pointers as being to Message instead of a specific Message
@@ -996,7 +996,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
                    const RepeatedPtrField& rhs)
       : RepeatedPtrField(arena, rhs) {}
 
-  // TODO(b/290091828): make constructor private
+  // TODO: make constructor private
   explicit RepeatedPtrField(Arena* arena);
 
   template <typename Iter,

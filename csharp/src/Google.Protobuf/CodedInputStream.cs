@@ -403,7 +403,7 @@ namespace Google.Protobuf
         /// </summary>
         public void ReadMessage(IMessage builder)
         {
-            // TODO(jtattermusch): if the message doesn't implement IBufferMessage (and thus does not provide the InternalMergeFrom method),
+            // TODO: if the message doesn't implement IBufferMessage (and thus does not provide the InternalMergeFrom method),
             // what we're doing here works fine, but could be more efficient.
             // What happens is that we first initialize a ParseContext from the current coded input stream only to parse the length of the message, at which point
             // we will need to switch back again to CodedInputStream-based parsing (which involves copying and storing the state) to be able to

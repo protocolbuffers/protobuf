@@ -83,7 +83,7 @@ if _implementation_type == 'cpp':
     _c_module = _message
     del _message
   except ImportError:
-    # TODO(jieluo): fail back to python
+    # TODO: fail back to python
     warnings.warn(
         'Selected implementation cpp is not available.')
     pass
@@ -130,7 +130,7 @@ def Type():
 
 
 # See comment on 'Type' above.
-# TODO(jieluo): Remove the API, it returns a constant. b/228102101
+# TODO: Remove the API, it returns a constant. b/228102101
 def Version():
   return 2
 

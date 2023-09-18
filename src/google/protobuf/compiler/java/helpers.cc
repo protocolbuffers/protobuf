@@ -863,7 +863,7 @@ int GetExperimentalJavaFieldTypeForSingular(const FieldDescriptor* field) {
   // j/c/g/protobuf/FieldType.java lists field types in a slightly different
   // order from FieldDescriptor::Type so we can't do a simple cast.
   //
-  // TODO(xiaofeng): Make j/c/g/protobuf/FieldType.java follow the same order.
+  // TODO: Make j/c/g/protobuf/FieldType.java follow the same order.
   int result = field->type();
   if (result == FieldDescriptor::TYPE_GROUP) {
     return 17;

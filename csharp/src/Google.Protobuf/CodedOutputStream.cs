@@ -237,7 +237,7 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteMessage(IMessage value)
         {
-            // TODO(jtattermusch): if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
+            // TODO: if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
             // what we're doing here works fine, but could be more efficient.
             // For now, this inefficiency is fine, considering this is only a backward-compatibility scenario (and regenerating the code fixes it).
             var span = new Span<byte>(buffer);
@@ -259,7 +259,7 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteRawMessage(IMessage value)
         {
-            // TODO(jtattermusch): if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
+            // TODO: if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
             // what we're doing here works fine, but could be more efficient.
             // For now, this inefficiency is fine, considering this is only a backward-compatibility scenario (and regenerating the code fixes it).
             var span = new Span<byte>(buffer);

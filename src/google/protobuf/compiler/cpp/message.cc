@@ -1065,7 +1065,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                       }
                     )cc");
               } else {
-                // TODO(b/281513105): figure out if early return breaks tracking
+                // TODO: figure out if early return breaks tracking
                 if (ShouldSplit(field, options_)) {
                   p->Emit(R"cc(
                     if (PROTOBUF_PREDICT_TRUE(IsSplitMessageDefault()))
@@ -1355,7 +1355,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         "\n");
   }
 
-  // TODO(gerbens) make this private, while still granting other protos access.
+  // TODO make this private, while still granting other protos access.
   format(
       "static inline const $classname$* internal_default_instance() {\n"
       "  return reinterpret_cast<const $classname$*>(\n"
@@ -1555,7 +1555,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "}\n");
 
   format(
-      // TODO(gerbens) Make this private! Currently people are deriving from
+      // TODO Make this private! Currently people are deriving from
       // protos to give access to this constructor, breaking the invariants
       // we rely on.
       "protected:\n"
@@ -1665,7 +1665,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   format.Outdent();
   format(" private:\n");
   format.Indent();
-  // TODO(seongkim): Remove hack to track field access and remove this class.
+  // TODO: Remove hack to track field access and remove this class.
   format("class _Internal;\n");
 
   for (auto field : FieldRange(descriptor_)) {
@@ -1726,7 +1726,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   format.Indent();
 
 #ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
-  // TODO(b/290029568): check if/when there is a need for an outline dtor.
+  // TODO: check if/when there is a need for an outline dtor.
   format(R"cc(
     inline explicit constexpr Impl_(
         ::$proto_ns$::internal::ConstantInitialized) noexcept;
@@ -1751,7 +1751,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   }
 
   // Generate _inlined_string_donated_ for inlined string type.
-  // TODO(congliu): To avoid affecting the locality of `_has_bits_`, should this
+  // TODO: To avoid affecting the locality of `_has_bits_`, should this
   // be below or above `_has_bits_`?
   if (!inlined_string_indices_.empty()) {
     format("::$proto_ns$::internal::HasBits<$1$> _inlined_string_donated_;\n",
@@ -2173,7 +2173,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
                          descriptor_->real_oneof_decl_count();
   size_t entries = offsets;
   for (auto field : FieldRange(descriptor_)) {
-    // TODO(sbenza): We should not have an entry in the offset table for fields
+    // TODO: We should not have an entry in the offset table for fields
     // that do not use them.
     if (field->options().weak() || field->real_containing_oneof()) {
       // Mark the field to prevent unintentional access through reflection.
@@ -2986,7 +2986,7 @@ void MessageGenerator::GenerateCopyConstructorBody(io::Printer* p) const {
     format("if (PROTOBUF_PREDICT_FALSE(!from.IsSplitMessageDefault())) {\n");
     format.Indent();
     format("_this->PrepareSplitMessageForWrite();\n");
-    // TODO(b/122856539): cache the split pointers.
+    // TODO: cache the split pointers.
     for (auto field : optimized_order_) {
       if (ShouldSplit(field, options_)) {
         field_generators_.get(field).GenerateCopyConstructorCode(p);
@@ -3573,7 +3573,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
   format("PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);\n");
 
   format(
-      // TODO(jwb): It would be better to avoid emitting this if it is not used,
+      // TODO: It would be better to avoid emitting this if it is not used,
       // rather than emitting a workaround for the resulting warning.
       "$uint32$ cached_has_bits = 0;\n"
       "// Prevent compiler warnings about cached_has_bits being unused\n"
@@ -3696,7 +3696,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         // It's faster to just overwrite primitive types, but we should only
         // clear strings and messages if they were set.
         //
-        // TODO(kenton):  Let the CppFieldGenerator decide this somehow.
+        // TODO:  Let the CppFieldGenerator decide this somehow.
         bool have_enclosing_if =
             HasBitIndex(field) != kNoHasbit &&
             (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
@@ -4413,7 +4413,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       if (field->real_containing_oneof()) {
         v_.push_back(field);
       } else {
-        // TODO(ckennelly): Defer non-oneof fields similarly to oneof fields.
+        // TODO: Defer non-oneof fields similarly to oneof fields.
         if (HasHasbit(field) && field->has_presence()) {
           // We speculatively load the entire _has_bits_[index] contents, even
           // if it is for only one field.  Deferring non-oneof emitting would

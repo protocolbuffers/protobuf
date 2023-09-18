@@ -62,7 +62,7 @@ module Google
       # be provided.
       def self.new(type, type_class = nil, initial_values = [])
         instance = allocate
-        # TODO(jatl) This argument mangling doesn't agree with the type signature in the comments
+        # TODO This argument mangling doesn't agree with the type signature in the comments
         # but is required to make unit tests pass;
         if type_class.is_a?(Enumerable) and initial_values.empty? and ![:enum, :message].include?(type)
           initial_values = type_class

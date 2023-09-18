@@ -118,7 +118,7 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
 
       case FD::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
             return sizeof(RepeatedPtrField<std::string>);
         }
@@ -148,7 +148,7 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
 
       case FD::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
             return sizeof(ArenaStringPtr);
         }
@@ -391,7 +391,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
 
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
             if (!field->is_repeated()) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
@@ -518,7 +518,7 @@ DynamicMessage::~DynamicMessage() {
 
         case FieldDescriptor::CPPTYPE_STRING:
           switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other string reps.
+            default:  // TODO:  Support other string reps.
             case FieldOptions::STRING:
               reinterpret_cast<RepeatedPtrField<std::string>*>(field_ptr)
                   ->~RepeatedPtrField<std::string>();
@@ -538,7 +538,7 @@ DynamicMessage::~DynamicMessage() {
 
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
       switch (field->options().ctype()) {
-        default:  // TODO(kenton):  Support other string reps.
+        default:  // TODO:  Support other string reps.
         case FieldOptions::STRING: {
           reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
           break;
@@ -706,7 +706,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
   // All the fields.
   //
-  // TODO(b/31226269):  Optimize the order of fields to minimize padding.
+  // TODO:  Optimize the order of fields to minimize padding.
   for (int i = 0; i < type->field_count(); i++) {
     // Make sure field is aligned to avoid bus errors.
     // Oneof fields do not use any space.

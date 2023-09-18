@@ -251,7 +251,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
-    // TODO(b/239716377): experiment with simplifying this to be
+    // TODO: experiment with simplifying this to be
     // `if (!from.empty()) { body(); }` for both split and non-split cases.
     auto body = [&] {
       p->Emit(R"cc(

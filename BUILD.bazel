@@ -242,7 +242,7 @@ cc_library(
 # This provides just the header files for use in projects that need to build
 # shared libraries for dynamic loading. This target is available until Bazel
 # adds native support for such use cases.
-# TODO(keveman): Remove this target once the support gets added to Bazel.
+# TODO: Remove this target once the support gets added to Bazel.
 alias(
     name = "protobuf_headers",
     actual = "//src/google/protobuf:protobuf_headers",

@@ -498,7 +498,7 @@ public final class DynamicMessage extends AbstractMessage {
     @Override
     public Builder setField(FieldDescriptor field, Object value) {
       verifyContainingType(field);
-      // TODO(xiaofeng): This check should really be put in FieldSet.setField()
+      // TODO: This check should really be put in FieldSet.setField()
       // where all other such checks are done. However, currently
       // FieldSet.setField() permits Integer value for enum fields probably
       // because of some internal features we support. Should figure it out
@@ -614,7 +614,7 @@ public final class DynamicMessage extends AbstractMessage {
             throw new IllegalArgumentException(
                 "DynamicMessage should use EnumValueDescriptor to set Enum Value.");
           }
-          // TODO(xiaofeng): Re-enable this check after Orgstore is fixed to not
+          // TODO: Re-enable this check after Orgstore is fixed to not
           // set incorrect EnumValueDescriptors.
           // EnumDescriptor fieldType = field.getEnumType();
           // EnumDescriptor fieldValueType = ((EnumValueDescriptor) value).getType();

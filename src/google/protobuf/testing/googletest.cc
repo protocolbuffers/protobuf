@@ -174,7 +174,7 @@ TempDirDeleter temp_dir_deleter_;
 
 std::string TestTempDir() { return temp_dir_deleter_.GetTempDir(); }
 
-// TODO(kenton):  Share duplicated code below.  Too busy/lazy for now.
+// TODO:  Share duplicated code below.  Too busy/lazy for now.
 
 static std::string stdout_capture_filename_;
 static std::string stderr_capture_filename_;

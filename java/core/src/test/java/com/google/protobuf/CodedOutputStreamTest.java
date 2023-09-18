@@ -416,7 +416,7 @@ public class CodedOutputStreamTest {
     assertThat(coder.stream().getTotalBytesWritten()).isEqualTo((value.length * 1024) + stringSize);
   }
 
-  // TODO(dweis): Write a comprehensive test suite for CodedOutputStream that covers more than just
+  // TODO: Write a comprehensive test suite for CodedOutputStream that covers more than just
   //    this case.
   @Test
   public void testWriteStringNoTag_fastpath() throws Exception {
@@ -550,7 +550,7 @@ public class CodedOutputStreamTest {
     CodedOutputStream outputWithByteBuffer =
         CodedOutputStream.newInstance(ByteBuffer.allocate(10000));
     for (String s : invalidStrings) {
-      // TODO(dweis): These should all fail; instead they are corrupting data.
+      // TODO: These should all fail; instead they are corrupting data.
       CodedOutputStream.computeStringSizeNoTag(s);
       outputWithStream.writeStringNoTag(s);
       outputWithArray.writeStringNoTag(s);
@@ -558,7 +558,7 @@ public class CodedOutputStreamTest {
     }
   }
 
-  // TODO(nathanmittler): This test can be deleted once we properly throw IOException while
+  // TODO: This test can be deleted once we properly throw IOException while
   // encoding invalid UTF-8 strings.
   @Test
   public void testSerializeInvalidUtf8FollowedByOutOfSpace() throws Exception {

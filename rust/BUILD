@@ -22,7 +22,7 @@ licenses(["notice"])
 #
 # WARNING: It's critical that users do not end up using Rust Protobufs with multiple kernels in
 # their binaries. Currently this is achieved by using bzl visibility on kernel-specific rules.
-# TODO(b/149440343): Hide the kernel-specific targets once we can restrict a target visibility to a
+# TODO: Hide the kernel-specific targets once we can restrict a target visibility to a
 # rule.
 rust_library(
     name = "protobuf",

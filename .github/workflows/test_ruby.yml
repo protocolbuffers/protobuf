@@ -20,12 +20,12 @@ jobs:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
           - { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: NATIVE }
-          # TODO(b/294608485) Re-enable these once flakes are fixed
+          # TODO Re-enable these once flakes are fixed
           #- { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: FFI }
           - { name: Ruby 3.0, ruby: ruby-3.0.2 }
           - { name: Ruby 3.1, ruby: ruby-3.1.0 }
           - { name: Ruby 3.2, ruby: ruby-3.2.0, ffi: NATIVE }
-          # TODO(b/294608485) Re-enable these once flakes are fixed
+          # TODO Re-enable these once flakes are fixed
           #- { name: Ruby 3.2, ruby: ruby-3.2.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
@@ -117,12 +117,12 @@ jobs:
         # Ruby versions for CRuby, but only on Bazel 5.x.
         # Quote versions numbers otherwise 3.0 will render as 3
         - { version: "2.7", ffi: NATIVE }
-        # TODO(b/294608485) Re-enable these once flakes are fixed
+        # TODO Re-enable these once flakes are fixed
         #- { version: "2.7", ffi: FFI }
         - { version: "3.0" }
         - { version: "3.1" }
         - { version: "3.2", ffi: NATIVE }
-        # TODO(b/294608485) Re-enable these once flakes are fixed
+        # TODO Re-enable these once flakes are fixed
         #- { version: "3.2", ffi: FFI }
 
     name: MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}

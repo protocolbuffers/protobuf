@@ -427,7 +427,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * to force a classload of ByteString before LiteralByteString.
    */
   static ByteString wrap(byte[] bytes) {
-    // TODO(dweis): Return EMPTY when bytes are empty to reduce allocations?
+    // TODO: Return EMPTY when bytes are empty to reduce allocations?
     return new LiteralByteString(bytes);
   }
 
@@ -1410,7 +1410,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
         byte[] target, int sourceOffset, int targetOffset, int numberToCopy) {
       // Optimized form, not for subclasses, since we don't call
       // getOffsetIntoBytes() or check the 'numberToCopy' parameter.
-      // TODO(nathanmittler): Is not calling getOffsetIntoBytes really saving that much?
+      // TODO: Is not calling getOffsetIntoBytes really saving that much?
       System.arraycopy(bytes, sourceOffset, target, targetOffset, numberToCopy);
     }
 

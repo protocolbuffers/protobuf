@@ -164,7 +164,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     // end up with an invalid limit and it can lead to integer overflows.
     limit_ = limit_ + std::move(delta).token();
     if (PROTOBUF_PREDICT_FALSE(!EndedAtLimit())) return false;
-    // TODO(gerbens) We could remove this line and hoist the code to
+    // TODO We could remove this line and hoist the code to
     // DoneFallback. Study the perf/bin-size effects.
     limit_end_ = buffer_end_ + (std::min)(0, limit_);
     return true;
@@ -343,7 +343,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   uint32_t last_tag_minus_1_ = 0;
   int overall_limit_ = INT_MAX;  // Overall limit independent of pushed limits.
   // Pretty random large number that seems like a safe allocation on most
-  // systems. TODO(gerbens) do we need to set this as build flag?
+  // systems. TODO do we need to set this as build flag?
   enum { kSafeStringSize = 50000000 };
 
   // Advances to next buffer chunk returns a pointer to the same logical place
@@ -390,7 +390,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       append(ptr, chunk_size);
       ptr += chunk_size;
       size -= chunk_size;
-      // TODO(gerbens) Next calls NextBuffer which generates buffers with
+      // TODO Next calls NextBuffer which generates buffers with
       // overlap and thus incurs cost of copying the slop regions. This is not
       // necessary for reading strings. We should just call Next buffers.
       if (limit_ <= kSlopBytes) return nullptr;
@@ -496,7 +496,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   // This overload supports those few cases where ParseMessage is called
   // on a class that is not actually a proto message.
-  // TODO(jorg): Eliminate this use case.
+  // TODO: Eliminate this use case.
   template <typename T,
             typename std::enable_if<!std::is_base_of<MessageLite, T>::value,
                                     bool>::type = true>
@@ -951,7 +951,7 @@ PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE constexpr T RotateLeft(
 
 PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE uint64_t
 RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
-  // TODO(b/239808098): remove the inline assembly
+  // TODO: remove the inline assembly
 #if defined(__x86_64__) && defined(__GNUC__)
   // This will only use one register for `res`.
   // `byte` comes as a reference to allow the compiler to generate code like:

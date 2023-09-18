@@ -48,7 +48,7 @@ public class ExtensionRegistryLite {
 
   // Set true to enable lazy parsing feature for MessageSet.
   //
-  // TODO(xiangl): Now we use a global flag to control whether enable lazy
+  // TODO: Now we use a global flag to control whether enable lazy
   // parsing feature for MessageSet, which may be too crude for some
   // applications. Need to support this feature on smaller granularity.
   private static volatile boolean eagerlyParseMessageSets = false;

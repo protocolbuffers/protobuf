@@ -588,7 +588,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Set (and leave set) PROTOBUF_EXPLICIT_CONSTRUCTORS
 // This flag changes the internal implementation class and its uses from using
 // aggregate initialization to using explicit constructor based initialization.
-// TODO(b/290029568): remove this flag and make the code permanent.
+// TODO: remove this flag and make the code permanent.
 #ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
 #define PROTOBUF_EXPLICIT_CONSTRUCTORS
 #endif
@@ -657,7 +657,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_THREAD_LOCAL __thread
 #endif
 
-// TODO(b/228173843): cleanup PROTOBUF_LITTLE_ENDIAN in various 3p forks.
+// TODO: cleanup PROTOBUF_LITTLE_ENDIAN in various 3p forks.
 #if (defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && \
      __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 #define PROTOBUF_LITTLE_ENDIAN 1
@@ -829,7 +829,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_TSAN_WRITE was previously defined
 #endif
 #ifdef PROTOBUF_TSAN
-// TODO(b/285620714): it would be preferable to use __tsan_external_read/
+// TODO: it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
 #define PROTOBUF_TSAN_READ(addr)                                      \
   do {                                                                \

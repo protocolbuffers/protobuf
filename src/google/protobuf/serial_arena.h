@@ -123,7 +123,7 @@ class PROTOBUF_EXPORT SerialArena {
   // We do not do this by default because most non-array allocations will not
   // have the right size and will fail to find an appropriate cached block.
   //
-  // TODO(sbenza): Evaluate if we should use cached blocks for message types of
+  // TODO: Evaluate if we should use cached blocks for message types of
   // the right size. We can statically know if the allocation size can benefit
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>

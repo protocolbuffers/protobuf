@@ -668,7 +668,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertRaises(StopIteration, next, reversed_iterator)
     expected_list[0] = 'change value'
     self.assertNotEqual(expected_list, sequence)
-    # TODO(jieluo): Change __repr__ support for DescriptorSequence.
+    # TODO: Change __repr__ support for DescriptorSequence.
     if api_implementation.Type() == 'python':
       self.assertEqual(str(list(sequence)), str(sequence))
     else:
@@ -698,7 +698,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertEqual(mapping.get(key), item)
     with self.assertRaises(TypeError):
       mapping.get()
-    # TODO(jieluo): Fix python and cpp extension diff.
+    # TODO: Fix python and cpp extension diff.
     if api_implementation.Type() == 'cpp':
       self.assertEqual(None, mapping.get([]))
     else:
@@ -718,7 +718,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertNotEqual(mapping, excepted_dict)
     self.assertRaises(KeyError, mapping.__getitem__, 'key_error')
     self.assertRaises(KeyError, mapping.__getitem__, len(mapping) + 1)
-    # TODO(jieluo): Add __repr__ support for DescriptorMapping.
+    # TODO: Add __repr__ support for DescriptorMapping.
     if api_implementation.Type() == 'cpp':
       self.assertEqual(str(mapping)[0], '<')
     else:
@@ -1066,7 +1066,7 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
   @unittest.skipIf(
       api_implementation.Type() == 'python',
       'Pure python does not raise error.')
-  # TODO(jieluo): Fix pure python to check with the proto type.
+  # TODO: Fix pure python to check with the proto type.
   def testCopyToProto_TypeError(self):
     file_proto = descriptor_pb2.FileDescriptorProto()
     self.assertRaises(TypeError,

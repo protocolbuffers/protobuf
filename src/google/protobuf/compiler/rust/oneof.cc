@@ -25,7 +25,7 @@ namespace rust {
 //    each of the cases. Named as the one_of name in CamelCase.
 // -  An enum acting as a tagged union that has each case holds a Mut<> of
 //    each of the cases. Named as one_of name in CamelCase with "Mut" appended.
-//    [TODO(b/285309334): Mut not implemented yet].
+//    [TODO: Mut not implemented yet].
 // -  A simple enum whose cases have int values matching the cpp or upb's
 //    case enum. Named as the one_of camelcase with "Case" appended.
 // All three contain cases matching the fields in the oneof CamelCased.
@@ -90,7 +90,7 @@ std::string oneofCaseEnumName(const OneofDescriptor& desc) {
   return ToCamelCase(desc.name()) + "Case";
 }
 
-// TODO(b/285309334): Promote up to naming.h once all types can be spelled.
+// TODO: Promote up to naming.h once all types can be spelled.
 std::string RsTypeName(const FieldDescriptor& desc) {
   switch (desc.type()) {
     case FieldDescriptor::TYPE_MESSAGE:
@@ -154,8 +154,8 @@ void GenerateOneofDefinition(Context<OneofDescriptor> oneof) {
                 )rs");
           }
         }}},
-      // TODO(b/297342638): Revisit if isize is the optimal repr for this enum.
-      // TODO(b/285309334): not_set currently has phantom data just to avoid the
+      // TODO: Revisit if isize is the optimal repr for this enum.
+      // TODO: not_set currently has phantom data just to avoid the
       // lifetime on the enum breaking compilation if there are zero supported
       // fields on it (e.g. if the oneof only has Messages inside).
       R"rs(
@@ -243,7 +243,7 @@ void GenerateOneofAccessors(Context<OneofDescriptor> oneof) {
             if (rs_type.empty()) {
               continue;
             }
-            // TODO(b/285309334, 285309449): Uncomment this to allow mut once
+            // TODO: Uncomment this to allow mut once
             // _mut() on singular fields with presence is implemented.
             /*oneof.Emit({
                     {"case", ToCamelCase(field->name())},

@@ -163,7 +163,7 @@ void MessageDrop(Context<Descriptor> msg) {
   )rs");
 }
 
-// TODO(b/285309454): deferring on strings and bytes for now, eventually this
+// TODO: deferring on strings and bytes for now, eventually this
 // check will go away as we support more than just simple scalars
 bool IsSimpleScalar(FieldDescriptor::Type type) {
   return type == FieldDescriptor::TYPE_DOUBLE ||
@@ -291,7 +291,7 @@ void GenerateRs(Context<Descriptor> msg) {
       },
       R"rs(
         #[allow(non_camel_case_types)]
-        // TODO(b/291938599): Implement support for debug redaction
+        // TODO: Implement support for debug redaction
         #[derive(Debug)]
         pub struct $Msg$ {
           inner: $pbr$::MessageInner

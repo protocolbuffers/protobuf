@@ -140,7 +140,7 @@ UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(upb_Map* map, const void* key,
     return kUpb_MapInsertStatus_OutOfMemory;
   }
 
-  // TODO(haberman): add overwrite operation to minimize number of lookups.
+  // TODO: add overwrite operation to minimize number of lookups.
   bool removed =
       upb_strtable_remove2(&map->table, strkey.data, strkey.size, NULL);
   if (!upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a)) {

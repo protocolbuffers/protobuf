@@ -26,7 +26,7 @@ public class TestBadIdentifiers extends TestCase {
         TestBadIdentifiersProto.Override.getDefaultInstance();
   }
 
-  @SuppressWarnings({"IgnoredPureGetter", "CheckReturnValue"}) // TODO(b/221602772): Fix this
+  @SuppressWarnings({"IgnoredPureGetter", "CheckReturnValue"}) // TODO: Fix this
   public void testGetDescriptor() {
     TestBadIdentifiersProto.getDescriptor();
     TestBadIdentifiersProto.Descriptor.getDefaultInstance().getDescriptor();

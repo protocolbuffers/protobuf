@@ -44,10 +44,10 @@ abstract class BinaryReader implements Reader {
    */
   public static BinaryReader newInstance(ByteBuffer buffer, boolean bufferIsImmutable) {
     if (buffer.hasArray()) {
-      // TODO(nathanmittler): Add support for unsafe operations.
+      // TODO: Add support for unsafe operations.
       return new SafeHeapReader(buffer, bufferIsImmutable);
     }
-    // TODO(nathanmittler): Add support for direct buffers
+    // TODO: Add support for direct buffers
     throw new IllegalArgumentException("Direct buffers not yet supported");
   }
 

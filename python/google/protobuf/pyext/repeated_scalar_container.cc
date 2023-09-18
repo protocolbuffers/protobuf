@@ -443,7 +443,7 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
 PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
   cmessage::AssureWritable(self->parent);
 
-  // TODO(b/286557203): Remove this in OSS
+  // TODO: Remove this in OSS
   if (value == Py_None) {
     PyErr_Warn(nullptr,
                "Value is not iterable. Please remove the wrong usage."

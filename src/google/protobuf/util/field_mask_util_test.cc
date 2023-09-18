@@ -800,7 +800,7 @@ TEST(FieldMaskUtilTest, TrimMessageReturnValue) {
   EXPECT_EQ(trimed_msg.optional_nested_message().bb(), 123);
   trimed_msg.Clear();
 
-  // TODO(b/32443320): field mask on repeated nested message is not yet
+  // TODO: field mask on repeated nested message is not yet
   // supported.
 }
 

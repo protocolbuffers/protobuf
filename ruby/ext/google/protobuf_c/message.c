@@ -662,8 +662,8 @@ static VALUE Message_dup(VALUE _self) {
   Message* new_msg_self = ruby_to_Message(new_msg);
   size_t size = upb_MessageDef_MiniTable(self->msgdef)->size;
 
-  // TODO(copy unknown fields?)
-  // TODO(use official upb msg copy function)
+  // TODO
+  // TODO
   memcpy((upb_Message*)new_msg_self->msg, self->msg, size);
   Arena_fuse(self->arena, Arena_get(new_msg_self->arena));
   return new_msg;
@@ -974,7 +974,7 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   int options = 0;
   upb_Status status;
 
-  // TODO(haberman): use this message's pool instead.
+  // TODO: use this message's pool instead.
   const upb_DefPool* symtab = DescriptorPool_GetSymtab(generated_pool);
 
   if (argc < 1 || argc > 2) {
@@ -997,7 +997,7 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
     rb_raise(rb_eArgError, "Expected string for JSON data.");
   }
 
-  // TODO(cfallin): Check and respect string encoding. If not UTF-8, we need to
+  // TODO: Check and respect string encoding. If not UTF-8, we need to
   // convert, because string handlers pass data directly to message string
   // fields.
 
@@ -1090,7 +1090,7 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   size_t size;
   upb_Status status;
 
-  // TODO(haberman): use this message's pool instead.
+  // TODO: use this message's pool instead.
   const upb_DefPool* symtab = DescriptorPool_GetSymtab(generated_pool);
 
   if (argc < 1 || argc > 2) {

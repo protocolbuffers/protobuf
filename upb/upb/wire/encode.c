@@ -117,7 +117,7 @@ static void encode_growbuffer(upb_encstate* e, size_t bytes) {
   if (!new_buf) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
 
   // We want previous data at the end, realloc() put it at the beginning.
-  // TODO(salo): This is somewhat inefficient since we are copying twice.
+  // TODO: This is somewhat inefficient since we are copying twice.
   // Maybe create a realloc() that copies to the end of the new buffer?
   if (old_size > 0) {
     memmove(new_buf + new_size - old_size, e->buf, old_size);

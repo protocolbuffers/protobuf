@@ -20,7 +20,7 @@ rust_test(
     name = "child_parent_upb_test",
     srcs = ["child_parent_test.rs"],
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
@@ -33,7 +33,7 @@ rust_test(
     name = "child_parent_cpp_test",
     srcs = ["child_parent_test.rs"],
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
@@ -46,7 +46,7 @@ rust_test(
     name = "package_cpp_test",
     srcs = ["package_test.rs"],
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
@@ -60,7 +60,7 @@ rust_test(
     name = "package_upb_test",
     srcs = ["package_test.rs"],
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
@@ -74,7 +74,7 @@ rust_test(
     name = "reserved_cpp_test",
     srcs = ["reserved_test.rs"],
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
@@ -87,7 +87,7 @@ rust_test(
     name = "reserved_upb_test",
     srcs = ["reserved_test.rs"],
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
@@ -100,7 +100,7 @@ rust_test(
     name = "nested_messages_cpp_test",
     srcs = ["nested_messages_test.rs"],
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = ["//rust/test:unittest_cc_rust_proto"],
@@ -110,7 +110,7 @@ rust_test(
     name = "nested_messages_upb_test",
     srcs = ["nested_messages_test.rs"],
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = ["//rust/test:unittest_upb_rust_proto"],
@@ -123,7 +123,7 @@ rust_test(
         "//rust:protobuf_cpp": "protobuf",
     },
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
@@ -139,7 +139,7 @@ rust_test(
         "//rust:protobuf_upb": "protobuf",
     },
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
@@ -155,7 +155,7 @@ rust_test(
         "//rust:protobuf_cpp": "protobuf",
     },
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
@@ -172,7 +172,7 @@ rust_test(
         "//rust:protobuf_upb": "protobuf",
     },
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
@@ -186,7 +186,7 @@ rust_test(
     name = "serialization_upb_test",
     srcs = ["serialization_test.rs"],
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = ["//rust/test:unittest_upb_rust_proto"],
@@ -196,7 +196,7 @@ rust_test(
     name = "serialization_cpp_test",
     srcs = ["serialization_test.rs"],
     tags = [
-        # TODO(b/298006932): Enable testing on arm once we support sanitizers for Rust on Arm.
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = ["//rust/test:unittest_cc_rust_proto"],
@@ -208,7 +208,7 @@ rust_test(
     deps = ["//rust/test:nested_cc_rust_proto"],
 )
 
-# TODO(b/285309454): enable once we emit default messages for upb at the rust level
+# TODO: enable once we emit default messages for upb at the rust level
 # The default submsg that upb emits is NULL (whereas cpp returns a default constructed msg)
 #rust_test(
 #    name = "simple_nested_upb_test",

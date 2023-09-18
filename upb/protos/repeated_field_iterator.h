@@ -49,7 +49,7 @@
 namespace protos {
 namespace internal {
 
-// TODO(b/279086429): Implement std iterator for messages
+// TODO: Implement std iterator for messages
 template <typename T>
 class RepeatedFieldScalarProxy;
 template <typename T>
@@ -117,7 +117,7 @@ class ReferenceProxy : InjectedRelationals<PolicyT> {
   ReferenceProxy(const ReferenceProxy&) = default;
   ReferenceProxy& operator=(const ReferenceProxy& other) {
     // Assign through the references
-    // TODO(sbenza): Make this better for strings to avoid the copy.
+    // TODO: Make this better for strings to avoid the copy.
     it_.Set(other.it_.Get());
     return *this;
   }

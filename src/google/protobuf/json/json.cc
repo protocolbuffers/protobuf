@@ -36,7 +36,7 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
   opts.always_print_primitive_fields = options.always_print_primitive_fields;
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
 
-  // TODO(b/234868512): Drop this setting.
+  // TODO: Drop this setting.
   opts.allow_legacy_syntax = true;
 
   return google::protobuf::json_internal::BinaryToJsonStream(
@@ -63,7 +63,7 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
   opts.ignore_unknown_fields = options.ignore_unknown_fields;
   opts.case_insensitive_enum_parsing = options.case_insensitive_enum_parsing;
 
-  // TODO(b/234868512): Drop this setting.
+  // TODO: Drop this setting.
   opts.allow_legacy_syntax = true;
 
   return google::protobuf::json_internal::JsonToBinaryStream(
@@ -90,7 +90,7 @@ absl::Status MessageToJsonString(const Message& message, std::string* output,
   opts.always_print_primitive_fields = options.always_print_primitive_fields;
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
 
-  // TODO(b/234868512): Drop this setting.
+  // TODO: Drop this setting.
   opts.allow_legacy_syntax = true;
 
   return google::protobuf::json_internal::MessageToJsonString(message, output, opts);
@@ -102,7 +102,7 @@ absl::Status JsonStringToMessage(absl::string_view input, Message* message,
   opts.ignore_unknown_fields = options.ignore_unknown_fields;
   opts.case_insensitive_enum_parsing = options.case_insensitive_enum_parsing;
 
-  // TODO(b/234868512): Drop this setting.
+  // TODO: Drop this setting.
   opts.allow_legacy_syntax = true;
 
   return google::protobuf::json_internal::JsonStringToMessage(input, message, opts);

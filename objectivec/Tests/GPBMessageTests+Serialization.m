@@ -23,7 +23,7 @@
 
 @implementation MessageSerializationTests
 
-// TODO(thomasvl): Pull tests over from GPBMessageTests that are serialization
+// TODO: Pull tests over from GPBMessageTests that are serialization
 // specific.
 
 - (void)testProto3SerializationHandlingDefaults {

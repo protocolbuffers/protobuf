@@ -50,7 +50,7 @@ void SetMessageVariables(
   (*variables)["group_or_message"] =
       (GetType(descriptor) == FieldDescriptor::TYPE_GROUP) ? "Group"
                                                            : "Message";
-  // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
+  // TODO: Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
@@ -132,7 +132,7 @@ int ImmutableMessageFieldGenerator::GetNumBitsForBuilder() const { return 1; }
 
 void ImmutableMessageFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  // TODO(jonp): In the future, consider having a method specific to the
+  // TODO: In the future, consider having a method specific to the
   // interface so that builders can choose dynamically to either return a
   // message or a nested builder, so that asking for the interface doesn't
   // cause a message to ever be built.
@@ -800,7 +800,7 @@ int RepeatedImmutableMessageFieldGenerator::GetNumBitsForBuilder() const {
 
 void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  // TODO(jonp): In the future, consider having methods specific to the
+  // TODO: In the future, consider having methods specific to the
   // interface so that builders can choose dynamically to either return a
   // message or a nested builder, so that asking for the interface doesn't
   // cause a message to ever be built.

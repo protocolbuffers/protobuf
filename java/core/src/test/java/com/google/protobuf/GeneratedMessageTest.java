@@ -601,7 +601,7 @@ public class GeneratedMessageTest {
             // Create expected version passing foreign message instance explicitly.
             .setOptionalForeignMessage(ForeignMessage.newBuilder().setC(123).build())
             .build();
-    // TODO(ngd): Upgrade to using real #equals method once implemented
+    // TODO: Upgrade to using real #equals method once implemented
     assertThat(message.toString()).isEqualTo(expectedMessage.toString());
   }
 

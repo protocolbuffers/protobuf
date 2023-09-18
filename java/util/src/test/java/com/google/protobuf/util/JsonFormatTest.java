@@ -562,7 +562,7 @@ public class JsonFormatTest {
 
   @Test
   public void testParserRejectDuplicatedFields() throws Exception {
-    // TODO(xiaofeng): The parser we are currently using (GSON) will accept and keep the last
+    // TODO: The parser we are currently using (GSON) will accept and keep the last
     // one if multiple entries have the same name. This is not the desired behavior but it can
     // only be fixed by using our own parser. Here we only test the cases where the names are
     // different but still referring to the same field.

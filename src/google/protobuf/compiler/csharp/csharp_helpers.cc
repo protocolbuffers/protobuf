@@ -268,7 +268,7 @@ std::string GetPropertyName(const FieldDescriptor* descriptor) {
     "Parser"
     });
 
-  // TODO(jtattermusch): consider introducing csharp_property_name field option
+  // TODO: consider introducing csharp_property_name field option
   std::string property_name = UnderscoresToPascalCase(GetFieldName(descriptor));
   // Avoid either our own type name or reserved names.
   // There are various ways of ending up with naming collisions, but we try to avoid obvious

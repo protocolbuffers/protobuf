@@ -11,7 +11,7 @@ package com.google.protobuf;
 final class NewInstanceSchemaLite implements NewInstanceSchema {
   @Override
   public Object newInstance(Object defaultInstance) {
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     return ((GeneratedMessageLite<?, ?>) defaultInstance).newMutableInstance();
   }

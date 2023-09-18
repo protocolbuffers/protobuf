@@ -266,7 +266,7 @@ void ImmutableServiceGenerator::GenerateCallBlockingMethod(
 void ImmutableServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
                                                      io::Printer* printer) {
   /*
-   * TODO(cpovirk): The exception message says "Service.foo" when it may be
+   * TODO: The exception message says "Service.foo" when it may be
    * "BlockingService.foo."  Consider fixing.
    */
   printer->Print(

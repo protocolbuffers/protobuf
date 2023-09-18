@@ -551,7 +551,7 @@ public abstract class GeneratedMessageLite<
         throws IOException {
       copyOnWrite();
       try {
-        // TODO(yilunchong): Try to make input with type CodedInputStream.ArrayDecoder use
+        // TODO: Try to make input with type CodedInputStream.ArrayDecoder use
         // fast path.
         Protobuf.getInstance().schemaFor(instance).mergeFrom(
             instance, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
@@ -620,7 +620,7 @@ public abstract class GeneratedMessageLite<
         throws IOException {
       int fieldNumber = WireFormat.getTagFieldNumber(tag);
 
-      // TODO(dweis): How much bytecode would be saved by not requiring the generated code to
+      // TODO: How much bytecode would be saved by not requiring the generated code to
       //     provide the default instance?
       GeneratedExtension<MessageType, ?> extension =
           extensionRegistry.findLiteExtensionByNumber(defaultInstance, fieldNumber);
@@ -658,7 +658,7 @@ public abstract class GeneratedMessageLite<
         return parseUnknownField(tag, input);
       }
 
-      // TODO(b/230609037): remove the unused variable
+      // TODO: remove the unused variable
       FieldSet<ExtensionDescriptor> unused = ensureExtensionsAreMutable();
 
       if (packed) {
@@ -754,13 +754,13 @@ public abstract class GeneratedMessageLite<
         return true;
       }
 
-      // TODO(dweis): Do we really want to support non message set wire format in message sets?
+      // TODO: Do we really want to support non message set wire format in message sets?
       // Full runtime does... So we do for now.
       int wireType = WireFormat.getTagWireType(tag);
       if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
         return parseUnknownField(defaultInstance, input, extensionRegistry, tag);
       } else {
-        // TODO(dweis): Should we throw on invalid input? Full runtime does not...
+        // TODO: Should we throw on invalid input? Full runtime does not...
         return input.skipField(tag);
       }
     }
@@ -852,7 +852,7 @@ public abstract class GeneratedMessageLite<
         throws IOException {
       int fieldNumber = typeId;
       int tag = WireFormat.makeTag(typeId, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-      // TODO(b/230609037): remove the unused variable
+      // TODO: remove the unused variable
       boolean unused = parseExtension(input, extensionRegistry, extension, tag, fieldNumber);
     }
 
@@ -1512,7 +1512,7 @@ public abstract class GeneratedMessageLite<
     }
     boolean isInitialized = Protobuf.getInstance().schemaFor(message).isInitialized(message);
     if (shouldMemoize) {
-      // TODO(b/230609037): remove the unused variable
+      // TODO: remove the unused variable
       Object unused =
           message.dynamicMethod(
               MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, isInitialized ? message : null);
@@ -1613,14 +1613,14 @@ public abstract class GeneratedMessageLite<
    * A static helper method for parsing a partial from input using the extension registry and the
    * instance.
    */
-  // TODO(dweis): Should this verify that the last tag was 0?
+  // TODO: Should this verify that the last tag was 0?
   static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
       T instance, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
       throws InvalidProtocolBufferException {
     @SuppressWarnings("unchecked") // Guaranteed by protoc
     T result = instance.newMutableInstance();
     try {
-      // TODO(yilunchong): Try to make input with type CodedInpuStream.ArrayDecoder use
+      // TODO: Try to make input with type CodedInpuStream.ArrayDecoder use
       // fast path.
       Schema<T> schema = Protobuf.getInstance().schemaFor(result);
       schema.mergeFrom(result, CodedInputStreamReader.forCodedInput(input), extensionRegistry);

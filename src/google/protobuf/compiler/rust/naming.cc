@@ -144,7 +144,7 @@ std::string RustModule(Context<Descriptor> msg) {
 }
 
 std::string RustInternalModuleName(Context<FileDescriptor> file) {
-  // TODO(b/291853557): Introduce a more robust mangling here to avoid conflicts
+  // TODO: Introduce a more robust mangling here to avoid conflicts
   // between `foo/bar/baz.proto` and `foo_bar/baz.proto`.
   return absl::StrReplaceAll(StripProto(file.desc().name()), {{"/", "_"}});
 }

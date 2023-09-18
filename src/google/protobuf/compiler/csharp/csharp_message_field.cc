@@ -234,7 +234,7 @@ void MessageOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 }
 
 void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
-  // TODO(jonskeet): We may be able to do better than this
+  // TODO: We may be able to do better than this
   printer->Print(
     variables_,
     "$type_name$ subBuilder = new $type_name$();\n"

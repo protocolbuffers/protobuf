@@ -68,7 +68,7 @@ std::string PrintShortTextFormat(const google::protobuf::Message& message) {
 }  // namespace
 
 // A reporter to report the total number of diffs.
-// TODO(ykzhu): we can improve this to take into account the value differencers.
+// TODO: we can improve this to take into account the value differencers.
 class NumDiffsReporter : public google::protobuf::util::MessageDifferencer::Reporter {
  public:
   NumDiffsReporter() : num_diffs_(0) {}
@@ -200,7 +200,7 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
 // implementation is to find the longest matching sequence from the first
 // element. The optimal solution requires to use //util/diff/lcs.h, which is
 // not open sourced yet. Overwrite this method if you want to have that.
-// TODO(ykzhu): change to use LCS once it is open sourced.
+// TODO: change to use LCS once it is open sourced.
 void MatchIndicesPostProcessorForSmartList(std::vector<int>* match_list1,
                                            std::vector<int>* match_list2) {
   int last_matched_index = -1;
@@ -1144,7 +1144,7 @@ bool MessageDifferencer::CompareMapField(
   // When both map fields are on map, do not sync to repeated field.
   if (reflection1->GetMapData(message1, repeated_field)->IsMapValid() &&
       reflection2->GetMapData(message2, repeated_field)->IsMapValid() &&
-      // TODO(jieluo): Add support for reporter
+      // TODO: Add support for reporter
       reporter_ == nullptr &&
       // Users didn't set custom map field key comparator
       map_field_key_comparator_.find(repeated_field) ==
@@ -2163,7 +2163,7 @@ void MessageDifferencer::StreamReporter::PrintUnknownFieldValue(
           "\"%s\"", absl::CEscape(unknown_field->length_delimited()).c_str());
       break;
     case UnknownField::TYPE_GROUP:
-      // TODO(kenton):  Print the contents of the group like we do for
+      // TODO:  Print the contents of the group like we do for
       //   messages.  Requires an equivalent of ShortDebugString() for
       //   UnknownFieldSet.
       output = "{ ... }";

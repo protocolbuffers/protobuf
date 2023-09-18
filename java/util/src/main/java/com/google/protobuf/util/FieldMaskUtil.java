@@ -39,7 +39,7 @@ public final class FieldMaskUtil {
    * Converts a FieldMask to a string.
    */
   public static String toString(FieldMask fieldMask) {
-    // TODO(xiaofeng): Consider using com.google.common.base.Joiner here instead.
+    // TODO: Consider using com.google.common.base.Joiner here instead.
     StringBuilder result = new StringBuilder();
     boolean first = true;
     for (String value : fieldMask.getPathsList()) {
@@ -61,7 +61,7 @@ public final class FieldMaskUtil {
    * Parses from a string to a FieldMask.
    */
   public static FieldMask fromString(String value) {
-    // TODO(xiaofeng): Consider using com.google.common.base.Splitter here instead.
+    // TODO: Consider using com.google.common.base.Splitter here instead.
     return fromStringList(Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
   }
 
@@ -71,7 +71,7 @@ public final class FieldMaskUtil {
    * @throws IllegalArgumentException if any of the field path is invalid.
    */
   public static FieldMask fromString(Class<? extends Message> type, String value) {
-    // TODO(xiaofeng): Consider using com.google.common.base.Splitter here instead.
+    // TODO: Consider using com.google.common.base.Splitter here instead.
     return fromStringList(type, Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
   }
 
@@ -285,7 +285,7 @@ public final class FieldMaskUtil {
   public static final class MergeOptions {
     private boolean replaceMessageFields = false;
     private boolean replaceRepeatedFields = false;
-    // TODO(b/28277137): change the default behavior to always replace primitive fields after
+    // TODO: change the default behavior to always replace primitive fields after
     // fixing all failing TAP tests.
     private boolean replacePrimitiveFields = false;
 

@@ -145,14 +145,14 @@ final class MessageLiteToString {
       // only works if the method names have not been proguarded out or renamed.
       Method getMethod = getter.getValue();
       Method hasMethod = hazzers.get("has" + suffix);
-      // TODO(dweis): Fix proto3 semantics.
+      // TODO: Fix proto3 semantics.
       if (getMethod != null) {
         Object value = GeneratedMessageLite.invokeOrDie(getMethod, messageLite);
         final boolean hasValue =
             hasMethod == null
                 ? !isDefaultValue(value)
                 : (Boolean) GeneratedMessageLite.invokeOrDie(hasMethod, messageLite);
-        // TODO(dweis): This doesn't stop printing oneof case twice: value and enum style.
+        // TODO: This doesn't stop printing oneof case twice: value and enum style.
         if (hasValue) {
           printField(buffer, indent, suffix, value);
         }

@@ -60,7 +60,7 @@ void SetPrimitiveVariables(
   (*variables)["null_check"] =
       "  java.lang.Class<?> valueClass = value.getClass();\n";
 
-  // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
+  // TODO: Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
@@ -149,7 +149,7 @@ int ImmutableStringFieldLiteGenerator::GetNumBitsForMessage() const {
 // properly incentivized to only fetch the data they need to read and wish to
 // reduce the number of allocations incurred when running on a user's device.
 
-// TODO(dweis): Consider dropping all of the *Bytes() methods. They really
+// TODO: Consider dropping all of the *Bytes() methods. They really
 //     shouldn't be necessary or used on devices.
 void ImmutableStringFieldLiteGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {

@@ -316,13 +316,13 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   }
 
   /**
-   * TODO(xiaofeng): remove this after b/29368482 is fixed. We need to move this interface to
+   * TODO: remove this after b/29368482 is fixed. We need to move this interface to
    * AbstractMessage in order to versioning GeneratedMessage but this move breaks binary
    * compatibility for AppEngine. After AppEngine is fixed we can exclude this from google3.
    */
   protected interface BuilderParent extends AbstractMessage.BuilderParent {}
 
-  /** TODO(xiaofeng): remove this together with GeneratedMessage.BuilderParent. */
+  /** TODO: remove this together with GeneratedMessage.BuilderParent. */
   protected abstract Message.Builder newBuilderForType(BuilderParent parent);
 
   @Override
@@ -939,7 +939,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
               output.writeMessageSetExtension(descriptor.getNumber(), (Message) next.getValue());
             }
           } else {
-            // TODO(xiangl): Taken care of following code, it may cause
+            // TODO: Taken care of following code, it may cause
             // problem when we use LazyField for normal fields/extensions.
             // Due to the optional field can be duplicated at the end of
             // serialized bytes, which will make the serialized size change
@@ -1655,7 +1655,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    */
   public static class GeneratedExtension<ContainingType extends Message, Type>
       extends Extension<ContainingType, Type> {
-    // TODO(kenton):  Find ways to avoid using Java reflection within this
+    // TODO:  Find ways to avoid using Java reflection within this
     //   class.  Also try to avoid suppressing unchecked warnings.
 
     // We can't always initialize the descriptor of a GeneratedExtension when

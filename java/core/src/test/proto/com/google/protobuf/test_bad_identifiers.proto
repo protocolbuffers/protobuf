@@ -54,7 +54,7 @@ message ForbiddenWordsLeadingUnderscoreMessage {
   optional bool _all_fields = 5;
   optional bool _descriptor_for_type = 6;
   optional bool _initialization_error_string = 7;
-  // TODO(b/219045204): re-enable
+  // TODO: re-enable
   // optional bool _unknown_fields = 8;
   // obsolete. kept for backwards compatibility of generated code
   optional bool _cached_size = 9;
@@ -75,7 +75,7 @@ message ForbiddenWordsCamelMessage {
   optional bool initializationErrorString = 5;
   optional bool descriptorForType = 6;
   optional bool allFields = 7;
-  // TODO(b/219045204): re-enable
+  // TODO: re-enable
   // optional bool unknownFields = 8;
   // obsolete. kept for backwards compatibility of generated code
   optional bool cachedSize = 9;
@@ -154,7 +154,7 @@ service TestConflictingMethodNames {
 }
 
 message TestConflictingFieldNames {
-  // TODO(b/261750190) Remove these tests once this behavior is removed.
+  // TODO Remove these tests once this behavior is removed.
   option deprecated_legacy_json_field_conflicts = true;
 
   enum TestEnum {

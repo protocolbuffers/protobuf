@@ -386,7 +386,7 @@ public abstract class AbstractMessageLite<
       if (values instanceof LazyStringList) {
         // For StringOrByteStringLists, check the underlying elements to avoid
         // forcing conversions of ByteStrings to Strings.
-        // TODO(dweis): Could we just prohibit nulls in all protobuf lists and get rid of this? Is
+        // TODO: Could we just prohibit nulls in all protobuf lists and get rid of this? Is
         // if even possible to hit this condition as all protobuf methods check for null first,
         // right?
         List<?> lazyValues = ((LazyStringList) values).getUnderlyingElements();

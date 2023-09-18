@@ -248,7 +248,7 @@ static void upb_util_FindUnsetRequiredInternal(upb_FindContext* ctx,
   // in the previous loop.  We do this separately because this loop will also
   // find present extensions, which the previous loop will not.
   //
-  // TODO(haberman): consider changing upb_Message_Next() to be capable of
+  // TODO: consider changing upb_Message_Next() to be capable of
   // visiting extensions only, for example with a kUpb_Message_BeginEXT
   // constant.
   size_t iter = kUpb_Message_Begin;

@@ -659,7 +659,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
   @Override
   public <K, V> void writeMap(int fieldNumber, MapEntryLite.Metadata<K, V> metadata, Map<K, V> map)
       throws IOException {
-    // TODO(liujisi): Reverse write those entries.
+    // TODO: Reverse write those entries.
     for (Map.Entry<K, V> entry : map.entrySet()) {
       int prevBytes = getTotalBytesWritten();
       writeMapEntryField(this, MAP_VALUE_NUMBER, metadata.valueType, entry.getValue());
@@ -1379,7 +1379,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value, offset, length));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }
@@ -1409,7 +1409,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
       }
 
@@ -1920,7 +1920,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value, offset, length));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }
@@ -1948,7 +1948,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
       }
 
@@ -2465,7 +2465,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value, offset, length));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }
@@ -2497,7 +2497,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }
@@ -3006,7 +3006,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value, offset, length));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }
@@ -3038,7 +3038,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }

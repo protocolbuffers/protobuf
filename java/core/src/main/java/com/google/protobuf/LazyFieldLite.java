@@ -22,7 +22,7 @@ import java.io.IOException;
  * All of the getters are expected to be thread-safe. When used in the context of a
  * MessageLite.Builder, setters can be invoked, but there is no guarantee of thread safety.
  *
- * <p>TODO(yatin,dweis): Consider splitting this class's functionality and put the mutable methods
+ * <p>TODO: Consider splitting this class's functionality and put the mutable methods
  * into a separate builder class to allow us to give stronger compile-time guarantees.
  *
  * <p>This class is internal implementation detail of the protobuf library, so you don't need to use
@@ -86,7 +86,7 @@ public class LazyFieldLite {
 
   /**
    * The memoized bytes for {@code value}. This is an optimization for the toByteString() method to
-   * not have to recompute its return-value on each invocation. TODO(yatin): Figure out whether this
+   * not have to recompute its return-value on each invocation. TODO: Figure out whether this
    * optimization is actually necessary.
    */
   private volatile ByteString memoizedBytes;

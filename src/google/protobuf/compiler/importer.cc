@@ -52,7 +52,7 @@ using google::protobuf::io::win32::open;
 #endif
 
 // Returns true if the text looks like a Windows-style absolute path, starting
-// with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with
+// with a drive letter.  Example:  "C:\foo".  TODO:  Share this with
 // copy in command_line_interface.cc?
 static bool IsWindowsAbsolutePath(absl::string_view text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -242,13 +242,13 @@ DiskSourceTree::~DiskSourceTree() {}
 // - Any consecutive '/'s are collapsed into a single slash.
 // Note that the resulting string may be empty.
 //
-// TODO(kenton):  It would be nice to handle "..", e.g. so that we can figure
+// TODO:  It would be nice to handle "..", e.g. so that we can figure
 //   out that "foo/bar.proto" is inside "baz/../foo".  However, if baz is a
 //   symlink or doesn't exist, then things get complicated, and we can't
 //   actually determine this without investigating the filesystem, probably
 //   in non-portable ways.  So, we punt.
 //
-// TODO(kenton):  It would be nice to use realpath() here except that it
+// TODO:  It would be nice to use realpath() here except that it
 //   resolves symbolic links.  This could cause problems if people place
 //   symbolic links in their source tree.  For example, if you executed:
 //     protoc --proto_path=foo foo/bar/baz.proto

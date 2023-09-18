@@ -201,7 +201,7 @@ function test_utf8()
     upb.decode(test_messages_proto3.TestAllTypesProto3, serialized)
   end)
 
-  -- TODO(haberman): should proto3 accessors also check UTF-8 at set time?
+  -- TODO: should proto3 accessors also check UTF-8 at set time?
 end
 
 function test_string_double_map()

@@ -34,8 +34,8 @@ def _VerifyExtensionHandle(message, extension_handle):
                     message.DESCRIPTOR.full_name))
 
 
-# TODO(robinson): Unify error handling of "unknown extension" crap.
-# TODO(robinson): Support iteritems()-style iteration over all
+# TODO: Unify error handling of "unknown extension" crap.
+# TODO: Support iteritems()-style iteration over all
 # extensions with the "has" bits turned on?
 class _ExtensionDict(object):
 

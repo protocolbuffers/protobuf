@@ -635,7 +635,7 @@ std::string FieldMessageTypeName(const FieldDescriptor* field,
 
 std::string StripProto(absl::string_view filename) {
   /*
-   * TODO(github/georgthegreat) remove this proxy method
+   * TODO remove this proxy method
    * once Google's internal codebase will become ready
    */
   return compiler::StripProto(filename);
@@ -1435,7 +1435,7 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
   }
 
   static const auto* bootstrap_mapping =
-      // TODO(b/242858704) Replace these with string_view once we remove
+      // TODO Replace these with string_view once we remove
       // StringPiece.
       new absl::flat_hash_map<absl::string_view, std::string>{
           {"net/proto2/proto/descriptor",

@@ -215,7 +215,7 @@ const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
 const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
                                                         const char* name) {
   upb_value v;
-  // TODO(haberman): non-extension fields and oneofs.
+  // TODO: non-extension fields and oneofs.
   if (upb_strtable_lookup(&s->syms, name, &v)) {
     switch (_upb_DefType_Type(v)) {
       case UPB_DEFTYPE_EXT: {

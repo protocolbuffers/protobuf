@@ -41,7 +41,7 @@ class MultiFileErrorCollector;
 class SourceTree;
 class DiskSourceTree;
 
-// TODO(kenton):  Move all SourceTree stuff to a separate file?
+// TODO:  Move all SourceTree stuff to a separate file?
 
 // An implementation of DescriptorDatabase which loads files from a SourceTree
 // and parses them.
@@ -132,7 +132,7 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
 // This is really just a thin wrapper around SourceTreeDescriptorDatabase.
 // You may find that SourceTreeDescriptorDatabase is more flexible.
 //
-// TODO(kenton):  I feel like this class is not well-named.
+// TODO:  I feel like this class is not well-named.
 class PROTOBUF_EXPORT Importer {
  public:
   Importer(SourceTree* source_tree, MultiFileErrorCollector* error_collector);
@@ -228,7 +228,7 @@ class PROTOBUF_EXPORT SourceTree {
   // description of the error.
   // Subclasses should implement this method and return a meaningful value for
   // better error reporting.
-  // TODO(xiaofeng): change this to a pure virtual function.
+  // TODO: change this to a pure virtual function.
   virtual std::string GetLastErrorMessage();
 };
 

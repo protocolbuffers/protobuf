@@ -1284,7 +1284,7 @@ class TextFormat::Parser::ParserImpl {
   // Consumes Any::type_url value, of form "type.googleapis.com/full.type.Name"
   // or "type.googleprod.com/full.type.Name"
   bool ConsumeAnyTypeUrl(std::string* full_type_name, std::string* prefix) {
-    // TODO(saito) Extend Consume() to consume multiple tokens at once, so that
+    // TODO Extend Consume() to consume multiple tokens at once, so that
     // this code can be written as just DO(Consume(kGoogleApisTypePrefix)).
     DO(ConsumeIdentifier(prefix));
     while (TryConsume(".")) {
@@ -2427,7 +2427,7 @@ bool MapFieldPrinterHelper::SortMap(
           const_cast<RepeatedPtrField<Message>*>(&map_field)->Mutable(i));
     }
   } else {
-    // TODO(teboring): For performance, instead of creating map entry message
+    // TODO: For performance, instead of creating map entry message
     // for each element, just store map keys and sort them.
     const Descriptor* map_entry_desc = field->message_type();
     const Message* prototype =

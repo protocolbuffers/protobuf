@@ -440,7 +440,7 @@ void BinaryAndJsonConformanceSuite::ExpectParseFailureForProto(
 // by valid protobuf data.  We can try running this twice: once with this
 // data verbatim and once with this data followed by some valid data.
 //
-// TODO(haberman): implement the second of these.
+// TODO: implement the second of these.
 void BinaryAndJsonConformanceSuite::ExpectHardParseFailureForProto(
     const string& proto, const string& test_name, ConformanceLevel level) {
   return ExpectParseFailureForProto(proto, test_name, level);
@@ -1626,14 +1626,14 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     // Additional test to check merging oneof message.
     TestMergeOneofMessage();
 
-    // TODO(haberman):
+    // TODO:
     // TestValidDataForType(FieldDescriptor::TYPE_GROUP
 
     // Unknown fields.
     {
       TestAllTypesProto3 messageProto3;
       TestAllTypesProto2 messageProto2;
-      // TODO(yilunchong): update this behavior when unknown field's behavior
+      // TODO: update this behavior when unknown field's behavior
       // changed in open source. Also delete
       // Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
       // from failure list of python_cpp python java

@@ -41,7 +41,7 @@ extern "C" {
 #endif
 
 enum {
-  /* When set, emits 0/default values.  TODO(haberman): proto3 only? */
+  /* When set, emits 0/default values.  TODO: proto3 only? */
   upb_JsonEncode_EmitDefaults = 1 << 0,
 
   /* When set, use normal (snake_case) field names instead of JSON (camelCase)

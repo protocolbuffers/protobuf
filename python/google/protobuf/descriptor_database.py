@@ -118,11 +118,11 @@ class DescriptorDatabase(object):
         raise KeyError(symbol)
 
   def FindFileContainingExtension(self, extendee_name, extension_number):
-    # TODO(jieluo): implement this API.
+    # TODO: implement this API.
     return None
 
   def FindAllExtensionNumbers(self, extendee_name):
-    # TODO(jieluo): implement this API.
+    # TODO: implement this API.
     return []
 
   def _AddSymbol(self, name, file_desc_proto):

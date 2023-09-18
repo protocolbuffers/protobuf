@@ -8,6 +8,6 @@
 #ifndef GOOGLE_PROTOBUF_METADATA_H__
 #define GOOGLE_PROTOBUF_METADATA_H__
 
-// TODO(b/151117630): Remove this file and all instances where it gets imported.
+// TODO: Remove this file and all instances where it gets imported.
 
 #endif  // GOOGLE_PROTOBUF_METADATA_H__

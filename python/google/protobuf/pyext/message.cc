@@ -264,7 +264,7 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   Py_INCREF(py_descriptor);
   newtype->py_message_descriptor = py_descriptor;
   newtype->message_descriptor = descriptor;
-  // TODO(amauryfa): Don't always use the canonical pool of the descriptor,
+  // TODO: Don't always use the canonical pool of the descriptor,
   // use the MessageFactory optionally passed in the class dict.
   PyDescriptorPool* py_descriptor_pool =
       GetDescriptorPool_FromPool(descriptor->file()->pool());
@@ -275,7 +275,7 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   Py_INCREF(newtype->py_message_factory);
 
   // Register the message in the MessageFactory.
-  // TODO(amauryfa): Move this call to MessageFactory.GetPrototype() when the
+  // TODO: Move this call to MessageFactory.GetPrototype() when the
   // MessageFactory is fully implemented in C++.
   if (message_factory::RegisterMessageClass(newtype->py_message_factory,
                                             descriptor, newtype) < 0) {
@@ -1579,7 +1579,7 @@ static PyObject* InternalSerializeToString(
       return nullptr;
     }
 
-    // TODO(haberman): this is a (hopefully temporary) hack.  The unit testing
+    // TODO: this is a (hopefully temporary) hack.  The unit testing
     // infrastructure reloads all pure-Python modules for every test, but not
     // C++ modules (because that's generally impossible:
     // http://bugs.python.org/issue1144263).  But if we cache EncodeError, we'll
@@ -1836,7 +1836,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   // ctx has an explicit limit set (length of string_view), so we have to
   // check we ended at that limit.
   if (!ctx.EndedAtLimit()) {
-    // TODO(jieluo): Raise error and return NULL instead.
+    // TODO: Raise error and return NULL instead.
     // b/27494216
     PyErr_Warn(nullptr, "Unexpected end-group tag: Not all data was converted");
     return PyLong_FromLong(data.len - ctx.BytesUntilLimit(ptr));
@@ -1940,7 +1940,7 @@ static PyObject* ListFields(CMessage* self) {
       // With C++ descriptors, the field can always be retrieved, but for
       // unknown extensions which have not been imported in Python code, there
       // is no message class and we cannot retrieve the value.
-      // TODO(amauryfa): consider building the class on the fly!
+      // TODO: consider building the class on the fly!
       if (fields[i]->message_type() != nullptr &&
           message_factory::GetMessageClass(GetFactoryForMessage(self),
                                            fields[i]->message_type()) ==
@@ -2785,7 +2785,7 @@ PyObject* PyMessage_NewMessageOwnedExternally(Message* message,
 }
 
 void InitGlobals() {
-  // TODO(gps): Check all return values in this function for NULL and propagate
+  // TODO: Check all return values in this function for NULL and propagate
   // the error (MemoryError) on up to result in an import failure.  These should
   // also be freed and reset to NULL during finalization.
   kDESCRIPTOR = PyUnicode_FromString("DESCRIPTOR");

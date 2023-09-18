@@ -26,7 +26,7 @@ module Google
       Upb_Encode_SkipUnknown = 2
 
       ## JSON Encoding options
-      # When set, emits 0/default values.  TODO(haberman): proto3 only?
+      # When set, emits 0/default values.  TODO: proto3 only?
       Upb_JsonEncode_EmitDefaults = 1
       # When set, use normal (snake_case) field names instead of JSON (camelCase) names.
       Upb_JsonEncode_UseProtoNames = 2

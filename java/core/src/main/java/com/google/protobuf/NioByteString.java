@@ -143,7 +143,7 @@ final class NioByteString extends ByteString.LeafByteString {
       offset = buffer.arrayOffset() + buffer.position();
       length = buffer.remaining();
     } else {
-      // TODO(nathanmittler): Can we optimize this?
+      // TODO: Can we optimize this?
       bytes = toByteArray();
       offset = 0;
       length = bytes.length;

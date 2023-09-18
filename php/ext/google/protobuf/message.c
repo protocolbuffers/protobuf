@@ -667,7 +667,7 @@ PHP_METHOD(Message, mergeFrom) {
   // zend_parse_parameters().
   PBPHP_ASSERT(from->desc == intern->desc);
 
-  // TODO(haberman): use a temp arena for this.
+  // TODO: use a temp arena for this.
   upb_EncodeStatus status = upb_Encode(from->msg, l, 0, arena, &pb, &size);
   if (!Message_checkEncodeStatus(status)) return;
 
@@ -695,7 +695,7 @@ PHP_METHOD(Message, mergeFromString) {
     return;
   }
 
-  // TODO(haberman): avoid this copy when we can make the decoder copy.
+  // TODO: avoid this copy when we can make the decoder copy.
   data_copy = upb_Arena_Malloc(arena, data_len);
   memcpy(data_copy, data, data_len);
 
@@ -754,7 +754,7 @@ PHP_METHOD(Message, mergeFromJsonString) {
     return;
   }
 
-  // TODO(haberman): avoid this copy when we can make the decoder copy.
+  // TODO: avoid this copy when we can make the decoder copy.
   data_copy = upb_Arena_Malloc(arena, data_len + 1);
   memcpy(data_copy, data, data_len);
   data_copy[data_len] = '\0';

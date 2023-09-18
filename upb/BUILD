@@ -157,7 +157,7 @@ cc_library(
 bootstrap_upb_proto_library(
     name = "descriptor_upb_proto",
     base_dir = "upb/reflection/",
-    # TODO(b/289127200): Export 'net/proto2/proto/descriptor.upb.h' and remove "-layering_check".
+    # TODO: Export 'net/proto2/proto/descriptor.upb.h' and remove "-layering_check".
     features = ["-layering_check"],
     google3_src_files = ["net/proto2/proto/descriptor.proto"],
     google3_src_rules = ["//net/proto2/proto:descriptor_proto_source"],
@@ -180,7 +180,7 @@ upb_minitable_proto_library(
     deps = ["//:descriptor_proto"],
 )
 
-# TODO(b/232091617): Once we can delete the deprecated forwarding headers
+# TODO: Once we can delete the deprecated forwarding headers
 # (= everything in upb/) we can move this build target down into reflection/
 bootstrap_cc_library(
     name = "reflection",
@@ -279,7 +279,7 @@ bootstrap_cc_library(
 )
 
 # Aliases ######################################################################
-# TODO(b/295870230): Remove these.
+# TODO: Remove these.
 
 alias(
     name = "base",

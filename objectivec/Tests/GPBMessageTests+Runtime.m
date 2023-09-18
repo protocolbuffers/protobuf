@@ -23,7 +23,7 @@
 
 @implementation MessageRuntimeTests
 
-// TODO(thomasvl): Pull tests over from GPBMessageTests that are runtime
+// TODO: Pull tests over from GPBMessageTests that are runtime
 // specific.
 
 - (void)testStartupOrdering {

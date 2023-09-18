@@ -15,7 +15,7 @@ namespace compiler {
 
 // NOTE: Allowlists in this file are not accepting new entries unless otherwise
 // specified.
-// TODO(b/136084631): Remove when empty.
+// TODO: Remove when empty.
 static constexpr auto kUnusedImports = internal::MakeAllowlist({
 // Intentionally left blank.
 });

@@ -42,7 +42,7 @@ using ::testing::AllOf;
 using ::testing::ExplainMatchResult;
 using ::testing::HasSubstr;
 
-// TODO(b/234474291): Use the gtest versions once that's available in OSS.
+// TODO: Use the gtest versions once that's available in OSS.
 template <typename T>
 absl::Status GetStatus(const absl::StatusOr<T>& s) {
   return s.status();

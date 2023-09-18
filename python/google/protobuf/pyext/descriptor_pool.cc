@@ -481,7 +481,7 @@ static PyObject* FindAllExtensions(PyObject* self, PyObject* arg) {
 // However we do check that the existing descriptor already exists in the pool,
 // which appears to always be true for existing calls -- but then why do people
 // call a function that will just be a no-op?
-// TODO(amauryfa): Need to investigate further.
+// TODO: Need to investigate further.
 
 static PyObject* AddFileDescriptor(PyObject* self, PyObject* descriptor) {
   const FileDescriptor* file_descriptor =
@@ -756,7 +756,7 @@ bool InitDescriptorPool() {
 
 // The default DescriptorPool used everywhere in this module.
 // Today it's the python_generated_pool.
-// TODO(amauryfa): Remove all usages of this function: the pool should be
+// TODO: Remove all usages of this function: the pool should be
 // derived from the context.
 PyDescriptorPool* GetDefaultDescriptorPool() {
   return python_generated_pool;

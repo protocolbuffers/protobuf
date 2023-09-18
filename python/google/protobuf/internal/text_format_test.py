@@ -1262,7 +1262,7 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
                       % (letter,) for letter in string.ascii_uppercase))
     self.CompareToGoldenText(text_format.MessageToString(message), golden)
 
-  # TODO(teboring): In c/137553523, not serializing default value for map entry
+  # TODO: In c/137553523, not serializing default value for map entry
   # message has been fixed. This test needs to be disabled in order to submit
   # that cl. Add this back when c/137553523 has been submitted.
   # def testMapOrderSemantics(self):

@@ -244,7 +244,7 @@ extend TestAllExtensions {
     optional_import_enum_extension = 23;
 
   optional string optional_string_piece_extension = 24 [ctype=STRING_PIECE];
-  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   optional string optional_cord_extension = 25;
 
@@ -288,7 +288,7 @@ extend TestAllExtensions {
     repeated_import_enum_extension = 53;
 
   repeated string repeated_string_piece_extension = 54 [ctype=STRING_PIECE];
-  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   repeated string repeated_cord_extension = 55;
 
@@ -321,7 +321,7 @@ extend TestAllExtensions {
 
   optional string default_string_piece_extension = 84 [ctype=STRING_PIECE,
                                                        default="abc"];
-  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   optional string default_cord_extension = 85 [default="123"];
 
@@ -1159,7 +1159,7 @@ extend TestExtensionInsideTable {
   optional int32 test_extension_inside_table_extension = 5;
 }
 
-// NOTE(b/202996544): Intentionally nested to mirror go/glep.
+// NOTE: Intentionally nested to mirror go/glep.
 message TestNestedGroupExtensionOuter {
   optional group Layer1OptionalGroup = 1 {
     repeated group Layer2RepeatedGroup = 2 {

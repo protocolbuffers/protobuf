@@ -7,7 +7,7 @@
 
 # This code is meant to work on Python 2.4 and above only.
 #
-# TODO(robinson): Helpers for verbose, common checks like seeing if a
+# TODO: Helpers for verbose, common checks like seeing if a
 # descriptor's cpp_type is CPPTYPE_MESSAGE.
 
 """Contains a metaclass and helper functions used to create
@@ -208,7 +208,7 @@ def _PropertyName(proto_field_name):
     proto_field_name: The protocol message field name, exactly
       as it appears (or would appear) in a .proto file.
   """
-  # TODO(robinson): Escape Python keywords (e.g., yield), and test this support.
+  # TODO: Escape Python keywords (e.g., yield), and test this support.
   # nnorwitz makes my day by writing:
   # """
   # FYI.  See the keyword module in the stdlib. This could be as simple as:
@@ -223,7 +223,7 @@ def _PropertyName(proto_field_name):
   #   the same transformation.  Note that currently if you name a field "yield",
   #   you can still access it just fine using getattr/setattr -- it's not even
   #   that cumbersome to do so.
-  # TODO(kenton):  Remove this method entirely if/when everyone agrees with my
+  # TODO:  Remove this method entirely if/when everyone agrees with my
   #   position.
   return proto_field_name
 
@@ -457,7 +457,7 @@ def _DefaultValueConstructorForField(field):
     return MakeSubMessageDefault
 
   def MakeScalarDefault(message):
-    # TODO(protobuf-team): This may be broken since there may not be
+    # TODO: This may be broken since there may not be
     # default_value.  Combine with has_default_value somehow.
     return field.default_value
   return MakeScalarDefault
@@ -682,7 +682,7 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
   default_value = field.default_value
 
   def getter(self):
-    # TODO(protobuf-team): This may be broken since there may not be
+    # TODO: This may be broken since there may not be
     # default_value.  Combine with has_default_value somehow.
     return self._fields.get(field, default_value)
   getter.__module__ = None
@@ -732,7 +732,7 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
     field: A FieldDescriptor for this field.
     cls: The class we're constructing.
   """
-  # TODO(robinson): Remove duplication with similar method
+  # TODO: Remove duplication with similar method
   # for non-repeated scalars.
   proto_field_name = field.name
   property_name = _PropertyName(proto_field_name)
@@ -772,17 +772,17 @@ def _AddPropertiesForExtensions(descriptor, cls):
     constant_name = extension_name.upper() + '_FIELD_NUMBER'
     setattr(cls, constant_name, extension_field.number)
 
-  # TODO(amauryfa): Migrate all users of these attributes to functions like
+  # TODO: Migrate all users of these attributes to functions like
   #   pool.FindExtensionByNumber(descriptor).
   if descriptor.file is not None:
-    # TODO(amauryfa): Use cls.MESSAGE_FACTORY.pool when available.
+    # TODO: Use cls.MESSAGE_FACTORY.pool when available.
     pool = descriptor.file.pool
 
 def _AddStaticMethods(cls):
-  # TODO(robinson): This probably needs to be thread-safe(?)
+  # TODO: This probably needs to be thread-safe(?)
   def RegisterExtension(field_descriptor):
     field_descriptor.containing_type = cls.DESCRIPTOR
-    # TODO(amauryfa): Use cls.MESSAGE_FACTORY.pool when available.
+    # TODO: Use cls.MESSAGE_FACTORY.pool when available.
     # pylint: disable=protected-access
     cls.DESCRIPTOR.file.pool._AddExtensionDescriptor(field_descriptor)
     _AttachFieldHelpers(cls, field_descriptor)
@@ -934,7 +934,7 @@ def _InternalUnpackAny(msg):
   Returns:
     The unpacked message.
   """
-  # TODO(amauryfa): Don't use the factory of generated messages.
+  # TODO: Don't use the factory of generated messages.
   # To make Any work with custom factories, use the message factory of the
   # parent message.
   # pylint: disable=g-import-not-at-top
@@ -946,7 +946,7 @@ def _InternalUnpackAny(msg):
   if not type_url:
     return None
 
-  # TODO(haberman): For now we just strip the hostname.  Better logic will be
+  # TODO: For now we just strip the hostname.  Better logic will be
   # required.
   type_name = type_url.split('/')[-1]
   descriptor = factory.pool.FindMessageTypeByName(type_name)
@@ -980,7 +980,7 @@ def _AddEqualsMethod(message_descriptor, cls):
     if not self.ListFields() == other.ListFields():
       return False
 
-    # TODO(jieluo): Fix UnknownFieldSet to consider MessageSet extensions,
+    # TODO: Fix UnknownFieldSet to consider MessageSet extensions,
     # then use it for the comparison.
     unknown_fields = list(self._unknown_fields)
     unknown_fields.sort()
@@ -1177,7 +1177,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
         field_number, wire_type = wire_format.UnpackTag(tag)
         if field_number == 0:
           raise message_mod.DecodeError('Field number 0 is illegal.')
-        # TODO(jieluo): remove old_pos.
+        # TODO: remove old_pos.
         old_pos = new_pos
         (data, new_pos) = decoder._DecodeUnknownField(
             buffer, new_pos, wire_type)  # pylint: disable=protected-access
@@ -1185,7 +1185,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
           return pos
         # pylint: disable=protected-access
         unknown_field_set._add(field_number, wire_type, data)
-        # TODO(jieluo): remove _unknown_fields.
+        # TODO: remove _unknown_fields.
         new_pos = local_SkipField(buffer, old_pos, end, tag_bytes)
         if new_pos == -1:
           return pos

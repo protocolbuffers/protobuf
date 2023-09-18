@@ -177,7 +177,7 @@ bool WireFormatLite::SkipField(io::CodedInputStream* input, uint32_t tag,
       if (!input->ReadVarint32(&length)) return false;
       output->WriteVarint32(tag);
       output->WriteVarint32(length);
-      // TODO(mkilavuz): Provide API to prevent extra string copying.
+      // TODO: Provide API to prevent extra string copying.
       std::string temp;
       if (!input->ReadString(&temp, length)) return false;
       output->WriteString(temp);

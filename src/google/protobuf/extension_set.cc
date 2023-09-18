@@ -1100,7 +1100,7 @@ void ExtensionSet::Swap(const MessageLite* extendee, ExtensionSet* other) {
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
     InternalSwap(other);
   } else {
-    // TODO(cfallin, rohananil): We maybe able to optimize a case where we are
+    // TODO: We maybe able to optimize a case where we are
     // swapping from heap to arena-allocated extension set, by just Own()'ing
     // the extensions.
     ExtensionSet extension_set;
@@ -1135,7 +1135,7 @@ void ExtensionSet::SwapExtension(const MessageLite* extendee,
   if (this_ext == other_ext) return;
 
   if (this_ext != nullptr && other_ext != nullptr) {
-    // TODO(cfallin, rohananil): We could further optimize these cases,
+    // TODO: We could further optimize these cases,
     // especially avoid creation of ExtensionSet, and move MergeFrom logic
     // into Extensions itself (which takes arena as an argument).
     // We do it this way to reuse the copy-across-arenas logic already

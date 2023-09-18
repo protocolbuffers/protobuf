@@ -219,7 +219,7 @@ module Google
         instance
       end
 
-      # TODO(jatl) Can this be added to the public API?
+      # TODO Can this be added to the public API?
       def real_containing_oneof
         @real_containing_oneof ||= Google::Protobuf::FFI.real_containing_oneof self
       end

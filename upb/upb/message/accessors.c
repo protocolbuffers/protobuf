@@ -83,7 +83,7 @@ bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
   upb_EncodeStatus status2 = upb_Encode(m2, layout, opts, a, &data2, &size2);
 
   if (status1 != kUpb_EncodeStatus_Ok || status2 != kUpb_EncodeStatus_Ok) {
-    // TODO(salo): How should we fail here? (In Ruby we throw an exception.)
+    // TODO: How should we fail here? (In Ruby we throw an exception.)
     upb_Arena_Free(a);
     return false;
   }

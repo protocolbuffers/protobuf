@@ -165,7 +165,7 @@ void ImmutableMapFieldGenerator::SetMessageVariables(
          variables_["boxed_value_type"], variables_["value_builder_type"]},
         ", ");
   }
-  // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
+  // TODO: Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   variables_["deprecation"] =
       descriptor_->options().deprecated() ? "@java.lang.Deprecated " : "";

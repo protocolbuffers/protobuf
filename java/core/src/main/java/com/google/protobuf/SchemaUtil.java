@@ -35,7 +35,7 @@ final class SchemaUtil {
    * GeneratedMessageLite}.
    */
   public static void requireGeneratedMessage(Class<?> messageType) {
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (!GeneratedMessageLite.class.isAssignableFrom(messageType)
         && GENERATED_MESSAGE_CLASS != null
@@ -782,7 +782,7 @@ final class SchemaUtil {
 
   private static Class<?> getGeneratedMessageClass() {
     try {
-      // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle
+      // TODO decide if we're keeping support for Full in schema classes and handle
       // this better.
       return Class.forName("com.google.protobuf.GeneratedMessageV3");
     } catch (Throwable e) {
@@ -887,7 +887,7 @@ final class SchemaUtil {
     if (enumMap == null) {
       return unknownFields;
     }
-    // TODO(dweis): Specialize for IntArrayList to avoid boxing.
+    // TODO: Specialize for IntArrayList to avoid boxing.
     if (enumList instanceof RandomAccess) {
       int writePos = 0;
       int size = enumList.size();
@@ -933,7 +933,7 @@ final class SchemaUtil {
     if (enumVerifier == null) {
       return unknownFields;
     }
-    // TODO(dweis): Specialize for IntArrayList to avoid boxing.
+    // TODO: Specialize for IntArrayList to avoid boxing.
     if (enumList instanceof RandomAccess) {
       int writePos = 0;
       int size = enumList.size();

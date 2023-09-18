@@ -1103,7 +1103,7 @@ extend TestExtensionInsideTable {
   optional int32 test_extension_inside_table_extension = 5;
 }
 
-// NOTE(b/202996544): Intentionally nested to mirror go/glep.
+// NOTE: Intentionally nested to mirror go/glep.
 message TestNestedGroupExtensionOuter {
   optional group Layer1OptionalGroup = 1 {
     repeated group Layer2RepeatedGroup = 2 {

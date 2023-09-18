@@ -71,7 +71,7 @@ using google::protobuf::io::win32::open;
 #endif
 
 TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
-  // TODO(kenton):  Test more helpers?  They're all two-liners so it seems
+  // TODO:  Test more helpers?  They're all two-liners so it seems
   //   like a waste of time.
 
   UNITTEST::TestAllTypes message;
@@ -134,7 +134,7 @@ TEST(MESSAGE_TEST_NAME, ParsePackedFromFileDescriptor) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParseHelpers) {
-  // TODO(kenton):  Test more helpers?  They're all two-liners so it seems
+  // TODO:  Test more helpers?  They're all two-liners so it seems
   //   like a waste of time.
   std::string data;
 

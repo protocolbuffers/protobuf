@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 // Do not directly access the fields of this struct - use the accessors only.
-// TODO(salo): Add a small (16 bytes, maybe?) internal buffer so we can avoid
+// TODO: Add a small (16 bytes, maybe?) internal buffer so we can avoid
 // hitting the arena for short strings.
 typedef struct {
   size_t size_;

@@ -217,13 +217,13 @@ impl<const N: usize> SettableValue<[u8]> for &'_ [u8; N] {
 }
 
 impl SettableValue<[u8]> for Vec<u8> {
-    // TODO(b/293956360): Investigate taking ownership of this when allowed by the
+    // TODO: Investigate taking ownership of this when allowed by the
     // runtime.
     impl_forwarding_settable_value!([u8], self => &self[..]);
 }
 
 impl SettableValue<[u8]> for Cow<'_, [u8]> {
-    // TODO(b/293956360): Investigate taking ownership of this when allowed by the
+    // TODO: Investigate taking ownership of this when allowed by the
     // runtime.
     impl_forwarding_settable_value!([u8], self => &self[..]);
 }
@@ -726,13 +726,13 @@ impl SettableValue<ProtoStr> for &'_ str {
 }
 
 impl SettableValue<ProtoStr> for String {
-    // TODO(b/293956360): Investigate taking ownership of this when allowed by the
+    // TODO: Investigate taking ownership of this when allowed by the
     // runtime.
     impl_forwarding_settable_value!(ProtoStr, self => ProtoStr::from_str(&self));
 }
 
 impl SettableValue<ProtoStr> for Cow<'_, str> {
-    // TODO(b/293956360): Investigate taking ownership of this when allowed by the
+    // TODO: Investigate taking ownership of this when allowed by the
     // runtime.
     impl_forwarding_settable_value!(ProtoStr, self => ProtoStr::from_str(&self));
 }
@@ -752,7 +752,7 @@ impl<'msg> Ord for ProtoStrMut<'msg> {
 
 /// Implements `PartialCmp` and `PartialEq` for the `lhs` against the `rhs`
 /// using `AsRef<[u8]>`.
-// TODO(kupiakos): consider improving to not require a `<()>` if no generics are
+// TODO: consider improving to not require a `<()>` if no generics are
 // needed
 macro_rules! impl_bytes_partial_cmp {
     ($(<($($generics:tt)*)> $lhs:ty => $rhs:ty),+ $(,)?) => {
@@ -805,7 +805,7 @@ impl_bytes_partial_cmp!(
 mod tests {
     use super::*;
 
-    // TODO(b/285309330): Add unit tests
+    // TODO: Add unit tests
 
     // Shorter and safe utility function to construct `ProtoStr` from bytes for
     // testing.

@@ -89,7 +89,7 @@ UPB_API bool upb_ExtensionRegistry_Add(upb_ExtensionRegistry* r,
 // registry. If there are any errors, the entire array is backed out.
 // The extensions must outlive the registry.
 // Possible errors include OOM or an extension number that already exists.
-// TODO(salo): There is currently no way to know the exact reason for failure.
+// TODO: There is currently no way to know the exact reason for failure.
 bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
                                     const upb_MiniTableExtension** e,
                                     size_t count);

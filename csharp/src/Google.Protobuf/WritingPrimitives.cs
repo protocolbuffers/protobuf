@@ -74,7 +74,7 @@ namespace Google.Protobuf
         {
             const int length = sizeof(float);
 
-            // TODO(jtattermusch): deduplicate the code. Populating the span is the same as for the fastpath.
+            // TODO: deduplicate the code. Populating the span is the same as for the fastpath.
             Span<byte> floatSpan = stackalloc byte[length];
             Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(floatSpan), value);
             if (!BitConverter.IsLittleEndian)

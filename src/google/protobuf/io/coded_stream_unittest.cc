@@ -62,7 +62,7 @@ namespace {
 // which failed will be printed.  The case type must be printable using
 // ostream::operator<<.
 
-// TODO(kenton):  gTest now supports "parameterized tests" which would be
+// TODO:  gTest now supports "parameterized tests" which would be
 //   a better way to accomplish this.  Rewrite when time permits.
 
 #define TEST_1D(FIXTURE, NAME, CASES)                             \
@@ -738,7 +738,7 @@ TEST_1D(CodedStreamTest, ReadStringReservesMemoryOnTotalLimit, kBlockSizes) {
     EXPECT_EQ(sizeof(kRawBytes) - strlen(kRawBytes),
               coded_input.BytesUntilTotalBytesLimit());
     EXPECT_EQ(kRawBytes, str);
-    // TODO(liujisi): Replace with a more meaningful test (see cl/60966023).
+    // TODO: Replace with a more meaningful test (see cl/60966023).
     EXPECT_GE(str.capacity(), strlen(kRawBytes));
   }
 
@@ -756,7 +756,7 @@ TEST_1D(CodedStreamTest, ReadStringReservesMemoryOnPushedLimit, kBlockSizes) {
     std::string str;
     EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
     EXPECT_EQ(kRawBytes, str);
-    // TODO(liujisi): Replace with a more meaningful test (see cl/60966023).
+    // TODO: Replace with a more meaningful test (see cl/60966023).
     EXPECT_GE(str.capacity(), strlen(kRawBytes));
   }
 
@@ -780,7 +780,7 @@ TEST_F(CodedStreamTest, ReadStringNoReservationIfLimitsNotSet) {
     // expects that string will allocate more than strlen(kRawBytes)
     // if the content of kRawBytes is appended to string in small
     // chunks.
-    // TODO(liujisi): Replace with a more meaningful test (see cl/60966023).
+    // TODO: Replace with a more meaningful test (see cl/60966023).
     EXPECT_GE(str.capacity(), strlen(kRawBytes));
   }
 

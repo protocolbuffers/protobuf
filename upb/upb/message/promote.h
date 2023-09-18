@@ -59,7 +59,7 @@ typedef enum {
 // Returns a message extension or promotes an unknown field to
 // an extension.
 //
-// TODO(ferhat): Only supports extension fields that are messages,
+// TODO: Only supports extension fields that are messages,
 // expand support to include non-message types.
 upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,

@@ -63,7 +63,7 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
 
   upb_MiniTableSub* table_sub =
       (void*)&table->subs[field->UPB_PRIVATE(submsg_index)];
-  // TODO(haberman): Add this assert back once YouTube is updated to not call
+  // TODO: Add this assert back once YouTube is updated to not call
   // this function repeatedly.
   // UPB_ASSERT(table_sub->submsg == &_kUpb_MiniTable_Empty);
   table_sub->submsg = sub;

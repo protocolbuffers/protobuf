@@ -1259,7 +1259,7 @@ class FileDescriptorTables {
   // Finding items.
 
   // Returns a null Symbol (symbol.IsNull() is true) if not found.
-  // TODO(sbenza): All callers to this function know the type they are looking
+  // TODO: All callers to this function know the type they are looking
   // for. If we propagate that information statically we can make the query
   // faster.
   inline Symbol FindNestedSymbol(const void* parent,
@@ -2159,7 +2159,7 @@ void DescriptorPool::InternalAddGeneratedFile(
 
 // Find*By* methods ==================================================
 
-// TODO(kenton):  There's a lot of repeated code here, but I'm not sure if
+// TODO:  There's a lot of repeated code here, but I'm not sure if
 //   there's any good way to factor it out.  Think about this some time when
 //   there's nothing more important to do (read: never).
 
@@ -2558,7 +2558,7 @@ Descriptor::FindExtensionRangeContainingNumber(int number) const {
 
 const Descriptor::ReservedRange* Descriptor::FindReservedRangeContainingNumber(
     int number) const {
-  // TODO(chrisn): Consider a non-linear search.
+  // TODO: Consider a non-linear search.
   for (int i = 0; i < reserved_range_count(); i++) {
     if (number >= reserved_range(i)->start && number < reserved_range(i)->end) {
       return reserved_range(i);
@@ -2569,7 +2569,7 @@ const Descriptor::ReservedRange* Descriptor::FindReservedRangeContainingNumber(
 
 const EnumDescriptor::ReservedRange*
 EnumDescriptor::FindReservedRangeContainingNumber(int number) const {
-  // TODO(chrisn): Consider a non-linear search.
+  // TODO: Consider a non-linear search.
   for (int i = 0; i < reserved_range_count(); i++) {
     if (number >= reserved_range(i)->start &&
         number <= reserved_range(i)->end) {
@@ -2788,7 +2788,7 @@ void FileDescriptor::CopyHeadingTo(FileDescriptorProto* proto) const {
     proto->set_package(package());
   }
 
-  // TODO(liujisi): Also populate when syntax="proto2".
+  // TODO: Also populate when syntax="proto2".
   FileDescriptorLegacy::Syntax syntax = FileDescriptorLegacy(this).syntax();
   if (syntax == FileDescriptorLegacy::Syntax::SYNTAX_PROTO3 ||
       syntax == FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
@@ -5368,13 +5368,13 @@ const FeatureSet* DescriptorBuilder::GetLegacyFeatureOverride(
 }
 
 void DescriptorBuilder::PostProcessFieldFeatures(FieldDescriptor& field) {
-  // TODO(b/285013359) This can be replace by a runtime check in `is_required`
+  // TODO This can be replace by a runtime check in `is_required`
   // once the `label` getter is hidden.
   if (field.features().field_presence() == FeatureSet::LEGACY_REQUIRED &&
       field.label_ == FieldDescriptor::LABEL_OPTIONAL) {
     field.label_ = FieldDescriptor::LABEL_REQUIRED;
   }
-  // TODO(b/285024320) This can be replace by a runtime check of `is_delimited`
+  // TODO This can be replace by a runtime check of `is_delimited`
   // once the `TYPE_GROUP` value is removed.
   if (field.type_ == FieldDescriptor::TYPE_MESSAGE &&
       field.features().message_encoding() == FeatureSet::DELIMITED) {
@@ -5441,7 +5441,7 @@ PROTOBUF_NOINLINE static bool ExistingFileMatchesProto(
     const FileDescriptor* existing_file, const FileDescriptorProto& proto) {
   FileDescriptorProto existing_proto;
   existing_file->CopyTo(&existing_proto);
-  // TODO(liujisi): Remove it when CopyTo supports copying syntax params when
+  // TODO: Remove it when CopyTo supports copying syntax params when
   // syntax="proto2".
   if (FileDescriptorLegacy(existing_file).syntax() ==
           FileDescriptorLegacy::Syntax::SYNTAX_PROTO2 &&
@@ -5614,7 +5614,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   }
 
   // Check to see if this file is already on the pending files list.
-  // TODO(kenton):  Allow recursive imports?  It may not work with some
+  // TODO:  Allow recursive imports?  It may not work with some
   //   (most?) programming languages.  E.g., in C++, a forward declaration
   //   of a type is not sufficient to allow it to be used even in a
   //   generated header file due to inlining.  This could perhaps be
@@ -5716,7 +5716,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
              "Missing field: FileDescriptorProto.name.");
   }
 
-  // TODO(liujisi): Report error when the syntax is empty after all the protos
+  // TODO: Report error when the syntax is empty after all the protos
   // have added the syntax statement.
   if (proto.syntax().empty() || proto.syntax() == "proto2") {
     file_->syntax_ = FileDescriptorLegacy::SYNTAX_PROTO2;
@@ -6306,7 +6306,7 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     if (descriptor->features().json_format() ==
             FeatureSet::LEGACY_BEST_EFFORT &&
         involves_default) {
-      // TODO(b/261750676) Upgrade this to an error once downstream protos
+      // TODO Upgrade this to an error once downstream protos
       // have been fixed.
       AddWarning(message_name, field, DescriptorPool::ErrorCollector::NAME,
                  make_error);
@@ -7264,7 +7264,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
     // In case of weak fields we force building the dependency. We need to know
     // if the type exist or not. If it doesn't exist we substitute Empty which
     // should only be done if the type can't be found in the generated pool.
-    // TODO(gerbens) Ideally we should query the database directly to check
+    // TODO Ideally we should query the database directly to check
     // if weak fields exist or not so that we don't need to force building
     // weak dependencies. However the name lookup rules for symbols are
     // somewhat complicated, so I defer it too another CL.
@@ -7472,7 +7472,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
         // Conflicting extension numbers should be an error. However, before
         // turning this into an error we need to fix all existing broken
         // protos first.
-        // TODO(xiaofeng): Change this to an error.
+        // TODO: Change this to an error.
         AddWarning(field->full_name(), proto,
                    DescriptorPool::ErrorCollector::NUMBER, make_error);
       }
@@ -7643,7 +7643,7 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
 // Determine if the file uses optimize_for = LITE_RUNTIME, being careful to
 // avoid problems that exist at init time.
 static bool IsLite(const FileDescriptor* file) {
-  // TODO(kenton):  I don't even remember how many of these conditions are
+  // TODO:  I don't even remember how many of these conditions are
   //   actually possible.  I'm just being super-safe.
   return file != nullptr &&
          &file->options() != &FileOptions::default_instance() &&
@@ -8146,7 +8146,7 @@ void DescriptorBuilder::ValidateExtensionRangeOptions(
 
 
     if (!range_options.declaration().empty()) {
-      // TODO(b/278783756): remove the "has_verification" check once the default
+      // TODO: remove the "has_verification" check once the default
       // is flipped to DECLARATION.
       if (range_options.has_verification() &&
           range_options.verification() == ExtensionRangeOptions::UNVERIFIED) {

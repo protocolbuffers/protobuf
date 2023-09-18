@@ -239,7 +239,7 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
   EXPECT_EQ(ext.string_source_feature(), "field");
 }
 
-// TODO(b/234474291): Use the gtest versions once that's available in OSS.
+// TODO: Use the gtest versions once that's available in OSS.
 MATCHER_P(HasError, msg_matcher, "") {
   return arg.status().code() == absl::StatusCode::kFailedPrecondition &&
          ExplainMatchResult(msg_matcher, arg.status().message(),

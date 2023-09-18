@@ -1,4 +1,4 @@
-# TODO(haberman): describe this package.
+# TODO: describe this package.
 
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(

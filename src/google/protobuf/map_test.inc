@@ -2176,7 +2176,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
     EXPECT_EQ(int32_value0a, int32_value9b);
   }
 
-  // TODO(b/181148674): After supporting arena agnostic delete or let map entry
+  // TODO: After supporting arena agnostic delete or let map entry
   // handle heap allocation, this could be removed.
   if (message.GetArena() != nullptr) {
     entry_int32_int32.release();
@@ -2289,7 +2289,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefMergeFromAndSwap) {
     EXPECT_EQ(Func(i, 26), m2.map_int32_foreign_message().at(i + 20).c());
   }
 
-  // TODO(teboring): add test for duplicated key
+  // TODO: add test for duplicated key
 }
 
 TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
@@ -4101,7 +4101,7 @@ TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {
   data.reserve(128 * 1024);
 
   {
-    // TODO(teboring): Enable no heap check when ArenaStringPtr is used in map.
+    // TODO: Enable no heap check when ArenaStringPtr is used in map.
     // NoHeapChecker no_heap;
 
     UNITTEST::TestArenaMap* from =

@@ -115,7 +115,7 @@ public class LiteTest {
 
   @Test
   public void testLiteExtensions() throws Exception {
-    // TODO(kenton):  Unlike other features of the lite library, extensions are
+    // TODO:  Unlike other features of the lite library, extensions are
     //   implemented completely differently from the regular library.  We
     //   should probably test them more thoroughly.
 

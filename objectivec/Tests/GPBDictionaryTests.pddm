@@ -743,7 +743,7 @@
 //
 // BOOL test macros
 //
-//TODO(thomasvl): enum tests
+//TODO: enum tests
 
 //%PDDM-DEFINE BOOL_TESTS_FOR_POD_VALUE(VALUE_NAME, VALUE_TYPE, VAL1, VAL2)
 //%BOOL_TESTS_COMMON(Bool, BOOL, , , YES, NO, VALUE_NAME, VALUE_TYPE, , value, POD, VAL1, VAL2)

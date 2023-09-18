@@ -99,7 +99,7 @@ class PatternedOutputStream : public io::ZeroCopyOutputStream {
       return false;
     }
 
-    // TODO(b/234159981): This is only ever constructed in test code, and only
+    // TODO: This is only ever constructed in test code, and only
     // from non-const bytes, so this is a valid cast. We need to do this since
     // OSS proto does not yet have absl::Span; once we take a full Abseil
     // dependency we should use that here instead.

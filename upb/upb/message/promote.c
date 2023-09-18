@@ -249,7 +249,7 @@ upb_DecodeStatus upb_Map_PromoteMessages(upb_Map* map,
 // OLD promotion functions, will be removed!
 ////////////////////////////////////////////////////////////////////////////////
 
-// Warning: See TODO(b/267655898)
+// Warning: See TODO
 upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, const upb_MiniTable* sub_mini_table,
@@ -306,7 +306,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
 //
 // Since the repeated field is not a scalar type we don't check for
 // kUpb_LabelFlags_IsPacked.
-// TODO(b/251007554): Optimize. Instead of converting messages one at a time,
+// TODO: Optimize. Instead of converting messages one at a time,
 // scan all unknown data once and compact.
 upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
     upb_Message* msg, const upb_MiniTableField* field,

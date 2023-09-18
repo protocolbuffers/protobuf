@@ -22,7 +22,7 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-// TODO(b/250947994): PROTOC_EXPORT is only used to allow the CMake build to
+// TODO: PROTOC_EXPORT is only used to allow the CMake build to
 // find/link these in the unittest, this is not public api.
 
 // Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform

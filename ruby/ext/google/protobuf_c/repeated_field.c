@@ -263,7 +263,7 @@ static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
     memset(&fill, 0, sizeof(fill));
     for (int i = size; i < index; i++) {
       // Fill default values.
-      // TODO(haberman): should this happen at the upb level?
+      // TODO: should this happen at the upb level?
       upb_Array_Set(array, i, fill);
     }
   }

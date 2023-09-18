@@ -69,7 +69,7 @@ absl::flat_hash_map<absl::string_view, std::string> FileVars(
   };
 }
 
-// TODO(b/203101078): remove pragmas that suppresses uninitialized warnings when
+// TODO: remove pragmas that suppresses uninitialized warnings when
 // clang bug is fixed.
 void MuteWuninitialized(io::Printer* p) {
   p->Emit(R"(
@@ -620,7 +620,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
       )");
 
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
-  // TODO(gerbens) This is to include parse_context.h, we need a better way
+  // TODO This is to include parse_context.h, we need a better way
   IncludeFile("third_party/protobuf/extension_set.h", p);
   IncludeFile("third_party/protobuf/wire_format_lite.h", p);
   if (ShouldVerify(file_, options_, &scc_analyzer_)) {
@@ -1660,7 +1660,7 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(io::Printer* p) {
   // The TableStruct is also outputted in weak_message_field.cc, because the
   // weak fields must refer to table struct but cannot include the header.
   // Also it annotates extra weak attributes.
-  // TODO(gerbens) make sure this situation is handled better.
+  // TODO make sure this situation is handled better.
   p->Emit(R"cc(
     // Internal implementation detail -- do not use these members.
     struct $dllexport_decl $$tablename$ {
@@ -1721,7 +1721,7 @@ void FileGenerator::GenerateExtensionIdentifiers(io::Printer* p) {
 }
 
 void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* p) {
-  // TODO(gerbens) remove pragmas when gcc is no longer used. Current version
+  // TODO remove pragmas when gcc is no longer used. Current version
   // of gcc fires a bogus error when compiled with strict-aliasing.
   p->Emit(R"(
       #ifdef __GNUC__

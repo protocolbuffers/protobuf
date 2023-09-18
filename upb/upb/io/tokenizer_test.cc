@@ -33,7 +33,7 @@ static bool StringEquals(const char* a, const char* b) {
 // ===================================================================
 // Data-Driven Test Infrastructure
 
-// TODO(kenton):  This is copied from coded_stream_unittest.  This is
+// TODO:  This is copied from coded_stream_unittest.  This is
 //   temporary until these features are integrated into gUnit itself.
 
 // TEST_1D and TEST_2D are macros I'd eventually like to see added to
@@ -567,7 +567,7 @@ TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
 
 // -------------------------------------------------------------------
 
-#if 0  // TODO(salo): Extended comments are currently unimplemented.
+#if 0  // TODO: Extended comments are currently unimplemented.
 
 // In each case, the input is expected to have two tokens named "prev" and
 // "next" with comments in between.
@@ -753,7 +753,7 @@ TEST_2D(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {
 // -------------------------------------------------------------------
 
 // Test parse helpers.
-// TODO(b/225783758): Add a fuzz test for this.
+// TODO: Add a fuzz test for this.
 TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_EQ(0, ParseInteger("0"));
   EXPECT_EQ(123, ParseInteger("123"));
