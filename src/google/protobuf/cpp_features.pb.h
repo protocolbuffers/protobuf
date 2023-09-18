@@ -224,8 +224,10 @@ class PROTOBUF_EXPORT CppFeatures final :
   }
   protected:
   explicit CppFeatures(::google::protobuf::Arena* arena);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 

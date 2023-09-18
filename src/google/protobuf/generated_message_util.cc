@@ -381,8 +381,6 @@ MessageLite* GetOwnedMessageInternal(Arena* message_arena,
   }
 }
 
-PROTOBUF_CONSTINIT DescriptorMethods descriptor_methods{};
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

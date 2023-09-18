@@ -95,11 +95,7 @@ void ZeroFieldsBase::InternalSwap(ZeroFieldsBase* other) {
 }
 
 const Message::ClassData* ZeroFieldsBase::GetClassData() const {
-  static constexpr ClassData data = {
-      &MergeImpl,
-      nullptr,
-      true,
-  };
+  static constexpr ClassData data = {&MergeImpl};
   return &data;
 }
 

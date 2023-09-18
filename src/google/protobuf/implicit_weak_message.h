@@ -56,14 +56,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   static const ImplicitWeakMessage* default_instance();
 
-  const ClassData* GetClassData() const final {
-    struct Data {
-      ClassData header;
-      char name[1];
-    };
-    static constexpr Data data = {{}, ""};
-    return &data.header;
-  }
+  std::string GetTypeName() const override { return ""; }
 
   MessageLite* New(Arena* arena) const override {
     return Arena::CreateMessage<ImplicitWeakMessage>(arena);

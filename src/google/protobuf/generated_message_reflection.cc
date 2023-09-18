@@ -3794,19 +3794,6 @@ bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) {
   return field->is_repeated();
 }
 
-static std::string GetTypeNameImpl(const MessageLite& msg) {
-  const auto* descriptor = DownCast<const Message&>(msg).GetDescriptor();
-  // Keep the preexisting behavior on MapEntry types to return an empty name.
-  if (descriptor->options().map_entry()) return "";
-  return descriptor->full_name();
-}
-
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_PRAGMA_INIT_SEG
-    std::true_type inject_descriptor_methods =
-        (descriptor_methods.get_type_name.store(GetTypeNameImpl,
-                                                std::memory_order_relaxed),
-         std::true_type{});
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
