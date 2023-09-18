@@ -290,7 +290,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
        {"message_comments",
         [&] {
           EmitCommentsString(printer, descriptor_,
-                             CommentStringFlags::kForceMultiline);
+                             kCommentStringFlags_ForceMultiline);
         }},
        {"message_fieldnum_enum",
         [&] {

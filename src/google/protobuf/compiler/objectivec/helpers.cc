@@ -364,11 +364,11 @@ void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
          {"*/", "*\\/"}}));
   }
 
-  if (flags & CommentStringFlags::kAddLeadingNewline) {
+  if (flags & kCommentStringFlags_AddLeadingNewline) {
     printer->Emit("\n");
   }
 
-  if ((flags & CommentStringFlags::kForceMultiline) == 0 && lines.size() == 1) {
+  if ((flags & kCommentStringFlags_ForceMultiline) == 0 && lines.size() == 1) {
     printer->Emit({{"text", lines[0]}}, R"(
       /** $text$ */
     )");
