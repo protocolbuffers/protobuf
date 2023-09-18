@@ -1,5 +1,5 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 load("//conformance:defs.bzl", "conformance_test")
 load("//java/internal:testing.bzl", "junit_tests")
@@ -37,6 +37,7 @@ proto_lang_toolchain(
     ],
     command_line = "--java_out=lite:$(OUT)",
     runtime = ":lite",
+    toolchain_type = "@rules_java//java/proto:lite_toolchain_type",
     visibility = ["//visibility:public"],
 )
 
