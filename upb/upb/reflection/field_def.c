@@ -32,16 +32,16 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <stdbool.h>
 
+#include "upb/upb/base/descriptor_constants.h"
 #include "upb/upb/mini_descriptor/decode.h"
 #include "upb/upb/mini_descriptor/internal/modifiers.h"
 #include "upb/upb/reflection/def.h"
-#include "upb/upb/reflection/def_pool.h"
 #include "upb/upb/reflection/def_type.h"
 #include "upb/upb/reflection/internal/def_builder.h"
 #include "upb/upb/reflection/internal/desc_state.h"
 #include "upb/upb/reflection/internal/enum_def.h"
-#include "upb/upb/reflection/internal/enum_value_def.h"
 #include "upb/upb/reflection/internal/file_def.h"
 #include "upb/upb/reflection/internal/message_def.h"
 #include "upb/upb/reflection/internal/oneof_def.h"
@@ -270,6 +270,29 @@ bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f) {
 
 int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f) { return f->layout_index; }
 
+// begin:google_only
+// static bool _upb_FieldDef_EnforceUtf8Option(const upb_FieldDef* f) {
+// #if defined(UPB_BOOTSTRAP_STAGE0)
+//   return true;
+// #else
+//   return UPB_DESC(FieldOptions_enforce_utf8)(f->opts);
+// #endif
+// }
+// end:google_only
+
+// begin:github_only
+static bool _upb_FieldDef_EnforceUtf8Option(const upb_FieldDef* f) {
+  return true;
+}
+// end:github_only
+
+bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f) {
+  if (upb_FieldDef_Type(f) != kUpb_FieldType_String) return false;
+  return upb_FileDef_Syntax(upb_FieldDef_File(f)) == kUpb_Syntax_Proto3
+             ? _upb_FieldDef_EnforceUtf8Option(f)
+             : false;
+}
+
 uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f) {
   uint64_t out = f->is_packed ? kUpb_FieldModifier_IsPacked : 0;
 
@@ -290,6 +313,11 @@ uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f) {
   if (_upb_FieldDef_IsClosedEnum(f)) {
     out |= kUpb_FieldModifier_IsClosedEnum;
   }
+
+  if (_upb_FieldDef_ValidateUtf8(f)) {
+    out |= kUpb_FieldModifier_ValidateUtf8;
+  }
+
   return out;
 }
 

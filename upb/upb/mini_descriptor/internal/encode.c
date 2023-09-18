@@ -30,6 +30,10 @@
 
 #include "upb/upb/mini_descriptor/internal/encode.h"
 
+#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include "upb/upb/base/internal/log2.h"
 #include "upb/upb/mini_descriptor/internal/base92.h"
 #include "upb/upb/mini_descriptor/internal/modifiers.h"
@@ -225,6 +229,19 @@ static char* _upb_MtDataEncoder_MaybePutModifiers(upb_MtDataEncoder* e,
                              kUpb_MessageModifier_DefaultIsPacked;
     if (field_is_packed != default_is_packed) {
       encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
+    }
+  }
+
+  if (type == kUpb_FieldType_String) {
+    bool field_validates_utf8 = field_mod & kUpb_FieldModifier_ValidateUtf8;
+    bool message_validates_utf8 =
+        in->state.msg_state.msg_modifiers & kUpb_MessageModifier_ValidateUtf8;
+    if (field_validates_utf8 != message_validates_utf8) {
+      // Old binaries do not recognize the field modifier.  We need the failure
+      // mode to be too lax rather than too strict.  Our caller should have
+      // handled this (see _upb_MessageDef_ValidateUtf8()).
+      assert(!message_validates_utf8);
+      encoded_modifiers |= kUpb_EncodedFieldModifier_FlipValidateUtf8;
     }
   }
 
