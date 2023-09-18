@@ -97,21 +97,23 @@ std::string ObjCClassDeclaration(absl::string_view class_name);
 
 // Flag to control the behavior of `EmitCommentsString`.
 enum CommentStringFlags : unsigned int {
-  kNone = 0,
-  kAddLeadingNewline = 1 << 1,  // Add a newline before the comment.
-  kForceMultiline = 1 << 2,  // Force a multiline comment even if only 1 line.
+  kCommentStringFlags_None = 0,
+  // Add a newline before the comment.
+  kCommentStringFlags_AddLeadingNewline = 1 << 1,
+  // Force a multiline comment even if only 1 line.
+  kCommentStringFlags_ForceMultiline = 1 << 2,
 };
 
 // Emits HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
 void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
-                        CommentStringFlags flags = kNone);
+                        CommentStringFlags flags = kCommentStringFlags_None);
 
 // Emits HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
 template <class TDescriptor>
 void EmitCommentsString(io::Printer* printer, const TDescriptor* descriptor,
-                        CommentStringFlags flags = kNone) {
+                        CommentStringFlags flags = kCommentStringFlags_None) {
   SourceLocation location;
   if (descriptor->GetSourceLocation(&location)) {
     EmitCommentsString(printer, location, flags);

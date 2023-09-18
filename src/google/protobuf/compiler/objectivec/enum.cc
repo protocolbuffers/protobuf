@@ -103,7 +103,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
            }},
           {"enum_values",
            [&] {
-             CommentStringFlags comment_flags = CommentStringFlags::kNone;
+             CommentStringFlags comment_flags = kCommentStringFlags_None;
              for (const auto* v : all_values_) {
                if (alias_values_to_skip_.contains(v)) continue;
                printer->Emit(
@@ -120,7 +120,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
                      $comments$
                      $name$$ deprecated_attribute$ = $value$,
                    )objc");
-               comment_flags = CommentStringFlags::kAddLeadingNewline;
+               comment_flags = kCommentStringFlags_AddLeadingNewline;
              }
            }},
       },
