@@ -8,26 +8,25 @@
 // Test schema for proto2 messages.  This test schema is used by:
 //
 // - conformance tests
-//
 
-// LINT: ALLOW_GROUPS
+// LINT:ALLOW_GROUPS
 
 edition = "2023";
+
+package protobuf_test_messages.proto2;
+
 import "google/protobuf/cpp_features.proto";
+
 option features.enum_type = CLOSED;
 option features.repeated_field_encoding = EXPANDED;
 option features.utf8_validation = UNVERIFIED;
 option features.json_format = LEGACY_BEST_EFFORT;
 option features.(pb.cpp).legacy_closed_enum = true;
-
-package protobuf_test_messages.proto2;
-
 option java_package = "com.google.protobuf_test_messages.proto2";
 option objc_class_prefix = "Proto2";
 
 // This is the default, but we specify it here explicitly.
 option optimize_for = SPEED;
-
 option cc_enable_arenas = true;
 
 // This proto includes every type of field in both singular and repeated
@@ -47,7 +46,7 @@ message TestAllTypesProto2 {
     FOO = 0;
     BAR = 1;
     BAZ = 2;
-    NEG = -1;  // Intentionally negative.
+    NEG = -1; // Intentionally negative.
   }
 
   // Singular
@@ -66,15 +65,17 @@ message TestAllTypesProto2 {
   bool optional_bool = 13;
   string optional_string = 14;
   bytes optional_bytes = 15;
-
   NestedMessage optional_nested_message = 18;
   ForeignMessageProto2 optional_foreign_message = 19;
-
   NestedEnum optional_nested_enum = 21;
   ForeignEnumProto2 optional_foreign_enum = 22;
+  string optional_string_piece = 24 [
+    ctype = STRING_PIECE
+  ];
 
-  string optional_string_piece = 24 [ctype = STRING_PIECE];
-  string optional_cord = 25 [ctype = CORD];
+  string optional_cord = 25 [
+    ctype = CORD
+  ];
 
   TestAllTypesProto2 recursive_message = 27;
 
@@ -94,31 +95,74 @@ message TestAllTypesProto2 {
   repeated bool repeated_bool = 43;
   repeated string repeated_string = 44;
   repeated bytes repeated_bytes = 45;
-
   repeated NestedMessage repeated_nested_message = 48;
   repeated ForeignMessageProto2 repeated_foreign_message = 49;
-
   repeated NestedEnum repeated_nested_enum = 51;
   repeated ForeignEnumProto2 repeated_foreign_enum = 52;
+  repeated string repeated_string_piece = 54 [
+    ctype = STRING_PIECE
+  ];
 
-  repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
-  repeated string repeated_cord = 55 [ctype = CORD];
+  repeated string repeated_cord = 55 [
+    ctype = CORD
+  ];
 
   // Packed
-  repeated int32 packed_int32 = 75 [features.repeated_field_encoding = PACKED];
-  repeated int64 packed_int64 = 76 [features.repeated_field_encoding = PACKED];
-  repeated uint32 packed_uint32 = 77 [features.repeated_field_encoding = PACKED];
-  repeated uint64 packed_uint64 = 78 [features.repeated_field_encoding = PACKED];
-  repeated sint32 packed_sint32 = 79 [features.repeated_field_encoding = PACKED];
-  repeated sint64 packed_sint64 = 80 [features.repeated_field_encoding = PACKED];
-  repeated fixed32 packed_fixed32 = 81 [features.repeated_field_encoding = PACKED];
-  repeated fixed64 packed_fixed64 = 82 [features.repeated_field_encoding = PACKED];
-  repeated sfixed32 packed_sfixed32 = 83 [features.repeated_field_encoding = PACKED];
-  repeated sfixed64 packed_sfixed64 = 84 [features.repeated_field_encoding = PACKED];
-  repeated float packed_float = 85 [features.repeated_field_encoding = PACKED];
-  repeated double packed_double = 86 [features.repeated_field_encoding = PACKED];
-  repeated bool packed_bool = 87 [features.repeated_field_encoding = PACKED];
-  repeated NestedEnum packed_nested_enum = 88 [features.repeated_field_encoding = PACKED];
+  repeated int32 packed_int32 = 75 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated int64 packed_int64 = 76 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated uint32 packed_uint32 = 77 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated uint64 packed_uint64 = 78 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated sint32 packed_sint32 = 79 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated sint64 packed_sint64 = 80 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated fixed32 packed_fixed32 = 81 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated fixed64 packed_fixed64 = 82 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated sfixed32 packed_sfixed32 = 83 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated sfixed64 packed_sfixed64 = 84 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated float packed_float = 85 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated double packed_double = 86 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated bool packed_bool = 87 [
+    features.repeated_field_encoding = PACKED
+  ];
+
+  repeated NestedEnum packed_nested_enum = 88 [
+    features.repeated_field_encoding = PACKED
+  ];
 
   // Unpacked
   repeated int32 unpacked_int32 = 89;
@@ -177,24 +221,71 @@ message TestAllTypesProto2 {
     int32 group_int32 = 202;
     uint32 group_uint32 = 203;
   }
-  Data data = 201 [features.message_encoding = DELIMITED];
+
+  Data data = 201 [
+    features.message_encoding = DELIMITED
+  ];
 
   // default values
-  int32 default_int32 = 241 [default = -123456789];
-  int64 default_int64 = 242 [default = -9123456789123456789];
-  uint32 default_uint32 = 243 [default = 2123456789];
-  uint64 default_uint64 = 244 [default = 10123456789123456789];
-  sint32 default_sint32 = 245 [default = -123456789];
-  sint64 default_sint64 = 246 [default = -9123456789123456789];
-  fixed32 default_fixed32 = 247 [default = 2123456789];
-  fixed64 default_fixed64 = 248 [default = 10123456789123456789];
-  sfixed32 default_sfixed32 = 249 [default = -123456789];
-  sfixed64 default_sfixed64 = 250 [default = -9123456789123456789];
-  float default_float = 251 [default = 9e9];
-  double default_double = 252 [default = 7e22];
-  bool default_bool = 253 [default = true];
-  string default_string = 254 [default = "Rosebud"];
-  bytes default_bytes = 255 [default = "joshua"];
+  int32 default_int32 = 241 [
+    default = -123456789
+  ];
+
+  int64 default_int64 = 242 [
+    default = -9123456789123456789
+  ];
+
+  uint32 default_uint32 = 243 [
+    default = 2123456789
+  ];
+
+  uint64 default_uint64 = 244 [
+    default = 10123456789123456789
+  ];
+
+  sint32 default_sint32 = 245 [
+    default = -123456789
+  ];
+
+  sint64 default_sint64 = 246 [
+    default = -9123456789123456789
+  ];
+
+  fixed32 default_fixed32 = 247 [
+    default = 2123456789
+  ];
+
+  fixed64 default_fixed64 = 248 [
+    default = 10123456789123456789
+  ];
+
+  sfixed32 default_sfixed32 = 249 [
+    default = -123456789
+  ];
+
+  sfixed64 default_sfixed64 = 250 [
+    default = -9123456789123456789
+  ];
+
+  float default_float = 251 [
+    default = 9.0E9
+  ];
+
+  double default_double = 252 [
+    default = 7.0E22
+  ];
+
+  bool default_bool = 253 [
+    default = true
+  ];
+
+  string default_string = 254 [
+    default = "Rosebud"
+  ];
+
+  bytes default_bytes = 255 [
+    default = "joshua"
+  ];
 
   // Test field-name-to-JSON-name convention.
   // (protobuf says names can be any valid C/C++ identifier.)
@@ -231,6 +322,7 @@ message TestAllTypesProto2 {
     extend MessageSetCorrect {
       MessageSetCorrectExtension1 message_set_extension = 1547769;
     }
+
     string str = 25;
   }
 
@@ -238,6 +330,7 @@ message TestAllTypesProto2 {
     extend MessageSetCorrect {
       MessageSetCorrectExtension2 message_set_extension = 4135312;
     }
+
     int32 i = 9;
   }
 }
@@ -260,15 +353,21 @@ message UnknownToTestAllTypes {
   int32 optional_int32 = 1001;
   string optional_string = 1002;
   ForeignMessageProto2 nested_message = 1003;
+
   message OptionalGroup {
     int32 a = 1;
   }
-  OptionalGroup optionalgroup = 1004 [features.message_encoding = DELIMITED];
+
+  OptionalGroup optionalgroup = 1004 [
+    features.message_encoding = DELIMITED
+  ];
+
   bool optional_bool = 1006;
   repeated int32 repeated_int32 = 1011;
 }
 
-message NullHypothesisProto2 {}
+message NullHypothesisProto2 {
+}
 
 message EnumOnlyProto2 {
   enum Bool {
@@ -289,8 +388,14 @@ message ProtoWithKeywords {
 
 message TestAllRequiredTypesProto2 {
   message NestedMessage {
-    int32 a = 1 [features.field_presence = LEGACY_REQUIRED];
-    TestAllRequiredTypesProto2 corecursive = 2 [features.field_presence = LEGACY_REQUIRED];
+    int32 a = 1 [
+      features.field_presence = LEGACY_REQUIRED
+    ];
+
+    TestAllRequiredTypesProto2 corecursive = 2 [
+      features.field_presence = LEGACY_REQUIRED
+    ];
+
     TestAllRequiredTypesProto2 optional_corecursive = 3;
   }
 
@@ -298,36 +403,100 @@ message TestAllRequiredTypesProto2 {
     FOO = 0;
     BAR = 1;
     BAZ = 2;
-    NEG = -1;  // Intentionally negative.
+    NEG = -1; // Intentionally negative.
   }
 
   // Singular
-  int32 required_int32 = 1 [features.field_presence = LEGACY_REQUIRED];
-  int64 required_int64 = 2 [features.field_presence = LEGACY_REQUIRED];
-  uint32 required_uint32 = 3 [features.field_presence = LEGACY_REQUIRED];
-  uint64 required_uint64 = 4 [features.field_presence = LEGACY_REQUIRED];
-  sint32 required_sint32 = 5 [features.field_presence = LEGACY_REQUIRED];
-  sint64 required_sint64 = 6 [features.field_presence = LEGACY_REQUIRED];
-  fixed32 required_fixed32 = 7 [features.field_presence = LEGACY_REQUIRED];
-  fixed64 required_fixed64 = 8 [features.field_presence = LEGACY_REQUIRED];
-  sfixed32 required_sfixed32 = 9 [features.field_presence = LEGACY_REQUIRED];
-  sfixed64 required_sfixed64 = 10 [features.field_presence = LEGACY_REQUIRED];
-  float required_float = 11 [features.field_presence = LEGACY_REQUIRED];
-  double required_double = 12 [features.field_presence = LEGACY_REQUIRED];
-  bool required_bool = 13 [features.field_presence = LEGACY_REQUIRED];
-  string required_string = 14 [features.field_presence = LEGACY_REQUIRED];
-  bytes required_bytes = 15 [features.field_presence = LEGACY_REQUIRED];
+  int32 required_int32 = 1 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
 
-  NestedMessage required_nested_message = 18 [features.field_presence = LEGACY_REQUIRED];
-  ForeignMessageProto2 required_foreign_message = 19 [features.field_presence = LEGACY_REQUIRED];
+  int64 required_int64 = 2 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
 
-  NestedEnum required_nested_enum = 21 [features.field_presence = LEGACY_REQUIRED];
-  ForeignEnumProto2 required_foreign_enum = 22 [features.field_presence = LEGACY_REQUIRED];
+  uint32 required_uint32 = 3 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
 
-  string required_string_piece = 24 [ctype = STRING_PIECE, features.field_presence = LEGACY_REQUIRED];
-  string required_cord = 25 [ctype = CORD, features.field_presence = LEGACY_REQUIRED];
+  uint64 required_uint64 = 4 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
 
-  TestAllRequiredTypesProto2 recursive_message = 27 [features.field_presence = LEGACY_REQUIRED];
+  sint32 required_sint32 = 5 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  sint64 required_sint64 = 6 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  fixed32 required_fixed32 = 7 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  fixed64 required_fixed64 = 8 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  sfixed32 required_sfixed32 = 9 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  sfixed64 required_sfixed64 = 10 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  float required_float = 11 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  double required_double = 12 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  bool required_bool = 13 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  string required_string = 14 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  bytes required_bytes = 15 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  NestedMessage required_nested_message = 18 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  ForeignMessageProto2 required_foreign_message = 19 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  NestedEnum required_nested_enum = 21 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  ForeignEnumProto2 required_foreign_enum = 22 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
+  string required_string_piece = 24 [
+    features.field_presence = LEGACY_REQUIRED,
+    ctype = STRING_PIECE
+  ];
+
+  string required_cord = 25 [
+    features.field_presence = LEGACY_REQUIRED,
+    ctype = CORD
+  ];
+
+  TestAllRequiredTypesProto2 recursive_message = 27 [
+    features.field_presence = LEGACY_REQUIRED
+  ];
+
   TestAllRequiredTypesProto2 optional_recursive_message = 28;
 
   // extensions
@@ -335,27 +504,95 @@ message TestAllRequiredTypesProto2 {
 
   // groups
   message Data {
-    int32 group_int32 = 202 [features.field_presence = LEGACY_REQUIRED];
-    uint32 group_uint32 = 203 [features.field_presence = LEGACY_REQUIRED];
+    int32 group_int32 = 202 [
+      features.field_presence = LEGACY_REQUIRED
+    ];
+
+    uint32 group_uint32 = 203 [
+      features.field_presence = LEGACY_REQUIRED
+    ];
   }
-  Data data = 201 [features.message_encoding = DELIMITED, features.field_presence = LEGACY_REQUIRED];
+
+  Data data = 201 [
+    features.field_presence = LEGACY_REQUIRED,
+    features.message_encoding = DELIMITED
+  ];
 
   // default values
-  int32 default_int32 = 241 [default = -123456789, features.field_presence = LEGACY_REQUIRED];
-  int64 default_int64 = 242 [default = -9123456789123456789, features.field_presence = LEGACY_REQUIRED];
-  uint32 default_uint32 = 243 [default = 2123456789, features.field_presence = LEGACY_REQUIRED];
-  uint64 default_uint64 = 244 [default = 10123456789123456789, features.field_presence = LEGACY_REQUIRED];
-  sint32 default_sint32 = 245 [default = -123456789, features.field_presence = LEGACY_REQUIRED];
-  sint64 default_sint64 = 246 [default = -9123456789123456789, features.field_presence = LEGACY_REQUIRED];
-  fixed32 default_fixed32 = 247 [default = 2123456789, features.field_presence = LEGACY_REQUIRED];
-  fixed64 default_fixed64 = 248 [default = 10123456789123456789, features.field_presence = LEGACY_REQUIRED];
-  sfixed32 default_sfixed32 = 249 [default = -123456789, features.field_presence = LEGACY_REQUIRED];
-  sfixed64 default_sfixed64 = 250 [default = -9123456789123456789, features.field_presence = LEGACY_REQUIRED];
-  float default_float = 251 [default = 9e9, features.field_presence = LEGACY_REQUIRED];
-  double default_double = 252 [default = 7e22, features.field_presence = LEGACY_REQUIRED];
-  bool default_bool = 253 [default = true, features.field_presence = LEGACY_REQUIRED];
-  string default_string = 254 [default = "Rosebud", features.field_presence = LEGACY_REQUIRED];
-  bytes default_bytes = 255 [default = "joshua", features.field_presence = LEGACY_REQUIRED];
+  int32 default_int32 = 241 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = -123456789
+  ];
+
+  int64 default_int64 = 242 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = -9123456789123456789
+  ];
+
+  uint32 default_uint32 = 243 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = 2123456789
+  ];
+
+  uint64 default_uint64 = 244 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = 10123456789123456789
+  ];
+
+  sint32 default_sint32 = 245 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = -123456789
+  ];
+
+  sint64 default_sint64 = 246 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = -9123456789123456789
+  ];
+
+  fixed32 default_fixed32 = 247 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = 2123456789
+  ];
+
+  fixed64 default_fixed64 = 248 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = 10123456789123456789
+  ];
+
+  sfixed32 default_sfixed32 = 249 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = -123456789
+  ];
+
+  sfixed64 default_sfixed64 = 250 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = -9123456789123456789
+  ];
+
+  float default_float = 251 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = 9.0E9
+  ];
+
+  double default_double = 252 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = 7.0E22
+  ];
+
+  bool default_bool = 253 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = true
+  ];
+
+  string default_string = 254 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = "Rosebud"
+  ];
+
+  bytes default_bytes = 255 [
+    features.field_presence = LEGACY_REQUIRED,
+    default = "joshua"
+  ];
 
   // Reserved for unknown fields test.
   reserved 1000 to 9999;
@@ -371,13 +608,19 @@ message TestAllRequiredTypesProto2 {
     extend MessageSetCorrect {
       MessageSetCorrectExtension1 message_set_extension = 1547769;
     }
-    string str = 25 [features.field_presence = LEGACY_REQUIRED];
+
+    string str = 25 [
+      features.field_presence = LEGACY_REQUIRED
+    ];
   }
 
   message MessageSetCorrectExtension2 {
     extend MessageSetCorrect {
       MessageSetCorrectExtension2 message_set_extension = 4135312;
     }
-    int32 i = 9 [features.field_presence = LEGACY_REQUIRED];
+
+    int32 i = 9 [
+      features.field_presence = LEGACY_REQUIRED
+    ];
   }
 }

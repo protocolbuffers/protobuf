@@ -10,18 +10,10 @@
 // - benchmarks
 // - fuzz tests
 // - conformance tests
-//
 
 edition = "2023";
-option features.field_presence = IMPLICIT;
 
 package protobuf_test_messages.proto3;
-
-option java_package = "com.google.protobuf_test_messages.proto3";
-option objc_class_prefix = "Proto3";
-
-// This is the default, but we specify it here explicitly.
-option optimize_for = SPEED;
 
 import "google/protobuf/any.proto";
 import "google/protobuf/duration.proto";
@@ -30,6 +22,12 @@ import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
+option features.field_presence = IMPLICIT;
+option java_package = "com.google.protobuf_test_messages.proto3";
+option objc_class_prefix = "Proto3";
+
+// This is the default, but we specify it here explicitly.
+option optimize_for = SPEED;
 option cc_enable_arenas = true;
 
 // This proto includes every type of field in both singular and repeated
@@ -49,7 +47,7 @@ message TestAllTypesProto3 {
     FOO = 0;
     BAR = 1;
     BAZ = 2;
-    NEG = -1;  // Intentionally negative.
+    NEG = -1; // Intentionally negative.
   }
 
   enum AliasedEnum {
@@ -79,16 +77,18 @@ message TestAllTypesProto3 {
   bool optional_bool = 13;
   string optional_string = 14;
   bytes optional_bytes = 15;
-
   NestedMessage optional_nested_message = 18;
   ForeignMessage optional_foreign_message = 19;
-
   NestedEnum optional_nested_enum = 21;
   ForeignEnum optional_foreign_enum = 22;
   AliasedEnum optional_aliased_enum = 23;
+  string optional_string_piece = 24 [
+    ctype = STRING_PIECE
+  ];
 
-  string optional_string_piece = 24 [ctype = STRING_PIECE];
-  string optional_cord = 25 [ctype = CORD];
+  string optional_cord = 25 [
+    ctype = CORD
+  ];
 
   TestAllTypesProto3 recursive_message = 27;
 
@@ -108,15 +108,17 @@ message TestAllTypesProto3 {
   repeated bool repeated_bool = 43;
   repeated string repeated_string = 44;
   repeated bytes repeated_bytes = 45;
-
   repeated NestedMessage repeated_nested_message = 48;
   repeated ForeignMessage repeated_foreign_message = 49;
-
   repeated NestedEnum repeated_nested_enum = 51;
   repeated ForeignEnum repeated_foreign_enum = 52;
+  repeated string repeated_string_piece = 54 [
+    ctype = STRING_PIECE
+  ];
 
-  repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
-  repeated string repeated_cord = 55 [ctype = CORD];
+  repeated string repeated_cord = 55 [
+    ctype = CORD
+  ];
 
   // Packed
   repeated int32 packed_int32 = 75;
@@ -135,20 +137,61 @@ message TestAllTypesProto3 {
   repeated NestedEnum packed_nested_enum = 88;
 
   // Unpacked
-  repeated int32 unpacked_int32 = 89 [features.repeated_field_encoding = EXPANDED];
-  repeated int64 unpacked_int64 = 90 [features.repeated_field_encoding = EXPANDED];
-  repeated uint32 unpacked_uint32 = 91 [features.repeated_field_encoding = EXPANDED];
-  repeated uint64 unpacked_uint64 = 92 [features.repeated_field_encoding = EXPANDED];
-  repeated sint32 unpacked_sint32 = 93 [features.repeated_field_encoding = EXPANDED];
-  repeated sint64 unpacked_sint64 = 94 [features.repeated_field_encoding = EXPANDED];
-  repeated fixed32 unpacked_fixed32 = 95 [features.repeated_field_encoding = EXPANDED];
-  repeated fixed64 unpacked_fixed64 = 96 [features.repeated_field_encoding = EXPANDED];
-  repeated sfixed32 unpacked_sfixed32 = 97 [features.repeated_field_encoding = EXPANDED];
-  repeated sfixed64 unpacked_sfixed64 = 98 [features.repeated_field_encoding = EXPANDED];
-  repeated float unpacked_float = 99 [features.repeated_field_encoding = EXPANDED];
-  repeated double unpacked_double = 100 [features.repeated_field_encoding = EXPANDED];
-  repeated bool unpacked_bool = 101 [features.repeated_field_encoding = EXPANDED];
-  repeated NestedEnum unpacked_nested_enum = 102 [features.repeated_field_encoding = EXPANDED];
+  repeated int32 unpacked_int32 = 89 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated int64 unpacked_int64 = 90 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated uint32 unpacked_uint32 = 91 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated uint64 unpacked_uint64 = 92 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated sint32 unpacked_sint32 = 93 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated sint64 unpacked_sint64 = 94 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated fixed32 unpacked_fixed32 = 95 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated fixed64 unpacked_fixed64 = 96 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated sfixed32 unpacked_sfixed32 = 97 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated sfixed64 unpacked_sfixed64 = 98 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated float unpacked_float = 99 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated double unpacked_double = 100 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated bool unpacked_bool = 101 [
+    features.repeated_field_encoding = EXPANDED
+  ];
+
+  repeated NestedEnum unpacked_nested_enum = 102 [
+    features.repeated_field_encoding = EXPANDED
+  ];
 
   // Map
   map<int32, int32> map_int32_int32 = 56;
@@ -194,7 +237,6 @@ message TestAllTypesProto3 {
   google.protobuf.DoubleValue optional_double_wrapper = 207;
   google.protobuf.StringValue optional_string_wrapper = 208;
   google.protobuf.BytesValue optional_bytes_wrapper = 209;
-
   repeated google.protobuf.BoolValue repeated_bool_wrapper = 211;
   repeated google.protobuf.Int32Value repeated_int32_wrapper = 212;
   repeated google.protobuf.Int64Value repeated_int64_wrapper = 213;
@@ -204,7 +246,6 @@ message TestAllTypesProto3 {
   repeated google.protobuf.DoubleValue repeated_double_wrapper = 217;
   repeated google.protobuf.StringValue repeated_string_wrapper = 218;
   repeated google.protobuf.BytesValue repeated_bytes_wrapper = 219;
-
   google.protobuf.Duration optional_duration = 301;
   google.protobuf.Timestamp optional_timestamp = 302;
   google.protobuf.FieldMask optional_field_mask = 303;
@@ -212,7 +253,6 @@ message TestAllTypesProto3 {
   google.protobuf.Any optional_any = 305;
   google.protobuf.Value optional_value = 306;
   google.protobuf.NullValue optional_null_value = 307;
-
   repeated google.protobuf.Duration repeated_duration = 311;
   repeated google.protobuf.Timestamp repeated_timestamp = 312;
   repeated google.protobuf.FieldMask repeated_fieldmask = 313;
@@ -256,7 +296,8 @@ enum ForeignEnum {
   FOREIGN_BAZ = 2;
 }
 
-message NullHypothesisProto3 {}
+message NullHypothesisProto3 {
+}
 
 message EnumOnlyProto3 {
   enum Bool {
