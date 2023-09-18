@@ -201,3 +201,17 @@ rust_test(
     ],
     deps = ["//rust/test:unittest_cc_rust_proto"],
 )
+
+rust_test(
+    name = "simple_nested_cpp_test",
+    srcs = ["simple_nested_test.rs"],
+    deps = ["//rust/test:nested_cc_rust_proto"],
+)
+
+# TODO(b/285309454): enable once we emit default messages for upb at the rust level
+# The default submsg that upb emits is NULL (whereas cpp returns a default constructed msg)
+#rust_test(
+#    name = "simple_nested_upb_test",
+#    srcs = ["simple_nested_test.rs"],
+#    deps = ["//rust/test:nested_upb_rust_proto"],
+#)

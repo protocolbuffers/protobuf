@@ -162,6 +162,38 @@ void MessageDrop(Context<Descriptor> msg) {
     unsafe { $delete_thunk$(self.inner.msg); }
   )rs");
 }
+
+// TODO(b/285309454): deferring on strings and bytes for now, eventually this
+// check will go away as we support more than just simple scalars
+bool IsSimpleScalar(FieldDescriptor::Type type) {
+  return type == FieldDescriptor::TYPE_DOUBLE ||
+         type == FieldDescriptor::TYPE_FLOAT ||
+         type == FieldDescriptor::TYPE_INT32 ||
+         type == FieldDescriptor::TYPE_INT64 ||
+         type == FieldDescriptor::TYPE_UINT32 ||
+         type == FieldDescriptor::TYPE_UINT64 ||
+         type == FieldDescriptor::TYPE_SINT32 ||
+         type == FieldDescriptor::TYPE_SINT64 ||
+         type == FieldDescriptor::TYPE_FIXED32 ||
+         type == FieldDescriptor::TYPE_FIXED64 ||
+         type == FieldDescriptor::TYPE_SFIXED32 ||
+         type == FieldDescriptor::TYPE_SFIXED64 ||
+         type == FieldDescriptor::TYPE_BOOL;
+}
+
+void GenerateSubView(Context<FieldDescriptor> field) {
+  field.Emit(
+      {
+          {"field", field.desc().name()},
+          {"getter_thunk", Thunk(field, "get")},
+          {"Scalar", PrimitiveRsTypeName(field.desc())},
+      },
+      R"rs(
+      pub fn r#$field$(&self) -> $Scalar$ { unsafe {
+        $getter_thunk$(self.msg)
+      } }
+    )rs");
+}
 }  // namespace
 
 void GenerateRs(Context<Descriptor> msg) {
@@ -246,6 +278,16 @@ void GenerateRs(Context<Descriptor> msg) {
                  }  // mod $Msg$_
                 )rs");
            }},
+          {"subviews",
+           [&] {
+             for (int i = 0; i < msg.desc().field_count(); ++i) {
+               auto field = msg.WithDesc(*msg.desc().field(i));
+               if (field.desc().is_repeated()) continue;
+               if (!IsSimpleScalar(field.desc().type())) continue;
+               GenerateSubView(field);
+               msg.printer().PrintRaw("\n");
+             }
+           }},
       },
       R"rs(
         #[allow(non_camel_case_types)]
@@ -279,6 +321,7 @@ void GenerateRs(Context<Descriptor> msg) {
           pub fn new(_private: $pbi$::Private, msg: $pbi$::RawMessage) -> Self {
             Self { msg, _phantom: std::marker::PhantomData }
           }
+          $subviews$
         }
 
         // SAFETY:
