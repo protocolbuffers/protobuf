@@ -58,6 +58,10 @@ using internal::ReflectionOps;
 using internal::WireFormat;
 using internal::WireFormatLite;
 
+void Message::MergeImpl(Message& to, const Message& from) {
+  ReflectionOps::Merge(from, &to);
+}
+
 void Message::MergeFrom(const Message& from) {
   auto* class_to = GetClassData();
   auto* class_from = from.GetClassData();
@@ -68,6 +72,15 @@ void Message::MergeFrom(const Message& from) {
     };
   }
   merge_to_from(*this, from);
+}
+
+const MessageLite::ClassData* Message::GetClassData() const {
+  static constexpr ClassData data = {
+      &MergeImpl,
+      nullptr,
+      &kDescriptorMethods,
+  };
+  return &data;
 }
 
 void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
@@ -97,10 +110,6 @@ void Message::CopyFrom(const Message& from) {
         << from.GetDescriptor()->full_name();
     ReflectionOps::Copy(from, this);
   }
-}
-
-std::string Message::GetTypeName() const {
-  return GetDescriptor()->full_name();
 }
 
 void Message::Clear() { ReflectionOps::Clear(this); }
@@ -181,6 +190,14 @@ size_t Message::MaybeComputeUnknownFieldsSize(
 size_t Message::SpaceUsedLong() const {
   return GetReflection()->SpaceUsedLong(*this);
 }
+
+static std::string GetTypeNameImpl(const MessageLite& msg) {
+  return DownCast<const Message&>(msg).GetDescriptor()->full_name();
+}
+
+constexpr MessageLite::DescriptorMethods Message::kDescriptorMethods = {
+    GetTypeNameImpl,
+};
 
 namespace internal {
 void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,

@@ -196,6 +196,16 @@ inline void JavaFeatures::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+JavaFeatures::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          JavaFeatures::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 // @@protoc_insertion_point(message_clear_start:pb.JavaFeatures)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -312,13 +322,6 @@ const ::_pbi::TcParseTable<1, 2, 1, 0, 2> JavaFeatures::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData JavaFeatures::_class_data_ = {
-    JavaFeatures::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* JavaFeatures::GetClassData() const {
-  return &_class_data_;
-}
 
 void JavaFeatures::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<JavaFeatures*>(&to_msg);
