@@ -7906,6 +7906,13 @@ void DescriptorBuilder::ValidateFieldFeatures(
   // Rely on our legacy validation for proto2/proto3 files.
   if (IsLegacyFeatureSet(field->features())) return;
 
+  // Validate legacy options that have been migrated to features.
+  if (field->options().has_packed()) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Field option packed is not allowed under editions.  Use the "
+             "repeated_field_encoding feature to control this behavior.");
+  }
+
   // Validate fully resolved features.
   if (field->has_default_value() &&
       field->features().field_presence() == FeatureSet::IMPLICIT) {

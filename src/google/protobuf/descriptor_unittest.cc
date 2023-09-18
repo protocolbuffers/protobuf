@@ -7631,7 +7631,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
         label: LABEL_REPEATED
         type: TYPE_INT64
         options {
-          packed: true
+          deprecated: true
           features {
             [pb.test] { int_field_feature: 9 }
           }
@@ -7716,7 +7716,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
                                  [pb.test] { int_message_feature: 3 }
                                })pb"));
   EXPECT_THAT(proto.message_type(0).field(0).options(),
-              EqualsProto(R"pb(packed: true
+              EqualsProto(R"pb(deprecated: true
                                features {
                                  [pb.test] { int_field_feature: 9 }
                                })pb"));
@@ -9159,6 +9159,30 @@ TEST_F(FeaturesTest, FeaturesOutsideEditions) {
       "foo.proto: foo.proto: EDITIONS: Features are only valid under "
       "editions.\n");
 }
+
+TEST_F(FeaturesTest, InvalidFieldPacked) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition_enum: EDITION_2023
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_INT64
+            options { packed: true }
+          }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NAME: Field option packed is not allowed under "
+      "editions.  Use the repeated_field_encoding feature to control this "
+      "behavior.\n");
+}
+
 
 TEST_F(FeaturesTest, InvalidFieldImplicitDefault) {
   BuildDescriptorMessagesInTestPool();
