@@ -7,7 +7,7 @@
 
 """Contains routines for printing protocol messages in JSON format.
 
-Simple usage example:
+Simple usage example::
 
   # Create a proto object and serialize it to a json format string.
   message = my_proto_pb2.MyMessage(foo='bar')
