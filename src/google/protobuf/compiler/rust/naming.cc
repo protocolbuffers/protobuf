@@ -72,9 +72,21 @@ std::string Thunk(Context<T> field, absl::string_view op) {
   std::string thunk =
       absl::StrCat(prefix, GetUnderscoreDelimitedFullName(
                                field.WithDesc(field.desc().containing_type())));
-
   absl::string_view format;
-  if (field.is_upb() && op == "get") {
+  if (op == "get_shady") {
+    if (field.is_upb()) {
+      // upb muts generate a default msg if NULL. Note that we definitely do NOT
+      // want to employ this trick in the long run -- we'll need defaults to
+      // properly materialize in terra rust. This merely unblocks the upb nested
+      // test in the short-term.
+      format = "_$1";
+      absl::SubstituteAndAppend(&thunk, format, op, field.desc().name());
+      return absl::StrReplaceAll(thunk, {{"_inner", "_mutable_inner"}});
+    } else {
+      format = "_$0_$1";
+      op = "get";
+    }
+  } else if (field.is_upb() && op == "get") {
     // upb getter is simply the field name (no "get" in the name).
     format = "_$1";
   } else if (field.is_upb() && op == "case") {
@@ -84,7 +96,6 @@ std::string Thunk(Context<T> field, absl::string_view op) {
   } else {
     format = "_$0_$1";
   }
-
   absl::SubstituteAndAppend(&thunk, format, op, field.desc().name());
   return thunk;
 }

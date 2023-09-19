@@ -32,29 +32,52 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
       {
           {"prefix", prefix},
           {"field", field.desc().name()},
-          {"getter_thunk", Thunk(field, "get")},
+          {"getter_thunk", Thunk(field, "get_shady")},
+          {"getter",
+           [&] {
+             if (field.is_cpp()) {
+               field.Emit({}, R"rs(
+                         pub fn r#$field$(&self) -> $prefix$View {
+                          $prefix$View::new($pbi$::Private, unsafe { $getter_thunk$(self.inner.msg) } )
+                        }
+                        )rs");
+             } else {
+               field.Emit({}, R"rs(
+                         pub fn r#$field$(&self) -> $prefix$View {
+                          $prefix$View::new($pbi$::Private, unsafe { $getter_thunk$(self.inner.msg, &self.inner.arena) } )
+                        }
+                        )rs");
+             }
+           }},
       },
       R"rs(
-          pub fn r#$field$(&self) -> $prefix$View {
-            $prefix$View::new($pbi$::Private, unsafe { $getter_thunk$(self.inner.msg) } )
-          }
+          $getter$
         )rs");
 }
 
 void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
-  field.Emit(
-      {
-          {"getter_thunk", Thunk(field, "get")},
-      },
-      R"rs(
-                  fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::RawMessage;
+  field.Emit({{"getter_thunk", Thunk(field, "get_shady")},
+              {"getter",
+               [&] {
+                 if (field.is_cpp()) {
+                   field.Emit({}, R"rs(
+                              fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::RawMessage;
+                              )rs");
+                 } else {
+                   field.Emit({}, R"rs(
+                              fn $getter_thunk$(raw_msg: $pbi$::RawMessage, raw_arena: &$pbr$::Arena) -> $pbi$::RawMessage;
+                              )rs");
+                 }
+               }}},
+             R"rs(
+                  $getter$
                )rs");
 }
 
 void SingularMessage::InThunkCc(Context<FieldDescriptor> field) const {
   field.Emit({{"QualifiedMsg",
                cpp::QualifiedClassName(field.desc().containing_type())},
-              {"getter_thunk", Thunk(field, "get")},
+              {"getter_thunk", Thunk(field, "get_shady")},
               {"field", cpp::FieldName(&field.desc())}},
              R"cc(
                const void* $getter_thunk$($QualifiedMsg$* msg) {
