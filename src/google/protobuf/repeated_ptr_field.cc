@@ -9,7 +9,6 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -29,28 +28,24 @@ namespace protobuf {
 
 namespace internal {
 
-void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
-  int new_size = current_size_ + extend_amount;
-  if (total_size_ >= new_size) {
-    // N.B.: rep_ is non-nullptr because extend_amount is always > 0, hence
-    // total_size must be non-zero since it is lower-bounded by new_size.
-    return elements() + current_size_;
-  }
+void RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
+  ABSL_DCHECK(extend_amount > 0);
   constexpr size_t ptr_size = sizeof(rep()->elements[0]);
+  int new_capacity = total_size_ + extend_amount;
   Arena* arena = GetOwningArena();
-  new_size = internal::CalculateReserveSize<void*, kRepHeaderSize>(total_size_,
-                                                                   new_size);
+  new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
+      total_size_, new_capacity);
   ABSL_CHECK_LE(
-      static_cast<int64_t>(new_size),
+      static_cast<int64_t>(new_capacity),
       static_cast<int64_t>(
           (std::numeric_limits<size_t>::max() - kRepHeaderSize) / ptr_size))
       << "Requested size is too large to fit into size_t.";
-  size_t bytes = kRepHeaderSize + ptr_size * new_size;
+  size_t bytes = kRepHeaderSize + ptr_size * new_capacity;
   Rep* new_rep;
   void* old_tagged_ptr = tagged_rep_or_elem_;
   if (arena == nullptr) {
     internal::SizedPtr res = internal::AllocateAtLeast(bytes);
-    new_size = static_cast<int>((res.n - kRepHeaderSize) / ptr_size);
+    new_capacity = static_cast<int>((res.n - kRepHeaderSize) / ptr_size);
     new_rep = reinterpret_cast<Rep*>(res.p);
   } else {
     new_rep = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
@@ -78,13 +73,12 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
 
   tagged_rep_or_elem_ =
       reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_rep) + 1);
-  total_size_ = new_size;
-  return &new_rep->elements[current_size_];
+  total_size_ = new_capacity;
 }
 
-void RepeatedPtrFieldBase::Reserve(int new_size) {
-  if (new_size > current_size_) {
-    InternalExtend(new_size - current_size_);
+void RepeatedPtrFieldBase::Reserve(int capacity) {
+  if (capacity > total_size_) {
+    InternalExtend(capacity - total_size_);
   }
 }
 
@@ -113,16 +107,14 @@ void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
     ABSL_DCHECK(using_sso());
     ABSL_DCHECK_EQ(allocated_size(), 0);
     ExchangeCurrentSize(1);
-    tagged_rep_or_elem_ = obj;
-    return obj;
+    return tagged_rep_or_elem_ = obj;
   }
   if (using_sso() || rep()->allocated_size == total_size_) {
     InternalExtend(1);  // Equivalent to "Reserve(total_size_ + 1)"
   }
   Rep* r = rep();
   ++r->allocated_size;
-  r->elements[ExchangeCurrentSize(current_size_ + 1)] = obj;
-  return obj;
+  return r->elements[ExchangeCurrentSize(current_size_ + 1)] = obj;
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
@@ -145,21 +137,10 @@ MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
     return reinterpret_cast<MessageLite*>(
         element_at(ExchangeCurrentSize(current_size_ + 1)));
   }
-  if (allocated_size() == total_size_) {
-    Reserve(total_size_ + 1);
-  }
   MessageLite* result = prototype
                             ? prototype->New(arena_)
                             : Arena::CreateMessage<ImplicitWeakMessage>(arena_);
-  if (using_sso()) {
-    ExchangeCurrentSize(current_size_ + 1);
-    tagged_rep_or_elem_ = result;
-  } else {
-    Rep* r = rep();
-    ++r->allocated_size;
-    r->elements[ExchangeCurrentSize(current_size_ + 1)] = result;
-  }
-  return result;
+  return static_cast<MessageLite*>(AddOutOfLineHelper(result));
 }
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
