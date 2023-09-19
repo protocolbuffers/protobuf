@@ -324,7 +324,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #if __has_cpp_attribute(clang::musttail) && !defined(__arm__) &&      \
     !defined(_ARCH_PPC) && !defined(__wasm__) &&                      \
     !(defined(_MSC_VER) && defined(_M_IX86)) && !defined(__i386__) && \
-    !(defined(__NDK_MAJOR__) && __NDK_MAJOR <= 24)
+    !(defined(__NDK_MAJOR__) && __NDK_MAJOR__ <= 24)
 // Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
 // Compilation fails on X86 Windows:
