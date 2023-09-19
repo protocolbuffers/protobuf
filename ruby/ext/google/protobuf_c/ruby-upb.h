@@ -11042,6 +11042,7 @@ UPB_API bool upb_FieldDef_IsSubMessage(const upb_FieldDef* f);
 UPB_API const char* upb_FieldDef_JsonName(const upb_FieldDef* f);
 UPB_API upb_Label upb_FieldDef_Label(const upb_FieldDef* f);
 UPB_API const upb_MessageDef* upb_FieldDef_MessageSubDef(const upb_FieldDef* f);
+bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f);
 
 // Creates a mini descriptor string for a field, returns true on success.
 bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f, upb_Arena* a,
@@ -12178,6 +12179,7 @@ typedef enum {
   kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
   kUpb_EncodedFieldModifier_IsRequired = 1 << 1,
   kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
+  kUpb_EncodedFieldModifier_FlipValidateUtf8 = 1 << 3,
 } upb_EncodedFieldModifier;
 
 enum {
@@ -12217,8 +12219,10 @@ typedef enum {
   kUpb_FieldModifier_IsClosedEnum = 1 << 2,
   kUpb_FieldModifier_IsProto3Singular = 1 << 3,
   kUpb_FieldModifier_IsRequired = 1 << 4,
+  kUpb_FieldModifier_ValidateUtf8 = 1 << 5,
 } kUpb_FieldModifier;
 
+// These modifiers are also used on the wire.
 typedef enum {
   kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
   kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
