@@ -37,7 +37,7 @@ void SetEnumVariables(
   // the forward declaration of the enums.
   if (!descriptor->is_repeated() &&
       (descriptor->file() != descriptor->enum_type()->file())) {
-    (*variables)["property_type"] = absl::StrCat("enum ", type);
+    (*variables)["property_type"] = absl::StrCat("enum ", type, " ");
   }
   (*variables)["enum_verifier"] = absl::StrCat(type, "_IsValidValue");
   (*variables)["enum_desc_func"] = enum_desc_func;
