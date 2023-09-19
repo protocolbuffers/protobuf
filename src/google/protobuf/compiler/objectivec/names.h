@@ -99,6 +99,27 @@ PROTOC_EXPORT std::string ExtensionMethodName(
 PROTOC_EXPORT std::string FieldName(const FieldDescriptor* field);
 PROTOC_EXPORT std::string FieldNameCapitalized(const FieldDescriptor* field);
 
+// The formatting options for FieldObjCType
+enum FieldObjCTypeOptions : unsigned int {
+  // No options.
+  kFieldObjCTypeOptions_None = 0,
+  // Leave off the lightweight generics from any collection classes.
+  kFieldObjCTypeOptions_OmitLightweightGenerics = 1 << 0,
+  // For things that are pointers, include a space before the `*`.
+  kFieldObjCTypeOptions_IncludeSpaceBeforeStar = 1 << 1,
+  // For things that are basic types (int, float, etc.), include a space after
+  // the type, needed for some usage cases. This is mainly needed when using the
+  // type to declare variables. Pointers don't need the space to generate valid
+  // code.
+  kFieldObjCTypeOptions_IncludeSpaceAfterBasicTypes = 1 << 2,
+};
+
+// This returns the ObjC type for the field. `options` allows some controls on
+// how the string is created for different usages.
+PROTOC_EXPORT std::string FieldObjCType(
+    const FieldDescriptor* field,
+    FieldObjCTypeOptions options = kFieldObjCTypeOptions_None);
+
 // Returns the transformed oneof name.
 PROTOC_EXPORT std::string OneofEnumName(const OneofDescriptor* descriptor);
 PROTOC_EXPORT std::string OneofName(const OneofDescriptor* descriptor);
