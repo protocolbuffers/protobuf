@@ -33,12 +33,14 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
+#include "upb/upb/base/descriptor_constants.h"
 #include "upb/upb/base/string_view.h"
 #include "upb/upb/mem/arena.h"
 #include "upb/upb/mini_descriptor/internal/base92.h"
 #include "upb/upb/mini_descriptor/internal/decoder.h"
 #include "upb/upb/mini_descriptor/internal/modifiers.h"
 #include "upb/upb/mini_descriptor/internal/wire_constants.h"
+#include "upb/upb/mini_table/internal/field.h"
 
 // Must be last.
 #include "upb/upb/port/def.inc"
@@ -217,6 +219,19 @@ static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
                              field->number);
     }
     field->mode ^= kUpb_LabelFlags_IsPacked;
+  }
+
+  if (field_modifiers & kUpb_EncodedFieldModifier_FlipValidateUtf8) {
+    if (field->UPB_PRIVATE(descriptortype) != kUpb_FieldType_Bytes ||
+        !(field->mode & kUpb_LabelFlags_IsAlternate)) {
+      upb_MdDecoder_ErrorJmp(
+          &d->base,
+          "Cannot flip ValidateUtf8 on field %" PRIu32 ", type=%d, mode=%d",
+          field->number, (int)field->UPB_PRIVATE(descriptortype),
+          (int)field->mode);
+    }
+    field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_String;
+    field->mode &= ~kUpb_LabelFlags_IsAlternate;
   }
 
   bool singular = field_modifiers & kUpb_EncodedFieldModifier_IsProto3Singular;

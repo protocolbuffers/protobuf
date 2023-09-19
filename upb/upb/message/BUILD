@@ -311,6 +311,31 @@ cc_test(
     ],
 )
 
+proto_library(
+    name = "utf8_test_proto",
+    testonly = 1,
+    srcs = ["utf8_test.proto"],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+)
+
+upb_proto_library(
+    name = "utf8_test_upb_proto",
+    testonly = 1,
+    deps = [":utf8_test_proto"],
+)
+
+cc_test(
+    name = "utf8_test",
+    srcs = ["utf8_test.cc"],
+    deps = [
+        ":utf8_test_upb_proto",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:wire",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 # begin:github_only
 filegroup(
     name = "source_files",
