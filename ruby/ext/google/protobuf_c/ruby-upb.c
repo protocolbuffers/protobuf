@@ -4297,7 +4297,7 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
   upb_EncodeStatus status =
       upb_Encode(any_msg, upb_MessageDef_MiniTable(any_m), 0, d->arena,
                  (char**)&encoded.str_val.data, &encoded.str_val.size);
-  // TODO(b/235839510): We should fail gracefully here on a bad return status.
+  // TODO: We should fail gracefully here on a bad return status.
   UPB_ASSERT(status == kUpb_EncodeStatus_Ok);
   upb_Message_SetFieldByDef(msg, value_f, encoded, d->arena);
 }
@@ -4866,7 +4866,7 @@ static void jsonenc_listvalue(jsonenc* e, const upb_Message* msg,
 
 static void jsonenc_value(jsonenc* e, const upb_Message* msg,
                           const upb_MessageDef* m) {
-  /* TODO(haberman): do we want a reflection method to get oneof case? */
+  /* TODO: do we want a reflection method to get oneof case? */
   size_t iter = kUpb_Message_Begin;
   const upb_FieldDef* f;
   upb_MessageValue val;
@@ -5729,7 +5729,7 @@ bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
   upb_EncodeStatus status2 = upb_Encode(m2, layout, opts, a, &data2, &size2);
 
   if (status1 != kUpb_EncodeStatus_Ok || status2 != kUpb_EncodeStatus_Ok) {
-    // TODO(salo): How should we fail here? (In Ruby we throw an exception.)
+    // TODO: How should we fail here? (In Ruby we throw an exception.)
     upb_Arena_Free(a);
     return false;
   }
@@ -6876,7 +6876,7 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
 
   upb_MiniTableSub* table_sub =
       (void*)&table->subs[field->UPB_PRIVATE(submsg_index)];
-  // TODO(haberman): Add this assert back once YouTube is updated to not call
+  // TODO: Add this assert back once YouTube is updated to not call
   // this function repeatedly.
   // UPB_ASSERT(table_sub->submsg == &_kUpb_MiniTable_Empty);
   table_sub->submsg = sub;
@@ -7240,7 +7240,7 @@ static char* upb_MtDataEncoder_FlushDenseEnumMask(upb_MtDataEncoder* e,
 
 char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
                                      uint32_t val) {
-  // TODO(b/229641772): optimize this encoding.
+  // TODO: optimize this encoding.
   upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
   UPB_ASSERT(val >= in->state.enum_state.last_written_value);
   uint32_t delta = val - in->state.enum_state.last_written_value;
@@ -7590,7 +7590,7 @@ const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
 const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
                                                         const char* name) {
   upb_value v;
-  // TODO(haberman): non-extension fields and oneofs.
+  // TODO: non-extension fields and oneofs.
   if (upb_strtable_lookup(&s->syms, name, &v)) {
     switch (_upb_DefType_Type(v)) {
       case UPB_DEFTYPE_EXT: {
@@ -9160,7 +9160,7 @@ static int _upb_FieldDef_Compare(const void* p1, const void* p2) {
 // for non-sorted lists of fields.
 const upb_FieldDef** _upb_FieldDefs_Sorted(const upb_FieldDef* f, int n,
                                            upb_Arena* a) {
-  // TODO(salo): Replace this arena alloc with a persistent scratch buffer.
+  // TODO: Replace this arena alloc with a persistent scratch buffer.
   upb_FieldDef** out = (upb_FieldDef**)upb_Arena_Malloc(a, n * sizeof(void*));
   if (!out) return NULL;
 
@@ -9499,7 +9499,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     file->package = NULL;
   }
 
-  // TODO(b/267770604): How should we validate this?
+  // TODO: How should we validate this?
   file->edition = UPB_DESC(FileDescriptorProto_edition_enum)(file_proto);
 
   if (UPB_DESC(FileDescriptorProto_has_syntax)(file_proto)) {
@@ -10190,7 +10190,7 @@ struct upb_MessageDef {
   const upb_EnumDef* nested_enums;
   const upb_FieldDef* nested_exts;
 
-  // TODO(salo): These counters don't need anywhere near 32 bits.
+  // TODO: These counters don't need anywhere near 32 bits.
   int field_count;
   int real_oneof_count;
   int oneof_count;
@@ -11077,7 +11077,7 @@ void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
   const int number = upb_FieldDef_Number(f);
   const upb_value v = upb_value_constptr(f);
 
-  // TODO(salo): This lookup is unfortunate because we also perform it when
+  // TODO: This lookup is unfortunate because we also perform it when
   // inserting into the message's table. Unfortunately that step occurs after
   // this one and moving things around could be tricky so let's leave it for
   // a future refactoring.
@@ -11086,7 +11086,7 @@ void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
     _upb_DefBuilder_Errf(ctx, "oneof fields have the same number (%d)", number);
   }
 
-  // TODO(salo): More redundant work happening here.
+  // TODO: More redundant work happening here.
   const bool name_exists = upb_strtable_lookup2(&o->ntof, name, size, NULL);
   if (UPB_UNLIKELY(name_exists)) {
     _upb_DefBuilder_Errf(ctx, "oneof fields have the same name (%.*s)",
@@ -13667,7 +13667,7 @@ static void encode_growbuffer(upb_encstate* e, size_t bytes) {
   if (!new_buf) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
 
   // We want previous data at the end, realloc() put it at the beginning.
-  // TODO(salo): This is somewhat inefficient since we are copying twice.
+  // TODO: This is somewhat inefficient since we are copying twice.
   // Maybe create a realloc() that copies to the end of the new buffer?
   if (old_size > 0) {
     memmove(new_buf + new_size - old_size, e->buf, old_size);

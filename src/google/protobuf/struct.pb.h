@@ -235,8 +235,10 @@ class PROTOBUF_EXPORT ListValue final :
   }
   protected:
   explicit ListValue(::google::protobuf::Arena* arena);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -415,8 +417,10 @@ class PROTOBUF_EXPORT Struct final :
   }
   protected:
   explicit Struct(::google::protobuf::Arena* arena);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -632,8 +636,10 @@ class PROTOBUF_EXPORT Value final :
   }
   protected:
   explicit Value(::google::protobuf::Arena* arena);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 

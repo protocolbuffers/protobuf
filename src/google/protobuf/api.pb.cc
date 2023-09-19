@@ -559,14 +559,12 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-Api::GetClassData() const {
-  static constexpr ::google::protobuf::MessageLite::ClassData data = {
-      Api::MergeImpl,
-       nullptr,  // OnDemandRegisterArenaDtor
-          true,
-  };
-  return &data;
+const ::google::protobuf::Message::ClassData Api::_class_data_ = {
+    Api::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
+};
+const ::google::protobuf::Message::ClassData* Api::GetClassData() const {
+  return &_class_data_;
 }
 
 void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
@@ -929,14 +927,12 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-Method::GetClassData() const {
-  static constexpr ::google::protobuf::MessageLite::ClassData data = {
-      Method::MergeImpl,
-       nullptr,  // OnDemandRegisterArenaDtor
-          true,
-  };
-  return &data;
+const ::google::protobuf::Message::ClassData Method::_class_data_ = {
+    Method::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
+};
+const ::google::protobuf::Message::ClassData* Method::GetClassData() const {
+  return &_class_data_;
 }
 
 void Method::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
@@ -1175,14 +1171,12 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-Mixin::GetClassData() const {
-  static constexpr ::google::protobuf::MessageLite::ClassData data = {
-      Mixin::MergeImpl,
-       nullptr,  // OnDemandRegisterArenaDtor
-          true,
-  };
-  return &data;
+const ::google::protobuf::Message::ClassData Mixin::_class_data_ = {
+    Mixin::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
+};
+const ::google::protobuf::Message::ClassData* Mixin::GetClassData() const {
+  return &_class_data_;
 }
 
 void Mixin::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {

@@ -401,14 +401,12 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-Struct::GetClassData() const {
-  static constexpr ::google::protobuf::MessageLite::ClassData data = {
-      Struct::MergeImpl,
-       nullptr,  // OnDemandRegisterArenaDtor
-          true,
-  };
-  return &data;
+const ::google::protobuf::Message::ClassData Struct::_class_data_ = {
+    Struct::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
+};
+const ::google::protobuf::Message::ClassData* Struct::GetClassData() const {
+  return &_class_data_;
 }
 
 void Struct::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
@@ -775,14 +773,12 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-Value::GetClassData() const {
-  static constexpr ::google::protobuf::MessageLite::ClassData data = {
-      Value::MergeImpl,
-       nullptr,  // OnDemandRegisterArenaDtor
-          true,
-  };
-  return &data;
+const ::google::protobuf::Message::ClassData Value::_class_data_ = {
+    Value::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
+};
+const ::google::protobuf::Message::ClassData* Value::GetClassData() const {
+  return &_class_data_;
 }
 
 void Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
@@ -990,14 +986,12 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-ListValue::GetClassData() const {
-  static constexpr ::google::protobuf::MessageLite::ClassData data = {
-      ListValue::MergeImpl,
-       nullptr,  // OnDemandRegisterArenaDtor
-          true,
-  };
-  return &data;
+const ::google::protobuf::Message::ClassData ListValue::_class_data_ = {
+    ListValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
+};
+const ::google::protobuf::Message::ClassData* ListValue::GetClassData() const {
+  return &_class_data_;
 }
 
 void ListValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {

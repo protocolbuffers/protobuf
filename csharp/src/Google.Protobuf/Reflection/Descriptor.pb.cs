@@ -755,7 +755,7 @@ namespace Google.Protobuf.Reflection {
     private string edition_;
     /// <summary>
     /// The edition of the proto file, which is an opaque string.
-    /// TODO(b/297898292) Deprecate and remove this field in favor of enums.
+    /// TODO Deprecate and remove this field in favor of enums.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2360,7 +2360,7 @@ namespace Google.Protobuf.Reflection {
     private global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.VerificationState verification_;
     /// <summary>
     /// The verification state of the range.
-    /// TODO(b/278783756): flip the default to DECLARATION once all empty ranges
+    /// TODO: flip the default to DECLARATION once all empty ranges
     /// are marked as UNVERIFIED.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7499,7 +7499,7 @@ namespace Google.Protobuf.Reflection {
     /// This should only be used as a temporary measure against broken builds due
     /// to the change in behavior for JSON field name conflicts.
     ///
-    /// TODO(b/261750190) This is legacy behavior we plan to remove once downstream
+    /// TODO This is legacy behavior we plan to remove once downstream
     /// teams have had time to migrate.
     /// </summary>
     [global::System.ObsoleteAttribute]
@@ -8870,7 +8870,7 @@ namespace Google.Protobuf.Reflection {
 
         private string edition_;
         /// <summary>
-        /// TODO(b/297898292) Deprecate and remove this field in favor of enums.
+        /// TODO Deprecate and remove this field in favor of enums.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -9537,7 +9537,7 @@ namespace Google.Protobuf.Reflection {
     /// and strips underscored from the fields before comparison in proto3 only.
     /// The new behavior takes `json_name` into account and applies to proto2 as
     /// well.
-    /// TODO(b/261750190) Remove this legacy behavior once downstream teams have
+    /// TODO Remove this legacy behavior once downstream teams have
     /// had time to migrate.
     /// </summary>
     [global::System.ObsoleteAttribute]
@@ -11777,7 +11777,7 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  /// TODO(b/274655146) Enums in C++ gencode (and potentially other languages) are
+  /// TODO Enums in C++ gencode (and potentially other languages) are
   /// not well scoped.  This means that each of the feature enums below can clash
   /// with each other.  The short names we've chosen maximize call-site
   /// readability, but leave us very open to this scenario.  A future feature will
@@ -12355,7 +12355,7 @@ namespace Google.Protobuf.Reflection {
 
     private string minimumEdition_;
     /// <summary>
-    /// TODO(b/297898292) Deprecate and remove these fields in favor of enums.
+    /// TODO Deprecate and remove these fields in favor of enums.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -12748,7 +12748,7 @@ namespace Google.Protobuf.Reflection {
 
         private string edition_;
         /// <summary>
-        /// TODO(b/297898292) Deprecate and remove this field in favor of enums.
+        /// TODO Deprecate and remove this field in favor of enums.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

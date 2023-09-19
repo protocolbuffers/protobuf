@@ -324,8 +324,10 @@ class PROTOBUF_EXPORT Option final :
   }
   protected:
   explicit Option(::google::protobuf::Arena* arena);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -520,8 +522,10 @@ class PROTOBUF_EXPORT Field final :
   }
   protected:
   explicit Field(::google::protobuf::Arena* arena);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -891,8 +895,10 @@ class PROTOBUF_EXPORT EnumValue final :
   }
   protected:
   explicit EnumValue(::google::protobuf::Arena* arena);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -1101,8 +1107,10 @@ class PROTOBUF_EXPORT Type final :
   }
   protected:
   explicit Type(::google::protobuf::Arena* arena);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -1397,8 +1405,10 @@ class PROTOBUF_EXPORT Enum final :
   }
   protected:
   explicit Enum(::google::protobuf::Arena* arena);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
+
+  static const ClassData _class_data_;
+  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
