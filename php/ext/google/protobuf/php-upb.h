@@ -3155,7 +3155,6 @@ typedef union upb_MiniTableSub upb_MiniTableSub;
 // Export the newer headers, for legacy users.  New users should include the
 // more specific headers directly.
 // IWYU pragma: begin_exports
-
 #ifndef UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
 #define UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
 
