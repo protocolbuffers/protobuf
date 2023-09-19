@@ -137,6 +137,11 @@ class FieldGeneratorBase {
         << descriptor_->cpp_type_name();
   }
 
+  virtual void GenerateArenaDestructorRegistrationCode(io::Printer* p) const {
+    ABSL_CHECK(NeedsArenaDestructor() == ArenaDtorNeeds::kNone)
+        << descriptor_->cpp_type_name();
+  }
+
   // Generates constexpr member initialization code, e.g.: `foo_{5}`.
   // The default implementation generates the following code:
   // - repeated fields and maps: `field_{}`
@@ -405,6 +410,16 @@ class FieldGenerator {
   void GenerateArenaDestructorCode(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateArenaDestructorCode(p);
+  }
+
+  // Generates the registration call to arena->OwnXXX to register a single
+  // field.
+  //
+  // This is an alternative to a shared ArenaDtor method for when it is more
+  // efficient to register only the one field.
+  void GenerateArenaDestructorRegistrationCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateArenaDestructorRegistrationCode(p);
   }
 
   // Generates initialization code for private members declared by

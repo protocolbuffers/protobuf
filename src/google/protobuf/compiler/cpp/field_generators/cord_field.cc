@@ -69,6 +69,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* printer) const override;
 #endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
+  void GenerateArenaDestructorRegistrationCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
@@ -261,6 +262,13 @@ void CordFieldGenerator::GenerateArenaDestructorCode(
   Formatter format(printer, variables_);
   // _this is the object being destructed (we are inside a static method here).
   format("_this->$field$. ::absl::Cord::~Cord ();\n");
+}
+
+void CordFieldGenerator::GenerateArenaDestructorRegistrationCode(
+    io::Printer* p) const {
+  p->Emit(R"cc(
+    arena.OwnDestructor(&$field$);
+  )cc");
 }
 
 void CordFieldGenerator::GenerateSerializeWithCachedSizesToArray(

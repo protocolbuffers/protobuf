@@ -20,3 +20,14 @@ message NestedMessage {
 message ArenaMessage {
   repeated NestedMessage repeated_nested_message = 1;
 }
+
+// This message has many fields that need arena cleanup.
+message MessageWithSharedArenaDtor {
+  string s = 1 [ctype = CORD];
+  MessageWithSharedArenaDtor m = 2 [lazy = true];
+}
+
+// This message has only one field that needs arena cleanup.
+message MessageWithoutSharedArenaDtor {
+  string s = 1 [ctype = CORD];
+}

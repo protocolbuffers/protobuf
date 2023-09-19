@@ -24,6 +24,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/extension_set.h"
@@ -45,12 +46,16 @@
 #include "google/protobuf/port_def.inc"
 
 using proto2_arena_unittest::ArenaMessage;
+using proto2_arena_unittest::MessageWithoutSharedArenaDtor;
+using proto2_arena_unittest::MessageWithSharedArenaDtor;
 using protobuf_unittest::ForeignMessage;
 using protobuf_unittest::TestAllExtensions;
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
 using protobuf_unittest::TestOneof2;
 using protobuf_unittest::TestRepeatedString;
+using testing::ElementsAre;
+using testing::Not;
 
 namespace google {
 namespace protobuf {

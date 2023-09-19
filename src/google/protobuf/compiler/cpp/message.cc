@@ -1561,11 +1561,20 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "protected:\n"
       "explicit $classname$(::$proto_ns$::Arena* arena);\n");
 
-  switch (NeedsArenaDestructor()) {
-    case ArenaDtorNeeds::kOnDemand:
+  const auto needs_arena_dtor = NeedsArenaDestructor();
+  if (needs_arena_dtor != ArenaDtorNeeds::kNone) {
+    p->Emit(R"cc(
+      private:
+      void RegisterArenaDtor(::$proto_ns$::Arena& arena);
+    )cc");
+    const auto fields_that_need_arena_dtor = FieldsThatNeedArenaDestructor();
+    if (ShouldGenerateSharedArenaDtor()) {
       p->Emit(R"cc(
-        private:
         static void ArenaDtor(void* object);
+      )cc");
+    }
+    if (needs_arena_dtor == ArenaDtorNeeds::kOnDemand) {
+      p->Emit(R"cc(
         static void OnDemandRegisterArenaDtor(MessageLite& msg,
                                               ::$proto_ns$::Arena& arena) {
           auto& this_ = static_cast<$classname$&>(msg);
@@ -1573,17 +1582,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             return;
           }
           this_.$inlined_string_donated_array$[0] &= 0xFFFFFFFEu;
-          arena.OwnCustomDestructor(&this_, &$classname$::ArenaDtor);
+          this_.RegisterArenaDtor(arena);
         }
       )cc");
-      break;
-    case ArenaDtorNeeds::kRequired:
-      format(
-          "private:\n"
-          "static void ArenaDtor(void* object);\n");
-      break;
-    case ArenaDtorNeeds::kNone:
-      break;
+    }
   }
 
   format(
@@ -2742,8 +2744,54 @@ ArenaDtorNeeds MessageGenerator::NeedsArenaDestructor() const {
   return needs;
 }
 
+std::vector<const FieldDescriptor*>
+MessageGenerator::FieldsThatNeedArenaDestructor() const {
+  std::vector<const FieldDescriptor*> out;
+  for (const auto* field : FieldRange(descriptor_)) {
+    if (field_generators_.get(field).NeedsArenaDestructor() !=
+        ArenaDtorNeeds::kNone) {
+      out.push_back(field);
+    }
+  }
+  return out;
+}
+
+bool MessageGenerator::ShouldGenerateSharedArenaDtor() const {
+  const auto fields_that_need_arena_dtor = FieldsThatNeedArenaDestructor();
+  if (fields_that_need_arena_dtor.size() > 1) return true;
+  if (fields_that_need_arena_dtor.size() == 0) return false;
+  auto* field = fields_that_need_arena_dtor[0];
+  return ShouldSplit(fields_that_need_arena_dtor[0], options_) ||
+         field->real_containing_oneof() != nullptr;
+}
+
 void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
   ABSL_CHECK(NeedsArenaDestructor() > ArenaDtorNeeds::kNone);
+
+  if (ShouldGenerateSharedArenaDtor()) {
+    p->Emit(R"cc(
+      inline void $classname$::RegisterArenaDtor(::$proto_ns$::Arena& arena) {
+        arena.OwnCustomDestructor(this, &ArenaDtor);
+      }
+    )cc");
+  } else {
+    p->Emit({{"register_field",
+              [&] {
+                for (auto* field : FieldsThatNeedArenaDestructor()) {
+                  field_generators_.get(field)
+                      .GenerateArenaDestructorRegistrationCode(p);
+                }
+              }}},
+            R"cc(
+              inline void $classname$::RegisterArenaDtor(
+                  ::$proto_ns$::Arena& arena) {
+                $register_field$;
+              }
+            )cc");
+    // And return because we don't want to generate the ArenaDtor function.
+    return;
+  }
+
   auto emit_field_dtors = [&](bool split_fields) {
     // Write the destructors for each field except oneof members.
     // optimized_order_ does not contain oneof fields.
@@ -3350,7 +3398,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
     if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
       p->Emit(R"cc(
         if (arena != nullptr) {
-          arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
+          RegisterArenaDtor(*arena);
         }
       )cc");
     }
@@ -3394,7 +3442,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
              if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
                p->Emit(R"cc(
                  if (arena != nullptr) {
-                   arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
+                   RegisterArenaDtor(*arena);
                  }
                )cc");
              }

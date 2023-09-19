@@ -104,6 +104,14 @@ class SingularString : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateArenaDestructorRegistrationCode(io::Printer* p) const {
+    if (!is_inlined()) return;
+
+    p->Emit(R"cc(
+      arena.OwnDestructor(&$field$);
+    )cc");
+  }
+
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override {
     if (EmptyDefault()) return;
     p->Emit(R"cc(

@@ -168,6 +168,8 @@ class MessageGenerator {
   // - Returning kRequired means we meed to generate ArenaDtor and register it
   //   at construction.
   ArenaDtorNeeds NeedsArenaDestructor() const;
+  std::vector<const FieldDescriptor*> FieldsThatNeedArenaDestructor() const;
+  bool ShouldGenerateSharedArenaDtor() const;
 
   size_t HasBitsSize() const;
   size_t InlinedStringDonatedSize() const;
