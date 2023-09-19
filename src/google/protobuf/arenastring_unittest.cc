@@ -89,42 +89,6 @@ TEST_P(SingleArena, NullDefault) {
   field.Destroy();
 }
 
-class DualArena : public testing::TestWithParam<std::tuple<bool, bool>> {
- public:
-  std::unique_ptr<Arena> GetLhsArena() {
-    if (std::get<0>(this->GetParam())) return nullptr;
-    return std::unique_ptr<Arena>(new Arena());
-  }
-  std::unique_ptr<Arena> GetRhsArena() {
-    if (std::get<1>(this->GetParam())) return nullptr;
-    return std::unique_ptr<Arena>(new Arena());
-  }
-};
-
-INSTANTIATE_TEST_SUITE_P(ArenaString, DualArena,
-                         testing::Combine(testing::Bool(), testing::Bool()));
-
-TEST_P(DualArena, Swap) {
-  auto lhs_arena = GetLhsArena();
-  ArenaStringPtr lhs;
-  lhs.InitDefault();
-  ArenaStringPtr rhs;
-  rhs.InitDefault();
-
-  {
-    auto rhs_arena = GetRhsArena();
-    lhs.Set("lhs value that has some heft", lhs_arena.get());
-    rhs.Set("rhs value that has some heft", rhs_arena.get());
-    ArenaStringPtr::InternalSwap(&lhs, lhs_arena.get(),  //
-                                 &rhs, rhs_arena.get());
-    EXPECT_EQ("rhs value that has some heft", lhs.Get());
-    EXPECT_EQ("lhs value that has some heft", rhs.Get());
-    lhs.Destroy();
-  }
-  EXPECT_EQ("lhs value that has some heft", rhs.Get());
-  rhs.Destroy();
-}
-
 TEST(ArenaStringPtrTest, ConstInit) {
   // Verify that we can constinit construct an ArenaStringPtr from an arbitrary
   // ExplicitlyConstructed<std::string>*.

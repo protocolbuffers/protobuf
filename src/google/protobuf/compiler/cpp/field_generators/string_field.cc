@@ -571,8 +571,7 @@ void SingularString::GenerateSwappingCode(io::Printer* p) const {
 
   if (!is_inlined()) {
     p->Emit(R"cc(
-      ::_pbi::ArenaStringPtr::InternalSwap(&$field_$, lhs_arena,
-                                           &other->$field_$, rhs_arena);
+      ::_pbi::ArenaStringPtr::InternalSwap(&$field_$, &other->$field_$, arena);
     )cc");
     return;
   }
@@ -583,8 +582,8 @@ void SingularString::GenerateSwappingCode(io::Printer* p) const {
       bool rhs_dtor_registered =
           (other->$inlined_string_donated_array$[0] & 1) == 0;
       ::_pbi::InlinedStringField::InternalSwap(
-          &$field_$, lhs_arena, lhs_dtor_registered, this, &other->$field_$,
-          rhs_arena, rhs_dtor_registered, other);
+          &$field_$, lhs_dtor_registered, this, &other->$field_$,
+          rhs_dtor_registered, other, arena);
     }
   )cc");
 }
