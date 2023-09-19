@@ -32,9 +32,8 @@ void SetMessageVariables(
   const std::string& message_type = ClassName(descriptor->message_type());
   const std::string& containing_class =
       ClassName(descriptor->containing_type());
-  (*variables)["type"] = message_type;
+  (*variables)["msg_type"] = message_type;
   (*variables)["containing_class"] = containing_class;
-  (*variables)["storage_type"] = message_type;
   (*variables)["dataTypeSpecific_value"] = ObjCClass(message_type);
 }
 
@@ -56,14 +55,13 @@ void MessageFieldGenerator::DetermineForwardDeclarations(
   if ((include_external_types && !IsProtobufLibraryBundledProtoFile(
                                      descriptor_->message_type()->file())) ||
       descriptor_->file() == descriptor_->message_type()->file()) {
-    // Class name is already in "storage_type".
-    fwd_decls->insert(absl::StrCat("@class ", variable("storage_type"), ";"));
+    fwd_decls->insert(absl::StrCat("@class ", variable("msg_type"), ";"));
   }
 }
 
 void MessageFieldGenerator::DetermineObjectiveCClassDefinitions(
     absl::btree_set<std::string>* fwd_decls) const {
-  fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
+  fwd_decls->insert(ObjCClassDeclaration(variable("msg_type")));
 }
 
 void MessageFieldGenerator::DetermineNeededFiles(
@@ -77,7 +75,6 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
     const FieldDescriptor* descriptor)
     : RepeatedFieldGenerator(descriptor) {
   SetMessageVariables(descriptor, &variables_);
-  variables_["array_storage_type"] = "NSMutableArray";
 }
 
 void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
@@ -91,14 +88,13 @@ void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
   if ((include_external_types && !IsProtobufLibraryBundledProtoFile(
                                      descriptor_->message_type()->file())) ||
       descriptor_->file() == descriptor_->message_type()->file()) {
-    // Class name is already in "storage_type".
-    fwd_decls->insert(absl::StrCat("@class ", variable("storage_type"), ";"));
+    fwd_decls->insert(absl::StrCat("@class ", variable("msg_type"), ";"));
   }
 }
 
 void RepeatedMessageFieldGenerator::DetermineObjectiveCClassDefinitions(
     absl::btree_set<std::string>* fwd_decls) const {
-  fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
+  fwd_decls->insert(ObjCClassDeclaration(variable("msg_type")));
 }
 
 void RepeatedMessageFieldGenerator::DetermineNeededFiles(

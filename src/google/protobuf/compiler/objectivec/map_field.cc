@@ -12,7 +12,6 @@
 
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
-#include "absl/log/absl_log.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/field.h"
@@ -28,43 +27,6 @@ namespace objectivec {
 // MapFieldGenerator uses RepeatedFieldGenerator as the parent because it
 // provides a bunch of things (no has* methods, comments for contained type,
 // etc.).
-
-namespace {
-
-const char* MapEntryTypeName(const FieldDescriptor* descriptor, bool isKey) {
-  ObjectiveCType type = GetObjectiveCType(descriptor);
-  switch (type) {
-    case OBJECTIVECTYPE_INT32:
-      return "Int32";
-    case OBJECTIVECTYPE_UINT32:
-      return "UInt32";
-    case OBJECTIVECTYPE_INT64:
-      return "Int64";
-    case OBJECTIVECTYPE_UINT64:
-      return "UInt64";
-    case OBJECTIVECTYPE_FLOAT:
-      return "Float";
-    case OBJECTIVECTYPE_DOUBLE:
-      return "Double";
-    case OBJECTIVECTYPE_BOOLEAN:
-      return "Bool";
-    case OBJECTIVECTYPE_STRING:
-      return (isKey ? "String" : "Object");
-    case OBJECTIVECTYPE_DATA:
-      return "Object";
-    case OBJECTIVECTYPE_ENUM:
-      return "Enum";
-    case OBJECTIVECTYPE_MESSAGE:
-      return "Object";
-  }
-
-  // Some compilers report reaching end of function even though all cases of
-  // the enum are handed in the switch.
-  ABSL_LOG(FATAL) << "Can't get here.";
-  return nullptr;
-}
-
-}  // namespace
 
 MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
     : RepeatedFieldGenerator(descriptor) {
@@ -102,20 +64,6 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
 
   variables_["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
 
-  ObjectiveCType value_objc_type = GetObjectiveCType(value_descriptor);
-  const bool value_is_object_type =
-      ((value_objc_type == OBJECTIVECTYPE_STRING) ||
-       (value_objc_type == OBJECTIVECTYPE_DATA) ||
-       (value_objc_type == OBJECTIVECTYPE_MESSAGE));
-  if ((GetObjectiveCType(key_descriptor) == OBJECTIVECTYPE_STRING) &&
-      value_is_object_type) {
-    variables_["array_storage_type"] = "NSMutableDictionary";
-  } else {
-    variables_["array_storage_type"] =
-        absl::StrCat("GPB", MapEntryTypeName(key_descriptor, true),
-                     MapEntryTypeName(value_descriptor, false), "Dictionary");
-  }
-
   variables_["dataTypeSpecific_name"] =
       value_field_generator_->variable("dataTypeSpecific_name");
   variables_["dataTypeSpecific_value"] =
@@ -130,9 +78,9 @@ void MapFieldGenerator::EmitArrayComment(io::Printer* printer) const {
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_ENUM) {
     printer->Emit(
         {{"name", variable("name")},
-         {"storage_type", value_field_generator_->variable("storage_type")}},
+         {"enum_name", value_field_generator_->variable("enum_name")}},
         R"objc(
-          // |$name$| values are |$storage_type$|
+          // |$name$| values are |$enum_name$|
         )objc");
   }
 }
@@ -160,20 +108,20 @@ void MapFieldGenerator::DetermineForwardDeclarations(
   if ((include_external_types &&
        !IsProtobufLibraryBundledProtoFile(value_msg_descriptor->file())) ||
       descriptor_->file() == value_msg_descriptor->file()) {
-    const std::string& value_storage_type =
-        value_field_generator_->variable("storage_type");
-    fwd_decls->insert(absl::StrCat("@class ", value_storage_type, ";"));
+    const std::string& value_type =
+        value_field_generator_->variable("msg_type");
+    fwd_decls->insert(absl::StrCat("@class ", value_type, ";"));
   }
 }
 
 void MapFieldGenerator::DetermineObjectiveCClassDefinitions(
     absl::btree_set<std::string>* fwd_decls) const {
-  // Class name is already in "storage_type".
+  // Class name is already in value's "msg_type".
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_MESSAGE) {
     fwd_decls->insert(
-        ObjCClassDeclaration(value_field_generator_->variable("storage_type")));
+        ObjCClassDeclaration(value_field_generator_->variable("msg_type")));
   }
 }
 

@@ -31,7 +31,7 @@ void SetEnumVariables(
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
   const std::string type = EnumName(descriptor->enum_type());
   const std::string enum_desc_func = absl::StrCat(type, "_EnumDescriptor");
-  (*variables)["storage_type"] = type;
+  (*variables)["enum_name"] = type;
   // For non repeated fields, if it was defined in a different file, the
   // property decls need to use "enum NAME" rather than just "NAME" to support
   // the forward declaration of the enums.
@@ -112,8 +112,7 @@ void EnumFieldGenerator::DetermineForwardDeclarations(
   if (include_external_types &&
       descriptor_->file() != descriptor_->enum_type()->file() &&
       !IsProtobufLibraryBundledProtoFile(descriptor_->enum_type()->file())) {
-    // Enum name is already in "storage_type".
-    const std::string& name = variable("storage_type");
+    const std::string& name = variable("enum_name");
     fwd_decls->insert(absl::StrCat("GPB_ENUM_FWD_DECLARE(", name, ");"));
   }
 }
@@ -129,13 +128,12 @@ RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
     const FieldDescriptor* descriptor)
     : RepeatedFieldGenerator(descriptor) {
   SetEnumVariables(descriptor, &variables_);
-  variables_["array_storage_type"] = "GPBEnumArray";
 }
 
 void RepeatedEnumFieldGenerator::EmitArrayComment(io::Printer* printer) const {
   auto vars = printer->WithVars(variables_);
   printer->Emit(R"objc(
-    // |$name$| contains |$storage_type$|
+    // |$name$| contains |$enum_name$|
   )objc");
 }
 
