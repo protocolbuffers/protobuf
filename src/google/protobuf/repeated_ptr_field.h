@@ -678,7 +678,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
                    sizeof(void*)];
   };
 
-  static constexpr int kInitialSize = 0;
   static constexpr size_t kRepHeaderSize = offsetof(Rep, elements);
 
   // Replaces current_size_ with new_size and returns the previous value of
