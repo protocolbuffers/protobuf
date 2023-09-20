@@ -799,6 +799,43 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
 // -------------------------------------------------------------------
 // Messages
 
+PROTOBUF_NOINLINE static void GenerateSyntheticOneofs(
+    DescriptorProto* message) {
+  // Add synthetic one-field oneofs for optional fields, except messages which
+  // already have presence in proto3.
+  //
+  // We have to make sure the oneof names don't conflict with any other
+  // field or oneof.
+  absl::flat_hash_set<std::string> names;
+  for (const auto& field : message->field()) {
+    names.insert(field.name());
+  }
+  for (const auto& oneof : message->oneof_decl()) {
+    names.insert(oneof.name());
+  }
+
+  for (auto& field : *message->mutable_field()) {
+    if (field.proto3_optional()) {
+      std::string oneof_name = field.name();
+
+      // Prepend 'XXXXX_' until we are no longer conflicting.
+      // Avoid prepending a double-underscore because such names are
+      // reserved in C++.
+      if (oneof_name.empty() || oneof_name[0] != '_') {
+        oneof_name = '_' + oneof_name;
+      }
+      while (names.count(oneof_name) > 0) {
+        oneof_name = 'X' + oneof_name;
+      }
+
+      names.insert(oneof_name);
+      field.set_oneof_index(message->oneof_decl_size());
+      OneofDescriptorProto* oneof = message->add_oneof_decl();
+      oneof->set_name(std::move(oneof_name));
+    }
+  }
+}
+
 bool Parser::ParseMessageDefinition(
     DescriptorProto* message, const LocationRecorder& message_location,
     const FileDescriptorProto* containing_file) {
@@ -818,39 +855,7 @@ bool Parser::ParseMessageDefinition(
   DO(ParseMessageBlock(message, message_location, containing_file));
 
   if (syntax_identifier_ == "proto3") {
-    // Add synthetic one-field oneofs for optional fields, except messages which
-    // already have presence in proto3.
-    //
-    // We have to make sure the oneof names don't conflict with any other
-    // field or oneof.
-    absl::flat_hash_set<std::string> names;
-    for (const auto& field : message->field()) {
-      names.insert(field.name());
-    }
-    for (const auto& oneof : message->oneof_decl()) {
-      names.insert(oneof.name());
-    }
-
-    for (auto& field : *message->mutable_field()) {
-      if (field.proto3_optional()) {
-        std::string oneof_name = field.name();
-
-        // Prepend 'XXXXX_' until we are no longer conflicting.
-        // Avoid prepending a double-underscore because such names are
-        // reserved in C++.
-        if (oneof_name.empty() || oneof_name[0] != '_') {
-          oneof_name = '_' + oneof_name;
-        }
-        while (names.count(oneof_name) > 0) {
-          oneof_name = 'X' + oneof_name;
-        }
-
-        names.insert(oneof_name);
-        field.set_oneof_index(message->oneof_decl_size());
-        OneofDescriptorProto* oneof = message->add_oneof_decl();
-        oneof->set_name(std::move(oneof_name));
-      }
-    }
+    GenerateSyntheticOneofs(message);
   }
 
   return true;
