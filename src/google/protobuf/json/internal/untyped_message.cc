@@ -20,6 +20,7 @@
 #include "google/protobuf/type.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -158,6 +159,44 @@ absl::StatusOr<const ResolverPool::Enum*> ResolverPool::FindEnum(
       .first->second.get();
 }
 
+PROTOBUF_NOINLINE static absl::Status MakeEndGroupWithoutGroupError(
+    int field_number) {
+  return absl::InvalidArgumentError(absl::StrFormat(
+      "attempted to close group %d before SGROUP tag", field_number));
+}
+
+PROTOBUF_NOINLINE static absl::Status MakeEndGroupMismatchError(
+    int field_number, int current_group) {
+  return absl::InvalidArgumentError(
+      absl::StrFormat("attempted to close group %d while inside group %d",
+                      field_number, current_group));
+}
+
+PROTOBUF_NOINLINE static absl::Status MakeFieldNotGroupError(int field_number) {
+  return absl::InvalidArgumentError(
+      absl::StrFormat("field number %d is not a group", field_number));
+}
+
+PROTOBUF_NOINLINE static absl::Status MakeUnexpectedEofError() {
+  return absl::InvalidArgumentError("unexpected EOF");
+}
+
+PROTOBUF_NOINLINE static absl::Status MakeUnknownWireTypeError(int wire_type) {
+  return absl::InvalidArgumentError(
+      absl::StrCat("unknown wire type: ", wire_type));
+}
+
+PROTOBUF_NOINLINE static absl::Status MakeProto3Utf8Error() {
+  return absl::InvalidArgumentError("proto3 strings must be UTF-8");
+}
+
+PROTOBUF_NOINLINE static absl::Status MakeInvalidLengthDelimType(
+    int kind, int field_number) {
+  return absl::InvalidArgumentError(absl::StrFormat(
+      "field type %d (number %d) does not support type 2 records", kind,
+      field_number));
+}
+
 absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
                                     absl::optional<int32_t> current_group) {
   while (true) {
@@ -175,13 +214,10 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
     // special field has been added to the message.
     if (wire_type == WireFormatLite::WIRETYPE_END_GROUP) {
       if (!current_group.has_value()) {
-        return absl::InvalidArgumentError(absl::StrFormat(
-            "attempted to close group %d before SGROUP tag", field_number));
+        return MakeEndGroupWithoutGroupError(field_number);
       }
       if (field_number != *current_group) {
-        return absl::InvalidArgumentError(
-            absl::StrFormat("attempted to close group %d while inside group %d",
-                            field_number, *current_group));
+        return MakeEndGroupMismatchError(field_number, *current_group);
       }
       return absl::OkStatus();
     }
@@ -194,28 +230,28 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
         case WireFormatLite::WIRETYPE_VARINT: {
           uint64_t x;
           if (!stream.ReadVarint64(&x)) {
-            return absl::InvalidArgumentError("unexpected EOF");
+            return MakeUnexpectedEofError();
           }
           continue;
         }
         case WireFormatLite::WIRETYPE_FIXED64: {
           uint64_t x;
           if (!stream.ReadLittleEndian64(&x)) {
-            return absl::InvalidArgumentError("unexpected EOF");
+            return MakeUnexpectedEofError();
           }
           continue;
         }
         case WireFormatLite::WIRETYPE_FIXED32: {
           uint32_t x;
           if (!stream.ReadLittleEndian32(&x)) {
-            return absl::InvalidArgumentError("unexpected EOF");
+            return MakeUnexpectedEofError();
           }
           continue;
         }
         case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
           uint32_t x;
           if (!stream.ReadVarint32(&x)) {
-            return absl::InvalidArgumentError("unexpected EOF");
+            return MakeUnexpectedEofError();
           }
           stream.Skip(x);
           continue;
@@ -226,20 +262,16 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
         }
         case WireFormatLite::WIRETYPE_END_GROUP: {
           if (group_stack.empty()) {
-            return absl::InvalidArgumentError(absl::StrFormat(
-                "attempted to close group %d before SGROUP tag", field_number));
+            return MakeEndGroupWithoutGroupError(field_number);
           }
           if (field_number != group_stack.back()) {
-            return absl::InvalidArgumentError(absl::StrFormat(
-                "attempted to close group %d while inside group %d",
-                field_number, *current_group));
+            return MakeEndGroupMismatchError(field_number, group_stack.back());
           }
           group_stack.pop_back();
           continue;
         }
         default:
-          return absl::InvalidArgumentError(
-              absl::StrCat("unknown wire type: ", wire_type));
+          return MakeUnknownWireTypeError(wire_type);
       }
     }
     switch (wire_type) {
@@ -257,8 +289,7 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
         break;
       case WireFormatLite::WIRETYPE_START_GROUP: {
         if (field->proto().kind() != Field::TYPE_GROUP) {
-          return absl::InvalidArgumentError(absl::StrFormat(
-              "field number %d is not a group", field->proto().number()));
+          return MakeFieldNotGroupError(field->proto().number());
         }
         auto group_desc = field->MessageType();
         RETURN_IF_ERROR(group_desc.status());
@@ -269,11 +300,10 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
         break;
       }
       case WireFormatLite::WIRETYPE_END_GROUP:
-        ABSL_CHECK(false) << "unreachable";
+        ABSL_LOG(FATAL) << "unreachable";
         break;
       default:
-        return absl::InvalidArgumentError(
-            absl::StrCat("unknown wire type: ", wire_type));
+        return MakeUnknownWireTypeError(wire_type);
     }
   }
 
@@ -419,7 +449,7 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
                                              const ResolverPool::Field& field) {
   auto limit = stream.ReadLengthAndPushLimit();
   if (limit == 0) {
-    return absl::InvalidArgumentError("unexpected EOF");
+    return MakeUnexpectedEofError();
   }
 
   switch (field.proto().kind()) {
@@ -427,12 +457,12 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
     case Field::TYPE_BYTES: {
       std::string buf;
       if (!stream.ReadString(&buf, stream.BytesUntilLimit())) {
-        return absl::InvalidArgumentError("unexpected EOF");
+        return MakeUnexpectedEofError();
       }
       if (field.proto().kind() == Field::TYPE_STRING) {
         if (desc_->proto().syntax() == google::protobuf::SYNTAX_PROTO3 &&
             utf8_range::IsStructurallyValid(buf)) {
-          return absl::InvalidArgumentError("proto3 strings must be UTF-8");
+          return MakeProto3Utf8Error();
         }
       }
 
@@ -473,9 +503,8 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
             RETURN_IF_ERROR(Decode32Bit(stream, field));
             break;
           default:
-            return absl::InvalidArgumentError(absl::StrFormat(
-                "field type %d (number %d) does not support type 2 records",
-                field.proto().kind(), field.proto().number()));
+            return MakeInvalidLengthDelimType(field.proto().kind(),
+                                              field.proto().number());
         }
       }
       break;
