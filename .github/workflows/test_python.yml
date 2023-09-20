@@ -20,10 +20,10 @@ jobs:
         version: [ "3.7", "3.8", "3.9", "3.10" ]
         include:
           - type: Pure
-            targets: //python/... //upb/python/... //python:python_version
+            targets: //python/... //upb/python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=false
           - type: C++
-            targets: //python/... //python:python_version
+            targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
           - type: C++
             version: aarch64
@@ -57,9 +57,9 @@ jobs:
         version: [ "3.10" ]
         include:
           - type: Pure
-            targets: //python/... //upb/python/... //python:python_version
+            targets: //python/... //upb/python/... //python:python_version_test
           - type: C++
-            targets: //python/... //python:python_version
+            targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
 
     name: MacOS ${{ matrix.type }} ${{ matrix.version }}
