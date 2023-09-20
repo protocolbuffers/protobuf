@@ -91,10 +91,6 @@ rust_library(
     srcs = PROTOBUF_SHARED + ["cpp.rs"],
     crate_root = "shared.rs",
     rustc_flags = ["--cfg=cpp_kernel"],
-    visibility = [
-        "//src/google/protobuf:__subpackages__",
-        "//rust:__subpackages__",
-    ],
     deps = [":utf8"],
 )
 
