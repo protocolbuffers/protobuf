@@ -5,14 +5,14 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//upb/bazel:py_proto_library.bzl", "py_proto_library")
-load(":dist.bzl", "py_dist", "py_dist_module")
-load("@bazel_skylib//lib:selects.bzl", "selects")
-load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
+load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("//upb/bazel:py_proto_library.bzl", "py_proto_library")
+load(":dist.bzl", "py_dist", "py_dist_module")
 
 licenses(["notice"])
 
@@ -233,7 +233,7 @@ pkg_files(
 pkg_files(
     name = "filegroup_source_files",
     srcs = [
-        "//upb:LICENSE",
+        "//:LICENSE",
         "//upb:source_files",
         "//upb/python:message_srcs",
         "//upb/upb/base:source_files",
@@ -312,7 +312,7 @@ py_wheel(
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
-        "//upb:LICENSE": "LICENSE",
+        "//:LICENSE": "LICENSE",
     },
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
@@ -368,7 +368,7 @@ py_wheel(
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
-        "//upb:LICENSE": "LICENSE",
+        "//:LICENSE": "LICENSE",
     },
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
@@ -397,7 +397,7 @@ py_wheel(
     abi = "none",
     distribution = "protobuftests",
     extra_distinfo_files = {
-        "//upb:LICENSE": "LICENSE",
+        "//:LICENSE": "LICENSE",
     },
     platform = "any",
     python_tag = "py3",
