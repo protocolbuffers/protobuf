@@ -607,6 +607,8 @@ static void GenerateSibling(
       "// source: $filename$\n"
       "\n",
       "filename", descriptor->file()->name());
+  printer.Print("// Protobuf Java Version: $protobuf_java_version$\n",
+                "protobuf_java_version", internal::kProtoJavaVersionString);
   if (!java_package.empty()) {
     printer.Print(
         "package $package$;\n"
