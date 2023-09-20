@@ -10,11 +10,6 @@
 
 #include "upb/upb/mini_table/internal/extension.h"
 
-// Must be last.
-#include "upb/upb/port/def.inc"
-
 typedef struct upb_MiniTableExtension upb_MiniTableExtension;
-
-#include "upb/upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_EXTENSION_H_ */
