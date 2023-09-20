@@ -1835,7 +1835,6 @@ UPB_INLINE uint64_t upb_MiniTable_requiredmask(const struct upb_MiniTable* l) {
 
 
 #endif /* UPB_MINI_TABLE_INTERNAL_MESSAGE_H_ */
-
 #ifndef UPB_MINI_TABLE_INTERNAL_SUB_H_
 #define UPB_MINI_TABLE_INTERNAL_SUB_H_
 
