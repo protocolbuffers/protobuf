@@ -31,6 +31,8 @@
 #ifndef UPB_UTIL_REQUIRED_FIELDS_H_
 #define UPB_UTIL_REQUIRED_FIELDS_H_
 
+#include <stddef.h>
+
 #include "upb/upb/reflection/def.h"
 #include "upb/upb/reflection/message.h"
 
