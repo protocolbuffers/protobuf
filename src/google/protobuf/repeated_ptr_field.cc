@@ -147,6 +147,10 @@ void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
   delete message;
 }
 
+template PROTOBUF_EXPORT_TEMPLATE_DEFINE void
+memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
+    char* PROTOBUF_RESTRICT, char* PROTOBUF_RESTRICT);
+
 }  // namespace internal
 
 }  // namespace protobuf
