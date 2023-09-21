@@ -257,7 +257,10 @@ bool ObjectiveCGenerator::GenerateAll(
       // Controls if minimal imports should be generated from a files imports.
       // Since custom options require imports, they current cause generated
       // imports even though there is nothing captured in the generated code,
-      // this provides smaller imports only for the things referenced.
+      // this provides smaller imports only for the things referenced. This
+      // could break code in complex cases where code uses types via long
+      // import chains with public imports mixed through the way, as things
+      // that aren't really needed for the local usages could be pruned.
       if (!StringToBool(options[i].second,
                         &generation_options.generate_minimal_imports)) {
         *error =
