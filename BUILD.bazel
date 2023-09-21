@@ -25,6 +25,8 @@ exports_files(["LICENSE"])
 # )
 ################################################################################
 
+#noop
+
 alias(
     name = "any_proto",
     actual = "//src/google/protobuf:any_proto",
