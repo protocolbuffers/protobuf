@@ -301,10 +301,10 @@ class PROTOBUF_EXPORT InlinedStringField {
   // Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
   inline PROTOBUF_NDEBUG_INLINE static void InternalSwap(
-      InlinedStringField* lhs, Arena* lhs_arena, bool lhs_arena_dtor_registered,
+      InlinedStringField* lhs, bool lhs_arena_dtor_registered,
       MessageLite* lhs_msg,  //
-      InlinedStringField* rhs, Arena* rhs_arena, bool rhs_arena_dtor_registered,
-      MessageLite* rhs_msg);
+      InlinedStringField* rhs, bool rhs_arena_dtor_registered,
+      MessageLite* rhs_msg, Arena* arena);
 
   // Frees storage (if not on an arena).
   PROTOBUF_NDEBUG_INLINE void Destroy(const std::string* default_value,
@@ -407,22 +407,20 @@ inline void InlinedStringField::SetNoArena(std::string&& value) {
   get_mutable()->assign(std::move(value));
 }
 
-// Caller should make sure rhs_arena allocated rhs, and lhs_arena allocated lhs.
 inline PROTOBUF_NDEBUG_INLINE void InlinedStringField::InternalSwap(
-    InlinedStringField* lhs, Arena* lhs_arena, bool lhs_arena_dtor_registered,
+    InlinedStringField* lhs, bool lhs_arena_dtor_registered,
     MessageLite* lhs_msg,  //
-    InlinedStringField* rhs, Arena* rhs_arena, bool rhs_arena_dtor_registered,
-    MessageLite* rhs_msg) {
+    InlinedStringField* rhs, bool rhs_arena_dtor_registered,
+    MessageLite* rhs_msg, Arena* arena) {
 #ifdef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
   lhs->get_mutable()->swap(*rhs->get_mutable());
   if (!lhs_arena_dtor_registered && rhs_arena_dtor_registered) {
-    lhs_msg->OnDemandRegisterArenaDtor(lhs_arena);
+    lhs_msg->OnDemandRegisterArenaDtor(arena);
   } else if (lhs_arena_dtor_registered && !rhs_arena_dtor_registered) {
-    rhs_msg->OnDemandRegisterArenaDtor(rhs_arena);
+    rhs_msg->OnDemandRegisterArenaDtor(arena);
   }
 #else
-  (void)lhs_arena;
-  (void)rhs_arena;
+  (void)arena;
   (void)lhs_arena_dtor_registered;
   (void)rhs_arena_dtor_registered;
   (void)lhs_msg;

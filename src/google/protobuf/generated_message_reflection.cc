@@ -640,10 +640,11 @@ void SwapFieldHelper::SwapInlinedStrings(const Reflection* r, Message* lhs,
   bool lhs_arena_dtor_registered = (lhs_array[0] & 0x1u) == 0;
   bool rhs_arena_dtor_registered = (rhs_array[0] & 0x1u) == 0;
   const uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
-  if (unsafe_shallow_swap || lhs_arena == rhs_arena) {
-    InlinedStringField::InternalSwap(lhs_string, lhs_arena,
-                                     lhs_arena_dtor_registered, lhs, rhs_string,
-                                     rhs_arena, rhs_arena_dtor_registered, rhs);
+  if (unsafe_shallow_swap) {
+    ABSL_DCHECK_EQ(lhs_arena, rhs_arena);
+    InlinedStringField::InternalSwap(lhs_string, lhs_arena_dtor_registered, lhs,
+                                     rhs_string, rhs_arena_dtor_registered, rhs,
+                                     lhs_arena);
   } else {
     const std::string temp = lhs_string->Get();
     lhs_string->Set(rhs_string->Get(), lhs_arena,
@@ -697,7 +698,7 @@ void SwapFieldHelper::SwapArenaStringPtr(ArenaStringPtr* lhs, Arena* lhs_arena,
                                          ArenaStringPtr* rhs,
                                          Arena* rhs_arena) {
   if (lhs_arena == rhs_arena) {
-    ArenaStringPtr::InternalSwap(lhs, lhs_arena, rhs, rhs_arena);
+    ArenaStringPtr::InternalSwap(lhs, rhs, lhs_arena);
   } else if (lhs->IsDefault() && rhs->IsDefault()) {
     // Nothing to do.
   } else if (lhs->IsDefault()) {

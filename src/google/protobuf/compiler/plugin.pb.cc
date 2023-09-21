@@ -592,12 +592,11 @@ PROTOBUF_NOINLINE bool Version::IsInitialized() const {
 }
 void Version::InternalSwap(Version* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.suffix_, lhs_arena,
-                                       &other->_impl_.suffix_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.suffix_, &other->_impl_.suffix_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Version, _impl_.patch_)
       + sizeof(Version::_impl_.patch_)
@@ -941,15 +940,14 @@ PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
 }
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.file_to_generate_.InternalSwap(&other->_impl_.file_to_generate_);
   _impl_.proto_file_.InternalSwap(&other->_impl_.proto_file_);
   _impl_.source_file_descriptors_.InternalSwap(&other->_impl_.source_file_descriptors_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.parameter_, lhs_arena,
-                                       &other->_impl_.parameter_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.parameter_, &other->_impl_.parameter_, arena);
   swap(_impl_.compiler_version_, other->_impl_.compiler_version_);
 }
 
@@ -1269,16 +1267,13 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse_File::IsInitialized() const {
 }
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
-                                       &other->_impl_.name_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.insertion_point_, lhs_arena,
-                                       &other->_impl_.insertion_point_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.content_, lhs_arena,
-                                       &other->_impl_.content_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.insertion_point_, &other->_impl_.insertion_point_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.content_, &other->_impl_.content_, arena);
   swap(_impl_.generated_code_info_, other->_impl_.generated_code_info_);
 }
 
@@ -1539,13 +1534,12 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse::IsInitialized() const {
 }
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.file_.InternalSwap(&other->_impl_.file_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.error_, lhs_arena,
-                                       &other->_impl_.error_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.error_, &other->_impl_.error_, arena);
         swap(_impl_.supported_features_, other->_impl_.supported_features_);
 }
 

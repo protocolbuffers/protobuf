@@ -3824,9 +3824,10 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
     }
 
     if (HasNonSplitOptionalString(descriptor_, options_)) {
-      format(
-          "auto* lhs_arena = GetArenaForAllocation();\n"
-          "auto* rhs_arena = other->GetArenaForAllocation();\n");
+      p->Emit(R"cc(
+        auto* arena = GetArenaForAllocation();
+        ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+      )cc");
     }
     format("_internal_metadata_.InternalSwap(&other->_internal_metadata_);\n");
 
