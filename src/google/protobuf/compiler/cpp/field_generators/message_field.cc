@@ -601,7 +601,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $StrongRef$;
       if ($has_field$) {
         clear_has_$oneof_name$();
-        $Submsg$* temp = $cast_field_$;
+        auto* temp = $cast_field_$;
         if (GetArenaForAllocation() != nullptr) {
           temp = $pbi$::DuplicateIfNonNull(temp);
         }
@@ -632,7 +632,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $StrongRef$;
       if ($has_field$) {
         clear_has_$oneof_name$();
-        $Submsg$* temp = $cast_field_$;
+        auto* temp = $cast_field_$;
         $field_$ = nullptr;
         return temp;
       } else {
@@ -641,14 +641,14 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
-    inline void $Msg$::unsafe_arena_set_allocated_$name$($Submsg$* $name$) {
+    inline void $Msg$::unsafe_arena_set_allocated_$name$($Submsg$* value) {
       // We rely on the oneof clear method to free the earlier contents
       // of this oneof. We can directly use the pointer we're given to
       // set the new value.
       clear_$oneof_name$();
-      if ($name$) {
+      if (value) {
         set_has_$name$();
-        $field_$ = $weak_cast$($name$);
+        $field_$ = $weak_cast$(value);
       }
       $annotate_set$;
       // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)

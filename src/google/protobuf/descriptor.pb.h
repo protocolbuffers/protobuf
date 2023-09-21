@@ -8,6 +8,7 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "google/protobuf/port_def.inc"
 #if PROTOBUF_VERSION < 4024000
@@ -812,7 +813,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   void set_name_part(Arg_&& arg, Args_... args);
   std::string* mutable_name_part();
   PROTOBUF_NODISCARD std::string* release_name_part();
-  void set_allocated_name_part(std::string* ptr);
+  void set_allocated_name_part(std::string* value);
 
   private:
   const std::string& _internal_name_part() const;
@@ -843,9 +844,10 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -1074,7 +1076,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   void set_leading_comments(Arg_&& arg, Args_... args);
   std::string* mutable_leading_comments();
   PROTOBUF_NODISCARD std::string* release_leading_comments();
-  void set_allocated_leading_comments(std::string* ptr);
+  void set_allocated_leading_comments(std::string* value);
 
   private:
   const std::string& _internal_leading_comments() const;
@@ -1091,7 +1093,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   void set_trailing_comments(Arg_&& arg, Args_... args);
   std::string* mutable_trailing_comments();
   PROTOBUF_NODISCARD std::string* release_trailing_comments();
-  void set_allocated_trailing_comments(std::string* ptr);
+  void set_allocated_trailing_comments(std::string* value);
 
   private:
   const std::string& _internal_trailing_comments() const;
@@ -1111,9 +1113,10 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -1322,7 +1325,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   void set_source_file(Arg_&& arg, Args_... args);
   std::string* mutable_source_file();
   PROTOBUF_NODISCARD std::string* release_source_file();
-  void set_allocated_source_file(std::string* ptr);
+  void set_allocated_source_file(std::string* value);
 
   private:
   const std::string& _internal_source_file() const;
@@ -1375,9 +1378,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -1544,7 +1548,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   void set_edition(Arg_&& arg, Args_... args);
   std::string* mutable_edition();
   PROTOBUF_NODISCARD std::string* release_edition();
-  void set_allocated_edition(std::string* ptr);
+  void set_allocated_edition(std::string* value);
 
   private:
   const std::string& _internal_edition() const;
@@ -1561,7 +1565,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   void set_value(Arg_&& arg, Args_... args);
   std::string* mutable_value();
   PROTOBUF_NODISCARD std::string* release_value();
-  void set_allocated_value(std::string* ptr);
+  void set_allocated_value(std::string* value);
 
   private:
   const std::string& _internal_value() const;
@@ -1592,9 +1596,10 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -2075,9 +2080,10 @@ class PROTOBUF_EXPORT FeatureSet final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -2247,7 +2253,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   void set_full_name(Arg_&& arg, Args_... args);
   std::string* mutable_full_name();
   PROTOBUF_NODISCARD std::string* release_full_name();
-  void set_allocated_full_name(std::string* ptr);
+  void set_allocated_full_name(std::string* value);
 
   private:
   const std::string& _internal_full_name() const;
@@ -2264,7 +2270,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   void set_type(Arg_&& arg, Args_... args);
   std::string* mutable_type();
   PROTOBUF_NODISCARD std::string* release_type();
-  void set_allocated_type(std::string* ptr);
+  void set_allocated_type(std::string* value);
 
   private:
   const std::string& _internal_type() const;
@@ -2317,9 +2323,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -2509,9 +2516,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -2698,9 +2706,10 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -2848,7 +2857,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
 
   // nested types ----------------------------------------------------
 
-  typedef UninterpretedOption_NamePart NamePart;
+  using NamePart = UninterpretedOption_NamePart;
 
   // accessors -------------------------------------------------------
 
@@ -2887,7 +2896,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   void set_identifier_value(Arg_&& arg, Args_... args);
   std::string* mutable_identifier_value();
   PROTOBUF_NODISCARD std::string* release_identifier_value();
-  void set_allocated_identifier_value(std::string* ptr);
+  void set_allocated_identifier_value(std::string* value);
 
   private:
   const std::string& _internal_identifier_value() const;
@@ -2904,7 +2913,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   void set_string_value(Arg_&& arg, Args_... args);
   std::string* mutable_string_value();
   PROTOBUF_NODISCARD std::string* release_string_value();
-  void set_allocated_string_value(std::string* ptr);
+  void set_allocated_string_value(std::string* value);
 
   private:
   const std::string& _internal_string_value() const;
@@ -2921,7 +2930,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   void set_aggregate_value(Arg_&& arg, Args_... args);
   std::string* mutable_aggregate_value();
   PROTOBUF_NODISCARD std::string* release_aggregate_value();
-  void set_allocated_aggregate_value(std::string* ptr);
+  void set_allocated_aggregate_value(std::string* value);
 
   private:
   const std::string& _internal_aggregate_value() const;
@@ -2974,9 +2983,10 @@ class PROTOBUF_EXPORT UninterpretedOption final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -3129,7 +3139,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
 
   // nested types ----------------------------------------------------
 
-  typedef SourceCodeInfo_Location Location;
+  using Location = SourceCodeInfo_Location;
 
   // accessors -------------------------------------------------------
 
@@ -3165,9 +3175,10 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -3313,7 +3324,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
 
   // nested types ----------------------------------------------------
 
-  typedef GeneratedCodeInfo_Annotation Annotation;
+  using Annotation = GeneratedCodeInfo_Annotation;
 
   // accessors -------------------------------------------------------
 
@@ -3349,9 +3360,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -3512,7 +3524,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   void set_edition(Arg_&& arg, Args_... args);
   std::string* mutable_edition();
   PROTOBUF_NODISCARD std::string* release_edition();
-  void set_allocated_edition(std::string* ptr);
+  void set_allocated_edition(std::string* value);
 
   private:
   const std::string& _internal_edition() const;
@@ -3558,9 +3570,10 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -3922,9 +3935,10 @@ class PROTOBUF_EXPORT ServiceOptions final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -4276,9 +4290,10 @@ class PROTOBUF_EXPORT OneofOptions final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -4674,9 +4689,10 @@ class PROTOBUF_EXPORT MethodOptions final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -5089,9 +5105,10 @@ class PROTOBUF_EXPORT MessageOptions final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -5319,7 +5336,7 @@ class PROTOBUF_EXPORT FileOptions final :
   void set_java_package(Arg_&& arg, Args_... args);
   std::string* mutable_java_package();
   PROTOBUF_NODISCARD std::string* release_java_package();
-  void set_allocated_java_package(std::string* ptr);
+  void set_allocated_java_package(std::string* value);
 
   private:
   const std::string& _internal_java_package() const;
@@ -5336,7 +5353,7 @@ class PROTOBUF_EXPORT FileOptions final :
   void set_java_outer_classname(Arg_&& arg, Args_... args);
   std::string* mutable_java_outer_classname();
   PROTOBUF_NODISCARD std::string* release_java_outer_classname();
-  void set_allocated_java_outer_classname(std::string* ptr);
+  void set_allocated_java_outer_classname(std::string* value);
 
   private:
   const std::string& _internal_java_outer_classname() const;
@@ -5353,7 +5370,7 @@ class PROTOBUF_EXPORT FileOptions final :
   void set_go_package(Arg_&& arg, Args_... args);
   std::string* mutable_go_package();
   PROTOBUF_NODISCARD std::string* release_go_package();
-  void set_allocated_go_package(std::string* ptr);
+  void set_allocated_go_package(std::string* value);
 
   private:
   const std::string& _internal_go_package() const;
@@ -5370,7 +5387,7 @@ class PROTOBUF_EXPORT FileOptions final :
   void set_objc_class_prefix(Arg_&& arg, Args_... args);
   std::string* mutable_objc_class_prefix();
   PROTOBUF_NODISCARD std::string* release_objc_class_prefix();
-  void set_allocated_objc_class_prefix(std::string* ptr);
+  void set_allocated_objc_class_prefix(std::string* value);
 
   private:
   const std::string& _internal_objc_class_prefix() const;
@@ -5387,7 +5404,7 @@ class PROTOBUF_EXPORT FileOptions final :
   void set_csharp_namespace(Arg_&& arg, Args_... args);
   std::string* mutable_csharp_namespace();
   PROTOBUF_NODISCARD std::string* release_csharp_namespace();
-  void set_allocated_csharp_namespace(std::string* ptr);
+  void set_allocated_csharp_namespace(std::string* value);
 
   private:
   const std::string& _internal_csharp_namespace() const;
@@ -5404,7 +5421,7 @@ class PROTOBUF_EXPORT FileOptions final :
   void set_swift_prefix(Arg_&& arg, Args_... args);
   std::string* mutable_swift_prefix();
   PROTOBUF_NODISCARD std::string* release_swift_prefix();
-  void set_allocated_swift_prefix(std::string* ptr);
+  void set_allocated_swift_prefix(std::string* value);
 
   private:
   const std::string& _internal_swift_prefix() const;
@@ -5421,7 +5438,7 @@ class PROTOBUF_EXPORT FileOptions final :
   void set_php_class_prefix(Arg_&& arg, Args_... args);
   std::string* mutable_php_class_prefix();
   PROTOBUF_NODISCARD std::string* release_php_class_prefix();
-  void set_allocated_php_class_prefix(std::string* ptr);
+  void set_allocated_php_class_prefix(std::string* value);
 
   private:
   const std::string& _internal_php_class_prefix() const;
@@ -5438,7 +5455,7 @@ class PROTOBUF_EXPORT FileOptions final :
   void set_php_namespace(Arg_&& arg, Args_... args);
   std::string* mutable_php_namespace();
   PROTOBUF_NODISCARD std::string* release_php_namespace();
-  void set_allocated_php_namespace(std::string* ptr);
+  void set_allocated_php_namespace(std::string* value);
 
   private:
   const std::string& _internal_php_namespace() const;
@@ -5455,7 +5472,7 @@ class PROTOBUF_EXPORT FileOptions final :
   void set_php_metadata_namespace(Arg_&& arg, Args_... args);
   std::string* mutable_php_metadata_namespace();
   PROTOBUF_NODISCARD std::string* release_php_metadata_namespace();
-  void set_allocated_php_metadata_namespace(std::string* ptr);
+  void set_allocated_php_metadata_namespace(std::string* value);
 
   private:
   const std::string& _internal_php_metadata_namespace() const;
@@ -5472,7 +5489,7 @@ class PROTOBUF_EXPORT FileOptions final :
   void set_ruby_package(Arg_&& arg, Args_... args);
   std::string* mutable_ruby_package();
   PROTOBUF_NODISCARD std::string* release_ruby_package();
-  void set_allocated_ruby_package(std::string* ptr);
+  void set_allocated_ruby_package(std::string* value);
 
   private:
   const std::string& _internal_ruby_package() const;
@@ -5768,9 +5785,10 @@ class PROTOBUF_EXPORT FileOptions final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -5940,7 +5958,7 @@ class PROTOBUF_EXPORT FieldOptions final :
 
   // nested types ----------------------------------------------------
 
-  typedef FieldOptions_EditionDefault EditionDefault;
+  using EditionDefault = FieldOptions_EditionDefault;
 
   using CType = FieldOptions_CType;
   static constexpr CType STRING = FieldOptions_CType_STRING;
@@ -6381,9 +6399,10 @@ class PROTOBUF_EXPORT FieldOptions final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -6544,7 +6563,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
 
   // nested types ----------------------------------------------------
 
-  typedef FeatureSetDefaults_FeatureSetEditionDefault FeatureSetEditionDefault;
+  using FeatureSetEditionDefault = FeatureSetDefaults_FeatureSetEditionDefault;
 
   // accessors -------------------------------------------------------
 
@@ -6581,7 +6600,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   void set_minimum_edition(Arg_&& arg, Args_... args);
   std::string* mutable_minimum_edition();
   PROTOBUF_NODISCARD std::string* release_minimum_edition();
-  void set_allocated_minimum_edition(std::string* ptr);
+  void set_allocated_minimum_edition(std::string* value);
 
   private:
   const std::string& _internal_minimum_edition() const;
@@ -6598,7 +6617,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   void set_maximum_edition(Arg_&& arg, Args_... args);
   std::string* mutable_maximum_edition();
   PROTOBUF_NODISCARD std::string* release_maximum_edition();
-  void set_allocated_maximum_edition(std::string* ptr);
+  void set_allocated_maximum_edition(std::string* value);
 
   private:
   const std::string& _internal_maximum_edition() const;
@@ -6640,9 +6659,10 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -6793,7 +6813,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
 
   // nested types ----------------------------------------------------
 
-  typedef ExtensionRangeOptions_Declaration Declaration;
+  using Declaration = ExtensionRangeOptions_Declaration;
 
   using VerificationState = ExtensionRangeOptions_VerificationState;
   static constexpr VerificationState DECLARATION = ExtensionRangeOptions_VerificationState_DECLARATION;
@@ -7047,9 +7067,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -7426,9 +7447,10 @@ class PROTOBUF_EXPORT EnumValueOptions final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -7817,9 +7839,10 @@ class PROTOBUF_EXPORT EnumOptions final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -7986,7 +8009,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -8021,9 +8044,10 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -8189,7 +8213,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -8206,7 +8230,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   void set_input_type(Arg_&& arg, Args_... args);
   std::string* mutable_input_type();
   PROTOBUF_NODISCARD std::string* release_input_type();
-  void set_allocated_input_type(std::string* ptr);
+  void set_allocated_input_type(std::string* value);
 
   private:
   const std::string& _internal_input_type() const;
@@ -8223,7 +8247,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   void set_output_type(Arg_&& arg, Args_... args);
   std::string* mutable_output_type();
   PROTOBUF_NODISCARD std::string* release_output_type();
-  void set_allocated_output_type(std::string* ptr);
+  void set_allocated_output_type(std::string* value);
 
   private:
   const std::string& _internal_output_type() const;
@@ -8280,9 +8304,10 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -8514,7 +8539,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -8531,7 +8556,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   void set_extendee(Arg_&& arg, Args_... args);
   std::string* mutable_extendee();
   PROTOBUF_NODISCARD std::string* release_extendee();
-  void set_allocated_extendee(std::string* ptr);
+  void set_allocated_extendee(std::string* value);
 
   private:
   const std::string& _internal_extendee() const;
@@ -8548,7 +8573,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   void set_type_name(Arg_&& arg, Args_... args);
   std::string* mutable_type_name();
   PROTOBUF_NODISCARD std::string* release_type_name();
-  void set_allocated_type_name(std::string* ptr);
+  void set_allocated_type_name(std::string* value);
 
   private:
   const std::string& _internal_type_name() const;
@@ -8565,7 +8590,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   void set_default_value(Arg_&& arg, Args_... args);
   std::string* mutable_default_value();
   PROTOBUF_NODISCARD std::string* release_default_value();
-  void set_allocated_default_value(std::string* ptr);
+  void set_allocated_default_value(std::string* value);
 
   private:
   const std::string& _internal_default_value() const;
@@ -8582,7 +8607,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   void set_json_name(Arg_&& arg, Args_... args);
   std::string* mutable_json_name();
   PROTOBUF_NODISCARD std::string* release_json_name();
-  void set_allocated_json_name(std::string* ptr);
+  void set_allocated_json_name(std::string* value);
 
   private:
   const std::string& _internal_json_name() const;
@@ -8672,9 +8697,10 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -8846,7 +8872,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -8892,9 +8918,10 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -9098,9 +9125,10 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -9282,7 +9310,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -9317,9 +9345,10 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -9468,7 +9497,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
 
   // nested types ----------------------------------------------------
 
-  typedef EnumDescriptorProto_EnumReservedRange EnumReservedRange;
+  using EnumReservedRange = EnumDescriptorProto_EnumReservedRange;
 
   // accessors -------------------------------------------------------
 
@@ -9551,7 +9580,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -9586,9 +9615,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -9739,8 +9769,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
 
   // nested types ----------------------------------------------------
 
-  typedef DescriptorProto_ExtensionRange ExtensionRange;
-  typedef DescriptorProto_ReservedRange ReservedRange;
+  using ExtensionRange = DescriptorProto_ExtensionRange;
+  using ReservedRange = DescriptorProto_ReservedRange;
 
   // accessors -------------------------------------------------------
 
@@ -9918,7 +9948,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -9953,9 +9983,10 @@ class PROTOBUF_EXPORT DescriptorProto final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -10273,7 +10304,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -10290,7 +10321,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   void set_package(Arg_&& arg, Args_... args);
   std::string* mutable_package();
   PROTOBUF_NODISCARD std::string* release_package();
-  void set_allocated_package(std::string* ptr);
+  void set_allocated_package(std::string* value);
 
   private:
   const std::string& _internal_package() const;
@@ -10307,7 +10338,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   void set_syntax(Arg_&& arg, Args_... args);
   std::string* mutable_syntax();
   PROTOBUF_NODISCARD std::string* release_syntax();
-  void set_allocated_syntax(std::string* ptr);
+  void set_allocated_syntax(std::string* value);
 
   private:
   const std::string& _internal_syntax() const;
@@ -10324,7 +10355,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   void set_edition(Arg_&& arg, Args_... args);
   std::string* mutable_edition();
   PROTOBUF_NODISCARD std::string* release_edition();
-  void set_allocated_edition(std::string* ptr);
+  void set_allocated_edition(std::string* value);
 
   private:
   const std::string& _internal_edition() const;
@@ -10385,9 +10416,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -10581,9 +10613,10 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(

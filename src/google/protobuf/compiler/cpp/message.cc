@@ -1139,29 +1139,30 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
     vars["lite"] =
         HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite";
     auto v = p->WithVars(std::move(vars));
-    format(
-        "class $classname$ final : public "
-        "::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
-        "    $key_cpp$, $val_cpp$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {\n"
-        "public:\n"
-        "  typedef ::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
-        "    $key_cpp$, $val_cpp$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> "
-        "SuperType;\n"
-        "  $classname$();\n"
-        // Templatize constexpr constructor as a workaround for a bug in gcc 12
-        // (warning in gcc 13).
-        "  template <typename = void>\n"
-        "  explicit PROTOBUF_CONSTEXPR $classname$(\n"
-        "      ::$proto_ns$::internal::ConstantInitialized);\n"
-        "  explicit $classname$(::$proto_ns$::Arena* arena);\n"
-        "  void MergeFrom(const $classname$& other);\n"
-        "  static const $classname$* internal_default_instance() { return "
-        "reinterpret_cast<const "
-        "$classname$*>(&_$classname$_default_instance_); }\n");
+    // Templatize constexpr constructor as a workaround for a bug in gcc 12
+    // (warning in gcc 13).
+    p->Emit(R"cc(
+      class $classname$ final
+          : public ::$proto_ns$::internal::MapEntry$lite$<
+                $classname$, $key_cpp$, $val_cpp$,
+                ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,
+                ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {
+       public:
+        using SuperType = ::$proto_ns$::internal::MapEntry$lite$<
+            $classname$, $key_cpp$, $val_cpp$,
+            ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,
+            ::$proto_ns$::internal::WireFormatLite::$val_wire_type$>;
+        $classname$();
+        template <typename = void>
+        explicit PROTOBUF_CONSTEXPR $classname$(
+            ::$proto_ns$::internal::ConstantInitialized);
+        explicit $classname$(::$proto_ns$::Arena* arena);
+        void MergeFrom(const $classname$& other);
+        static const $classname$* internal_default_instance() {
+          return reinterpret_cast<const $classname$*>(
+              &_$classname$_default_instance_);
+        }
+    )cc");
     auto utf8_check = internal::cpp::GetUtf8CheckMode(
         descriptor_->field(0), GetOptimizeFor(descriptor_->file(), options_) ==
                                    FileOptions::LITE_RUNTIME);
@@ -1627,11 +1628,16 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     const Descriptor* nested_type = descriptor_->nested_type(i);
     if (!IsMapEntryMessage(nested_type)) {
-      auto v =
-          p->WithVars({{"nested_full_name", ClassName(nested_type, false)},
-                       {"nested_name", ResolveKeyword(nested_type->name())}});
-      format("typedef ${1$$nested_full_name$$}$ ${1$$nested_name$$}$;\n",
-             nested_type);
+      p->Emit(
+          {
+              Sub{"nested_full_name", ClassName(nested_type, false)}
+                  .AnnotatedAs(nested_type),
+              Sub{"nested_name", ResolveKeyword(nested_type->name())}
+                  .AnnotatedAs(nested_type),
+          },
+          R"cc(
+            using $nested_name$ = $nested_full_name$;
+          )cc");
     }
   }
 
@@ -1702,15 +1708,14 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                            : absl::StrCat("::$proto_ns$::internal::HasBits<",
                                           sizeof_has_bits, "> _has_bits_;\n");
 
-  format(
-#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
-      "friend class ::$proto_ns$::MessageLite;\n"
-      "friend class ::$proto_ns$::Arena;\n"
-#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
-      "template <typename T> friend class "
-      "::$proto_ns$::Arena::InternalHelper;\n"
-      "typedef void InternalArenaConstructable_;\n"
-      "typedef void DestructorSkippable_;\n");
+  p->Emit(R"cc(
+    friend class ::$proto_ns$::MessageLite;
+    friend class ::$proto_ns$::Arena;
+    template <typename T>
+    friend class ::$proto_ns$::Arena::InternalHelper;
+    using InternalArenaConstructable_ = void;
+    using DestructorSkippable_ = void;
+  )cc");
 
   // To minimize padding, data members are divided into three sections:
   // (1) members assumed to align to 8 bytes
@@ -1787,9 +1792,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       field_generators_.get(field).GeneratePrivateMembers(p);
     }
     format.Outdent();
+    p->Emit(R"cc(
+      using InternalArenaConstructable_ = void;
+      using DestructorSkippable_ = void;
+    )cc");
     format(
-        "  typedef void InternalArenaConstructable_;\n"
-        "  typedef void DestructorSkippable_;\n"
         "};\n"
         "static_assert(std::is_trivially_copy_constructible<Split>::value);\n"
         "static_assert(std::is_trivially_destructible<Split>::value);\n"

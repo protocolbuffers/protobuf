@@ -324,6 +324,7 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
     #include <limits>
     #include <string>
     #include <type_traits>
+    #include <utility>
 
     $cb$;
 
@@ -1409,7 +1410,7 @@ class FileGenerator::ForwardDeclarations {
           p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
             template <>
             $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(
-                Arena*, const $class$& from);
+                Arena*, const $class$&);
           )cc");
         }
 #endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS

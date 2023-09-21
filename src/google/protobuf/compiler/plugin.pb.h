@@ -8,6 +8,7 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "google/protobuf/port_def.inc"
 #if PROTOBUF_VERSION < 4024000
@@ -265,7 +266,7 @@ class PROTOC_EXPORT Version final :
   void set_suffix(Arg_&& arg, Args_... args);
   std::string* mutable_suffix();
   PROTOBUF_NODISCARD std::string* release_suffix();
-  void set_allocated_suffix(std::string* ptr);
+  void set_allocated_suffix(std::string* value);
 
   private:
   const std::string& _internal_suffix() const;
@@ -318,9 +319,10 @@ class PROTOC_EXPORT Version final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOC_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -486,7 +488,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -503,7 +505,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   void set_insertion_point(Arg_&& arg, Args_... args);
   std::string* mutable_insertion_point();
   PROTOBUF_NODISCARD std::string* release_insertion_point();
-  void set_allocated_insertion_point(std::string* ptr);
+  void set_allocated_insertion_point(std::string* value);
 
   private:
   const std::string& _internal_insertion_point() const;
@@ -520,7 +522,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   void set_content(Arg_&& arg, Args_... args);
   std::string* mutable_content();
   PROTOBUF_NODISCARD std::string* release_content();
-  void set_allocated_content(std::string* ptr);
+  void set_allocated_content(std::string* value);
 
   private:
   const std::string& _internal_content() const;
@@ -555,9 +557,10 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOC_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -707,7 +710,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
 
   // nested types ----------------------------------------------------
 
-  typedef CodeGeneratorResponse_File File;
+  using File = CodeGeneratorResponse_File;
 
   using Feature = CodeGeneratorResponse_Feature;
   static constexpr Feature FEATURE_NONE = CodeGeneratorResponse_Feature_FEATURE_NONE;
@@ -763,7 +766,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   void set_error(Arg_&& arg, Args_... args);
   std::string* mutable_error();
   PROTOBUF_NODISCARD std::string* release_error();
-  void set_allocated_error(std::string* ptr);
+  void set_allocated_error(std::string* value);
 
   private:
   const std::string& _internal_error() const;
@@ -794,9 +797,10 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOC_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -1026,7 +1030,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   void set_parameter(Arg_&& arg, Args_... args);
   std::string* mutable_parameter();
   PROTOBUF_NODISCARD std::string* release_parameter();
-  void set_allocated_parameter(std::string* ptr);
+  void set_allocated_parameter(std::string* value);
 
   private:
   const std::string& _internal_parameter() const;
@@ -1061,9 +1065,10 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOC_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
