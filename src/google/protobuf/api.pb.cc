@@ -613,17 +613,15 @@ PROTOBUF_NOINLINE bool Api::IsInitialized() const {
 }
 void Api::InternalSwap(Api* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.methods_.InternalSwap(&other->_impl_.methods_);
   _impl_.options_.InternalSwap(&other->_impl_.options_);
   _impl_.mixins_.InternalSwap(&other->_impl_.mixins_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
-                                       &other->_impl_.name_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.version_, lhs_arena,
-                                       &other->_impl_.version_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.version_, &other->_impl_.version_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Api, _impl_.syntax_)
       + sizeof(Api::_impl_.syntax_)
@@ -982,16 +980,13 @@ PROTOBUF_NOINLINE bool Method::IsInitialized() const {
 }
 void Method::InternalSwap(Method* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.options_.InternalSwap(&other->_impl_.options_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
-                                       &other->_impl_.name_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.request_type_url_, lhs_arena,
-                                       &other->_impl_.request_type_url_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.response_type_url_, lhs_arena,
-                                       &other->_impl_.response_type_url_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.request_type_url_, &other->_impl_.request_type_url_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.response_type_url_, &other->_impl_.response_type_url_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Method, _impl_.syntax_)
       + sizeof(Method::_impl_.syntax_)
@@ -1212,13 +1207,11 @@ PROTOBUF_NOINLINE bool Mixin::IsInitialized() const {
 }
 void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
-                                       &other->_impl_.name_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.root_, lhs_arena,
-                                       &other->_impl_.root_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.root_, &other->_impl_.root_, arena);
 }
 
 ::google::protobuf::Metadata Mixin::GetMetadata() const {

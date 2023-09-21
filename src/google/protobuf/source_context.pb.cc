@@ -296,11 +296,10 @@ PROTOBUF_NOINLINE bool SourceContext::IsInitialized() const {
 }
 void SourceContext::InternalSwap(SourceContext* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.file_name_, lhs_arena,
-                                       &other->_impl_.file_name_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.file_name_, &other->_impl_.file_name_, arena);
 }
 
 ::google::protobuf::Metadata SourceContext::GetMetadata() const {

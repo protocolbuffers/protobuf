@@ -345,13 +345,11 @@ PROTOBUF_NOINLINE bool Any::IsInitialized() const {
 }
 void Any::InternalSwap(Any* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, lhs_arena,
-                                       &other->_impl_.type_url_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, lhs_arena,
-                                       &other->_impl_.value_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, &other->_impl_.type_url_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
 }
 
 ::google::protobuf::Metadata Any::GetMetadata() const {

@@ -792,17 +792,15 @@ PROTOBUF_NOINLINE bool Type::IsInitialized() const {
 }
 void Type::InternalSwap(Type* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.fields_.InternalSwap(&other->_impl_.fields_);
   _impl_.oneofs_.InternalSwap(&other->_impl_.oneofs_);
   _impl_.options_.InternalSwap(&other->_impl_.options_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
-                                       &other->_impl_.name_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, lhs_arena,
-                                       &other->_impl_.edition_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, &other->_impl_.edition_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Type, _impl_.syntax_)
       + sizeof(Type::_impl_.syntax_)
@@ -1235,18 +1233,14 @@ PROTOBUF_NOINLINE bool Field::IsInitialized() const {
 }
 void Field::InternalSwap(Field* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.options_.InternalSwap(&other->_impl_.options_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
-                                       &other->_impl_.name_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, lhs_arena,
-                                       &other->_impl_.type_url_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.json_name_, lhs_arena,
-                                       &other->_impl_.json_name_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.default_value_, lhs_arena,
-                                       &other->_impl_.default_value_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, &other->_impl_.type_url_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.json_name_, &other->_impl_.json_name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.default_value_, &other->_impl_.default_value_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Field, _impl_.packed_)
       + sizeof(Field::_impl_.packed_)
@@ -1604,16 +1598,14 @@ PROTOBUF_NOINLINE bool Enum::IsInitialized() const {
 }
 void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.enumvalue_.InternalSwap(&other->_impl_.enumvalue_);
   _impl_.options_.InternalSwap(&other->_impl_.options_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
-                                       &other->_impl_.name_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, lhs_arena,
-                                       &other->_impl_.edition_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, &other->_impl_.edition_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Enum, _impl_.syntax_)
       + sizeof(Enum::_impl_.syntax_)
@@ -1857,12 +1849,11 @@ PROTOBUF_NOINLINE bool EnumValue::IsInitialized() const {
 }
 void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.options_.InternalSwap(&other->_impl_.options_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
-                                       &other->_impl_.name_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
         swap(_impl_.number_, other->_impl_.number_);
 }
 
@@ -2104,12 +2095,11 @@ PROTOBUF_NOINLINE bool Option::IsInitialized() const {
 }
 void Option::InternalSwap(Option* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArenaForAllocation();
+  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, lhs_arena,
-                                       &other->_impl_.name_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
   swap(_impl_.value_, other->_impl_.value_);
 }
 
