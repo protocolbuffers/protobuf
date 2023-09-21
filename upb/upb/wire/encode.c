@@ -477,44 +477,6 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
   }
 }
 
-static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
-                                const upb_MiniTableSub* subs,
-                                const upb_MiniTableField* f) {
-  if (f->presence == 0) {
-    /* Proto3 presence or map/array. */
-    const void* mem = UPB_PTR_AT(msg, f->offset, void);
-    switch (_upb_MiniTableField_GetRep(f)) {
-      case kUpb_FieldRep_1Byte: {
-        char ch;
-        memcpy(&ch, mem, 1);
-        return ch != 0;
-      }
-      case kUpb_FieldRep_4Byte: {
-        uint32_t u32;
-        memcpy(&u32, mem, 4);
-        return u32 != 0;
-      }
-      case kUpb_FieldRep_8Byte: {
-        uint64_t u64;
-        memcpy(&u64, mem, 8);
-        return u64 != 0;
-      }
-      case kUpb_FieldRep_StringView: {
-        const upb_StringView* str = (const upb_StringView*)mem;
-        return str->size != 0;
-      }
-      default:
-        UPB_UNREACHABLE();
-    }
-  } else if (f->presence > 0) {
-    /* Proto2 presence: hasbit. */
-    return _upb_hasbit_field(msg, f);
-  } else {
-    /* Field is in a oneof. */
-    return _upb_getoneofcase_field(msg, f) == f->number;
-  }
-}
-
 static void encode_field(upb_encstate* e, const upb_Message* msg,
                          const upb_MiniTableSub* subs,
                          const upb_MiniTableField* field) {
@@ -604,7 +566,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
     const upb_MiniTableField* first = &m->fields[0];
     while (f != first) {
       f--;
-      if (encode_shouldencode(e, msg, m->subs, f)) {
+      if (_upb_Message_ShouldSerializeNonExtensionField(msg, f)) {
         encode_field(e, msg, m->subs, f);
       }
     }

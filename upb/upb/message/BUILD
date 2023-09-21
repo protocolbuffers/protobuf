@@ -47,7 +47,10 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        "//upb:base",
         "//upb:collections_internal",
+        "//upb:message",
+        "//upb:mini_table",
         "//upb:mini_table_internal",
         "//upb:port",
     ],
