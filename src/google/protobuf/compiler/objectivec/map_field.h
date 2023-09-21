@@ -14,6 +14,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -22,7 +23,9 @@ namespace compiler {
 namespace objectivec {
 
 class MapFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  friend FieldGenerator* FieldGenerator::Make(
+      const FieldDescriptor* field,
+      const GenerationOptions& generation_options);
 
  public:
   void EmitArrayComment(io::Printer* printer) const override;
@@ -31,7 +34,8 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
   MapFieldGenerator& operator=(const MapFieldGenerator&) = delete;
 
  protected:
-  explicit MapFieldGenerator(const FieldDescriptor* descriptor);
+  MapFieldGenerator(const FieldDescriptor* descriptor,
+                    const GenerationOptions& generation_options);
   ~MapFieldGenerator() override = default;
 
   void DetermineObjectiveCClassDefinitions(

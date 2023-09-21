@@ -198,7 +198,7 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
     : file_description_name_(file_description_name),
       descriptor_(descriptor),
       generation_options_(generation_options),
-      field_generators_(descriptor),
+      field_generators_(descriptor, generation_options),
       class_name_(ClassName(descriptor_)),
       deprecated_attribute_(
           GetOptionalDeprecatedAttribute(descriptor, descriptor->file())) {

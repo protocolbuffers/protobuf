@@ -17,6 +17,7 @@
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -39,8 +40,10 @@ void SetMessageVariables(
 
 }  // namespace
 
-MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor)
-    : ObjCObjFieldGenerator(descriptor) {
+MessageFieldGenerator::MessageFieldGenerator(
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : ObjCObjFieldGenerator(descriptor, generation_options) {
   SetMessageVariables(descriptor, &variables_);
 }
 
@@ -72,8 +75,9 @@ void MessageFieldGenerator::DetermineNeededFiles(
 }
 
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : RepeatedFieldGenerator(descriptor) {
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : RepeatedFieldGenerator(descriptor, generation_options) {
   SetMessageVariables(descriptor, &variables_);
 }
 

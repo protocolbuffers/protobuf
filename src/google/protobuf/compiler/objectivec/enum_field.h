@@ -13,6 +13,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -21,7 +22,9 @@ namespace compiler {
 namespace objectivec {
 
 class EnumFieldGenerator : public SingleFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  friend FieldGenerator* FieldGenerator::Make(
+      const FieldDescriptor* field,
+      const GenerationOptions& generation_options);
 
   EnumFieldGenerator(const EnumFieldGenerator&) = delete;
   EnumFieldGenerator& operator=(const EnumFieldGenerator&) = delete;
@@ -35,12 +38,15 @@ class EnumFieldGenerator : public SingleFieldGenerator {
       absl::flat_hash_set<const FileDescriptor*>* deps) const override;
 
  protected:
-  explicit EnumFieldGenerator(const FieldDescriptor* descriptor);
+  EnumFieldGenerator(const FieldDescriptor* descriptor,
+                     const GenerationOptions& generation_options);
   ~EnumFieldGenerator() override = default;
 };
 
 class RepeatedEnumFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  friend FieldGenerator* FieldGenerator::Make(
+      const FieldDescriptor* field,
+      const GenerationOptions& generation_options);
 
  public:
   void EmitArrayComment(io::Printer* printer) const override;
@@ -48,7 +54,8 @@ class RepeatedEnumFieldGenerator : public RepeatedFieldGenerator {
       absl::flat_hash_set<const FileDescriptor*>* deps) const override;
 
  protected:
-  explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor);
+  RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
+                             const GenerationOptions& generation_options);
   ~RepeatedEnumFieldGenerator() override = default;
 };
 
