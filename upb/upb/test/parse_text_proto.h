@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 

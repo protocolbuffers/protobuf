@@ -32,8 +32,8 @@
 
 #include <stdlib.h>
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 #include "upb/upb/base/status.hpp"
 #include "upb/upb/json/decode.h"

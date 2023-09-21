@@ -31,7 +31,7 @@
 #include "upb/upb/json/decode.h"
 
 #include "google/protobuf/struct.upb.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "upb/upb/json/test.upb.h"
 #include "upb/upb/json/test.upbdefs.h"
 #include "upb/upb/mem/arena.hpp"

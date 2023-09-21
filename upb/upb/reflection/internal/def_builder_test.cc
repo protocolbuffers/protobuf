@@ -7,7 +7,7 @@
 
 #include "upb/upb/reflection/internal/def_builder.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 #include "upb/upb/mem/arena.hpp"
 

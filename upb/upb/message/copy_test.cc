@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "upb/upb/base/string_view.h"
 #include "upb/upb/collections/map.h"

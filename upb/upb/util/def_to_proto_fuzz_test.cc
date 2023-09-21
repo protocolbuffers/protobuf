@@ -30,8 +30,8 @@
 
 #include <string>
 
-#include "google/protobuf/descriptor.proto.h"
-#include "gtest/gtest.h"
+#include "google/protobuf/descriptor.pb.h"
+#include <gtest/gtest.h>
 #include "testing/fuzzing/fuzztest.h"
 #include "upb/upb/util/def_to_proto_test.h"
 

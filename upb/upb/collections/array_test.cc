@@ -30,7 +30,7 @@
 
 #include "upb/upb/collections/array.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "upb/upb/base/status.hpp"
 #include "upb/upb/mem/arena.hpp"
 

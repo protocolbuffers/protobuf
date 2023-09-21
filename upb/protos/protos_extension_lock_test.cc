@@ -35,8 +35,8 @@
 #include <string>
 #include <thread>
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "upb/protos/protos.h"

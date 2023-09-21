@@ -14,7 +14,7 @@
 // process is run with a variety of block sizes for both the input and
 // the output.
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "upb/upb/base/status.hpp"
 #include "upb/upb/io/chunked_input_stream.h"
 #include "upb/upb/io/chunked_output_stream.h"

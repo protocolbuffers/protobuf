@@ -30,7 +30,7 @@
 
 #include <stdlib.h>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "upb/upb/base/string_view.h"
 #include "upb/upb/mem/arena.h"
 #include "upb/upb/mem/arena.hpp"

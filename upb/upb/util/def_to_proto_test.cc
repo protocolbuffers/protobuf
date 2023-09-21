@@ -35,8 +35,8 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.upbdefs.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "upb/upb/mem/arena.hpp"

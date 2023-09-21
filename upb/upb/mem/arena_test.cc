@@ -12,8 +12,8 @@
 #include <thread>
 #include <vector>
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "absl/random/distributions.h"
 #include "absl/random/random.h"
 #include "absl/synchronization/notification.h"
