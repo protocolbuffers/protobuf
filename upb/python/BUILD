@@ -187,6 +187,8 @@ filegroup(
         "descriptor_pool.h",
         "extension_dict.c",
         "extension_dict.h",
+        "field.c",
+        "field.h",
         "map.c",
         "map.h",
         "message.c",

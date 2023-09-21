@@ -33,6 +33,7 @@
 #include "upb/python/convert.h"
 #include "upb/python/descriptor.h"
 #include "upb/python/extension_dict.h"
+#include "upb/python/field.h"
 #include "upb/python/map.h"
 #include "upb/python/repeated.h"
 #include "upb/upb/message/copy.h"
@@ -384,7 +385,7 @@ void PyUpb_Message_EnsureReified(PyUpb_Message* self);
 static bool PyUpb_Message_InitMapAttribute(PyObject* _self, PyObject* name,
                                            const upb_FieldDef* f,
                                            PyObject* value) {
-  PyObject* map = PyUpb_Message_GetAttr(_self, name);
+  PyObject* map = PyUpb_Message_GetFieldValue(_self, f);
   int ok = PyUpb_Message_InitMapAttributes(map, value, f);
   Py_DECREF(map);
   return ok >= 0;
@@ -458,7 +459,10 @@ static PyObject* PyUpb_Message_MergePartialFrom(PyObject*, PyObject*);
 
 static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
                                                PyObject* value) {
-  PyObject* submsg = PyUpb_Message_GetAttr(_self, name);
+  PyUpb_Message* self = (void*)_self;
+  const upb_FieldDef* field;
+  if (!PyUpb_Message_LookupName(self, name, &field, NULL, NULL)) return -1;
+  PyObject* submsg = PyUpb_Message_GetFieldValue(_self, field);
   if (!submsg) return -1;
   assert(!PyErr_Occurred());
   bool ok;
@@ -994,14 +998,6 @@ int PyUpb_Message_GetVersion(PyObject* _self) {
  */
 __attribute__((flatten)) static PyObject* PyUpb_Message_GetAttr(
     PyObject* _self, PyObject* attr) {
-  PyUpb_Message* self = (void*)_self;
-
-  // Lookup field by name.
-  const upb_FieldDef* field;
-  if (PyUpb_Message_LookupName(self, attr, &field, NULL, NULL)) {
-    return PyUpb_Message_GetFieldValue(_self, field);
-  }
-
   // Check base class attributes.
   assert(!PyErr_Occurred());
   PyObject* ret = PyObject_GenericGetAttr(_self, attr);
@@ -1019,24 +1015,6 @@ __attribute__((flatten)) static PyObject* PyUpb_Message_GetAttr(
   }
 
   return NULL;
-}
-
-/*
- * PyUpb_Message_SetAttr()
- *
- * Implements:
- *   msg.foo = foo
- */
-static int PyUpb_Message_SetAttr(PyObject* _self, PyObject* attr,
-                                 PyObject* value) {
-  PyUpb_Message* self = (void*)_self;
-  const upb_FieldDef* field;
-  if (!PyUpb_Message_LookupName(self, attr, &field, NULL,
-                                PyExc_AttributeError)) {
-    return -1;
-  }
-
-  return PyUpb_Message_SetFieldValue(_self, field, value, PyExc_AttributeError);
 }
 
 static PyObject* PyUpb_Message_HasField(PyObject* _self, PyObject* arg) {
@@ -1729,7 +1707,6 @@ static PyType_Slot PyUpb_Message_Slots[] = {
     {Py_tp_str, PyUpb_Message_ToString},
     {Py_tp_repr, PyUpb_Message_ToString},
     {Py_tp_richcompare, PyUpb_Message_RichCompare},
-    {Py_tp_setattro, PyUpb_Message_SetAttr},
     {Py_tp_init, PyUpb_Message_Init},
     {0, NULL}};
 
@@ -1811,6 +1788,18 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
   PyObject* ret = cpython_bits.type_new(state->message_meta_type, args, NULL);
   Py_DECREF(args);
   if (!ret) return NULL;
+
+  for (int i = 0; i < upb_MessageDef_FieldCount(msgdef); i++) {
+    const upb_FieldDef* field_def = upb_MessageDef_Field(msgdef, i);
+    PyObject* property = PyUpb_FieldProperty_New(field_def);
+    if (property == NULL) {
+      return NULL;
+    }
+    const char* name = upb_FieldDef_Name(field_def);
+    int status = PyObject_SetAttrString(ret, name, property);
+    Py_DECREF(property);
+    if (status < 0) return NULL;
+  }
 
   PyUpb_MessageMeta* meta = PyUpb_GetMessageMeta(ret);
   meta->py_message_descriptor = py_descriptor;

@@ -114,6 +114,9 @@ typedef struct {
   // From unknown_fields.c
   PyTypeObject* unknown_fields_type;
   PyObject* unknown_field_type;
+
+  // From field.c
+  PyTypeObject* field_property;
 } PyUpb_ModuleState;
 
 // Returns the global state object from the current interpreter. The current

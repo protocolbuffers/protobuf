@@ -40,12 +40,6 @@ Proto2ReflectionTest.testExtensionIter.__unittest_expecting_failure__ = True
 SerializationTest.testCanonicalSerializationOrder.__unittest_expecting_failure__ = True
 SerializationTest.testCanonicalSerializationOrderSameAsCpp.__unittest_expecting_failure__ = True
 
-# This test relies on the internal implementation using Python descriptors.
-# This is an implementation detail that users should not depend on.
-SerializationTest.testFieldDataDescriptor.__unittest_expecting_failure__ = True
-
-SerializationTest.testFieldProperties.__unittest_expecting_failure__ = True
-
 # TODO Python Docker image on MacOS failing.
 ClassAPITest.testParsingNestedClass.__unittest_skip__ = True
 

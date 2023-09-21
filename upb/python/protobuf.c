@@ -34,6 +34,7 @@
 #include "upb/python/descriptor_containers.h"
 #include "upb/python/descriptor_pool.h"
 #include "upb/python/extension_dict.h"
+#include "upb/python/field.h"
 #include "upb/python/map.h"
 #include "upb/python/message.h"
 #include "upb/python/repeated.h"
@@ -418,7 +419,7 @@ __attribute__((visibility("default"))) PyMODINIT_FUNC PyInit__message(void) {
       !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m) ||
       !PyUpb_InitExtensionDict(m) || !PyUpb_Map_Init(m) ||
       !PyUpb_InitMessage(m) || !PyUpb_Repeated_Init(m) ||
-      !PyUpb_UnknownFields_Init(m)) {
+      !PyUpb_UnknownFields_Init(m) || !PyUpb_FieldProperty_Init(m)) {
     Py_DECREF(m);
     return NULL;
   }
