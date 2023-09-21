@@ -15,6 +15,10 @@
 
 typedef struct upb_MiniTableEnum upb_MiniTableEnum;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Validates enum value against range defined by enum mini table.
 UPB_INLINE bool upb_MiniTableEnum_CheckValue(const struct upb_MiniTableEnum* e,
                                              uint32_t val) {
@@ -24,6 +28,10 @@ UPB_INLINE bool upb_MiniTableEnum_CheckValue(const struct upb_MiniTableEnum* e,
   }
   return status == _kUpb_FastEnumCheck_ValueIsInEnum ? true : false;
 }
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #include "upb/upb/port/undef.inc"
 
