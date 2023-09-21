@@ -1321,13 +1321,29 @@ public abstract class CodedOutputStream extends ByteOutput {
     @Override
     public final void writeUInt32NoTag(int value) throws IOException {
       try {
-        while (true) {
+        if ((value & ~0x7F) == 0) {
+          buffer[position++] = (byte) value;
+        } else {
+          buffer[position++] = (byte) (value | 0x80);
+          value >>>= 7;
           if ((value & ~0x7F) == 0) {
             buffer[position++] = (byte) value;
-            return;
           } else {
-            buffer[position++] = (byte) ((value & 0x7F) | 0x80);
+            buffer[position++] = (byte) (value | 0x80);
             value >>>= 7;
+            if ((value & ~0x7F) == 0) {
+              buffer[position++] = (byte) value;
+            } else {
+              buffer[position++] = (byte) (value | 0x80);
+              value >>>= 7;
+              if ((value & ~0x7F) == 0) {
+                buffer[position++] = (byte) value;
+              } else {
+                buffer[position++] = (byte) (value | 0x80);
+                value >>>= 7;
+                buffer[position++] = (byte) value;
+              }
+            }
           }
         }
       } catch (IndexOutOfBoundsException e) {
