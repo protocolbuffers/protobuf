@@ -8,6 +8,7 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "google/protobuf/port_def.inc"
 #if PROTOBUF_VERSION < 4024000
@@ -249,9 +250,10 @@ class PROTOBUF_EXPORT UInt64Value final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -423,9 +425,10 @@ class PROTOBUF_EXPORT UInt32Value final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -583,7 +586,7 @@ class PROTOBUF_EXPORT StringValue final :
   void set_value(Arg_&& arg, Args_... args);
   std::string* mutable_value();
   PROTOBUF_NODISCARD std::string* release_value();
-  void set_allocated_value(std::string* ptr);
+  void set_allocated_value(std::string* value);
 
   private:
   const std::string& _internal_value() const;
@@ -603,9 +606,10 @@ class PROTOBUF_EXPORT StringValue final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -777,9 +781,10 @@ class PROTOBUF_EXPORT Int64Value final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -951,9 +956,10 @@ class PROTOBUF_EXPORT Int32Value final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -1125,9 +1131,10 @@ class PROTOBUF_EXPORT FloatValue final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -1299,9 +1306,10 @@ class PROTOBUF_EXPORT DoubleValue final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -1459,7 +1467,7 @@ class PROTOBUF_EXPORT BytesValue final :
   void set_value(Arg_&& arg, Args_... args);
   std::string* mutable_value();
   PROTOBUF_NODISCARD std::string* release_value();
-  void set_allocated_value(std::string* ptr);
+  void set_allocated_value(std::string* value);
 
   private:
   const std::string& _internal_value() const;
@@ -1479,9 +1487,10 @@ class PROTOBUF_EXPORT BytesValue final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -1653,9 +1662,10 @@ class PROTOBUF_EXPORT BoolValue final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(

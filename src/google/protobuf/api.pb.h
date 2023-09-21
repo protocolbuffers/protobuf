@@ -8,6 +8,7 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "google/protobuf/port_def.inc"
 #if PROTOBUF_VERSION < 4024000
@@ -220,7 +221,7 @@ class PROTOBUF_EXPORT Mixin final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -236,7 +237,7 @@ class PROTOBUF_EXPORT Mixin final :
   void set_root(Arg_&& arg, Args_... args);
   std::string* mutable_root();
   PROTOBUF_NODISCARD std::string* release_root();
-  void set_allocated_root(std::string* ptr);
+  void set_allocated_root(std::string* value);
 
   private:
   const std::string& _internal_root() const;
@@ -256,9 +257,10 @@ class PROTOBUF_EXPORT Mixin final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -441,7 +443,7 @@ class PROTOBUF_EXPORT Method final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -457,7 +459,7 @@ class PROTOBUF_EXPORT Method final :
   void set_request_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_request_type_url();
   PROTOBUF_NODISCARD std::string* release_request_type_url();
-  void set_allocated_request_type_url(std::string* ptr);
+  void set_allocated_request_type_url(std::string* value);
 
   private:
   const std::string& _internal_request_type_url() const;
@@ -473,7 +475,7 @@ class PROTOBUF_EXPORT Method final :
   void set_response_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_response_type_url();
   PROTOBUF_NODISCARD std::string* release_response_type_url();
-  void set_allocated_response_type_url(std::string* ptr);
+  void set_allocated_response_type_url(std::string* value);
 
   private:
   const std::string& _internal_response_type_url() const;
@@ -523,9 +525,10 @@ class PROTOBUF_EXPORT Method final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -749,7 +752,7 @@ class PROTOBUF_EXPORT Api final :
   void set_name(Arg_&& arg, Args_... args);
   std::string* mutable_name();
   PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* ptr);
+  void set_allocated_name(std::string* value);
 
   private:
   const std::string& _internal_name() const;
@@ -765,7 +768,7 @@ class PROTOBUF_EXPORT Api final :
   void set_version(Arg_&& arg, Args_... args);
   std::string* mutable_version();
   PROTOBUF_NODISCARD std::string* release_version();
-  void set_allocated_version(std::string* ptr);
+  void set_allocated_version(std::string* value);
 
   private:
   const std::string& _internal_version() const;
@@ -810,9 +813,10 @@ class PROTOBUF_EXPORT Api final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(

@@ -8,6 +8,7 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "google/protobuf/port_def.inc"
 #if PROTOBUF_VERSION < 4024000
@@ -190,9 +191,10 @@ class PROTOBUF_EXPORT Empty final :
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(

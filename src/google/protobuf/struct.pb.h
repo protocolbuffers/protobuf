@@ -8,6 +8,7 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "google/protobuf/port_def.inc"
 #if PROTOBUF_VERSION < 4024000
@@ -278,9 +279,10 @@ class PROTOBUF_EXPORT ListValue final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -458,9 +460,10 @@ class PROTOBUF_EXPORT Struct final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -480,22 +483,26 @@ class PROTOBUF_EXPORT Struct final :
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };// -------------------------------------------------------------------
 
-class Struct_FieldsEntry_DoNotUse final : public ::google::protobuf::internal::MapEntry<Struct_FieldsEntry_DoNotUse, 
-    std::string, ::google::protobuf::Value,
-    ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
-    ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE> {
-public:
-  typedef ::google::protobuf::internal::MapEntry<Struct_FieldsEntry_DoNotUse, 
-    std::string, ::google::protobuf::Value,
-    ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
-    ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE> SuperType;
+class Struct_FieldsEntry_DoNotUse final
+    : public ::google::protobuf::internal::MapEntry<
+          Struct_FieldsEntry_DoNotUse, std::string, ::google::protobuf::Value,
+          ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+          ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE> {
+ public:
+  using SuperType = ::google::protobuf::internal::MapEntry<
+      Struct_FieldsEntry_DoNotUse, std::string, ::google::protobuf::Value,
+      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+      ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>;
   Struct_FieldsEntry_DoNotUse();
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse(
       ::google::protobuf::internal::ConstantInitialized);
   explicit Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena);
   void MergeFrom(const Struct_FieldsEntry_DoNotUse& other);
-  static const Struct_FieldsEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(&_Struct_FieldsEntry_DoNotUse_default_instance_); }
+  static const Struct_FieldsEntry_DoNotUse* internal_default_instance() {
+    return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(
+        &_Struct_FieldsEntry_DoNotUse_default_instance_);
+  }
   static bool ValidateKey(std::string* s) {
     return ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::google::protobuf::internal::WireFormatLite::PARSE, "google.protobuf.Struct.FieldsEntry.key");
  }
@@ -685,7 +692,7 @@ class PROTOBUF_EXPORT Value final :
   void set_string_value(Arg_&& arg, Args_... args);
   std::string* mutable_string_value();
   PROTOBUF_NODISCARD std::string* release_string_value();
-  void set_allocated_string_value(std::string* ptr);
+  void set_allocated_string_value(std::string* value);
 
   private:
   const std::string& _internal_string_value() const;
@@ -765,9 +772,10 @@ class PROTOBUF_EXPORT Value final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
@@ -1061,7 +1069,7 @@ inline ::google::protobuf::Struct* Value::release_struct_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.struct_value)
   if (kind_case() == kStructValue) {
     clear_has_kind();
-    ::google::protobuf::Struct* temp = _impl_.kind_.struct_value_;
+    auto* temp = _impl_.kind_.struct_value_;
     if (GetArenaForAllocation() != nullptr) {
       temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
     }
@@ -1082,21 +1090,21 @@ inline ::google::protobuf::Struct* Value::unsafe_arena_release_struct_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.struct_value)
   if (kind_case() == kStructValue) {
     clear_has_kind();
-    ::google::protobuf::Struct* temp = _impl_.kind_.struct_value_;
+    auto* temp = _impl_.kind_.struct_value_;
     _impl_.kind_.struct_value_ = nullptr;
     return temp;
   } else {
     return nullptr;
   }
 }
-inline void Value::unsafe_arena_set_allocated_struct_value(::google::protobuf::Struct* struct_value) {
+inline void Value::unsafe_arena_set_allocated_struct_value(::google::protobuf::Struct* value) {
   // We rely on the oneof clear method to free the earlier contents
   // of this oneof. We can directly use the pointer we're given to
   // set the new value.
   clear_kind();
-  if (struct_value) {
+  if (value) {
     set_has_struct_value();
-    _impl_.kind_.struct_value_ = struct_value;
+    _impl_.kind_.struct_value_ = value;
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.struct_value)
 }
@@ -1138,7 +1146,7 @@ inline ::google::protobuf::ListValue* Value::release_list_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.list_value)
   if (kind_case() == kListValue) {
     clear_has_kind();
-    ::google::protobuf::ListValue* temp = _impl_.kind_.list_value_;
+    auto* temp = _impl_.kind_.list_value_;
     if (GetArenaForAllocation() != nullptr) {
       temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
     }
@@ -1159,21 +1167,21 @@ inline ::google::protobuf::ListValue* Value::unsafe_arena_release_list_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.list_value)
   if (kind_case() == kListValue) {
     clear_has_kind();
-    ::google::protobuf::ListValue* temp = _impl_.kind_.list_value_;
+    auto* temp = _impl_.kind_.list_value_;
     _impl_.kind_.list_value_ = nullptr;
     return temp;
   } else {
     return nullptr;
   }
 }
-inline void Value::unsafe_arena_set_allocated_list_value(::google::protobuf::ListValue* list_value) {
+inline void Value::unsafe_arena_set_allocated_list_value(::google::protobuf::ListValue* value) {
   // We rely on the oneof clear method to free the earlier contents
   // of this oneof. We can directly use the pointer we're given to
   // set the new value.
   clear_kind();
-  if (list_value) {
+  if (value) {
     set_has_list_value();
-    _impl_.kind_.list_value_ = list_value;
+    _impl_.kind_.list_value_ = value;
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.list_value)
 }

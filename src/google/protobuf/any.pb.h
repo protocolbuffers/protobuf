@@ -8,6 +8,7 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "google/protobuf/port_def.inc"
 #if PROTOBUF_VERSION < 4024000
@@ -247,7 +248,7 @@ class PROTOBUF_EXPORT Any final :
   void set_type_url(Arg_&& arg, Args_... args);
   std::string* mutable_type_url();
   PROTOBUF_NODISCARD std::string* release_type_url();
-  void set_allocated_type_url(std::string* ptr);
+  void set_allocated_type_url(std::string* value);
 
   private:
   const std::string& _internal_type_url() const;
@@ -263,7 +264,7 @@ class PROTOBUF_EXPORT Any final :
   void set_value(Arg_&& arg, Args_... args);
   std::string* mutable_value();
   PROTOBUF_NODISCARD std::string* release_value();
-  void set_allocated_value(std::string* ptr);
+  void set_allocated_value(std::string* value);
 
   private:
   const std::string& _internal_value() const;
@@ -283,9 +284,10 @@ class PROTOBUF_EXPORT Any final :
       _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
-  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
 
         inline explicit constexpr Impl_(
