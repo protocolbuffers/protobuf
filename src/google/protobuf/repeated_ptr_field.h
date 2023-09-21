@@ -127,6 +127,14 @@ struct IsMovable
     : std::integral_constant<bool, std::is_move_constructible<T>::value &&
                                        std::is_move_assignable<T>::value> {};
 
+// A trait that tells offset of `T::arena_`.
+//
+// Do not use this struct - it exists for internal use only.
+template <typename T>
+struct ArenaOffsetHelper {
+  constexpr static size_t value = offsetof(T, arena_);
+};
+
 // This is the common base class for RepeatedPtrFields.  It deals only in void*
 // pointers.  Users should not use this interface directly.
 //
@@ -160,15 +168,15 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       internal::GenericTypeHandler<MessageLite>, Handler>::type;
 
   constexpr RepeatedPtrFieldBase()
-      : arena_(nullptr),
+      : tagged_rep_or_elem_(nullptr),
         current_size_(0),
         total_size_(kSSOCapacity),
-        tagged_rep_or_elem_(nullptr) {}
+        arena_(nullptr) {}
   explicit RepeatedPtrFieldBase(Arena* arena)
-      : arena_(arena),
+      : tagged_rep_or_elem_(nullptr),
         current_size_(0),
         total_size_(kSSOCapacity),
-        tagged_rep_or_elem_(nullptr) {}
+        arena_(arena) {}
 
   RepeatedPtrFieldBase(const RepeatedPtrFieldBase&) = delete;
   RepeatedPtrFieldBase& operator=(const RepeatedPtrFieldBase&) = delete;
@@ -305,8 +313,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   inline void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
     ABSL_DCHECK(this != rhs);
 
-    // Swap all fields at once.
-    internal::memswap<sizeof(RepeatedPtrFieldBase)>(
+    // Swap all fields except arena pointer at once.
+    internal::memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
         reinterpret_cast<char*>(this), reinterpret_cast<char*>(rhs));
   }
 
@@ -664,6 +672,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   friend class internal::TcParser;  // TODO: Remove this friend.
 
+  // Expose offset of `arena_` without exposing the member itself.
+  // Used to optimize code size of `InternalSwap` method.
+  template <typename T>
+  friend struct ArenaOffsetHelper;
+
   // The reflection implementation needs to call protected methods directly,
   // reinterpreting pointers as being to Message instead of a specific Message
   // subclass.
@@ -824,10 +837,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // misses due to the indirection, because these fields are checked frequently.
   // Placing all fields directly in the RepeatedPtrFieldBase instance would cost
   // significant performance for memory-sensitive workloads.
-  Arena* arena_;
+  void* tagged_rep_or_elem_;
   int current_size_;
   int total_size_;
-  void* tagged_rep_or_elem_;
+  Arena* arena_;
 };
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message);
@@ -2135,6 +2148,15 @@ UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
   return internal::UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator<T>(
       mutable_field);
 }
+
+
+namespace internal {
+// Size optimization for `memswap<N>` - supplied below N is used by every
+// `RepeatedPtrField<T>`.
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void
+memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
+    char* PROTOBUF_RESTRICT, char* PROTOBUF_RESTRICT);
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google
