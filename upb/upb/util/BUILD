@@ -97,7 +97,9 @@ cc_library(
     hdrs = ["required_fields.h"],
     visibility = ["//visibility:public"],
     deps = [
+        "//upb:base",
         "//upb:collections",
+        "//upb:message_types",
         "//upb:port",
         "//upb:reflection",
     ],

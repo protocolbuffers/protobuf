@@ -30,11 +30,21 @@
 
 #include "upb/upb/util/required_fields.h"
 
+#include <assert.h>
 #include <inttypes.h>
+#include <setjmp.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "upb/upb/base/descriptor_constants.h"
+#include "upb/upb/collections/array.h"
 #include "upb/upb/collections/map.h"
+#include "upb/upb/message/types.h"
 #include "upb/upb/port/vsnprintf_compat.h"
+#include "upb/upb/reflection/def.h"
 #include "upb/upb/reflection/message.h"
 
 // Must be last.
