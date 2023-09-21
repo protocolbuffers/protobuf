@@ -1157,7 +1157,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         explicit PROTOBUF_CONSTEXPR $classname$(
             ::$proto_ns$::internal::ConstantInitialized);
         explicit $classname$(::$proto_ns$::Arena* arena);
-        void MergeFrom(const $classname$& other);
         static const $classname$* internal_default_instance() {
           return reinterpret_cast<const $classname$*>(
               &_$classname$_default_instance_);
@@ -1226,8 +1225,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
     }
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
-          "  using ::$proto_ns$::Message::MergeFrom;\n"
-          ""
           "  ::$proto_ns$::Metadata GetMetadata() const final;\n");
     }
     format(
@@ -1932,10 +1929,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     format(
         "$classname$::$classname$() {}\n"
         "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
-        "    : SuperType(arena) {}\n"
-        "void $classname$::MergeFrom(const $classname$& other) {\n"
-        "  MergeFromInternal(other);\n"
-        "}\n");
+        "    : SuperType(arena) {}\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       if (!descriptor_->options().map_entry()) {
         format(
