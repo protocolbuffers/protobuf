@@ -13,10 +13,12 @@ This is intentionally modeled on C++ code in
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import importlib.resources
 import numbers
 import operator
 import os.path
 
+from google.protobuf import testdata
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 
@@ -607,20 +609,21 @@ def GoldenFile(filename):
       return open(full_path, 'rb')
     path = os.path.join(path, '..')
 
-  # Search internally.
-  path = '.'
-  full_path = os.path.join(path, 'third_party/py/google/protobuf/testdata',
-                           filename)
+  # Search for cross-repo path.
+  full_path = os.path.join(
+      'external/com_google_protobuf/src/google/protobuf/testdata', filename
+  )
   if os.path.exists(full_path):
     # Found it.  Load the golden file from the testdata directory.
     return open(full_path, 'rb')
 
-  # Search for cross-repo path.
-  full_path = os.path.join('external/com_google_protobuf/src/google/protobuf/testdata',
-                           filename)
-  if os.path.exists(full_path):
-    # Found it.  Load the golden file from the testdata directory.
-    return open(full_path, 'rb')
+  try:
+    full_path = importlib.resources.files(testdata) / filename
+    if os.path.exists(full_path):
+      return open(full_path, 'rb')
+  except AttributeError:
+    # Fallback for Python < 3.9
+    return importlib.resources.open_binary(testdata, filename)
 
   raise RuntimeError(
       'Could not find golden files.  This test must be run from within the '

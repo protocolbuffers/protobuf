@@ -53,8 +53,7 @@ class TextFormatBase(unittest.TestCase):
 
   def ReadGolden(self, golden_filename):
     with test_util.GoldenFile(golden_filename) as f:
-      return (f.readlines() if str is bytes else  # PY3
-              [golden_line.decode('utf-8') for golden_line in f])
+      return [golden_line.decode('utf-8') for golden_line in f]
 
   def CompareToGoldenFile(self, text, golden_filename):
     golden_lines = self.ReadGolden(golden_filename)

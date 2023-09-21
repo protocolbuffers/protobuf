@@ -426,7 +426,10 @@ if __name__ == '__main__':
           'Programming Language :: Python',
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.7',
+          # LINT.IfChange
+          # Remove importlib fallback path when we drop Python 3.8 support.
           'Programming Language :: Python :: 3.8',
+          # LINT.ThenChange(//depot/google3/google/protobuf/internal/test_util.py)
           'Programming Language :: Python :: 3.9',
           'Programming Language :: Python :: 3.10',
       ],
@@ -435,7 +438,8 @@ if __name__ == '__main__':
           exclude=[
               'import_test_package',
               'protobuf_distutils',
-          ],),
+          ],
+      ),
       test_suite='google.protobuf.internal',
       cmdclass={
           'clean': CleanCmd,
