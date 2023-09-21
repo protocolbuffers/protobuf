@@ -472,7 +472,7 @@ void GenerateThunksCc(Context<Descriptor> msg) {
         //~ `$abi${`). Disabling clang-format for the block.
         // clang-format off
         extern $abi$ {
-        void* $new_thunk$(){return new $QualifiedMsg$(); }
+        void* $new_thunk$() { return new $QualifiedMsg$(); }
         void $delete_thunk$(void* ptr) { delete static_cast<$QualifiedMsg$*>(ptr); }
         google::protobuf::rust_internal::SerializedData $serialize_thunk$($QualifiedMsg$* msg) {
           return google::protobuf::rust_internal::SerializeMsg(msg);
