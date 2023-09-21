@@ -12,6 +12,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -22,7 +23,8 @@ namespace objectivec {
 
 class OneofGenerator {
  public:
-  explicit OneofGenerator(const OneofDescriptor* descriptor);
+  OneofGenerator(const OneofDescriptor* descriptor,
+                 const GenerationOptions& generation_options);
   ~OneofGenerator() = default;
 
   OneofGenerator(const OneofGenerator&) = delete;

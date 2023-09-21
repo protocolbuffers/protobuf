@@ -13,6 +13,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -24,7 +25,8 @@ namespace objectivec {
 class ExtensionGenerator {
  public:
   ExtensionGenerator(absl::string_view root_or_message_class_name,
-                     const FieldDescriptor* descriptor);
+                     const FieldDescriptor* descriptor,
+                     const GenerationOptions& generation_options);
   ~ExtensionGenerator() = default;
 
   ExtensionGenerator(const ExtensionGenerator&) = delete;

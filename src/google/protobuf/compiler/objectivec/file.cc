@@ -119,10 +119,10 @@ void MakeDescriptors(
     std::vector<std::unique_ptr<EnumGenerator>>* enum_generators,
     std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
     std::vector<std::unique_ptr<MessageGenerator>>* message_generators,
-    bool strip_custom_options) {
+    const GenerationOptions& generation_options) {
   for (int i = 0; i < descriptor->enum_type_count(); i++) {
-    enum_generators->emplace_back(
-        std::make_unique<EnumGenerator>(descriptor->enum_type(i)));
+    enum_generators->emplace_back(std::make_unique<EnumGenerator>(
+        descriptor->enum_type(i), generation_options));
   }
   for (int i = 0; i < descriptor->nested_type_count(); i++) {
     const Descriptor* message_type = descriptor->nested_type(i);
@@ -132,12 +132,11 @@ void MakeDescriptors(
       continue;
     }
     message_generators->emplace_back(std::make_unique<MessageGenerator>(
-        file_description_name, message_type));
-    message_generators->back()->AddExtensionGenerators(extension_generators,
-                                                       strip_custom_options);
+        file_description_name, message_type, generation_options));
+    message_generators->back()->AddExtensionGenerators(extension_generators);
     MakeDescriptors(message_type, file_description_name, enum_generators,
                     extension_generators, message_generators,
-                    strip_custom_options);
+                    generation_options);
   }
 }
 
@@ -253,15 +252,15 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
       file_description_name_(FileClassName(file) + "_FileDescription"),
       is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
-    enum_generators_.emplace_back(
-        std::make_unique<EnumGenerator>(file_->enum_type(i)));
+    enum_generators_.emplace_back(std::make_unique<EnumGenerator>(
+        file_->enum_type(i), generation_options));
   }
   for (int i = 0; i < file_->extension_count(); i++) {
     const FieldDescriptor* extension = file_->extension(i);
     if (!generation_options.strip_custom_options ||
         !ExtensionIsCustomOption(extension)) {
-      extension_generators_.push_back(
-          std::make_unique<ExtensionGenerator>(root_class_name_, extension));
+      extension_generators_.push_back(std::make_unique<ExtensionGenerator>(
+          root_class_name_, extension, generation_options));
     }
   }
   file_scoped_extension_count_ = extension_generators_.size();
@@ -273,12 +272,11 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
       continue;
     }
     message_generators_.emplace_back(std::make_unique<MessageGenerator>(
-        file_description_name_, message_type));
-    message_generators_.back()->AddExtensionGenerators(
-        &extension_generators_, generation_options.strip_custom_options);
+        file_description_name_, message_type, generation_options));
+    message_generators_.back()->AddExtensionGenerators(&extension_generators_);
     MakeDescriptors(message_type, file_description_name_, &enum_generators_,
                     &extension_generators_, &message_generators_,
-                    generation_options.strip_custom_options);
+                    generation_options);
   }
 }
 
