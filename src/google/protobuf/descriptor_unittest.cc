@@ -7529,16 +7529,15 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
   BuildDescriptorMessagesInTestPool();
   const FileDescriptor* file = ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
   EXPECT_THAT(file->options(), EqualsProto(""));
-  EXPECT_THAT(
-      GetCoreFeatures(file), EqualsProto(R"pb(
-        field_presence: EXPLICIT
-        enum_type: OPEN
-        repeated_field_encoding: PACKED
-        utf8_validation: VERIFY
-        message_encoding: LENGTH_PREFIXED
-        json_format: ALLOW
-        [pb.cpp] { legacy_closed_enum: false utf8_validation: VERIFY_PARSE }
-      )pb"));
+  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                [pb.cpp] { legacy_closed_enum: false }
+              )pb"));
 
   // Since pb::test is registered in the pool, it should end up with defaults in
   // our FeatureSet.
@@ -7558,16 +7557,15 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
   ASSERT_NE(file, nullptr);
 
   EXPECT_THAT(file->options(), EqualsProto(""));
-  EXPECT_THAT(
-      GetFeatures(file), EqualsProto(R"pb(
-        field_presence: EXPLICIT
-        enum_type: OPEN
-        repeated_field_encoding: PACKED
-        utf8_validation: VERIFY
-        message_encoding: LENGTH_PREFIXED
-        json_format: ALLOW
-        [pb.cpp] { legacy_closed_enum: false utf8_validation: VERIFY_PARSE }
-      )pb"));
+  EXPECT_THAT(GetFeatures(file), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                [pb.cpp] { legacy_closed_enum: false }
+              )pb"));
   EXPECT_FALSE(GetFeatures(file).HasExtension(pb::test));
 }
 
@@ -7590,10 +7588,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
@@ -7853,10 +7848,7 @@ TEST_F(FeaturesTest, NoOptions) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, InvalidEdition) {
@@ -7885,10 +7877,7 @@ TEST_F(FeaturesTest, FileFeatures) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, FileFeaturesExtension) {
@@ -7963,10 +7952,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, MessageFeaturesInherit) {
@@ -8071,10 +8057,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, FieldFeaturesInherit) {
@@ -8462,10 +8445,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, EnumFeaturesInherit) {
@@ -8572,10 +8552,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, EnumValueFeaturesInherit) {
@@ -8667,10 +8644,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, OneofFeaturesInherit) {
@@ -8769,10 +8743,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, ExtensionRangeFeaturesInherit) {
@@ -8856,10 +8827,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, ServiceFeaturesInherit) {
@@ -8925,10 +8893,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, MethodFeaturesInherit) {
@@ -9722,10 +9687,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
 }
 
 TEST_F(FeaturesTest, UninterpretedOptionsMerge) {

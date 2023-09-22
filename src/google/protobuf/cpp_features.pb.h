@@ -33,7 +33,6 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"  // IWYU pragma: export
-#include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/descriptor.pb.h"
 // @@protoc_insertion_point(includes)
@@ -68,37 +67,6 @@ namespace protobuf {
 }  // namespace google
 
 namespace pb {
-enum CppFeatures_Utf8Validation : int {
-  CppFeatures_Utf8Validation_UTF8_VALIDATION_UNKNOWN = 0,
-  CppFeatures_Utf8Validation_VERIFY_PARSE = 1,
-  CppFeatures_Utf8Validation_VERIFY_DLOG = 2,
-  CppFeatures_Utf8Validation_NONE = 3,
-};
-
-PROTOBUF_EXPORT bool CppFeatures_Utf8Validation_IsValid(int value);
-PROTOBUF_EXPORT extern const uint32_t CppFeatures_Utf8Validation_internal_data_[];
-constexpr CppFeatures_Utf8Validation CppFeatures_Utf8Validation_Utf8Validation_MIN = static_cast<CppFeatures_Utf8Validation>(0);
-constexpr CppFeatures_Utf8Validation CppFeatures_Utf8Validation_Utf8Validation_MAX = static_cast<CppFeatures_Utf8Validation>(3);
-constexpr int CppFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
-CppFeatures_Utf8Validation_descriptor();
-template <typename T>
-const std::string& CppFeatures_Utf8Validation_Name(T value) {
-  static_assert(std::is_same<T, CppFeatures_Utf8Validation>::value ||
-                    std::is_integral<T>::value,
-                "Incorrect type passed to Utf8Validation_Name().");
-  return CppFeatures_Utf8Validation_Name(static_cast<CppFeatures_Utf8Validation>(value));
-}
-template <>
-inline const std::string& CppFeatures_Utf8Validation_Name(CppFeatures_Utf8Validation value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_Utf8Validation_descriptor,
-                                                 0, 3>(
-      static_cast<int>(value));
-}
-inline bool CppFeatures_Utf8Validation_Parse(absl::string_view name, CppFeatures_Utf8Validation* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<CppFeatures_Utf8Validation>(
-      CppFeatures_Utf8Validation_descriptor(), name, value);
-}
 
 // ===================================================================
 
@@ -234,33 +202,10 @@ class PROTOBUF_EXPORT CppFeatures final :
 
   // nested types ----------------------------------------------------
 
-  using Utf8Validation = CppFeatures_Utf8Validation;
-  static constexpr Utf8Validation UTF8_VALIDATION_UNKNOWN = CppFeatures_Utf8Validation_UTF8_VALIDATION_UNKNOWN;
-  static constexpr Utf8Validation VERIFY_PARSE = CppFeatures_Utf8Validation_VERIFY_PARSE;
-  static constexpr Utf8Validation VERIFY_DLOG = CppFeatures_Utf8Validation_VERIFY_DLOG;
-  static constexpr Utf8Validation NONE = CppFeatures_Utf8Validation_NONE;
-  static inline bool Utf8Validation_IsValid(int value) {
-    return CppFeatures_Utf8Validation_IsValid(value);
-  }
-  static constexpr Utf8Validation Utf8Validation_MIN = CppFeatures_Utf8Validation_Utf8Validation_MIN;
-  static constexpr Utf8Validation Utf8Validation_MAX = CppFeatures_Utf8Validation_Utf8Validation_MAX;
-  static constexpr int Utf8Validation_ARRAYSIZE = CppFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor* Utf8Validation_descriptor() {
-    return CppFeatures_Utf8Validation_descriptor();
-  }
-  template <typename T>
-  static inline const std::string& Utf8Validation_Name(T value) {
-    return CppFeatures_Utf8Validation_Name(value);
-  }
-  static inline bool Utf8Validation_Parse(absl::string_view name, Utf8Validation* value) {
-    return CppFeatures_Utf8Validation_Parse(name, value);
-  }
-
   // accessors -------------------------------------------------------
 
   enum : int {
     kLegacyClosedEnumFieldNumber = 1,
-    kUtf8ValidationFieldNumber = 2,
   };
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_legacy_closed_enum() const;
@@ -273,24 +218,13 @@ class PROTOBUF_EXPORT CppFeatures final :
   void _internal_set_legacy_closed_enum(bool value);
 
   public:
-  // optional .pb.CppFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool has_utf8_validation() const;
-  void clear_utf8_validation() ;
-  ::pb::CppFeatures_Utf8Validation utf8_validation() const;
-  void set_utf8_validation(::pb::CppFeatures_Utf8Validation value);
-
-  private:
-  ::pb::CppFeatures_Utf8Validation _internal_utf8_validation() const;
-  void _internal_set_utf8_validation(::pb::CppFeatures_Utf8Validation value);
-
-  public:
   // @@protoc_insertion_point(class_scope:pb.CppFeatures)
  private:
   class _Internal;
 
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 1,
+      0, 1, 0,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -310,7 +244,6 @@ class PROTOBUF_EXPORT CppFeatures final :
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     bool legacy_closed_enum_;
-    int utf8_validation_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -365,35 +298,6 @@ inline void CppFeatures::_internal_set_legacy_closed_enum(bool value) {
   _impl_.legacy_closed_enum_ = value;
 }
 
-// optional .pb.CppFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-inline bool CppFeatures::has_utf8_validation() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
-  return value;
-}
-inline void CppFeatures::clear_utf8_validation() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.utf8_validation_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000002u;
-}
-inline ::pb::CppFeatures_Utf8Validation CppFeatures::utf8_validation() const {
-  // @@protoc_insertion_point(field_get:pb.CppFeatures.utf8_validation)
-  return _internal_utf8_validation();
-}
-inline void CppFeatures::set_utf8_validation(::pb::CppFeatures_Utf8Validation value) {
-  _internal_set_utf8_validation(value);
-  // @@protoc_insertion_point(field_set:pb.CppFeatures.utf8_validation)
-}
-inline ::pb::CppFeatures_Utf8Validation CppFeatures::_internal_utf8_validation() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return static_cast<::pb::CppFeatures_Utf8Validation>(_impl_.utf8_validation_);
-}
-inline void CppFeatures::_internal_set_utf8_validation(::pb::CppFeatures_Utf8Validation value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  assert(::pb::CppFeatures_Utf8Validation_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.utf8_validation_ = value;
-}
-
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif  // __GNUC__
@@ -401,19 +305,6 @@ inline void CppFeatures::_internal_set_utf8_validation(::pb::CppFeatures_Utf8Val
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 
-
-namespace google {
-namespace protobuf {
-
-template <>
-struct is_proto_enum<::pb::CppFeatures_Utf8Validation> : std::true_type {};
-template <>
-inline const EnumDescriptor* GetEnumDescriptor<::pb::CppFeatures_Utf8Validation>() {
-  return ::pb::CppFeatures_Utf8Validation_descriptor();
-}
-
-}  // namespace protobuf
-}  // namespace google
 
 // @@protoc_insertion_point(global_scope)
 

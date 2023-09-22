@@ -136,18 +136,17 @@ TEST(Generated, EditionDefaults2023) {
 }
 
 TEST(Generated, EditionDefaults2023InternalFeatures) {
-  EXPECT_THAT(
-      internal::InternalFeatureHelper::GetFeatures(
-          *EditionsDefaultMessage::descriptor()),
-      google::protobuf::EqualsProto(R"pb(
-        field_presence: EXPLICIT
-        enum_type: OPEN
-        repeated_field_encoding: PACKED
-        utf8_validation: VERIFY
-        message_encoding: LENGTH_PREFIXED
-        json_format: ALLOW
-        [pb.cpp] { legacy_closed_enum: false utf8_validation: VERIFY_PARSE }
-      )pb"));
+  EXPECT_THAT(internal::InternalFeatureHelper::GetFeatures(
+                  *EditionsDefaultMessage::descriptor()),
+              google::protobuf::EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                [pb.cpp] { legacy_closed_enum: false }
+              )pb"));
 }
 
 }  // namespace
