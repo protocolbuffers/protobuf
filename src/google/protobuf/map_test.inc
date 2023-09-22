@@ -2351,17 +2351,18 @@ class MyMapEntry
                                 internal::WireFormatLite::TYPE_INT32> {
  public:
   constexpr MyMapEntry() {}
-  MyMapEntry(Arena*) { ABSL_CHECK(false); }
+  using MyMapEntry::MapEntry::MapEntry;
   Metadata GetMetadata() const override { ABSL_CHECK(false); }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };
 
 TEST(MapEntryTest, ConstInit) {
-  // This verifies that `MapEntry`, `MapEntryLite` and `MapEntryImpl` can be
-  // constant initialized.
+  // This verifies that `MapEntry` can be constant initialized.
   PROTOBUF_CONSTINIT static MyMapEntry entry{};
-  EXPECT_NE(entry.SpaceUsed(), 0);
+  // Use the object in some way to make sure the vtable is there.
+  const google::protobuf::Message* volatile m = &entry;
+  delete m->New();
 }
 
 // Generated Message Test ===========================================
