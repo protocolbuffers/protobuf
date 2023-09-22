@@ -197,6 +197,10 @@ PROTOBUF_NOINLINE static absl::Status MakeInvalidLengthDelimType(
       field_number));
 }
 
+PROTOBUF_NOINLINE static absl::Status MakeTooDeepError() {
+  return absl::InvalidArgumentError("allowed depth exceeded");
+}
+
 absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
                                     absl::optional<int32_t> current_group) {
   while (true) {
@@ -447,6 +451,9 @@ absl::Status UntypedMessage::Decode32Bit(io::CodedInputStream& stream,
 
 absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
                                              const ResolverPool::Field& field) {
+  if (!stream.IncrementRecursionDepth()) {
+    return MakeTooDeepError();
+  }
   auto limit = stream.ReadLengthAndPushLimit();
   if (limit == 0) {
     return MakeUnexpectedEofError();
@@ -510,7 +517,7 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
       break;
     }
   }
-  stream.PopLimit(limit);
+  stream.DecrementRecursionDepthAndPopLimit(limit);
   return absl::OkStatus();
 }
 
