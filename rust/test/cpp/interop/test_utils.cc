@@ -8,7 +8,7 @@
 #include <cstddef>
 
 #include "absl/strings/string_view.h"
-#include "google/protobuf/rust/cpp_kernel/cpp_api.h"
+#include "rust/cpp_kernel/cpp_api.h"
 #include "google/protobuf/unittest.pb.h"
 
 extern "C" void MutateTestAllTypes(protobuf_unittest::TestAllTypes* msg) {

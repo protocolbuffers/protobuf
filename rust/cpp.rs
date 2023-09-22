@@ -7,7 +7,8 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::{Private, RawArena, RawMessage};
+use crate::__internal::{Private, RawArena, RawMessage, RawRepeatedField};
+use paste::paste;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
 use std::fmt;
@@ -35,6 +36,7 @@ pub struct Arena {
 impl Arena {
     /// Allocates a fresh arena.
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self { ptr: NonNull::dangling(), _not_sync: PhantomData }
     }
@@ -182,6 +184,116 @@ pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
     val
 }
 
+/// RepeatedField impls delegate out to `extern "C"` functions exposed by
+/// `cpp_api.h` and store either a RepeatedField* or a RepeatedPtrField*
+/// depending on the type.
+///
+/// Note: even though this type is `Copy`, it should only be copied by
+/// protobuf internals that can maintain mutation invariants:
+///
+/// - No concurrent mutation for any two fields in a message: this means
+///   mutators cannot be `Send` but are `Sync`.
+/// - If there are multiple accessible `Mut` to a single message at a time, they
+///   must be different fields, and not be in the same oneof. As such, a `Mut`
+///   cannot be `Clone` but *can* reborrow itself with `.as_mut()`, which
+///   converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
+#[derive(Clone, Copy)]
+pub struct RepeatedField<'msg, T: ?Sized> {
+    inner: RepeatedFieldInner<'msg>,
+    _phantom: PhantomData<&'msg mut T>,
+}
+
+/// CPP runtime-specific arguments for initializing a RepeatedField.
+/// See RepeatedField comment about mutation invariants for when this type can
+/// be copied.
+#[derive(Clone, Copy)]
+pub struct RepeatedFieldInner<'msg> {
+    pub raw: RawRepeatedField,
+    pub _phantom: PhantomData<&'msg ()>,
+}
+
+impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
+    pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
+        RepeatedField { inner, _phantom: PhantomData }
+    }
+}
+impl<'msg> RepeatedField<'msg, i32> {}
+
+pub trait RepeatedScalarOps {
+    fn new_repeated_field() -> RawRepeatedField;
+    fn push(f: RawRepeatedField, v: Self);
+    fn len(f: RawRepeatedField) -> usize;
+    fn get(f: RawRepeatedField, i: usize) -> Self;
+    fn set(f: RawRepeatedField, i: usize, v: Self);
+}
+
+macro_rules! impl_repeated_scalar_ops {
+    ($($t: ty),*) => {
+        paste! { $(
+            extern "C" {
+                fn [< __pb_rust_RepeatedField_ $t _new >]() -> RawRepeatedField;
+                fn [< __pb_rust_RepeatedField_ $t _add >](f: RawRepeatedField, v: $t);
+                fn [< __pb_rust_RepeatedField_ $t _size >](f: RawRepeatedField) -> usize;
+                fn [< __pb_rust_RepeatedField_ $t _get >](f: RawRepeatedField, i: usize) -> $t;
+                fn [< __pb_rust_RepeatedField_ $t _set >](f: RawRepeatedField, i: usize, v: $t);
+            }
+            impl RepeatedScalarOps for $t {
+                fn new_repeated_field() -> RawRepeatedField {
+                    unsafe { [< __pb_rust_RepeatedField_ $t _new >]() }
+                }
+                fn push(f: RawRepeatedField, v: Self) {
+                    unsafe { [< __pb_rust_RepeatedField_ $t _add >](f, v) }
+                }
+                fn len(f: RawRepeatedField) -> usize {
+                    unsafe { [< __pb_rust_RepeatedField_ $t _size >](f) }
+                }
+                fn get(f: RawRepeatedField, i: usize) -> Self {
+                    unsafe { [< __pb_rust_RepeatedField_ $t _get >](f, i) }
+                }
+                fn set(f: RawRepeatedField, i: usize, v: Self) {
+                    unsafe { [< __pb_rust_RepeatedField_ $t _set >](f, i, v) }
+                }
+            }
+        )* }
+    };
+}
+
+impl_repeated_scalar_ops!(i32, u32, i64, u64, f32, f64, bool);
+
+impl<'msg, T: RepeatedScalarOps> RepeatedField<'msg, T> {
+    #[allow(clippy::new_without_default, dead_code)]
+    /// new() is not currently used in our normal pathways, it is only used
+    /// for testing. Existing `RepeatedField<>`s are owned by, and retrieved
+    /// from, the containing `Message`.
+    pub fn new() -> Self {
+        Self::from_inner(
+            Private,
+            RepeatedFieldInner::<'msg> { raw: T::new_repeated_field(), _phantom: PhantomData },
+        )
+    }
+    pub fn push(&mut self, val: T) {
+        T::push(self.inner.raw, val)
+    }
+    pub fn len(&self) -> usize {
+        T::len(self.inner.raw)
+    }
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+    pub fn get(&self, index: usize) -> Option<T> {
+        if index >= self.len() {
+            return None;
+        }
+        Some(T::get(self.inner.raw, index))
+    }
+    pub fn set(&mut self, index: usize, val: T) {
+        if index >= self.len() {
+            return;
+        }
+        T::set(self.inner.raw, index, val)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -200,5 +312,28 @@ mod tests {
         let (ptr, len) = allocate_byte_array(b"Hello world");
         let serialized_data = SerializedData { data: NonNull::new(ptr).unwrap(), len: len };
         assert_eq!(&*serialized_data, b"Hello world");
+    }
+
+    #[test]
+    fn repeated_field() {
+        let mut r = RepeatedField::<i32>::new();
+        assert_eq!(r.len(), 0);
+        r.push(32);
+        assert_eq!(r.get(0), Some(32));
+
+        let mut r = RepeatedField::<u32>::new();
+        assert_eq!(r.len(), 0);
+        r.push(32);
+        assert_eq!(r.get(0), Some(32));
+
+        let mut r = RepeatedField::<f64>::new();
+        assert_eq!(r.len(), 0);
+        r.push(0.1234f64);
+        assert_eq!(r.get(0), Some(0.1234));
+
+        let mut r = RepeatedField::<bool>::new();
+        assert_eq!(r.len(), 0);
+        r.push(true);
+        assert_eq!(r.get(0), Some(true));
     }
 }

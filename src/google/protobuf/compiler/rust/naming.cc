@@ -64,22 +64,28 @@ std::string GetHeaderFile(Context<FileDescriptor> file) {
 namespace {
 
 template <typename T>
-std::string Thunk(Context<T> field, absl::string_view op) {
+std::string FieldPrefix(Context<T> field) {
   // NOTE: When field.is_upb(), this functions outputs must match the symbols
   // that the upbc plugin generates exactly. Failure to do so correctly results
   // in a link-time failure.
   absl::string_view prefix = field.is_cpp() ? "__rust_proto_thunk__" : "";
-  std::string thunk =
+  std::string thunk_prefix =
       absl::StrCat(prefix, GetUnderscoreDelimitedFullName(
                                field.WithDesc(field.desc().containing_type())));
+  return thunk_prefix;
+}
+
+template <typename T>
+std::string Thunk(Context<T> field, absl::string_view op) {
+  std::string thunk = FieldPrefix(field);
 
   absl::string_view format;
   if (field.is_upb() && op == "get") {
     // upb getter is simply the field name (no "get" in the name).
     format = "_$1";
-  } else if (field.is_upb() && op == "case") {
-    // upb oneof case function is x_case compared to has/set/clear which are in
-    // the other order e.g. clear_x.
+  } else if (field.is_upb() && (op == "case")) {
+    // some upb functions are in the order x_op compared to has/set/clear which
+    // are in the other order e.g. op_x.
     format = "_$1_$0";
   } else {
     format = "_$0_$1";
@@ -89,9 +95,32 @@ std::string Thunk(Context<T> field, absl::string_view op) {
   return thunk;
 }
 
+std::string ThunkRepeated(Context<FieldDescriptor> field,
+                          absl::string_view op) {
+  if (!field.is_upb()) {
+    return Thunk<FieldDescriptor>(field, op);
+  }
+
+  std::string thunk = absl::StrCat("_", FieldPrefix(field));
+  absl::string_view format;
+  if (op == "get") {
+    format = "_$1_upb_array";
+  } else if (op == "get_mut") {
+    format = "_$1_mutable_upb_array";
+  } else {
+    return Thunk<FieldDescriptor>(field, op);
+  }
+
+  absl::SubstituteAndAppend(&thunk, format, op, field.desc().name());
+  return thunk;
+}
+
 }  // namespace
 
 std::string Thunk(Context<FieldDescriptor> field, absl::string_view op) {
+  if (field.desc().is_repeated()) {
+    return ThunkRepeated(field, op);
+  }
   return Thunk<FieldDescriptor>(field, op);
 }
 
