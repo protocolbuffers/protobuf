@@ -13,7 +13,6 @@
 #define GOOGLE_PROTOBUF_COMMON_H__
 
 #include <algorithm>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
