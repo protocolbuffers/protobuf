@@ -137,6 +137,33 @@ namespace Google.Protobuf
             }
         }
 
+        /// <summary>
+        /// Configures whether or not serialization is deterministic.
+        /// </summary>
+        /// <remarks>
+        /// Deterministic serialization guarantees that for a given binary, equal messages (defined by the
+        /// equals methods in protos) will always be serialized to the same bytes. This implies:
+        /// <list type="bullet">
+        /// <item><description>Repeated serialization of a message will return the same bytes.</description></item>
+        /// <item><description>Different processes of the same binary (which may be executing on different machines)
+        /// will serialize equal messages to the same bytes.</description></item>
+        /// </list>
+        /// Note the deterministic serialization is NOT canonical across languages; it is also unstable
+        /// across different builds with schema changes due to unknown fields. Users who need canonical
+        /// serialization, e.g. persistent storage in a canonical form, fingerprinting, etc, should define
+        /// their own canonicalization specification and implement the serializer using reflection APIs
+        /// rather than relying on this API.
+        /// Once set, the serializer will: (Note this is an implementation detail and may subject to
+        /// change in the future)
+        /// <list type="bullet">
+        /// <item><description>Sort map entries by keys in lexicographical order or numerical order. Note: For string
+        /// keys, the order is based on comparing the UTF-16 code unit value of each character in the strings.
+        /// The order may be different from the deterministic serialization in other languages where
+        /// maps are sorted on the lexicographical order of the UTF8 encoded keys.</description></item>
+        /// </list>
+        /// </remarks>
+        public bool Deterministic { get; set; }
+
         #region Writing of values (not including tags)
 
         /// <summary>
@@ -462,7 +489,7 @@ namespace Google.Protobuf
         #endregion
 
         #region Underlying writing primitives
-        
+
         /// <summary>
         /// Writes a 32 bit value as a varint. The fast route is taken when
         /// there's enough buffer space left to whizz through without checking

@@ -311,7 +311,7 @@ namespace Google.Protobuf
 
             output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
 
-            var key = 10; // Field 1 
+            var key = 10; // Field 1
             var value = 20; // Field 2
             var extra = 30; // Field 3
 
@@ -666,6 +666,79 @@ namespace Google.Protobuf
             {
                 Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofUint32, parsedMessage.OneofFieldCase);
             });
+        }
+
+        [Test]
+        public void MapStringString_DeterministicTrue_ThenBytesIdentical()
+        {
+            // Define three strings consisting of different versions of the letter I.
+            // LATIN CAPITAL LETTER I (U+0049)
+            string capitalLetterI = "I";
+            // LATIN SMALL LETTER I (U+0069)
+            string smallLetterI   = "i";
+            // LATIN SMALL LETTER DOTLESS I (U+0131)
+            string smallLetterDotlessI = "\u0131";
+            var testMap1 = new TestMap();
+
+            testMap1.MapStringString.Add(smallLetterDotlessI, "value_"+smallLetterDotlessI);
+            testMap1.MapStringString.Add(smallLetterI, "value_"+smallLetterI);
+            testMap1.MapStringString.Add(capitalLetterI, "content_"+capitalLetterI);
+            var bytes1 = SerializeTestMap(testMap1, true);
+
+            var testMap2 = new TestMap();
+            testMap2.MapStringString.Add(capitalLetterI, "content_"+capitalLetterI);
+            testMap2.MapStringString.Add(smallLetterI, "value_"+smallLetterI);
+            testMap2.MapStringString.Add(smallLetterDotlessI, "value_"+smallLetterDotlessI);
+
+            var bytes2 = SerializeTestMap(testMap2, true);
+            var parsedBytes2 = TestMap.Parser.ParseFrom(bytes2);
+            var parsedBytes1 = TestMap.Parser.ParseFrom(bytes1);
+            Assert.IsTrue(bytes1.SequenceEqual(bytes2));
+        }
+
+        [Test]
+        public void MapInt32Bytes_DeterministicTrue_ThenBytesIdentical()
+        {
+            var testMap1 = new TestMap();
+            testMap1.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test1"));
+            testMap1.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            var bytes1 = SerializeTestMap(testMap1, true);
+
+            var testMap2 = new TestMap();
+            testMap2.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            testMap2.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test1"));
+            var bytes2 = SerializeTestMap(testMap2, true);
+
+            Assert.IsTrue(bytes1.SequenceEqual(bytes2));
+        }
+
+        [Test]
+        public void MapInt32Bytes_DeterministicFalse_ThenBytesDifferent()
+        {
+            var testMap1 = new TestMap();
+            testMap1.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test1"));
+            testMap1.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            var bytes1 = SerializeTestMap(testMap1, false);
+
+            var testMap2 = new TestMap();
+            testMap2.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            testMap2.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test1"));
+            var bytes2 = SerializeTestMap(testMap2, false);
+
+            Assert.IsFalse(bytes1.SequenceEqual(bytes2));
+        }
+
+        private byte[] SerializeTestMap(TestMap testMap, bool deterministic)
+        {
+            using var memoryStream = new MemoryStream();
+            var codedOutputStream = new CodedOutputStream(memoryStream);
+            codedOutputStream.Deterministic = deterministic;
+
+            testMap.WriteTo(codedOutputStream);
+            codedOutputStream.Flush();
+
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            return memoryStream.ToArray();
         }
 
         [Test]
