@@ -8,10 +8,6 @@
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
-
 licenses(["notice"])
 
 exports_files(

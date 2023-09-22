@@ -1,20 +1,10 @@
 """A function to compile C/C++ code, like cc_library() but from Starlark."""
 
-# begin:google_only
-# load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
-#
-# def upb_use_cpp_toolchain():
-#     return use_cpp_toolchain()
-#
-# end:google_only
-
-# begin:github_only
 # Compatibility code for Bazel 4.x. Remove this when we drop support for Bazel 4.x.
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
 def upb_use_cpp_toolchain():
     return ["@bazel_tools//tools/cpp:toolchain_type"]
-# end:github_only
 
 def cc_library_func(ctx, name, hdrs, srcs, copts, includes, dep_ccinfos):
     """Like cc_library(), but callable from rules.

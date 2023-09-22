@@ -13,15 +13,8 @@ _stages = ["_stage0", "_stage1", ""]
 _protoc = "//:protoc"
 _upbc_base = "//upb/upbc:protoc-gen-"
 
-# begin:google_only
-# _is_google3 = True
-# _extra_proto_path = ""
-# end:google_only
-
-# begin:github_only
 _is_google3 = False
 _extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_proto_srcs))/../.. "
-# end:github_only
 
 def _upbc(generator, stage):
     return _upbc_base + generator + _stages[stage]

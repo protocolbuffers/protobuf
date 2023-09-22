@@ -35,7 +35,6 @@ cc_library(
     deps = ["//upb:port"],
 )
 
-# begin:github_only
 filegroup(
     name = "source_files",
     srcs = glob(
@@ -50,4 +49,3 @@ filegroup(
         "//upb/python/dist:__pkg__",
     ]
 )
-# end:github_only

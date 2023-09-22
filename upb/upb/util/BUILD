@@ -4,10 +4,6 @@ load(
     "upb_proto_reflection_library",
 )
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
-
 licenses(["notice"])
 
 # Def to Proto
@@ -75,19 +71,6 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
-
-# begin:google_only
-# cc_test(
-#     name = "def_to_proto_fuzz_test",
-#     srcs = ["def_to_proto_fuzz_test.cc"],
-#     tags = ["clang_only"],
-#     deps = [
-#         ":def_to_proto_test_lib",
-#         "//testing/fuzzing:fuzztest",
-#         "@com_google_googletest//:gtest_main",
-#     ],
-# )
-# end:google_only
 
 # Required fields
 
@@ -164,7 +147,6 @@ cc_test(
     ],
 )
 
-# begin:github_only
 filegroup(
     name = "source_files",
     srcs = [
@@ -177,4 +159,3 @@ filegroup(
     ],
     visibility = ["//upb/python/dist:__pkg__"],
 )
-# end:github_only

@@ -7,10 +7,6 @@
 
 load("@rules_python//python:defs.bzl", "py_binary")
 
-# begin:google_only
-# load("@rules_cc//cc:defs.bzl", "cc_proto_library")
-# end:google_only
-
 load(
     "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
@@ -23,10 +19,6 @@ load(
     "proto_library",
     "tmpl_cc_binary",
 )
-
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
 
 licenses(["notice"])
 

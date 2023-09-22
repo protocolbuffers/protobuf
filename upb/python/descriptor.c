@@ -660,13 +660,6 @@ static PyGetSetDef PyUpb_Descriptor_Getters[] = {
      "Containing type"},
     {"is_extendable", PyUpb_Descriptor_GetIsExtendable, NULL},
     {"has_options", PyUpb_Descriptor_GetHasOptions, NULL, "Has Options"},
-    // begin:github_only
-    {"syntax", &PyUpb_Descriptor_GetSyntax, NULL, "Syntax"},
-    // end:github_only
-    // begin:google_only
-//     // TODO Use this to open-source syntax deprecation.
-//     {"deprecated_syntax", &PyUpb_Descriptor_GetSyntax, NULL, "Syntax"},
-    // end:google_only
     {NULL}};
 
 static PyMethodDef PyUpb_Descriptor_Methods[] = {
@@ -1355,14 +1348,6 @@ static PyGetSetDef PyUpb_FileDescriptor_Getters[] = {
     {"public_dependencies", PyUpb_FileDescriptor_GetPublicDependencies, NULL,
      "Dependencies"},
     {"has_options", PyUpb_FileDescriptor_GetHasOptions, NULL, "Has Options"},
-    // begin:github_only
-    {"syntax", PyUpb_FileDescriptor_GetSyntax, (setter)NULL, "Syntax"},
-    // end:github_only
-    // begin:google_only
-//     // TODO Use this to open-source syntax deprecation.
-//     {"deprecated_syntax", PyUpb_FileDescriptor_GetSyntax, (setter)NULL,
-//      "Syntax"},
-    // end:google_only
     {NULL},
 };
 

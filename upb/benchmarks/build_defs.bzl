@@ -5,16 +5,8 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-# begin:google_only
-# load("@rules_cc//cc:defs.bzl", _cc_proto_library = "cc_proto_library")
-#
-# _is_google3 = True
-# end:google_only
-
-# begin:github_only
 _cc_proto_library = native.cc_proto_library
 _is_google3 = False
-# end:github_only
 
 def proto_library(**kwargs):
     if _is_google3:

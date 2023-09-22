@@ -10,7 +10,6 @@
 _DEFAULT_CPPOPTS = []
 _DEFAULT_COPTS = []
 
-# begin:github_only
 _DEFAULT_CPPOPTS.extend([
     "-Wextra",
     # "-Wshorten-64-to-32",  # not in GCC (and my Kokoro images doesn't have Clang)
@@ -26,7 +25,6 @@ _DEFAULT_COPTS.extend([
     #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80635
     #"-Wno-maybe-uninitialized",
 ])
-# end:github_only
 
 UPB_DEFAULT_CPPOPTS = select({
     "//upb:windows": [],

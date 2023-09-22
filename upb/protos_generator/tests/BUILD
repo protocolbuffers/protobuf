@@ -22,10 +22,6 @@ load(
     "cc_proto_library",
 )
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
-
 licenses(["notice"])
 
 proto_library(
@@ -101,31 +97,11 @@ cc_proto_library(
     deps = [":test_model_proto"],
 )
 
-# begin:google_only
-# proto_library(
-#     name = "legacy_name_proto",
-#     srcs = [
-#         "legacy-name.proto",
-#     ],
-# )
-#
-# upb_cc_proto_library(
-#     name = "legacy_name_test_proto",
-#     visibility = [
-#         "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
-#     ],
-#     deps = [":legacy_name_proto"],
-# )
-# end:google_only
-
 cc_test(
     name = "test_generated_cc_code",
     srcs = ["test_generated.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
-        # begin:google_only
-#         ":legacy_name_test_proto",
-        # end:google_only
         ":no_package_upb_cc_proto",
         ":test_model_upb_cc_proto",
         ":test_model_upb_proto",

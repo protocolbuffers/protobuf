@@ -247,21 +247,9 @@ bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f) {
 
 int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f) { return f->layout_index; }
 
-// begin:google_only
-// static bool _upb_FieldDef_EnforceUtf8Option(const upb_FieldDef* f) {
-// #if defined(UPB_BOOTSTRAP_STAGE0)
-//   return true;
-// #else
-//   return UPB_DESC(FieldOptions_enforce_utf8)(f->opts);
-// #endif
-// }
-// end:google_only
-
-// begin:github_only
 static bool _upb_FieldDef_EnforceUtf8Option(const upb_FieldDef* f) {
   return true;
 }
-// end:github_only
 
 bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f) {
   if (upb_FieldDef_Type(f) != kUpb_FieldType_String) return false;

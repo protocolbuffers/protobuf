@@ -4,13 +4,7 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//upb/bazel:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")
 load("//upb/bazel:upb_proto_library_internal/copts.bzl", "UpbProtoLibraryCoptsInfo")
 
-# begin:github_only
 _is_google3 = False
-# end:github_only
-
-# begin:google_only
-# _is_google3 = True
-# end:google_only
 
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:

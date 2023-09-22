@@ -6,13 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
-# begin:github_only
 load("@pip_deps//:requirements.bzl", "requirement")
-# end:github_only
-
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
 
 licenses(["notice"])
 
@@ -22,9 +16,7 @@ pyproto_test_wrapper(name = "descriptor_pool_test")
 
 pyproto_test_wrapper(name = "descriptor_test")
 
-# begin:github_only
 pyproto_test_wrapper(name = "generator_test")
-# end:github_only
 
 pyproto_test_wrapper(name = "json_format_test")
 
@@ -32,7 +24,6 @@ pyproto_test_wrapper(name = "keywords_test")
 
 pyproto_test_wrapper(name = "message_factory_test")
 
-# begin:github_only
 # This target has different dependencies and fails when using the wrapper
 # TODO: Move this to using pyproto_test_wrapper
 py_test(
@@ -49,11 +40,6 @@ py_test(
       "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
-# end:github_only
-
-# begin:google_only
-# pyproto_test_wrapper(name = "numpy_test")
-# end:google_only
 
 pyproto_test_wrapper(name = "proto_builder_test")
 

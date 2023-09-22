@@ -10,16 +10,11 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
-# begin:github_only
 load("@rules_pkg//:mappings.bzl", "pkg_files")
-# end:github_only
 
 licenses(["notice"])
 
 package(
-    # begin:google_only
-#     default_applicable_licenses = ["//upb:license"],
-    # end:google_only
     default_visibility = ["//upb/python/dist:__pkg__"],
 )
 
@@ -158,21 +153,12 @@ selects.config_setting_group(
     ],
 )
 
-# begin:github_only
 _message_target_compatible_with = {
    "@platforms//os:windows": ["@platforms//:incompatible"],
    "@system_python//:none": ["@platforms//:incompatible"],
    "@system_python//:unsupported": ["@platforms//:incompatible"],
    "//conditions:default": [],
 }
-
-# end:github_only
-# begin:google_only
-# _message_target_compatible_with = {
-#     "@platforms//os:windows": ["@platforms//:incompatible"],
-#     "//conditions:default": [],
-# }
-# end:google_only
 
 filegroup(
     name = "message_srcs",
@@ -199,9 +185,6 @@ filegroup(
         "unknown_fields.c",
         "unknown_fields.h",
     ],
-    # begin:google_only
-#     compatible_with = ["//buildenv/target:non_prod"],
-    # end:google_only
 )
 
 py_extension(

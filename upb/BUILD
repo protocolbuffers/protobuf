@@ -17,26 +17,10 @@ load(
     "bootstrap_upb_proto_library",
 )
 
-# begin:google_only
-# load("//tools/build_defs/kotlin/native:rules.bzl", "kt_native_interop_hint")
-# load("//tools/build_defs/license:license.bzl", "license")
-# end:google_only
-
-# begin:github_only
 load(
     "//upb/bazel:amalgamation.bzl",
     "upb_amalgamation",
 )
-# end:github_only
-
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-#
-# license(
-#     name = "license",
-#     package_name = "upb",
-# )
-# end:google_only
 
 licenses(["notice"])
 
@@ -425,15 +409,6 @@ alias(
     visibility = ["//upb:friends"],
 )
 
-# begin:google_only
-# alias(
-#     name = "mini_table_compat",
-#     actual = "//upb/upb/mini_table:compat",
-#     compatible_with = ["//buildenv/target:non_prod"],
-#     visibility = ["//upb:friends"],
-# )
-# end:google_only
-
 alias(
     name = "mini_table_internal",
     actual = "//upb/upb/mini_table:internal",
@@ -527,8 +502,6 @@ cc_binary(
 )
 
 # Amalgamation #################################################################
-
-# begin:github_only
 
 upb_amalgamation(
     name = "gen_amalgamation",
@@ -710,42 +683,3 @@ filegroup(
         "//upb/python/dist:__pkg__",
     ]
 )
-# end:github_only
-
-# begin:google_only
-#
-# py_binary(
-#     name = "update_check_runs",
-#     srcs = ["update_check_runs.py"],
-#     main = "update_check_runs.py",
-#     deps = [
-#         "//third_party/py/absl:app",
-#         "//third_party/py/absl/flags",
-#     ],
-# )
-#
-# kt_native_interop_hint(
-#     name = "upb_kotlin_native_hint",
-#     compatible_with = ["//buildenv/target:non_prod"],
-#     headers_to_exclude = glob([
-#         "**/*.hpp",
-#     ]),
-#     kotlin_package = "upb",
-#     no_string_conversion = ["_upb_MiniTable_Build"],
-#     strict_enums = [
-#         "upb_CType",
-#         "upb_DecodeStatus",
-#         "upb_EncodeStatus",
-#         "upb_FieldType",
-#         "upb_FindUnknown_Status",
-#         "upb_GetExtension_Status",
-#         "upb_GetExtensionAsBytes_Status",
-#         "upb_Label",
-#         "upb_MapInsertStatus",
-#         "upb_UnknownToMessage_Status",
-#         "upb_WireType",
-#     ],
-#     visibility = ["//upb:__subpackages__"],
-# )
-#
-# end:google_only

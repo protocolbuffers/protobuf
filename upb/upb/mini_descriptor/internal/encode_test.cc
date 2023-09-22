@@ -23,10 +23,6 @@
 #include "upb/upb/mini_table/enum.h"
 #include "upb/upb/wire/decode.h"
 
-// begin:google_only
-// #include "testing/fuzzing/fuzztest.h"
-// end:google_only
-
 namespace protobuf = ::google::protobuf;
 
 class MiniTableTest : public testing::TestWithParam<upb_MiniTablePlatform> {};
@@ -277,21 +273,3 @@ TEST_P(MiniTableTest, Extendible) {
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(kUpb_ExtMode_Extendable, table->ext & kUpb_ExtMode_Extendable);
 }
-
-// begin:google_only
-//
-// static void BuildMiniTable(std::string_view s, bool is_32bit) {
-//   upb::Arena arena;
-//   upb::Status status;
-//   _upb_MiniTable_Build(
-//       s.data(), s.size(),
-//       is_32bit ? kUpb_MiniTablePlatform_32Bit : kUpb_MiniTablePlatform_64Bit,
-//       arena.ptr(), status.ptr());
-// }
-// FUZZ_TEST(FuzzTest, BuildMiniTable);
-//
-// TEST(FuzzTest, BuildMiniTableRegression) {
-//   BuildMiniTable("g}{v~fq{\271", false);
-// }
-//
-// end:google_only

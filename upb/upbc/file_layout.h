@@ -33,17 +33,7 @@
 
 #include <string>
 
-// begin:google_only
-// #ifndef UPB_BOOTSTRAP_STAGE0
-// #include "net/proto2/proto/descriptor.upb.h"
-// #else
-// #include "google/protobuf/descriptor.upb.h"
-// #endif
-// end:google_only
-
-// begin:github_only
 #include "google/protobuf/descriptor.upb.h"
-// end:github_only
 
 #include "absl/container/flat_hash_map.h"
 #include "upb/upb/base/status.hpp"

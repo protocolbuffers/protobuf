@@ -37,19 +37,10 @@
 #include "upb/python/python_api.h"
 #include "upb/upb/hash/int_table.h"
 
-// begin:github_only
 #define PYUPB_PROTOBUF_PUBLIC_PACKAGE "google.protobuf"
 #define PYUPB_PROTOBUF_INTERNAL_PACKAGE "google.protobuf.internal"
 #define PYUPB_DESCRIPTOR_PROTO_PACKAGE "google.protobuf"
 #define PYUPB_MODULE_NAME "google._upb._message"
-// end:github_only
-
-// begin:google_only
-// #define PYUPB_PROTOBUF_PUBLIC_PACKAGE "google3.net.proto2.python.public"
-// #define PYUPB_PROTOBUF_INTERNAL_PACKAGE "google3.net.proto2.python.internal"
-// #define PYUPB_DESCRIPTOR_PROTO_PACKAGE "proto2"
-// #define PYUPB_MODULE_NAME "google3.third_party.upb.python._message"
-// end:google_only
 
 #define PYUPB_DESCRIPTOR_MODULE "google.protobuf.descriptor_pb2"
 #define PYUPB_RETURN_OOM return PyErr_SetNone(PyExc_MemoryError), NULL

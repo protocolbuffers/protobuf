@@ -121,7 +121,6 @@ typename T::Proxy CreateMessage(::protos::Arena& arena) {
                            arena.ptr());
 }
 
-// begin:github_only
 // This type exists to work around an absl type that has not yet been
 // released.
 struct SourceLocation {
@@ -129,11 +128,6 @@ struct SourceLocation {
   absl::string_view file_name() { return "<unknown>"; }
   int line() { return 0; }
 };
-// end:github_only
-
-// begin:google_only
-// using SourceLocation = absl::SourceLocation;
-// end:google_only
 
 absl::Status MessageAllocationError(
     SourceLocation loc = SourceLocation::current());
