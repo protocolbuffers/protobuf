@@ -37,7 +37,7 @@
 #include <variant>
 #include <vector>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "upb/upb/wire/internal/swap.h"
 #include "upb/upb/wire/types.h"
 

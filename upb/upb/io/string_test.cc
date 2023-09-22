@@ -9,7 +9,7 @@
 
 #include <string.h>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "upb/upb/mem/arena.hpp"
 
 TEST(StringTest, Append) {

@@ -8,8 +8,8 @@
 #include <string>
 #include <string_view>
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/upb/base/status.hpp"
 #include "upb/upb/json/decode.h"

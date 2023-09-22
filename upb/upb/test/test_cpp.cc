@@ -16,7 +16,7 @@
 
 #include "google/protobuf/timestamp.upb.h"
 #include "google/protobuf/timestamp.upbdefs.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "upb/upb/json/decode.h"
 #include "upb/upb/json/encode.h"
 #include "upb/upb/reflection/def.h"

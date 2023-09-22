@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
 #include "upb/upb/hash/int_table.h"
 #include "upb/upb/hash/str_table.h"

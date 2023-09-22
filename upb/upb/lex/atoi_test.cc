@@ -7,7 +7,7 @@
 
 #include "upb/upb/lex/atoi.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
 
 TEST(AtoiTest, Uint64) {

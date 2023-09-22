@@ -13,7 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/upb/base/status.h"

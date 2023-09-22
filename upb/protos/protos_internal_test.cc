@@ -30,8 +30,8 @@
 
 #include "upb/protos/protos_internal.h"
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "upb/protos_generator/tests/test_model.upb.h"
 #include "upb/protos_generator/tests/test_model.upb.proto.h"
 #include "upb/upb/mem/arena.h"

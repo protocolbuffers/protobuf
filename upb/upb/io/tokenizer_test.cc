@@ -7,7 +7,7 @@
 
 #include "upb/upb/io/tokenizer.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
 #include "upb/upb/io/chunked_input_stream.h"
@@ -18,7 +18,8 @@
 // Must be last.
 #include "upb/upb/port/def.inc"
 
-namespace proto2 {
+namespace google {
+namespace protobuf {
 namespace io {
 namespace {
 
@@ -34,10 +35,10 @@ static bool StringEquals(const char* a, const char* b) {
 // Data-Driven Test Infrastructure
 
 // TODO:  This is copied from coded_stream_unittest.  This is
-//   temporary until these features are integrated into gUnit itself.
+//   temporary until these features are integrated into gTest itself.
 
 // TEST_1D and TEST_2D are macros I'd eventually like to see added to
-// gUnit.  These macros can be used to declare tests which should be
+// gTest.  These macros can be used to declare tests which should be
 // run multiple times, once for each item in some input array.  TEST_1D
 // tests all cases in a single input array.  TEST_2D tests all
 // combinations of cases from two arrays.  The arrays must be statically
@@ -1230,4 +1231,5 @@ TEST(TokenizerHandlesUnicode, NonBMPCodes) {
 
 }  // namespace
 }  // namespace io
-}  // namespace proto2
+}  // namespace protobuf
+}  // namespace google

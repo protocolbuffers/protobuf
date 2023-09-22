@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "upb/upb/test/test_import_empty_srcs.upb.h"
 
 TEST(Test, Reexport) {
