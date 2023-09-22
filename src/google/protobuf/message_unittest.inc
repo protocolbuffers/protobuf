@@ -70,6 +70,7 @@ using google::protobuf::io::win32::open;
 #endif
 #endif
 
+
 TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
   // TODO:  Test more helpers?  They're all two-liners so it seems
   //   like a waste of time.
@@ -742,6 +743,7 @@ TEST(MESSAGE_TEST_NAME, SupportDeepRecursionLimit) {
 inline bool IsOptimizeForCodeSize(const Descriptor* descriptor) {
   return descriptor->file()->options().optimize_for() == FileOptions::CODE_SIZE;
 }
+
 
 TEST(MESSAGE_TEST_NAME, Swap) {
   UNITTEST::NestedTestAllTypes o;
