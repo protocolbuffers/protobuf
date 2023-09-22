@@ -159,13 +159,13 @@ jobs:
           # a single wheel. As a result we can just test the oldest and newest
           # supported Python versions and assume this gives us sufficient test
           # coverage.
-          - { os: ubuntu-18, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: macos-11, python-version: "3.8", architecture: x64, type: 'binary' }
-          - { os: ubuntu-20, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: ubuntu-latest, python-version: "3.11", architecture: x64, type: 'binary' }
           - { os: macos-12, python-version: "3.11", architecture: x64, type: 'binary' }
-          - { os: ubuntu-18, python-version: "3.8", architecture: x64, type: 'source' }
+          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source' }
           - { os: macos-11, python-version: "3.8", architecture: x64, type: 'source' }
-          - { os: ubuntu-20, python-version: "3.11", architecture: x64, type: 'source' }
+          - { os: ubuntu-latest, python-version: "3.11", architecture: x64, type: 'source' }
           - { os: macos-12, python-version: "3.11", architecture: x64, type: 'source' }
 
           # Windows uses the full API up until Python 3.10, so each of these
