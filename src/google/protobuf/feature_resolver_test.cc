@@ -997,6 +997,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         field_presence: EXPLICIT
         enum_type: OPEN
         repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         [pb.test] { int_file_feature: 1 }
@@ -1008,6 +1009,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         field_presence: EXPLICIT
         enum_type: OPEN
         repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         [pb.test] { int_file_feature: 2 }

@@ -955,6 +955,18 @@ message FeatureSet {
     edition_defaults = { edition: EDITION_2023, value: "PACKED" }
   ];
 
+  enum Utf8Validation {
+    UTF8_VALIDATION_UNKNOWN = 0;
+    NONE = 1;
+    VERIFY = 2;
+  }
+  optional Utf8Validation utf8_validation = 4 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: EDITION_2023, value: "VERIFY" }
+  ];
+
   enum MessageEncoding {
     MESSAGE_ENCODING_UNKNOWN = 0;
     LENGTH_PREFIXED = 1;
@@ -980,7 +992,7 @@ message FeatureSet {
     edition_defaults = { edition: EDITION_2023, value: "ALLOW" }
   ];
 
-  reserved 4, 999;
+  reserved 999;
 
   extensions 1000;  // for Protobuf C++
   extensions 1001;  // for Protobuf Java

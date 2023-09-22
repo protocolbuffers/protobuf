@@ -1753,6 +1753,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     field_presence: EXPLICIT
                     enum_type: OPEN
                     repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
@@ -1779,6 +1780,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     field_presence: EXPLICIT
                     enum_type: OPEN
                     repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
@@ -1806,6 +1808,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     field_presence: EXPLICIT
                     enum_type: OPEN
                     repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }

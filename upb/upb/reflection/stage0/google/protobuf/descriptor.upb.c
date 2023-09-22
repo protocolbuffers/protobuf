@@ -317,7 +317,7 @@ const upb_MiniTable* google_protobuf_UninterpretedOption_NamePart_msg_init() {
 
 const upb_MiniTable* google_protobuf_FeatureSet_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$P444a44";
+  static const char* mini_descriptor = "$P444444";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -325,6 +325,7 @@ const upb_MiniTable* google_protobuf_FeatureSet_msg_init() {
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 1), google_protobuf_FeatureSet_FieldPresence_enum_init());
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 2), google_protobuf_FeatureSet_EnumType_enum_init());
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 3), google_protobuf_FeatureSet_RepeatedFieldEncoding_enum_init());
+  upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 4), google_protobuf_FeatureSet_Utf8Validation_enum_init());
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 5), google_protobuf_FeatureSet_MessageEncoding_enum_init());
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 6), google_protobuf_FeatureSet_JsonFormat_enum_init());
   return mini_table;
@@ -459,6 +460,16 @@ const upb_MiniTableEnum* google_protobuf_FeatureSet_MessageEncoding_enum_init() 
 }
 
 const upb_MiniTableEnum* google_protobuf_FeatureSet_RepeatedFieldEncoding_enum_init() {
+  static const upb_MiniTableEnum* mini_table = NULL;
+  static const char* mini_descriptor = "!)";
+  if (mini_table) return mini_table;
+  mini_table =
+      upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
+                              upb_BootstrapArena(), NULL);
+  return mini_table;
+}
+
+const upb_MiniTableEnum* google_protobuf_FeatureSet_Utf8Validation_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
   static const char* mini_descriptor = "!)";
   if (mini_table) return mini_table;
