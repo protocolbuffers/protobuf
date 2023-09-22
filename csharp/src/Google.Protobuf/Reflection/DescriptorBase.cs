@@ -8,12 +8,14 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Google.Protobuf.Reflection
 {
     /// <summary>
     /// Base class for nearly all descriptors, providing common functionality.
     /// </summary>
+    [DebuggerDisplay("Type = {GetType().Name,nq}, FullName = {FullName}")]
     public abstract class DescriptorBase : IDescriptor
     {
         internal DescriptorBase(FileDescriptor file, string fullName, int index)

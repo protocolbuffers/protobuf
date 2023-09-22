@@ -8,8 +8,10 @@
 #endregion
 
 using Google.Protobuf.Collections;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -38,6 +40,8 @@ namespace Google.Protobuf.Reflection
     /// all the set values are merged together.
     /// </para>
     /// </remarks>
+    [DebuggerDisplay("Count = {DebugCount}")]
+    [DebuggerTypeProxy(typeof(CustomOptionsDebugView))]
     public sealed class CustomOptions
     {
         private const string UnreferencedCodeMessage = "CustomOptions is incompatible with trimming.";
@@ -289,6 +293,21 @@ namespace Google.Protobuf.Reflection
 
             value = default;
             return false;
+        }
+
+        private int DebugCount => values?.Count ?? 0;
+
+        private sealed class CustomOptionsDebugView
+        {
+            private readonly CustomOptions customOptions;
+
+            public CustomOptionsDebugView(CustomOptions customOptions)
+            {
+                this.customOptions = customOptions;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public KeyValuePair<int, IExtensionValue>[] Items => customOptions.values?.ToArray() ?? new KeyValuePair<int, IExtensionValue>[0];
         }
     }
 }

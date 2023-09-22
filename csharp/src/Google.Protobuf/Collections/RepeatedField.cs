@@ -10,7 +10,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Security;
 
 namespace Google.Protobuf.Collections
@@ -24,6 +26,8 @@ namespace Google.Protobuf.Collections
     /// supported by Protocol Buffers but nor does it guarantee that all operations will work in such cases.
     /// </remarks>
     /// <typeparam name="T">The element type of the repeated field.</typeparam>
+    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(RepeatedField<>.RepeatedFieldDebugView))]
     public sealed class RepeatedField<T> : IList<T>, IList, IDeepCloneable<RepeatedField<T>>, IEquatable<RepeatedField<T>>, IReadOnlyList<T>
     {
         private static readonly EqualityComparer<T> EqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<T>();
@@ -642,5 +646,18 @@ namespace Google.Protobuf.Collections
             }
         }
         #endregion        
+
+        private sealed class RepeatedFieldDebugView
+        {
+            private readonly RepeatedField<T> list;
+
+            public RepeatedFieldDebugView(RepeatedField<T> list)
+            {
+                this.list = list;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public T[] Items => list.ToArray();
+        }
     }
 }
