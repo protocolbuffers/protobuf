@@ -298,6 +298,7 @@ namespace Google.Protobuf.Reflection {
   /// The protocol compiler can output a FileDescriptorSet containing the .proto
   /// files it parses.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -479,6 +480,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a complete .proto file.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1208,6 +1210,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a message type.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DescriptorProto : pb::IMessage<DescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1672,6 +1675,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class ExtensionRange : pb::IMessage<ExtensionRange>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -1987,6 +1991,7 @@ namespace Google.Protobuf.Reflection {
       /// fields or extension ranges in the same message. Reserved ranges may
       /// not overlap.
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class ReservedRange : pb::IMessage<ReservedRange>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -2256,6 +2261,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ExtensionRangeOptions : pb::IExtendableMessage<ExtensionRangeOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2635,6 +2641,7 @@ namespace Google.Protobuf.Reflection {
         [pbr::OriginalName("UNVERIFIED")] Unverified = 1,
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class Declaration : pb::IMessage<Declaration>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -3076,6 +3083,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a field within a message.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3916,6 +3924,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a oneof.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4168,6 +4177,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes an enum type.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4515,6 +4525,7 @@ namespace Google.Protobuf.Reflection {
       /// is inclusive such that it can appropriately represent the entire int32
       /// domain.
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class EnumReservedRange : pb::IMessage<EnumReservedRange>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -4787,6 +4798,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a value within an enum.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -5093,6 +5105,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a service.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -5371,6 +5384,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a method of a service.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -5838,6 +5852,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FileOptions : pb::IExtendableMessage<FileOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -7268,6 +7283,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MessageOptions : pb::IExtendableMessage<MessageOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -7874,6 +7890,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FieldOptions : pb::IExtendableMessage<FieldOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -8816,6 +8833,7 @@ namespace Google.Protobuf.Reflection {
         [pbr::OriginalName("TARGET_TYPE_METHOD")] TargetTypeMethod = 9,
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class EditionDefault : pb::IMessage<EditionDefault>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -9135,6 +9153,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneofOptions : pb::IExtendableMessage<OneofOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -9410,6 +9429,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class EnumOptions : pb::IExtendableMessage<EnumOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -9864,6 +9884,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class EnumValueOptions : pb::IExtendableMessage<EnumValueOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -10256,6 +10277,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ServiceOptions : pb::IExtendableMessage<ServiceOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -10591,6 +10613,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MethodOptions : pb::IExtendableMessage<MethodOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -11011,6 +11034,7 @@ namespace Google.Protobuf.Reflection {
   /// or produced by Descriptor::CopyTo()) will never have UninterpretedOptions
   /// in them.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -11514,6 +11538,7 @@ namespace Google.Protobuf.Reflection {
       /// E.g.,{ ["foo", false], ["bar.baz", true], ["moo", false] } represents
       /// "foo.(bar.baz).moo".
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NamePart : pb::IMessage<NamePart>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -11784,6 +11809,7 @@ namespace Google.Protobuf.Reflection {
   /// be designed and implemented to handle this, hopefully before we ever hit a
   /// conflict here.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FeatureSet : pb::IExtendableMessage<FeatureSet>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -12288,6 +12314,7 @@ namespace Google.Protobuf.Reflection {
   /// feature resolution. The resolution with this object becomes a simple search
   /// for the closest matching edition, followed by proto merges.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FeatureSetDefaults : pb::IMessage<FeatureSetDefaults>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -12694,6 +12721,7 @@ namespace Google.Protobuf.Reflection {
       /// the defaults at the closest matching edition ordered at or before it should
       /// be used.  This field must be in strict ascending order by edition.
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class FeatureSetEditionDefault : pb::IMessage<FeatureSetEditionDefault>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -13009,6 +13037,7 @@ namespace Google.Protobuf.Reflection {
   /// Encapsulates information about the original source file from which a
   /// FileDescriptorProto was generated.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -13235,6 +13264,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class Location : pb::IMessage<Location>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -13662,6 +13692,7 @@ namespace Google.Protobuf.Reflection {
   /// file. A GeneratedCodeInfo message is associated with only one generated
   /// source file, but may contain references to different source .proto files.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class GeneratedCodeInfo : pb::IMessage<GeneratedCodeInfo>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -13847,6 +13878,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class Annotation : pb::IMessage<Annotation>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
