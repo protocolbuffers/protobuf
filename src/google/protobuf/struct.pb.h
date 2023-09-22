@@ -498,7 +498,6 @@ class Struct_FieldsEntry_DoNotUse final
   explicit PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse(
       ::google::protobuf::internal::ConstantInitialized);
   explicit Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena);
-  void MergeFrom(const Struct_FieldsEntry_DoNotUse& other);
   static const Struct_FieldsEntry_DoNotUse* internal_default_instance() {
     return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(
         &_Struct_FieldsEntry_DoNotUse_default_instance_);
@@ -507,7 +506,6 @@ class Struct_FieldsEntry_DoNotUse final
     return ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::google::protobuf::internal::WireFormatLite::PARSE, "google.protobuf.Struct.FieldsEntry.key");
  }
   static bool ValidateValue(void*) { return true; }
-  using ::google::protobuf::Message::MergeFrom;
   ::google::protobuf::Metadata GetMetadata() const final;
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
