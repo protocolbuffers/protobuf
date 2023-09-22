@@ -96,6 +96,7 @@ cc_library(
         "//upb:base_internal",
         "//upb:mem",
         "//upb:mini_table",
+        "//upb:mini_table_compat",
         "//upb:port",
     ],
 )
@@ -124,6 +125,7 @@ cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
+        "//upb:mini_table_compat",
         "//upb:port",
     ],
 )

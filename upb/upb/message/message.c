@@ -13,6 +13,7 @@
 #include "upb/upb/message/internal/message.h"
 
 // Must be last.
+#include "upb/upb/mini_table/compat.h"
 #include "upb/upb/port/def.inc"
 
 const float kUpb_FltInfinity = INFINITY;
@@ -125,11 +126,22 @@ const upb_Message_Extension* _upb_Message_Getext(
    * becomes an issue due to messages with lots of extensions, we can introduce
    * a table of some sort. */
   for (size_t i = 0; i < n; i++) {
-    if (ext[i].ext == e) {
-      return &ext[i];
+    const upb_Message_Extension* candidate = &ext[i];
+    if (candidate->ext == e) {
+      return candidate;
+    }
+    /* For cross-language access we can't compare upb_Message_Extension*
+     * pointers directly since mini descriptors are decoded independently.
+     * To provide safety, we ensure the extension mini tables are identical
+     * in DEBUG builds.
+     */
+    if (candidate->ext->field.number == e->field.number) {
+#ifndef NDEBUG
+      UPB_ASSERT(upb_MiniTable_Equals(ext[i].ext->sub.submsg, e->sub.submsg));
+#endif
+      return candidate;
     }
   }
-
   return NULL;
 }
 
