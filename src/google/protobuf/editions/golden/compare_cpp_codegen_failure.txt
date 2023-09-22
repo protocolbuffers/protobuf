@@ -36,14 +36,6 @@
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h
 @@ @@
- #include "third_party/protobuf/generated_message_util.h"
- #include "third_party/protobuf/metadata_lite.h"
- #include "third_party/protobuf/message_lite.h"
-+#include "third_party/protobuf/cpp_features.pb.h"
- // @@protoc_insertion_point(includes)
- 
- // Must be included last.
-@@ @@
    enum : int {
      kInt32FieldFieldNumber = 1,
    };

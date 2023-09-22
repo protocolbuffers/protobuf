@@ -78,17 +78,6 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
   };
 }
 
-static bool IsStringMapType(const FieldDescriptor& field) {
-  if (!field.is_map()) return false;
-  for (int i = 0; i < field.message_type()->field_count(); ++i) {
-    if (field.message_type()->field(i)->type() ==
-        FieldDescriptor::TYPE_STRING) {
-      return true;
-    }
-  }
-  return false;
-}
-
 }  // namespace
 
 bool CppGenerator::Generate(const FileDescriptor* file,
@@ -352,14 +341,6 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
           absl::StrCat("Field ", field.full_name(),
                        " has a closed enum type with implicit presence."));
     }
-    if (resolved_features.GetExtension(::pb::cpp).utf8_validation() ==
-        pb::CppFeatures::UTF8_VALIDATION_UNKNOWN) {
-      status = absl::FailedPreconditionError(absl::StrCat(
-          "Field ", field.full_name(),
-          " has an unknown value for the utf8_validation feature. ",
-          resolved_features.DebugString(),
-          "\nRawFeatures: ", unresolved_features));
-    }
 
     if (field.containing_type() == nullptr ||
         !field.containing_type()->options().map_entry()) {
@@ -373,14 +354,6 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
             absl::StrCat("Field ", field.full_name(),
                          " specifies the legacy_closed_enum feature but has "
                          "non-enum type."));
-      }
-      if (field.type() != FieldDescriptor::TYPE_STRING &&
-          !IsStringMapType(field) &&
-          unresolved_features.has_utf8_validation()) {
-        status = absl::FailedPreconditionError(
-            absl::StrCat("Field ", field.full_name(),
-                         " specifies the utf8_validation feature but is not of "
-                         "string type."));
       }
     }
 

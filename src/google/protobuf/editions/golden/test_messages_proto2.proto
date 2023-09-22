@@ -16,9 +16,9 @@ edition = "2023";
 import "google/protobuf/cpp_features.proto";
 option features.enum_type = CLOSED;
 option features.repeated_field_encoding = EXPANDED;
+option features.utf8_validation = NONE;
 option features.json_format = LEGACY_BEST_EFFORT;
 option features.(pb.cpp).legacy_closed_enum = true;
-option features.(pb.cpp).utf8_validation = VERIFY_DLOG;
 
 package protobuf_test_messages.proto2;
 
