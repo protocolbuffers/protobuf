@@ -13,6 +13,7 @@
 #include <cstddef>
 
 #include "google/protobuf/message.h"
+#include "google/protobuf/repeated_field.h"
 
 namespace google {
 namespace protobuf {

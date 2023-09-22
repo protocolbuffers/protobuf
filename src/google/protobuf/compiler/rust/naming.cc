@@ -81,6 +81,8 @@ std::string Thunk(Context<T> field, absl::string_view op) {
     // upb oneof case function is x_case compared to has/set/clear which are in
     // the other order e.g. clear_x.
     format = "_$1_$0";
+  } else if (field.is_upb() && op == "mutable_upb_array") {
+    format = "_$1_$0";
   } else {
     format = "_$0_$1";
   }

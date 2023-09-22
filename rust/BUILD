@@ -50,6 +50,7 @@ PROTOBUF_SHARED = [
     "optional.rs",
     "primitive.rs",
     "proxied.rs",
+    "repeated.rs",
     "shared.rs",
     "string.rs",
     "vtable.rs",
@@ -90,8 +91,15 @@ rust_library(
     name = "protobuf_cpp",
     srcs = PROTOBUF_SHARED + ["cpp.rs"],
     crate_root = "shared.rs",
+    proc_macro_deps = [
+        # TODO: make this work for bazel
+        "//third_party/rust/paste/v1:paste",
+    ],
     rustc_flags = ["--cfg=cpp_kernel"],
-    deps = [":utf8"],
+    deps = [
+        ":utf8",
+        "//rust/cpp_kernel:cpp_api",
+    ],
 )
 
 rust_test(

@@ -7,7 +7,8 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::{Private, RawArena, RawMessage};
+use crate::__internal::{Private, RawArena, RawMessage, RawRepeatedField};
+use paste::paste;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
 use std::fmt;
@@ -182,6 +183,79 @@ pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
     val
 }
 
+// RepeatedField impls delegate out to `extern "C"` functions exposed by
+// `cpp_api.h` and store either a RepeatedField* or a RepeatedPtrField*
+// depending on the type.
+// TODO: how does this work for RepeatedPtrField<Msg>? should probably be
+// vtable/thunk generation. but maybe since it's always pointers, we can just
+// use RepeatedPtrField<void*> and cast in rust through RawMessage. this more
+// closely matches how upb works.
+#[derive(Clone, Copy)]
+pub struct RepeatedField<'msg, T: ?Sized> {
+    raw: RawRepeatedField,
+    _phantom: PhantomData<&'msg mut T>,
+}
+
+// CPP runtime-specific arguments for initializing a RepeatedField.
+pub struct RepeatedFieldInner<'msg> {
+    pub raw: RawRepeatedField,
+    pub _phantom: PhantomData<&'msg ()>,
+}
+
+impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
+    pub fn from_inner(inner: RepeatedFieldInner) -> Self {
+        Self { raw: inner.raw, _phantom: PhantomData }
+    }
+}
+impl<'msg> RepeatedField<'msg, i32> {}
+
+macro_rules! impl_repeated_primitives {
+    ($($rs_type:ty),*) => {
+        $(
+            paste! {
+                impl <'msg> RepeatedField<'msg, $rs_type> {
+                    #[allow(dead_code)]
+                    fn new() -> Self {
+                        Self { raw: unsafe { [< RepeatedField _ $rs_type _ new >]() }, _phantom: PhantomData }
+                    }
+                    pub fn push(&mut self, val: $rs_type) {
+                        unsafe { [< RepeatedField _ $rs_type _ add >](self.raw, val)}
+                    }
+                    pub fn len(&self) -> usize {
+                        unsafe { [< RepeatedField _ $rs_type _ size >](self.raw) }
+                    }
+                    pub fn is_empty(&self) -> bool {
+                        self.len() == 0
+                    }
+                    pub fn get(&self, index: usize) -> Option<$rs_type> {
+                        if index >= self.len() {
+                            return None;
+                        }
+                        Some(unsafe { [< RepeatedField _ $rs_type _ get >](self.raw, index) })
+                    }
+                    pub fn set(&mut self, index: usize, val: $rs_type) {
+                        if index >= self.len() {
+                            return;
+                        }
+                        unsafe { [< RepeatedField _ $rs_type _ set >](self.raw, index, val) }
+                    }
+
+                }
+                extern "C" {
+                    #[allow(dead_code)]
+                    fn [< RepeatedField _ $rs_type _ new >]() -> RawRepeatedField;
+                    fn [< RepeatedField _ $rs_type _ size >](raw: RawRepeatedField) -> usize;
+                    fn [< RepeatedField _ $rs_type _ add >](raw: RawRepeatedField, val: $rs_type);
+                    fn [< RepeatedField _ $rs_type _ get >](raw: RawRepeatedField, index: usize) -> $rs_type;
+                    fn [< RepeatedField _ $rs_type _ set >](raw: RawRepeatedField, index: usize, val: $rs_type);
+                }
+            }
+        )*
+    };
+}
+
+impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool);
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -200,5 +274,28 @@ mod tests {
         let (ptr, len) = allocate_byte_array(b"Hello world");
         let serialized_data = SerializedData { data: NonNull::new(ptr).unwrap(), len: len };
         assert_eq!(&*serialized_data, b"Hello world");
+    }
+
+    #[test]
+    fn repeated_field() {
+        let mut r = RepeatedField::<i32>::new();
+        assert_eq!(r.len(), 0);
+        r.push(32);
+        assert_eq!(r.get(0), Some(32));
+
+        let mut r = RepeatedField::<u32>::new();
+        assert_eq!(r.len(), 0);
+        r.push(32);
+        assert_eq!(r.get(0), Some(32));
+
+        let mut r = RepeatedField::<f64>::new();
+        assert_eq!(r.len(), 0);
+        r.push(0.1234);
+        assert_eq!(r.get(0), Some(0.1234));
+
+        let mut r = RepeatedField::<bool>::new();
+        assert_eq!(r.len(), 0);
+        r.push(true);
+        assert_eq!(r.get(0), Some(true));
     }
 }
