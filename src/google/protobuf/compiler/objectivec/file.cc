@@ -19,6 +19,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
@@ -526,7 +527,26 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       const FileDescriptor* dep = file_->dependency(i);
       if (file_imports.contains(dep)) {
         import_writer.AddFile(file_->dependency(i), header_extension);
+        file_imports.erase(dep);
       }
+    }
+    if (!file_imports.empty()) {
+      // If there are still things in file_imports, then there were files that
+      // were public imports into the non public imports, add those files are
+      // needed to define the types also.
+      //
+      // Sort them (to get stable generation), and add them to the extra files
+      // to imports.
+
+      // This can really only happen in minimal imports mode, every other case,
+      // it shouldn't happen.
+      ABSL_CHECK(generation_options_.generate_minimal_imports);
+      std::vector<const FileDescriptor*> still_needed(file_imports.begin(),
+                                                      file_imports.end());
+      std::sort(still_needed.begin(), still_needed.end(),
+                FileDescriptorsOrderedByName());
+      extra_files_to_import.insert(extra_files_to_import.end(),
+                                   still_needed.begin(), still_needed.end());
     }
   }
 

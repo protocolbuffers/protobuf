@@ -98,7 +98,13 @@ class FileGenerator {
       const std::vector<const FileDescriptor*>& deps_with_extensions) const;
   void EmitFileDescription(io::Printer* p) const;
 
-  enum class PublicDepsHandling : int { kAsUsed, kForceInclude, kExclude };
+  enum class PublicDepsHandling : int {
+    kAsUsed,        // No special handing, require references to import then.
+    kForceInclude,  // Always treat them as needed.
+    kExclude,       // Never treat them as needed.
+  };
+  // `public_deps_handling` controls how the public imports in this file should
+  // be handed.
   void DetermineNeededDeps(absl::flat_hash_set<const FileDescriptor*>* deps,
                            PublicDepsHandling public_deps_handling) const;
 
