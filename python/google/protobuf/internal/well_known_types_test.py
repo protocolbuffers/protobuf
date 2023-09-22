@@ -279,6 +279,22 @@ class TimeUtilTest(TimeUtilTestBase):
         aware_datetime)
     self.assertEqual(tzinfo, aware_datetime.tzinfo)
 
+  def testFromDatetimeWithDifferentUtcOffsetThanEpoch(self):
+    # Converting the (timezone-aware) UTC epoch into this timezone and adding
+    # this offset gets a result that's off by one hour. The offset needs to be
+    # added to the epoch, _then_ converted, since the result of adding a
+    # timedelta to a datetime has the same fixed UTC offset as the datetime.
+    tz = zoneinfo.ZoneInfo('America/Los_Angeles')
+    # This timezone has a different UTC offset
+    dt = datetime.datetime(2016, 6, 26, tzinfo=tz)
+    epoch_dt = datetime.datetime.fromtimestamp(
+        0, tz=datetime.timezone.utc
+    ).astimezone(tz)
+    self.assertNotEqual(dt.utcoffset(), epoch_dt.utcoffset())
+    ts = timestamp_pb2.Timestamp()
+    ts.FromDatetime(dt)
+    self.assertEqual(dt, ts.ToDatetime(tzinfo=dt.tzinfo))
+
   def testTimedeltaConversion(self):
     message = duration_pb2.Duration()
     message.FromNanoseconds(1999999999)

@@ -67,11 +67,6 @@ class Any(object):
     return '/' in self.type_url and self.TypeName() == descriptor.full_name
 
 
-_EPOCH_DATETIME_NAIVE = datetime.datetime.utcfromtimestamp(0)
-_EPOCH_DATETIME_AWARE = datetime.datetime.fromtimestamp(
-    0, tz=datetime.timezone.utc)
-
-
 class Timestamp(object):
   """Class for Timestamp message type."""
 
@@ -223,13 +218,18 @@ class Timestamp(object):
 
       Otherwise, returns a timezone-aware datetime in the input timezone.
     """
-    delta = datetime.timedelta(
-        seconds=self.seconds,
-        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND))
+    # This could be made more efficient if there were methods for constructing
+    # a datetime from an integer timestamp, the inverse of something like
+    # time.time_ns(). For now, we can construct the datetime from the timestamp
+    # in seconds, then set the microseconds separately to avoid an unnecessary
+    # loss of precision (beyond truncating nanosecond precision to micro). This
+    # ensures that datetimes round-trip correctly.
     if tzinfo is None:
-      return _EPOCH_DATETIME_NAIVE + delta
+      dt = datetime.datetime.utcfromtimestamp(self.seconds)
     else:
-      return _EPOCH_DATETIME_AWARE.astimezone(tzinfo) + delta
+      dt = datetime.datetime.fromtimestamp(self.seconds, tzinfo)
+    micros = _RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND)
+    return dt.replace(microsecond=micros)
 
   def FromDatetime(self, dt):
     """Converts datetime to Timestamp.
