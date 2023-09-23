@@ -425,14 +425,11 @@ alias(
     visibility = ["//upb:friends"],
 )
 
-# begin:google_only
-# alias(
-#     name = "mini_table_compat",
-#     actual = "//upb/upb/mini_table:compat",
-#     compatible_with = ["//buildenv/target:non_prod"],
-#     visibility = ["//upb:friends"],
-# )
-# end:google_only
+alias(
+    name = "mini_table_compat",
+    actual = "//upb/upb/mini_table:compat",
+    visibility = ["//upb:friends"],
+)
 
 alias(
     name = "mini_table_internal",
@@ -559,6 +556,7 @@ upb_amalgamation(
         ":mini_descriptor",
         ":mini_descriptor_internal",
         ":mini_table",
+        ":mini_table_compat",
         ":mini_table_internal",
         ":port",
         ":reflection",

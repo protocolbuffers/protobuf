@@ -26,8 +26,15 @@ extern "C" {
 bool upb_MiniTable_Compatible(const upb_MiniTable* src,
                               const upb_MiniTable* dst);
 
+typedef enum {
+  kUpb_MiniTableEquals_NotEqual,
+  kUpb_MiniTableEquals_Equal,
+  kUpb_MiniTableEquals_OutOfMemory,
+} upb_MiniTableEquals_Status;
+
 // Checks equality of mini tables originating from different language runtimes.
-bool upb_MiniTable_Equals(const upb_MiniTable* src, const upb_MiniTable* dst);
+upb_MiniTableEquals_Status upb_MiniTable_Equals(const upb_MiniTable* src,
+                                                const upb_MiniTable* dst);
 
 #ifdef __cplusplus
 } /* extern "C" */

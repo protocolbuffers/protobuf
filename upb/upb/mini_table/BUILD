@@ -10,25 +10,24 @@ load(
     "UPB_DEFAULT_COPTS",
 )
 
-# begin:google_only
-# cc_library(
-#     name = "compat",
-#     srcs = [
-#         "compat.c",
-#     ],
-#     hdrs = [
-#         "compat.h",
-#     ],
-#     compatible_with = ["//buildenv/target:non_prod"],
-#     copts = UPB_DEFAULT_COPTS,
-#     visibility = ["//upb:__pkg__"],
-#     deps = [
-#         ":mini_table",
-#         "//upb:base",
-#         "//upb:port",
-#     ],
-# )
-# end:google_only
+cc_library(
+    name = "compat",
+    srcs = [
+        "compat.c",
+    ],
+    hdrs = [
+        "compat.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":mini_table",
+        "//upb:base",
+        "//upb:hash",
+        "//upb:mem",
+        "//upb:port",
+    ],
+)
 
 cc_library(
     name = "mini_table",
@@ -75,6 +74,18 @@ cc_library(
         "//upb:base",
         "//upb:message_types",
         "//upb:port",
+    ],
+)
+
+cc_test(
+    name = "compat_test",
+    srcs = ["compat_test.cc"],
+    deps = [
+        "//upb:mini_table_compat",
+        "//upb/upb/test:test_messages_proto2_upb_proto",
+        "//upb/upb/test:test_messages_proto3_upb_proto",
+        "//upb/upb/test:test_upb_proto",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
