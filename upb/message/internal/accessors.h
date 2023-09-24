@@ -8,8 +8,8 @@
 #ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 #define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 
-#include "upb/collections/internal/map.h"
 #include "upb/message/internal/extension.h"
+#include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
 #include "upb/mini_table/internal/field.h"
 

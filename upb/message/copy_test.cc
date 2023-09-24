@@ -22,10 +22,10 @@
 #include <gtest/gtest.h>
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "upb/base/string_view.h"
-#include "upb/collections/map.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/encode.h"

@@ -17,8 +17,8 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
-#include "upb/collections/array.h"
-#include "upb/collections/map.h"
+#include "upb/message/array.h"
+#include "upb/message/map.h"
 #include "upb/message/types.h"
 #include "upb/port/vsnprintf_compat.h"
 #include "upb/reflection/def.h"

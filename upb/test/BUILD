@@ -169,8 +169,8 @@ cc_test(
         ":test_upb_proto",
         "@com_google_googletest//:gtest_main",
         "//upb:base",
-        "//upb:collections",
         "//upb:mem",
+        "//upb:message",
         "//upb:port",
     ],
 )

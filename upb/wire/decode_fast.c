@@ -17,7 +17,8 @@
 
 #include "upb/wire/decode_fast.h"
 
-#include "upb/collections/internal/array.h"
+#include "upb/message/array.h"
+#include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
 #include "upb/wire/internal/decode.h"
 

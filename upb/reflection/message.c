@@ -9,9 +9,9 @@
 
 #include <string.h>
 
-#include "upb/collections/map.h"
 #include "upb/hash/common.h"
 #include "upb/message/accessors.h"
+#include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
 #include "upb/reflection/def.h"

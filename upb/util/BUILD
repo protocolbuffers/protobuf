@@ -98,7 +98,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:collections",
+        "//upb:message",
         "//upb:message_types",
         "//upb:port",
         "//upb:reflection",

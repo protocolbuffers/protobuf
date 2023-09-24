@@ -81,14 +81,13 @@ package_group(
     packages = ["//..."],
 )
 
-# This is a stub library to keep gRPC happy. Do not use it for any reason,
-# use the smaller targets below instead.
 cc_library(
     name = "upb",
     hdrs = [
         "upb.hpp",
     ],
     copts = UPB_DEFAULT_COPTS,
+    deprecation = "use upb:base and/or upb:mem instead",
     visibility = ["//visibility:public"],
     deps = [
         ":base",
@@ -112,8 +111,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":base",
-        ":collections",
-        ":collections_internal",
         ":mem",
         ":message",
         ":message_accessors",
@@ -200,8 +197,8 @@ bootstrap_cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":base",
-        ":collections",
         ":mem",
+        ":message",
         ":message_types",
         ":message_value",
         ":port",
@@ -269,7 +266,6 @@ bootstrap_cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":base",
-        ":collections",
         ":hash",
         ":mem",
         ":message",
@@ -301,18 +297,7 @@ alias(
 alias(
     name = "collections",
     actual = "//upb/collections",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "collections_internal",
-    actual = "//upb/collections:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "collections_split64",
-    actual = "//upb/collections:split64",
+    deprecation = "use upb:message instead",
     visibility = ["//visibility:public"],
 )
 
@@ -516,8 +501,6 @@ cc_binary(
     linkstatic = 1,
     visibility = ["//visibility:public"],
     deps = [
-        ":collections",
-        ":collections_split64",
         ":mem",
         ":message",
         ":message_accessors",
@@ -541,8 +524,6 @@ upb_amalgamation(
     libs = [
         ":base",
         ":base_internal",
-        ":collections",
-        ":collections_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
@@ -591,8 +572,6 @@ upb_amalgamation(
     libs = [
         ":base",
         ":base_internal",
-        ":collections",
-        ":collections_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto_reflection",
         ":descriptor_upb_proto",
@@ -644,8 +623,6 @@ upb_amalgamation(
     libs = [
         ":base",
         ":base_internal",
-        ":collections",
-        ":collections_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",

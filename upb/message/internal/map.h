@@ -34,9 +34,9 @@
 #define UPB_COLLECTIONS_INTERNAL_MAP_H_
 
 #include "upb/base/string_view.h"
-#include "upb/collections/map.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
+#include "upb/message/map.h"
 
 // Must be last.
 #include "upb/port/def.inc"

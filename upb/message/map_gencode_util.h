@@ -30,10 +30,10 @@
 
 // These functions are only used by generated code.
 
-#ifndef UPB_COLLECTIONS_MAP_GENCODE_UTIL_H_
-#define UPB_COLLECTIONS_MAP_GENCODE_UTIL_H_
+#ifndef UPB_MESSAGE_MAP_GENCODE_UTIL_H_
+#define UPB_MESSAGE_MAP_GENCODE_UTIL_H_
 
-#include "upb/collections/internal/map.h"
+#include "upb/message/internal/map.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -78,4 +78,4 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_COLLECTIONS_MAP_GENCODE_UTIL_H_ */
+#endif /* UPB_MESSAGE_MAP_GENCODE_UTIL_H_ */

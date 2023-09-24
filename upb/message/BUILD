@@ -27,8 +27,6 @@ cc_library(
         ":internal",
         ":message",
         "//upb:base",
-        "//upb:collections",
-        "//upb:collections_internal",
         "//upb:eps_copy_input_stream",
         "//upb:mini_table",
         "//upb:mini_table_internal",
@@ -47,7 +45,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
-        "//upb:collections_internal",
         "//upb:mini_table_internal",
         "//upb:port",
     ],
@@ -69,7 +66,6 @@ cc_library(
         ":message",
         ":types",
         "//upb:base",
-        "//upb:collections",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:mini_table_internal",
@@ -80,20 +76,32 @@ cc_library(
 cc_library(
     name = "internal",
     srcs = [
+        "array.c",
+        "array.h",
+        "map.c",
+        "map.h",
+        "map_sorter.c",
         "message.c",
         "message.h",
     ],
     hdrs = [
+        "internal/array.h",
         "internal/extension.h",
+        "internal/map.h",
+        "internal/map_entry.h",
+        "internal/map_sorter.h",
         "internal/message.h",
+        "map_gencode_util.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":internal_types",
         ":types",
+        ":value",
         "//upb:base",
         "//upb:base_internal",
+        "//upb:hash",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
@@ -114,6 +122,8 @@ cc_library(
 cc_library(
     name = "message",
     hdrs = [
+        "array.h",
+        "map.h",
         "message.h",
     ],
     copts = UPB_DEFAULT_COPTS,
@@ -121,6 +131,7 @@ cc_library(
     deps = [
         ":internal",
         ":types",
+        ":value",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
@@ -145,8 +156,6 @@ cc_library(
         ":message",
         ":types",
         "//upb:base",
-        "//upb:collections",
-        "//upb:collections_internal",
         "//upb:eps_copy_input_stream",
         "//upb:mem",
         "//upb:message_tagged_ptr",
@@ -163,11 +172,13 @@ cc_library(
     name = "split64",
     hdrs = [
         "accessors_split64.h",
+        "array_split64.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":accessors",
+        ":message",
         "//upb:port",
     ],
 )
@@ -231,10 +242,10 @@ cc_test(
     srcs = ["accessors_test.cc"],
     deps = [
         ":accessors",
+        ":message",
         "//:protobuf",
         "@com_google_googletest//:gtest_main",
         "//upb:base",
-        "//upb:collections",
         "//upb:mini_descriptor",
         "//upb:mini_descriptor_internal",
         "//upb:mini_table",
@@ -244,6 +255,17 @@ cc_test(
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
+    ],
+)
+
+cc_test(
+    name = "array_test",
+    srcs = ["array_test.cc"],
+    deps = [
+        ":message",
+        "@com_google_googletest//:gtest_main",
+        "//upb:base",
+        "//upb:mem",
     ],
 )
 
@@ -258,7 +280,6 @@ cc_test(
         "//:protobuf",
         "@com_google_googletest//:gtest_main",
         "//upb:base",
-        "//upb:collections",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:wire",
@@ -270,16 +291,27 @@ cc_test(
 )
 
 cc_test(
+    name = "map_test",
+    srcs = ["map_test.cc"],
+    deps = [
+        ":message",
+        "@com_google_googletest//:gtest_main",
+        "//upb:base",
+        "//upb:mem",
+    ],
+)
+
+cc_test(
     name = "promote_test",
     srcs = ["promote_test.cc"],
     deps = [
         ":accessors",
         ":copy",
+        ":message",
         ":promote",
         "//:protobuf",
         "@com_google_googletest//:gtest_main",
         "//upb:base",
-        "//upb:collections",
         "//upb:mem",
         "//upb:mini_descriptor_internal",
         "//upb:mini_table",

@@ -38,9 +38,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "upb/collections/map.h"
 #include "upb/lex/atoi.h"
 #include "upb/lex/unicode.h"
+#include "upb/message/map.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/encode.h"
 
