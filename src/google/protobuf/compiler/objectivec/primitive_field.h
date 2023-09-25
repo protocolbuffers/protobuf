@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_PRIMITIVE_FIELD_H__
 
 #include "google/protobuf/compiler/objectivec/field.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -17,10 +18,13 @@ namespace compiler {
 namespace objectivec {
 
 class PrimitiveFieldGenerator : public SingleFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  friend FieldGenerator* FieldGenerator::Make(
+      const FieldDescriptor* field,
+      const GenerationOptions& generation_options);
 
  protected:
-  explicit PrimitiveFieldGenerator(const FieldDescriptor* descriptor);
+  PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+                          const GenerationOptions& generation_options);
   ~PrimitiveFieldGenerator() override = default;
 
   PrimitiveFieldGenerator(const PrimitiveFieldGenerator&) = delete;
@@ -33,10 +37,13 @@ class PrimitiveFieldGenerator : public SingleFieldGenerator {
 };
 
 class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  friend FieldGenerator* FieldGenerator::Make(
+      const FieldDescriptor* field,
+      const GenerationOptions& generation_options);
 
  protected:
-  explicit PrimitiveObjFieldGenerator(const FieldDescriptor* descriptor);
+  PrimitiveObjFieldGenerator(const FieldDescriptor* descriptor,
+                             const GenerationOptions& generation_options);
   ~PrimitiveObjFieldGenerator() override = default;
 
   PrimitiveObjFieldGenerator(const PrimitiveObjFieldGenerator&) = delete;
@@ -45,10 +52,13 @@ class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {
 };
 
 class RepeatedPrimitiveFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  friend FieldGenerator* FieldGenerator::Make(
+      const FieldDescriptor* field,
+      const GenerationOptions& generation_options);
 
  protected:
-  explicit RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor);
+  RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+                                  const GenerationOptions& generation_options);
   ~RepeatedPrimitiveFieldGenerator() override = default;
 
   RepeatedPrimitiveFieldGenerator(const RepeatedPrimitiveFieldGenerator&) =

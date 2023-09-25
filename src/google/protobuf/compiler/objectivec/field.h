@@ -17,6 +17,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -27,7 +28,8 @@ namespace objectivec {
 
 class FieldGenerator {
  public:
-  static FieldGenerator* Make(const FieldDescriptor* field);
+  static FieldGenerator* Make(const FieldDescriptor* field,
+                              const GenerationOptions& generation_options);
 
   virtual ~FieldGenerator() = default;
 
@@ -80,7 +82,8 @@ class FieldGenerator {
   std::string raw_field_name() const { return variable("raw_field_name"); }
 
  protected:
-  explicit FieldGenerator(const FieldDescriptor* descriptor);
+  FieldGenerator(const FieldDescriptor* descriptor,
+                 const GenerationOptions& generation_options);
 
   bool WantsHasProperty() const;
 
@@ -103,7 +106,8 @@ class SingleFieldGenerator : public FieldGenerator {
   bool RuntimeUsesHasBit() const override;
 
  protected:
-  explicit SingleFieldGenerator(const FieldDescriptor* descriptor);
+  SingleFieldGenerator(const FieldDescriptor* descriptor,
+                       const GenerationOptions& generation_options);
 };
 
 // Subclass with common support for when the field ends up as an ObjC Object.
@@ -118,7 +122,8 @@ class ObjCObjFieldGenerator : public SingleFieldGenerator {
   void GeneratePropertyDeclaration(io::Printer* printer) const override;
 
  protected:
-  explicit ObjCObjFieldGenerator(const FieldDescriptor* descriptor);
+  ObjCObjFieldGenerator(const FieldDescriptor* descriptor,
+                        const GenerationOptions& generation_options);
 };
 
 class RepeatedFieldGenerator : public ObjCObjFieldGenerator {
@@ -138,13 +143,15 @@ class RepeatedFieldGenerator : public ObjCObjFieldGenerator {
   virtual void EmitArrayComment(io::Printer* printer) const;
 
  protected:
-  explicit RepeatedFieldGenerator(const FieldDescriptor* descriptor);
+  RepeatedFieldGenerator(const FieldDescriptor* descriptor,
+                         const GenerationOptions& generation_options);
 };
 
 // Convenience class which constructs FieldGenerators for a Descriptor.
 class FieldGeneratorMap {
  public:
-  explicit FieldGeneratorMap(const Descriptor* descriptor);
+  FieldGeneratorMap(const Descriptor* descriptor,
+                    const GenerationOptions& generation_options);
   ~FieldGeneratorMap() = default;
 
   FieldGeneratorMap(const FieldGeneratorMap&) = delete;

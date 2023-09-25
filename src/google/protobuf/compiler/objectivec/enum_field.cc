@@ -16,6 +16,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -50,8 +51,10 @@ void SetEnumVariables(
 }
 }  // namespace
 
-EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor)
-    : SingleFieldGenerator(descriptor) {
+EnumFieldGenerator::EnumFieldGenerator(
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : SingleFieldGenerator(descriptor, generation_options) {
   SetEnumVariables(descriptor, &variables_);
 }
 
@@ -125,8 +128,9 @@ void EnumFieldGenerator::DetermineNeededFiles(
 }
 
 RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : RepeatedFieldGenerator(descriptor) {
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : RepeatedFieldGenerator(descriptor, generation_options) {
   SetEnumVariables(descriptor, &variables_);
 }
 

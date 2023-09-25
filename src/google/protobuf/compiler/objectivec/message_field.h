@@ -13,6 +13,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -21,10 +22,13 @@ namespace compiler {
 namespace objectivec {
 
 class MessageFieldGenerator : public ObjCObjFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  friend FieldGenerator* FieldGenerator::Make(
+      const FieldDescriptor* field,
+      const GenerationOptions& generation_options);
 
  protected:
-  explicit MessageFieldGenerator(const FieldDescriptor* descriptor);
+  MessageFieldGenerator(const FieldDescriptor* descriptor,
+                        const GenerationOptions& generation_options);
   ~MessageFieldGenerator() override = default;
 
   MessageFieldGenerator(const MessageFieldGenerator&) = delete;
@@ -40,10 +44,13 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
 };
 
 class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  friend FieldGenerator* FieldGenerator::Make(
+      const FieldDescriptor* field,
+      const GenerationOptions& generation_options);
 
  protected:
-  explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor);
+  RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
+                                const GenerationOptions& generation_options);
   ~RepeatedMessageFieldGenerator() override = default;
 
   RepeatedMessageFieldGenerator(const RepeatedMessageFieldGenerator&) = delete;
