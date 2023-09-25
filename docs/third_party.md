@@ -124,6 +124,7 @@ These are projects we know about implementing Protocol Buffers for other program
 *   Typescript: https://github.com/pbkit/pbkit
 *   Vala: https://launchpad.net/protobuf-vala
 *   Visual Basic: https://code.google.com/p/protobuf-net/
+*   Zig: https://github.com/Arwalk/zig-protobuf
 
 ## RPC Implementations
 
