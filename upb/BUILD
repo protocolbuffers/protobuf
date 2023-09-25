@@ -74,10 +74,17 @@ upb_proto_library_copts(
     visibility = ["//visibility:public"],
 )
 
-# Please update copy.bara.sky target = ":friends" if
-# you make changes to this list.
+# Please update //src/google/protobuf/copybara/upb.copy.bara.sky target
+# ":friends" if you make changes to this list.
 package_group(
     name = "friends",
+    packages = ["//..."],
+)
+
+# Please update //src/google/protobuf/copybara/upb.copy.bara.sky target
+# ":grpc_only_hack" if you make changes to this list.
+package_group(
+    name = "grpc_only_hack",
     packages = ["//..."],
 )
 
