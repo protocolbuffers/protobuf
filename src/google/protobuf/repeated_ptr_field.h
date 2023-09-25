@@ -296,18 +296,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
   }
 
-  template <typename TypeHandler>
-  void MergeFrom(const RepeatedPtrFieldBase& other) {
-    // To avoid unnecessary code duplication and reduce binary size, we use a
-    // layered approach to implementing MergeFrom(). The toplevel method is
-    // templated, so we get a small thunk per concrete message type in the
-    // binary. This calls a shared implementation with most of the logic,
-    // passing a function pointer to another type-specific piece of code that
-    // calls the object-allocate and merge handlers.
-    ABSL_DCHECK_NE(&other, this);
-    if (other.current_size_ == 0) return;
-    using H = CommonHandler<TypeHandler>;
-    MergeFromInternal(other, &RepeatedPtrFieldBase::MergeFromInnerLoop<H>);
+  // Message creating functor: used in MergeFrom<T>()
+  template <typename T>
+  static MessageLite* CopyMessage(Arena* arena, const MessageLite& src) {
+    return Arena::CreateMaybeMessage<T>(arena, static_cast<const T&>(src));
+  }
+
+  // Appends all message values from `from` to this instance.
+  template <typename T>
+  void MergeFrom(const RepeatedPtrFieldBase& from) {
+    static_assert(std::is_base_of<MessageLite, T>::value, "");
+    MergeFromConcreteMessage(from, CopyMessage<T>);
   }
 
   inline void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
@@ -348,7 +347,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void CopyFrom(const RepeatedPtrFieldBase& other) {
     if (&other == this) return;
     RepeatedPtrFieldBase::Clear<TypeHandler>();
-    RepeatedPtrFieldBase::MergeFrom<TypeHandler>(other);
+    if (other.empty()) return;
+    RepeatedPtrFieldBase::MergeFrom<typename TypeHandler::Type>(other);
   }
 
   void CloseGap(int start, int num);
@@ -629,9 +629,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // temporary on |other|'s arena so that messages are copied twice rather
     // than three times.
     RepeatedPtrFieldBase temp(other->GetOwningArena());
-    temp.MergeFrom<TypeHandler>(*this);
-    this->Clear<TypeHandler>();
-    this->MergeFrom<TypeHandler>(*other);
+    if (!this->empty()) {
+      temp.MergeFrom<typename TypeHandler::Type>(*this);
+    }
+    this->CopyFrom<TypeHandler>(*other);
     other->InternalSwap(&temp);
     temp.Destroy<TypeHandler>();  // Frees rep_ if `other` had no arena.
   }
@@ -682,6 +683,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // subclass.
   friend class google::protobuf::Reflection;
   friend class internal::SwapFieldHelper;
+
+  // Concrete Arena enabled copy function used to copy messages instances.
+  // This follows the `Arena::CreateMaybeMessage` signature so that the compiler
+  // can have the inlined call into the out of line copy function(s) simply pass
+  // the address of `Arena::CreateMaybeMessage` 'as is'.
+  using CopyFn = MessageLite* (*)(Arena*, const MessageLite&);
 
   struct Rep {
     int allocated_size;
@@ -763,52 +770,24 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ExchangeCurrentSize(0);
   }
 
-  // Non-templated inner function to avoid code duplication. Takes a function
-  // pointer to the type-specific (templated) inner allocate/merge loop.
-  PROTOBUF_NOINLINE void MergeFromInternal(
-      const RepeatedPtrFieldBase& other,
-      void (RepeatedPtrFieldBase::*inner_loop)(void**, void* const*, int,
-                                               int)) {
-    // Note: wrapper has already guaranteed that `other_size` > 0.
-    int other_size = other.current_size_;
-    Reserve(current_size_ + other_size);
-    void* const* other_elements = other.elements();
-    void** new_elements = elements() + current_size_;
-    int allocated_elems = allocated_size() - current_size_;
-    (this->*inner_loop)(new_elements, other_elements, other_size,
-                        allocated_elems);
-    ExchangeCurrentSize(current_size_ + other_size);
-    if (allocated_size() < current_size_) {
-      rep()->allocated_size = current_size_;
-    }
-  }
+  // Merges messages from `from` into available, cleared messages sitting in the
+  // range `[size(), allocated_size())`. Returns the number of message merged
+  // which is `ClearedCount(), from.size())`.
+  // Note that this function does explicitly NOT update `current_size_`.
+  // This function is out of line as it should be the slow path: this scenario
+  // only happens when a caller constructs and fills a repeated field, then
+  // shrinks it, and then merges additional messages into it.
+  int MergeIntoClearedMessages(const RepeatedPtrFieldBase& from);
 
-  // Merges other_elems to our_elems.
-  template <typename TypeHandler>
-  PROTOBUF_NOINLINE void MergeFromInnerLoop(void** our_elems,
-                                            void* const* other_elems,
-                                            int length, int already_allocated) {
-    if (already_allocated < length) {
-      Arena* arena = GetOwningArena();
-      auto* elem_prototype = cast<TypeHandler>(other_elems[0]);
-      for (int i = already_allocated; i < length; i++) {
-        // Allocate a new empty element that we'll merge into below
-        our_elems[i] = TypeHandler::NewFromPrototype(elem_prototype, arena);
-      }
-    }
-    // Main loop that does the actual merging
-    for (int i = 0; i < length; i++) {
-      // Already allocated: use existing element.
-      auto* other_elem = cast<TypeHandler>(other_elems[i]);
-      auto* new_elem = cast<TypeHandler>(our_elems[i]);
-      TypeHandler::Merge(*other_elem, new_elem);
-    }
-  }
+  // Appends all messages from `from` to this instance, using the
+  // provided `copy_fn` copy function to copy existing messages.
+  void MergeFromConcreteMessage(const RepeatedPtrFieldBase& from,
+                                CopyFn copy_fn);
 
   // Extends capacity by at least |extend_amount|.
   //
   // Pre-condition: |extend_amount| must be > 0.
-  void InternalExtend(int extend_amount);
+  void** InternalExtend(int extend_amount);
 
   // Ensures that capacity is big enough to store one more allocated element.
   inline void MaybeExtend() {
@@ -819,6 +798,16 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     } else {
       ABSL_DCHECK_NE(allocated_size(), Capacity());
     }
+  }
+
+  // Ensures that capacity is at least `n` elements.
+  // Returns a pointer to the element directly beyond the last element.
+  inline void** InternalReserve(int n) {
+    if (n <= total_size_) {
+      void** elements = using_sso() ? &tagged_rep_or_elem_ : rep()->elements;
+      return elements + current_size_;
+    }
+    return InternalExtend(n - total_size_);
   }
 
   // Internal helper for Add: adds "obj" as the next element in the
@@ -842,6 +831,25 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   int total_size_;
   Arena* arena_;
 };
+
+// Appends all message values from `from` to this instance using the abstract
+// message interface. This overload is used in places like reflection and
+// other locations where the underlying type is unavailable
+template <>
+void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
+    const RepeatedPtrFieldBase& from);
+
+template <>
+inline void RepeatedPtrFieldBase::MergeFrom<Message>(
+    const RepeatedPtrFieldBase& from) {
+  return MergeFrom<MessageLite>(from);
+}
+
+// Appends all `std::string` values from `from` to this instance.
+template <>
+void RepeatedPtrFieldBase::MergeFrom<std::string>(
+    const RepeatedPtrFieldBase& from);
+
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message);
 
@@ -1579,7 +1587,8 @@ inline void RepeatedPtrField<Element>::Clear() {
 template <typename Element>
 inline void RepeatedPtrField<Element>::MergeFrom(
     const RepeatedPtrField& other) {
-  RepeatedPtrFieldBase::MergeFrom<TypeHandler>(other);
+  if (other.empty()) return;
+  RepeatedPtrFieldBase::MergeFrom<Element>(other);
 }
 
 template <typename Element>
