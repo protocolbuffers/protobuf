@@ -72,7 +72,6 @@ function transform_field(field)
     sub(/\<optional\s*/, "", field_def)
     sub(/\<packed = true\>/, "features.repeated_field_encoding = PACKED", existing_options)
     existing_options = strip_option("packed = false", existing_options)
-    existing_options = strip_option("enforce_utf8 = (true|false)", existing_options)
     if (match(field_def, /^\s*required\>/)) {
       sub(/\<required\s*/, "", field_def)
       options[++num_options] = "features.field_presence = LEGACY_REQUIRED"
@@ -80,10 +79,8 @@ function transform_field(field)
   }
 
   if(syntax == 3) {
-    sub(/\<enforce_utf8 = false\>/, "features.utf8_validation = UNVERIFIED", existing_options)
     sub(/\<packed = false\>/, "features.repeated_field_encoding = EXPANDED", existing_options)
     existing_options = strip_option("packed = true", existing_options)
-    existing_options = strip_option("enforce_utf8 = (true|false)", existing_options)
     if (match($0, /\<optional\>/)) {
       sub(/\<optional /, "", field_def)
       options[++num_options] = "features.field_presence = EXPLICIT"

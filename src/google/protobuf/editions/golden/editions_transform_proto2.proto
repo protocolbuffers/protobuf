@@ -59,17 +59,16 @@ extend ParentMessage.ExtendedMessage {
 
 message TestMessage {
   string string_field = 1;
-  string string_field_utf = 2;
-  string string_field_noutf = 3;
-  string options_strip_beginning = 4 [  ctype = STRING_PIECE, default = "hello world abcd" ];
-  string options_strip_middle = 5 [ ctype = STRING_PIECE,  default = "hello world abcd" ];
-  string options_strip_end = 6 [ ctype = STRING_PIECE, default = "hello world abcd" ];
 
   map<string, string> string_map_field = 7;
 
   repeated int32 int_field = 8;
   repeated int32 int_field_packed = 9 [features.repeated_field_encoding = PACKED];
   repeated int32 int_field_unpacked = 10;
+
+  repeated int32 options_strip_beginning = 4 [  /* inline comment*/ debug_redact = true, deprecated = false ];
+  repeated int32 options_strip_middle = 5 [debug_redact = true,  deprecated = false];
+  repeated int32 options_strip_end = 6 [debug_redact = true, deprecated = false];
 
   message OptionalGroup {
     int32 a = 17;
