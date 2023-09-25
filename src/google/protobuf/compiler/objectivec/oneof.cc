@@ -12,6 +12,7 @@
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -20,7 +21,8 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-OneofGenerator::OneofGenerator(const OneofDescriptor* descriptor)
+OneofGenerator::OneofGenerator(const OneofDescriptor* descriptor,
+                               const GenerationOptions& generation_options)
     : descriptor_(descriptor) {
   variables_["enum_name"] = OneofEnumName(descriptor_);
   variables_["name"] = OneofName(descriptor_);

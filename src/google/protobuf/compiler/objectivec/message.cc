@@ -25,6 +25,7 @@
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/oneof.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -192,9 +193,11 @@ const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
 }  // namespace
 
 MessageGenerator::MessageGenerator(const std::string& file_description_name,
-                                   const Descriptor* descriptor)
+                                   const Descriptor* descriptor,
+                                   const GenerationOptions& generation_options)
     : file_description_name_(file_description_name),
       descriptor_(descriptor),
+      generation_options_(generation_options),
       field_generators_(descriptor),
       class_name_(ClassName(descriptor_)),
       deprecated_attribute_(
@@ -202,8 +205,8 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
   ABSL_DCHECK(!descriptor->options().map_entry())
       << "error: MessageGenerator create of a map<>!";
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
-    oneof_generators_.push_back(
-        std::make_unique<OneofGenerator>(descriptor_->real_oneof_decl(i)));
+    oneof_generators_.push_back(std::make_unique<OneofGenerator>(
+        descriptor_->real_oneof_decl(i), generation_options));
   }
 
   // Assign has bits:
@@ -233,13 +236,13 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
 }
 
 void MessageGenerator::AddExtensionGenerators(
-    std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
-    bool strip_custom_options) {
+    std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators) {
   for (int i = 0; i < descriptor_->extension_count(); i++) {
     const FieldDescriptor* extension = descriptor_->extension(i);
-    if (!strip_custom_options || !ExtensionIsCustomOption(extension)) {
-      extension_generators->push_back(
-          std::make_unique<ExtensionGenerator>(class_name_, extension));
+    if (!generation_options_.strip_custom_options ||
+        !ExtensionIsCustomOption(extension)) {
+      extension_generators->push_back(std::make_unique<ExtensionGenerator>(
+          class_name_, extension, generation_options_));
       extension_generators_.push_back(extension_generators->back().get());
     }
   }

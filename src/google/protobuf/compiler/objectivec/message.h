@@ -17,6 +17,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/oneof.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -30,15 +31,15 @@ class ExtensionGenerator;
 class MessageGenerator {
  public:
   MessageGenerator(const std::string& file_description_name,
-                   const Descriptor* descriptor);
+                   const Descriptor* descriptor,
+                   const GenerationOptions& generation_options);
   ~MessageGenerator() = default;
 
   MessageGenerator(const MessageGenerator&) = delete;
   MessageGenerator& operator=(const MessageGenerator&) = delete;
 
   void AddExtensionGenerators(
-      std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
-      bool strip_custom_options);
+      std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators);
 
   void GenerateMessageHeader(io::Printer* printer) const;
   void GenerateSource(io::Printer* printer) const;
@@ -55,6 +56,7 @@ class MessageGenerator {
  private:
   const std::string file_description_name_;
   const Descriptor* descriptor_;
+  const GenerationOptions& generation_options_;
   FieldGeneratorMap field_generators_;
   const std::string class_name_;
   const std::string deprecated_attribute_;
