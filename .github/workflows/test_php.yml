@@ -42,7 +42,6 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
       - name: Setup composer
         uses: protocolbuffers/protobuf-ci/composer-setup@v2
         with:
@@ -81,7 +80,6 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
 
       - name: Cross compile protoc for i386
         id: cross-compile
@@ -161,7 +159,6 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
 
       - name: Uninstall problematic libgd
         run: brew uninstall --ignore-dependencies gd
