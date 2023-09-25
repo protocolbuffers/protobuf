@@ -29,14 +29,17 @@ namespace {
 
 void SetEnumVariables(
     const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options,
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
   const std::string type = EnumName(descriptor->enum_type());
   const std::string enum_desc_func = absl::StrCat(type, "_EnumDescriptor");
   (*variables)["enum_name"] = type;
-  // For non repeated fields, if it was defined in a different file, the
-  // property decls need to use "enum NAME" rather than just "NAME" to support
-  // the forward declaration of the enums.
-  if (!descriptor->is_repeated() &&
+  // When using fwd decls, for non repeated fields, if it was defined in a
+  // different file, the property decls need to use "enum NAME" rather than just
+  // "NAME" to support the forward declaration of the enums.
+  if (generation_options.headers_use_forward_declarations &&
+      !descriptor->is_repeated() &&
+      !IsProtobufLibraryBundledProtoFile(descriptor->enum_type()->file()) &&
       (descriptor->file() != descriptor->enum_type()->file())) {
     (*variables)["property_type"] = absl::StrCat("enum ", type, " ");
   }
@@ -55,7 +58,7 @@ EnumFieldGenerator::EnumFieldGenerator(
     const FieldDescriptor* descriptor,
     const GenerationOptions& generation_options)
     : SingleFieldGenerator(descriptor, generation_options) {
-  SetEnumVariables(descriptor, &variables_);
+  SetEnumVariables(descriptor, generation_options, &variables_);
 }
 
 void EnumFieldGenerator::GenerateCFunctionDeclarations(
@@ -131,7 +134,7 @@ RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
     const FieldDescriptor* descriptor,
     const GenerationOptions& generation_options)
     : RepeatedFieldGenerator(descriptor, generation_options) {
-  SetEnumVariables(descriptor, &variables_);
+  SetEnumVariables(descriptor, generation_options, &variables_);
 }
 
 void RepeatedEnumFieldGenerator::EmitArrayComment(io::Printer* printer) const {
