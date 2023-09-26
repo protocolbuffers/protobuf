@@ -143,33 +143,6 @@ class MapEntry : public Message {
 
   std::string GetTypeName() const final { return ""; }
 
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
-    while (!ctx->Done(&ptr)) {
-      uint32_t tag;
-      ptr = ReadTag(ptr, &tag);
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      if (tag == kKeyTag) {
-        auto* key = mutable_key();
-        ptr = KeyTypeHandler::Read(ptr, ctx, key);
-        if (!Derived::ValidateKey(key)) return nullptr;
-      } else if (tag == kValueTag) {
-        auto* value = mutable_value();
-        ptr = ValueTypeHandler::Read(ptr, ctx, value);
-        if (!Derived::ValidateValue(value)) return nullptr;
-      } else {
-        if (tag == 0 || WireFormatLite::GetTagWireType(tag) ==
-                            WireFormatLite::WIRETYPE_END_GROUP) {
-          ctx->SetLastTag(tag);
-          return ptr;
-        }
-        ptr = UnknownFieldParse(tag, static_cast<std::string*>(nullptr), ptr,
-                                ctx);
-      }
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-    }
-    return ptr;
-  }
-
   size_t ByteSizeLong() const final {
     size_t size = 0;
     size += kTagSize + static_cast<size_t>(KeyTypeHandler::ByteSize(key()));

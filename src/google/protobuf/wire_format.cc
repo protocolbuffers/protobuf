@@ -1021,11 +1021,14 @@ const char* WireFormat::_InternalParseAndMergeField(
       if (ptr != nullptr && field->is_map()) {
         auto* value_field = field->message_type()->map_value();
         auto* enum_type = value_field->enum_type();
+        auto* sub_ref = sub_message->GetReflection();
         if (enum_type != nullptr &&
             !internal::cpp::HasPreservingUnknownEnumSemantics(value_field) &&
-            enum_type->FindValueByNumber(
-                sub_message->GetReflection()->GetEnumValue(
-                    *sub_message, value_field)) == nullptr) {
+            (enum_type->FindValueByNumber(
+                 sub_ref->GetEnumValue(*sub_message, value_field)) == nullptr ||
+             // or it is in the unknown field
+             (!sub_ref->HasField(*sub_message, value_field) &&
+              sub_ref->GetUnknownFields(*sub_message).field_count() != 0))) {
           reflection->MutableUnknownFields(msg)->AddLengthDelimited(
               field->number(), sub_message->SerializeAsString());
           reflection->RemoveLast(msg, field);

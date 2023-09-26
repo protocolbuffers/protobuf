@@ -69,8 +69,7 @@ class MapTypeHandler;
 template <typename Type>
 class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
  public:
-  // Enum type cannot be used for MapTypeHandler::Read. Define a type which will
-  // replace Enum with int.
+  // Enum type cannot be used. Define a type which will replace Enum with int.
   typedef typename MapWireFieldTypeTraits<WireFormatLite::TYPE_MESSAGE,
                                           Type>::MapEntryAccessorType
       MapEntryAccessorType;
@@ -84,10 +83,6 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
   // Functions used in parsing and serialization. ===================
   static inline size_t ByteSize(const MapEntryAccessorType& value);
   static inline int GetCachedSize(const MapEntryAccessorType& value);
-  static inline bool Read(io::CodedInputStream* input,
-                          MapEntryAccessorType* value);
-  static inline const char* Read(const char* ptr, ParseContext* ctx,
-                                 MapEntryAccessorType* value);
 
   static inline uint8_t* Write(int field, const MapEntryAccessorType& value,
                                uint8_t* ptr, io::EpsCopyOutputStream* stream);
@@ -119,10 +114,6 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
                                Type>::kWireType;                               \
     static inline int ByteSize(const MapEntryAccessorType& value);             \
     static inline int GetCachedSize(const MapEntryAccessorType& value);        \
-    static inline bool Read(io::CodedInputStream* input,                       \
-                            MapEntryAccessorType* value);                      \
-    static inline const char* Read(const char* begin, ParseContext* ctx,       \
-                                   MapEntryAccessorType* value);               \
     static inline uint8_t* Write(int field, const MapEntryAccessorType& value, \
                                  uint8_t* ptr,                                 \
                                  io::EpsCopyOutputStream* stream);             \
@@ -291,132 +282,6 @@ WRITE_METHOD(SFIXED32, SFixed32)
 WRITE_METHOD(BOOL, Bool)
 
 #undef WRITE_METHOD
-
-template <typename Type>
-inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Read(
-    io::CodedInputStream* input, MapEntryAccessorType* value) {
-  return WireFormatLite::ReadMessageNoVirtual(input, value);
-}
-
-template <typename Type>
-inline bool MapTypeHandler<WireFormatLite::TYPE_STRING, Type>::Read(
-    io::CodedInputStream* input, MapEntryAccessorType* value) {
-  return WireFormatLite::ReadString(input, value);
-}
-
-template <typename Type>
-inline bool MapTypeHandler<WireFormatLite::TYPE_BYTES, Type>::Read(
-    io::CodedInputStream* input, MapEntryAccessorType* value) {
-  return WireFormatLite::ReadBytes(input, value);
-}
-
-template <typename Type>
-const char* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Read(
-    const char* ptr, ParseContext* ctx, MapEntryAccessorType* value) {
-  return ctx->ParseMessage(value, ptr);
-}
-
-template <typename Type>
-const char* MapTypeHandler<WireFormatLite::TYPE_STRING, Type>::Read(
-    const char* ptr, ParseContext* ctx, MapEntryAccessorType* value) {
-  int size = ReadSize(&ptr);
-  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-  return ctx->ReadString(ptr, size, value);
-}
-
-template <typename Type>
-const char* MapTypeHandler<WireFormatLite::TYPE_BYTES, Type>::Read(
-    const char* ptr, ParseContext* ctx, MapEntryAccessorType* value) {
-  int size = ReadSize(&ptr);
-  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-  return ctx->ReadString(ptr, size, value);
-}
-
-inline const char* ReadINT64(const char* ptr, int64_t* value) {
-  return VarintParse(ptr, reinterpret_cast<uint64_t*>(value));
-}
-inline const char* ReadUINT64(const char* ptr, uint64_t* value) {
-  return VarintParse(ptr, value);
-}
-inline const char* ReadINT32(const char* ptr, int32_t* value) {
-  return VarintParse(ptr, reinterpret_cast<uint32_t*>(value));
-}
-inline const char* ReadUINT32(const char* ptr, uint32_t* value) {
-  return VarintParse(ptr, value);
-}
-inline const char* ReadSINT64(const char* ptr, int64_t* value) {
-  *value = ReadVarintZigZag64(&ptr);
-  return ptr;
-}
-inline const char* ReadSINT32(const char* ptr, int32_t* value) {
-  *value = ReadVarintZigZag32(&ptr);
-  return ptr;
-}
-template <typename E>
-inline const char* ReadENUM(const char* ptr, E* value) {
-  *value = static_cast<E>(ReadVarint32(&ptr));
-  return ptr;
-}
-inline const char* ReadBOOL(const char* ptr, bool* value) {
-  *value = static_cast<bool>(ReadVarint64(&ptr));
-  return ptr;
-}
-
-template <typename F>
-inline const char* ReadUnaligned(const char* ptr, F* value) {
-  *value = UnalignedLoad<F>(ptr);
-  return ptr + sizeof(F);
-}
-inline const char* ReadFLOAT(const char* ptr, float* value) {
-  return ReadUnaligned(ptr, value);
-}
-inline const char* ReadDOUBLE(const char* ptr, double* value) {
-  return ReadUnaligned(ptr, value);
-}
-inline const char* ReadFIXED64(const char* ptr, uint64_t* value) {
-  return ReadUnaligned(ptr, value);
-}
-inline const char* ReadFIXED32(const char* ptr, uint32_t* value) {
-  return ReadUnaligned(ptr, value);
-}
-inline const char* ReadSFIXED64(const char* ptr, int64_t* value) {
-  return ReadUnaligned(ptr, value);
-}
-inline const char* ReadSFIXED32(const char* ptr, int32_t* value) {
-  return ReadUnaligned(ptr, value);
-}
-
-#define READ_METHOD(FieldType)                                              \
-  template <typename Type>                                                  \
-  inline bool MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Read( \
-      io::CodedInputStream* input, MapEntryAccessorType* value) {           \
-    return WireFormatLite::ReadPrimitive<TypeOnMemory,                      \
-                                         WireFormatLite::TYPE_##FieldType>( \
-        input, value);                                                      \
-  }                                                                         \
-  template <typename Type>                                                  \
-  const char* MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Read( \
-      const char* begin, ParseContext* ctx, MapEntryAccessorType* value) {  \
-    (void)ctx;                                                              \
-    return Read##FieldType(begin, value);                                   \
-  }
-
-READ_METHOD(INT64)
-READ_METHOD(UINT64)
-READ_METHOD(INT32)
-READ_METHOD(UINT32)
-READ_METHOD(SINT64)
-READ_METHOD(SINT32)
-READ_METHOD(ENUM)
-READ_METHOD(DOUBLE)
-READ_METHOD(FLOAT)
-READ_METHOD(FIXED64)
-READ_METHOD(FIXED32)
-READ_METHOD(SFIXED64)
-READ_METHOD(SFIXED32)
-READ_METHOD(BOOL)
-
-#undef READ_METHOD
 
 // Definition for message handler
 
