@@ -129,7 +129,7 @@ template <typename Key, typename T>
 void TypeDefinedMapFieldBase<Key, T>::Swap(MapFieldBase* other) {
   MapFieldBase::Swap(other);
   auto* other_field = DownCast<TypeDefinedMapFieldBase*>(other);
-  map_.Swap(&other_field->map_);
+  map_.swap(other_field->map_);
 }
 
 template <typename Key, typename T>

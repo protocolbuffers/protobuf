@@ -1270,7 +1270,6 @@ TEST_F(MapImplTest, SwapArena) {
 
 TEST_F(MapImplTest, SwapFieldArenaReflection) {
   MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
-  Arena arena;
 
   {
     // Tests filled lfs and empty rhs.
@@ -1289,9 +1288,15 @@ TEST_F(MapImplTest, SwapFieldArenaReflection) {
       reflection->SwapFields(lhs, &rhs, fields);
 
       reflection_tester.ExpectClearViaReflection(*lhs);
+
+      // Add an entry to make sure it is using the right arena.
+      (*lhs->mutable_map_int32_int32())[1234] = 1234;
     }
 
     reflection_tester.ExpectMapFieldsSetViaReflection(rhs);
+
+      // Add an entry to make sure it is using the right arena.
+    (*rhs.mutable_map_int32_int32())[1234] = 1234;
   }
 }
 
