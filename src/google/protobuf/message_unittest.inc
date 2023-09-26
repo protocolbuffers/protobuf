@@ -806,6 +806,69 @@ TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
   Message* test_all_types_pointer_nullptr = nullptr;
   EXPECT_EQ(nullptr, DynamicCastToGenerated<UNITTEST::TestAllTypes>(
                          test_all_types_pointer_nullptr));
+
+  Message& test_all_types_pointer_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_ref));
+
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const_ref));
+}
+
+TEST(MESSAGE_TEST_NAME, DynamicCastToGeneratedInvalidReferenceType) {
+  UNITTEST::TestAllTypes test_all_types;
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  ASSERT_DEATH(DynamicCastToGenerated<UNITTEST::TestRequired>(
+                   test_all_types_pointer_const_ref),
+               "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+                   UNITTEST::TestRequired::default_instance().GetTypeName());
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedValidType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message* test_all_types_pointer = &test_all_types;
+  EXPECT_EQ(&test_all_types, DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer));
+
+  const Message* test_all_types_pointer_const = &test_all_types;
+  EXPECT_EQ(&test_all_types, DownCastToGenerated<const UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const));
+
+  Message* test_all_types_pointer_nullptr = nullptr;
+  EXPECT_EQ(nullptr, DownCastToGenerated<UNITTEST::TestAllTypes>(
+                         test_all_types_pointer_nullptr));
+
+  Message& test_all_types_pointer_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_ref));
+
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const_ref));
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidPointerType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message* test_all_types_pointer = &test_all_types;
+
+  ASSERT_DEBUG_DEATH(
+      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
+      "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+          UNITTEST::TestRequired::default_instance().GetTypeName());
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidReferenceType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message& test_all_types_pointer = test_all_types;
+
+  ASSERT_DEBUG_DEATH(
+      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
+      "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+          UNITTEST::TestRequired::default_instance().GetTypeName());
 }
 
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
