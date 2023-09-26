@@ -19,6 +19,6 @@ message TestInvalidFeatures {
   repeated int32 repeated_feature = 1 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition_enum: EDITION_2023, value: "3" }
+    edition_defaults = { edition: EDITION_2023, value: "3" }
   ];
 }

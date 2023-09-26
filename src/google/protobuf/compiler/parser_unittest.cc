@@ -868,7 +868,7 @@ TEST_F(ParseMessageTest, ReservedIdentifiers) {
       "}\n",
 
       "syntax: \"editions\" "
-      "edition_enum: EDITION_2023 "
+      "edition: EDITION_2023 "
       "message_type {"
       "  name: \"TestMessage\""
       "  reserved_name: \"foo\""
@@ -1256,7 +1256,7 @@ TEST_F(ParseEnumTest, ReservedIdentifiers) {
       "}\n",
 
       "syntax: \"editions\" "
-      "edition_enum: EDITION_2023 "
+      "edition: EDITION_2023 "
       "enum_type {"
       "  name: \"TestEnum\""
       "  value { name:\"FOO\" number:0 }"
@@ -4058,7 +4058,7 @@ TEST_F(ParseEditionsTest, Editions) {
       "  }"
       "}"
       "syntax: \"editions\""
-      "edition_enum: EDITION_2023\n");
+      "edition: EDITION_2023\n");
 }
 
 TEST_F(ParseEditionsTest, TestEdition) {
@@ -4067,7 +4067,7 @@ TEST_F(ParseEditionsTest, TestEdition) {
         edition = "99998_TEST_ONLY";
       )schema",
       "syntax: \"editions\""
-      "edition_enum: EDITION_99998_TEST_ONLY\n");
+      "edition: EDITION_99998_TEST_ONLY\n");
 }
 
 TEST_F(ParseEditionsTest, ExtensionsParse) {
@@ -4093,7 +4093,7 @@ TEST_F(ParseEditionsTest, ExtensionsParse) {
       "  type: TYPE_STRING"
       "}"
       "syntax: \"editions\""
-      "edition_enum: EDITION_2023\n");
+      "edition: EDITION_2023\n");
 }
 
 TEST_F(ParseEditionsTest, MapFeatures) {
@@ -4152,7 +4152,7 @@ TEST_F(ParseEditionsTest, MapFeatures) {
              }
            }
            syntax: "editions"
-           edition_enum: EDITION_2023)pb");
+           edition: EDITION_2023)pb");
 }
 
 TEST_F(ParseEditionsTest, EmptyEdition) {

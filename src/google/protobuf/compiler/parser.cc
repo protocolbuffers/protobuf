@@ -671,7 +671,7 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       if (file != nullptr) {
         file->set_syntax(syntax_identifier_);
         if (syntax_identifier_ == "editions") {
-          file->set_edition_enum(edition_);
+          file->set_edition(edition_);
         }
       }
     } else if (!stop_after_syntax_identifier_) {

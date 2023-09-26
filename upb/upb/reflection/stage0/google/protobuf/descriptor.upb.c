@@ -21,7 +21,7 @@ const upb_MiniTable* google_protobuf_FileDescriptorSet_msg_init() {
 
 const upb_MiniTable* google_protobuf_FileDescriptorProto_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$11EGGGG33<<114";
+  static const char* mini_descriptor = "$11EGGGG33<<1a4";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -224,7 +224,7 @@ const upb_MiniTable* google_protobuf_FieldOptions_msg_init() {
 
 const upb_MiniTable* google_protobuf_FieldOptions_EditionDefault_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$114";
+  static const char* mini_descriptor = "$a14";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -332,7 +332,7 @@ const upb_MiniTable* google_protobuf_FeatureSet_msg_init() {
 
 const upb_MiniTable* google_protobuf_FeatureSetDefaults_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$G1144";
+  static const char* mini_descriptor = "$Gb44";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -345,7 +345,7 @@ const upb_MiniTable* google_protobuf_FeatureSetDefaults_msg_init() {
 
 const upb_MiniTable* google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$134";
+  static const char* mini_descriptor = "$a34";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),

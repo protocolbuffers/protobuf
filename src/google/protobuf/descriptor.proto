@@ -109,12 +109,8 @@ message FileDescriptorProto {
   // If `edition` is present, this value must be "editions".
   optional string syntax = 12;
 
-  // The edition of the proto file, which is an opaque string.
-  // TODO Deprecate and remove this field in favor of enums.
-  optional string edition = 13;
-
   // The edition of the proto file.
-  optional Edition edition_enum = 14;
+  optional Edition edition = 14;
 }
 
 // Describes a message type.
@@ -744,9 +740,7 @@ message FieldOptions {
   repeated OptionTargetType targets = 19;
 
   message EditionDefault {
-    // TODO Deprecate and remove this field in favor of enums.
-    optional string edition = 1;
-    optional Edition edition_enum = 3;
+    optional Edition edition = 3;
     optional string value = 2;  // Textproto value.
   }
   repeated EditionDefault edition_defaults = 20;
@@ -934,7 +928,7 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "EXPLICIT" }
+    edition_defaults = { edition: EDITION_2023, value: "EXPLICIT" }
   ];
 
   enum EnumType {
@@ -946,7 +940,7 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "OPEN" }
+    edition_defaults = { edition: EDITION_2023, value: "OPEN" }
   ];
 
   enum RepeatedFieldEncoding {
@@ -958,7 +952,7 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "PACKED" }
+    edition_defaults = { edition: EDITION_2023, value: "PACKED" }
   ];
 
   enum MessageEncoding {
@@ -970,7 +964,7 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "LENGTH_PREFIXED" }
+    edition_defaults = { edition: EDITION_2023, value: "LENGTH_PREFIXED" }
   ];
 
   enum JsonFormat {
@@ -983,7 +977,7 @@ message FeatureSet {
     targets = TARGET_TYPE_MESSAGE,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "ALLOW" }
+    edition_defaults = { edition: EDITION_2023, value: "ALLOW" }
   ];
 
   reserved 4, 999;
@@ -1004,24 +998,18 @@ message FeatureSetDefaults {
   // the defaults at the closest matching edition ordered at or before it should
   // be used.  This field must be in strict ascending order by edition.
   message FeatureSetEditionDefault {
-    // TODO Deprecate and remove this field in favor of enums.
-    optional string edition = 1;
-    optional Edition edition_enum = 3;
+    optional Edition edition = 3;
     optional FeatureSet features = 2;
   }
   repeated FeatureSetEditionDefault defaults = 1;
 
-  // TODO Deprecate and remove these fields in favor of enums.
-  optional string minimum_edition = 2;
-  optional string maximum_edition = 3;
-
   // The minimum supported edition (inclusive) when this was constructed.
   // Editions before this will not have defaults.
-  optional Edition minimum_edition_enum = 4;
+  optional Edition minimum_edition = 4;
 
   // The maximum known edition (inclusive) when this was constructed. Editions
   // after this will not have reliable defaults.
-  optional Edition maximum_edition_enum = 5;
+  optional Edition maximum_edition = 5;
 }
 
 // ===================================================================

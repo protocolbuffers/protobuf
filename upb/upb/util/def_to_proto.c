@@ -506,7 +506,7 @@ static google_protobuf_FileDescriptorProto* filedef_toproto(upb_ToProto_Context*
   }
 
   if (upb_FileDef_Syntax(f) == kUpb_Syntax_Editions) {
-    google_protobuf_FileDescriptorProto_set_edition_enum(proto, upb_FileDef_Edition(f));
+    google_protobuf_FileDescriptorProto_set_edition(proto, upb_FileDef_Edition(f));
   }
 
   if (upb_FileDef_Syntax(f) == kUpb_Syntax_Proto3) {

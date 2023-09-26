@@ -429,7 +429,7 @@ class DescriptorPoolTypeResolverSyntaxTest : public testing::Test {
     proto.set_name("foo");
     proto.set_syntax(syntax);
     if (edition.has_value()) {
-      proto.set_edition_enum(*edition);
+      proto.set_edition(*edition);
     }
     DescriptorProto* message = proto.add_message_type();
     message->set_name("MyMessage");

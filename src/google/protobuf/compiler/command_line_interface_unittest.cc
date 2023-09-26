@@ -1406,7 +1406,7 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensions) {
       optional int32 int_feature = 1 [
         retention = RETENTION_RUNTIME,
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition: "2023", value: "3" }
+        edition_defaults = { edition: EDITION_2023, value: "3" }
       ];
     })schema");
   CreateTempFile("foo.proto",
@@ -1748,7 +1748,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
                 defaults {
-                  edition_enum: EDITION_2023
+                  edition: EDITION_2023
                   features {
                     field_presence: EXPLICIT
                     enum_type: OPEN
@@ -1757,8 +1757,8 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     json_format: ALLOW
                   }
                 }
-                minimum_edition_enum: EDITION_2023
-                maximum_edition_enum: EDITION_2023
+                minimum_edition: EDITION_2023
+                maximum_edition: EDITION_2023
               )pb"));
 }
 
@@ -1774,7 +1774,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
                 defaults {
-                  edition_enum: EDITION_2023
+                  edition: EDITION_2023
                   features {
                     field_presence: EXPLICIT
                     enum_type: OPEN
@@ -1783,8 +1783,8 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     json_format: ALLOW
                   }
                 }
-                minimum_edition_enum: EDITION_2023
-                maximum_edition_enum: EDITION_99997_TEST_ONLY
+                minimum_edition: EDITION_2023
+                maximum_edition: EDITION_99997_TEST_ONLY
               )pb"));
 }
 
@@ -1801,7 +1801,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
                 defaults {
-                  edition_enum: EDITION_2023
+                  edition: EDITION_2023
                   features {
                     field_presence: EXPLICIT
                     enum_type: OPEN
@@ -1810,8 +1810,8 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     json_format: ALLOW
                   }
                 }
-                minimum_edition_enum: EDITION_99997_TEST_ONLY
-                maximum_edition_enum: EDITION_99999_TEST_ONLY
+                minimum_edition: EDITION_99997_TEST_ONLY
+                maximum_edition: EDITION_99999_TEST_ONLY
               )pb"));
 }
 
@@ -1827,12 +1827,12 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_EQ(defaults.minimum_edition_enum(), EDITION_2023);
-  EXPECT_EQ(defaults.maximum_edition_enum(), EDITION_99999_TEST_ONLY);
+  EXPECT_EQ(defaults.minimum_edition(), EDITION_2023);
+  EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
   ASSERT_EQ(defaults.defaults_size(), 3);
-  EXPECT_EQ(defaults.defaults(0).edition_enum(), EDITION_2023);
-  EXPECT_EQ(defaults.defaults(1).edition_enum(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults.defaults(2).edition_enum(), EDITION_99998_TEST_ONLY);
+  EXPECT_EQ(defaults.defaults(0).edition(), EDITION_2023);
+  EXPECT_EQ(defaults.defaults(1).edition(), EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(defaults.defaults(2).edition(), EDITION_99998_TEST_ONLY);
   EXPECT_EQ(
       defaults.defaults(0).features().GetExtension(pb::test).int_file_feature(),
       1);

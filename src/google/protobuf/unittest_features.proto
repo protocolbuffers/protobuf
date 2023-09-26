@@ -30,49 +30,49 @@ message TestFeatures {
   optional int32 int_file_feature = 1 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1" },
-    edition_defaults = { edition_enum: EDITION_99997_TEST_ONLY, value: "2" },
-    edition_defaults = { edition_enum: EDITION_99998_TEST_ONLY, value: "3" }
+    edition_defaults = { edition: EDITION_2023, value: "1" },
+    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "2" },
+    edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "3" }
   ];
   optional int32 int_extension_range_feature = 2 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+    edition_defaults = { edition: EDITION_2023, value: "1" }
   ];
   optional int32 int_message_feature = 3 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_MESSAGE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+    edition_defaults = { edition: EDITION_2023, value: "1" }
   ];
   optional int32 int_field_feature = 4 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+    edition_defaults = { edition: EDITION_2023, value: "1" }
   ];
   optional int32 int_oneof_feature = 5 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ONEOF,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+    edition_defaults = { edition: EDITION_2023, value: "1" }
   ];
   optional int32 int_enum_feature = 6 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+    edition_defaults = { edition: EDITION_2023, value: "1" }
   ];
   optional int32 int_enum_entry_feature = 7 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM_ENTRY,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+    edition_defaults = { edition: EDITION_2023, value: "1" }
   ];
   optional int32 int_service_feature = 8 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_SERVICE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+    edition_defaults = { edition: EDITION_2023, value: "1" }
   ];
   optional int32 int_method_feature = 9 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_METHOD,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+    edition_defaults = { edition: EDITION_2023, value: "1" }
   ];
   optional int32 int_multiple_feature = 10 [
     retention = RETENTION_RUNTIME,
@@ -85,20 +85,20 @@ message TestFeatures {
     targets = TARGET_TYPE_METHOD,
     targets = TARGET_TYPE_ONEOF,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+    edition_defaults = { edition: EDITION_2023, value: "1" }
   ];
 
   optional bool bool_field_feature = 11 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition_enum: EDITION_2023, value: "false" },
-    edition_defaults = { edition_enum: EDITION_99997_TEST_ONLY, value: "true" }
+    edition_defaults = { edition: EDITION_2023, value: "false" },
+    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "true" }
   ];
   optional float float_field_feature = 12 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1.1" },
-    edition_defaults = { edition_enum: EDITION_99997_TEST_ONLY, value: "1.2" }
+    edition_defaults = { edition: EDITION_2023, value: "1.1" },
+    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "1.2" }
   ];
 
   message MessageFeature {
@@ -111,15 +111,15 @@ message TestFeatures {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     edition_defaults = {
-      edition_enum: EDITION_99997_TEST_ONLY,
+      edition: EDITION_99997_TEST_ONLY,
       value: "int_field: 2"
     },
     edition_defaults = {
-      edition_enum: EDITION_99998_TEST_ONLY,
+      edition: EDITION_99998_TEST_ONLY,
       value: "string_field: '2024'"
     },
     edition_defaults = {
-      edition_enum: EDITION_2023,
+      edition: EDITION_2023,
       value: "bool_field: true int_field: 1 float_field: 1.5 string_field: '2023'"
     }
   ];
@@ -135,13 +135,13 @@ message TestFeatures {
   optional EnumFeature enum_field_feature = 14 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition_enum: EDITION_2023, value: "ENUM_VALUE1" },
+    edition_defaults = { edition: EDITION_2023, value: "ENUM_VALUE1" },
     edition_defaults = {
-      edition_enum: EDITION_99997_TEST_ONLY,
+      edition: EDITION_99997_TEST_ONLY,
       value: "ENUM_VALUE2"
     },
     edition_defaults = {
-      edition_enum: EDITION_99998_TEST_ONLY,
+      edition: EDITION_99998_TEST_ONLY,
       value: "ENUM_VALUE3"
     }
   ];
@@ -157,7 +157,7 @@ message TestFeatures {
     targets = TARGET_TYPE_METHOD,
     targets = TARGET_TYPE_ONEOF,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+    edition_defaults = { edition: EDITION_2023, value: "1" }
   ];
 
   optional string string_source_feature = 16 [
@@ -171,6 +171,6 @@ message TestFeatures {
     targets = TARGET_TYPE_METHOD,
     targets = TARGET_TYPE_ONEOF,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "'2023'" }
+    edition_defaults = { edition: EDITION_2023, value: "'2023'" }
   ];
 }

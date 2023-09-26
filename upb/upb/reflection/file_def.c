@@ -226,7 +226,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   // TODO: How should we validate this?
-  file->edition = UPB_DESC(FileDescriptorProto_edition_enum)(file_proto);
+  file->edition = UPB_DESC(FileDescriptorProto_edition)(file_proto);
 
   if (UPB_DESC(FileDescriptorProto_has_syntax)(file_proto)) {
     upb_StringView syntax = UPB_DESC(FileDescriptorProto_syntax)(file_proto);

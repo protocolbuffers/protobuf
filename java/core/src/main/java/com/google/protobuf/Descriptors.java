@@ -169,15 +169,15 @@ public final class Descriptors {
 
     /** Get the edition of the .proto file. */
     public Edition getEdition() {
-      return proto.getEditionEnum();
+      return proto.getEdition();
     }
 
     /** Gets the name of the edition as specified in the .proto file. */
     public String getEditionName() {
-      if (proto.getEditionEnum().equals(Edition.EDITION_UNKNOWN)) {
+      if (proto.getEdition().equals(Edition.EDITION_UNKNOWN)) {
         return "";
       }
-      return proto.getEditionEnum().name().substring("EDITION_".length());
+      return proto.getEdition().name().substring("EDITION_".length());
     }
 
     public void copyHeadingTo(FileDescriptorProto.Builder protoBuilder) {
@@ -187,7 +187,7 @@ public final class Descriptors {
       }
 
       if (getSyntax().equals(Syntax.EDITIONS)) {
-        protoBuilder.setEditionEnum(getEdition());
+        protoBuilder.setEdition(getEdition());
       }
 
       if (!getOptions().equals(FileOptions.getDefaultInstance())) {
