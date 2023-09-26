@@ -77,17 +77,10 @@ function transform_field(field)
       sub(/\<required\s*/, "", field_def)
       options[++num_options] = "features.field_presence = LEGACY_REQUIRED"
     }
-    if (disable_utf8 && match(field_def, /^\s*(string|repeated\s*string|map<string,\s*string>)/)) {
-      options[++num_options] = "features.(pb.cpp).utf8_validation = NONE"
-    }
   }
 
   if(syntax == 3) {
-    if (disable_utf8 && match(field_def, /^\s*(string|repeated\s*string|map<string,\s*string>)/)) {
-      options[++num_options] = "features.(pb.cpp).utf8_validation = NONE"
-    } else {
-      sub(/\<enforce_utf8 = false\>/, "features.(pb.cpp).utf8_validation = VERIFY_DLOG", existing_options)
-    }
+    sub(/\<enforce_utf8 = false\>/, "features.utf8_validation = NONE", existing_options)
     sub(/\<packed = false\>/, "features.repeated_field_encoding = EXPANDED", existing_options)
     existing_options = strip_option("packed = true", existing_options)
     existing_options = strip_option("enforce_utf8 = (true|false)", existing_options)
@@ -121,27 +114,18 @@ function transform_field(field)
   print "import \"third_party/protobuf/cpp_features.proto\";"
   print "option features.enum_type = CLOSED;"
   print "option features.repeated_field_encoding = EXPANDED;"
+  print "option features.utf8_validation = NONE;"
   print "option features.json_format = LEGACY_BEST_EFFORT;"
   print "option features.(pb.cpp).legacy_closed_enum = true;"
-  print "option features.(pb.cpp).utf8_validation = VERIFY_DLOG;"
   syntax = 2
   next
 }
 
 /syntax = "proto3"/ {
   print "edition = \"2023\";"
-  print "import \"third_party/protobuf/cpp_features.proto\";"
   print "option features.field_presence = IMPLICIT;"
-  print "option features.(pb.cpp).utf8_validation = VERIFY_PARSE;"
   syntax = 3
   next
-}
-
-# utf8 validation handling
-/option (cc_utf8_verification\s*=\s*false)/ {
-  disable_utf8 = 1
-  # Strip this option and replace with feature setting.
-  next;
 }
 
 # Group handling.

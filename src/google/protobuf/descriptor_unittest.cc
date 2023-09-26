@@ -7316,32 +7316,26 @@ TEST_F(FeaturesTest, Proto2Features) {
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
+                utf8_validation: NONE
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
-                [pb.cpp] {
-                  legacy_closed_enum: true
-                  utf8_validation: VERIFY_DLOG
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: true })pb"));
   EXPECT_THAT(GetFeatures(field), EqualsProto(R"pb(
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
+                utf8_validation: NONE
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
-                [pb.cpp] {
-                  legacy_closed_enum: true
-                  utf8_validation: VERIFY_DLOG
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: true })pb"));
   EXPECT_THAT(GetFeatures(group), EqualsProto(R"pb(
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
+                utf8_validation: NONE
                 message_encoding: DELIMITED
                 json_format: LEGACY_BEST_EFFORT
-                [pb.cpp] {
-                  legacy_closed_enum: true
-                  utf8_validation: VERIFY_DLOG
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: true })pb"));
   EXPECT_TRUE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
   EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/false), Utf8CheckMode::kVerify);
@@ -7395,22 +7389,18 @@ TEST_F(FeaturesTest, Proto3Features) {
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
   EXPECT_THAT(GetFeatures(field), EqualsProto(R"pb(
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] {
-                  legacy_closed_enum: false
-                  utf8_validation: VERIFY_PARSE
-                })pb"));
+                [pb.cpp] { legacy_closed_enum: false })pb"));
   EXPECT_FALSE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
   EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/false), Utf8CheckMode::kStrict);
@@ -8316,6 +8306,52 @@ TEST_F(FeaturesTest, MapFieldFeaturesOverride) {
   validate(value);
 }
 
+TEST_F(FeaturesTest, MapFieldFeaturesStringValidation) {
+  constexpr absl::string_view kProtoFile = R"schema(
+    edition = "2023";
+
+    message Foo {
+      map<string, string> map_field = 1 [
+        features.utf8_validation = NONE
+      ];
+      map<int32, string> map_field_value = 2 [
+        features.utf8_validation = NONE
+      ];
+      map<string, int32> map_field_key = 3 [
+        features.utf8_validation = NONE
+      ];
+    }
+  )schema";
+  io::ArrayInputStream input_stream(kProtoFile.data(), kProtoFile.size());
+  SimpleErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  parser.RecordErrorsTo(&error_collector);
+  FileDescriptorProto proto;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &proto))
+      << error_collector.last_error() << "\n"
+      << kProtoFile;
+  ASSERT_EQ("", error_collector.last_error());
+  proto.set_name("foo.proto");
+
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = pool_.BuildFile(proto);
+  ASSERT_THAT(file, NotNull());
+
+  auto validate_map_field = [](const FieldDescriptor* field) {
+    const FieldDescriptor* key = field->message_type()->field(0);
+    const FieldDescriptor* value = field->message_type()->field(1);
+
+    EXPECT_FALSE(field->requires_utf8_validation()) << field->DebugString();
+    EXPECT_FALSE(key->requires_utf8_validation()) << field->DebugString();
+    EXPECT_FALSE(value->requires_utf8_validation()) << field->DebugString();
+  };
+
+  validate_map_field(file->message_type(0)->field(0));
+  validate_map_field(file->message_type(0)->field(1));
+  validate_map_field(file->message_type(0)->field(2));
+}
+
 TEST_F(FeaturesTest, RootExtensionFeaturesOverride) {
   BuildDescriptorMessagesInTestPool();
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
@@ -8967,11 +9003,9 @@ TEST_F(FeaturesTest, MethodFeaturesOverride) {
 
 TEST_F(FeaturesTest, FieldFeatureHelpers) {
   BuildDescriptorMessagesInTestPool();
-  BuildFileInTestPool(pb::CppFeatures::GetDescriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
-    dependency: "google/protobuf/cpp_features.proto"
     edition: EDITION_2023
     message_type {
       name: "Foo"
@@ -9011,22 +9045,7 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
         number: 7
         label: LABEL_REPEATED
         type: TYPE_STRING
-        options {
-          features {
-            [pb.cpp] { utf8_validation: VERIFY_DLOG }
-          }
-        }
-      }
-      field {
-        name: "utf8_none_field"
-        number: 8
-        label: LABEL_REPEATED
-        type: TYPE_STRING
-        options {
-          features {
-            [pb.cpp] { utf8_validation: NONE }
-          }
-        }
+        options { features { utf8_validation: NONE } }
       }
     }
   )pb");
@@ -9038,7 +9057,6 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
   const FieldDescriptor* required_message_field = message->field(4);
   const FieldDescriptor* expanded_field = message->field(5);
   const FieldDescriptor* utf8_verify_field = message->field(6);
-  const FieldDescriptor* utf8_none_field = message->field(7);
 
   EXPECT_FALSE(default_field->is_packed());
   EXPECT_FALSE(default_field->is_required());
@@ -9069,7 +9087,6 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
             Utf8CheckMode::kVerify);
   EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/true),
             Utf8CheckMode::kNone);
-  EXPECT_FALSE(utf8_none_field->requires_utf8_validation());
   EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/false),
             Utf8CheckMode::kVerify);
   EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/true),
@@ -9430,6 +9447,86 @@ TEST_F(FeaturesTest, InvalidFieldOneofRequired) {
         }
       )pb",
       "foo.proto: Foo.bar: NAME: Oneof fields can't specify field presence.\n");
+}
+
+TEST_F(FeaturesTest, InvalidFieldNonStringWithStringValidation) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT64
+            options { features { utf8_validation: NONE } }
+          }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NAME: Only string fields can specify "
+      "utf8 validation.\n");
+}
+
+TEST_F(FeaturesTest, InvalidFieldNonStringMapWithStringValidation) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        message_type {
+          name: "Foo"
+          nested_type {
+            name: "MapFieldEntry"
+            field {
+              name: "key"
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_INT32
+              options {
+                uninterpreted_option {
+                  name { name_part: "features" is_extension: false }
+                  name { name_part: "utf8_validation" is_extension: false }
+                  identifier_value: "NONE"
+                }
+              }
+            }
+            field {
+              name: "value"
+              number: 2
+              label: LABEL_OPTIONAL
+              type: TYPE_INT32
+              options {
+                uninterpreted_option {
+                  name { name_part: "features" is_extension: false }
+                  name { name_part: "utf8_validation" is_extension: false }
+                  identifier_value: "NONE"
+                }
+              }
+            }
+            options { map_entry: true }
+          }
+          field {
+            name: "map_field"
+            number: 1
+            label: LABEL_REPEATED
+            type_name: "MapFieldEntry"
+            options {
+              uninterpreted_option {
+                name { name_part: "features" is_extension: false }
+                name { name_part: "utf8_validation" is_extension: false }
+                identifier_value: "NONE"
+              }
+            }
+          }
+        }
+      )pb",
+      "foo.proto: Foo.map_field: NAME: Only string fields can specify "
+      "utf8 validation.\n");
 }
 
 TEST_F(FeaturesTest, InvalidFieldNonRepeatedWithRepeatedEncoding) {

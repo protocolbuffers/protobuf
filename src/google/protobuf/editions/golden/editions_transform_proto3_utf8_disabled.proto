@@ -6,19 +6,17 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 edition = "2023";
-import "google/protobuf/cpp_features.proto";
 option features.field_presence = IMPLICIT;
-option features.(pb.cpp).utf8_validation = VERIFY_PARSE;
 
 package protobuf_editions_test;
 
 
 message TestMessageProto3 {
-  string string_field = 1 [features.(pb.cpp).utf8_validation = NONE];
-  string string_field_utf = 2 [features.(pb.cpp).utf8_validation = NONE];
-  string string_field_noutf = 3 [features.(pb.cpp).utf8_validation = NONE];
+  string string_field = 1;
+  string string_field_utf = 2;
+  string string_field_noutf = 3 [features.utf8_validation = NONE];
 
-  map<string, string> string_map_field = 4 [features.(pb.cpp).utf8_validation = NONE];
+  map<string, string> string_map_field = 4;
 
   repeated int32 int_field = 7;
 }

@@ -13,9 +13,7 @@
 //
 
 edition = "2023";
-import "google/protobuf/cpp_features.proto";
 option features.field_presence = IMPLICIT;
-option features.(pb.cpp).utf8_validation = VERIFY_PARSE;
 
 package protobuf_test_messages.proto3;
 
