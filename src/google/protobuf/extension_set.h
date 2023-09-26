@@ -999,6 +999,7 @@ class PrimitiveTypeTraits {
   typedef Type ConstType;
   typedef Type MutableType;
   typedef PrimitiveTypeTraits<Type> Singular;
+  static constexpr bool kLifetimeBound = false;
 
   static inline ConstType Get(int number, const ExtensionSet& set,
                               ConstType default_value);
@@ -1021,6 +1022,7 @@ class RepeatedPrimitiveTypeTraits {
   typedef Type ConstType;
   typedef Type MutableType;
   typedef RepeatedPrimitiveTypeTraits<Type> Repeated;
+  static constexpr bool kLifetimeBound = false;
 
   typedef RepeatedField<Type> RepeatedFieldType;
 
@@ -1147,6 +1149,7 @@ class PROTOBUF_EXPORT StringTypeTraits {
   typedef const std::string& ConstType;
   typedef std::string* MutableType;
   typedef StringTypeTraits Singular;
+  static constexpr bool kLifetimeBound = true;
 
   static inline const std::string& Get(int number, const ExtensionSet& set,
                                        ConstType default_value) {
@@ -1177,6 +1180,7 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
   typedef const std::string& ConstType;
   typedef std::string* MutableType;
   typedef RepeatedStringTypeTraits Repeated;
+  static constexpr bool kLifetimeBound = true;
 
   typedef RepeatedPtrField<std::string> RepeatedFieldType;
 
@@ -1244,6 +1248,7 @@ class EnumTypeTraits {
   typedef Type ConstType;
   typedef Type MutableType;
   typedef EnumTypeTraits<Type, IsValid> Singular;
+  static constexpr bool kLifetimeBound = false;
 
   static inline ConstType Get(int number, const ExtensionSet& set,
                               ConstType default_value) {
@@ -1275,6 +1280,7 @@ class RepeatedEnumTypeTraits {
   typedef Type ConstType;
   typedef Type MutableType;
   typedef RepeatedEnumTypeTraits<Type, IsValid> Repeated;
+  static constexpr bool kLifetimeBound = false;
 
   typedef RepeatedField<Type> RepeatedFieldType;
 
@@ -1349,6 +1355,7 @@ class MessageTypeTraits {
   typedef const Type& ConstType;
   typedef Type* MutableType;
   typedef MessageTypeTraits<Type> Singular;
+  static constexpr bool kLifetimeBound = true;
 
   static inline ConstType Get(int number, const ExtensionSet& set,
                               ConstType default_value) {
@@ -1407,6 +1414,7 @@ class RepeatedMessageTypeTraits {
   typedef const Type& ConstType;
   typedef Type* MutableType;
   typedef RepeatedMessageTypeTraits<Type> Repeated;
+  static constexpr bool kLifetimeBound = true;
 
   typedef RepeatedPtrField<Type> RepeatedFieldType;
 

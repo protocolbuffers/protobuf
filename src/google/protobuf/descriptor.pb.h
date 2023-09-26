@@ -1924,7 +1924,8 @@ class PROTOBUF_EXPORT FeatureSet final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -1932,10 +1933,21 @@ class PROTOBUF_EXPORT FeatureSet final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -1986,7 +1998,8 @@ class PROTOBUF_EXPORT FeatureSet final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -1995,11 +2008,21 @@ class PROTOBUF_EXPORT FeatureSet final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
-      int index) {
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -2016,7 +2039,8 @@ class PROTOBUF_EXPORT FeatureSet final :
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -2037,7 +2061,8 @@ class PROTOBUF_EXPORT FeatureSet final :
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) const {
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -2046,7 +2071,8 @@ class PROTOBUF_EXPORT FeatureSet final :
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -3760,7 +3786,8 @@ class PROTOBUF_EXPORT ServiceOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -3768,10 +3795,21 @@ class PROTOBUF_EXPORT ServiceOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -3822,7 +3860,8 @@ class PROTOBUF_EXPORT ServiceOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -3831,11 +3870,21 @@ class PROTOBUF_EXPORT ServiceOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
-      int index) {
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -3852,7 +3901,8 @@ class PROTOBUF_EXPORT ServiceOptions final :
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -3873,7 +3923,8 @@ class PROTOBUF_EXPORT ServiceOptions final :
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) const {
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -3882,7 +3933,8 @@ class PROTOBUF_EXPORT ServiceOptions final :
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -4115,7 +4167,8 @@ class PROTOBUF_EXPORT OneofOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -4123,10 +4176,21 @@ class PROTOBUF_EXPORT OneofOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -4177,7 +4241,8 @@ class PROTOBUF_EXPORT OneofOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -4186,11 +4251,21 @@ class PROTOBUF_EXPORT OneofOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
-      int index) {
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -4207,7 +4282,8 @@ class PROTOBUF_EXPORT OneofOptions final :
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -4228,7 +4304,8 @@ class PROTOBUF_EXPORT OneofOptions final :
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) const {
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -4237,7 +4314,8 @@ class PROTOBUF_EXPORT OneofOptions final :
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -4514,7 +4592,8 @@ class PROTOBUF_EXPORT MethodOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -4522,10 +4601,21 @@ class PROTOBUF_EXPORT MethodOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -4576,7 +4666,8 @@ class PROTOBUF_EXPORT MethodOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -4585,11 +4676,21 @@ class PROTOBUF_EXPORT MethodOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
-      int index) {
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -4606,7 +4707,8 @@ class PROTOBUF_EXPORT MethodOptions final :
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -4627,7 +4729,8 @@ class PROTOBUF_EXPORT MethodOptions final :
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) const {
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -4636,7 +4739,8 @@ class PROTOBUF_EXPORT MethodOptions final :
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -4930,7 +5034,8 @@ class PROTOBUF_EXPORT MessageOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -4938,10 +5043,21 @@ class PROTOBUF_EXPORT MessageOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -4992,7 +5108,8 @@ class PROTOBUF_EXPORT MessageOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -5001,11 +5118,21 @@ class PROTOBUF_EXPORT MessageOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
-      int index) {
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -5022,7 +5149,8 @@ class PROTOBUF_EXPORT MessageOptions final :
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -5043,7 +5171,8 @@ class PROTOBUF_EXPORT MessageOptions final :
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) const {
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -5052,7 +5181,8 @@ class PROTOBUF_EXPORT MessageOptions final :
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -5610,7 +5740,8 @@ class PROTOBUF_EXPORT FileOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -5618,10 +5749,21 @@ class PROTOBUF_EXPORT FileOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -5672,7 +5814,8 @@ class PROTOBUF_EXPORT FileOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -5681,11 +5824,21 @@ class PROTOBUF_EXPORT FileOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
-      int index) {
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -5702,7 +5855,8 @@ class PROTOBUF_EXPORT FileOptions final :
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -5723,7 +5877,8 @@ class PROTOBUF_EXPORT FileOptions final :
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) const {
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -5732,7 +5887,8 @@ class PROTOBUF_EXPORT FileOptions final :
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -6224,7 +6380,8 @@ class PROTOBUF_EXPORT FieldOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -6232,10 +6389,21 @@ class PROTOBUF_EXPORT FieldOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -6286,7 +6454,8 @@ class PROTOBUF_EXPORT FieldOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -6295,11 +6464,21 @@ class PROTOBUF_EXPORT FieldOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
-      int index) {
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -6316,7 +6495,8 @@ class PROTOBUF_EXPORT FieldOptions final :
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -6337,7 +6517,8 @@ class PROTOBUF_EXPORT FieldOptions final :
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) const {
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -6346,7 +6527,8 @@ class PROTOBUF_EXPORT FieldOptions final :
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -6854,7 +7036,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -6862,10 +7045,21 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -6916,7 +7110,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -6925,11 +7120,21 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
-      int index) {
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -6946,7 +7151,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -6967,7 +7173,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) const {
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -6976,7 +7183,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -7234,7 +7442,8 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -7242,10 +7451,21 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -7296,7 +7516,8 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -7305,11 +7526,21 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
-      int index) {
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -7326,7 +7557,8 @@ class PROTOBUF_EXPORT EnumValueOptions final :
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -7347,7 +7579,8 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) const {
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -7356,7 +7589,8 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -7626,7 +7860,8 @@ class PROTOBUF_EXPORT EnumOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -7634,10 +7869,21 @@ class PROTOBUF_EXPORT EnumOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -7688,7 +7934,8 @@ class PROTOBUF_EXPORT EnumOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
@@ -7697,11 +7944,21 @@ class PROTOBUF_EXPORT EnumOptions final :
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
-      int index) {
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -7718,7 +7975,8 @@ class PROTOBUF_EXPORT EnumOptions final :
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -7739,7 +7997,8 @@ class PROTOBUF_EXPORT EnumOptions final :
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) const {
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -7748,7 +8007,8 @@ class PROTOBUF_EXPORT EnumOptions final :
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
-                                       _field_type, _is_packed>& id) {
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
