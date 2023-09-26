@@ -495,6 +495,12 @@ class MessageTest(unittest.TestCase):
     req = more_messages_pb2.RequiredField()
     more_messages_pb2.RequiredWrapper(request=req)
 
+  def testMergeFromMissingRequiredField(self, message_module):
+    msg = more_messages_pb2.RequiredField()
+    message = more_messages_pb2.RequiredField()
+    message.MergeFrom(msg)
+    self.assertEqual(msg, message)
+
   def testAddWrongRepeatedNestedField(self, message_module):
     msg = message_module.TestAllTypes()
     try:
