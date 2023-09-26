@@ -454,8 +454,6 @@ err:
   return ok;
 }
 
-static PyObject* PyUpb_Message_MergePartialFrom(PyObject*, PyObject*);
-
 static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
                                                PyObject* value) {
   PyObject* submsg = PyUpb_Message_GetAttr(_self, name);
@@ -463,7 +461,7 @@ static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
   assert(!PyErr_Occurred());
   bool ok;
   if (PyUpb_Message_TryCheck(value)) {
-    PyObject* tmp = PyUpb_Message_MergePartialFrom(submsg, value);
+    PyObject* tmp = PyUpb_Message_MergeFrom(submsg, value);
     ok = tmp != NULL;
     Py_XDECREF(tmp);
   } else if (PyDict_Check(value)) {
@@ -1197,8 +1195,7 @@ err:
   return NULL;
 }
 
-static PyObject* PyUpb_Message_MergeInternal(PyObject* self, PyObject* arg,
-                                             bool check_required) {
+PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
   if (self->ob_type != arg->ob_type) {
     PyErr_Format(PyExc_TypeError,
                  "Parameter to MergeFrom() must be instance of same class: "
@@ -1209,23 +1206,13 @@ static PyObject* PyUpb_Message_MergeInternal(PyObject* self, PyObject* arg,
   // OPT: exit if src is empty.
   PyObject* subargs = PyTuple_New(0);
   PyObject* serialized =
-      check_required
-          ? PyUpb_Message_SerializeToString(arg, subargs, NULL)
-          : PyUpb_Message_SerializePartialToString(arg, subargs, NULL);
+      PyUpb_Message_SerializePartialToString(arg, subargs, NULL);
   Py_DECREF(subargs);
   if (!serialized) return NULL;
   PyObject* ret = PyUpb_Message_MergeFromString(self, serialized);
   Py_DECREF(serialized);
   Py_XDECREF(ret);
   Py_RETURN_NONE;
-}
-
-PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
-  return PyUpb_Message_MergeInternal(self, arg, true);
-}
-
-static PyObject* PyUpb_Message_MergePartialFrom(PyObject* self, PyObject* arg) {
-  return PyUpb_Message_MergeInternal(self, arg, false);
 }
 
 static PyObject* PyUpb_Message_Clear(PyUpb_Message* self);
