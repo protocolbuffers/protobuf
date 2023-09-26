@@ -353,7 +353,8 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   printer->Emit(R"cc(
-    inline const ::absl::Cord& $classname$::$name$() const {
+    inline const ::absl::Cord& $classname$::$name$() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$full_name$)
       return _internal_$name$();

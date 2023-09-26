@@ -295,7 +295,16 @@ inline void TestUtil::ModifyRepeatedFields(UNITTEST::TestAllTypes* message) {
 inline void TestUtil::SetOneofFields(UNITTEST::TestAllTypes* message) {
   message->set_oneof_uint32(601);
   message->mutable_oneof_nested_message()->set_bb(602);
+  message->mutable_oneof_lazy_nested_message()->set_bb(605);
   message->set_oneof_string("603");
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
+  message->GetReflection()->SetString(
+      message, message->GetDescriptor()->FindFieldByName("oneof_cord"), "606");
+  message->GetReflection()->SetString(
+      message, message->GetDescriptor()->FindFieldByName("oneof_string_piece"),
+      "607");
+#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
+  // Must be last because tests are expecting it.
   message->set_oneof_bytes("604");
 }
 
