@@ -7,11 +7,11 @@
  * regenerated. */
 
 #include <stddef.h>
-#include "upb/upb/generated_code_support.h"
+#include "upb/generated_code_support.h"
 #include "google/protobuf/descriptor.upb_minitable.h"
 
 // Must be last.
-#include "upb/upb/port/def.inc"
+#include "upb/port/def.inc"
 
 static const upb_MiniTableSub google_protobuf_FileDescriptorSet_submsgs[1] = {
   {.submsg = &google_protobuf_FileDescriptorProto_msg_init},
@@ -1352,5 +1352,5 @@ const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout = {
   0,
 };
 
-#include "upb/upb/port/undef.inc"
+#include "upb/port/undef.inc"
 

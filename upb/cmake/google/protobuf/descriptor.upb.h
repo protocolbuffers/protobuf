@@ -9,12 +9,12 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
 #define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
 
-#include "upb/upb/generated_code_support.h"
+#include "upb/generated_code_support.h"
 
 #include "google/protobuf/descriptor.upb_minitable.h"
 
 // Must be last.
-#include "upb/upb/port/def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -6391,6 +6391,6 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_semantic(google
 }  /* extern "C" */
 #endif
 
-#include "upb/upb/port/undef.inc"
+#include "upb/port/undef.inc"
 
 #endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_ */

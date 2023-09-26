@@ -7,17 +7,17 @@
  *
  * The correct usage is:
  *
- *   #include "upb/upb/foobar.h"
- *   #include "upb/upb/baz.h"
+ *   #include "upb/foobar.h"
+ *   #include "upb/baz.h"
  *
  *   // MUST be last included header.
- *   #include "upb/upb/port/def.inc"
+ *   #include "upb/port/def.inc"
  *
  *   // Code for this file.
  *   // <...>
  *
  *   // Can be omitted for .c files, required for .h.
- *   #include "upb/upb/port/undef.inc"
+ *   #include "upb/port/undef.inc"
  *
  * This file is private and must not be included by users!
  */
@@ -639,7 +639,7 @@ UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
 #endif /* UPB_MEM_ARENA_H_ */
 
 // Users should include array.h or map.h instead.
-// IWYU pragma: private, include "upb/upb/collections/array.h"
+// IWYU pragma: private, include "upb/collections/array.h"
 
 #ifndef UPB_MESSAGE_VALUE_H_
 #define UPB_MESSAGE_VALUE_H_
@@ -3791,13 +3791,13 @@ extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 
 // IWYU pragma: begin_exports
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_DEF_POOL_H_
 #define UPB_REFLECTION_DEF_POOL_H_
 
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 // Declarations common to all public def types.
 
@@ -10354,7 +10354,7 @@ const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
 
 #endif /* UPB_REFLECTION_DEF_POOL_H_ */
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_ENUM_DEF_H_
 #define UPB_REFLECTION_ENUM_DEF_H_
@@ -10404,7 +10404,7 @@ UPB_API int upb_EnumDef_ValueCount(const upb_EnumDef* e);
 
 #endif /* UPB_REFLECTION_ENUM_DEF_H_ */
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_ENUM_VALUE_DEF_H_
 #define UPB_REFLECTION_ENUM_VALUE_DEF_H_
@@ -10432,7 +10432,7 @@ const UPB_DESC(EnumValueOptions) *
 
 #endif /* UPB_REFLECTION_ENUM_VALUE_DEF_H_ */
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_EXTENSION_RANGE_H_
 #define UPB_REFLECTION_EXTENSION_RANGE_H_
@@ -10458,7 +10458,7 @@ const UPB_DESC(ExtensionRangeOptions) *
 
 #endif /* UPB_REFLECTION_EXTENSION_RANGE_H_ */
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_FIELD_DEF_H_
 #define UPB_REFLECTION_FIELD_DEF_H_
@@ -10522,7 +10522,7 @@ UPB_API upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f);
 
 #endif /* UPB_REFLECTION_FIELD_DEF_H_ */
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_FILE_DEF_H_
 #define UPB_REFLECTION_FILE_DEF_H_
@@ -10570,7 +10570,7 @@ int upb_FileDef_WeakDependencyCount(const upb_FileDef* f);
 
 #endif /* UPB_REFLECTION_FILE_DEF_H_ */
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_MESSAGE_DEF_H_
 #define UPB_REFLECTION_MESSAGE_DEF_H_
@@ -10716,7 +10716,7 @@ UPB_API upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
 
 #endif /* UPB_REFLECTION_MESSAGE_DEF_H_ */
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_METHOD_DEF_H_
 #define UPB_REFLECTION_METHOD_DEF_H_
@@ -10746,7 +10746,7 @@ const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 
 #endif /* UPB_REFLECTION_METHOD_DEF_H_ */
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_ONEOF_DEF_H_
 #define UPB_REFLECTION_ONEOF_DEF_H_
@@ -10784,7 +10784,7 @@ const UPB_DESC(OneofOptions) * upb_OneofDef_Options(const upb_OneofDef* o);
 
 #endif /* UPB_REFLECTION_ONEOF_DEF_H_ */
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_SERVICE_DEF_H_
 #define UPB_REFLECTION_SERVICE_DEF_H_
@@ -12831,7 +12831,7 @@ bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a);
 #define UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_
 
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
 #define UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
@@ -12955,7 +12955,7 @@ size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m);
 #define UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_
 
 
-// IWYU pragma: private, include "upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_
 #define UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_
