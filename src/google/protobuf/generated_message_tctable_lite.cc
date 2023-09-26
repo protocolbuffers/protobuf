@@ -2270,10 +2270,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
       absl::Cord* field;
       if (is_oneof) {
         if (need_init) {
-          field = new absl::Cord;
+          field = Arena::Create<absl::Cord>(msg->GetArenaForAllocation());
           RefAt<absl::Cord*>(msg, entry.offset) = field;
-          Arena* arena = msg->GetArenaForAllocation();
-          if (arena) arena->Own(field);
         } else {
           field = RefAt<absl::Cord*>(msg, entry.offset);
         }
