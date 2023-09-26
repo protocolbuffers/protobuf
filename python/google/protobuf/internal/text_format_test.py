@@ -96,6 +96,16 @@ class TextFormatMessageToStringTests(TextFormatBase):
         ' "\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""\n'
         'repeated_string: "\\303\\274\\352\\234\\237"\n')
 
+  def testStrExotic(self, message_module):
+    message = message_module.TestAllTypes()
+    message.repeated_string.append(u'\u0635\'')
+    message.optional_string = u'\xd9'
+    message.repeated_string.append('\178\377')
+    self.assertEqual(str(message),
+                     'optional_string: "\\303\\231"\n'
+                     'repeated_string: "\\330\\265\\\'"\n'
+                     'repeated_string: "\\0178\\303\\277"\n')
+
   def testPrintFloatPrecision(self, message_module):
     message = message_module.TestAllTypes()
 
@@ -603,6 +613,10 @@ class TextFormatMessageToStringTests(TextFormatBase):
                      text_format.MessageToString(empty_message,
                                                  print_unknown_fields=True,
                                                  as_one_line=True))
+
+  def testPrintAllFields(self, message_module):
+    message = message_module.TestAllTypes()
+    test_util.SetAllFields(message)
 
 
 @_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)

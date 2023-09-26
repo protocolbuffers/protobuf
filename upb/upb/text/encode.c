@@ -120,13 +120,13 @@ static void txtenc_string(txtenc* e, upb_StringView str, bool bytes) {
         txtenc_putstr(e, "\\\"");
         break;
       case '\'':
-        txtenc_putstr(e, "\\'");
+        txtenc_putstr(e, "\\\'");
         break;
       case '\\':
         txtenc_putstr(e, "\\\\");
         break;
       default:
-        if ((bytes || (uint8_t)*ptr < 0x80) && !isprint(*ptr)) {
+        if ((bytes || (uint8_t)*ptr <= 0xff) && !isprint(*ptr)) {
           txtenc_printf(e, "\\%03o", (int)(uint8_t)*ptr);
         } else {
           txtenc_putbytes(e, ptr, 1);
