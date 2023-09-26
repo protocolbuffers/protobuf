@@ -269,6 +269,7 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                     field_presence: EXPLICIT
                     enum_type: OPEN
                     repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }

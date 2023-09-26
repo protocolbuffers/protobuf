@@ -546,6 +546,36 @@ inline bool FeatureSet_RepeatedFieldEncoding_Parse(absl::string_view name, Featu
   return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_RepeatedFieldEncoding>(
       FeatureSet_RepeatedFieldEncoding_descriptor(), name, value);
 }
+enum FeatureSet_Utf8Validation : int {
+  FeatureSet_Utf8Validation_UTF8_VALIDATION_UNKNOWN = 0,
+  FeatureSet_Utf8Validation_NONE = 1,
+  FeatureSet_Utf8Validation_VERIFY = 2,
+};
+
+PROTOBUF_EXPORT bool FeatureSet_Utf8Validation_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_Utf8Validation_internal_data_[];
+constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MIN = static_cast<FeatureSet_Utf8Validation>(0);
+constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MAX = static_cast<FeatureSet_Utf8Validation>(2);
+constexpr int FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE = 2 + 1;
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
+FeatureSet_Utf8Validation_descriptor();
+template <typename T>
+const std::string& FeatureSet_Utf8Validation_Name(T value) {
+  static_assert(std::is_same<T, FeatureSet_Utf8Validation>::value ||
+                    std::is_integral<T>::value,
+                "Incorrect type passed to Utf8Validation_Name().");
+  return FeatureSet_Utf8Validation_Name(static_cast<FeatureSet_Utf8Validation>(value));
+}
+template <>
+inline const std::string& FeatureSet_Utf8Validation_Name(FeatureSet_Utf8Validation value) {
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_Utf8Validation_descriptor,
+                                                 0, 2>(
+      static_cast<int>(value));
+}
+inline bool FeatureSet_Utf8Validation_Parse(absl::string_view name, FeatureSet_Utf8Validation* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<FeatureSet_Utf8Validation>(
+      FeatureSet_Utf8Validation_descriptor(), name, value);
+}
 enum FeatureSet_MessageEncoding : int {
   FeatureSet_MessageEncoding_MESSAGE_ENCODING_UNKNOWN = 0,
   FeatureSet_MessageEncoding_LENGTH_PREFIXED = 1,
@@ -1793,6 +1823,27 @@ class PROTOBUF_EXPORT FeatureSet final :
     return FeatureSet_RepeatedFieldEncoding_Parse(name, value);
   }
 
+  using Utf8Validation = FeatureSet_Utf8Validation;
+  static constexpr Utf8Validation UTF8_VALIDATION_UNKNOWN = FeatureSet_Utf8Validation_UTF8_VALIDATION_UNKNOWN;
+  static constexpr Utf8Validation NONE = FeatureSet_Utf8Validation_NONE;
+  static constexpr Utf8Validation VERIFY = FeatureSet_Utf8Validation_VERIFY;
+  static inline bool Utf8Validation_IsValid(int value) {
+    return FeatureSet_Utf8Validation_IsValid(value);
+  }
+  static constexpr Utf8Validation Utf8Validation_MIN = FeatureSet_Utf8Validation_Utf8Validation_MIN;
+  static constexpr Utf8Validation Utf8Validation_MAX = FeatureSet_Utf8Validation_Utf8Validation_MAX;
+  static constexpr int Utf8Validation_ARRAYSIZE = FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor* Utf8Validation_descriptor() {
+    return FeatureSet_Utf8Validation_descriptor();
+  }
+  template <typename T>
+  static inline const std::string& Utf8Validation_Name(T value) {
+    return FeatureSet_Utf8Validation_Name(value);
+  }
+  static inline bool Utf8Validation_Parse(absl::string_view name, Utf8Validation* value) {
+    return FeatureSet_Utf8Validation_Parse(name, value);
+  }
+
   using MessageEncoding = FeatureSet_MessageEncoding;
   static constexpr MessageEncoding MESSAGE_ENCODING_UNKNOWN = FeatureSet_MessageEncoding_MESSAGE_ENCODING_UNKNOWN;
   static constexpr MessageEncoding LENGTH_PREFIXED = FeatureSet_MessageEncoding_LENGTH_PREFIXED;
@@ -1841,6 +1892,7 @@ class PROTOBUF_EXPORT FeatureSet final :
     kFieldPresenceFieldNumber = 1,
     kEnumTypeFieldNumber = 2,
     kRepeatedFieldEncodingFieldNumber = 3,
+    kUtf8ValidationFieldNumber = 4,
     kMessageEncodingFieldNumber = 5,
     kJsonFormatFieldNumber = 6,
   };
@@ -1875,6 +1927,17 @@ class PROTOBUF_EXPORT FeatureSet final :
   private:
   ::google::protobuf::FeatureSet_RepeatedFieldEncoding _internal_repeated_field_encoding() const;
   void _internal_set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value);
+
+  public:
+  // optional .google.protobuf.FeatureSet.Utf8Validation utf8_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool has_utf8_validation() const;
+  void clear_utf8_validation() ;
+  ::google::protobuf::FeatureSet_Utf8Validation utf8_validation() const;
+  void set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value);
+
+  private:
+  ::google::protobuf::FeatureSet_Utf8Validation _internal_utf8_validation() const;
+  void _internal_set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value);
 
   public:
   // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -2082,7 +2145,7 @@ class PROTOBUF_EXPORT FeatureSet final :
 
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 5, 5,
+      3, 6, 6,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -2106,6 +2169,7 @@ class PROTOBUF_EXPORT FeatureSet final :
     int field_presence_;
     int enum_type_;
     int repeated_field_encoding_;
+    int utf8_validation_;
     int message_encoding_;
     int json_format_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -18527,15 +18591,44 @@ inline void FeatureSet::_internal_set_repeated_field_encoding(::google::protobuf
   _impl_.repeated_field_encoding_ = value;
 }
 
+// optional .google.protobuf.FeatureSet.Utf8Validation utf8_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+inline bool FeatureSet::has_utf8_validation() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline void FeatureSet::clear_utf8_validation() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.utf8_validation_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000008u;
+}
+inline ::google::protobuf::FeatureSet_Utf8Validation FeatureSet::utf8_validation() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.utf8_validation)
+  return _internal_utf8_validation();
+}
+inline void FeatureSet::set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value) {
+  _internal_set_utf8_validation(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.utf8_validation)
+}
+inline ::google::protobuf::FeatureSet_Utf8Validation FeatureSet::_internal_utf8_validation() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  return static_cast<::google::protobuf::FeatureSet_Utf8Validation>(_impl_.utf8_validation_);
+}
+inline void FeatureSet::_internal_set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  assert(::google::protobuf::FeatureSet_Utf8Validation_IsValid(value));
+  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_.utf8_validation_ = value;
+}
+
 // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_message_encoding() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline void FeatureSet::clear_message_encoding() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.message_encoding_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline ::google::protobuf::FeatureSet_MessageEncoding FeatureSet::message_encoding() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.message_encoding)
@@ -18552,19 +18645,19 @@ inline ::google::protobuf::FeatureSet_MessageEncoding FeatureSet::_internal_mess
 inline void FeatureSet::_internal_set_message_encoding(::google::protobuf::FeatureSet_MessageEncoding value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_MessageEncoding_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.message_encoding_ = value;
 }
 
 // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool FeatureSet::has_json_format() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
   return value;
 }
 inline void FeatureSet::clear_json_format() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.json_format_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000010u;
+  _impl_._has_bits_[0] &= ~0x00000020u;
 }
 inline ::google::protobuf::FeatureSet_JsonFormat FeatureSet::json_format() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FeatureSet.json_format)
@@ -18581,7 +18674,7 @@ inline ::google::protobuf::FeatureSet_JsonFormat FeatureSet::_internal_json_form
 inline void FeatureSet::_internal_set_json_format(::google::protobuf::FeatureSet_JsonFormat value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_JsonFormat_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.json_format_ = value;
 }
 
@@ -19557,6 +19650,12 @@ struct is_proto_enum<::google::protobuf::FeatureSet_RepeatedFieldEncoding> : std
 template <>
 inline const EnumDescriptor* GetEnumDescriptor<::google::protobuf::FeatureSet_RepeatedFieldEncoding>() {
   return ::google::protobuf::FeatureSet_RepeatedFieldEncoding_descriptor();
+}
+template <>
+struct is_proto_enum<::google::protobuf::FeatureSet_Utf8Validation> : std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor<::google::protobuf::FeatureSet_Utf8Validation>() {
+  return ::google::protobuf::FeatureSet_Utf8Validation_descriptor();
 }
 template <>
 struct is_proto_enum<::google::protobuf::FeatureSet_MessageEncoding> : std::true_type {};

@@ -7544,6 +7544,7 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
         field_presence: EXPLICIT
         enum_type: OPEN
         repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         [pb.cpp] { legacy_closed_enum: false utf8_validation: VERIFY_PARSE }
@@ -7572,6 +7573,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
         field_presence: EXPLICIT
         enum_type: OPEN
         repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         [pb.cpp] { legacy_closed_enum: false utf8_validation: VERIFY_PARSE }
@@ -7595,6 +7597,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -7857,6 +7860,7 @@ TEST_F(FeaturesTest, NoOptions) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -7888,6 +7892,7 @@ TEST_F(FeaturesTest, FileFeatures) {
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -7965,6 +7970,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8072,6 +8078,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8416,6 +8423,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8525,6 +8533,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8619,6 +8628,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8720,6 +8730,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8806,6 +8817,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -8874,6 +8886,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                 field_presence: EXPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
@@ -9609,6 +9622,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] {
