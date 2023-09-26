@@ -9,6 +9,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Security;
 
 namespace Google.Protobuf
@@ -22,6 +24,8 @@ namespace Google.Protobuf
     ///
     /// Most users will never need to use this class directly.
     /// </summary>
+    [DebuggerDisplay("Count = {fields.Count}")]
+    [DebuggerTypeProxy(typeof(UnknownFieldSetDebugView))]
     public sealed partial class UnknownFieldSet
     {
         private readonly IDictionary<int, UnknownField> fields = new Dictionary<int, UnknownField>();
@@ -93,7 +97,7 @@ namespace Google.Protobuf
             }
             UnknownFieldSet otherSet = other as UnknownFieldSet;
             IDictionary<int, UnknownField> otherFields = otherSet.fields;
-            if (fields.Count  != otherFields.Count)
+            if (fields.Count != otherFields.Count)
             {
                 return false;
             }
@@ -359,6 +363,19 @@ namespace Google.Protobuf
             UnknownFieldSet unknownFields = new UnknownFieldSet();
             unknownFields.MergeFrom(other);
             return unknownFields;
+        }
+
+        private sealed class UnknownFieldSetDebugView
+        {
+            private readonly UnknownFieldSet set;
+
+            public UnknownFieldSetDebugView(UnknownFieldSet set)
+            {
+                this.set = set;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public KeyValuePair<int, UnknownField>[] Items => set.fields.ToArray();
         }
     }
 }
