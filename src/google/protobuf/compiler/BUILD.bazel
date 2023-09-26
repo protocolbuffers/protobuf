@@ -212,7 +212,7 @@ filegroup(
     name = "plugin_proto_src",
     srcs = ["plugin.proto"],
     visibility = [
-        "//upb:__subpackages__",
+        "//upbc:__subpackages__",
         # For compatibility with workspaces that still use the old upb repo
         "@upb//:__subpackages__",
     ],

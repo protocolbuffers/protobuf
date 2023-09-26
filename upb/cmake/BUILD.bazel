@@ -6,12 +6,12 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    ":build_defs.bzl",
-    "staleness_test",
+    "//bazel:build_defs.bzl",
+    "make_shell_script",
 )
 load(
-    "//upb/bazel:build_defs.bzl",
-    "make_shell_script",
+    ":build_defs.bzl",
+    "staleness_test",
 )
 
 licenses(["notice"])
@@ -87,17 +87,17 @@ sh_test(
         ":copy_protos",
         ":gen_cmakelists",
         "//upb:source_files",
-        "//upb/upb/base:source_files",
-        "//upb/upb/collections:source_files",
-        "//upb/upb/hash:source_files",
-        "//upb/upb/lex:source_files",
-        "//upb/upb/mem:source_files",
-        "//upb/upb/message:source_files",
-        "//upb/upb/mini_descriptor:source_files",
-        "//upb/upb/mini_table:source_files",
-        "//upb/upb/port:source_files",
-        "//upb/upb/text:source_files",
-        "//upb/upb/wire:source_files",
+        "//upb/base:source_files",
+        "//upb/collections:source_files",
+        "//upb/hash:source_files",
+        "//upb/lex:source_files",
+        "//upb/mem:source_files",
+        "//upb/message:source_files",
+        "//upb/mini_descriptor:source_files",
+        "//upb/mini_table:source_files",
+        "//upb/port:source_files",
+        "//upb/text:source_files",
+        "//upb/wire:source_files",
         "@utf8_range//:utf8_range_srcs",
     ],
     target_compatible_with = select({

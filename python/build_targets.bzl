@@ -444,7 +444,7 @@ def build_targets(name):
             "tox.ini",
         ],
         strip_prefix = "",
-        visibility = ["//upb:__subpackages__"],
+        visibility = ["//python/dist:__pkg__"],
     )
 
     pkg_files(
@@ -456,9 +456,10 @@ def build_targets(name):
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
         ]) + [
-            "BUILD.bazel",
+            "BUILD",
             "MANIFEST.in",
             "README.md",
+            "build_targets.bzl",
             "google/protobuf/proto_api.h",
             "google/protobuf/pyext/README",
             "google/protobuf/python_protobuf.h",

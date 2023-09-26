@@ -1,6 +1,0 @@
-load("//python:build_targets.bzl", "build_targets")
-
-# The build targets for this package have been temporarily moved into a Bazel
-# macro to facilitate merging upb's Python support into this directory. Once
-# that merge is complete, we will move the build targets back here.
-build_targets(name = "python")

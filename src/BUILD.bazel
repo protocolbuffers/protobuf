@@ -49,8 +49,8 @@ genrule(
     srcs = ["//pkg:gen_src_file_lists"],
     outs = ["cmake_copy/file_lists.cmake"],
     cmd = "cp $< $@",
-    visibility = ["//visibility:private"],
     tags = ["manual"],
+    visibility = ["//visibility:private"],
 )
 
 staleness_test(

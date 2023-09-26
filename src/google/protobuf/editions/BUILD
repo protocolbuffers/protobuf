@@ -56,7 +56,7 @@ cc_test(
         ":test_editions_default_features_cc_proto",
         ":test_messages_proto2_cc_proto",
         ":test_messages_proto3_cc_proto",
-        "//src/google/protobuf",
+        "//:protobuf",
         "//src/google/protobuf:test_textproto",
         "@com_google_googletest//:gtest_main",
     ],

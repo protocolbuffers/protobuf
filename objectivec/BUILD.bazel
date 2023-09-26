@@ -42,8 +42,8 @@ genrule(
         for wkt in _OBJC_WKT_NAMES
         for ext in _OBJC_EXTS
     ]),
-    tools = ["//:protoc"],
     tags = ["manual"],
+    tools = ["//:protoc"],
 )
 
 staleness_test(

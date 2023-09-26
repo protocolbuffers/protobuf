@@ -107,13 +107,13 @@ ruby_bundle(
     gemfile = "//ruby:Gemfile",
 )
 
-load("//upb/bazel:workspace_deps.bzl", "upb_deps")
+load("//bazel:workspace_deps.bzl", "upb_deps")
 
 upb_deps()
 
 http_archive(
     name = "lua",
-    build_file = "//upb/bazel:lua.BUILD",
+    build_file = "//bazel:lua.BUILD",
     sha256 = "b9e2e4aad6789b3b63a056d442f7b39f0ecfca3ae0f1fc0ae4e9614401b69f4b",
     strip_prefix = "lua-5.2.4",
     urls = [
@@ -134,11 +134,11 @@ http_archive(
     urls = ["https://github.com/googleapis/googleapis/archive/30ed2662a85403cbdeb9ea38df1e414a2a276b83.zip"],
     strip_prefix = "googleapis-30ed2662a85403cbdeb9ea38df1e414a2a276b83",
     sha256 = "4dfc28101127d22abd6f0f6308d915d490c4594c0cfcf7643769c446d6763a46",
-    build_file = "//upb/benchmarks:BUILD.googleapis",
+    build_file = "//benchmarks:BUILD.googleapis",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("//upb/bazel:system_python.bzl", "system_python")
+load("//bazel:system_python.bzl", "system_python")
 
 system_python(
     name = "system_python",
@@ -149,7 +149,7 @@ load("@system_python//:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "pip_deps",
-    requirements = "//upb/python:requirements.txt",
+    requirements = "//python:requirements.txt",
 )
 
 load("@pip_deps//:requirements.bzl", "install_deps")

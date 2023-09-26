@@ -11,7 +11,7 @@ cc_library(
     ],
     deps = [
         ":rust_alloc_for_cpp_api",
-        "//src/google/protobuf",
+        "//:protobuf",
     ],
 )
 

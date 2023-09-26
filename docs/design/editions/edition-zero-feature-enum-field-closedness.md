@@ -7,7 +7,7 @@
 ## Background
 
 On 2023-02-10, a CL [@mcy](https://github.com/mcy) submitted to delete
-`proto2::Reflection::SupportsUnknownEnumValue()`. Oddly, this function used the
+`google::protobuf::Reflection::SupportsUnknownEnumValue()`. Oddly, this function used the
 containing message's `syntax`, rather than the enum field's, to determine
 whether the enum was open.
 

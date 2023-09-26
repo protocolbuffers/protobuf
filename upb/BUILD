@@ -7,12 +7,12 @@
 
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
-load("//upb/bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
-load("//upb/bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
-load("//upb/bazel:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
+load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
+load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
+load("//bazel:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
 load(
-    "//upb/upbc:bootstrap_compiler.bzl",
+    "//upbc:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
     "bootstrap_upb_proto_library",
 )
@@ -24,7 +24,7 @@ load(
 
 # begin:github_only
 load(
-    "//upb/bazel:amalgamation.bzl",
+    "//bazel:amalgamation.bzl",
     "upb_amalgamation",
 )
 # end:github_only
@@ -86,7 +86,7 @@ package_group(
 cc_library(
     name = "upb",
     hdrs = [
-        "upb/upb.hpp",
+        "upb.hpp",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -104,10 +104,10 @@ cc_library(
 # give up any backward compatibility guarantees.
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-    hdrs = ["upb/generated_code_support.h"],
+    hdrs = ["generated_code_support.h"],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/upb/port:inc",
+        "//upb/port:inc",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -131,7 +131,7 @@ cc_library(
     name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/upb/port:inc",
+        "//upb/port:inc",
     ],
     visibility = ["//visibility:public"],
 )
@@ -139,12 +139,12 @@ cc_library(
 cc_library(
     name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
-        "upb/reflection/def.h",
-        "upb/reflection/internal/def_pool.h",
+        "reflection/def.h",
+        "reflection/internal/def_pool.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/upb/port:inc",
+        "//upb/port:inc",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -156,7 +156,7 @@ cc_library(
 
 bootstrap_upb_proto_library(
     name = "descriptor_upb_proto",
-    base_dir = "upb/reflection/",
+    base_dir = "reflection/",
     # TODO: Export 'net/proto2/proto/descriptor.upb.h' and remove "-layering_check".
     features = ["-layering_check"],
     google3_src_files = ["net/proto2/proto/descriptor.proto"],
@@ -176,7 +176,12 @@ upb_proto_reflection_library(
 
 upb_minitable_proto_library(
     name = "descriptor_upb_minitable_proto",
-    visibility = ["//upb:__subpackages__"],
+    visibility = [
+        "//upb:__subpackages__",
+        # begin:github_only
+        "//python:__subpackages__",
+        # end:github_only
+    ],
     deps = ["//:descriptor_proto"],
 )
 
@@ -185,10 +190,10 @@ upb_minitable_proto_library(
 bootstrap_cc_library(
     name = "reflection",
     hdrs = [
-        "upb/reflection/def.h",
-        "upb/reflection/def.hpp",
-        "upb/reflection/message.h",
-        "upb/reflection/message.hpp",
+        "reflection/def.h",
+        "reflection/def.hpp",
+        "reflection/message.h",
+        "reflection/message.hpp",
     ],
     bootstrap_deps = [":reflection_internal"],
     copts = UPB_DEFAULT_COPTS,
@@ -206,58 +211,58 @@ bootstrap_cc_library(
 bootstrap_cc_library(
     name = "reflection_internal",
     srcs = [
-        "upb/reflection/def_pool.c",
-        "upb/reflection/def_type.c",
-        "upb/reflection/desc_state.c",
-        "upb/reflection/enum_def.c",
-        "upb/reflection/enum_reserved_range.c",
-        "upb/reflection/enum_value_def.c",
-        "upb/reflection/extension_range.c",
-        "upb/reflection/field_def.c",
-        "upb/reflection/file_def.c",
-        "upb/reflection/internal/def_builder.c",
-        "upb/reflection/internal/def_builder.h",
-        "upb/reflection/internal/strdup2.c",
-        "upb/reflection/internal/strdup2.h",
-        "upb/reflection/message.c",
-        "upb/reflection/message_def.c",
-        "upb/reflection/message_reserved_range.c",
-        "upb/reflection/method_def.c",
-        "upb/reflection/oneof_def.c",
-        "upb/reflection/service_def.c",
+        "reflection/def_pool.c",
+        "reflection/def_type.c",
+        "reflection/desc_state.c",
+        "reflection/enum_def.c",
+        "reflection/enum_reserved_range.c",
+        "reflection/enum_value_def.c",
+        "reflection/extension_range.c",
+        "reflection/field_def.c",
+        "reflection/file_def.c",
+        "reflection/internal/def_builder.c",
+        "reflection/internal/def_builder.h",
+        "reflection/internal/strdup2.c",
+        "reflection/internal/strdup2.h",
+        "reflection/message.c",
+        "reflection/message_def.c",
+        "reflection/message_reserved_range.c",
+        "reflection/method_def.c",
+        "reflection/oneof_def.c",
+        "reflection/service_def.c",
     ],
     hdrs = [
-        "upb/reflection/common.h",
-        "upb/reflection/def.h",
-        "upb/reflection/def.hpp",
-        "upb/reflection/def_pool.h",
-        "upb/reflection/def_type.h",
-        "upb/reflection/enum_def.h",
-        "upb/reflection/enum_reserved_range.h",
-        "upb/reflection/enum_value_def.h",
-        "upb/reflection/extension_range.h",
-        "upb/reflection/field_def.h",
-        "upb/reflection/file_def.h",
-        "upb/reflection/internal/def_pool.h",
-        "upb/reflection/internal/desc_state.h",
-        "upb/reflection/internal/enum_def.h",
-        "upb/reflection/internal/enum_reserved_range.h",
-        "upb/reflection/internal/enum_value_def.h",
-        "upb/reflection/internal/extension_range.h",
-        "upb/reflection/internal/field_def.h",
-        "upb/reflection/internal/file_def.h",
-        "upb/reflection/internal/message_def.h",
-        "upb/reflection/internal/message_reserved_range.h",
-        "upb/reflection/internal/method_def.h",
-        "upb/reflection/internal/oneof_def.h",
-        "upb/reflection/internal/service_def.h",
-        "upb/reflection/message.h",
-        "upb/reflection/message.hpp",
-        "upb/reflection/message_def.h",
-        "upb/reflection/message_reserved_range.h",
-        "upb/reflection/method_def.h",
-        "upb/reflection/oneof_def.h",
-        "upb/reflection/service_def.h",
+        "reflection/common.h",
+        "reflection/def.h",
+        "reflection/def.hpp",
+        "reflection/def_pool.h",
+        "reflection/def_type.h",
+        "reflection/enum_def.h",
+        "reflection/enum_reserved_range.h",
+        "reflection/enum_value_def.h",
+        "reflection/extension_range.h",
+        "reflection/field_def.h",
+        "reflection/file_def.h",
+        "reflection/internal/def_pool.h",
+        "reflection/internal/desc_state.h",
+        "reflection/internal/enum_def.h",
+        "reflection/internal/enum_reserved_range.h",
+        "reflection/internal/enum_value_def.h",
+        "reflection/internal/extension_range.h",
+        "reflection/internal/field_def.h",
+        "reflection/internal/file_def.h",
+        "reflection/internal/message_def.h",
+        "reflection/internal/message_reserved_range.h",
+        "reflection/internal/method_def.h",
+        "reflection/internal/oneof_def.h",
+        "reflection/internal/service_def.h",
+        "reflection/message.h",
+        "reflection/message.hpp",
+        "reflection/message_def.h",
+        "reflection/message_reserved_range.h",
+        "reflection/method_def.h",
+        "reflection/oneof_def.h",
+        "reflection/service_def.h",
     ],
     bootstrap_deps = [":descriptor_upb_proto"],
     copts = UPB_DEFAULT_COPTS,
@@ -283,199 +288,199 @@ bootstrap_cc_library(
 
 alias(
     name = "base",
-    actual = "//upb/upb/base",
+    actual = "//upb/base",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "base_internal",
-    actual = "//upb/upb/base:internal",
+    actual = "//upb/base:internal",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "collections",
-    actual = "//upb/upb/collections",
+    actual = "//upb/collections",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "collections_internal",
-    actual = "//upb/upb/collections:internal",
+    actual = "//upb/collections:internal",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "collections_split64",
-    actual = "//upb/upb/collections:split64",
+    actual = "//upb/collections:split64",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "hash",
-    actual = "//upb/upb/hash",
+    actual = "//upb/hash",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "json",
-    actual = "//upb/upb/json",
+    actual = "//upb/json",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "lex",
-    actual = "//upb/upb/lex",
+    actual = "//upb/lex",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "mem",
-    actual = "//upb/upb/mem",
+    actual = "//upb/mem",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "mem_internal",
-    actual = "//upb/upb/mem:internal",
+    actual = "//upb/mem:internal",
     visibility = ["//upb:__subpackages__"],
 )
 
 alias(
     name = "message",
-    actual = "//upb/upb/message",
+    actual = "//upb/message",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_accessors",
-    actual = "//upb/upb/message:accessors",
+    actual = "//upb/message:accessors",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_accessors_internal",
-    actual = "//upb/upb/message:accessors_internal",
+    actual = "//upb/message:accessors_internal",
     visibility = ["//upb:friends"],
 )
 
 alias(
     name = "message_copy",
-    actual = "//upb/upb/message:copy",
+    actual = "//upb/message:copy",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_internal",
-    actual = "//upb/upb/message:internal",
+    actual = "//upb/message:internal",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_internal_types",
-    actual = "//upb/upb/message:internal_types",
+    actual = "//upb/message:internal_types",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_promote",
-    actual = "//upb/upb/message:promote",
+    actual = "//upb/message:promote",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_split64",
-    actual = "//upb/upb/message:split64",
+    actual = "//upb/message:split64",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_tagged_ptr",
-    actual = "//upb/upb/message:tagged_ptr",
+    actual = "//upb/message:tagged_ptr",
     visibility = ["//upb:friends"],
 )
 
 alias(
     name = "message_types",
-    actual = "//upb/upb/message:types",
+    actual = "//upb/message:types",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "message_value",
-    actual = "//upb/upb/message:value",
+    actual = "//upb/message:value",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "mini_descriptor",
-    actual = "//upb/upb/mini_descriptor",
+    actual = "//upb/mini_descriptor",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "mini_descriptor_internal",
-    actual = "//upb/upb/mini_descriptor:internal",
+    actual = "//upb/mini_descriptor:internal",
     visibility = ["//upb:__subpackages__"],
 )
 
 alias(
     name = "mini_table",
-    actual = "//upb/upb/mini_table",
+    actual = "//upb/mini_table",
     visibility = ["//upb:friends"],
 )
 
 alias(
     name = "mini_table_compat",
-    actual = "//upb/upb/mini_table:compat",
+    actual = "//upb/mini_table:compat",
     visibility = ["//upb:friends"],
 )
 
 alias(
     name = "mini_table_internal",
-    actual = "//upb/upb/mini_table:internal",
+    actual = "//upb/mini_table:internal",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "port",
-    actual = "//upb/upb/port",
+    actual = "//upb/port",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "text",
-    actual = "//upb/upb/text",
+    actual = "//upb/text",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "wire",
-    actual = "//upb/upb/wire",
+    actual = "//upb/wire",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "wire_internal",
-    actual = "//upb/upb/wire:internal",
+    actual = "//upb/wire:internal",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "wire_reader",
-    actual = "//upb/upb/wire:reader",
+    actual = "//upb/wire:reader",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "wire_types",
-    actual = "//upb/upb/wire:types",
+    actual = "//upb/wire:types",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "eps_copy_input_stream",
-    actual = "//upb/upb/wire:eps_copy_input_stream",
+    actual = "//upb/wire:eps_copy_input_stream",
     visibility = ["//visibility:public"],
 )
 
@@ -484,10 +489,10 @@ alias(
 cc_test(
     name = "def_builder_test",
     srcs = [
-        "upb/reflection/common.h",
-        "upb/reflection/def_type.h",
-        "upb/reflection/internal/def_builder.h",
-        "upb/reflection/internal/def_builder_test.cc",
+        "reflection/common.h",
+        "reflection/def_type.h",
+        "reflection/internal/def_builder.h",
+        "reflection/internal/def_builder_test.cc",
     ],
     deps = [
         ":descriptor_upb_proto",
@@ -496,8 +501,8 @@ cc_test(
         ":port",
         ":reflection",
         ":reflection_internal",
-        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -505,7 +510,7 @@ cc_test(
 
 cc_binary(
     name = "libupb.so",
-    srcs = ["upb/upb_so.c"],
+    srcs = ["upb_so.c"],
     copts = UPB_DEFAULT_COPTS + ["-DUPB_BUILD_API"],
     linkshared = 1,
     linkstatic = 1,
@@ -687,25 +692,25 @@ exports_files(
         "third_party/lunit/console.lua",
         "third_party/lunit/lunit.lua",
     ],
-    visibility = ["//upb/lua:__pkg__"],
+    visibility = ["//lua:__pkg__"],
 )
 
 filegroup(
     name = "source_files",
     srcs = glob(
         [
-            "upb/**/*.c",
-            "upb/**/*.h",
-            "upb/**/*.hpp",
+            "**/*.c",
+            "**/*.h",
+            "**/*.hpp",
        ],
         exclude = [
-            "upb/**/conformance_upb.c",
-            "upb/reflection/stage0/**/*",
+            "**/conformance_upb.c",
+            "reflection/stage0/**/*",
         ],
     ),
     visibility = [
         "//upb/cmake:__pkg__",
-        "//upb/python/dist:__pkg__",
+        "//python/dist:__pkg__",
     ]
 )
 # end:github_only

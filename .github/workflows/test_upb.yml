@@ -20,9 +20,9 @@ jobs:
           - { name: "Fastbuild" }
           - { name: "Optimized", flags: "-c opt" }
           - { name: "FastTable", flags: "--//upb:fasttable_enabled=true" }
-          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//upb/benchmarks:benchmark -//upb/python/..." }
-          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//upb/benchmarks:benchmark -//upb/python/... -//upb/lua/..." }
-          - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//upb/benchmarks:benchmark -//upb/python/..." }
+          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/..." }
+          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/..." }
+          - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/..." }
           # TODO: b/297027295 - Add 32-bit ASAN test
 
     name: ${{ matrix.config.name }}
@@ -39,7 +39,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
-          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //upb/... ${{ matrix.config.flags }}
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upbc/... ${{ matrix.config.flags }}
           exclude-targets: ${{ matrix.config.exclude-targets }}
 
   linux-gcc:
@@ -58,7 +58,7 @@ jobs:
           image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-gcc"
-          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //upb/...
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upbc/...
 
   windows:
     strategy:
@@ -75,7 +75,8 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
-          bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/upb/... //upb/upbc/... //upb/python/... //upb/protos/... //upb/protos_generator/...
+          bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/... //upbc/... //python/... //protos/... //protos_generator/...
+          exclude-targets: -//python:conformance_test -//upb:def_builder_test
 
   macos:
     strategy:
@@ -96,7 +97,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
-          bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} //upb/...
+          bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upbc/...
 
   no-python:
     strategy:
@@ -118,7 +119,7 @@ jobs:
             which python3 &&
             mv `which python3` /tmp &&
             ! which python3 &&
-            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //upb/python/... -- -//upb/python/dist:source_wheel
+            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //python/... -- -//python/dist:source_wheel
 
   build_wheels:
     name: Build Wheels
@@ -135,7 +136,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple@sha256:b3dc9b75d8e599b0e95ed245d89f44b5a4231112f975da89dd02006a484a58df
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel-python
-          bazel: build --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg //upb/python/dist //upb/python/dist:test_wheel //upb/python/dist:source_wheel
+          bazel: build --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg //python/dist //python/dist:test_wheel //python/dist:source_wheel
       - name: Move Wheels
         run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
       - uses: actions/upload-artifact@v3
@@ -146,7 +147,7 @@ jobs:
         with:
           name: requirements
           # Tests shouldn't have access to the whole upb repo, upload the one file we need
-          path: upb/python/requirements.txt
+          path: python/requirements.txt
 
   test_wheels:
     name: Test Wheels

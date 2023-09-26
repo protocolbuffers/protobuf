@@ -20,7 +20,7 @@ jobs:
         version: ["3.8", "3.9", "3.10", "3.11" ]
         include:
           - type: Pure
-            targets: //python/... //upb/python/... //python:python_version_test
+            targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=false
           - type: C++
             targets: //python/... //python:python_version_test
@@ -46,6 +46,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
+          exclude-targets: -//python/pb_unit_tests/...
 
 
   macos:
@@ -57,7 +58,7 @@ jobs:
         version: [ "3.11" ]
         include:
           - type: Pure
-            targets: //python/... //upb/python/... //python:python_version_test
+            targets: //python/... //python:python_version_test
           - type: C++
             targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
@@ -95,3 +96,4 @@ jobs:
             test ${{ matrix.targets }} ${{ matrix.flags }}
             --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
             --macos_minimum_os=10.9
+          exclude-targets: -//python/pb_unit_tests/...

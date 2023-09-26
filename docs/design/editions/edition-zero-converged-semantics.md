@@ -129,7 +129,7 @@ build horizon issues since GCL parses protos in prod).
 
 Rev'ing `descriptor.proto` is a far more intrusive change that affects many
 downstream systems. Many systems access descriptors through either a descriptor
-API (for example, `proto2::Descriptor` in C++) or by directly accessing a proto
+API (for example, `google::protobuf::Descriptor` in C++) or by directly accessing a proto
 from `descriptor.proto` (eg. `google.protobuf.DescriptorProto`). Any changes
 here need to be managed much more delicately.
 
