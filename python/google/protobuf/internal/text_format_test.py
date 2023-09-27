@@ -96,6 +96,20 @@ class TextFormatMessageToStringTests(TextFormatBase):
         ' "\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""\n'
         'repeated_string: "\\303\\274\\352\\234\\237"\n')
 
+  def testStrExotic(self, message_module):
+    message = message_module.TestAllTypes()
+    message.optional_string = u'\xd9'
+    message.repeated_string.append(u'ﺹ\'')
+    message.repeated_bytes.append(u'\u0635\''.encode('utf-8'))
+    message.repeated_string.append(u'café ð')
+    message.repeated_bytes.append(u'café ð'.encode('utf-8'))
+    self.assertEqual(str(message),
+                     'optional_string: "Ù"\n'
+                     'repeated_string: "ﺹ\\\'"\n'
+                     'repeated_string: "café ð"\n'
+                     'repeated_bytes: "\\330\\265\\\'"\n'
+                     'repeated_bytes: "caf\\303\\251 \\303\\260"\n')
+
   def testPrintFloatPrecision(self, message_module):
     message = message_module.TestAllTypes()
 

@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 
 #ifndef PyVarObject_HEAD_INIT
@@ -1682,6 +1683,16 @@ class PythonFieldValuePrinter : public TextFormat::FastFieldValuePrinter {
     }
 
     generator->PrintString(PyString_AsString(py_str.get()));
+  }
+  void PrintString(const std::string& val,
+                   TextFormat::BaseTextGenerator* generator) const override {
+    generator->PrintLiteral("\"");
+    generator->PrintString(absl::Utf8SafeCEscape(val));
+    generator->PrintLiteral("\"");
+  }
+  void PrintBytes(const std::string& val,
+                  TextFormat::BaseTextGenerator* generator) const override {
+    return FastFieldValuePrinter::PrintString(val, generator);
   }
 };
 

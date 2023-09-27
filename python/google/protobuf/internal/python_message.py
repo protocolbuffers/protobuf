@@ -994,14 +994,14 @@ def _AddEqualsMethod(message_descriptor, cls):
 def _AddStrMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
   def __str__(self):
-    return text_format.MessageToString(self)
+    return text_format.MessageToString(self, as_utf8=True)
   cls.__str__ = __str__
 
 
 def _AddReprMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
   def __repr__(self):
-    return text_format.MessageToString(self)
+    return text_format.MessageToString(self, as_utf8=True)
   cls.__repr__ = __repr__
 
 
