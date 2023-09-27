@@ -43,6 +43,7 @@ bzl_library(
     ],
     deps = [
         "@bazel_skylib//lib:paths",
+        "@rules_proto//proto:defs",
         "@bazel_tools//tools/cpp:toolchain_utils.bzl",
     ],
 )

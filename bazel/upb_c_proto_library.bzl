@@ -31,22 +31,12 @@ upb_c_proto_library_aspect = aspect(
         "_copts": attr.label(
             default = "//upb:upb_proto_library_copts__for_generated_code_only_do_not_use",
         ),
-        "_gen_upb": attr.label(
-            executable = True,
-            cfg = "exec",
-            default = "//upbc:protoc-gen-upb_stage1",
-        ),
-        "_protoc": attr.label(
-            executable = True,
-            cfg = "exec",
-            default = "//:protoc",
+        "_upb_toolchain": attr.label(
+            default = Label("//upbc:protoc-gen-upb_toolchain"),
         ),
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",
         ),
-        "_upb": attr.label_list(default = [
-            "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ]),
     },
     implementation = _upb_c_proto_library_aspect_impl,
     requires = [upb_minitable_proto_library_aspect],
@@ -58,7 +48,9 @@ upb_c_proto_library_aspect = aspect(
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = upb_use_cpp_toolchain(),
-    incompatible_use_toolchain_transition = True,
+    exec_groups = {
+        "proto_compiler": exec_group(),
+    },
 )
 
 def _upb_c_proto_library_rule_impl(ctx):
