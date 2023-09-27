@@ -107,10 +107,6 @@ ruby_bundle(
     gemfile = "//ruby:Gemfile",
 )
 
-load("//bazel:workspace_deps.bzl", "upb_deps")
-
-upb_deps()
-
 http_archive(
     name = "lua",
     build_file = "//bazel:lua.BUILD",
