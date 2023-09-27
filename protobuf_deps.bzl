@@ -145,11 +145,3 @@ def protobuf_deps():
             urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.8.1/rules_kotlin_release.tgz"],
             sha256 = "a630cda9fdb4f56cf2dc20a4bf873765c41cf00e9379e8d59cd07b24730f4fde",
         )
-
-    if not native.existing_rule("upb"):
-        http_archive(
-            name = "upb",
-            url = "https://github.com/protocolbuffers/protobuf/archive/7242c3619c6db9843614b2c865681bf397261be8.zip",
-            strip_prefix = "protobuf-7242c3619c6db9843614b2c865681bf397261be8/upb",
-            sha256 = "0fc581f5e5caaf30c7119a73f2cff5d45424e4a4f23a52ebba73e3df031ad1c6",
-        )
