@@ -14,7 +14,6 @@ import static com.google.common.math.LongMath.checkedMultiply;
 import static com.google.common.math.LongMath.checkedSubtract;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.google.errorprone.annotations.CompileTimeConstant;
 import com.google.j2objc.annotations.J2ObjCIncompatible;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
@@ -277,7 +276,7 @@ public final class Timestamps {
    * @return a {@link Timestamp} parsed from the string
    * @throws IllegalArgumentException if parsing fails
    */
-  public static Timestamp parseUnchecked(@CompileTimeConstant String value) {
+  public static Timestamp parseUnchecked(String value) {
     try {
       return parse(value);
     } catch (ParseException e) {
