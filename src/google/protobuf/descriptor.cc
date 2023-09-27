@@ -1110,7 +1110,7 @@ FeatureSet* CreateProto2DefaultFeatures() {
   features->set_repeated_field_encoding(FeatureSet::EXPANDED);
   features->set_message_encoding(FeatureSet::LENGTH_PREFIXED);
   features->set_json_format(FeatureSet::LEGACY_BEST_EFFORT);
-  features->set_utf8_validation(FeatureSet::NONE);
+  features->set_utf8_validation(FeatureSet::UNVERIFIED);
   features->MutableExtension(pb::cpp)->set_legacy_closed_enum(true);
 
   return features;

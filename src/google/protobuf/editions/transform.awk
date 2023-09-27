@@ -80,7 +80,7 @@ function transform_field(field)
   }
 
   if(syntax == 3) {
-    sub(/\<enforce_utf8 = false\>/, "features.utf8_validation = NONE", existing_options)
+    sub(/\<enforce_utf8 = false\>/, "features.utf8_validation = UNVERIFIED", existing_options)
     sub(/\<packed = false\>/, "features.repeated_field_encoding = EXPANDED", existing_options)
     existing_options = strip_option("packed = true", existing_options)
     existing_options = strip_option("enforce_utf8 = (true|false)", existing_options)
@@ -114,7 +114,7 @@ function transform_field(field)
   print "import \"third_party/protobuf/cpp_features.proto\";"
   print "option features.enum_type = CLOSED;"
   print "option features.repeated_field_encoding = EXPANDED;"
-  print "option features.utf8_validation = NONE;"
+  print "option features.utf8_validation = UNVERIFIED;"
   print "option features.json_format = LEGACY_BEST_EFFORT;"
   print "option features.(pb.cpp).legacy_closed_enum = true;"
   syntax = 2
