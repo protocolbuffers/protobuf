@@ -7316,7 +7316,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
-                utf8_validation: NONE
+                utf8_validation: UNVERIFIED
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
                 [pb.cpp] { legacy_closed_enum: true })pb"));
@@ -7324,7 +7324,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
-                utf8_validation: NONE
+                utf8_validation: UNVERIFIED
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
                 [pb.cpp] { legacy_closed_enum: true })pb"));
@@ -7332,7 +7332,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
-                utf8_validation: NONE
+                utf8_validation: UNVERIFIED
                 message_encoding: DELIMITED
                 json_format: LEGACY_BEST_EFFORT
                 [pb.cpp] { legacy_closed_enum: true })pb"));
@@ -8295,13 +8295,13 @@ TEST_F(FeaturesTest, MapFieldFeaturesStringValidation) {
 
     message Foo {
       map<string, string> map_field = 1 [
-        features.utf8_validation = NONE
+        features.utf8_validation = UNVERIFIED
       ];
       map<int32, string> map_field_value = 2 [
-        features.utf8_validation = NONE
+        features.utf8_validation = UNVERIFIED
       ];
       map<string, int32> map_field_key = 3 [
-        features.utf8_validation = NONE
+        features.utf8_validation = UNVERIFIED
       ];
     }
   )schema";
@@ -9010,7 +9010,7 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
         number: 7
         label: LABEL_REPEATED
         type: TYPE_STRING
-        options { features { utf8_validation: NONE } }
+        options { features { utf8_validation: UNVERIFIED } }
       }
     }
   )pb");
@@ -9428,7 +9428,7 @@ TEST_F(FeaturesTest, InvalidFieldNonStringWithStringValidation) {
             number: 1
             label: LABEL_OPTIONAL
             type: TYPE_INT64
-            options { features { utf8_validation: NONE } }
+            options { features { utf8_validation: UNVERIFIED } }
           }
         }
       )pb",
@@ -9456,7 +9456,7 @@ TEST_F(FeaturesTest, InvalidFieldNonStringMapWithStringValidation) {
                 uninterpreted_option {
                   name { name_part: "features" is_extension: false }
                   name { name_part: "utf8_validation" is_extension: false }
-                  identifier_value: "NONE"
+                  identifier_value: "UNVERIFIED"
                 }
               }
             }
@@ -9469,7 +9469,7 @@ TEST_F(FeaturesTest, InvalidFieldNonStringMapWithStringValidation) {
                 uninterpreted_option {
                   name { name_part: "features" is_extension: false }
                   name { name_part: "utf8_validation" is_extension: false }
-                  identifier_value: "NONE"
+                  identifier_value: "UNVERIFIED"
                 }
               }
             }
@@ -9484,7 +9484,7 @@ TEST_F(FeaturesTest, InvalidFieldNonStringMapWithStringValidation) {
               uninterpreted_option {
                 name { name_part: "features" is_extension: false }
                 name { name_part: "utf8_validation" is_extension: false }
-                identifier_value: "NONE"
+                identifier_value: "UNVERIFIED"
               }
             }
           }

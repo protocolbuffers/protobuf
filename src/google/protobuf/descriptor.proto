@@ -957,7 +957,7 @@ message FeatureSet {
 
   enum Utf8Validation {
     UTF8_VALIDATION_UNKNOWN = 0;
-    NONE = 1;
+    UNVERIFIED = 1;
     VERIFY = 2;
   }
   optional Utf8Validation utf8_validation = 4 [

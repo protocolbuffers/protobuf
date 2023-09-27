@@ -548,7 +548,7 @@ inline bool FeatureSet_RepeatedFieldEncoding_Parse(absl::string_view name, Featu
 }
 enum FeatureSet_Utf8Validation : int {
   FeatureSet_Utf8Validation_UTF8_VALIDATION_UNKNOWN = 0,
-  FeatureSet_Utf8Validation_NONE = 1,
+  FeatureSet_Utf8Validation_UNVERIFIED = 1,
   FeatureSet_Utf8Validation_VERIFY = 2,
 };
 
@@ -1825,7 +1825,7 @@ class PROTOBUF_EXPORT FeatureSet final :
 
   using Utf8Validation = FeatureSet_Utf8Validation;
   static constexpr Utf8Validation UTF8_VALIDATION_UNKNOWN = FeatureSet_Utf8Validation_UTF8_VALIDATION_UNKNOWN;
-  static constexpr Utf8Validation NONE = FeatureSet_Utf8Validation_NONE;
+  static constexpr Utf8Validation UNVERIFIED = FeatureSet_Utf8Validation_UNVERIFIED;
   static constexpr Utf8Validation VERIFY = FeatureSet_Utf8Validation_VERIFY;
   static inline bool Utf8Validation_IsValid(int value) {
     return FeatureSet_Utf8Validation_IsValid(value);
