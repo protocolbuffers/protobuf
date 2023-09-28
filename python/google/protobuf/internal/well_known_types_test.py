@@ -14,10 +14,10 @@ import datetime
 import unittest
 
 from google.protobuf import any_pb2
+from google.protobuf.internal import any_test_pb2
 from google.protobuf import duration_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
-from google.protobuf.internal import any_test_pb2
 from google.protobuf.internal import well_known_types
 from google.protobuf import text_format
 from google.protobuf.internal import _parameterized
@@ -256,10 +256,15 @@ class TimeUtilTest(TimeUtilTestBase):
 
   def testTimezoneNaiveMaxDatetimeConversion(self):
     ts = timestamp_pb2.Timestamp()
-    naive_end_of_time = datetime.datetime(9999, 12, 31, 23, 59, 59, 999999)
-    ts.FromDatetime(naive_end_of_time)
-    # TODO Re-enable once windows issue is fixed
-    # self.assertEqual(naive_end_of_time, ts.ToDatetime())
+    naive_max_datetime = datetime.datetime(9999, 12, 31, 23, 59, 59, 999999)
+    ts.FromDatetime(naive_max_datetime)
+    self.assertEqual(naive_max_datetime, ts.ToDatetime())
+
+  def testTimezoneNaiveMinDatetimeConversion(self):
+    ts = timestamp_pb2.Timestamp()
+    naive_min_datetime = datetime.datetime(1, 1, 1)
+    ts.FromDatetime(naive_min_datetime)
+    self.assertEqual(naive_min_datetime, ts.ToDatetime())
 
   # Two hours after the Unix Epoch, around the world.
   @_parameterized.named_parameters(
@@ -327,14 +332,24 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(tz_aware_future, ts.ToDatetime(tz))
 
   def testTimezoneAwareMaxDatetimeConversion(self):
-    tz = _TZ_PACIFIC
     ts = timestamp_pb2.Timestamp()
-    tz_aware_end_of_time = datetime.datetime(
+    tz_aware_max_datetime = datetime.datetime(
         9999, 12, 31, 23, 59, 59, 999999, tzinfo=datetime.timezone.utc
     )
-    ts.FromDatetime(tz_aware_end_of_time.astimezone(tz))
-    # TODO Re-enable once windows issue is fixed
-    # self.assertEqual(tz_aware_end_of_time, ts.ToDatetime(tz))
+    ts.FromDatetime(tz_aware_max_datetime)
+    self.assertEqual(
+        tz_aware_max_datetime, ts.ToDatetime(datetime.timezone.utc)
+    )
+
+  def testTimezoneAwareMinDatetimeConversion(self):
+    ts = timestamp_pb2.Timestamp()
+    tz_aware_min_datetime = datetime.datetime(
+        1, 1, 1, tzinfo=datetime.timezone.utc
+    )
+    ts.FromDatetime(tz_aware_min_datetime)
+    self.assertEqual(
+        tz_aware_min_datetime, ts.ToDatetime(datetime.timezone.utc)
+    )
 
   def testNanosOneSecond(self):
     # TODO: b/301980950 - Test error behavior instead once ToDatetime validates
