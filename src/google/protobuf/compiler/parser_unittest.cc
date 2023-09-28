@@ -4225,7 +4225,7 @@ TEST_F(ParseEditionsTest, OptionalKeywordBanned) {
         message A {
           optional int32 b = 1;
         })schema",
-      "3:10: Label \"optional\" is not supported in editions.  By default, all "
+      "3:10: Label \"optional\" is not supported in editions. By default, all "
       "singular fields have presence unless features.field_presence is set.\n");
 }
 

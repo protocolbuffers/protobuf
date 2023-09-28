@@ -2410,7 +2410,7 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
   }
   if (LookingAt("optional") && syntax_identifier_ == "editions") {
     RecordError(
-        "Label \"optional\" is not supported in editions.  By default, all "
+        "Label \"optional\" is not supported in editions. By default, all "
         "singular fields have presence unless features.field_presence is set.");
   }
   if (LookingAt("required") && syntax_identifier_ == "editions") {
