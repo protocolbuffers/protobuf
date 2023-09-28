@@ -28,9 +28,11 @@ try:
   import zoneinfo  # pylint:disable=g-import-not-at-top
   _TZ_JAPAN = zoneinfo.ZoneInfo('Japan')
   _TZ_PACIFIC = zoneinfo.ZoneInfo('US/Pacific')
+  has_zoneinfo = True
 except ImportError:
   _TZ_JAPAN = datetime.timezone(datetime.timedelta(hours=9), 'Japan')
   _TZ_PACIFIC = datetime.timezone(datetime.timedelta(hours=-8), 'US/Pacific')
+  has_zoneinfo = False
 
 
 class TimeUtilTestBase(_parameterized.TestCase):
@@ -216,20 +218,18 @@ class TimeUtilTest(TimeUtilTestBase):
     message.FromNanoseconds(-1999)
     self.assertEqual(-1, message.ToMicroseconds())
 
-  def testTimezoneNaiveDatetimeConversion(self):
+  def testTimezoneNaiveDatetimeConversionNearEpoch(self):
     message = timestamp_pb2.Timestamp()
     naive_utc_epoch = datetime.datetime(1970, 1, 1)
     message.FromDatetime(naive_utc_epoch)
     self.assertEqual(0, message.seconds)
     self.assertEqual(0, message.nanos)
-
     self.assertEqual(naive_utc_epoch, message.ToDatetime())
 
     naive_epoch_morning = datetime.datetime(1970, 1, 1, 8, 0, 0, 1)
     message.FromDatetime(naive_epoch_morning)
     self.assertEqual(8 * 3600, message.seconds)
     self.assertEqual(1000, message.nanos)
-
     self.assertEqual(naive_epoch_morning, message.ToDatetime())
 
     message.FromMilliseconds(1999)
@@ -239,13 +239,26 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(datetime.datetime(1970, 1, 1, 0, 0, 1, 999000),
                      message.ToDatetime())
 
+  def testTimezoneNaiveDatetimeConversionWhereTimestampLosesPrecision(self):
+    ts = timestamp_pb2.Timestamp()
     naive_future = datetime.datetime(2555, 2, 22, 1, 2, 3, 456789)
-    message.FromDatetime(naive_future)
-    self.assertEqual(naive_future, message.ToDatetime())
+    # The float timestamp for this datetime does not represent the integer
+    # millisecond value with full precision.
+    self.assertNotEqual(
+        naive_future.astimezone(datetime.timezone.utc),
+        datetime.datetime.fromtimestamp(
+            naive_future.timestamp(), datetime.timezone.utc
+        ),
+    )
+    # It still round-trips correctly.
+    ts.FromDatetime(naive_future)
+    self.assertEqual(naive_future, ts.ToDatetime())
 
-    naive_end_of_time = datetime.datetime.max
-    message.FromDatetime(naive_end_of_time)
-    self.assertEqual(naive_end_of_time, message.ToDatetime())
+  def testTimezoneNaiveMaxDatetimeConversion(self):
+    ts = timestamp_pb2.Timestamp()
+    naive_end_of_time = datetime.datetime(9999, 12, 31, 23, 59, 59, 999999)
+    ts.FromDatetime(naive_end_of_time)
+    self.assertEqual(naive_end_of_time, ts.ToDatetime())
 
   # Two hours after the Unix Epoch, around the world.
   @_parameterized.named_parameters(
@@ -278,6 +291,71 @@ class TimeUtilTest(TimeUtilTestBase):
         datetime.datetime(1970, 1, 1, 2, tzinfo=datetime.timezone.utc),
         aware_datetime)
     self.assertEqual(tzinfo, aware_datetime.tzinfo)
+
+  @unittest.skipIf(
+      not has_zoneinfo,
+      'Versions without zoneinfo use a fixed-offset timezone that does not'
+      ' demonstrate this problem.',
+  )
+  def testDatetimeConversionWithDifferentUtcOffsetThanEpoch(self):
+    # This timezone has a different UTC offset at this date than at the epoch.
+    # The datetime returned by FromDatetime needs to have the correct offset
+    # for the moment represented.
+    tz = _TZ_PACIFIC
+    dt = datetime.datetime(2016, 6, 26, tzinfo=tz)
+    epoch_dt = datetime.datetime.fromtimestamp(
+        0, tz=datetime.timezone.utc
+    ).astimezone(tz)
+    self.assertNotEqual(dt.utcoffset(), epoch_dt.utcoffset())
+    ts = timestamp_pb2.Timestamp()
+    ts.FromDatetime(dt)
+    self.assertEqual(dt, ts.ToDatetime(tzinfo=dt.tzinfo))
+
+  def testTimezoneAwareDatetimeConversionWhereTimestampLosesPrecision(self):
+    tz = _TZ_PACIFIC
+    ts = timestamp_pb2.Timestamp()
+    tz_aware_future = datetime.datetime(2555, 2, 22, 1, 2, 3, 456789, tzinfo=tz)
+    # The float timestamp for this datetime does not represent the integer
+    # millisecond value with full precision.
+    self.assertNotEqual(
+        tz_aware_future,
+        datetime.datetime.fromtimestamp(tz_aware_future.timestamp(), tz),
+    )
+    # It still round-trips correctly.
+    ts.FromDatetime(tz_aware_future)
+    self.assertEqual(tz_aware_future, ts.ToDatetime(tz))
+
+  def testTimezoneAwareMaxDatetimeConversion(self):
+    tz = _TZ_PACIFIC
+    ts = timestamp_pb2.Timestamp()
+    tz_aware_end_of_time = datetime.datetime(
+        9999, 12, 31, 23, 59, 59, 999999, tzinfo=datetime.timezone.utc
+    )
+    ts.FromDatetime(tz_aware_end_of_time.astimezone(tz))
+    self.assertEqual(tz_aware_end_of_time, ts.ToDatetime(tz))
+
+  def testNanosOneSecond(self):
+    # TODO: b/301980950 - Test error behavior instead once ToDatetime validates
+    # that nanos are in expected range.
+    tz = _TZ_PACIFIC
+    ts = timestamp_pb2.Timestamp(nanos=1_000_000_000)
+    self.assertEqual(ts.ToDatetime(), datetime.datetime(1970, 1, 1, 0, 0, 1))
+    self.assertEqual(
+        ts.ToDatetime(tz), datetime.datetime(1969, 12, 31, 16, 0, 1, tzinfo=tz)
+    )
+
+  def testNanosNegativeOneSecond(self):
+    # TODO: b/301980950 - Test error behavior instead once ToDatetime validates
+    # that nanos are in expected range.
+    tz = _TZ_PACIFIC
+    ts = timestamp_pb2.Timestamp(nanos=-1_000_000_000)
+    self.assertEqual(
+        ts.ToDatetime(), datetime.datetime(1969, 12, 31, 23, 59, 59)
+    )
+    self.assertEqual(
+        ts.ToDatetime(tz),
+        datetime.datetime(1969, 12, 31, 15, 59, 59, tzinfo=tz),
+    )
 
   def testTimedeltaConversion(self):
     message = duration_pb2.Duration()

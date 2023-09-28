@@ -67,11 +67,6 @@ class Any(object):
     return '/' in self.type_url and self.TypeName() == descriptor.full_name
 
 
-_EPOCH_DATETIME_NAIVE = datetime.datetime.utcfromtimestamp(0)
-_EPOCH_DATETIME_AWARE = datetime.datetime.fromtimestamp(
-    0, tz=datetime.timezone.utc)
-
-
 class Timestamp(object):
   """Class for Timestamp message type."""
 
@@ -223,13 +218,40 @@ class Timestamp(object):
 
       Otherwise, returns a timezone-aware datetime in the input timezone.
     """
-    delta = datetime.timedelta(
-        seconds=self.seconds,
-        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND))
+    # This could be made simpler and more efficient if there was a way to
+    # construct a datetime from a microseconds-since-epoch integer. For now, we
+    # can construct the datetime from the timestamp in seconds, then set the
+    # microseconds separately to avoid an unnecessary loss of precision (beyond
+    # truncating nanosecond precision to micro). This ensures that datetimes
+    # round-trip correctly (at least if timezone offset is not sub-second and
+    # does not change mid-second).
+
+    # Take care to handle Timestamps where |nanos| > 1s consistent with previous
+    # behavior.
+    #
+    # TODO: b/301980950 - Instead, strictly check that self.nanos is in the
+    # expected range.
+    seconds = self.seconds + self.nanos // _NANOS_PER_SECOND
     if tzinfo is None:
-      return _EPOCH_DATETIME_NAIVE + delta
+      # utcfromtimestamp will be deprecated in 3.12, so avoiding it even though
+      # this requires a call to replace.
+      dt = datetime.datetime.fromtimestamp(
+          seconds, datetime.timezone.utc
+      ).replace(tzinfo=None)
     else:
-      return _EPOCH_DATETIME_AWARE.astimezone(tzinfo) + delta
+      dt = datetime.datetime.fromtimestamp(seconds, tzinfo)
+    if self.nanos != 0:
+      nanos = _RoundTowardZero(
+          self.nanos % _NANOS_PER_SECOND, _NANOS_PER_MICROSECOND
+      )
+      # This gets the correct result if tzinfo.utcoffset neither affects nor
+      # is affected by dt.microsecond, i.e. the offset is not sub-second and
+      # never changes mid-second. It doesn't violate the contract of tzinfo for
+      # either of those to be the case, though one would hope not to run into
+      # that in a situation where it would matter.
+      if nanos != 0:
+        dt = dt.replace(microsecond=nanos)
+    return dt
 
   def FromDatetime(self, dt):
     """Converts datetime to Timestamp.
