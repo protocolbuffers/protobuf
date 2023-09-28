@@ -129,7 +129,7 @@ class Output {
       void* void_buffer;
       int size;
       if (!stream_->Next(&void_buffer, &size)) {
-        fprintf(stderr, "upbc: Failed to write to to output\n");
+        fprintf(stderr, "upb_generator: Failed to write to to output\n");
         abort();
       }
       output_buffer_ = static_cast<char*>(void_buffer);

@@ -28,29 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-syntax = "proto2";
+#ifndef UPB_PROTOS_GENERATOR_KEYWORDS_H
+#define UPB_PROTOS_GENERATOR_KEYWORDS_H
 
-package upbc;
+#include <string>
 
-import "google/protobuf/compiler/plugin.proto";
+namespace upb {
+namespace generator {
 
-message CodeGeneratorRequest {
-  message UpbInfo {
-    optional string mini_descriptor = 1;
+// Resolves proto field name conflict with C++ reserved keywords.
+std::string ResolveKeywordConflict(const std::string& name);
 
-    // An ordered list of fully qualified sub-message names whose upb_MiniTable
-    // should be passed to upb_MiniTable_Link().
-    repeated string sub_message = 3;
+}  // namespace generator
+}  // namespace upb
 
-    // An ordered list of fully qualified sub-enum names whose upb_MiniTableEnum
-    // should be passed to upb_MiniTable_Link().
-    repeated string sub_enum = 4;
-  }
-
-  // The pb sent by protoc to its plugins.
-  optional google.protobuf.compiler.CodeGeneratorRequest request = 1;
-
-  // upb-specific info for the messages/enums/extensions in the request, keyed
-  // by the fully qualified names.
-  map<string, UpbInfo> upb_info = 2;
-}
+#endif  // UPB_PROTOS_GENERATOR_KEYWORDS_H

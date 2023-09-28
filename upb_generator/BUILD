@@ -20,7 +20,7 @@ load(
     "upb_proto_reflection_library",
 )
 load(
-    "//upbc:bootstrap_compiler.bzl",
+    "//upb_generator:bootstrap_compiler.bzl",
     "bootstrap_cc_binary",
     "bootstrap_cc_library",
     "bootstrap_upb_proto_library",
@@ -191,8 +191,8 @@ bootstrap_cc_library(
 )
 
 cc_binary(
-    name = "libupbc.so",
-    srcs = ["upbc_so.c"],
+    name = "libupb_generator.so",
+    srcs = ["upb_generator_so.c"],
     copts = UPB_DEFAULT_COPTS + ["-DUPB_BUILD_API"],
     linkshared = 1,
     linkstatic = 1,

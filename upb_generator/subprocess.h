@@ -31,8 +31,8 @@
 // Shamelessly copied from the protobuf compiler's subprocess.h
 // except this version passes strings instead of Messages.
 
-#ifndef THIRD_PARTY_UPB_UPBC_H_
-#define THIRD_PARTY_UPB_UPBC_H_
+#ifndef THIRD_PARTY_UPB_UPB_GENERATOR_H_
+#define THIRD_PARTY_UPB_UPB_GENERATOR_H_
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -45,7 +45,8 @@
 #endif  // !_WIN32
 #include <string>
 
-namespace upbc {
+namespace upb {
+namespace generator {
 
 // Utility class for launching sub-processes.
 class Subprocess {
@@ -97,6 +98,7 @@ class Subprocess {
 #endif  // !_WIN32
 };
 
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb
 
-#endif  // THIRD_PARTY_UPB_UPBC_H_
+#endif  // THIRD_PARTY_UPB_UPB_GENERATOR_H_

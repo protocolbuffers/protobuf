@@ -41,9 +41,9 @@
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/names.h"
 #include "protos_generator/output.h"
-#include "upbc/common.h"
-#include "upbc/keywords.h"
-#include "upbc/names.h"
+#include "upb_generator/common.h"
+#include "upb_generator/keywords.h"
+#include "upb_generator/names.h"
 
 namespace protos_generator {
 
@@ -98,12 +98,12 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
   OutputIndenter i(output);
 
   auto field_names = CreateFieldNameMap(desc);
-  auto upbc_field_names = upbc::CreateFieldNameMap(desc);
+  auto upbc_field_names = upb::generator::CreateFieldNameMap(desc);
 
   for (const auto* field : FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
     std::string resolved_upbc_name =
-        upbc::ResolveFieldName(field, upbc_field_names);
+        upb::generator::ResolveFieldName(field, upbc_field_names);
     WriteFieldAccessorHazzer(desc, field, resolved_field_name,
                              resolved_upbc_name, output);
     WriteFieldAccessorClear(desc, field, resolved_field_name,
@@ -214,14 +214,14 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
   output("namespace internal {\n");
   const char arena_expression[] = "arena_";
   auto field_names = CreateFieldNameMap(desc);
-  auto upbc_field_names = upbc::CreateFieldNameMap(desc);
+  auto upbc_field_names = upb::generator::CreateFieldNameMap(desc);
 
   // Generate const methods.
   OutputIndenter i(output);
   for (const auto* field : FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
     std::string resolved_upbc_name =
-        upbc::ResolveFieldName(field, upbc_field_names);
+        upb::generator::ResolveFieldName(field, upbc_field_names);
     if (field->is_map()) {
       WriteMapAccessorDefinitions(desc, field, resolved_field_name, class_name,
                                   output);
@@ -327,7 +327,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
         MessagePtrConstType(val, /* is_const */ true), MessageName(message),
         MessageName(val->message_type()), optional_conversion_code,
         converted_key_name, upbc_name,
-        ::upbc::MessageInit(val->message_type()->full_name()));
+        ::upb::generator::MessageInit(val->message_type()->full_name()));
     output(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
@@ -341,7 +341,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
         MessagePtrConstType(val, /* is_const */ false), MessageName(message),
         MessageName(val->message_type()), optional_conversion_code,
         converted_key_name, upbc_name,
-        ::upbc::MessageInit(val->message_type()->full_name()));
+        ::upb::generator::MessageInit(val->message_type()->full_name()));
     output(
         R"cc(
           absl::StatusOr<$3> $0::get_$1($2 key) {
@@ -586,7 +586,7 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
       }
     }
   }
-  return upbc::ResolveKeywordConflict(std::string(field_name));
+  return upb::generator::ResolveKeywordConflict(std::string(field_name));
 }
 
 }  // namespace protos_generator

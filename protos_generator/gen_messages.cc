@@ -42,8 +42,8 @@
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/names.h"
 #include "protos_generator/output.h"
-#include "upbc/common.h"
-#include "upbc/file_layout.h"
+#include "upb_generator/common.h"
+#include "upb_generator/file_layout.h"
 
 namespace protos_generator {
 
@@ -176,7 +176,8 @@ void WriteModelPublicDeclaration(
             return *this;
           }
       )cc",
-      ClassName(descriptor), ::upbc::MessageInit(descriptor->full_name()),
+      ClassName(descriptor),
+      ::upb::generator::MessageInit(descriptor->full_name()),
       MessageName(descriptor), QualifiedClassName(descriptor));
 
   WriteUsingAccessorsInHeader(descriptor, MessageClassType::kMessage, output);
@@ -387,7 +388,7 @@ void WriteMessageImplementation(
           }
         )cc",
         ClassName(descriptor), MessageName(descriptor),
-        ::upbc::MessageInit(descriptor->full_name()),
+        ::upb::generator::MessageInit(descriptor->full_name()),
         QualifiedClassName(descriptor));
     output("\n");
     // Minitable
@@ -395,7 +396,8 @@ void WriteMessageImplementation(
         R"cc(
           const upb_MiniTable* $0::minitable() { return &$1; }
         )cc",
-        ClassName(descriptor), ::upbc::MessageInit(descriptor->full_name()));
+        ClassName(descriptor),
+        ::upb::generator::MessageInit(descriptor->full_name()));
     output("\n");
   }
 

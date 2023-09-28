@@ -39,7 +39,8 @@
 #include "google/protobuf/descriptor.h"
 #include "upb/reflection/def.hpp"
 
-namespace upbc {
+namespace upb {
+namespace generator {
 
 using NameToFieldDescriptorMap =
     absl::flat_hash_map<absl::string_view, const google::protobuf::FieldDescriptor*>;
@@ -68,6 +69,7 @@ ABSL_CONST_INIT extern const absl::string_view kRepeatedFieldArrayGetterPostfix;
 ABSL_CONST_INIT extern const absl::string_view
     kRepeatedFieldMutableArrayGetterPostfix;
 
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb
 
 #endif  // UPB_PROTOS_GENERATOR_NAMES_H

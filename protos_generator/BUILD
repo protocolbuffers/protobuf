@@ -30,7 +30,7 @@ cc_binary(
         ":output",
         "//:protobuf",
         "//src/google/protobuf/compiler:code_generator",
-        "//upbc:file_layout",
+        "//upb_generator:file_layout",
     ],
 )
 
@@ -58,10 +58,10 @@ cc_library(
         "//:protobuf",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
-        "//upbc:common",
-        "//upbc:file_layout",
-        "//upbc:keywords",
-        "//upbc:names",
+        "//upb_generator:common",
+        "//upb_generator:file_layout",
+        "//upb_generator:keywords",
+        "//upb_generator:names",
     ],
 )
 
@@ -96,6 +96,6 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         ":output",
-        "//upbc:keywords",
+        "//upb_generator:keywords",
     ],
 )

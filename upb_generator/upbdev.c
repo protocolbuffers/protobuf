@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upbc/upbdev.h"
+#include "upb_generator/upbdev.h"
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -45,9 +45,9 @@
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/mem/arena.h"
-#include "upbc/code_generator_request.h"
-#include "upbc/code_generator_request.upb.h"
-#include "upbc/code_generator_request.upbdefs.h"
+#include "upb_generator/code_generator_request.h"
+#include "upb_generator/code_generator_request.upb.h"
+#include "upb_generator/code_generator_request.upbdefs.h"
 
 static google_protobuf_compiler_CodeGeneratorResponse* upbc_JsonDecode(
     const char* data, size_t size, upb_Arena* arena, upb_Status* status) {
@@ -65,12 +65,12 @@ static google_protobuf_compiler_CodeGeneratorResponse* upbc_JsonDecode(
   return response;
 }
 
-static upb_StringView upbc_JsonEncode(const upbc_CodeGeneratorRequest* request,
+static upb_StringView upbc_JsonEncode(const upb_CodeGeneratorRequest* request,
                                       upb_Arena* arena, upb_Status* status) {
   upb_StringView out = {.data = NULL, .size = 0};
 
   upb_DefPool* s = upb_DefPool_New();
-  const upb_MessageDef* m = upbc_CodeGeneratorRequest_getmsgdef(s);
+  const upb_MessageDef* m = upb_CodeGeneratorRequest_getmsgdef(s);
   const int options = upb_JsonEncode_FormatEnumsAsIntegers;
 
   out.size = upb_JsonEncode(request, m, s, options, NULL, 0, status);
@@ -95,7 +95,7 @@ upb_StringView upbdev_ProcessInput(const char* buf, size_t size,
   google_protobuf_compiler_CodeGeneratorRequest* inner_request =
       google_protobuf_compiler_CodeGeneratorRequest_parse(buf, size, arena);
 
-  const upbc_CodeGeneratorRequest* outer_request =
+  const upb_CodeGeneratorRequest* outer_request =
       upbc_MakeCodeGeneratorRequest(inner_request, arena, status);
   if (!upb_Status_IsOk(status)) return out;
 

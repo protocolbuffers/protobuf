@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPB_UPBC_PLUGIN_H_
-#define UPB_UPBC_PLUGIN_H_
+#ifndef UPB_UPB_GENERATOR_PLUGIN_H_
+#define UPB_UPB_GENERATOR_PLUGIN_H_
 
 #include <stdio.h>
 
@@ -42,8 +42,8 @@
 
 // begin:google_only
 // #ifndef UPB_BOOTSTRAP_STAGE0
-// #include "net/proto2/proto/descriptor.upb.h"
-// #include "third_party/protobuf/compiler/plugin.upb.h"
+// #include "google/protobuf/descriptor.upb.h"
+// #include "google/protobuf/compiler/plugin.upb.h"
 // #else
 // #include "google/protobuf/compiler/plugin.upb.h"
 // #include "google/protobuf/descriptor.upb.h"
@@ -64,7 +64,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-namespace upbc {
+namespace upb {
+namespace generator {
 
 inline std::vector<std::pair<std::string, std::string>> ParseGeneratorParameter(
     const absl::string_view text) {
@@ -205,8 +206,9 @@ class Plugin {
   }
 };
 
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb
 
 #include "upb/port/undef.inc"
 
-#endif  // UPB_UPBC_PLUGIN_H_
+#endif  // UPB_UPB_GENERATOR_PLUGIN_H_

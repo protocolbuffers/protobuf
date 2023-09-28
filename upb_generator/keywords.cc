@@ -28,12 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upbc/keywords.h"
+#include "upb_generator/keywords.h"
 
 #include <string>
 #include <unordered_set>
 
-namespace upbc {
+namespace upb {
+namespace generator {
 
 static const char* const kKeywordList[] = {
     //
@@ -149,4 +150,5 @@ std::string ResolveKeywordConflict(const std::string& name) {
   return name;
 }
 
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb

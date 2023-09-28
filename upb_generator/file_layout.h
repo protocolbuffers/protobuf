@@ -28,14 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPBC_FILE_LAYOUT_H
-#define UPBC_FILE_LAYOUT_H
+#ifndef UPB_GENERATOR_FILE_LAYOUT_H
+#define UPB_GENERATOR_FILE_LAYOUT_H
 
 #include <string>
 
 // begin:google_only
 // #ifndef UPB_BOOTSTRAP_STAGE0
-// #include "net/proto2/proto/descriptor.upb.h"
+// #include "google/protobuf/descriptor.upb.h"
 // #else
 // #include "google/protobuf/descriptor.upb.h"
 // #endif
@@ -54,7 +54,8 @@
 // Must be last
 #include "upb/port/def.inc"
 
-namespace upbc {
+namespace upb {
+namespace generator {
 
 std::vector<upb::EnumDefPtr> SortedEnums(upb::FileDefPtr file);
 
@@ -122,8 +123,9 @@ class DefPoolPair {
   upb::DefPool pool64_;
 };
 
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb
 
 #include "upb/port/undef.inc"
 
-#endif  // UPBC_FILE_LAYOUT_H
+#endif  // UPB_GENERATOR_FILE_LAYOUT_H

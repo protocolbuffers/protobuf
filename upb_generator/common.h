@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPBC_COMMON_H
-#define UPBC_COMMON_H
+#ifndef UPB_GENERATOR_COMMON_H
+#define UPB_GENERATOR_COMMON_H
 
 #include <vector>
 
@@ -37,7 +37,8 @@
 #include "absl/strings/substitute.h"
 #include "upb/reflection/def.hpp"
 
-namespace upbc {
+namespace upb {
+namespace generator {
 
 class Output {
  public:
@@ -97,6 +98,7 @@ std::string GetModeInit(const upb_MiniTableField* field32,
 std::string GetFieldRep(const upb_MiniTableField* field32,
                         const upb_MiniTableField* field64);
 
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb
 
-#endif  // UPBC_COMMON_H
+#endif  // UPB_GENERATOR_COMMON_H

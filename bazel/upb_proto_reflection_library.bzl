@@ -29,7 +29,7 @@ _upb_proto_reflection_library_aspect = aspect(
             default = "//upb:upb_proto_library_copts__for_generated_code_only_do_not_use",
         ),
         "_upbdefs_toolchain": attr.label(
-            default = Label("//upbc:protoc-gen-upbdefs_toolchain"),
+            default = Label("//upb_generator:protoc-gen-upbdefs_toolchain"),
             cfg = getattr(proto_common, "proto_lang_toolchain_cfg", "target"),
         ),
         "_cc_toolchain": attr.label(

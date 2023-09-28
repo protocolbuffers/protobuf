@@ -32,7 +32,7 @@ upb_c_proto_library_aspect = aspect(
             default = "//upb:upb_proto_library_copts__for_generated_code_only_do_not_use",
         ),
         "_upb_toolchain": attr.label(
-            default = Label("//upbc:protoc-gen-upb_toolchain"),
+            default = Label("//upb_generator:protoc-gen-upb_toolchain"),
         ),
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",

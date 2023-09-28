@@ -41,9 +41,9 @@
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/names.h"
 #include "protos_generator/output.h"
-#include "upbc/common.h"
-#include "upbc/file_layout.h"
-#include "upbc/names.h"
+#include "upb_generator/common.h"
+#include "upb_generator/file_layout.h"
+#include "upb_generator/names.h"
 
 namespace protos_generator {
 namespace protobuf = ::google::protobuf;
@@ -204,13 +204,13 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
           return ::protos::RepeatedField<$1>::Proxy(arr, arena_);
         }
       )cc",
-      class_name,                                       // $0
-      MessageBaseType(field, /* maybe_const */ false),  // $1
-      resolved_field_name,                              // $2
-      MessageName(message),                             // $3
-      upbc_name,                                        // $4
-      upbc::kRepeatedFieldArrayGetterPostfix,           // $5
-      upbc::kRepeatedFieldMutableArrayGetterPostfix     // $6
+      class_name,                                              // $0
+      MessageBaseType(field, /* maybe_const */ false),         // $1
+      resolved_field_name,                                     // $2
+      MessageName(message),                                    // $3
+      upbc_name,                                               // $4
+      upb::generator::kRepeatedFieldArrayGetterPostfix,        // $5
+      upb::generator::kRepeatedFieldMutableArrayGetterPostfix  // $6
   );
 }
 
@@ -270,13 +270,13 @@ void WriteRepeatedStringAccessor(const protobuf::Descriptor* message,
           return ::protos::RepeatedField<$1>::Proxy(arr, arena_);
         }
       )cc",
-      class_name,                                    // $0
-      CppConstType(field),                           // $1
-      resolved_field_name,                           // $2
-      MessageName(message),                          // $3
-      upbc_name,                                     // $4
-      upbc::kRepeatedFieldArrayGetterPostfix,        // $5
-      upbc::kRepeatedFieldMutableArrayGetterPostfix  // $6
+      class_name,                                              // $0
+      CppConstType(field),                                     // $1
+      resolved_field_name,                                     // $2
+      MessageName(message),                                    // $3
+      upbc_name,                                               // $4
+      upb::generator::kRepeatedFieldArrayGetterPostfix,        // $5
+      upb::generator::kRepeatedFieldMutableArrayGetterPostfix  // $6
   );
 }
 
@@ -334,13 +334,13 @@ void WriteRepeatedScalarAccessor(const protobuf::Descriptor* message,
           return ::protos::RepeatedField<$1>::Proxy(arr, arena_);
         }
       )cc",
-      class_name,                                    // $0
-      CppConstType(field),                           // $1
-      resolved_field_name,                           // $2
-      MessageName(message),                          // $3
-      upbc_name,                                     // $4
-      upbc::kRepeatedFieldArrayGetterPostfix,        // $5
-      upbc::kRepeatedFieldMutableArrayGetterPostfix  // $6
+      class_name,                                              // $0
+      CppConstType(field),                                     // $1
+      resolved_field_name,                                     // $2
+      MessageName(message),                                    // $3
+      upbc_name,                                               // $4
+      upb::generator::kRepeatedFieldArrayGetterPostfix,        // $5
+      upb::generator::kRepeatedFieldMutableArrayGetterPostfix  // $6
   );
 }
 

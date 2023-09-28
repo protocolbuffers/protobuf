@@ -31,7 +31,7 @@
 // Shamelessly copied from the protobuf compiler's subprocess.cc
 // except this version passes strings instead of Messages.
 
-#include "upbc/subprocess.h"
+#include "upb_generator/subprocess.h"
 
 #include <algorithm>
 #include <cstring>
@@ -50,7 +50,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-namespace upbc {
+namespace upb {
+namespace generator {
 
 namespace {
 char* portable_strdup(const char* s) {
@@ -462,4 +463,5 @@ bool Subprocess::Communicate(const std::string& input_data,
 
 #endif  // !_WIN32
 
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb

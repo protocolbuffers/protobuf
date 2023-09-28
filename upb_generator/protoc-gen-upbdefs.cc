@@ -33,11 +33,12 @@
 #include "google/protobuf/descriptor.upb.h"
 #include "upb/reflection/def.hpp"
 #include "upb/util/def_to_proto.h"
-#include "upbc/common.h"
-#include "upbc/file_layout.h"
-#include "upbc/plugin.h"
+#include "upb_generator/common.h"
+#include "upb_generator/file_layout.h"
+#include "upb_generator/plugin.h"
 
-namespace upbc {
+namespace upb {
+namespace generator {
 namespace {
 
 std::string DefInitSymbol(upb::FileDefPtr file) {
@@ -160,16 +161,18 @@ void GenerateFile(upb::FileDefPtr file, Plugin* plugin) {
 }
 
 }  // namespace
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb
 
 int main(int argc, char** argv) {
-  upbc::Plugin plugin;
+  upb::generator::Plugin plugin;
   if (!plugin.parameter().empty()) {
     plugin.SetError(
         absl::StrCat("Expected no parameters, got: ", plugin.parameter()));
     return 0;
   }
-  plugin.GenerateFiles(
-      [&](upb::FileDefPtr file) { upbc::GenerateFile(file, &plugin); });
+  plugin.GenerateFiles([&](upb::FileDefPtr file) {
+    upb::generator::GenerateFile(file, &plugin);
+  });
   return 0;
 }

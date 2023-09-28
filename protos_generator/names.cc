@@ -32,7 +32,7 @@
 
 #include <string>
 
-#include "upbc/keywords.h"
+#include "upb_generator/keywords.h"
 
 namespace protos_generator {
 
@@ -113,7 +113,7 @@ std::string ClassName(const protobuf::Descriptor* descriptor) {
   }
   if (parent) res += ClassName(parent) + "_";
   absl::StrAppend(&res, descriptor->name());
-  return ::upbc::ResolveKeywordConflict(res);
+  return ::upb::generator::ResolveKeywordConflict(res);
 }
 
 std::string QualifiedClassName(const protobuf::Descriptor* descriptor) {

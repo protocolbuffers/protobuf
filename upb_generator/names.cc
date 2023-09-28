@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upbc/names.h"
+#include "upb_generator/names.h"
 
 #include <string>
 
@@ -37,7 +37,8 @@
 #include "google/protobuf/descriptor.h"
 #include "upb/reflection/def.hpp"
 
-namespace upbc {
+namespace upb {
+namespace generator {
 
 namespace protobuf = ::google::protobuf;
 
@@ -129,4 +130,5 @@ std::string ResolveFieldName(upb::FieldDefPtr field,
   return std::string(field_name);
 }
 
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb

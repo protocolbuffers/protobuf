@@ -28,15 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upbc/file_layout.h"
+#include "upb_generator/file_layout.h"
 
 #include <string>
 #include <unordered_set>
 
 #include "upb/mini_table/internal/extension.h"
-#include "upbc/common.h"
+#include "upb_generator/common.h"
 
-namespace upbc {
+namespace upb {
+namespace generator {
 
 const char* kEnumsInit = "enums_layout";
 const char* kExtensionsInit = "extensions_layout";
@@ -141,4 +142,5 @@ std::vector<upb::FieldDefPtr> FieldNumberOrder(upb::MessageDefPtr message) {
   return fields;
 }
 
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb

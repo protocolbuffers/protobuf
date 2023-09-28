@@ -12,7 +12,7 @@ load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
 load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
 load("//bazel:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
 load(
-    "//upbc:bootstrap_compiler.bzl",
+    "//upb_generator:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
     "bootstrap_upb_proto_library",
 )

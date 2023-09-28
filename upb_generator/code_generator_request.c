@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upbc/code_generator_request.h"
+#include "upb_generator/code_generator_request.h"
 
 #include <inttypes.h>
 
@@ -48,7 +48,7 @@ typedef struct {
   upb_Status* status;
   upb_DefPool* symtab;
 
-  upbc_CodeGeneratorRequest* out;
+  upb_CodeGeneratorRequest* out;
 
   jmp_buf jmp;
 } upbc_State;
@@ -68,7 +68,7 @@ static void upbc_State_Init(upbc_State* s) {
   s->symtab = upb_DefPool_New();
   if (!s->symtab) upbc_Error(s, __func__, "could not allocate def pool");
 
-  s->out = upbc_CodeGeneratorRequest_new(s->arena);
+  s->out = upb_CodeGeneratorRequest_new(s->arena);
   if (!s->out) upbc_Error(s, __func__, "could not allocate request");
 }
 
@@ -83,11 +83,11 @@ static upb_StringView upbc_State_StrDup(upbc_State* s, const char* str) {
 static void upbc_State_AddMiniDescriptor(upbc_State* s, const char* name,
                                          upb_StringView encoding) {
   const upb_StringView key = upb_StringView_FromString(name);
-  upbc_CodeGeneratorRequest_UpbInfo* info =
-      upbc_CodeGeneratorRequest_UpbInfo_new(s->arena);
+  upb_CodeGeneratorRequest_UpbInfo* info =
+      upb_CodeGeneratorRequest_UpbInfo_new(s->arena);
   if (!info) upbc_Error(s, __func__, "Out of memory");
-  upbc_CodeGeneratorRequest_UpbInfo_set_mini_descriptor(info, encoding);
-  bool ok = upbc_CodeGeneratorRequest_upb_info_set(s->out, key, info, s->arena);
+  upb_CodeGeneratorRequest_UpbInfo_set_mini_descriptor(info, encoding);
+  bool ok = upb_CodeGeneratorRequest_upb_info_set(s->out, key, info, s->arena);
   if (!ok) upbc_Error(s, __func__, "could not set mini descriptor in map");
 }
 
@@ -144,7 +144,7 @@ static void upbc_Scrape_File(upbc_State* s, const upb_FileDef* f) {
 
 static void upbc_Scrape_Files(upbc_State* s) {
   const google_protobuf_compiler_CodeGeneratorRequest* request =
-      upbc_CodeGeneratorRequest_request(s->out);
+      upb_CodeGeneratorRequest_request(s->out);
 
   size_t len = 0;
   const google_protobuf_FileDescriptorProto* const* files =
@@ -184,7 +184,7 @@ static void upbc_Scrape_NestedMessages(upbc_State* s, const upb_MessageDef* m) {
 }
 
 static void upbc_Scrape_MessageSubs(upbc_State* s,
-                                    upbc_CodeGeneratorRequest_UpbInfo* info,
+                                    upb_CodeGeneratorRequest_UpbInfo* info,
                                     const upb_MessageDef* m) {
   const upb_MiniTableField** fields =
       malloc(upb_MessageDef_FieldCount(m) * sizeof(*fields));
@@ -200,7 +200,7 @@ static void upbc_Scrape_MessageSubs(upbc_State* s,
     const upb_MessageDef* sub = upb_FieldDef_MessageSubDef(f);
     if (!sub) upbc_Error(s, __func__, "Missing sub");
     upb_StringView name = upbc_State_StrDup(s, upb_MessageDef_FullName(sub));
-    upbc_CodeGeneratorRequest_UpbInfo_add_sub_message(info, name, s->arena);
+    upb_CodeGeneratorRequest_UpbInfo_add_sub_message(info, name, s->arena);
   }
 
   for (uint32_t i = 0; i < enum_count; i++) {
@@ -210,7 +210,7 @@ static void upbc_Scrape_MessageSubs(upbc_State* s,
     const upb_EnumDef* sub = upb_FieldDef_EnumSubDef(f);
     if (!sub) upbc_Error(s, __func__, "Missing sub (2)");
     upb_StringView name = upbc_State_StrDup(s, upb_EnumDef_FullName(sub));
-    upbc_CodeGeneratorRequest_UpbInfo_add_sub_enum(info, name, s->arena);
+    upb_CodeGeneratorRequest_UpbInfo_add_sub_enum(info, name, s->arena);
   }
 
   free(fields);
@@ -221,15 +221,15 @@ static void upbc_Scrape_Message(upbc_State* s, const upb_MessageDef* m) {
   bool ok = upb_MessageDef_MiniDescriptorEncode(m, s->arena, &desc);
   if (!ok) upbc_Error(s, __func__, "could not encode message");
 
-  upbc_CodeGeneratorRequest_UpbInfo* info =
-      upbc_CodeGeneratorRequest_UpbInfo_new(s->arena);
+  upb_CodeGeneratorRequest_UpbInfo* info =
+      upb_CodeGeneratorRequest_UpbInfo_new(s->arena);
   if (!info) upbc_Error(s, __func__, "Out of memory");
-  upbc_CodeGeneratorRequest_UpbInfo_set_mini_descriptor(info, desc);
+  upb_CodeGeneratorRequest_UpbInfo_set_mini_descriptor(info, desc);
 
   upbc_Scrape_MessageSubs(s, info, m);
 
   const upb_StringView key = upbc_State_StrDup(s, upb_MessageDef_FullName(m));
-  ok = upbc_CodeGeneratorRequest_upb_info_set(s->out, key, info, s->arena);
+  ok = upb_CodeGeneratorRequest_upb_info_set(s->out, key, info, s->arena);
   if (!ok) upbc_Error(s, __func__, "could not set mini descriptor in map");
 
   upbc_Scrape_NestedEnums(s, m);
@@ -237,18 +237,18 @@ static void upbc_Scrape_Message(upbc_State* s, const upb_MessageDef* m) {
   upbc_Scrape_NestedMessages(s, m);
 }
 
-static upbc_CodeGeneratorRequest* upbc_State_MakeCodeGeneratorRequest(
+static upb_CodeGeneratorRequest* upbc_State_MakeCodeGeneratorRequest(
     upbc_State* const s, google_protobuf_compiler_CodeGeneratorRequest* const request) {
   if (UPB_SETJMP(s->jmp)) return NULL;
   upbc_State_Init(s);
 
-  upbc_CodeGeneratorRequest_set_request(s->out, request);
+  upb_CodeGeneratorRequest_set_request(s->out, request);
   upbc_Scrape_Files(s);
   upbc_State_Fini(s);
   return s->out;
 }
 
-upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
+upb_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
     google_protobuf_compiler_CodeGeneratorRequest* request, upb_Arena* arena,
     upb_Status* status) {
   upbc_State s = {

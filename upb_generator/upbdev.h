@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPBC_UPBDEV_H_
-#define UPBC_UPBDEV_H_
+#ifndef UPB_GENERATOR_UPBDEV_H_
+#define UPB_GENERATOR_UPBDEV_H_
 
 #include "upb/base/status.h"
 #include "upb/base/string_view.h"
@@ -43,7 +43,7 @@ extern "C" {
 #endif
 
 // Consume |buf|, deserialize it to a Code_Generator_Request proto, construct a
-// upbc_Code_Generator_Request, and return it as a JSON-encoded string.
+// upb_Code_Generator_Request, and return it as a JSON-encoded string.
 UPB_API upb_StringView upbdev_ProcessInput(const char* buf, size_t size,
                                            upb_Arena* arena,
                                            upb_Status* status);
@@ -68,4 +68,4 @@ UPB_API void upbdev_Status_Clear(upb_Status* status);
 
 #include "upb/port/undef.inc"
 
-#endif  // UPBC_UPBDEV_H_
+#endif  // UPB_GENERATOR_UPBDEV_H_

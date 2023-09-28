@@ -32,8 +32,8 @@
 #include <string>
 
 #include "google/protobuf/compiler/plugin.upb.h"
-#include "upbc/subprocess.h"
-#include "upbc/upbdev.h"
+#include "upb_generator/subprocess.h"
+#include "upb_generator/upbdev.h"
 
 static constexpr char kDefaultPlugin[] = "protoc_dart_plugin";
 
@@ -57,7 +57,7 @@ int main() {
     plugin = std::string(param.data, param.size);
   }
 
-  // Wrap the request inside a upbc_CodeGeneratorRequest and JSON-encode it.
+  // Wrap the request inside a upb_CodeGeneratorRequest and JSON-encode it.
   const upb_StringView sv =
       upbdev_ProcessInput(input.data(), input.size(), a, &status);
   if (!upb_Status_IsOk(&status)) {
@@ -66,8 +66,8 @@ int main() {
   }
 
   // Launch the subprocess.
-  upbc::Subprocess subprocess;
-  subprocess.Start(plugin, upbc::Subprocess::SEARCH_PATH);
+  upb::generator::Subprocess subprocess;
+  subprocess.Start(plugin, upb::generator::Subprocess::SEARCH_PATH);
 
   // Exchange JSON strings with the subprocess.
   const std::string json_request = std::string(sv.data, sv.size);

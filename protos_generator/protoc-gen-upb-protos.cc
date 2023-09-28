@@ -40,7 +40,7 @@
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/names.h"
 #include "protos_generator/output.h"
-#include "upbc/file_layout.h"
+#include "upb_generator/file_layout.h"
 
 namespace protos_generator {
 namespace {

@@ -53,15 +53,16 @@
 #include "upb/base/string_view.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
-#include "upbc/common.h"
-#include "upbc/file_layout.h"
-#include "upbc/names.h"
-#include "upbc/plugin.h"
+#include "upb_generator/common.h"
+#include "upb_generator/file_layout.h"
+#include "upb_generator/names.h"
+#include "upb_generator/plugin.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
-namespace upbc {
+namespace upb {
+namespace generator {
 namespace {
 
 struct Options {
@@ -278,7 +279,8 @@ void DumpEnumValues(upb::EnumDefPtr desc, Output& output) {
 }
 
 std::string GetFieldRep(const DefPoolPair& pools, upb::FieldDefPtr field) {
-  return upbc::GetFieldRep(pools.GetField32(field), pools.GetField64(field));
+  return upb::generator::GetFieldRep(pools.GetField32(field),
+                                     pools.GetField64(field));
 }
 
 void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
@@ -993,7 +995,7 @@ std::string FieldInitializer(upb::FieldDefPtr field,
         "*upb_MiniTable_FindFieldByNumber($0, $1)",
         MessageMiniTableRef(field.containing_type(), options), field.number());
   } else {
-    return upbc::FieldInitializer(field, field64, field32);
+    return upb::generator::FieldInitializer(field, field64, field32);
   }
 }
 
@@ -1131,20 +1133,21 @@ absl::string_view ToStringView(upb_StringView str) {
 
 }  // namespace
 
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb
 
 int main(int argc, char** argv) {
-  upbc::DefPoolPair pools;
-  upbc::Plugin plugin;
-  upbc::Options options;
+  upb::generator::DefPoolPair pools;
+  upb::generator::Plugin plugin;
+  upb::generator::Options options;
   if (!ParseOptions(&plugin, &options)) return 0;
   plugin.GenerateFilesRaw([&](const UPB_DESC(FileDescriptorProto) * file_proto,
                               bool generate) {
     upb::Status status;
     upb::FileDefPtr file = pools.AddFile(file_proto, &status);
     if (!file) {
-      absl::string_view name =
-          upbc::ToStringView(UPB_DESC(FileDescriptorProto_name)(file_proto));
+      absl::string_view name = upb::generator::ToStringView(
+          UPB_DESC(FileDescriptorProto_name)(file_proto));
       ABSL_LOG(FATAL) << "Couldn't add file " << name
                       << " to DefPool: " << status.error_message();
     }

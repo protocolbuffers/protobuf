@@ -28,12 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPBC_CODE_GENERATOR_REQUEST_H_
-#define UPBC_CODE_GENERATOR_REQUEST_H_
+#ifndef UPB_GENERATOR_GET_USED_FIELDS
+#define UPB_GENERATOR_GET_USED_FIELDS
 
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
-#include "upb/reflection/def.h"
-#include "upbc/code_generator_request.upb.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -42,9 +42,11 @@
 extern "C" {
 #endif
 
-upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
-    struct google_protobuf_compiler_CodeGeneratorRequest* request, upb_Arena* a,
-    upb_Status* s);
+// Consume |buf|, deserialize it to a Code_Generator_Request proto, then
+// upb_Code_Generator_Request, and return it as a JSON-encoded string.
+UPB_API upb_StringView upbdev_GetUsedFields(
+    const char* request, size_t request_size, const char* payload,
+    size_t payload_size, const char* message_name, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -52,4 +54,4 @@ upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
 
 #include "upb/port/undef.inc"
 
-#endif /* UPBC_CODE_GENERATOR_REQUEST_H_ */
+#endif  // UPB_GENERATOR_GET_USED_FIELDS

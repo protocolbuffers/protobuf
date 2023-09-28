@@ -49,15 +49,16 @@
 #include "upb/base/string_view.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
-#include "upbc/common.h"
-#include "upbc/file_layout.h"
-#include "upbc/names.h"
-#include "upbc/plugin.h"
+#include "upb_generator/common.h"
+#include "upb_generator/file_layout.h"
+#include "upb_generator/names.h"
+#include "upb_generator/plugin.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
-namespace upbc {
+namespace upb {
+namespace generator {
 namespace {
 
 // Returns fields in order of "hotness", eg. how frequently they appear in
@@ -406,15 +407,15 @@ std::string ArchDependentSize(int64_t size32, int64_t size64) {
 }
 
 std::string FieldInitializer(const DefPoolPair& pools, upb::FieldDefPtr field) {
-  return upbc::FieldInitializer(field, pools.GetField64(field),
-                                pools.GetField32(field));
+  return upb::generator::FieldInitializer(field, pools.GetField64(field),
+                                          pools.GetField32(field));
 }
 
 // Writes a single field into a .upb.c source file.
 void WriteMessageField(upb::FieldDefPtr field,
                        const upb_MiniTableField* field64,
                        const upb_MiniTableField* field32, Output& output) {
-  output("  $0,\n", upbc::FieldInitializer(field, field64, field32));
+  output("  $0,\n", upb::generator::FieldInitializer(field, field64, field32));
 }
 
 std::string GetSub(upb::FieldDefPtr field) {
@@ -687,23 +688,24 @@ absl::string_view ToStringView(upb_StringView str) {
 
 }  // namespace
 
-}  // namespace upbc
+}  // namespace generator
+}  // namespace upb
 
 int main(int argc, char** argv) {
-  upbc::DefPoolPair pools;
-  upbc::Plugin plugin;
-  if (!upbc::ParseOptions(&plugin)) return 0;
+  upb::generator::DefPoolPair pools;
+  upb::generator::Plugin plugin;
+  if (!upb::generator::ParseOptions(&plugin)) return 0;
   plugin.GenerateFilesRaw([&](const UPB_DESC(FileDescriptorProto) * file_proto,
                               bool generate) {
     upb::Status status;
     upb::FileDefPtr file = pools.AddFile(file_proto, &status);
     if (!file) {
-      absl::string_view name =
-          upbc::ToStringView(UPB_DESC(FileDescriptorProto_name)(file_proto));
+      absl::string_view name = upb::generator::ToStringView(
+          UPB_DESC(FileDescriptorProto_name)(file_proto));
       ABSL_LOG(FATAL) << "Couldn't add file " << name
                       << " to DefPool: " << status.error_message();
     }
-    if (generate) upbc::GenerateFile(pools, file, &plugin);
+    if (generate) upb::generator::GenerateFile(pools, file, &plugin);
   });
   return 0;
 }

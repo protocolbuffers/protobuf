@@ -39,7 +39,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
-          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upbc/... ${{ matrix.config.flags }}
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
           exclude-targets: ${{ matrix.config.exclude-targets }}
 
   linux-gcc:
@@ -58,7 +58,7 @@ jobs:
           image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-gcc"
-          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upbc/...
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upb_generator/...
 
   windows:
     strategy:
@@ -75,7 +75,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
-          bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/... //upbc/... //python/... //protos/... //protos_generator/...
+          bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/... //upb_generator/... //python/... //protos/... //protos_generator/...
           exclude-targets: -//python:conformance_test -//upb:def_builder_test
 
   macos:
@@ -97,7 +97,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
-          bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upbc/...
+          bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upb_generator/...
 
   no-python:
     strategy:
