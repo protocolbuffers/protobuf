@@ -2461,7 +2461,10 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final String containingOneofCamelCaseName) {
         isOneofField =
             descriptor.getRealContainingOneof() != null;
-        hasHasMethod = descriptor.hasPresence();
+        hasHasMethod =
+              descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO2
+                || descriptor.hasOptionalKeyword()
+                || (!isOneofField && descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE);
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(
                 descriptor,
