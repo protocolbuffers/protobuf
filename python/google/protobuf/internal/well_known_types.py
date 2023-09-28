@@ -34,6 +34,11 @@ _MICROS_PER_SECOND = 1000000
 _SECONDS_PER_DAY = 24 * 3600
 _DURATION_SECONDS_MAX = 315576000000
 
+_EPOCH_DATETIME_NAIVE = datetime.datetime(1970, 1, 1, tzinfo=None)
+_EPOCH_DATETIME_AWARE = _EPOCH_DATETIME_NAIVE.replace(
+    tzinfo=datetime.timezone.utc
+)
+
 
 class Any(object):
   """Class for Any Message type."""
@@ -218,40 +223,21 @@ class Timestamp(object):
 
       Otherwise, returns a timezone-aware datetime in the input timezone.
     """
-    # This could be made simpler and more efficient if there was a way to
-    # construct a datetime from a microseconds-since-epoch integer. For now, we
-    # can construct the datetime from the timestamp in seconds, then set the
-    # microseconds separately to avoid an unnecessary loss of precision (beyond
-    # truncating nanosecond precision to micro). This ensures that datetimes
-    # round-trip correctly (at least if timezone offset is not sub-second and
-    # does not change mid-second).
-
-    # Take care to handle Timestamps where |nanos| > 1s consistent with previous
-    # behavior.
-    #
-    # TODO: b/301980950 - Instead, strictly check that self.nanos is in the
-    # expected range.
-    seconds = self.seconds + self.nanos // _NANOS_PER_SECOND
+    # Using datetime.fromtimestamp for this would avoid constructing an extra
+    # timedelta object and possibly an extra datetime. Unfortuantely, that has
+    # the disadvantage of not handling the full precision (on all platforms, see
+    # https://github.com/python/cpython/issues/109849) or full range (on some
+    # platforms, see https://github.com/python/cpython/issues/110042) of
+    # datetime.
+    delta = datetime.timedelta(
+        seconds=self.seconds,
+        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND),
+    )
     if tzinfo is None:
-      # utcfromtimestamp will be deprecated in 3.12, so avoiding it even though
-      # this requires a call to replace.
-      dt = datetime.datetime.fromtimestamp(
-          seconds, datetime.timezone.utc
-      ).replace(tzinfo=None)
+      return _EPOCH_DATETIME_NAIVE + delta
     else:
-      dt = datetime.datetime.fromtimestamp(seconds, tzinfo)
-    if self.nanos != 0:
-      nanos = _RoundTowardZero(
-          self.nanos % _NANOS_PER_SECOND, _NANOS_PER_MICROSECOND
-      )
-      # This gets the correct result if tzinfo.utcoffset neither affects nor
-      # is affected by dt.microsecond, i.e. the offset is not sub-second and
-      # never changes mid-second. It doesn't violate the contract of tzinfo for
-      # either of those to be the case, though one would hope not to run into
-      # that in a situation where it would matter.
-      if nanos != 0:
-        dt = dt.replace(microsecond=nanos)
-    return dt
+      # Note the tz conversion has to come after the timedelta arithmetic.
+      return (_EPOCH_DATETIME_AWARE + delta).astimezone(tzinfo)
 
   def FromDatetime(self, dt):
     """Converts datetime to Timestamp.
