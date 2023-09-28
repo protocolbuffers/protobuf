@@ -284,6 +284,16 @@ std::string PluginName(absl::string_view plugin_prefix,
                       directive.substr(2, directive.size() - 6));
 }
 
+bool GetBootstrapParam(const std::string& parameter) {
+  std::vector<std::string> parts = absl::StrSplit(parameter, ',');
+  for (const auto& part : parts) {
+    if (part == "bootstrap") {
+      return true;
+    }
+  }
+  return false;
+}
+
 
 bool EnforceEditionsSupport(
     const std::string& codegen_name, uint64_t supported_features,
@@ -2700,6 +2710,7 @@ bool CommandLineInterface::GeneratePluginOutput(
   CodeGeneratorResponse response;
   std::string processed_parameter = parameter;
 
+  bool bootstrap = GetBootstrapParam(processed_parameter);
 
   // Build the request.
   if (!processed_parameter.empty()) {
@@ -2727,8 +2738,11 @@ bool CommandLineInterface::GeneratePluginOutput(
       const FileDescriptor* file = pool->FindFileByName(file_proto.name());
       *request.add_source_file_descriptors() = std::move(file_proto);
       file->CopyTo(&file_proto);
-      file->CopySourceCodeInfoTo(&file_proto);
-      file->CopyJsonNameTo(&file_proto);
+      // Don't populate source code info or json_name for bootstrap protos.
+      if (!bootstrap) {
+        file->CopySourceCodeInfoTo(&file_proto);
+        file->CopyJsonNameTo(&file_proto);
+      }
       StripSourceRetentionOptions(*file->pool(), file_proto);
     }
   }

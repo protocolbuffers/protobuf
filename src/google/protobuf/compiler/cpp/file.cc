@@ -652,7 +652,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
       if (ShouldSkipDependencyImports(dep)) continue;
 
       std::string basename = StripProto(dep->name());
-      if (IsBootstrapProto(options_, file_)) {
+      if (options_.bootstrap) {
         GetBootstrapBasename(options_, basename, &basename);
       }
       p->Emit({{"name", basename}}, R"(
@@ -1642,7 +1642,7 @@ void FileGenerator::GenerateDependencyIncludes(io::Printer* p) {
     }
 
     std::string basename = StripProto(dep->name());
-    if (IsBootstrapProto(options_, file_)) {
+    if (options_.bootstrap) {
       GetBootstrapBasename(options_, basename, &basename);
     }
 
