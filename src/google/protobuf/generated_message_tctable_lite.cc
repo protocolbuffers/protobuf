@@ -383,7 +383,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   if (aux_is_table) {
     const auto* inner_table = table->field_aux(data.aux_idx())->table;
     if (field == nullptr) {
-      field = inner_table->default_instance->New(msg->GetArenaForAllocation());
+      field = inner_table->default_instance->New(msg->GetArena());
     }
     if (group_coding) {
       return ctx->ParseGroup<TcParser>(field, ptr, FastDecodeTag(saved_tag),
@@ -394,7 +394,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
     if (field == nullptr) {
       const MessageLite* default_instance =
           table->field_aux(data.aux_idx())->message_default();
-      field = default_instance->New(msg->GetArenaForAllocation());
+      field = default_instance->New(msg->GetArena());
     }
     if (group_coding) {
       return ctx->ParseGroup(field, ptr, FastDecodeTag(saved_tag));
@@ -1432,7 +1432,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
   ptr += sizeof(TagType);
   hasbits |= (uint64_t{1} << data.hasbit_idx());
   auto& field = RefAt<FieldType>(msg, data.offset());
-  auto arena = msg->GetArenaForAllocation();
+  auto arena = msg->GetArena();
   if (arena) {
     ptr =
         ReadStringIntoArena(msg, ptr, ctx, data.aux_idx(), table, field, arena);
@@ -1676,7 +1676,7 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
       case field_layout::kRepMessage:
       case field_layout::kRepGroup: {
         auto& field = RefAt<MessageLite*>(msg, current_entry->offset);
-        if (!msg->GetArenaForAllocation()) {
+        if (!msg->GetArena()) {
           delete field;
         }
         break;
@@ -1711,7 +1711,7 @@ void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
     if (split == default_split) {
       // Allocate split instance when needed.
       uint32_t size = GetSizeofSplit(table);
-      Arena* arena = msg->GetArenaForAllocation();
+      Arena* arena = msg->GetArena();
       split = (arena == nullptr) ? ::operator new(size)
                                  : arena->AllocateAligned(size);
       memcpy(split, default_split, size);
@@ -2184,7 +2184,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
     case field_layout::kRepAString: {
       auto& field = RefAt<ArenaStringPtr>(base, entry.offset);
       if (need_init) field.InitDefault();
-      Arena* arena = msg->GetArenaForAllocation();
+      Arena* arena = msg->GetArena();
       if (arena) {
         ptr = ctx->ReadArenaString(ptr, &field, arena);
       } else {
@@ -2201,7 +2201,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
       absl::Cord* field;
       if (is_oneof) {
         if (need_init) {
-          field = Arena::Create<absl::Cord>(msg->GetArenaForAllocation());
+          field = Arena::Create<absl::Cord>(msg->GetArena());
           RefAt<absl::Cord*>(msg, entry.offset) = field;
         } else {
           field = RefAt<absl::Cord*>(msg, entry.offset);
@@ -2366,7 +2366,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
     auto* inner_table = table->field_aux(&entry)->table;
     if (need_init || field == nullptr) {
-      field = inner_table->default_instance->New(msg->GetArenaForAllocation());
+      field = inner_table->default_instance->New(msg->GetArena());
     }
     if (is_group) {
       return ctx->ParseGroup<TcParser>(field, ptr, decoded_tag, inner_table);
@@ -2382,7 +2382,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
                        +field_layout::kTvWeakPtr);
         def = table->field_aux(&entry)->message_default_weak();
       }
-      field = def->New(msg->GetArenaForAllocation());
+      field = def->New(msg->GetArena());
     }
     if (is_group) {
       return ctx->ParseGroup(field, ptr, decoded_tag);

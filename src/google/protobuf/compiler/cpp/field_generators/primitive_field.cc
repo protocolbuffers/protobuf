@@ -520,7 +520,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
           $field_$.Set($pb$::Arena::CreateMessage<$pb$::RepeatedField<$Type$>>(
-              GetArenaForAllocation()));
+              GetArena()));
         }
         return $field_$.Get();
       }

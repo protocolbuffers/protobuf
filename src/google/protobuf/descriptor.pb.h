@@ -10951,7 +10951,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.name)
 }
 inline std::string* FileDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -10966,12 +10966,12 @@ inline const std::string& FileDescriptorProto::_internal_name() const {
 inline void FileDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(value, GetArenaForAllocation());
+  _impl_.name_.Set(value, GetArena());
 }
 inline std::string* FileDescriptorProto::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.name_.Mutable( GetArenaForAllocation());
+  return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* FileDescriptorProto::release_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -10982,7 +10982,7 @@ inline std::string* FileDescriptorProto::release_name() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.name_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.name_.Set("", GetArenaForAllocation());
+  _impl_.name_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -10993,10 +10993,10 @@ inline void FileDescriptorProto::set_allocated_name(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArenaForAllocation());
+          _impl_.name_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.name)
@@ -11022,7 +11022,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_package(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.package_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.package)
 }
 inline std::string* FileDescriptorProto::mutable_package() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -11037,12 +11037,12 @@ inline const std::string& FileDescriptorProto::_internal_package() const {
 inline void FileDescriptorProto::_internal_set_package(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.package_.Set(value, GetArenaForAllocation());
+  _impl_.package_.Set(value, GetArena());
 }
 inline std::string* FileDescriptorProto::_internal_mutable_package() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  return _impl_.package_.Mutable( GetArenaForAllocation());
+  return _impl_.package_.Mutable( GetArena());
 }
 inline std::string* FileDescriptorProto::release_package() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -11053,7 +11053,7 @@ inline std::string* FileDescriptorProto::release_package() {
   _impl_._has_bits_[0] &= ~0x00000002u;
   auto* released = _impl_.package_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.package_.Set("", GetArenaForAllocation());
+  _impl_.package_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -11064,10 +11064,10 @@ inline void FileDescriptorProto::set_allocated_package(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
-  _impl_.package_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.package_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.package_.IsDefault()) {
-          _impl_.package_.Set("", GetArenaForAllocation());
+          _impl_.package_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.package)
@@ -11482,7 +11482,7 @@ inline const ::google::protobuf::FileOptions& FileDescriptorProto::options() con
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::FileOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
   _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(value);
@@ -11502,11 +11502,11 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::release_options() {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -11525,7 +11525,7 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::_internal_mutable_o
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FileOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FileOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(p);
   }
   return _impl_.options_;
@@ -11536,7 +11536,7 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() A
   return _msg;
 }
 inline void FileDescriptorProto::set_allocated_options(::google::protobuf::FileOptions* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FileOptions*>(_impl_.options_);
@@ -11579,7 +11579,7 @@ inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::source_cod
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_code_info_);
   }
   _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(value);
@@ -11599,11 +11599,11 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::release_source_c
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -11622,7 +11622,7 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::_internal_mutabl
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000010u;
   if (_impl_.source_code_info_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::SourceCodeInfo>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::SourceCodeInfo>(GetArena());
     _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(p);
   }
   return _impl_.source_code_info_;
@@ -11633,7 +11633,7 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::mutable_source_c
   return _msg;
 }
 inline void FileDescriptorProto::set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::SourceCodeInfo*>(_impl_.source_code_info_);
@@ -11674,7 +11674,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_syntax(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.syntax_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.syntax_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.syntax)
 }
 inline std::string* FileDescriptorProto::mutable_syntax() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -11689,12 +11689,12 @@ inline const std::string& FileDescriptorProto::_internal_syntax() const {
 inline void FileDescriptorProto::_internal_set_syntax(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.syntax_.Set(value, GetArenaForAllocation());
+  _impl_.syntax_.Set(value, GetArena());
 }
 inline std::string* FileDescriptorProto::_internal_mutable_syntax() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  return _impl_.syntax_.Mutable( GetArenaForAllocation());
+  return _impl_.syntax_.Mutable( GetArena());
 }
 inline std::string* FileDescriptorProto::release_syntax() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -11705,7 +11705,7 @@ inline std::string* FileDescriptorProto::release_syntax() {
   _impl_._has_bits_[0] &= ~0x00000004u;
   auto* released = _impl_.syntax_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.syntax_.Set("", GetArenaForAllocation());
+  _impl_.syntax_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -11716,10 +11716,10 @@ inline void FileDescriptorProto::set_allocated_syntax(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
-  _impl_.syntax_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.syntax_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.syntax_.IsDefault()) {
-          _impl_.syntax_.Set("", GetArenaForAllocation());
+          _impl_.syntax_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.syntax)
@@ -11836,7 +11836,7 @@ inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_Extensio
 }
 inline void DescriptorProto_ExtensionRange::unsafe_arena_set_allocated_options(::google::protobuf::ExtensionRangeOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
   _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(value);
@@ -11856,11 +11856,11 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -11879,7 +11879,7 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(p);
   }
   return _impl_.options_;
@@ -11890,7 +11890,7 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
   return _msg;
 }
 inline void DescriptorProto_ExtensionRange::set_allocated_options(::google::protobuf::ExtensionRangeOptions* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(_impl_.options_);
@@ -11995,7 +11995,7 @@ inline PROTOBUF_ALWAYS_INLINE void DescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.name)
 }
 inline std::string* DescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -12010,12 +12010,12 @@ inline const std::string& DescriptorProto::_internal_name() const {
 inline void DescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(value, GetArenaForAllocation());
+  _impl_.name_.Set(value, GetArena());
 }
 inline std::string* DescriptorProto::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.name_.Mutable( GetArenaForAllocation());
+  return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* DescriptorProto::release_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -12026,7 +12026,7 @@ inline std::string* DescriptorProto::release_name() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.name_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.name_.Set("", GetArenaForAllocation());
+  _impl_.name_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -12037,10 +12037,10 @@ inline void DescriptorProto::set_allocated_name(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArenaForAllocation());
+          _impl_.name_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.DescriptorProto.name)
@@ -12362,7 +12362,7 @@ inline const ::google::protobuf::MessageOptions& DescriptorProto::options() cons
 }
 inline void DescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::MessageOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
   _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(value);
@@ -12382,11 +12382,11 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::release_options() {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -12405,7 +12405,7 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::_internal_mutable_op
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::MessageOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::MessageOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(p);
   }
   return _impl_.options_;
@@ -12416,7 +12416,7 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() AB
   return _msg;
 }
 inline void DescriptorProto::set_allocated_options(::google::protobuf::MessageOptions* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageOptions*>(_impl_.options_);
@@ -12639,7 +12639,7 @@ inline PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_full_n
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.full_name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.full_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
 }
 inline std::string* ExtensionRangeOptions_Declaration::mutable_full_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -12654,12 +12654,12 @@ inline const std::string& ExtensionRangeOptions_Declaration::_internal_full_name
 inline void ExtensionRangeOptions_Declaration::_internal_set_full_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.full_name_.Set(value, GetArenaForAllocation());
+  _impl_.full_name_.Set(value, GetArena());
 }
 inline std::string* ExtensionRangeOptions_Declaration::_internal_mutable_full_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.full_name_.Mutable( GetArenaForAllocation());
+  return _impl_.full_name_.Mutable( GetArena());
 }
 inline std::string* ExtensionRangeOptions_Declaration::release_full_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -12670,7 +12670,7 @@ inline std::string* ExtensionRangeOptions_Declaration::release_full_name() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.full_name_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.full_name_.Set("", GetArenaForAllocation());
+  _impl_.full_name_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -12681,10 +12681,10 @@ inline void ExtensionRangeOptions_Declaration::set_allocated_full_name(std::stri
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.full_name_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.full_name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.full_name_.IsDefault()) {
-          _impl_.full_name_.Set("", GetArenaForAllocation());
+          _impl_.full_name_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
@@ -12710,7 +12710,7 @@ inline PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_type(A
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.type_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.type)
 }
 inline std::string* ExtensionRangeOptions_Declaration::mutable_type() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -12725,12 +12725,12 @@ inline const std::string& ExtensionRangeOptions_Declaration::_internal_type() co
 inline void ExtensionRangeOptions_Declaration::_internal_set_type(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.type_.Set(value, GetArenaForAllocation());
+  _impl_.type_.Set(value, GetArena());
 }
 inline std::string* ExtensionRangeOptions_Declaration::_internal_mutable_type() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  return _impl_.type_.Mutable( GetArenaForAllocation());
+  return _impl_.type_.Mutable( GetArena());
 }
 inline std::string* ExtensionRangeOptions_Declaration::release_type() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -12741,7 +12741,7 @@ inline std::string* ExtensionRangeOptions_Declaration::release_type() {
   _impl_._has_bits_[0] &= ~0x00000002u;
   auto* released = _impl_.type_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.type_.Set("", GetArenaForAllocation());
+  _impl_.type_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -12752,10 +12752,10 @@ inline void ExtensionRangeOptions_Declaration::set_allocated_type(std::string* v
   } else {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
-  _impl_.type_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.type_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.type_.IsDefault()) {
-          _impl_.type_.Set("", GetArenaForAllocation());
+          _impl_.type_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.Declaration.type)
@@ -12941,7 +12941,7 @@ inline const ::google::protobuf::FeatureSet& ExtensionRangeOptions::features() c
 }
 inline void ExtensionRangeOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
@@ -12961,11 +12961,11 @@ inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::release_features()
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -12984,7 +12984,7 @@ inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::_internal_mutable_
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -12995,7 +12995,7 @@ inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::mutable_features()
   return _msg;
 }
 inline void ExtensionRangeOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
@@ -13069,7 +13069,7 @@ inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.name)
 }
 inline std::string* FieldDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13084,12 +13084,12 @@ inline const std::string& FieldDescriptorProto::_internal_name() const {
 inline void FieldDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(value, GetArenaForAllocation());
+  _impl_.name_.Set(value, GetArena());
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.name_.Mutable( GetArenaForAllocation());
+  return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* FieldDescriptorProto::release_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -13100,7 +13100,7 @@ inline std::string* FieldDescriptorProto::release_name() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.name_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.name_.Set("", GetArenaForAllocation());
+  _impl_.name_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -13111,10 +13111,10 @@ inline void FieldDescriptorProto::set_allocated_name(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArenaForAllocation());
+          _impl_.name_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.name)
@@ -13226,7 +13226,7 @@ inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_type_name(Arg_&& ar
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.type_name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.type_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.type_name)
 }
 inline std::string* FieldDescriptorProto::mutable_type_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13241,12 +13241,12 @@ inline const std::string& FieldDescriptorProto::_internal_type_name() const {
 inline void FieldDescriptorProto::_internal_set_type_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.type_name_.Set(value, GetArenaForAllocation());
+  _impl_.type_name_.Set(value, GetArena());
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_type_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  return _impl_.type_name_.Mutable( GetArenaForAllocation());
+  return _impl_.type_name_.Mutable( GetArena());
 }
 inline std::string* FieldDescriptorProto::release_type_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -13257,7 +13257,7 @@ inline std::string* FieldDescriptorProto::release_type_name() {
   _impl_._has_bits_[0] &= ~0x00000004u;
   auto* released = _impl_.type_name_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.type_name_.Set("", GetArenaForAllocation());
+  _impl_.type_name_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -13268,10 +13268,10 @@ inline void FieldDescriptorProto::set_allocated_type_name(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
-  _impl_.type_name_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.type_name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.type_name_.IsDefault()) {
-          _impl_.type_name_.Set("", GetArenaForAllocation());
+          _impl_.type_name_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.type_name)
@@ -13297,7 +13297,7 @@ inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_extendee(Arg_&& arg
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.extendee_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.extendee_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.extendee)
 }
 inline std::string* FieldDescriptorProto::mutable_extendee() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13312,12 +13312,12 @@ inline const std::string& FieldDescriptorProto::_internal_extendee() const {
 inline void FieldDescriptorProto::_internal_set_extendee(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.extendee_.Set(value, GetArenaForAllocation());
+  _impl_.extendee_.Set(value, GetArena());
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_extendee() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  return _impl_.extendee_.Mutable( GetArenaForAllocation());
+  return _impl_.extendee_.Mutable( GetArena());
 }
 inline std::string* FieldDescriptorProto::release_extendee() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -13328,7 +13328,7 @@ inline std::string* FieldDescriptorProto::release_extendee() {
   _impl_._has_bits_[0] &= ~0x00000002u;
   auto* released = _impl_.extendee_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.extendee_.Set("", GetArenaForAllocation());
+  _impl_.extendee_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -13339,10 +13339,10 @@ inline void FieldDescriptorProto::set_allocated_extendee(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
-  _impl_.extendee_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.extendee_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.extendee_.IsDefault()) {
-          _impl_.extendee_.Set("", GetArenaForAllocation());
+          _impl_.extendee_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.extendee)
@@ -13368,7 +13368,7 @@ inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_default_value(Arg_&
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
-  _impl_.default_value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.default_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.default_value)
 }
 inline std::string* FieldDescriptorProto::mutable_default_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13383,12 +13383,12 @@ inline const std::string& FieldDescriptorProto::_internal_default_value() const 
 inline void FieldDescriptorProto::_internal_set_default_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
-  _impl_.default_value_.Set(value, GetArenaForAllocation());
+  _impl_.default_value_.Set(value, GetArena());
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_default_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
-  return _impl_.default_value_.Mutable( GetArenaForAllocation());
+  return _impl_.default_value_.Mutable( GetArena());
 }
 inline std::string* FieldDescriptorProto::release_default_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -13399,7 +13399,7 @@ inline std::string* FieldDescriptorProto::release_default_value() {
   _impl_._has_bits_[0] &= ~0x00000008u;
   auto* released = _impl_.default_value_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.default_value_.Set("", GetArenaForAllocation());
+  _impl_.default_value_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -13410,10 +13410,10 @@ inline void FieldDescriptorProto::set_allocated_default_value(std::string* value
   } else {
     _impl_._has_bits_[0] &= ~0x00000008u;
   }
-  _impl_.default_value_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.default_value_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.default_value_.IsDefault()) {
-          _impl_.default_value_.Set("", GetArenaForAllocation());
+          _impl_.default_value_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.default_value)
@@ -13467,7 +13467,7 @@ inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_json_name(Arg_&& ar
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000010u;
-  _impl_.json_name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.json_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.json_name)
 }
 inline std::string* FieldDescriptorProto::mutable_json_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13482,12 +13482,12 @@ inline const std::string& FieldDescriptorProto::_internal_json_name() const {
 inline void FieldDescriptorProto::_internal_set_json_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000010u;
-  _impl_.json_name_.Set(value, GetArenaForAllocation());
+  _impl_.json_name_.Set(value, GetArena());
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_json_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000010u;
-  return _impl_.json_name_.Mutable( GetArenaForAllocation());
+  return _impl_.json_name_.Mutable( GetArena());
 }
 inline std::string* FieldDescriptorProto::release_json_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -13498,7 +13498,7 @@ inline std::string* FieldDescriptorProto::release_json_name() {
   _impl_._has_bits_[0] &= ~0x00000010u;
   auto* released = _impl_.json_name_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.json_name_.Set("", GetArenaForAllocation());
+  _impl_.json_name_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -13509,10 +13509,10 @@ inline void FieldDescriptorProto::set_allocated_json_name(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000010u;
   }
-  _impl_.json_name_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.json_name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.json_name_.IsDefault()) {
-          _impl_.json_name_.Set("", GetArenaForAllocation());
+          _impl_.json_name_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.json_name)
@@ -13540,7 +13540,7 @@ inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::options() c
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::FieldOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
   _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(value);
@@ -13560,11 +13560,11 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::release_options()
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -13583,7 +13583,7 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::_internal_mutable
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000020u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FieldOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FieldOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(p);
   }
   return _impl_.options_;
@@ -13594,7 +13594,7 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options()
   return _msg;
 }
 inline void FieldDescriptorProto::set_allocated_options(::google::protobuf::FieldOptions* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FieldOptions*>(_impl_.options_);
@@ -13667,7 +13667,7 @@ inline PROTOBUF_ALWAYS_INLINE void OneofDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.OneofDescriptorProto.name)
 }
 inline std::string* OneofDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13682,12 +13682,12 @@ inline const std::string& OneofDescriptorProto::_internal_name() const {
 inline void OneofDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(value, GetArenaForAllocation());
+  _impl_.name_.Set(value, GetArena());
 }
 inline std::string* OneofDescriptorProto::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.name_.Mutable( GetArenaForAllocation());
+  return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* OneofDescriptorProto::release_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -13698,7 +13698,7 @@ inline std::string* OneofDescriptorProto::release_name() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.name_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.name_.Set("", GetArenaForAllocation());
+  _impl_.name_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -13709,10 +13709,10 @@ inline void OneofDescriptorProto::set_allocated_name(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArenaForAllocation());
+          _impl_.name_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofDescriptorProto.name)
@@ -13740,7 +13740,7 @@ inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::options() c
 }
 inline void OneofDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::OneofOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
   _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(value);
@@ -13760,11 +13760,11 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::release_options()
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -13783,7 +13783,7 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::_internal_mutable
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::OneofOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::OneofOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(p);
   }
   return _impl_.options_;
@@ -13794,7 +13794,7 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::mutable_options()
   return _msg;
 }
 inline void OneofDescriptorProto::set_allocated_options(::google::protobuf::OneofOptions* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::OneofOptions*>(_impl_.options_);
@@ -13899,7 +13899,7 @@ inline PROTOBUF_ALWAYS_INLINE void EnumDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.name)
 }
 inline std::string* EnumDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13914,12 +13914,12 @@ inline const std::string& EnumDescriptorProto::_internal_name() const {
 inline void EnumDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(value, GetArenaForAllocation());
+  _impl_.name_.Set(value, GetArena());
 }
 inline std::string* EnumDescriptorProto::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.name_.Mutable( GetArenaForAllocation());
+  return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* EnumDescriptorProto::release_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -13930,7 +13930,7 @@ inline std::string* EnumDescriptorProto::release_name() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.name_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.name_.Set("", GetArenaForAllocation());
+  _impl_.name_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -13941,10 +13941,10 @@ inline void EnumDescriptorProto::set_allocated_name(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArenaForAllocation());
+          _impl_.name_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumDescriptorProto.name)
@@ -14021,7 +14021,7 @@ inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::options() con
 }
 inline void EnumDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::EnumOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
   _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(value);
@@ -14041,11 +14041,11 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::release_options() {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -14064,7 +14064,7 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::_internal_mutable_o
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::EnumOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::EnumOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(p);
   }
   return _impl_.options_;
@@ -14075,7 +14075,7 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() A
   return _msg;
 }
 inline void EnumDescriptorProto::set_allocated_options(::google::protobuf::EnumOptions* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::EnumOptions*>(_impl_.options_);
@@ -14270,7 +14270,7 @@ inline PROTOBUF_ALWAYS_INLINE void EnumValueDescriptorProto::set_name(Arg_&& arg
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValueDescriptorProto.name)
 }
 inline std::string* EnumValueDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -14285,12 +14285,12 @@ inline const std::string& EnumValueDescriptorProto::_internal_name() const {
 inline void EnumValueDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(value, GetArenaForAllocation());
+  _impl_.name_.Set(value, GetArena());
 }
 inline std::string* EnumValueDescriptorProto::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.name_.Mutable( GetArenaForAllocation());
+  return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* EnumValueDescriptorProto::release_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -14301,7 +14301,7 @@ inline std::string* EnumValueDescriptorProto::release_name() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.name_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.name_.Set("", GetArenaForAllocation());
+  _impl_.name_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -14312,10 +14312,10 @@ inline void EnumValueDescriptorProto::set_allocated_name(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArenaForAllocation());
+          _impl_.name_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueDescriptorProto.name)
@@ -14371,7 +14371,7 @@ inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::opt
 }
 inline void EnumValueDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::EnumValueOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
   _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(value);
@@ -14391,11 +14391,11 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::release_o
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -14414,7 +14414,7 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::_internal
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::EnumValueOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::EnumValueOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(p);
   }
   return _impl_.options_;
@@ -14425,7 +14425,7 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_o
   return _msg;
 }
 inline void EnumValueDescriptorProto::set_allocated_options(::google::protobuf::EnumValueOptions* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::EnumValueOptions*>(_impl_.options_);
@@ -14470,7 +14470,7 @@ inline PROTOBUF_ALWAYS_INLINE void ServiceDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.ServiceDescriptorProto.name)
 }
 inline std::string* ServiceDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -14485,12 +14485,12 @@ inline const std::string& ServiceDescriptorProto::_internal_name() const {
 inline void ServiceDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(value, GetArenaForAllocation());
+  _impl_.name_.Set(value, GetArena());
 }
 inline std::string* ServiceDescriptorProto::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.name_.Mutable( GetArenaForAllocation());
+  return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* ServiceDescriptorProto::release_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -14501,7 +14501,7 @@ inline std::string* ServiceDescriptorProto::release_name() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.name_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.name_.Set("", GetArenaForAllocation());
+  _impl_.name_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -14512,10 +14512,10 @@ inline void ServiceDescriptorProto::set_allocated_name(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArenaForAllocation());
+          _impl_.name_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceDescriptorProto.name)
@@ -14592,7 +14592,7 @@ inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::options
 }
 inline void ServiceDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::ServiceOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
   _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(value);
@@ -14612,11 +14612,11 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::release_optio
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -14635,7 +14635,7 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::_internal_mut
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::ServiceOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::ServiceOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(p);
   }
   return _impl_.options_;
@@ -14646,7 +14646,7 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_optio
   return _msg;
 }
 inline void ServiceDescriptorProto::set_allocated_options(::google::protobuf::ServiceOptions* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::ServiceOptions*>(_impl_.options_);
@@ -14691,7 +14691,7 @@ inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.name)
 }
 inline std::string* MethodDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -14706,12 +14706,12 @@ inline const std::string& MethodDescriptorProto::_internal_name() const {
 inline void MethodDescriptorProto::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_.Set(value, GetArenaForAllocation());
+  _impl_.name_.Set(value, GetArena());
 }
 inline std::string* MethodDescriptorProto::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.name_.Mutable( GetArenaForAllocation());
+  return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* MethodDescriptorProto::release_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -14722,7 +14722,7 @@ inline std::string* MethodDescriptorProto::release_name() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.name_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.name_.Set("", GetArenaForAllocation());
+  _impl_.name_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -14733,10 +14733,10 @@ inline void MethodDescriptorProto::set_allocated_name(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.name_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArenaForAllocation());
+          _impl_.name_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.name)
@@ -14762,7 +14762,7 @@ inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_input_type(Arg_&& 
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.input_type_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.input_type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.input_type)
 }
 inline std::string* MethodDescriptorProto::mutable_input_type() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -14777,12 +14777,12 @@ inline const std::string& MethodDescriptorProto::_internal_input_type() const {
 inline void MethodDescriptorProto::_internal_set_input_type(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.input_type_.Set(value, GetArenaForAllocation());
+  _impl_.input_type_.Set(value, GetArena());
 }
 inline std::string* MethodDescriptorProto::_internal_mutable_input_type() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  return _impl_.input_type_.Mutable( GetArenaForAllocation());
+  return _impl_.input_type_.Mutable( GetArena());
 }
 inline std::string* MethodDescriptorProto::release_input_type() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -14793,7 +14793,7 @@ inline std::string* MethodDescriptorProto::release_input_type() {
   _impl_._has_bits_[0] &= ~0x00000002u;
   auto* released = _impl_.input_type_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.input_type_.Set("", GetArenaForAllocation());
+  _impl_.input_type_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -14804,10 +14804,10 @@ inline void MethodDescriptorProto::set_allocated_input_type(std::string* value) 
   } else {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
-  _impl_.input_type_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.input_type_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.input_type_.IsDefault()) {
-          _impl_.input_type_.Set("", GetArenaForAllocation());
+          _impl_.input_type_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.input_type)
@@ -14833,7 +14833,7 @@ inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_output_type(Arg_&&
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.output_type_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.output_type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.output_type)
 }
 inline std::string* MethodDescriptorProto::mutable_output_type() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -14848,12 +14848,12 @@ inline const std::string& MethodDescriptorProto::_internal_output_type() const {
 inline void MethodDescriptorProto::_internal_set_output_type(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.output_type_.Set(value, GetArenaForAllocation());
+  _impl_.output_type_.Set(value, GetArena());
 }
 inline std::string* MethodDescriptorProto::_internal_mutable_output_type() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  return _impl_.output_type_.Mutable( GetArenaForAllocation());
+  return _impl_.output_type_.Mutable( GetArena());
 }
 inline std::string* MethodDescriptorProto::release_output_type() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -14864,7 +14864,7 @@ inline std::string* MethodDescriptorProto::release_output_type() {
   _impl_._has_bits_[0] &= ~0x00000004u;
   auto* released = _impl_.output_type_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.output_type_.Set("", GetArenaForAllocation());
+  _impl_.output_type_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -14875,10 +14875,10 @@ inline void MethodDescriptorProto::set_allocated_output_type(std::string* value)
   } else {
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
-  _impl_.output_type_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.output_type_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.output_type_.IsDefault()) {
-          _impl_.output_type_.Set("", GetArenaForAllocation());
+          _impl_.output_type_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.output_type)
@@ -14906,7 +14906,7 @@ inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::options()
 }
 inline void MethodDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::MethodOptions* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
   _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(value);
@@ -14926,11 +14926,11 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::release_options
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -14949,7 +14949,7 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::_internal_mutab
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
   if (_impl_.options_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::MethodOptions>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::MethodOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(p);
   }
   return _impl_.options_;
@@ -14960,7 +14960,7 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options
   return _msg;
 }
 inline void MethodDescriptorProto::set_allocated_options(::google::protobuf::MethodOptions* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::MethodOptions*>(_impl_.options_);
@@ -15061,7 +15061,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_package(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.java_package_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.java_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_package)
 }
 inline std::string* FileOptions::mutable_java_package() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15076,12 +15076,12 @@ inline const std::string& FileOptions::_internal_java_package() const {
 inline void FileOptions::_internal_set_java_package(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.java_package_.Set(value, GetArenaForAllocation());
+  _impl_.java_package_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_java_package() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.java_package_.Mutable( GetArenaForAllocation());
+  return _impl_.java_package_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_java_package() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -15092,7 +15092,7 @@ inline std::string* FileOptions::release_java_package() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.java_package_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.java_package_.Set("", GetArenaForAllocation());
+  _impl_.java_package_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -15103,10 +15103,10 @@ inline void FileOptions::set_allocated_java_package(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.java_package_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.java_package_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.java_package_.IsDefault()) {
-          _impl_.java_package_.Set("", GetArenaForAllocation());
+          _impl_.java_package_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.java_package)
@@ -15132,7 +15132,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_outer_classname(Arg_&& 
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.java_outer_classname_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.java_outer_classname_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_outer_classname)
 }
 inline std::string* FileOptions::mutable_java_outer_classname() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15147,12 +15147,12 @@ inline const std::string& FileOptions::_internal_java_outer_classname() const {
 inline void FileOptions::_internal_set_java_outer_classname(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.java_outer_classname_.Set(value, GetArenaForAllocation());
+  _impl_.java_outer_classname_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_java_outer_classname() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  return _impl_.java_outer_classname_.Mutable( GetArenaForAllocation());
+  return _impl_.java_outer_classname_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_java_outer_classname() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -15163,7 +15163,7 @@ inline std::string* FileOptions::release_java_outer_classname() {
   _impl_._has_bits_[0] &= ~0x00000002u;
   auto* released = _impl_.java_outer_classname_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.java_outer_classname_.Set("", GetArenaForAllocation());
+  _impl_.java_outer_classname_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -15174,10 +15174,10 @@ inline void FileOptions::set_allocated_java_outer_classname(std::string* value) 
   } else {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
-  _impl_.java_outer_classname_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.java_outer_classname_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.java_outer_classname_.IsDefault()) {
-          _impl_.java_outer_classname_.Set("", GetArenaForAllocation());
+          _impl_.java_outer_classname_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.java_outer_classname)
@@ -15316,7 +15316,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_go_package(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.go_package_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.go_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.go_package)
 }
 inline std::string* FileOptions::mutable_go_package() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15331,12 +15331,12 @@ inline const std::string& FileOptions::_internal_go_package() const {
 inline void FileOptions::_internal_set_go_package(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.go_package_.Set(value, GetArenaForAllocation());
+  _impl_.go_package_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_go_package() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  return _impl_.go_package_.Mutable( GetArenaForAllocation());
+  return _impl_.go_package_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_go_package() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -15347,7 +15347,7 @@ inline std::string* FileOptions::release_go_package() {
   _impl_._has_bits_[0] &= ~0x00000004u;
   auto* released = _impl_.go_package_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.go_package_.Set("", GetArenaForAllocation());
+  _impl_.go_package_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -15358,10 +15358,10 @@ inline void FileOptions::set_allocated_go_package(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
-  _impl_.go_package_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.go_package_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.go_package_.IsDefault()) {
-          _impl_.go_package_.Set("", GetArenaForAllocation());
+          _impl_.go_package_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.go_package)
@@ -15555,7 +15555,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_objc_class_prefix(Arg_&& arg
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
-  _impl_.objc_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.objc_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.objc_class_prefix)
 }
 inline std::string* FileOptions::mutable_objc_class_prefix() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15570,12 +15570,12 @@ inline const std::string& FileOptions::_internal_objc_class_prefix() const {
 inline void FileOptions::_internal_set_objc_class_prefix(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
-  _impl_.objc_class_prefix_.Set(value, GetArenaForAllocation());
+  _impl_.objc_class_prefix_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_objc_class_prefix() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000008u;
-  return _impl_.objc_class_prefix_.Mutable( GetArenaForAllocation());
+  return _impl_.objc_class_prefix_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_objc_class_prefix() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -15586,7 +15586,7 @@ inline std::string* FileOptions::release_objc_class_prefix() {
   _impl_._has_bits_[0] &= ~0x00000008u;
   auto* released = _impl_.objc_class_prefix_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.objc_class_prefix_.Set("", GetArenaForAllocation());
+  _impl_.objc_class_prefix_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -15597,10 +15597,10 @@ inline void FileOptions::set_allocated_objc_class_prefix(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000008u;
   }
-  _impl_.objc_class_prefix_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.objc_class_prefix_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.objc_class_prefix_.IsDefault()) {
-          _impl_.objc_class_prefix_.Set("", GetArenaForAllocation());
+          _impl_.objc_class_prefix_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.objc_class_prefix)
@@ -15626,7 +15626,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_csharp_namespace(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000010u;
-  _impl_.csharp_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.csharp_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_namespace)
 }
 inline std::string* FileOptions::mutable_csharp_namespace() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15641,12 +15641,12 @@ inline const std::string& FileOptions::_internal_csharp_namespace() const {
 inline void FileOptions::_internal_set_csharp_namespace(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000010u;
-  _impl_.csharp_namespace_.Set(value, GetArenaForAllocation());
+  _impl_.csharp_namespace_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_csharp_namespace() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000010u;
-  return _impl_.csharp_namespace_.Mutable( GetArenaForAllocation());
+  return _impl_.csharp_namespace_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_csharp_namespace() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -15657,7 +15657,7 @@ inline std::string* FileOptions::release_csharp_namespace() {
   _impl_._has_bits_[0] &= ~0x00000010u;
   auto* released = _impl_.csharp_namespace_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.csharp_namespace_.Set("", GetArenaForAllocation());
+  _impl_.csharp_namespace_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -15668,10 +15668,10 @@ inline void FileOptions::set_allocated_csharp_namespace(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000010u;
   }
-  _impl_.csharp_namespace_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.csharp_namespace_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.csharp_namespace_.IsDefault()) {
-          _impl_.csharp_namespace_.Set("", GetArenaForAllocation());
+          _impl_.csharp_namespace_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_namespace)
@@ -15697,7 +15697,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_swift_prefix(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000020u;
-  _impl_.swift_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.swift_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.swift_prefix)
 }
 inline std::string* FileOptions::mutable_swift_prefix() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15712,12 +15712,12 @@ inline const std::string& FileOptions::_internal_swift_prefix() const {
 inline void FileOptions::_internal_set_swift_prefix(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000020u;
-  _impl_.swift_prefix_.Set(value, GetArenaForAllocation());
+  _impl_.swift_prefix_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_swift_prefix() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000020u;
-  return _impl_.swift_prefix_.Mutable( GetArenaForAllocation());
+  return _impl_.swift_prefix_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_swift_prefix() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -15728,7 +15728,7 @@ inline std::string* FileOptions::release_swift_prefix() {
   _impl_._has_bits_[0] &= ~0x00000020u;
   auto* released = _impl_.swift_prefix_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.swift_prefix_.Set("", GetArenaForAllocation());
+  _impl_.swift_prefix_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -15739,10 +15739,10 @@ inline void FileOptions::set_allocated_swift_prefix(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000020u;
   }
-  _impl_.swift_prefix_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.swift_prefix_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.swift_prefix_.IsDefault()) {
-          _impl_.swift_prefix_.Set("", GetArenaForAllocation());
+          _impl_.swift_prefix_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.swift_prefix)
@@ -15768,7 +15768,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_class_prefix(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000040u;
-  _impl_.php_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.php_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_class_prefix)
 }
 inline std::string* FileOptions::mutable_php_class_prefix() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15783,12 +15783,12 @@ inline const std::string& FileOptions::_internal_php_class_prefix() const {
 inline void FileOptions::_internal_set_php_class_prefix(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000040u;
-  _impl_.php_class_prefix_.Set(value, GetArenaForAllocation());
+  _impl_.php_class_prefix_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_php_class_prefix() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000040u;
-  return _impl_.php_class_prefix_.Mutable( GetArenaForAllocation());
+  return _impl_.php_class_prefix_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_php_class_prefix() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -15799,7 +15799,7 @@ inline std::string* FileOptions::release_php_class_prefix() {
   _impl_._has_bits_[0] &= ~0x00000040u;
   auto* released = _impl_.php_class_prefix_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.php_class_prefix_.Set("", GetArenaForAllocation());
+  _impl_.php_class_prefix_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -15810,10 +15810,10 @@ inline void FileOptions::set_allocated_php_class_prefix(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000040u;
   }
-  _impl_.php_class_prefix_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.php_class_prefix_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.php_class_prefix_.IsDefault()) {
-          _impl_.php_class_prefix_.Set("", GetArenaForAllocation());
+          _impl_.php_class_prefix_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_class_prefix)
@@ -15839,7 +15839,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_namespace(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000080u;
-  _impl_.php_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.php_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_namespace)
 }
 inline std::string* FileOptions::mutable_php_namespace() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15854,12 +15854,12 @@ inline const std::string& FileOptions::_internal_php_namespace() const {
 inline void FileOptions::_internal_set_php_namespace(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000080u;
-  _impl_.php_namespace_.Set(value, GetArenaForAllocation());
+  _impl_.php_namespace_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_php_namespace() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000080u;
-  return _impl_.php_namespace_.Mutable( GetArenaForAllocation());
+  return _impl_.php_namespace_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_php_namespace() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -15870,7 +15870,7 @@ inline std::string* FileOptions::release_php_namespace() {
   _impl_._has_bits_[0] &= ~0x00000080u;
   auto* released = _impl_.php_namespace_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.php_namespace_.Set("", GetArenaForAllocation());
+  _impl_.php_namespace_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -15881,10 +15881,10 @@ inline void FileOptions::set_allocated_php_namespace(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000080u;
   }
-  _impl_.php_namespace_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.php_namespace_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.php_namespace_.IsDefault()) {
-          _impl_.php_namespace_.Set("", GetArenaForAllocation());
+          _impl_.php_namespace_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_namespace)
@@ -15910,7 +15910,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_metadata_namespace(Arg_&
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000100u;
-  _impl_.php_metadata_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.php_metadata_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_metadata_namespace)
 }
 inline std::string* FileOptions::mutable_php_metadata_namespace() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15925,12 +15925,12 @@ inline const std::string& FileOptions::_internal_php_metadata_namespace() const 
 inline void FileOptions::_internal_set_php_metadata_namespace(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000100u;
-  _impl_.php_metadata_namespace_.Set(value, GetArenaForAllocation());
+  _impl_.php_metadata_namespace_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_php_metadata_namespace() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000100u;
-  return _impl_.php_metadata_namespace_.Mutable( GetArenaForAllocation());
+  return _impl_.php_metadata_namespace_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_php_metadata_namespace() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -15941,7 +15941,7 @@ inline std::string* FileOptions::release_php_metadata_namespace() {
   _impl_._has_bits_[0] &= ~0x00000100u;
   auto* released = _impl_.php_metadata_namespace_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.php_metadata_namespace_.Set("", GetArenaForAllocation());
+  _impl_.php_metadata_namespace_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -15952,10 +15952,10 @@ inline void FileOptions::set_allocated_php_metadata_namespace(std::string* value
   } else {
     _impl_._has_bits_[0] &= ~0x00000100u;
   }
-  _impl_.php_metadata_namespace_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.php_metadata_namespace_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.php_metadata_namespace_.IsDefault()) {
-          _impl_.php_metadata_namespace_.Set("", GetArenaForAllocation());
+          _impl_.php_metadata_namespace_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_metadata_namespace)
@@ -15981,7 +15981,7 @@ inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_ruby_package(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000200u;
-  _impl_.ruby_package_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.ruby_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.ruby_package)
 }
 inline std::string* FileOptions::mutable_ruby_package() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15996,12 +15996,12 @@ inline const std::string& FileOptions::_internal_ruby_package() const {
 inline void FileOptions::_internal_set_ruby_package(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000200u;
-  _impl_.ruby_package_.Set(value, GetArenaForAllocation());
+  _impl_.ruby_package_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_ruby_package() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000200u;
-  return _impl_.ruby_package_.Mutable( GetArenaForAllocation());
+  return _impl_.ruby_package_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_ruby_package() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -16012,7 +16012,7 @@ inline std::string* FileOptions::release_ruby_package() {
   _impl_._has_bits_[0] &= ~0x00000200u;
   auto* released = _impl_.ruby_package_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.ruby_package_.Set("", GetArenaForAllocation());
+  _impl_.ruby_package_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -16023,10 +16023,10 @@ inline void FileOptions::set_allocated_ruby_package(std::string* value) {
   } else {
     _impl_._has_bits_[0] &= ~0x00000200u;
   }
-  _impl_.ruby_package_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.ruby_package_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.ruby_package_.IsDefault()) {
-          _impl_.ruby_package_.Set("", GetArenaForAllocation());
+          _impl_.ruby_package_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.ruby_package)
@@ -16054,7 +16054,7 @@ inline const ::google::protobuf::FeatureSet& FileOptions::features() const ABSL_
 }
 inline void FileOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
@@ -16074,11 +16074,11 @@ inline ::google::protobuf::FeatureSet* FileOptions::release_features() {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -16097,7 +16097,7 @@ inline ::google::protobuf::FeatureSet* FileOptions::_internal_mutable_features()
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000400u;
   if (_impl_.features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -16108,7 +16108,7 @@ inline ::google::protobuf::FeatureSet* FileOptions::mutable_features() ABSL_ATTR
   return _msg;
 }
 inline void FileOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
@@ -16344,7 +16344,7 @@ inline const ::google::protobuf::FeatureSet& MessageOptions::features() const AB
 }
 inline void MessageOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
@@ -16364,11 +16364,11 @@ inline ::google::protobuf::FeatureSet* MessageOptions::release_features() {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -16387,7 +16387,7 @@ inline ::google::protobuf::FeatureSet* MessageOptions::_internal_mutable_feature
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -16398,7 +16398,7 @@ inline ::google::protobuf::FeatureSet* MessageOptions::mutable_features() ABSL_A
   return _msg;
 }
 inline void MessageOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
@@ -16521,7 +16521,7 @@ inline PROTOBUF_ALWAYS_INLINE void FieldOptions_EditionDefault::set_value(Arg_&&
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.EditionDefault.value)
 }
 inline std::string* FieldOptions_EditionDefault::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -16536,12 +16536,12 @@ inline const std::string& FieldOptions_EditionDefault::_internal_value() const {
 inline void FieldOptions_EditionDefault::_internal_set_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.value_.Set(value, GetArenaForAllocation());
+  _impl_.value_.Set(value, GetArena());
 }
 inline std::string* FieldOptions_EditionDefault::_internal_mutable_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.value_.Mutable( GetArenaForAllocation());
+  return _impl_.value_.Mutable( GetArena());
 }
 inline std::string* FieldOptions_EditionDefault::release_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -16552,7 +16552,7 @@ inline std::string* FieldOptions_EditionDefault::release_value() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.value_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.value_.Set("", GetArenaForAllocation());
+  _impl_.value_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -16563,10 +16563,10 @@ inline void FieldOptions_EditionDefault::set_allocated_value(std::string* value)
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.value_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.value_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.value_.IsDefault()) {
-          _impl_.value_.Set("", GetArenaForAllocation());
+          _impl_.value_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.EditionDefault.value)
@@ -16948,7 +16948,7 @@ inline const ::google::protobuf::FeatureSet& FieldOptions::features() const ABSL
 }
 inline void FieldOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
@@ -16968,11 +16968,11 @@ inline ::google::protobuf::FeatureSet* FieldOptions::release_features() {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -16991,7 +16991,7 @@ inline ::google::protobuf::FeatureSet* FieldOptions::_internal_mutable_features(
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -17002,7 +17002,7 @@ inline ::google::protobuf::FeatureSet* FieldOptions::mutable_features() ABSL_ATT
   return _msg;
 }
 inline void FieldOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
@@ -17098,7 +17098,7 @@ inline const ::google::protobuf::FeatureSet& OneofOptions::features() const ABSL
 }
 inline void OneofOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
@@ -17118,11 +17118,11 @@ inline ::google::protobuf::FeatureSet* OneofOptions::release_features() {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -17141,7 +17141,7 @@ inline ::google::protobuf::FeatureSet* OneofOptions::_internal_mutable_features(
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -17152,7 +17152,7 @@ inline ::google::protobuf::FeatureSet* OneofOptions::mutable_features() ABSL_ATT
   return _msg;
 }
 inline void OneofOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
@@ -17332,7 +17332,7 @@ inline const ::google::protobuf::FeatureSet& EnumOptions::features() const ABSL_
 }
 inline void EnumOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
@@ -17352,11 +17352,11 @@ inline ::google::protobuf::FeatureSet* EnumOptions::release_features() {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -17375,7 +17375,7 @@ inline ::google::protobuf::FeatureSet* EnumOptions::_internal_mutable_features()
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -17386,7 +17386,7 @@ inline ::google::protobuf::FeatureSet* EnumOptions::mutable_features() ABSL_ATTR
   return _msg;
 }
 inline void EnumOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
@@ -17510,7 +17510,7 @@ inline const ::google::protobuf::FeatureSet& EnumValueOptions::features() const 
 }
 inline void EnumValueOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
@@ -17530,11 +17530,11 @@ inline ::google::protobuf::FeatureSet* EnumValueOptions::release_features() {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -17553,7 +17553,7 @@ inline ::google::protobuf::FeatureSet* EnumValueOptions::_internal_mutable_featu
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -17564,7 +17564,7 @@ inline ::google::protobuf::FeatureSet* EnumValueOptions::mutable_features() ABSL
   return _msg;
 }
 inline void EnumValueOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
@@ -17688,7 +17688,7 @@ inline const ::google::protobuf::FeatureSet& ServiceOptions::features() const AB
 }
 inline void ServiceOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
@@ -17708,11 +17708,11 @@ inline ::google::protobuf::FeatureSet* ServiceOptions::release_features() {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -17731,7 +17731,7 @@ inline ::google::protobuf::FeatureSet* ServiceOptions::_internal_mutable_feature
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -17742,7 +17742,7 @@ inline ::google::protobuf::FeatureSet* ServiceOptions::mutable_features() ABSL_A
   return _msg;
 }
 inline void ServiceOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
@@ -17923,7 +17923,7 @@ inline const ::google::protobuf::FeatureSet& MethodOptions::features() const ABS
 }
 inline void MethodOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
@@ -17943,11 +17943,11 @@ inline ::google::protobuf::FeatureSet* MethodOptions::release_features() {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -17966,7 +17966,7 @@ inline ::google::protobuf::FeatureSet* MethodOptions::_internal_mutable_features
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -17977,7 +17977,7 @@ inline ::google::protobuf::FeatureSet* MethodOptions::mutable_features() ABSL_AT
   return _msg;
 }
 inline void MethodOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
@@ -18071,7 +18071,7 @@ inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption_NamePart::set_name_part(A
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_part_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.name_part_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.NamePart.name_part)
 }
 inline std::string* UninterpretedOption_NamePart::mutable_name_part() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -18086,12 +18086,12 @@ inline const std::string& UninterpretedOption_NamePart::_internal_name_part() co
 inline void UninterpretedOption_NamePart::_internal_set_name_part(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.name_part_.Set(value, GetArenaForAllocation());
+  _impl_.name_part_.Set(value, GetArena());
 }
 inline std::string* UninterpretedOption_NamePart::_internal_mutable_name_part() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.name_part_.Mutable( GetArenaForAllocation());
+  return _impl_.name_part_.Mutable( GetArena());
 }
 inline std::string* UninterpretedOption_NamePart::release_name_part() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -18102,7 +18102,7 @@ inline std::string* UninterpretedOption_NamePart::release_name_part() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.name_part_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.name_part_.Set("", GetArenaForAllocation());
+  _impl_.name_part_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -18113,10 +18113,10 @@ inline void UninterpretedOption_NamePart::set_allocated_name_part(std::string* v
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.name_part_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.name_part_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.name_part_.IsDefault()) {
-          _impl_.name_part_.Set("", GetArenaForAllocation());
+          _impl_.name_part_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.NamePart.name_part)
@@ -18223,7 +18223,7 @@ inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_identifier_value(Arg
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.identifier_value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.identifier_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.identifier_value)
 }
 inline std::string* UninterpretedOption::mutable_identifier_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -18238,12 +18238,12 @@ inline const std::string& UninterpretedOption::_internal_identifier_value() cons
 inline void UninterpretedOption::_internal_set_identifier_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.identifier_value_.Set(value, GetArenaForAllocation());
+  _impl_.identifier_value_.Set(value, GetArena());
 }
 inline std::string* UninterpretedOption::_internal_mutable_identifier_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.identifier_value_.Mutable( GetArenaForAllocation());
+  return _impl_.identifier_value_.Mutable( GetArena());
 }
 inline std::string* UninterpretedOption::release_identifier_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -18254,7 +18254,7 @@ inline std::string* UninterpretedOption::release_identifier_value() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.identifier_value_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.identifier_value_.Set("", GetArenaForAllocation());
+  _impl_.identifier_value_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -18265,10 +18265,10 @@ inline void UninterpretedOption::set_allocated_identifier_value(std::string* val
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.identifier_value_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.identifier_value_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.identifier_value_.IsDefault()) {
-          _impl_.identifier_value_.Set("", GetArenaForAllocation());
+          _impl_.identifier_value_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.identifier_value)
@@ -18378,7 +18378,7 @@ inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_string_value(Arg_&& 
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.string_value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.string_value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.string_value)
 }
 inline std::string* UninterpretedOption::mutable_string_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -18393,12 +18393,12 @@ inline const std::string& UninterpretedOption::_internal_string_value() const {
 inline void UninterpretedOption::_internal_set_string_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.string_value_.Set(value, GetArenaForAllocation());
+  _impl_.string_value_.Set(value, GetArena());
 }
 inline std::string* UninterpretedOption::_internal_mutable_string_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  return _impl_.string_value_.Mutable( GetArenaForAllocation());
+  return _impl_.string_value_.Mutable( GetArena());
 }
 inline std::string* UninterpretedOption::release_string_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -18409,7 +18409,7 @@ inline std::string* UninterpretedOption::release_string_value() {
   _impl_._has_bits_[0] &= ~0x00000002u;
   auto* released = _impl_.string_value_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.string_value_.Set("", GetArenaForAllocation());
+  _impl_.string_value_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -18420,10 +18420,10 @@ inline void UninterpretedOption::set_allocated_string_value(std::string* value) 
   } else {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
-  _impl_.string_value_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.string_value_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.string_value_.IsDefault()) {
-          _impl_.string_value_.Set("", GetArenaForAllocation());
+          _impl_.string_value_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.string_value)
@@ -18449,7 +18449,7 @@ inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_aggregate_value(Arg_
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.aggregate_value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.aggregate_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.aggregate_value)
 }
 inline std::string* UninterpretedOption::mutable_aggregate_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -18464,12 +18464,12 @@ inline const std::string& UninterpretedOption::_internal_aggregate_value() const
 inline void UninterpretedOption::_internal_set_aggregate_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.aggregate_value_.Set(value, GetArenaForAllocation());
+  _impl_.aggregate_value_.Set(value, GetArena());
 }
 inline std::string* UninterpretedOption::_internal_mutable_aggregate_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000004u;
-  return _impl_.aggregate_value_.Mutable( GetArenaForAllocation());
+  return _impl_.aggregate_value_.Mutable( GetArena());
 }
 inline std::string* UninterpretedOption::release_aggregate_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -18480,7 +18480,7 @@ inline std::string* UninterpretedOption::release_aggregate_value() {
   _impl_._has_bits_[0] &= ~0x00000004u;
   auto* released = _impl_.aggregate_value_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.aggregate_value_.Set("", GetArenaForAllocation());
+  _impl_.aggregate_value_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -18491,10 +18491,10 @@ inline void UninterpretedOption::set_allocated_aggregate_value(std::string* valu
   } else {
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
-  _impl_.aggregate_value_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.aggregate_value_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.aggregate_value_.IsDefault()) {
-          _impl_.aggregate_value_.Set("", GetArenaForAllocation());
+          _impl_.aggregate_value_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.aggregate_value)
@@ -18733,7 +18733,7 @@ inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditio
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
   _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(value);
@@ -18753,11 +18753,11 @@ inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefau
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
   released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArenaForAllocation() == nullptr) {
+  if (GetArena() == nullptr) {
     delete old;
   }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
+  if (GetArena() != nullptr) {
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -18776,7 +18776,7 @@ inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefau
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArenaForAllocation());
+    auto* p = CreateMaybeMessage<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -18787,7 +18787,7 @@ inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefau
   return _msg;
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_features(::google::protobuf::FeatureSet* value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
     delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
@@ -19033,7 +19033,7 @@ inline PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_leading_comments
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.leading_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.leading_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_comments)
 }
 inline std::string* SourceCodeInfo_Location::mutable_leading_comments() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -19048,12 +19048,12 @@ inline const std::string& SourceCodeInfo_Location::_internal_leading_comments() 
 inline void SourceCodeInfo_Location::_internal_set_leading_comments(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.leading_comments_.Set(value, GetArenaForAllocation());
+  _impl_.leading_comments_.Set(value, GetArena());
 }
 inline std::string* SourceCodeInfo_Location::_internal_mutable_leading_comments() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.leading_comments_.Mutable( GetArenaForAllocation());
+  return _impl_.leading_comments_.Mutable( GetArena());
 }
 inline std::string* SourceCodeInfo_Location::release_leading_comments() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -19064,7 +19064,7 @@ inline std::string* SourceCodeInfo_Location::release_leading_comments() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.leading_comments_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.leading_comments_.Set("", GetArenaForAllocation());
+  _impl_.leading_comments_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -19075,10 +19075,10 @@ inline void SourceCodeInfo_Location::set_allocated_leading_comments(std::string*
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.leading_comments_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.leading_comments_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.leading_comments_.IsDefault()) {
-          _impl_.leading_comments_.Set("", GetArenaForAllocation());
+          _impl_.leading_comments_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceCodeInfo.Location.leading_comments)
@@ -19104,7 +19104,7 @@ inline PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_trailing_comment
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.trailing_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.trailing_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.trailing_comments)
 }
 inline std::string* SourceCodeInfo_Location::mutable_trailing_comments() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -19119,12 +19119,12 @@ inline const std::string& SourceCodeInfo_Location::_internal_trailing_comments()
 inline void SourceCodeInfo_Location::_internal_set_trailing_comments(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.trailing_comments_.Set(value, GetArenaForAllocation());
+  _impl_.trailing_comments_.Set(value, GetArena());
 }
 inline std::string* SourceCodeInfo_Location::_internal_mutable_trailing_comments() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000002u;
-  return _impl_.trailing_comments_.Mutable( GetArenaForAllocation());
+  return _impl_.trailing_comments_.Mutable( GetArena());
 }
 inline std::string* SourceCodeInfo_Location::release_trailing_comments() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -19135,7 +19135,7 @@ inline std::string* SourceCodeInfo_Location::release_trailing_comments() {
   _impl_._has_bits_[0] &= ~0x00000002u;
   auto* released = _impl_.trailing_comments_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.trailing_comments_.Set("", GetArenaForAllocation());
+  _impl_.trailing_comments_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -19146,10 +19146,10 @@ inline void SourceCodeInfo_Location::set_allocated_trailing_comments(std::string
   } else {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
-  _impl_.trailing_comments_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.trailing_comments_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.trailing_comments_.IsDefault()) {
-          _impl_.trailing_comments_.Set("", GetArenaForAllocation());
+          _impl_.trailing_comments_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceCodeInfo.Location.trailing_comments)
@@ -19378,7 +19378,7 @@ inline PROTOBUF_ALWAYS_INLINE void GeneratedCodeInfo_Annotation::set_source_file
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.source_file_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.source_file_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
 }
 inline std::string* GeneratedCodeInfo_Annotation::mutable_source_file() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -19393,12 +19393,12 @@ inline const std::string& GeneratedCodeInfo_Annotation::_internal_source_file() 
 inline void GeneratedCodeInfo_Annotation::_internal_set_source_file(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.source_file_.Set(value, GetArenaForAllocation());
+  _impl_.source_file_.Set(value, GetArena());
 }
 inline std::string* GeneratedCodeInfo_Annotation::_internal_mutable_source_file() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.source_file_.Mutable( GetArenaForAllocation());
+  return _impl_.source_file_.Mutable( GetArena());
 }
 inline std::string* GeneratedCodeInfo_Annotation::release_source_file() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -19409,7 +19409,7 @@ inline std::string* GeneratedCodeInfo_Annotation::release_source_file() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.source_file_.Release();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.source_file_.Set("", GetArenaForAllocation());
+  _impl_.source_file_.Set("", GetArena());
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return released;
 }
@@ -19420,10 +19420,10 @@ inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(std::string*
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.source_file_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.source_file_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.source_file_.IsDefault()) {
-          _impl_.source_file_.Set("", GetArenaForAllocation());
+          _impl_.source_file_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.GeneratedCodeInfo.Annotation.source_file)

@@ -899,7 +899,7 @@ int DeleteRepeatedField(
     }
   }
 
-  Arena* arena = Arena::InternalGetArenaForAllocation(message);
+  Arena* arena = message->GetArena();
   ABSL_DCHECK_EQ(arena, nullptr)
       << "python protobuf is expected to be allocated from heap";
   // Remove items, starting from the end.

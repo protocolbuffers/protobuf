@@ -521,10 +521,6 @@ class PROTOBUF_EXPORT MessageLite {
   // of this message or its internal memory could be changed.
   Arena* GetOwningArena() const { return _internal_metadata_.arena(); }
 
-  // Returns the arena, used for allocating internal objects(e.g., child
-  // messages, etc), or owning incoming objects (e.g., set allocated).
-  Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
-
   struct ClassData {
     // Note: The order of arguments in the functions is chosen so that it has
     // the same ABI as the member function that calls them. Eg the `this`

@@ -366,8 +366,8 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         clear_$oneof_name$();
         set_has_$name$();
         $field$ = new ::absl::Cord;
-        if (GetArenaForAllocation() != nullptr) {
-          GetArenaForAllocation()->Own($field$);
+        if (GetArena() != nullptr) {
+          GetArena()->Own($field$);
         }
       }
       *$field$ = value;
@@ -386,8 +386,8 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         clear_$oneof_name$();
         set_has_$name$();
         $field$ = new ::absl::Cord;
-        if (GetArenaForAllocation() != nullptr) {
-          GetArenaForAllocation()->Own($field$);
+        if (GetArena() != nullptr) {
+          GetArena()->Own($field$);
         }
       }
       *$field$ = value;
@@ -401,8 +401,8 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         clear_$oneof_name$();
         set_has_$name$();
         $field$ = new ::absl::Cord;
-        if (GetArenaForAllocation() != nullptr) {
-          GetArenaForAllocation()->Own($field$);
+        if (GetArena() != nullptr) {
+          GetArena()->Own($field$);
         }
       }
       return $field$;
@@ -425,7 +425,7 @@ void CordOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
 void CordOneofFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
-      "if (GetArenaForAllocation() == nullptr) {\n"
+      "if (GetArena() == nullptr) {\n"
       "  delete $field$;\n"
       "}\n");
 }

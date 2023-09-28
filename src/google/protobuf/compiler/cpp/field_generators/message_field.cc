@@ -212,7 +212,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $PrepareSplitMessageForWrite$;
           //~ If we're not on an arena, free whatever we were holding before.
           //~ (If we are on arena, we can just forget the earlier pointer.)
-          if (GetArenaForAllocation() == nullptr) {
+          if (GetArena() == nullptr) {
             delete reinterpret_cast<$pb$::MessageLite*>($field_$);
           }
           $field_$ = reinterpret_cast<$MemberType$*>(value);
@@ -232,11 +232,11 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
           auto* old = reinterpret_cast<$pb$::MessageLite*>(released);
           released = $pbi$::DuplicateIfNonNull(released);
-          if (GetArenaForAllocation() == nullptr) {
+          if (GetArena() == nullptr) {
             delete old;
           }
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-          if (GetArenaForAllocation() != nullptr) {
+          if (GetArena() != nullptr) {
             released = $pbi$::DuplicateIfNonNull(released);
           }
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -259,7 +259,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $StrongRef$;
           $set_hasbit$;
           if ($field_$ == nullptr) {
-            auto* p = CreateMaybeMessage<$Submsg$>(GetArenaForAllocation());
+            auto* p = CreateMaybeMessage<$Submsg$>(GetArena());
             $field_$ = reinterpret_cast<$MemberType$*>(p);
           }
           return $cast_field_$;
@@ -276,7 +276,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         //~ We handle the most common case inline, and delegate less common
         //~ cases to the slow fallback function.
         inline void $Msg$::set_allocated_$name$($Submsg$* value) {
-          $pb$::Arena* message_arena = GetArenaForAllocation();
+          $pb$::Arena* message_arena = GetArena();
           $TsanDetectConcurrentMutation$;
           $PrepareSplitMessageForWrite$;
           if (message_arena == nullptr) {
@@ -378,7 +378,7 @@ void SingularMessage::GenerateInternalAccessorDefinitions(
           $update_hasbit$;
           if ($is_already_set$) {
             $clear_oneof$;
-            msg->$field_$ = $kDefaultPtr$->New(msg->GetArenaForAllocation());
+            msg->$field_$ = $kDefaultPtr$->New(msg->GetArena());
           }
           return msg->$field_$;
         }
@@ -390,7 +390,7 @@ void SingularMessage::GenerateClearingCode(io::Printer* p) const {
     // If we don't have has-bits, message presence is indicated only by ptr !=
     // nullptr. Thus on clear, we need to delete the object.
     p->Emit(
-        "if (GetArenaForAllocation() == nullptr && $field_$ != nullptr) {\n"
+        "if (GetArena() == nullptr && $field_$ != nullptr) {\n"
         "  delete $field_$;\n"
         "}\n"
         "$field_$ = nullptr;\n");
@@ -404,7 +404,7 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
     // If we don't have has-bits, message presence is indicated only by ptr !=
     // nullptr. Thus on clear, we need to delete the object.
     p->Emit(
-        "if (GetArenaForAllocation() == nullptr && $field_$ != nullptr) {\n"
+        "if (GetArena() == nullptr && $field_$ != nullptr) {\n"
         "  delete $field_$;\n"
         "}\n"
         "$field_$ = nullptr;\n");
@@ -572,7 +572,7 @@ class OneofMessage : public SingularMessage {
 void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
     void $Msg$::set_allocated_$name$($Submsg$* $name$) {
-      $pb$::Arena* message_arena = GetArenaForAllocation();
+      $pb$::Arena* message_arena = GetArena();
       clear_$oneof_name$();
       if ($name$) {
         $pb$::Arena* submessage_arena =
@@ -602,7 +602,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       if ($has_field$) {
         clear_has_$oneof_name$();
         auto* temp = $cast_field_$;
-        if (GetArenaForAllocation() != nullptr) {
+        if (GetArena() != nullptr) {
           temp = $pbi$::DuplicateIfNonNull(temp);
         }
         $field_$ = nullptr;
@@ -660,8 +660,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name$();
-        $field_$ =
-            $weak_cast$(CreateMaybeMessage<$Submsg$>(GetArenaForAllocation()));
+        $field_$ = $weak_cast$(CreateMaybeMessage<$Submsg$>(GetArena()));
       }
       return $cast_field_$;
     }
@@ -678,7 +677,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 void OneofMessage::GenerateClearingCode(io::Printer* p) const {
   p->Emit(R"cc(
-    if (GetArenaForAllocation() == nullptr) {
+    if (GetArena() == nullptr) {
       delete $field_$;
     })cc");
 }
@@ -858,7 +857,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         if ($field_$.IsDefault()) {
           $field_$.Set(
               CreateMaybeMessage<$pb$::$Weak$RepeatedPtrField<$Submsg$>>(
-                  GetArenaForAllocation()));
+                  GetArena()));
         }
         return $field_$.Get();
       }
