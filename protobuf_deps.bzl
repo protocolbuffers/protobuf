@@ -151,16 +151,8 @@ def protobuf_deps():
 
     # Python Downloads
     python_source_archive(
-        name = "python-3.7.0",
-        sha256 = "85bb9feb6863e04fb1700b018d9d42d1caac178559ffa453d7e6a436e259fd0d",
-    )
-    python_nuget_package(
-        name = "nuget_python_i686_3.7.0",
-        sha256 = "a8bb49fa1ca62ad55430fcafaca1b58015e22943e66b1a87d5e7cef2556c6a54",
-    )
-    python_nuget_package(
-        name = "nuget_python_x86-64_3.7.0",
-        sha256 = "66eb796a5bdb1e6787b8f655a1237a6b6964af2115b7627cf4f0032cf068b4b2",
+        name = "python-3.8.0",
+        sha256 = "f1069ad3cae8e7ec467aa98a6565a62a48ef196cb8f1455a245a08db5e1792df",
     )
     python_nuget_package(
         name = "nuget_python_i686_3.8.0",
