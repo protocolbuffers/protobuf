@@ -82,13 +82,21 @@ cc_library(
 
 cc_library(
     name = "versions",
-    hdrs = ["versions.h"],
+    srcs = [
+        "versions.cc",
+    ],
+    hdrs = [
+        "versions.h",
+    ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler",
     visibility = [
         "//src/google/protobuf/compiler:__subpackages__",
     ],
-    deps = ["@com_google_absl//absl/strings"],
+    deps = [
+        ":code_generator",
+        "@com_google_absl//absl/strings",
+    ],
 )
 
 cc_library(

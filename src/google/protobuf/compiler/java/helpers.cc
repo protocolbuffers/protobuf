@@ -28,8 +28,10 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/wire_format.h"
 
@@ -41,8 +43,8 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-using internal::WireFormat;
-using internal::WireFormatLite;
+using ::google::protobuf::internal::WireFormat;
+using ::google::protobuf::internal::WireFormatLite;
 
 const char kThickSeparator[] =
     "// ===================================================================\n";
@@ -82,6 +84,19 @@ void PrintEnumVerifierLogic(
                          "      }");
   printer->Print(variables,
                  absl::StrCat(enum_verifier_string, terminating_string));
+}
+
+void PrintGencodeVersionValidator(io::Printer* printer) {
+  const auto& version = GetProtobufVersion(internal::kProtoJavaVersionString);
+  printer->Print(
+      "static {\n"
+      " com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
+      "   com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,\n"
+      "   $version_segments$);\n"
+      "}\n",
+      "version_segments",
+      absl::StrCat(version.major(), ", ", version.minor(), ", ",
+                   version.patch(), ", \"", version.suffix(), "\""));
 }
 
 std::string UnderscoresToCamelCase(absl::string_view input,

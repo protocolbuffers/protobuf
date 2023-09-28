@@ -32,6 +32,7 @@
 #define GOOGLE_PROTOBUF_VERSIONS_H__
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/plugin.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -62,6 +63,10 @@ constexpr absl::string_view kProtoCppVersionString = "4.25-main";
 constexpr absl::string_view kProtoJavaVersionString = "3.25-main";
 constexpr absl::string_view kProtoPythonVersionString = "4.25-main";
 }  // namespace internal
+
+// Parses the Protobuf version string into Version message. Useful when
+// accessing each segment of the version.
+Version GetProtobufVersion(absl::string_view version);
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
