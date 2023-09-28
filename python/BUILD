@@ -26,7 +26,7 @@ package(
 )
 
 LIMITED_API_FLAG_SELECT = {
-    ":limited_api_3.7": ["-DPy_LIMITED_API=0x03070000"],
+    ":limited_api_3.8": ["-DPy_LIMITED_API=0x03080000"],
     ":limited_api_3.10": ["-DPy_LIMITED_API=0x030a0000"],
     "//conditions:default": [],
 }
@@ -41,45 +41,19 @@ string_flag(
     build_setting_default = "system",
     values = [
         "system",
-        "37",
         "38",
         "39",
         "310",
+        "311",
     ],
 )
 
 config_setting(
-    name = "limited_api_3.7",
+    name = "limited_api_3.8",
     flag_values = {
         ":limited_api": "True",
-        ":python_version": "37",
+        ":python_version": "38",
     },
-)
-
-config_setting(
-    name = "full_api_3.7_win32",
-    flag_values = {
-        ":limited_api": "False",
-        ":python_version": "37",
-    },
-    values = {"cpu": "win32"},
-)
-
-config_setting(
-    name = "full_api_3.7_win64",
-    flag_values = {
-        ":limited_api": "False",
-        ":python_version": "37",
-    },
-    values = {"cpu": "win64"},
-)
-
-selects.config_setting_group(
-    name = "full_api_3.7",
-    match_any = [
-        ":full_api_3.7_win32",
-        ":full_api_3.7_win64",
-    ],
 )
 
 config_setting(

@@ -296,7 +296,6 @@ genrule(
 py_wheel(
     name = "binary_wheel",
     abi = select({
-        "//python:full_api_3.7": "cp37m",
         "//python:full_api_3.8": "cp38",
         "//python:full_api_3.9": "cp39",
         "//conditions:default": "abi3",
@@ -306,10 +305,10 @@ py_wheel(
     classifiers = [
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
@@ -328,9 +327,8 @@ py_wheel(
         ":windows_x86_64": "win_amd64",
         "//conditions:default": "any",
     }),
-    python_requires = ">=3.7",
+    python_requires = ">=3.8",
     python_tag = selects.with_or({
-        ("//python:limited_api_3.7", "//python:full_api_3.7"): "cp37",
         "//python:full_api_3.8": "cp38",
         "//python:full_api_3.9": "cp39",
         "//python:limited_api_3.10": "cp310",
@@ -362,10 +360,10 @@ py_wheel(
     classifiers = [
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
@@ -374,7 +372,7 @@ py_wheel(
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
     platform = "any",
-    python_requires = ">=3.7",
+    python_requires = ">=3.8",
     python_tag = "py3",
     strip_path_prefixes = [
         "python/",
@@ -430,7 +428,6 @@ py_dist(
     ],
     # Windows needs version-specific wheels until 3.10.
     full_api_versions = [
-        "37",
         "38",
         "39",
     ],
@@ -444,9 +441,9 @@ py_dist(
         # TODO: fix win32 build
         "win32": "310",
         "win64": "310",
-        "linux-x86_64": "37",
-        "linux-aarch_64": "37",
-        "osx-universal2": "37",
+        "linux-x86_64": "38",
+        "linux-aarch_64": "38",
+        "osx-universal2": "38",
     },
     pure_python_wheel = ":pure_python_wheel",
     tags = ["manual"],
