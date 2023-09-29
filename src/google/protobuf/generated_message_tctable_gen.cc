@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -731,6 +732,10 @@ TailCallTableInfo::TailCallTableInfo(
     const OptionProvider& option_provider,
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices) {
+  ABSL_DCHECK(std::is_sorted(ordered_fields.begin(), ordered_fields.end(),
+                             [](const auto* lhs, const auto* rhs) {
+                               return lhs->number() < rhs->number();
+                             }));
   // If this message has any inlined string fields, store the donation state
   // offset in the first auxiliary entry, which is kInlinedStringAuxIdx.
   if (!inlined_string_indices.empty()) {
