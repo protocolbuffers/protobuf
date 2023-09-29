@@ -69,6 +69,8 @@ constexpr absl::string_view kEscapeTestStringEscaped =
     "\"\\\"A string with \\' characters \\n and \\r newlines "
     "and \\t tabs and \\001 slashes \\\\ and  multiple   spaces\"";
 
+constexpr absl::string_view value_replacement = "\\[REDACTED\\]";
+
 class TextFormatTest : public testing::Test {
  public:
   static void SetUpTestSuite() {
@@ -172,35 +174,24 @@ TEST_F(TextFormatTest, ShortFormat) {
 
   std::string value_replacement = "\\[REDACTED\\]";
   EXPECT_THAT(google::protobuf::ShortFormat(proto),
-              testing::MatchesRegex(
-                  "optional_redacted_string: " +
-                  value_replacement +
-                  " "
+              testing::MatchesRegex(absl::Substitute(
+                  "optional_redacted_string: $0 "
                   "optional_unredacted_string: \"bar\" "
-                  "repeated_redacted_string: " +
-                  value_replacement +
-                  " "
-                  "repeated_redacted_string: " +
-                  value_replacement +
-                  " "
+                  "repeated_redacted_string: $0 "
+                  "repeated_redacted_string: $0 "
                   "repeated_unredacted_string: \"3\" "
                   "repeated_unredacted_string: \"4\" "
-                  "optional_redacted_message: " +
-                  value_replacement +
-                  " "
+                  "optional_redacted_message: $0 "
                   "optional_unredacted_message \\{ "
                   "optional_unredacted_nested_string: \"world\" \\} "
-                  "repeated_redacted_message: " +
-                  value_replacement +
-                  " "
+                  "repeated_redacted_message: $0 "
                   "repeated_unredacted_message "
                   "\\{ optional_unredacted_nested_string: \"7\" \\} "
                   "repeated_unredacted_message "
                   "\\{ optional_unredacted_nested_string: \"8\" \\} "
-                  "map_redacted_string: " +
-                  value_replacement +
-                  " "
-                  "map_unredacted_string \\{ key: \"ghi\" value: \"jkl\" \\}"));
+                  "map_redacted_string: $0 "
+                  "map_unredacted_string \\{ key: \"ghi\" value: \"jkl\" \\}",
+                  value_replacement)));
 }
 
 TEST_F(TextFormatTest, Utf8Format) {
@@ -234,39 +225,27 @@ TEST_F(TextFormatTest, Utf8Format) {
   (*proto.mutable_map_redacted_string())["abc"] = "def";
   (*proto.mutable_map_unredacted_string())["ghi"] = "jkl";
 
-  std::string value_replacement = "\\[REDACTED\\]";
   EXPECT_THAT(google::protobuf::Utf8Format(proto),
-              testing::MatchesRegex(
-                  "optional_redacted_string: " +
-                  value_replacement +
-                  "\n"
+              testing::MatchesRegex(absl::Substitute(
+                  "optional_redacted_string: $0\n"
                   "optional_unredacted_string: \"bar\"\n"
-                  "repeated_redacted_string: " +
-                  value_replacement +
-                  "\n"
-                  "repeated_redacted_string: " +
-                  value_replacement +
-                  "\n"
+                  "repeated_redacted_string: $0\n"
+                  "repeated_redacted_string: $0\n"
                   "repeated_unredacted_string: \"3\"\n"
                   "repeated_unredacted_string: \"4\"\n"
-                  "optional_redacted_message: " +
-                  value_replacement +
-                  "\n"
+                  "optional_redacted_message: $0\n"
                   "optional_unredacted_message \\{\n  "
                   "optional_unredacted_nested_string: "
                   "\"\xE8\xB0\xB7\xE6\xAD\x8C\"\n\\}\n"
-                  "repeated_redacted_message: " +
-                  value_replacement +
-                  "\n"
+                  "repeated_redacted_message: $0\n"
                   "repeated_unredacted_message \\{\n  "
                   "optional_unredacted_nested_string: \"7\"\n\\}\n"
                   "repeated_unredacted_message \\{\n  "
                   "optional_unredacted_nested_string: \"8\"\n\\}\n"
-                  "map_redacted_string: " +
-                  value_replacement +
-                  "\n"
+                  "map_redacted_string: $0\n"
                   "map_unredacted_string \\{\n  "
-                  "key: \"ghi\"\n  value: \"jkl\"\n\\}\n"));
+                  "key: \"ghi\"\n  value: \"jkl\"\n\\}\n",
+                  value_replacement)));
 }
 
 TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
@@ -402,6 +381,17 @@ TEST_F(TextFormatTest, PrintUnknownFields) {
                          "8: 2\n"
                          "8: 3\n"),
             message.DebugString());
+
+  EXPECT_THAT(absl::StrCat(message), testing::MatchesRegex(absl::Substitute(
+                                         "5: UNKNOWN_VARINT $0\n"
+                                         "5: UNKNOWN_FIXED32 $0\n"
+                                         "5: UNKNOWN_FIXED64 $0\n"
+                                         "5: UNKNOWN_STRING $0\n"
+                                         "5: UNKNOWN_GROUP $0\n"
+                                         "8: UNKNOWN_VARINT $0\n"
+                                         "8: UNKNOWN_VARINT $0\n"
+                                         "8: UNKNOWN_VARINT $0\n",
+                                         value_replacement)));
 }
 
 TEST_F(TextFormatTest, PrintUnknownFieldsDeepestStackWorks) {
