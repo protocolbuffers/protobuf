@@ -930,6 +930,35 @@ TEST_F(ParseMessageTest, CompoundExtensionRange) {
       "}");
 }
 
+TEST_F(ParseMessageTest, MaxIntExtensionDoesNotOverflow) {
+  ExpectHasErrors(
+      R"(
+        syntax = "proto2";
+        message TestMessage {
+          extensions 2147483647;
+        }
+      )",
+      "3:31: Field number out of bounds.\n");
+  error_collector_.text_.clear();
+  ExpectHasErrors(
+      R"(
+        syntax = "proto2";
+        message TestMessage {
+          extensions 1 to 2147483647;
+        }
+      )",
+      "3:36: Field number out of bounds.\n");
+  error_collector_.text_.clear();
+  ExpectHasErrors(
+      R"(
+        syntax = "proto2";
+        message TestMessage {
+          extensions 2147483647 to 2147483647;
+        }
+      )",
+      "3:32: Field number out of bounds.\n");
+}
+
 TEST_F(ParseMessageTest, CompoundExtensionRangeWithOptions) {
   ExpectParsesTo(
       "message TestMessage {\n"
