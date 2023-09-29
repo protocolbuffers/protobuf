@@ -6,16 +6,17 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 edition = "2023";
-option features.field_presence = IMPLICIT;
 
 package protobuf_editions_test;
 
+option features.field_presence = IMPLICIT;
+
 message TestMessageProto3 {
   string string_field = 1;
-
   map<string, string> string_map_field = 4;
-
   repeated int32 int_field = 7;
   repeated int32 int_field_packed = 8;
-  repeated int32 int_field_unpacked = 9 [features.repeated_field_encoding = EXPANDED];
+  repeated int32 int_field_unpacked = 9 [
+    features.repeated_field_encoding = EXPANDED
+  ];
 }

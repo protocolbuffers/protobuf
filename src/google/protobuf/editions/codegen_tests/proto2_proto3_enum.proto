@@ -13,8 +13,6 @@ import "google/protobuf/editions/codegen_tests/proto3_enum.proto";
 
 message Proto2ImportedEnumMessage {
   optional protobuf_editions_test.proto3.Proto3Enum enum_field = 1;
-  // clang-format off
-  // TODO Transforms don't support multi-line fields yet.
-  optional protobuf_editions_test.proto3.Proto3Enum enum_field_default = 2 [default = BAZ];
-  // clang-format on
+  optional protobuf_editions_test.proto3.Proto3Enum enum_field_default = 2
+      [default = BAZ];
 }
