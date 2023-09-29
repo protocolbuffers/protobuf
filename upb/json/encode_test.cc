@@ -103,3 +103,14 @@ TEST(JsonTest, EncodeNullEnum) {
   EXPECT_EQ(R"({"val":null})",
             JsonEncode(foo, upb_JsonEncode_FormatEnumsAsIntegers));
 }
+
+TEST(JsonTest, EncodeConflictJsonName) {
+  upb::Arena a;
+  upb_test_Box* box = upb_test_Box_new(a.ptr());
+  upb_test_Box_set_value(box, 2);
+  EXPECT_EQ(R"({"old_value":2})", JsonEncode(box, 0));
+
+  upb_test_Box* new_box = upb_test_Box_new(a.ptr());
+  upb_test_Box_set_new_value(new_box, 2);
+  EXPECT_EQ(R"({"value":2})", JsonEncode(new_box, 0));
+}

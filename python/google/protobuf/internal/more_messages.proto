@@ -343,3 +343,8 @@ message RequiredField {
 message RequiredWrapper {
   optional RequiredField request = 1;
 }
+
+message ConflictJsonName {
+  optional int32 value = 1 [json_name = "old_value"];
+  optional int32 new_value = 2 [json_name = "value"];
+}

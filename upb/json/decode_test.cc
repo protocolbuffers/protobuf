@@ -92,3 +92,11 @@ TEST(JsonTest, DecodeFloats) {
     EXPECT_EQ(box, nullptr);
   }
 }
+
+TEST(JsonTest, DecodeConflictJsonName) {
+  upb::Arena a;
+  std::string json_string = R"({"value": 2})";
+  upb_test_Box* box = JsonDecode(json_string.c_str(), a.ptr());
+  EXPECT_EQ(2, upb_test_Box_new_value(box));
+  EXPECT_EQ(0, upb_test_Box_value(box));
+}
