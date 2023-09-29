@@ -375,379 +375,6 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
   vsnprintf(status->msg + len, sizeof(status->msg) - len, fmt, args);
   status->msg[_kUpb_Status_MaxMessage - 1] = '\0';
 }
-
-
-#include <string.h>
-
-// Must be last.
-
-const char _upb_Array_CTypeSizeLg2Table[] = {
-    [kUpb_CType_Bool] = 0,
-    [kUpb_CType_Float] = 2,
-    [kUpb_CType_Int32] = 2,
-    [kUpb_CType_UInt32] = 2,
-    [kUpb_CType_Enum] = 2,
-    [kUpb_CType_Message] = UPB_SIZE(2, 3),
-    [kUpb_CType_Double] = 3,
-    [kUpb_CType_Int64] = 3,
-    [kUpb_CType_UInt64] = 3,
-    [kUpb_CType_String] = UPB_SIZE(3, 4),
-    [kUpb_CType_Bytes] = UPB_SIZE(3, 4),
-};
-
-upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
-  return _upb_Array_New(a, 4, _upb_Array_CTypeSizeLg2(type));
-}
-
-const void* upb_Array_DataPtr(const upb_Array* arr) {
-  return _upb_array_ptr((upb_Array*)arr);
-}
-
-void* upb_Array_MutableDataPtr(upb_Array* arr) { return _upb_array_ptr(arr); }
-
-size_t upb_Array_Size(const upb_Array* arr) { return arr->size; }
-
-upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
-  upb_MessageValue ret;
-  const char* data = _upb_array_constptr(arr);
-  int lg2 = arr->data & 7;
-  UPB_ASSERT(i < arr->size);
-  memcpy(&ret, data + (i << lg2), 1 << lg2);
-  return ret;
-}
-
-void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
-  char* data = _upb_array_ptr(arr);
-  int lg2 = arr->data & 7;
-  UPB_ASSERT(i < arr->size);
-  memcpy(data + (i << lg2), &val, 1 << lg2);
-}
-
-bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
-  UPB_ASSERT(arena);
-  if (!upb_Array_Resize(arr, arr->size + 1, arena)) {
-    return false;
-  }
-  upb_Array_Set(arr, arr->size - 1, val);
-  return true;
-}
-
-void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
-                    size_t count) {
-  const int lg2 = arr->data & 7;
-  char* data = _upb_array_ptr(arr);
-  memmove(&data[dst_idx << lg2], &data[src_idx << lg2], count << lg2);
-}
-
-bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
-                      upb_Arena* arena) {
-  UPB_ASSERT(arena);
-  UPB_ASSERT(i <= arr->size);
-  UPB_ASSERT(count + arr->size >= count);
-  const size_t oldsize = arr->size;
-  if (!upb_Array_Resize(arr, arr->size + count, arena)) {
-    return false;
-  }
-  upb_Array_Move(arr, i + count, i, oldsize - i);
-  return true;
-}
-
-/*
- *              i        end      arr->size
- * |------------|XXXXXXXX|--------|
- */
-void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
-  const size_t end = i + count;
-  UPB_ASSERT(i <= end);
-  UPB_ASSERT(end <= arr->size);
-  upb_Array_Move(arr, i, end, arr->size - end);
-  arr->size -= count;
-}
-
-bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
-  const size_t oldsize = arr->size;
-  if (UPB_UNLIKELY(!_upb_Array_ResizeUninitialized(arr, size, arena))) {
-    return false;
-  }
-  const size_t newsize = arr->size;
-  if (newsize > oldsize) {
-    const int lg2 = arr->data & 7;
-    char* data = _upb_array_ptr(arr);
-    memset(data + (oldsize << lg2), 0, (newsize - oldsize) << lg2);
-  }
-  return true;
-}
-
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-bool _upb_array_realloc(upb_Array* arr, size_t min_capacity, upb_Arena* arena) {
-  size_t new_capacity = UPB_MAX(arr->capacity, 4);
-  int elem_size_lg2 = arr->data & 7;
-  size_t old_bytes = arr->capacity << elem_size_lg2;
-  size_t new_bytes;
-  void* ptr = _upb_array_ptr(arr);
-
-  // Log2 ceiling of size.
-  while (new_capacity < min_capacity) new_capacity *= 2;
-
-  new_bytes = new_capacity << elem_size_lg2;
-  ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
-  if (!ptr) return false;
-
-  arr->data = _upb_tag_arrptr(ptr, elem_size_lg2);
-  arr->capacity = new_capacity;
-  return true;
-}
-
-
-#include <string.h>
-
-
-// Must be last.
-
-// Strings/bytes are special-cased in maps.
-char _upb_Map_CTypeSizeTable[12] = {
-    [kUpb_CType_Bool] = 1,
-    [kUpb_CType_Float] = 4,
-    [kUpb_CType_Int32] = 4,
-    [kUpb_CType_UInt32] = 4,
-    [kUpb_CType_Enum] = 4,
-    [kUpb_CType_Message] = sizeof(void*),
-    [kUpb_CType_Double] = 8,
-    [kUpb_CType_Int64] = 8,
-    [kUpb_CType_UInt64] = 8,
-    [kUpb_CType_String] = UPB_MAPTYPE_STRING,
-    [kUpb_CType_Bytes] = UPB_MAPTYPE_STRING,
-};
-
-upb_Map* upb_Map_New(upb_Arena* a, upb_CType key_type, upb_CType value_type) {
-  return _upb_Map_New(a, _upb_Map_CTypeSize(key_type),
-                      _upb_Map_CTypeSize(value_type));
-}
-
-size_t upb_Map_Size(const upb_Map* map) { return _upb_Map_Size(map); }
-
-bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
-                 upb_MessageValue* val) {
-  return _upb_Map_Get(map, &key, map->key_size, val, map->val_size);
-}
-
-void upb_Map_Clear(upb_Map* map) { _upb_Map_Clear(map); }
-
-upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
-                                   upb_MessageValue val, upb_Arena* arena) {
-  UPB_ASSERT(arena);
-  return (upb_MapInsertStatus)_upb_Map_Insert(map, &key, map->key_size, &val,
-                                              map->val_size, arena);
-}
-
-bool upb_Map_Delete(upb_Map* map, upb_MessageValue key, upb_MessageValue* val) {
-  upb_value v;
-  const bool removed = _upb_Map_Delete(map, &key, map->key_size, &v);
-  if (val) _upb_map_fromvalue(v, val, map->val_size);
-  return removed;
-}
-
-bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
-                  upb_MessageValue* val, size_t* iter) {
-  upb_StringView k;
-  upb_value v;
-  const bool ok = upb_strtable_next2(&map->table, &k, &v, (intptr_t*)iter);
-  if (ok) {
-    _upb_map_fromkey(k, key, map->key_size);
-    _upb_map_fromvalue(v, val, map->val_size);
-  }
-  return ok;
-}
-
-UPB_API void upb_Map_SetEntryValue(upb_Map* map, size_t iter,
-                                   upb_MessageValue val) {
-  upb_value v;
-  _upb_map_tovalue(&val, map->val_size, &v, NULL);
-  upb_strtable_setentryvalue(&map->table, iter, v);
-}
-
-bool upb_MapIterator_Next(const upb_Map* map, size_t* iter) {
-  return _upb_map_next(map, iter);
-}
-
-bool upb_MapIterator_Done(const upb_Map* map, size_t iter) {
-  upb_strtable_iter i;
-  UPB_ASSERT(iter != kUpb_Map_Begin);
-  i.t = &map->table;
-  i.index = iter;
-  return upb_strtable_done(&i);
-}
-
-// Returns the key and value for this entry of the map.
-upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter) {
-  upb_strtable_iter i;
-  upb_MessageValue ret;
-  i.t = &map->table;
-  i.index = iter;
-  _upb_map_fromkey(upb_strtable_iter_key(&i), &ret, map->key_size);
-  return ret;
-}
-
-upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter) {
-  upb_strtable_iter i;
-  upb_MessageValue ret;
-  i.t = &map->table;
-  i.index = iter;
-  _upb_map_fromvalue(upb_strtable_iter_value(&i), &ret, map->val_size);
-  return ret;
-}
-
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
-  upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
-  if (!map) return NULL;
-
-  upb_strtable_init(&map->table, 4, a);
-  map->key_size = key_size;
-  map->val_size = value_size;
-
-  return map;
-}
-
-
-
-// Must be last.
-
-static void _upb_mapsorter_getkeys(const void* _a, const void* _b, void* a_key,
-                                   void* b_key, size_t size) {
-  const upb_tabent* const* a = _a;
-  const upb_tabent* const* b = _b;
-  upb_StringView a_tabkey = upb_tabstrview((*a)->key);
-  upb_StringView b_tabkey = upb_tabstrview((*b)->key);
-  _upb_map_fromkey(a_tabkey, a_key, size);
-  _upb_map_fromkey(b_tabkey, b_key, size);
-}
-
-static int _upb_mapsorter_cmpi64(const void* _a, const void* _b) {
-  int64_t a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
-  return a < b ? -1 : a > b;
-}
-
-static int _upb_mapsorter_cmpu64(const void* _a, const void* _b) {
-  uint64_t a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
-  return a < b ? -1 : a > b;
-}
-
-static int _upb_mapsorter_cmpi32(const void* _a, const void* _b) {
-  int32_t a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
-  return a < b ? -1 : a > b;
-}
-
-static int _upb_mapsorter_cmpu32(const void* _a, const void* _b) {
-  uint32_t a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
-  return a < b ? -1 : a > b;
-}
-
-static int _upb_mapsorter_cmpbool(const void* _a, const void* _b) {
-  bool a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, 1);
-  return a < b ? -1 : a > b;
-}
-
-static int _upb_mapsorter_cmpstr(const void* _a, const void* _b) {
-  upb_StringView a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, UPB_MAPTYPE_STRING);
-  size_t common_size = UPB_MIN(a.size, b.size);
-  int cmp = memcmp(a.data, b.data, common_size);
-  if (cmp) return -cmp;
-  return a.size < b.size ? -1 : a.size > b.size;
-}
-
-static int (*const compar[kUpb_FieldType_SizeOf])(const void*, const void*) = {
-    [kUpb_FieldType_Int64] = _upb_mapsorter_cmpi64,
-    [kUpb_FieldType_SFixed64] = _upb_mapsorter_cmpi64,
-    [kUpb_FieldType_SInt64] = _upb_mapsorter_cmpi64,
-
-    [kUpb_FieldType_UInt64] = _upb_mapsorter_cmpu64,
-    [kUpb_FieldType_Fixed64] = _upb_mapsorter_cmpu64,
-
-    [kUpb_FieldType_Int32] = _upb_mapsorter_cmpi32,
-    [kUpb_FieldType_SInt32] = _upb_mapsorter_cmpi32,
-    [kUpb_FieldType_SFixed32] = _upb_mapsorter_cmpi32,
-    [kUpb_FieldType_Enum] = _upb_mapsorter_cmpi32,
-
-    [kUpb_FieldType_UInt32] = _upb_mapsorter_cmpu32,
-    [kUpb_FieldType_Fixed32] = _upb_mapsorter_cmpu32,
-
-    [kUpb_FieldType_Bool] = _upb_mapsorter_cmpbool,
-
-    [kUpb_FieldType_String] = _upb_mapsorter_cmpstr,
-    [kUpb_FieldType_Bytes] = _upb_mapsorter_cmpstr,
-};
-
-static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
-                                  int size) {
-  sorted->start = s->size;
-  sorted->pos = sorted->start;
-  sorted->end = sorted->start + size;
-
-  if (sorted->end > s->cap) {
-    s->cap = upb_Log2CeilingSize(sorted->end);
-    s->entries = realloc(s->entries, s->cap * sizeof(*s->entries));
-    if (!s->entries) return false;
-  }
-
-  s->size = sorted->end;
-  return true;
-}
-
-bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
-                            const upb_Map* map, _upb_sortedmap* sorted) {
-  int map_size = _upb_Map_Size(map);
-
-  if (!_upb_mapsorter_resize(s, sorted, map_size)) return false;
-
-  // Copy non-empty entries from the table to s->entries.
-  const void** dst = &s->entries[sorted->start];
-  const upb_tabent* src = map->table.t.entries;
-  const upb_tabent* end = src + upb_table_size(&map->table.t);
-  for (; src < end; src++) {
-    if (!upb_tabent_isempty(src)) {
-      *dst = src;
-      dst++;
-    }
-  }
-  UPB_ASSERT(dst == &s->entries[sorted->end]);
-
-  // Sort entries according to the key type.
-  qsort(&s->entries[sorted->start], map_size, sizeof(*s->entries),
-        compar[key_type]);
-  return true;
-}
-
-static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
-  const upb_Message_Extension* const* a = _a;
-  const upb_Message_Extension* const* b = _b;
-  uint32_t a_num = (*a)->ext->field.number;
-  uint32_t b_num = (*b)->ext->field.number;
-  assert(a_num != b_num);
-  return a_num < b_num ? -1 : 1;
-}
-
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
-                             const upb_Message_Extension* exts, size_t count,
-                             _upb_sortedmap* sorted) {
-  if (!_upb_mapsorter_resize(s, sorted, count)) return false;
-
-  for (size_t i = 0; i < count; i++) {
-    s->entries[sorted->start + i] = &exts[i];
-  }
-
-  qsort(&s->entries[sorted->start], count, sizeof(*s->entries),
-        _upb_mapsorter_cmpext);
-  return true;
-}
 /* This file was generated by upb_generator from the input file:
  *
  *     google/protobuf/descriptor.proto
@@ -6221,6 +5848,379 @@ bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
   const bool ret = (size1 == size2) && (memcmp(data1, data2, size1) == 0);
   upb_Arena_Free(a);
   return ret;
+}
+
+
+#include <string.h>
+
+// Must be last.
+
+const char _upb_Array_CTypeSizeLg2Table[] = {
+    [kUpb_CType_Bool] = 0,
+    [kUpb_CType_Float] = 2,
+    [kUpb_CType_Int32] = 2,
+    [kUpb_CType_UInt32] = 2,
+    [kUpb_CType_Enum] = 2,
+    [kUpb_CType_Message] = UPB_SIZE(2, 3),
+    [kUpb_CType_Double] = 3,
+    [kUpb_CType_Int64] = 3,
+    [kUpb_CType_UInt64] = 3,
+    [kUpb_CType_String] = UPB_SIZE(3, 4),
+    [kUpb_CType_Bytes] = UPB_SIZE(3, 4),
+};
+
+upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
+  return _upb_Array_New(a, 4, _upb_Array_CTypeSizeLg2(type));
+}
+
+const void* upb_Array_DataPtr(const upb_Array* arr) {
+  return _upb_array_ptr((upb_Array*)arr);
+}
+
+void* upb_Array_MutableDataPtr(upb_Array* arr) { return _upb_array_ptr(arr); }
+
+size_t upb_Array_Size(const upb_Array* arr) { return arr->size; }
+
+upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
+  upb_MessageValue ret;
+  const char* data = _upb_array_constptr(arr);
+  int lg2 = arr->data & 7;
+  UPB_ASSERT(i < arr->size);
+  memcpy(&ret, data + (i << lg2), 1 << lg2);
+  return ret;
+}
+
+void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
+  char* data = _upb_array_ptr(arr);
+  int lg2 = arr->data & 7;
+  UPB_ASSERT(i < arr->size);
+  memcpy(data + (i << lg2), &val, 1 << lg2);
+}
+
+bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
+  UPB_ASSERT(arena);
+  if (!upb_Array_Resize(arr, arr->size + 1, arena)) {
+    return false;
+  }
+  upb_Array_Set(arr, arr->size - 1, val);
+  return true;
+}
+
+void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
+                    size_t count) {
+  const int lg2 = arr->data & 7;
+  char* data = _upb_array_ptr(arr);
+  memmove(&data[dst_idx << lg2], &data[src_idx << lg2], count << lg2);
+}
+
+bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
+                      upb_Arena* arena) {
+  UPB_ASSERT(arena);
+  UPB_ASSERT(i <= arr->size);
+  UPB_ASSERT(count + arr->size >= count);
+  const size_t oldsize = arr->size;
+  if (!upb_Array_Resize(arr, arr->size + count, arena)) {
+    return false;
+  }
+  upb_Array_Move(arr, i + count, i, oldsize - i);
+  return true;
+}
+
+/*
+ *              i        end      arr->size
+ * |------------|XXXXXXXX|--------|
+ */
+void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
+  const size_t end = i + count;
+  UPB_ASSERT(i <= end);
+  UPB_ASSERT(end <= arr->size);
+  upb_Array_Move(arr, i, end, arr->size - end);
+  arr->size -= count;
+}
+
+bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
+  const size_t oldsize = arr->size;
+  if (UPB_UNLIKELY(!_upb_Array_ResizeUninitialized(arr, size, arena))) {
+    return false;
+  }
+  const size_t newsize = arr->size;
+  if (newsize > oldsize) {
+    const int lg2 = arr->data & 7;
+    char* data = _upb_array_ptr(arr);
+    memset(data + (oldsize << lg2), 0, (newsize - oldsize) << lg2);
+  }
+  return true;
+}
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+bool _upb_array_realloc(upb_Array* arr, size_t min_capacity, upb_Arena* arena) {
+  size_t new_capacity = UPB_MAX(arr->capacity, 4);
+  int elem_size_lg2 = arr->data & 7;
+  size_t old_bytes = arr->capacity << elem_size_lg2;
+  size_t new_bytes;
+  void* ptr = _upb_array_ptr(arr);
+
+  // Log2 ceiling of size.
+  while (new_capacity < min_capacity) new_capacity *= 2;
+
+  new_bytes = new_capacity << elem_size_lg2;
+  ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
+  if (!ptr) return false;
+
+  arr->data = _upb_tag_arrptr(ptr, elem_size_lg2);
+  arr->capacity = new_capacity;
+  return true;
+}
+
+
+#include <string.h>
+
+
+// Must be last.
+
+// Strings/bytes are special-cased in maps.
+char _upb_Map_CTypeSizeTable[12] = {
+    [kUpb_CType_Bool] = 1,
+    [kUpb_CType_Float] = 4,
+    [kUpb_CType_Int32] = 4,
+    [kUpb_CType_UInt32] = 4,
+    [kUpb_CType_Enum] = 4,
+    [kUpb_CType_Message] = sizeof(void*),
+    [kUpb_CType_Double] = 8,
+    [kUpb_CType_Int64] = 8,
+    [kUpb_CType_UInt64] = 8,
+    [kUpb_CType_String] = UPB_MAPTYPE_STRING,
+    [kUpb_CType_Bytes] = UPB_MAPTYPE_STRING,
+};
+
+upb_Map* upb_Map_New(upb_Arena* a, upb_CType key_type, upb_CType value_type) {
+  return _upb_Map_New(a, _upb_Map_CTypeSize(key_type),
+                      _upb_Map_CTypeSize(value_type));
+}
+
+size_t upb_Map_Size(const upb_Map* map) { return _upb_Map_Size(map); }
+
+bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
+                 upb_MessageValue* val) {
+  return _upb_Map_Get(map, &key, map->key_size, val, map->val_size);
+}
+
+void upb_Map_Clear(upb_Map* map) { _upb_Map_Clear(map); }
+
+upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
+                                   upb_MessageValue val, upb_Arena* arena) {
+  UPB_ASSERT(arena);
+  return (upb_MapInsertStatus)_upb_Map_Insert(map, &key, map->key_size, &val,
+                                              map->val_size, arena);
+}
+
+bool upb_Map_Delete(upb_Map* map, upb_MessageValue key, upb_MessageValue* val) {
+  upb_value v;
+  const bool removed = _upb_Map_Delete(map, &key, map->key_size, &v);
+  if (val) _upb_map_fromvalue(v, val, map->val_size);
+  return removed;
+}
+
+bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
+                  upb_MessageValue* val, size_t* iter) {
+  upb_StringView k;
+  upb_value v;
+  const bool ok = upb_strtable_next2(&map->table, &k, &v, (intptr_t*)iter);
+  if (ok) {
+    _upb_map_fromkey(k, key, map->key_size);
+    _upb_map_fromvalue(v, val, map->val_size);
+  }
+  return ok;
+}
+
+UPB_API void upb_Map_SetEntryValue(upb_Map* map, size_t iter,
+                                   upb_MessageValue val) {
+  upb_value v;
+  _upb_map_tovalue(&val, map->val_size, &v, NULL);
+  upb_strtable_setentryvalue(&map->table, iter, v);
+}
+
+bool upb_MapIterator_Next(const upb_Map* map, size_t* iter) {
+  return _upb_map_next(map, iter);
+}
+
+bool upb_MapIterator_Done(const upb_Map* map, size_t iter) {
+  upb_strtable_iter i;
+  UPB_ASSERT(iter != kUpb_Map_Begin);
+  i.t = &map->table;
+  i.index = iter;
+  return upb_strtable_done(&i);
+}
+
+// Returns the key and value for this entry of the map.
+upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter) {
+  upb_strtable_iter i;
+  upb_MessageValue ret;
+  i.t = &map->table;
+  i.index = iter;
+  _upb_map_fromkey(upb_strtable_iter_key(&i), &ret, map->key_size);
+  return ret;
+}
+
+upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter) {
+  upb_strtable_iter i;
+  upb_MessageValue ret;
+  i.t = &map->table;
+  i.index = iter;
+  _upb_map_fromvalue(upb_strtable_iter_value(&i), &ret, map->val_size);
+  return ret;
+}
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
+  upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
+  if (!map) return NULL;
+
+  upb_strtable_init(&map->table, 4, a);
+  map->key_size = key_size;
+  map->val_size = value_size;
+
+  return map;
+}
+
+
+
+// Must be last.
+
+static void _upb_mapsorter_getkeys(const void* _a, const void* _b, void* a_key,
+                                   void* b_key, size_t size) {
+  const upb_tabent* const* a = _a;
+  const upb_tabent* const* b = _b;
+  upb_StringView a_tabkey = upb_tabstrview((*a)->key);
+  upb_StringView b_tabkey = upb_tabstrview((*b)->key);
+  _upb_map_fromkey(a_tabkey, a_key, size);
+  _upb_map_fromkey(b_tabkey, b_key, size);
+}
+
+static int _upb_mapsorter_cmpi64(const void* _a, const void* _b) {
+  int64_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
+  return a < b ? -1 : a > b;
+}
+
+static int _upb_mapsorter_cmpu64(const void* _a, const void* _b) {
+  uint64_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
+  return a < b ? -1 : a > b;
+}
+
+static int _upb_mapsorter_cmpi32(const void* _a, const void* _b) {
+  int32_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
+  return a < b ? -1 : a > b;
+}
+
+static int _upb_mapsorter_cmpu32(const void* _a, const void* _b) {
+  uint32_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
+  return a < b ? -1 : a > b;
+}
+
+static int _upb_mapsorter_cmpbool(const void* _a, const void* _b) {
+  bool a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 1);
+  return a < b ? -1 : a > b;
+}
+
+static int _upb_mapsorter_cmpstr(const void* _a, const void* _b) {
+  upb_StringView a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, UPB_MAPTYPE_STRING);
+  size_t common_size = UPB_MIN(a.size, b.size);
+  int cmp = memcmp(a.data, b.data, common_size);
+  if (cmp) return -cmp;
+  return a.size < b.size ? -1 : a.size > b.size;
+}
+
+static int (*const compar[kUpb_FieldType_SizeOf])(const void*, const void*) = {
+    [kUpb_FieldType_Int64] = _upb_mapsorter_cmpi64,
+    [kUpb_FieldType_SFixed64] = _upb_mapsorter_cmpi64,
+    [kUpb_FieldType_SInt64] = _upb_mapsorter_cmpi64,
+
+    [kUpb_FieldType_UInt64] = _upb_mapsorter_cmpu64,
+    [kUpb_FieldType_Fixed64] = _upb_mapsorter_cmpu64,
+
+    [kUpb_FieldType_Int32] = _upb_mapsorter_cmpi32,
+    [kUpb_FieldType_SInt32] = _upb_mapsorter_cmpi32,
+    [kUpb_FieldType_SFixed32] = _upb_mapsorter_cmpi32,
+    [kUpb_FieldType_Enum] = _upb_mapsorter_cmpi32,
+
+    [kUpb_FieldType_UInt32] = _upb_mapsorter_cmpu32,
+    [kUpb_FieldType_Fixed32] = _upb_mapsorter_cmpu32,
+
+    [kUpb_FieldType_Bool] = _upb_mapsorter_cmpbool,
+
+    [kUpb_FieldType_String] = _upb_mapsorter_cmpstr,
+    [kUpb_FieldType_Bytes] = _upb_mapsorter_cmpstr,
+};
+
+static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
+                                  int size) {
+  sorted->start = s->size;
+  sorted->pos = sorted->start;
+  sorted->end = sorted->start + size;
+
+  if (sorted->end > s->cap) {
+    s->cap = upb_Log2CeilingSize(sorted->end);
+    s->entries = realloc(s->entries, s->cap * sizeof(*s->entries));
+    if (!s->entries) return false;
+  }
+
+  s->size = sorted->end;
+  return true;
+}
+
+bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
+                            const upb_Map* map, _upb_sortedmap* sorted) {
+  int map_size = _upb_Map_Size(map);
+
+  if (!_upb_mapsorter_resize(s, sorted, map_size)) return false;
+
+  // Copy non-empty entries from the table to s->entries.
+  const void** dst = &s->entries[sorted->start];
+  const upb_tabent* src = map->table.t.entries;
+  const upb_tabent* end = src + upb_table_size(&map->table.t);
+  for (; src < end; src++) {
+    if (!upb_tabent_isempty(src)) {
+      *dst = src;
+      dst++;
+    }
+  }
+  UPB_ASSERT(dst == &s->entries[sorted->end]);
+
+  // Sort entries according to the key type.
+  qsort(&s->entries[sorted->start], map_size, sizeof(*s->entries),
+        compar[key_type]);
+  return true;
+}
+
+static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
+  const upb_Message_Extension* const* a = _a;
+  const upb_Message_Extension* const* b = _b;
+  uint32_t a_num = (*a)->ext->field.number;
+  uint32_t b_num = (*b)->ext->field.number;
+  assert(a_num != b_num);
+  return a_num < b_num ? -1 : 1;
+}
+
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
+                             const upb_Message_Extension* exts, size_t count,
+                             _upb_sortedmap* sorted) {
+  if (!_upb_mapsorter_resize(s, sorted, count)) return false;
+
+  for (size_t i = 0; i < count; i++) {
+    s->entries[sorted->start + i] = &exts[i];
+  }
+
+  qsort(&s->entries[sorted->start], count, sizeof(*s->entries),
+        _upb_mapsorter_cmpext);
+  return true;
 }
 
 
