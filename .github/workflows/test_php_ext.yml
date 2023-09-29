@@ -41,34 +41,18 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        include:
-          - php-image: php:7.4-cli
-            version: "7.4"
-          - php-image: php:8.1-cli
-            version: "8.1"
-          - php-image: php:8.2-cli
-            version: "8.2"
+        version: ["7.4", "8.1", "8.2"]
     name: Build ${{ matrix.version }}
     runs-on: ubuntu-latest
-    container: ${{ matrix.php-image }}
     steps:
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: protobuf-php-release
-      - name: Compile extension
-        run: |
-          cd /tmp
-          MAKE="make -j$(nproc)" pecl install $GITHUB_WORKSPACE/protobuf-*.tgz
-      - name: Enable extension
-        run: docker-php-ext-enable protobuf
-      - name: Check for PHP startup warnings
-        run: |
-          php -d display_errors=stderr -d display_startup_errors=1 -d error_reporting=-1 -r ';' 2>/tmp/protobuf-warnings
-          if [ -s /tmp/protobuf-warnings ]; then
-            echo 'The PHP extension was successfully installed, but PHP raised these warnings:' >&2
-            cat /tmp/protobuf-warnings >&2
-            exit 1
-          fi
-          echo "PHP didn't raise any warnings at startup."
-      - name: Inspect extension
-        run: php --ri protobuf
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-a48f26c08d9a803dd0177dda63563f6ea6f7b2d4
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          skip-staleness-check: true
+          command: protobuf-*.tgz
