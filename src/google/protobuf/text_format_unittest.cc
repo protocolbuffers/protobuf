@@ -402,6 +402,16 @@ TEST_F(TextFormatTest, PrintUnknownFields) {
                          "8: 2\n"
                          "8: 3\n"),
             message.DebugString());
+
+  EXPECT_THAT(absl::StrCat(message), testing::MatchesRegex(
+                                         "5: REDACTED_VARINT\n"
+                                         "5: REDACTED_FIXED32\n"
+                                         "5: REDACTED_FIXED64\n"
+                                         "5: REDACTED_STRING\n"
+                                         "5: REDACTED_GROUP\n"
+                                         "8: REDACTED_VARINT\n"
+                                         "8: REDACTED_VARINT\n"
+                                         "8: REDACTED_VARINT\n"));
 }
 
 TEST_F(TextFormatTest, PrintUnknownFieldsDeepestStackWorks) {
