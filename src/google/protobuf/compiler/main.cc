@@ -21,6 +21,10 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+#ifdef _MSC_VER
+#include <windows.h>
+#endif
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -101,6 +105,30 @@ int ProtobufMain(int argc, char* argv[]) {
 }  // namespace protobuf
 }  // namespace google
 
-int main(int argc, char* argv[]) {
+#ifdef _MSC_VER
+std::string ToMultiByteUTF8String(const wchar_t* input)
+{
+    int size = WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), 0, 0, NULL, NULL);
+    std::string result(size, 0);
+    if (size) WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), &result[0], size, NULL, NULL);
+    return result;
+}
+
+int main(int argc, char* argv[]) 
+{
+  wchar_t** wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
+  std::string* argv_mbcs_str = new std::string [argc];
+  char** argv_mbcs = new char* [argc];
+  for (int i = 0; i < argc; i++)
+  {
+      argv_mbcs_str[i] = ToMultiByteUTF8String(wargv[i]);
+      argv_mbcs[i] = const_cast<char*>(argv_mbcs_str[i].c_str());
+  }
+  return google::protobuf::compiler::ProtobufMain(argc, argv_mbcs);
+}
+#else
+int main(int argc, char* argv[]) 
+{
   return google::protobuf::compiler::ProtobufMain(argc, argv);
 }
+#endif
