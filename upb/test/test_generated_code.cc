@@ -18,8 +18,8 @@
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/status.h"
 #include "upb/base/string_view.h"
-#include "upb/collections/array.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/array.h"
 #include "upb/test/test.upb.h"
 
 // Must be last.

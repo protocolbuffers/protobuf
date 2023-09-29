@@ -40,9 +40,9 @@
 
 #include "lauxlib.h"
 #include "lua/upb.h"
-#include "upb/collections/map.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
+#include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/port/def.inc"
 #include "upb/reflection/message.h"

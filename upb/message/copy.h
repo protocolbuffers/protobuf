@@ -8,9 +8,9 @@
 #ifndef UPB_MESSAGE_COPY_H_
 #define UPB_MESSAGE_COPY_H_
 
-#include "upb/collections/array.h"
-#include "upb/collections/map.h"
 #include "upb/mem/arena.h"
+#include "upb/message/array.h"
+#include "upb/message/map.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.

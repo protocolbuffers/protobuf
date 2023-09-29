@@ -12,14 +12,14 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
-#include "upb/collections/array.h"
-#include "upb/collections/internal/array.h"
-#include "upb/collections/map.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
+#include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
 #include "upb/mini_table/extension.h"

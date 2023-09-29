@@ -18,10 +18,10 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:collections",
-        "//upb:collections_internal",
         "//upb:eps_copy_input_stream",
         "//upb:lex",
+        "//upb:message",
+        "//upb:message_internal",
         "//upb:port",
         "//upb:reflection",
         "//upb:wire",

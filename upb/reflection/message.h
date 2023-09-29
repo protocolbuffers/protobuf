@@ -10,8 +10,8 @@
 
 #include <stddef.h>
 
-#include "upb/collections/map.h"
 #include "upb/mem/arena.h"
+#include "upb/message/map.h"
 #include "upb/message/types.h"
 #include "upb/message/value.h"  // IWYU pragma: export
 #include "upb/reflection/common.h"

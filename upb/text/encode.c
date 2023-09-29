@@ -13,9 +13,9 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "upb/collections/internal/map_sorter.h"
-#include "upb/collections/map.h"
 #include "upb/lex/round_trip.h"
+#include "upb/message/internal/map_sorter.h"
+#include "upb/message/map.h"
 #include "upb/port/vsnprintf_compat.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/eps_copy_input_stream.h"

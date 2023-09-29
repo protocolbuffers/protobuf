@@ -49,8 +49,6 @@ cc_library(
         ":reader",
         ":types",
         "//upb:base",
-        "//upb:collections",
-        "//upb:collections_internal",
         "//upb:hash",
         "//upb:mem",
         "//upb:mem_internal",

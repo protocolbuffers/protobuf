@@ -33,7 +33,7 @@
 #include "python/convert.h"
 #include "python/message.h"
 #include "python/protobuf.h"
-#include "upb/collections/map.h"
+#include "upb/message/map.h"
 #include "upb/reflection/def.h"
 
 // -----------------------------------------------------------------------------

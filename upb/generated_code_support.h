@@ -9,13 +9,13 @@
 #define UPB_GENERATED_CODE_SUPPORT_H_
 
 // IWYU pragma: begin_exports
-#include "upb/collections/array.h"
-#include "upb/collections/internal/array.h"
-#include "upb/collections/map_gencode_util.h"
 #include "upb/message/accessors.h"
+#include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/map_gencode_util.h"
 #include "upb/message/message.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_table/enum.h"

@@ -9,12 +9,12 @@
 #define UPB_MESSAGE_ACCESSORS_H_
 
 #include "upb/base/descriptor_constants.h"
-#include "upb/collections/array.h"
-#include "upb/collections/internal/array.h"
-#include "upb/collections/internal/map.h"
-#include "upb/collections/map.h"
+#include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/array.h"
+#include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/map.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
 

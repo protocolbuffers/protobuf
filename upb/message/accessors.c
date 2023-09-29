@@ -7,9 +7,9 @@
 
 #include "upb/message/accessors.h"
 
-#include "upb/collections/array.h"
-#include "upb/collections/internal/array.h"
-#include "upb/collections/map.h"
+#include "upb/message/array.h"
+#include "upb/message/internal/array.h"
+#include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
 #include "upb/wire/decode.h"

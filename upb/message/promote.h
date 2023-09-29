@@ -8,9 +8,9 @@
 #ifndef UPB_MESSAGE_PROMOTE_H_
 #define UPB_MESSAGE_PROMOTE_H_
 
-#include "upb/collections/array.h"
-#include "upb/collections/map.h"
+#include "upb/message/array.h"
 #include "upb/message/internal/extension.h"
+#include "upb/message/map.h"
 #include "upb/wire/decode.h"
 
 // Must be last.

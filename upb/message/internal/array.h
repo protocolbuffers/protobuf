@@ -28,12 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef UPB_COLLECTIONS_INTERNAL_ARRAY_H_
-#define UPB_COLLECTIONS_INTERNAL_ARRAY_H_
+#ifndef UPB_MESSAGE_INTERNAL_ARRAY_H_
+#define UPB_MESSAGE_INTERNAL_ARRAY_H_
 
 #include <string.h>
 
-#include "upb/collections/array.h"
+#include "upb/message/array.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -135,4 +135,4 @@ UPB_INLINE void _upb_array_detach(const void* msg, size_t ofs) {
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_COLLECTIONS_INTERNAL_ARRAY_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_ARRAY_H_ */

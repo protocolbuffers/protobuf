@@ -28,12 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/collections/map.h"
+#include "upb/message/map.h"
 
 #include <string.h>
 
-#include "upb/collections/internal/map.h"
 #include "upb/mem/arena.h"
+#include "upb/message/internal/map.h"
 
 // Must be last.
 #include "upb/port/def.inc"

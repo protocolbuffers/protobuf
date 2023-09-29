@@ -28,29 +28,39 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "upb/collections/map.h"
+#include "upb/message/array.h"
 
 #include <gtest/gtest.h>
-#include "upb/base/string_view.h"
+#include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 
-TEST(MapTest, DeleteRegression) {
+TEST(ArrayTest, Resize) {
   upb::Arena arena;
-  upb_Map* map = upb_Map_New(arena.ptr(), kUpb_CType_Int32, kUpb_CType_String);
+  upb::Status status;
 
-  upb_MessageValue key;
-  key.int32_val = 0;
+  upb_Array* array = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  EXPECT_TRUE(array);
 
-  upb_MessageValue insert_value;
-  insert_value.str_val = upb_StringView_FromString("abcde");
+  for (int i = 0; i < 10; i++) {
+    upb_MessageValue mv;
+    mv.int32_val = 3 * i;
 
-  upb_MapInsertStatus st = upb_Map_Insert(map, key, insert_value, arena.ptr());
-  EXPECT_EQ(kUpb_MapInsertStatus_Inserted, st);
+    upb_Array_Append(array, mv, arena.ptr());
+    EXPECT_EQ(upb_Array_Size(array), i + 1);
+    EXPECT_EQ(upb_Array_Get(array, i).int32_val, 3 * i);
+  }
 
-  upb_MessageValue delete_value;
-  bool removed = upb_Map_Delete(map, key, &delete_value);
-  EXPECT_TRUE(removed);
+  upb_Array_Resize(array, 12, arena.ptr());
+  EXPECT_EQ(upb_Array_Get(array, 10).int32_val, 0);
+  EXPECT_EQ(upb_Array_Get(array, 11).int32_val, 0);
 
-  EXPECT_TRUE(
-      upb_StringView_IsEqual(insert_value.str_val, delete_value.str_val));
+  upb_Array_Resize(array, 4, arena.ptr());
+  EXPECT_EQ(upb_Array_Size(array), 4);
+
+  upb_Array_Resize(array, 6, arena.ptr());
+  EXPECT_EQ(upb_Array_Size(array), 6);
+
+  EXPECT_EQ(upb_Array_Get(array, 3).int32_val, 9);
+  EXPECT_EQ(upb_Array_Get(array, 4).int32_val, 0);
+  EXPECT_EQ(upb_Array_Get(array, 5).int32_val, 0);
 }
