@@ -224,7 +224,7 @@ class UntypedMessage final {
                                const ResolverPool::Field& field);
 
   template <typename T>
-  absl::Status InsertField(const ResolverPool::Field& field, T value);
+  absl::Status InsertField(const ResolverPool::Field& field, T&& value);
 
   const ResolverPool::Message* desc_;
   absl::flat_hash_map<int32_t, Value> fields_;
