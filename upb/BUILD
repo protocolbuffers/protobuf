@@ -81,6 +81,11 @@ package_group(
     packages = ["//..."],
 )
 
+package_group(
+    name = "friend_generators",
+    packages = ["//..."],
+)
+
 cc_library(
     name = "upb",
     hdrs = [
