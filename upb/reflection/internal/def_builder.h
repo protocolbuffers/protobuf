@@ -36,6 +36,10 @@ extern "C" {
 
 struct upb_DefBuilder {
   upb_DefPool* symtab;
+  upb_strtable feature_cache;             // Caches features by identity.
+  UPB_DESC(FeatureSet*) legacy_features;  // For computing legacy features.
+  char* tmp_buf;                          // Temporary buffer in tmp_arena.
+  size_t tmp_buf_size;                    // Size of temporary buffer.
   upb_FileDef* file;                 // File we are building.
   upb_Arena* arena;                  // Allocate defs here.
   upb_Arena* tmp_arena;              // For temporary allocations.
@@ -126,6 +130,25 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
   }
 
   if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
+}
+
+// Returns true if the returned feature set is new and must be populated.
+bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
+                                           const UPB_DESC(FeatureSet*) parent,
+                                           upb_StringView key,
+                                           UPB_DESC(FeatureSet**) set);
+
+const UPB_DESC(FeatureSet*)
+    _upb_DefBuilder_DoResolveFeatures(upb_DefBuilder* ctx,
+                                      const UPB_DESC(FeatureSet*) parent,
+                                      const UPB_DESC(FeatureSet*) child,
+                                      bool is_implicit);
+
+UPB_INLINE const UPB_DESC(FeatureSet*)
+    _upb_DefBuilder_ResolveFeatures(upb_DefBuilder* ctx,
+                                    const UPB_DESC(FeatureSet*) parent,
+                                    const UPB_DESC(FeatureSet*) child) {
+  return _upb_DefBuilder_DoResolveFeatures(ctx, parent, child, false);
 }
 
 #ifdef __cplusplus

@@ -23,6 +23,7 @@
 
 struct upb_OneofDef {
   const UPB_DESC(OneofOptions) * opts;
+  const UPB_DESC(FeatureSet) * resolved_features;
   const upb_MessageDef* parent;
   const char* full_name;
   int field_count;
@@ -166,9 +167,15 @@ size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m) {
 }
 
 static void create_oneofdef(upb_DefBuilder* ctx, upb_MessageDef* m,
-                            const UPB_DESC(OneofDescriptorProto) * oneof_proto,
+                            const UPB_DESC(OneofDescriptorProto*) oneof_proto,
+                            const UPB_DESC(FeatureSet*) parent_features,
                             const upb_OneofDef* _o) {
   upb_OneofDef* o = (upb_OneofDef*)_o;
+
+  UPB_DEF_SET_OPTIONS(o->opts, OneofDescriptorProto, OneofOptions, oneof_proto);
+  o->resolved_features = _upb_DefBuilder_ResolveFeatures(
+      ctx, parent_features, UPB_DESC(OneofOptions_features)(o->opts));
+
   upb_StringView name = UPB_DESC(OneofDescriptorProto_name)(oneof_proto);
 
   o->parent = m;
@@ -176,8 +183,6 @@ static void create_oneofdef(upb_DefBuilder* ctx, upb_MessageDef* m,
       _upb_DefBuilder_MakeFullName(ctx, upb_MessageDef_FullName(m), name);
   o->field_count = 0;
   o->synthetic = false;
-
-  UPB_DEF_SET_OPTIONS(o->opts, OneofDescriptorProto, OneofOptions, oneof_proto);
 
   if (upb_MessageDef_FindByNameWithSize(m, name.data, name.size, NULL, NULL)) {
     _upb_DefBuilder_Errf(ctx, "duplicate oneof name (%s)", o->full_name);
@@ -195,14 +200,16 @@ static void create_oneofdef(upb_DefBuilder* ctx, upb_MessageDef* m,
 }
 
 // Allocate and initialize an array of |n| oneof defs.
-upb_OneofDef* _upb_OneofDefs_New(
-    upb_DefBuilder* ctx, int n,
-    const UPB_DESC(OneofDescriptorProto) * const* protos, upb_MessageDef* m) {
+upb_OneofDef* _upb_OneofDefs_New(upb_DefBuilder* ctx, int n,
+                                 const UPB_DESC(OneofDescriptorProto*)
+                                     const* protos,
+                                 const UPB_DESC(FeatureSet*) parent_features,
+                                 upb_MessageDef* m) {
   _upb_DefType_CheckPadding(sizeof(upb_OneofDef));
 
   upb_OneofDef* o = _upb_DefBuilder_Alloc(ctx, sizeof(upb_OneofDef) * n);
   for (int i = 0; i < n; i++) {
-    create_oneofdef(ctx, m, protos[i], &o[i]);
+    create_oneofdef(ctx, m, protos[i], parent_features, &o[i]);
   }
   return o;
 }

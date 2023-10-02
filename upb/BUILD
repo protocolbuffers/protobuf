@@ -16,6 +16,15 @@ load(
     "bootstrap_cc_library",
     "bootstrap_upb_proto_library",
 )
+load(
+    "//src/google/protobuf/editions:defaults.bzl",
+    "compile_edition_defaults",
+    "embed_edition_defaults",
+)
+load(
+    "//upb/cmake:build_defs.bzl",
+    "staleness_test",
+)
 
 # begin:google_only
 # load("//tools/build_defs/kotlin/native:rules.bzl", "kt_native_interop_hint")
@@ -226,6 +235,7 @@ bootstrap_cc_library(
         "reflection/internal/def_builder.h",
         "reflection/internal/strdup2.c",
         "reflection/internal/strdup2.h",
+        "reflection/internal/upb_edition_defaults.h",
         "reflection/message.c",
         "reflection/message_def.c",
         "reflection/message_reserved_range.c",
@@ -275,13 +285,39 @@ bootstrap_cc_library(
         ":mem",
         ":message",
         ":message_accessors",
+        ":message_copy",
         ":message_types",
         ":message_value",
         ":mini_descriptor",
         ":mini_descriptor_internal",
         ":mini_table",
         ":port",
+        "//upb/base:internal",
     ],
+)
+
+compile_edition_defaults(
+    name = "upb_edition_defaults",
+    srcs = [
+        "//net/proto2/proto:descriptor",
+    ],
+    maximum_edition = "2023",
+    minimum_edition = "PROTO2",
+)
+
+embed_edition_defaults(
+    name = "embedded_upb_edition_defaults_generate",
+    defaults = "upb_edition_defaults",
+    output = "generated/upb/reflection/internal/upb_edition_defaults.h",
+    placeholder = "DEFAULTS_VALUE",
+    template = "reflection/internal/upb_edition_defaults.h.template",
+)
+
+staleness_test(
+    name = "bootstrap_upb_defaults_staleness_test",
+    outs = ["reflection/internal/upb_edition_defaults.h"],
+    generated_pattern = "generated/%s",
+    target_files = ["reflection/internal/upb_edition_defaults.h"],
 )
 
 # Aliases ######################################################################

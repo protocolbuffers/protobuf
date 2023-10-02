@@ -196,7 +196,7 @@ static void upb_util_FindUnsetInMessage(upb_FindContext* ctx,
   // Iterate over all fields to see if any required fields are missing.
   for (int i = 0, n = upb_MessageDef_FieldCount(m); i < n; i++) {
     const upb_FieldDef* f = upb_MessageDef_Field(m, i);
-    if (upb_FieldDef_Label(f) != kUpb_Label_Required) continue;
+    if (!upb_FieldDef_IsRequired(f)) continue;
 
     if (!msg || !upb_Message_HasFieldByDef(msg, f)) {
       // A required field is missing.
