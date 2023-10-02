@@ -7,6 +7,8 @@
 
 #include "upb/reflection/internal/file_def.h"
 
+#include <stddef.h>
+
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/internal/def_builder.h"
 #include "upb/reflection/internal/enum_def.h"
@@ -19,7 +21,8 @@
 #include "upb/port/def.inc"
 
 struct upb_FileDef {
-  const UPB_DESC(FileOptions) * opts;
+  const UPB_DESC(FileOptions*) opts;
+  const UPB_DESC(FeatureSet*) resolved_features;
   const char* name;
   const char* package;
   UPB_DESC(Edition) edition;
@@ -47,6 +50,11 @@ struct upb_FileDef {
 
 const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f) {
   return f->opts;
+}
+
+const UPB_DESC(FeatureSet) *
+    upb_FileDef_ResolvedFeatures(const upb_FileDef* f) {
+  return f->resolved_features;
 }
 
 bool upb_FileDef_HasOptions(const upb_FileDef* f) {
@@ -165,6 +173,34 @@ static int count_exts_in_msg(const UPB_DESC(DescriptorProto) * msg_proto) {
   return ext_count;
 }
 
+const UPB_DESC(FeatureSet*)
+    _upb_FileDef_FindEdition(upb_DefBuilder* ctx, int edition) {
+  const UPB_DESC(FeatureSetDefaults)* defaults =
+      upb_DefPool_FeatureSetDefaults(ctx->symtab);
+
+  int min = UPB_DESC(FeatureSetDefaults_minimum_edition)(defaults);
+  int max = UPB_DESC(FeatureSetDefaults_maximum_edition)(defaults);
+  if (edition < min || edition > max) {
+    _upb_DefBuilder_Errf(ctx,
+                         "Edition %d is outside the supported range [%d, %d] "
+                         "given in the defaults",
+                         edition, min, max);
+  }
+
+  size_t n;
+  const UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault)* const* d =
+      UPB_DESC(FeatureSetDefaults_defaults)(defaults, &n);
+  const UPB_DESC(FeatureSet)* ret = NULL;
+  for (size_t i = 0; i < n; i++) {
+    if (UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault_edition)(d[i]) >
+        edition) {
+      break;
+    }
+    ret = UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault_features)(d[i]);
+  }
+  return ret;
+}
+
 // Allocate and initialize one file def, and add it to the context object.
 void _upb_FileDef_Create(upb_DefBuilder* ctx,
                          const UPB_DESC(FileDescriptorProto) * file_proto) {
@@ -233,20 +269,32 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
     if (streql_view(syntax, "proto2")) {
       file->syntax = kUpb_Syntax_Proto2;
+      file->edition = UPB_DESC(EDITION_PROTO2);
     } else if (streql_view(syntax, "proto3")) {
       file->syntax = kUpb_Syntax_Proto3;
+      file->edition = UPB_DESC(EDITION_PROTO3);
     } else if (streql_view(syntax, "editions")) {
       file->syntax = kUpb_Syntax_Editions;
+      file->edition = UPB_DESC(FileDescriptorProto_edition)(file_proto);
     } else {
       _upb_DefBuilder_Errf(ctx, "Invalid syntax '" UPB_STRINGVIEW_FORMAT "'",
                            UPB_STRINGVIEW_ARGS(syntax));
     }
   } else {
     file->syntax = kUpb_Syntax_Proto2;
+    file->edition = UPB_DESC(EDITION_PROTO2);
   }
 
   // Read options.
   UPB_DEF_SET_OPTIONS(file->opts, FileDescriptorProto, FileOptions, file_proto);
+
+  // Resolve features.
+  const UPB_DESC(FeatureSet*) edition_defaults =
+      _upb_FileDef_FindEdition(ctx, file->edition);
+  const UPB_DESC(FeatureSet*) unresolved =
+      UPB_DESC(FileOptions_features)(file->opts);
+  file->resolved_features =
+      _upb_DefBuilder_ResolveFeatures(ctx, edition_defaults, unresolved);
 
   // Verify dependencies.
   strs = UPB_DESC(FileDescriptorProto_dependency)(file_proto, &n);
@@ -293,22 +341,26 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   // Create enums.
   enums = UPB_DESC(FileDescriptorProto_enum_type)(file_proto, &n);
   file->top_lvl_enum_count = n;
-  file->top_lvl_enums = _upb_EnumDefs_New(ctx, n, enums, NULL);
+  file->top_lvl_enums =
+      _upb_EnumDefs_New(ctx, n, enums, file->resolved_features, NULL);
 
   // Create extensions.
   exts = UPB_DESC(FileDescriptorProto_extension)(file_proto, &n);
   file->top_lvl_ext_count = n;
-  file->top_lvl_exts = _upb_Extensions_New(ctx, n, exts, file->package, NULL);
+  file->top_lvl_exts = _upb_Extensions_New(
+      ctx, n, exts, file->resolved_features, file->package, NULL);
 
   // Create messages.
   msgs = UPB_DESC(FileDescriptorProto_message_type)(file_proto, &n);
   file->top_lvl_msg_count = n;
-  file->top_lvl_msgs = _upb_MessageDefs_New(ctx, n, msgs, NULL);
+  file->top_lvl_msgs =
+      _upb_MessageDefs_New(ctx, n, msgs, file->resolved_features, NULL);
 
   // Create services.
   services = UPB_DESC(FileDescriptorProto_service)(file_proto, &n);
   file->service_count = n;
-  file->services = _upb_ServiceDefs_New(ctx, n, services);
+  file->services =
+      _upb_ServiceDefs_New(ctx, n, services, file->resolved_features);
 
   // Now that all names are in the table, build layouts and resolve refs.
 
