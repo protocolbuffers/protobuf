@@ -401,7 +401,7 @@ const upb_MiniTable* google_protobuf_GeneratedCodeInfo_Annotation_msg_init() {
 
 const upb_MiniTableEnum* google_protobuf_Edition_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
-  static const char* mini_descriptor = "!)b~!ot_b)";
+  static const char* mini_descriptor = "!)`~)qt_b)";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),

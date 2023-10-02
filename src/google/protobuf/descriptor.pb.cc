@@ -1886,21 +1886,22 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
     "end\030\004 \001(\005\022H\n\010semantic\030\005 \001(\01626.google.pro"
     "tobuf.GeneratedCodeInfo.Annotation.Seman"
     "tic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n\003SET\020\001\022\t\n\005AL"
-    "IAS\020\002*\300\001\n\007Edition\022\023\n\017EDITION_UNKNOWN\020\000\022\021"
-    "\n\014EDITION_2023\020\350\007\022\027\n\023EDITION_1_TEST_ONLY"
-    "\020\001\022\027\n\023EDITION_2_TEST_ONLY\020\002\022\035\n\027EDITION_9"
-    "9997_TEST_ONLY\020\235\215\006\022\035\n\027EDITION_99998_TEST"
-    "_ONLY\020\236\215\006\022\035\n\027EDITION_99999_TEST_ONLY\020\237\215\006"
-    "B~\n\023com.google.protobufB\020DescriptorProto"
-    "sH\001Z-google.golang.org/protobuf/types/de"
-    "scriptorpb\370\001\001\242\002\003GPB\252\002\032Google.Protobuf.Re"
-    "flection"
+    "IAS\020\002*\352\001\n\007Edition\022\023\n\017EDITION_UNKNOWN\020\000\022\023"
+    "\n\016EDITION_PROTO2\020\346\007\022\023\n\016EDITION_PROTO3\020\347\007"
+    "\022\021\n\014EDITION_2023\020\350\007\022\027\n\023EDITION_1_TEST_ON"
+    "LY\020\001\022\027\n\023EDITION_2_TEST_ONLY\020\002\022\035\n\027EDITION"
+    "_99997_TEST_ONLY\020\235\215\006\022\035\n\027EDITION_99998_TE"
+    "ST_ONLY\020\236\215\006\022\035\n\027EDITION_99999_TEST_ONLY\020\237"
+    "\215\006B~\n\023com.google.protobufB\020DescriptorPro"
+    "tosH\001Z-google.golang.org/protobuf/types/"
+    "descriptorpb\370\001\001\242\002\003GPB\252\002\032Google.Protobuf."
+    "Reflection"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false,
     false,
-    9408,
+    9450,
     descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
@@ -2339,7 +2340,7 @@ const ::google::protobuf::EnumDescriptor* Edition_descriptor() {
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[16];
 }
 PROTOBUF_CONSTINIT const uint32_t Edition_internal_data_[] = {
-    196608u, 262144u, 99998u, 99997u, 99999u, 1000u, };
+    196608u, 393216u, 99997u, 999u, 99999u, 998u, 1000u, 99998u, };
 bool Edition_IsValid(int value) {
   return ::_pbi::ValidateEnum(value, Edition_internal_data_);
 }
