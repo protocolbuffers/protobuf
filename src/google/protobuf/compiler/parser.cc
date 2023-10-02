@@ -1695,6 +1695,11 @@ bool Parser::ParseExtensions(DescriptorProto* message,
           location, DescriptorProto::ExtensionRange::kStartFieldNumber);
       start_token = input_->current();
       DO(ConsumeInteger(&start, "Expected field number range."));
+
+      if (start == std::numeric_limits<int>::max()) {
+        RecordError("Field number out of bounds.");
+        return false;
+      }
     }
 
     if (TryConsume("to")) {
@@ -1707,6 +1712,11 @@ bool Parser::ParseExtensions(DescriptorProto* message,
         end = kMaxRangeSentinel - 1;
       } else {
         DO(ConsumeInteger(&end, "Expected integer."));
+
+        if (end == std::numeric_limits<int>::max()) {
+          RecordError("Field number out of bounds.");
+          return false;
+        }
       }
     } else {
       LocationRecorder end_location(
