@@ -1138,20 +1138,14 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   Map(internal::InternalVisibility, Arena* arena, const Map& other)
       : Map(arena, other) {}
 
-  Map(Map&& other) noexcept : Map() {
-    if (other.arena() != nullptr) {
-      *this = other;
-    } else {
-      swap(other);
-    }
-  }
+  Map(Map&& other) noexcept : Map() { *this = std::move(other); }
 
   Map& operator=(Map&& other) noexcept ABSL_ATTRIBUTE_LIFETIME_BOUND {
     if (this != &other) {
       if (arena() != other.arena()) {
         *this = other;
       } else {
-        swap(other);
+        InternalSwap(&other);
       }
     }
     return *this;
@@ -1492,12 +1486,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     if (arena() == other.arena()) {
       InternalSwap(&other);
     } else {
-      // TODO: optimize this. The temporary copy can be allocated
-      // in the same arena as the other message, and the "other = copy" can
-      // be replaced with the fast-path swap above.
-      Map copy = *this;
-      *this = other;
-      other = copy;
+      Map tmp;
+      // Do a loop to reduce code size.
+      Map* maps[] = {&tmp, this, &other, &tmp};
+      for (int i = 0; i < 3; ++i) {
+        *maps[i] = std::move(*maps[i + 1]);
+      }
     }
   }
 
