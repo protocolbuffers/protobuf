@@ -1997,6 +1997,34 @@ TEST(MESSAGE_TEST_NAME, TestRegressionOnParseFailureNotSettingHasBits) {
   }
 }
 
+TEST(MESSAGE_TEST_NAME, TestRegressionOverwrittenLazyOneofDoesNotLeak) {
+  UNITTEST::TestAllTypes message;
+  auto* lazy = message.mutable_oneof_lazy_nested_message();
+  // We need to add enough payload to make the lazy field overflow the SSO of
+  // Cord. However, NestedMessage does not have enough fields for that. Just add
+  // some unknown payload to it. Use something that the validator will allow to
+  // stay as lazy.
+  lazy->GetReflection()->MutableUnknownFields(lazy)->AddFixed64(10, 10);
+  lazy->GetReflection()->MutableUnknownFields(lazy)->AddFixed64(11, 10);
+  // Validate that the size is large enough.
+  ASSERT_GT(lazy->ByteSizeLong(), 15);
+
+  // Append two instances of the oneof: first the lazy field, then any other to
+  // cause a switch during parsing.
+  std::string str;
+  ASSERT_TRUE(message.AppendToString(&str));
+  message.set_oneof_uint32(7);
+  ASSERT_TRUE(message.AppendToString(&str));
+
+  EXPECT_TRUE(UNITTEST::TestAllTypes().ParseFromString(str));
+  Arena arena;
+  // This call had a bug where the LazyField was not destroyed in any way
+  // causing the Cord inside it to leak its contents.
+  EXPECT_TRUE(
+      Arena::CreateMessage<UNITTEST::TestAllTypes>(&arena)->ParseFromString(
+          str));
+}
+
 }  // namespace protobuf
 }  // namespace google
 
