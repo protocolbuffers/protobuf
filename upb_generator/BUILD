@@ -123,7 +123,7 @@ bootstrap_cc_library(
         "//upb:descriptor_upb_proto",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//protos_generator:__pkg__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
         "//upb:mini_descriptor",
