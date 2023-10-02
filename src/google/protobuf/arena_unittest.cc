@@ -561,16 +561,6 @@ TEST(ArenaTest, UnsafeArenaSwap) {
   TestUtil::ExpectAllFieldsSet(*message2);
 }
 
-TEST(ArenaTest, GetOwningArena) {
-  Arena arena;
-  auto* m1 = Arena::CreateMessage<TestAllTypes>(&arena);
-  EXPECT_EQ(Arena::InternalGetOwningArena(m1), &arena);
-  EXPECT_EQ(&arena, Arena::InternalGetOwningArena(
-                        m1->mutable_repeated_foreign_message()));
-  EXPECT_EQ(&arena,
-            Arena::InternalGetOwningArena(m1->mutable_repeated_int32()));
-}
-
 TEST(ArenaTest, SwapBetweenArenasUsingReflection) {
   Arena arena1;
   TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
@@ -723,7 +713,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
 #if GTEST_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(
         r->SetAllocatedMessage(arena1_message, arena2_submessage, msg_field),
-        "GetOwningArena");
+        "GetArena");
 #endif
     EXPECT_NE(arena2_submessage,
               arena1_message->mutable_optional_nested_message());
@@ -736,7 +726,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
 #if GTEST_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(
       r->SetAllocatedMessage(heap_message, arena1_submessage, msg_field),
-      "GetOwningArena");
+      "GetArena");
 #endif
   EXPECT_NE(arena1_submessage, heap_message->mutable_optional_nested_message());
   delete heap_message;

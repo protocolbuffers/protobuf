@@ -514,13 +514,6 @@ class PROTOBUF_EXPORT MessageLite {
 
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
-  // Returns the arena, if any, that directly owns this message and its internal
-  // memory (Arena::Own is different in that the arena doesn't directly own the
-  // internal memory). This method is used in proto's implementation for
-  // swapping, moving and setting allocated, for deciding whether the ownership
-  // of this message or its internal memory could be changed.
-  Arena* GetOwningArena() const { return _internal_metadata_.arena(); }
-
   struct ClassData {
     // Note: The order of arguments in the functions is chosen so that it has
     // the same ABI as the member function that calls them. Eg the `this`

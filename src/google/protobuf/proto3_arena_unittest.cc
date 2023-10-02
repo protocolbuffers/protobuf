@@ -28,18 +28,6 @@ using proto3_arena_unittest::TestAllTypes;
 namespace google {
 namespace protobuf {
 
-namespace internal {
-
-class Proto3ArenaTestHelper {
- public:
-  template <typename T>
-  static Arena* GetOwningArena(const T& msg) {
-    return msg.GetOwningArena();
-  }
-};
-
-}  // namespace internal
-
 namespace {
 // We selectively set/check a few representative fields rather than all fields
 // as this test is only expected to cover the basics of arena support.
