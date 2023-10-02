@@ -2099,7 +2099,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         "void $classname$::PrepareSplitMessageForWrite() {\n"
         "  if (PROTOBUF_PREDICT_TRUE(IsSplitMessageDefault())) {\n"
         "    void* chunk = $pbi$::CreateSplitMessageGeneric("
-        "GetArenaForAllocation(), &$1$, sizeof(Impl_::Split), this, &$2$);\n"
+        "GetArena(), &$1$, sizeof(Impl_::Split), this, &$2$);\n"
         "    $split$ = reinterpret_cast<Impl_::Split*>(chunk);\n"
         "  }\n"
         "}\n",
@@ -2749,7 +2749,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
       },
       R"cc(
         inline void $classname$::SharedDtor() {
-          $DCHK$(GetArenaForAllocation() == nullptr);
+          $DCHK$(GetArena() == nullptr);
           $extensions_dtor$;
           $field_dtors$;
           $split_field_dtors$;
@@ -3854,8 +3854,8 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
 
     if (HasNonSplitOptionalString(descriptor_, options_)) {
       p->Emit(R"cc(
-        auto* arena = GetArenaForAllocation();
-        ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+        auto* arena = GetArena();
+        ABSL_DCHECK_EQ(arena, other->GetArena());
       )cc");
     }
     format("_internal_metadata_.InternalSwap(&other->_internal_metadata_);\n");

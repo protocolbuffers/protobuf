@@ -111,7 +111,7 @@ class MapEntry : public Message {
   MapEntry& operator=(const MapEntry&) = delete;
 
   ~MapEntry() override {
-    if (GetArenaForAllocation() != nullptr) return;
+    if (GetArena() != nullptr) return;
     Message::_internal_metadata_.template Delete<UnknownFieldSet>();
     KeyTypeHandler::DeleteNoArena(key_);
     ValueTypeHandler::DeleteNoArena(value_);
@@ -130,11 +130,11 @@ class MapEntry : public Message {
   }
   inline auto* mutable_key() {
     _has_bits_[0] |= 0x00000001u;
-    return KeyTypeHandler::EnsureMutable(&key_, GetArenaForAllocation());
+    return KeyTypeHandler::EnsureMutable(&key_, GetArena());
   }
   inline auto* mutable_value() {
     _has_bits_[0] |= 0x00000002u;
-    return ValueTypeHandler::EnsureMutable(&value_, GetArenaForAllocation());
+    return ValueTypeHandler::EnsureMutable(&value_, GetArena());
   }
 
   // TODO: These methods currently differ in behavior from the ones

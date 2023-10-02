@@ -374,7 +374,7 @@ Version::~Version() {
   SharedDtor();
 }
 inline void Version::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.suffix_.Destroy();
   _impl_.~Impl_();
 }
@@ -592,8 +592,8 @@ PROTOBUF_NOINLINE bool Version::IsInitialized() const {
 }
 void Version::InternalSwap(Version* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.suffix_, &other->_impl_.suffix_, arena);
@@ -687,7 +687,7 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
   SharedDtor();
 }
 inline void CodeGeneratorRequest::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.parameter_.Destroy();
   if (this != internal_default_instance()) delete _impl_.compiler_version_;
   _impl_.~Impl_();
@@ -940,8 +940,8 @@ PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
 }
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.file_to_generate_.InternalSwap(&other->_impl_.file_to_generate_);
@@ -1034,7 +1034,7 @@ CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
   SharedDtor();
 }
 inline void CodeGeneratorResponse_File::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.insertion_point_.Destroy();
   _impl_.content_.Destroy();
@@ -1267,8 +1267,8 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse_File::IsInitialized() const {
 }
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
@@ -1340,7 +1340,7 @@ CodeGeneratorResponse::~CodeGeneratorResponse() {
   SharedDtor();
 }
 inline void CodeGeneratorResponse::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.error_.Destroy();
   _impl_.~Impl_();
 }
@@ -1534,8 +1534,8 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse::IsInitialized() const {
 }
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.file_.InternalSwap(&other->_impl_.file_);

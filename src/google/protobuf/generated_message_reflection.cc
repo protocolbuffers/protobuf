@@ -627,8 +627,8 @@ void SwapFieldHelper::SwapInlinedStrings(const Reflection* r, Message* lhs,
                                          Message* rhs,
                                          const FieldDescriptor* field) {
   // Inlined string field.
-  Arena* lhs_arena = lhs->GetArenaForAllocation();
-  Arena* rhs_arena = rhs->GetArenaForAllocation();
+  Arena* lhs_arena = lhs->GetArena();
+  Arena* rhs_arena = rhs->GetArena();
   auto* lhs_string = r->MutableRaw<InlinedStringField>(lhs, field);
   auto* rhs_string = r->MutableRaw<InlinedStringField>(rhs, field);
   uint32_t index = r->schema_.InlinedStringIndex(field);
@@ -664,9 +664,8 @@ void SwapFieldHelper::SwapNonInlinedStrings(const Reflection* r, Message* lhs,
   if (unsafe_shallow_swap) {
     ArenaStringPtr::UnsafeShallowSwap(lhs_string, rhs_string);
   } else {
-    SwapFieldHelper::SwapArenaStringPtr(
-        lhs_string, lhs->GetArenaForAllocation(),  //
-        rhs_string, rhs->GetArenaForAllocation());
+    SwapFieldHelper::SwapArenaStringPtr(lhs_string, lhs->GetArena(),  //
+                                        rhs_string, rhs->GetArena());
   }
 }
 
@@ -749,8 +748,7 @@ void SwapFieldHelper::SwapMessageField(const Reflection* r, Message* lhs,
     std::swap(*r->MutableRaw<Message*>(lhs, field),
               *r->MutableRaw<Message*>(rhs, field));
   } else {
-    SwapMessage(r, lhs, lhs->GetArenaForAllocation(), rhs,
-                rhs->GetArenaForAllocation(), field);
+    SwapMessage(r, lhs, lhs->GetArena(), rhs, rhs->GetArena(), field);
   }
 }
 
@@ -1155,8 +1153,7 @@ void Reflection::SwapFieldsImpl(
           if (field->options().ctype() == FieldOptions::STRING &&
               IsInlined(field)) {
             ABSL_DCHECK(!unsafe_shallow_swap ||
-                        message1->GetArenaForAllocation() ==
-                            message2->GetArenaForAllocation());
+                        message1->GetArena() == message2->GetArena());
             SwapInlinedStringDonated(message1, message2, field);
           }
         }
@@ -1174,8 +1171,7 @@ void Reflection::SwapFields(
 void Reflection::UnsafeShallowSwapFields(
     Message* message1, Message* message2,
     const std::vector<const FieldDescriptor*>& fields) const {
-  ABSL_DCHECK_EQ(message1->GetArenaForAllocation(),
-                 message2->GetArenaForAllocation());
+  ABSL_DCHECK_EQ(message1->GetArena(), message2->GetArena());
 
   SwapFieldsImpl<true>(message1, message2, fields);
 }
@@ -1183,7 +1179,7 @@ void Reflection::UnsafeShallowSwapFields(
 void Reflection::UnsafeArenaSwapFields(
     Message* lhs, Message* rhs,
     const std::vector<const FieldDescriptor*>& fields) const {
-  ABSL_DCHECK_EQ(lhs->GetArenaForAllocation(), rhs->GetArenaForAllocation());
+  ABSL_DCHECK_EQ(lhs->GetArena(), rhs->GetArena());
   UnsafeShallowSwapFields(lhs, rhs, fields);
 }
 
@@ -1400,7 +1396,7 @@ void Reflection::ClearField(Message* message,
           if (schema_.HasBitIndex(field) == static_cast<uint32_t>(-1)) {
             // Proto3 does not have has-bits and we need to set a message field
             // to nullptr in order to indicate its un-presence.
-            if (message->GetArenaForAllocation() == nullptr) {
+            if (message->GetArena() == nullptr) {
               delete *MutableRaw<Message*>(message, field);
             }
             *MutableRaw<Message*>(message, field) = nullptr;
@@ -1520,7 +1516,7 @@ Message* Reflection::ReleaseLast(Message* message,
     }
   }
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  return MaybeForceCopy(message->GetArenaForAllocation(), released);
+  return MaybeForceCopy(message->GetArena(), released);
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -1878,7 +1874,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           if (!HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
             *MutableField<absl::Cord*>(message, field) =
-                Arena::Create<absl::Cord>(message->GetArenaForAllocation());
+                Arena::Create<absl::Cord>(message->GetArena());
           }
           *(*MutableField<absl::Cord*>(message, field)) = value;
           break;
@@ -1894,7 +1890,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
           MutableField<InlinedStringField>(message, field)
-              ->Set(value, message->GetArenaForAllocation(),
+              ->Set(value, message->GetArena(),
                     IsInlinedStringDonated(*message, field), states, mask,
                     message);
           break;
@@ -1909,7 +1905,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           MutableField<ArenaStringPtr>(message, field)->InitDefault();
         }
         MutableField<ArenaStringPtr>(message, field)
-            ->Set(std::move(value), message->GetArenaForAllocation());
+            ->Set(std::move(value), message->GetArena());
         break;
       }
     }
@@ -1930,7 +1926,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           if (!HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
             *MutableField<absl::Cord*>(message, field) =
-                Arena::Create<absl::Cord>(message->GetArenaForAllocation());
+                Arena::Create<absl::Cord>(message->GetArena());
           }
           *(*MutableField<absl::Cord*>(message, field)) = value;
         } else {
@@ -1954,12 +1950,12 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           uint32_t* states =
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
-          str->Set(std::string(value), message->GetArenaForAllocation(),
+          str->Set(std::string(value), message->GetArena(),
                    IsInlinedStringDonated(*message, field), states, mask,
                    message);
         } else {
           auto* str = MutableField<ArenaStringPtr>(message, field);
-          str->Set(std::string(value), message->GetArenaForAllocation());
+          str->Set(std::string(value), message->GetArena());
         }
         break;
       }
@@ -2264,7 +2260,7 @@ Message* Reflection::MutableMessage(Message* message,
         ClearOneof(message, field->containing_oneof());
         result_holder = MutableField<Message*>(message, field);
         const Message* default_message = GetDefaultMessageInstance(field);
-        *result_holder = default_message->New(message->GetArenaForAllocation());
+        *result_holder = default_message->New(message->GetArena());
       }
     } else {
       SetBit(message, field);
@@ -2272,7 +2268,7 @@ Message* Reflection::MutableMessage(Message* message,
 
     if (*result_holder == nullptr) {
       const Message* default_message = GetDefaultMessageInstance(field);
-      *result_holder = default_message->New(message->GetArenaForAllocation());
+      *result_holder = default_message->New(message->GetArena());
     }
     result = *result_holder;
     return result;
@@ -2306,7 +2302,7 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
       SetBit(message, field);
     }
     Message** sub_message_holder = MutableRaw<Message*>(message, field);
-    if (message->GetArenaForAllocation() == nullptr) {
+    if (message->GetArena() == nullptr) {
       delete *sub_message_holder;
     }
     *sub_message_holder = sub_message;
@@ -2315,21 +2311,21 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
 
 void Reflection::SetAllocatedMessage(Message* message, Message* sub_message,
                                      const FieldDescriptor* field) const {
-  ABSL_DCHECK(
-      sub_message == nullptr || sub_message->GetOwningArena() == nullptr ||
-      sub_message->GetOwningArena() == message->GetArenaForAllocation());
+  ABSL_DCHECK(sub_message == nullptr ||
+              sub_message->GetOwningArena() == nullptr ||
+              sub_message->GetOwningArena() == message->GetArena());
 
   // If message and sub-message are in different memory ownership domains
   // (different arenas, or one is on heap and one is not), then we may need to
   // do a copy.
   if (sub_message != nullptr &&
-      sub_message->GetOwningArena() != message->GetArenaForAllocation()) {
+      sub_message->GetOwningArena() != message->GetArena()) {
     if (sub_message->GetOwningArena() == nullptr &&
-        message->GetArenaForAllocation() != nullptr) {
+        message->GetArena() != nullptr) {
       // Case 1: parent is on an arena and child is heap-allocated. We can add
       // the child to the arena's Own() list to free on arena destruction, then
       // set our pointer.
-      message->GetArenaForAllocation()->Own(sub_message);
+      message->GetArena()->Own(sub_message);
       UnsafeArenaSetAllocatedMessage(message, sub_message, field);
     } else {
       // Case 2: all other cases. We need to make a copy. MutableMessage() will
@@ -2378,9 +2374,9 @@ Message* Reflection::ReleaseMessage(Message* message,
                                     MessageFactory* factory) const {
   Message* released = UnsafeArenaReleaseMessage(message, field, factory);
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  released = MaybeForceCopy(message->GetArenaForAllocation(), released);
+  released = MaybeForceCopy(message->GetArena(), released);
 #endif  // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (message->GetArenaForAllocation() != nullptr && released != nullptr) {
+  if (message->GetArena() != nullptr && released != nullptr) {
     Message* copy_from_arena = released->New();
     copy_from_arena->CopyFrom(*released);
     released = copy_from_arena;
@@ -2459,7 +2455,7 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
       } else {
         prototype = &repeated->Get<GenericTypeHandler<Message> >(0);
       }
-      result = prototype->New(message->GetArenaForAllocation());
+      result = prototype->New(message->GetArena());
       // We can guarantee here that repeated and result are either both heap
       // allocated or arena owned. So it is safe to call the unsafe version
       // of AddAllocated.
@@ -2679,7 +2675,7 @@ void Reflection::PrepareSplitMessageForWrite(Message* message) const {
   const void* default_split = GetSplitField(schema_.default_instance_);
   if (*split == default_split) {
     uint32_t size = schema_.SizeofSplit();
-    Arena* arena = message->GetArenaForAllocation();
+    Arena* arena = message->GetArena();
     *split = (arena == nullptr) ? ::operator new(size)
                                 : arena->AllocateAligned(size);
     memcpy(*split, default_split, size);
@@ -2717,7 +2713,7 @@ Type* Reflection::MutableRawNonOneof(Message* message,
   if (SplitFieldHasExtraIndirection(field)) {
     return AllocIfDefault(field,
                           *GetPointerAtOffset<Type*>(*split, field_offset),
-                          message->GetArenaForAllocation());
+                          message->GetArena());
   }
   return GetPointerAtOffset<Type>(*split, field_offset);
 }
@@ -2734,7 +2730,7 @@ Type* Reflection::MutableRaw(Message* message,
   if (SplitFieldHasExtraIndirection(field)) {
     return AllocIfDefault(field,
                           *GetPointerAtOffset<Type*>(*split, field_offset),
-                          message->GetArenaForAllocation());
+                          message->GetArena());
   }
   return GetPointerAtOffset<Type>(*split, field_offset);
 }
@@ -2815,8 +2811,8 @@ inline void ClearInlinedStringDonated(uint32_t index, uint32_t* array) {
 
 void Reflection::SwapInlinedStringDonated(Message* lhs, Message* rhs,
                                           const FieldDescriptor* field) const {
-  Arena* lhs_arena = lhs->GetArenaForAllocation();
-  Arena* rhs_arena = rhs->GetArenaForAllocation();
+  Arena* lhs_arena = lhs->GetArena();
+  Arena* rhs_arena = rhs->GetArena();
   // If arenas differ, inined string fields are swapped by copying values.
   // Donation status should not be swapped.
   if (lhs_arena != rhs_arena) {
@@ -2982,7 +2978,7 @@ void Reflection::ClearOneof(Message* message,
   uint32_t oneof_case = GetOneofCase(*message, oneof_descriptor);
   if (oneof_case > 0) {
     const FieldDescriptor* field = descriptor_->FindFieldByNumber(oneof_case);
-    if (message->GetArenaForAllocation() == nullptr) {
+    if (message->GetArena() == nullptr) {
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (internal::cpp::EffectiveStringCType(field)) {

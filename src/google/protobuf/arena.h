@@ -389,8 +389,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     // mutually exclusive fashion, we use implicit conversions to base classes
     // to force an explicit ranking for our preferences.  The lowest ranked
     // version that compiles will be accepted.
-    struct Rank2 {};
-    struct Rank1 : Rank2 {};
+    struct Rank1 {};
     struct Rank0 : Rank1 {};
 
     static Arena* GetOwningArena(const T* p) {
@@ -410,31 +409,16 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
     static void InternalSwap(T* a, T* b) { a->InternalSwap(b); }
 
-    static Arena* GetArenaForAllocation(T* p) {
-      return GetArenaForAllocation(Rank0{}, p);
-    }
-
-    static Arena* GetArena(T* p) {
-      // Rather than replicate probing for `GetArena` with fallback to nullptr,
-      // we borrow the implementation of `GetArenaForAllocation` but skip
-      // `Rank0` which probes for `GetArenaForAllocation`.
-      return GetArenaForAllocation(Rank1{}, p);
-    }
+    static Arena* GetArena(T* p) { return GetArena(Rank0{}, p); }
 
     template <typename U>
-    static auto GetArenaForAllocation(Rank0, U* p)
-        -> EnableIfArena<decltype(p->GetArenaForAllocation())> {
-      return p->GetArenaForAllocation();
-    }
-
-    template <typename U>
-    static auto GetArenaForAllocation(Rank1, U* p)
+    static auto GetArena(Rank0, U* p)
         -> EnableIfArena<decltype(p->GetArena())> {
       return p->GetArena();
     }
 
     template <typename U>
-    static Arena* GetArenaForAllocation(Rank2, U*) {
+    static Arena* GetArena(Rank1, U*) {
       return nullptr;
     }
 
@@ -481,11 +465,18 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     return InternalHelper<T>::GetOwningArena(p);
   }
 
-  // Provides access to protected GetArenaForAllocation to generated messages.
+  // Wraps InternalGetArena() and will be removed soon.
   // For internal use only.
   template <typename T>
   static Arena* InternalGetArenaForAllocation(T* p) {
-    return InternalHelper<T>::GetArenaForAllocation(p);
+    return InternalHelper<T>::GetArena(p);
+  }
+
+  // Provides access to protected GetArena to generated messages.
+  // For internal use only.
+  template <typename T>
+  static Arena* InternalGetArena(T* p) {
+    return InternalHelper<T>::GetArena(p);
   }
 
   // Helper typetraits that indicates support for arenas in a type T at compile

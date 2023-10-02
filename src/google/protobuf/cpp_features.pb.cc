@@ -151,7 +151,7 @@ CppFeatures::~CppFeatures() {
   SharedDtor();
 }
 inline void CppFeatures::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 

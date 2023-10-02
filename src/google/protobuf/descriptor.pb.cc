@@ -2387,7 +2387,7 @@ FileDescriptorSet::~FileDescriptorSet() {
   SharedDtor();
 }
 inline void FileDescriptorSet::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -2633,7 +2633,7 @@ FileDescriptorProto::~FileDescriptorProto() {
   SharedDtor();
 }
 inline void FileDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.package_.Destroy();
   _impl_.syntax_.Destroy();
@@ -3103,8 +3103,8 @@ PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitialized() const {
 }
 void FileDescriptorProto::InternalSwap(FileDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.dependency_.InternalSwap(&other->_impl_.dependency_);
@@ -3206,7 +3206,7 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
   SharedDtor();
 }
 inline void DescriptorProto_ExtensionRange::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   if (this != internal_default_instance()) delete _impl_.options_;
   _impl_.~Impl_();
 }
@@ -3464,7 +3464,7 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
   SharedDtor();
 }
 inline void DescriptorProto_ReservedRange::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -3723,7 +3723,7 @@ DescriptorProto::~DescriptorProto() {
   SharedDtor();
 }
 inline void DescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
   _impl_.~Impl_();
@@ -4111,8 +4111,8 @@ PROTOBUF_NOINLINE bool DescriptorProto::IsInitialized() const {
 }
 void DescriptorProto::InternalSwap(DescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.field_.InternalSwap(&other->_impl_.field_);
@@ -4210,7 +4210,7 @@ ExtensionRangeOptions_Declaration::~ExtensionRangeOptions_Declaration() {
   SharedDtor();
 }
 inline void ExtensionRangeOptions_Declaration::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.full_name_.Destroy();
   _impl_.type_.Destroy();
   _impl_.~Impl_();
@@ -4458,8 +4458,8 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions_Declaration::IsInitialized() const 
 }
 void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Declaration* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.full_name_, &other->_impl_.full_name_, arena);
@@ -4547,7 +4547,7 @@ ExtensionRangeOptions::~ExtensionRangeOptions() {
   SharedDtor();
 }
 inline void ExtensionRangeOptions::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   if (this != internal_default_instance()) delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -4916,7 +4916,7 @@ FieldDescriptorProto::~FieldDescriptorProto() {
   SharedDtor();
 }
 inline void FieldDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.extendee_.Destroy();
   _impl_.type_name_.Destroy();
@@ -5337,8 +5337,8 @@ PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitialized() const {
 }
 void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
@@ -5422,7 +5422,7 @@ OneofDescriptorProto::~OneofDescriptorProto() {
   SharedDtor();
 }
 inline void OneofDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
   _impl_.~Impl_();
@@ -5601,8 +5601,8 @@ PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitialized() const {
 }
 void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
@@ -5659,7 +5659,7 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
   SharedDtor();
 }
 inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -5908,7 +5908,7 @@ EnumDescriptorProto::~EnumDescriptorProto() {
   SharedDtor();
 }
 inline void EnumDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
   _impl_.~Impl_();
@@ -6163,8 +6163,8 @@ PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitialized() const {
 }
 void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.value_.InternalSwap(&other->_impl_.value_);
@@ -6251,7 +6251,7 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
   SharedDtor();
 }
 inline void EnumValueDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
   _impl_.~Impl_();
@@ -6455,8 +6455,8 @@ PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitialized() const {
 }
 void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
@@ -6538,7 +6538,7 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
   SharedDtor();
 }
 inline void ServiceDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
   _impl_.~Impl_();
@@ -6744,8 +6744,8 @@ PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitialized() const {
 }
 void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.method_.InternalSwap(&other->_impl_.method_);
@@ -6849,7 +6849,7 @@ MethodDescriptorProto::~MethodDescriptorProto() {
   SharedDtor();
 }
 inline void MethodDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.input_type_.Destroy();
   _impl_.output_type_.Destroy();
@@ -7132,8 +7132,8 @@ PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitialized() const {
 }
 void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
@@ -7309,7 +7309,7 @@ FileOptions::~FileOptions() {
   SharedDtor();
 }
 inline void FileOptions::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.java_package_.Destroy();
   _impl_.java_outer_classname_.Destroy();
   _impl_.go_package_.Destroy();
@@ -8018,8 +8018,8 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
 void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.uninterpreted_option_.InternalSwap(&other->_impl_.uninterpreted_option_);
@@ -8136,7 +8136,7 @@ MessageOptions::~MessageOptions() {
   SharedDtor();
 }
 inline void MessageOptions::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   if (this != internal_default_instance()) delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -8502,7 +8502,7 @@ FieldOptions_EditionDefault::~FieldOptions_EditionDefault() {
   SharedDtor();
 }
 inline void FieldOptions_EditionDefault::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.value_.Destroy();
   _impl_.~Impl_();
 }
@@ -8671,8 +8671,8 @@ PROTOBUF_NOINLINE bool FieldOptions_EditionDefault::IsInitialized() const {
 }
 void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
@@ -8790,7 +8790,7 @@ FieldOptions::~FieldOptions() {
   SharedDtor();
 }
 inline void FieldOptions::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   if (this != internal_default_instance()) delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -9318,7 +9318,7 @@ OneofOptions::~OneofOptions() {
   SharedDtor();
 }
 inline void OneofOptions::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   if (this != internal_default_instance()) delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -9596,7 +9596,7 @@ EnumOptions::~EnumOptions() {
   SharedDtor();
 }
 inline void EnumOptions::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   if (this != internal_default_instance()) delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -9947,7 +9947,7 @@ EnumValueOptions::~EnumValueOptions() {
   SharedDtor();
 }
 inline void EnumValueOptions::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   if (this != internal_default_instance()) delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -10271,7 +10271,7 @@ ServiceOptions::~ServiceOptions() {
   SharedDtor();
 }
 inline void ServiceOptions::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   if (this != internal_default_instance()) delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -10579,7 +10579,7 @@ MethodOptions::~MethodOptions() {
   SharedDtor();
 }
 inline void MethodOptions::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   if (this != internal_default_instance()) delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -10895,7 +10895,7 @@ UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
   SharedDtor();
 }
 inline void UninterpretedOption_NamePart::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_part_.Destroy();
   _impl_.~Impl_();
 }
@@ -11066,8 +11066,8 @@ PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
 }
 void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_part_, &other->_impl_.name_part_, arena);
@@ -11164,7 +11164,7 @@ UninterpretedOption::~UninterpretedOption() {
   SharedDtor();
 }
 inline void UninterpretedOption::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.identifier_value_.Destroy();
   _impl_.string_value_.Destroy();
   _impl_.aggregate_value_.Destroy();
@@ -11461,8 +11461,8 @@ PROTOBUF_NOINLINE bool UninterpretedOption::IsInitialized() const {
 }
 void UninterpretedOption::InternalSwap(UninterpretedOption* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.name_.InternalSwap(&other->_impl_.name_);
@@ -11562,7 +11562,7 @@ FeatureSet::~FeatureSet() {
   SharedDtor();
 }
 inline void FeatureSet::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -11915,7 +11915,7 @@ FeatureSetDefaults_FeatureSetEditionDefault::~FeatureSetDefaults_FeatureSetEditi
   SharedDtor();
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   if (this != internal_default_instance()) delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -12169,7 +12169,7 @@ FeatureSetDefaults::~FeatureSetDefaults() {
   SharedDtor();
 }
 inline void FeatureSetDefaults::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -12440,7 +12440,7 @@ SourceCodeInfo_Location::~SourceCodeInfo_Location() {
   SharedDtor();
 }
 inline void SourceCodeInfo_Location::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.leading_comments_.Destroy();
   _impl_.trailing_comments_.Destroy();
   _impl_.~Impl_();
@@ -12701,8 +12701,8 @@ PROTOBUF_NOINLINE bool SourceCodeInfo_Location::IsInitialized() const {
 }
 void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.path_.InternalSwap(&other->_impl_.path_);
@@ -12761,7 +12761,7 @@ SourceCodeInfo::~SourceCodeInfo() {
   SharedDtor();
 }
 inline void SourceCodeInfo::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -12976,7 +12976,7 @@ GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
   SharedDtor();
 }
 inline void GeneratedCodeInfo_Annotation::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.source_file_.Destroy();
   _impl_.~Impl_();
 }
@@ -13226,8 +13226,8 @@ PROTOBUF_NOINLINE bool GeneratedCodeInfo_Annotation::IsInitialized() const {
 }
 void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.path_.InternalSwap(&other->_impl_.path_);
@@ -13289,7 +13289,7 @@ GeneratedCodeInfo::~GeneratedCodeInfo() {
   SharedDtor();
 }
 inline void GeneratedCodeInfo::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
