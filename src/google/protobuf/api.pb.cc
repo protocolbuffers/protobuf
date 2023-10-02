@@ -323,7 +323,7 @@ Api::~Api() {
   SharedDtor();
 }
 inline void Api::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.version_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
@@ -613,8 +613,8 @@ PROTOBUF_NOINLINE bool Api::IsInitialized() const {
 }
 void Api::InternalSwap(Api* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.methods_.InternalSwap(&other->_impl_.methods_);
@@ -702,7 +702,7 @@ Method::~Method() {
   SharedDtor();
 }
 inline void Method::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.request_type_url_.Destroy();
   _impl_.response_type_url_.Destroy();
@@ -980,8 +980,8 @@ PROTOBUF_NOINLINE bool Method::IsInitialized() const {
 }
 void Method::InternalSwap(Method* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
@@ -1046,7 +1046,7 @@ Mixin::~Mixin() {
   SharedDtor();
 }
 inline void Mixin::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.root_.Destroy();
   _impl_.~Impl_();
@@ -1207,8 +1207,8 @@ PROTOBUF_NOINLINE bool Mixin::IsInitialized() const {
 }
 void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.root_, &other->_impl_.root_, arena);

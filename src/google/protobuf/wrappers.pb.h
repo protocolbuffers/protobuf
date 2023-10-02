@@ -1902,7 +1902,7 @@ inline PROTOBUF_ALWAYS_INLINE void StringValue::set_value(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
-  _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.StringValue.value)
 }
 inline std::string* StringValue::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1917,12 +1917,12 @@ inline const std::string& StringValue::_internal_value() const {
 inline void StringValue::_internal_set_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
-  _impl_.value_.Set(value, GetArenaForAllocation());
+  _impl_.value_.Set(value, GetArena());
 }
 inline std::string* StringValue::_internal_mutable_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
-  return _impl_.value_.Mutable( GetArenaForAllocation());
+  return _impl_.value_.Mutable( GetArena());
 }
 inline std::string* StringValue::release_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -1931,10 +1931,10 @@ inline std::string* StringValue::release_value() {
 }
 inline void StringValue::set_allocated_value(std::string* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.value_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.value_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.value_.IsDefault()) {
-          _impl_.value_.Set("", GetArenaForAllocation());
+          _impl_.value_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.StringValue.value)
@@ -1959,7 +1959,7 @@ inline PROTOBUF_ALWAYS_INLINE void BytesValue::set_value(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
-  _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.BytesValue.value)
 }
 inline std::string* BytesValue::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1974,12 +1974,12 @@ inline const std::string& BytesValue::_internal_value() const {
 inline void BytesValue::_internal_set_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
-  _impl_.value_.Set(value, GetArenaForAllocation());
+  _impl_.value_.Set(value, GetArena());
 }
 inline std::string* BytesValue::_internal_mutable_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   ;
-  return _impl_.value_.Mutable( GetArenaForAllocation());
+  return _impl_.value_.Mutable( GetArena());
 }
 inline std::string* BytesValue::release_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -1988,10 +1988,10 @@ inline std::string* BytesValue::release_value() {
 }
 inline void BytesValue::set_allocated_value(std::string* value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.value_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.value_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.value_.IsDefault()) {
-          _impl_.value_.Set("", GetArenaForAllocation());
+          _impl_.value_.Set("", GetArena());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.BytesValue.value)

@@ -153,7 +153,7 @@ Duration::~Duration() {
   SharedDtor();
 }
 inline void Duration::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 

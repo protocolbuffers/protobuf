@@ -503,7 +503,7 @@ Type::~Type() {
   SharedDtor();
 }
 inline void Type::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
@@ -792,8 +792,8 @@ PROTOBUF_NOINLINE bool Type::IsInitialized() const {
 }
 void Type::InternalSwap(Type* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.fields_.InternalSwap(&other->_impl_.fields_);
@@ -879,7 +879,7 @@ Field::~Field() {
   SharedDtor();
 }
 inline void Field::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.type_url_.Destroy();
   _impl_.json_name_.Destroy();
@@ -1233,8 +1233,8 @@ PROTOBUF_NOINLINE bool Field::IsInitialized() const {
 }
 void Field::InternalSwap(Field* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
@@ -1331,7 +1331,7 @@ Enum::~Enum() {
   SharedDtor();
 }
 inline void Enum::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.source_context_;
@@ -1598,8 +1598,8 @@ PROTOBUF_NOINLINE bool Enum::IsInitialized() const {
 }
 void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.enumvalue_.InternalSwap(&other->_impl_.enumvalue_);
@@ -1667,7 +1667,7 @@ EnumValue::~EnumValue() {
   SharedDtor();
 }
 inline void EnumValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.~Impl_();
 }
@@ -1849,8 +1849,8 @@ PROTOBUF_NOINLINE bool EnumValue::IsInitialized() const {
 }
 void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.options_.InternalSwap(&other->_impl_.options_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
@@ -1927,7 +1927,7 @@ Option::~Option() {
   SharedDtor();
 }
 inline void Option::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   if (this != internal_default_instance()) delete _impl_.value_;
   _impl_.~Impl_();
@@ -2095,8 +2095,8 @@ PROTOBUF_NOINLINE bool Option::IsInitialized() const {
 }
 void Option::InternalSwap(Option* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);

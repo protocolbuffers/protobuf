@@ -161,7 +161,7 @@ SourceContext::~SourceContext() {
   SharedDtor();
 }
 inline void SourceContext::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.file_name_.Destroy();
   _impl_.~Impl_();
 }
@@ -296,8 +296,8 @@ PROTOBUF_NOINLINE bool SourceContext::IsInitialized() const {
 }
 void SourceContext::InternalSwap(SourceContext* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.file_name_, &other->_impl_.file_name_, arena);
 }

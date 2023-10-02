@@ -396,7 +396,7 @@ DoubleValue::~DoubleValue() {
   SharedDtor();
 }
 inline void DoubleValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -580,7 +580,7 @@ FloatValue::~FloatValue() {
   SharedDtor();
 }
 inline void FloatValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -764,7 +764,7 @@ Int64Value::~Int64Value() {
   SharedDtor();
 }
 inline void Int64Value::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -934,7 +934,7 @@ UInt64Value::~UInt64Value() {
   SharedDtor();
 }
 inline void UInt64Value::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -1104,7 +1104,7 @@ Int32Value::~Int32Value() {
   SharedDtor();
 }
 inline void Int32Value::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -1274,7 +1274,7 @@ UInt32Value::~UInt32Value() {
   SharedDtor();
 }
 inline void UInt32Value::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -1444,7 +1444,7 @@ BoolValue::~BoolValue() {
   SharedDtor();
 }
 inline void BoolValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -1626,7 +1626,7 @@ StringValue::~StringValue() {
   SharedDtor();
 }
 inline void StringValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.value_.Destroy();
   _impl_.~Impl_();
 }
@@ -1761,8 +1761,8 @@ PROTOBUF_NOINLINE bool StringValue::IsInitialized() const {
 }
 void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
 }
@@ -1816,7 +1816,7 @@ BytesValue::~BytesValue() {
   SharedDtor();
 }
 inline void BytesValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.value_.Destroy();
   _impl_.~Impl_();
 }
@@ -1946,8 +1946,8 @@ PROTOBUF_NOINLINE bool BytesValue::IsInitialized() const {
 }
 void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* arena = GetArenaForAllocation();
-  ABSL_DCHECK_EQ(arena, other->GetArenaForAllocation());
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
 }

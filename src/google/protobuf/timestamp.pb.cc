@@ -153,7 +153,7 @@ Timestamp::~Timestamp() {
   SharedDtor();
 }
 inline void Timestamp::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 

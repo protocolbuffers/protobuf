@@ -280,7 +280,7 @@ Struct::~Struct() {
   SharedDtor();
 }
 inline void Struct::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 
@@ -460,7 +460,7 @@ const ::google::protobuf::ListValue& Value::_Internal::list_value(const Value* m
   return *msg->_impl_.kind_.list_value_;
 }
 void Value::set_allocated_struct_value(::google::protobuf::Struct* struct_value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   clear_kind();
   if (struct_value) {
     ::google::protobuf::Arena* submessage_arena =
@@ -474,7 +474,7 @@ void Value::set_allocated_struct_value(::google::protobuf::Struct* struct_value)
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.struct_value)
 }
 void Value::set_allocated_list_value(::google::protobuf::ListValue* list_value) {
-  ::google::protobuf::Arena* message_arena = GetArenaForAllocation();
+  ::google::protobuf::Arena* message_arena = GetArena();
   clear_kind();
   if (list_value) {
     ::google::protobuf::Arena* submessage_arena =
@@ -549,7 +549,7 @@ Value::~Value() {
   SharedDtor();
 }
 inline void Value::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   if (has_kind()) {
     clear_kind();
   }
@@ -577,13 +577,13 @@ void Value::clear_kind() {
       break;
     }
     case kStructValue: {
-      if (GetArenaForAllocation() == nullptr) {
+      if (GetArena() == nullptr) {
         delete _impl_.kind_.struct_value_;
       }
       break;
     }
     case kListValue: {
-      if (GetArenaForAllocation() == nullptr) {
+      if (GetArena() == nullptr) {
         delete _impl_.kind_.list_value_;
       }
       break;
@@ -890,7 +890,7 @@ ListValue::~ListValue() {
   SharedDtor();
 }
 inline void ListValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.~Impl_();
 }
 

@@ -952,7 +952,7 @@ inline PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
     set_has_string_value();
     _impl_.kind_.string_value_.InitDefault();
   }
-  _impl_.kind_.string_value_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
+  _impl_.kind_.string_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
 inline std::string* Value::mutable_string_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -975,7 +975,7 @@ inline void Value::_internal_set_string_value(const std::string& value) {
     set_has_string_value();
     _impl_.kind_.string_value_.InitDefault();
   }
-  _impl_.kind_.string_value_.Set(value, GetArenaForAllocation());
+  _impl_.kind_.string_value_.Set(value, GetArena());
 }
 inline std::string* Value::_internal_mutable_string_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -985,7 +985,7 @@ inline std::string* Value::_internal_mutable_string_value() {
     set_has_string_value();
     _impl_.kind_.string_value_.InitDefault();
   }
-  return _impl_.kind_.string_value_.Mutable( GetArenaForAllocation());
+  return _impl_.kind_.string_value_.Mutable( GetArena());
 }
 inline std::string* Value::release_string_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -1003,7 +1003,7 @@ inline void Value::set_allocated_string_value(std::string* value) {
   }
   if (value != nullptr) {
     set_has_string_value();
-    _impl_.kind_.string_value_.InitAllocated(value, GetArenaForAllocation());
+    _impl_.kind_.string_value_.InitAllocated(value, GetArena());
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.string_value)
 }
@@ -1057,7 +1057,7 @@ inline void Value::set_has_struct_value() {
 inline void Value::clear_struct_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (kind_case() == kStructValue) {
-    if (GetArenaForAllocation() == nullptr) {
+    if (GetArena() == nullptr) {
       delete _impl_.kind_.struct_value_;
     }
     clear_has_kind();
@@ -1068,7 +1068,7 @@ inline ::google::protobuf::Struct* Value::release_struct_value() {
   if (kind_case() == kStructValue) {
     clear_has_kind();
     auto* temp = _impl_.kind_.struct_value_;
-    if (GetArenaForAllocation() != nullptr) {
+    if (GetArena() != nullptr) {
       temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
     }
     _impl_.kind_.struct_value_ = nullptr;
@@ -1110,8 +1110,7 @@ inline ::google::protobuf::Struct* Value::_internal_mutable_struct_value() {
   if (kind_case() != kStructValue) {
     clear_kind();
     set_has_struct_value();
-    _impl_.kind_.struct_value_ =
-        CreateMaybeMessage<::google::protobuf::Struct>(GetArenaForAllocation());
+    _impl_.kind_.struct_value_ = CreateMaybeMessage<::google::protobuf::Struct>(GetArena());
   }
   return _impl_.kind_.struct_value_;
 }
@@ -1134,7 +1133,7 @@ inline void Value::set_has_list_value() {
 inline void Value::clear_list_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (kind_case() == kListValue) {
-    if (GetArenaForAllocation() == nullptr) {
+    if (GetArena() == nullptr) {
       delete _impl_.kind_.list_value_;
     }
     clear_has_kind();
@@ -1145,7 +1144,7 @@ inline ::google::protobuf::ListValue* Value::release_list_value() {
   if (kind_case() == kListValue) {
     clear_has_kind();
     auto* temp = _impl_.kind_.list_value_;
-    if (GetArenaForAllocation() != nullptr) {
+    if (GetArena() != nullptr) {
       temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
     }
     _impl_.kind_.list_value_ = nullptr;
@@ -1187,8 +1186,7 @@ inline ::google::protobuf::ListValue* Value::_internal_mutable_list_value() {
   if (kind_case() != kListValue) {
     clear_kind();
     set_has_list_value();
-    _impl_.kind_.list_value_ =
-        CreateMaybeMessage<::google::protobuf::ListValue>(GetArenaForAllocation());
+    _impl_.kind_.list_value_ = CreateMaybeMessage<::google::protobuf::ListValue>(GetArena());
   }
   return _impl_.kind_.list_value_;
 }
