@@ -536,7 +536,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
  public:
   Arena* arena() const { return this->alloc_.arena(); }
 
-  void InternalSwap(UntypedMapBase* other) {
+  void Swap(UntypedMapBase* other) {
     std::swap(num_elements_, other->num_elements_);
     std::swap(num_buckets_, other->num_buckets_);
     std::swap(seed_, other->seed_);
@@ -1501,9 +1501,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     }
   }
 
-  void InternalSwap(Map* other) {
-    internal::UntypedMapBase::InternalSwap(other);
-  }
+  void InternalSwap(Map* other) { this->Swap(other); }
 
   hasher hash_function() const { return {}; }
 
