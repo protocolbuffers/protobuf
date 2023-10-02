@@ -9,9 +9,12 @@
 
 #include <string.h>
 
+#include "upb/base/internal/log2.h"
+#include "upb/message/copy.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/field_def.h"
+#include "upb/reflection/file_def.h"
 #include "upb/reflection/internal/strdup2.h"
 
 // Must be last.
@@ -336,4 +339,75 @@ void _upb_DefBuilder_CheckIdentSlow(upb_DefBuilder* ctx, upb_StringView name,
 
   // We should never reach this point.
   UPB_ASSERT(false);
+}
+
+upb_StringView _upb_DefBuilder_MakeKey(upb_DefBuilder* ctx,
+                                       const UPB_DESC(FeatureSet*) parent,
+                                       upb_StringView key) {
+  size_t need = key.size + sizeof(void*);
+  if (ctx->tmp_buf_size < need) {
+    ctx->tmp_buf_size = UPB_MAX(64, upb_Log2Ceiling(need));
+    ctx->tmp_buf = upb_Arena_Malloc(ctx->tmp_arena, ctx->tmp_buf_size);
+    if (!ctx->tmp_buf) _upb_DefBuilder_OomErr(ctx);
+  }
+
+  memcpy(ctx->tmp_buf, &parent, sizeof(void*));
+  memcpy(ctx->tmp_buf + sizeof(void*), key.data, key.size);
+  return upb_StringView_FromDataAndSize(ctx->tmp_buf, need);
+}
+
+bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
+                                           const UPB_DESC(FeatureSet*) parent,
+                                           upb_StringView key,
+                                           UPB_DESC(FeatureSet**) set) {
+  upb_StringView k = _upb_DefBuilder_MakeKey(ctx, parent, key);
+  upb_value v;
+  if (upb_strtable_lookup2(&ctx->feature_cache, k.data, k.size, &v)) {
+    *set = upb_value_getptr(v);
+    return false;
+  }
+
+  *set =
+      upb_Message_DeepClone(parent, UPB_DESC_MINITABLE(FeatureSet), ctx->arena);
+  if (!*set) _upb_DefBuilder_OomErr(ctx);
+
+  v = upb_value_ptr(*set);
+  if (!upb_strtable_insert(&ctx->feature_cache, k.data, k.size, v,
+                           ctx->tmp_arena)) {
+    _upb_DefBuilder_OomErr(ctx);
+  }
+
+  return true;
+}
+
+const UPB_DESC(FeatureSet*)
+    _upb_DefBuilder_DoResolveFeatures(upb_DefBuilder* ctx,
+                                      const UPB_DESC(FeatureSet*) parent,
+                                      const UPB_DESC(FeatureSet*) child,
+                                      bool is_implicit) {
+  assert(parent);
+  if (!child) return parent;
+
+  if (child && !is_implicit &&
+      upb_FileDef_Syntax(ctx->file) != kUpb_Syntax_Editions) {
+    _upb_DefBuilder_Errf(ctx, "Features can only be specified for editions");
+  }
+
+  UPB_DESC(FeatureSet*) resolved;
+  size_t child_size;
+  const char* child_bytes =
+      UPB_DESC(FeatureSet_serialize)(child, ctx->tmp_arena, &child_size);
+  if (!child_bytes) _upb_DefBuilder_OomErr(ctx);
+
+  upb_StringView key = upb_StringView_FromDataAndSize(child_bytes, child_size);
+  if (!_upb_DefBuilder_GetOrCreateFeatureSet(ctx, parent, key, &resolved)) {
+    return resolved;
+  }
+
+  upb_DecodeStatus dec_status =
+      upb_Decode(child_bytes, child_size, resolved,
+                 UPB_DESC_MINITABLE(FeatureSet), NULL, 0, ctx->arena);
+  if (dec_status != kUpb_DecodeStatus_Ok) _upb_DefBuilder_OomErr(ctx);
+
+  return resolved;
 }

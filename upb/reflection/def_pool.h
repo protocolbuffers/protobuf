@@ -26,6 +26,9 @@ UPB_API void upb_DefPool_Free(upb_DefPool* s);
 
 UPB_API upb_DefPool* upb_DefPool_New(void);
 
+UPB_API const UPB_DESC(FeatureSetDefaults) *
+    upb_DefPool_FeatureSetDefaults(const upb_DefPool* s);
+
 UPB_API const upb_MessageDef* upb_DefPool_FindMessageByName(
     const upb_DefPool* s, const char* sym);
 

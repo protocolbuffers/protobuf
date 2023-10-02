@@ -28,7 +28,8 @@
 #include "upb/port/def.inc"
 
 struct upb_MessageDef {
-  const UPB_DESC(MessageOptions) * opts;
+  const UPB_DESC(MessageOptions*) opts;
+  const UPB_DESC(FeatureSet*) resolved_features;
   const upb_MiniTable* layout;
   const upb_FileDef* file;
   const upb_MessageDef* containing_type;
@@ -66,6 +67,9 @@ struct upb_MessageDef {
   bool in_message_set;
   bool is_sorted;
   upb_WellKnown well_known_type;
+#if UINTPTR_MAX == 0xffffffff
+  uint32_t padding;  // Increase size to a multiple of 8.
+#endif
 };
 
 static void assign_msg_wellknowntype(upb_MessageDef* m) {
@@ -397,10 +401,9 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
       _upb_MessageDef_Insert(m, shortname, shortnamelen, field_v, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  // TODO: Once editions is supported this should turn into a
-  // check on LEGACY_BEST_EFFORT
   if (strcmp(shortname, json_name) != 0 &&
-      upb_FileDef_Syntax(m->file) == kUpb_Syntax_Proto3 &&
+      UPB_DESC(FeatureSet_json_format)(m->resolved_features) ==
+          UPB_DESC(FeatureSet_ALLOW) &&
       upb_strtable_lookup(&m->ntof, json_name, &v)) {
     _upb_DefBuilder_Errf(
         ctx, "duplicate json_name for (%s) with original field name (%s)",
@@ -517,7 +520,8 @@ static bool _upb_MessageDef_ValidateUtf8(const upb_MessageDef* m) {
 static uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m) {
   uint64_t out = 0;
 
-  if (upb_FileDef_Syntax(m->file) == kUpb_Syntax_Proto3) {
+  if (UPB_DESC(FeatureSet_repeated_field_encoding(m->resolved_features)) ==
+      UPB_DESC(FeatureSet_PACKED)) {
     out |= kUpb_MessageModifier_DefaultIsPacked;
   }
 
@@ -631,7 +635,8 @@ static upb_StringView* _upb_ReservedNames_New(upb_DefBuilder* ctx, int n,
 }
 
 static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
-                          const UPB_DESC(DescriptorProto) * msg_proto,
+                          const UPB_DESC(DescriptorProto*) msg_proto,
+                          const UPB_DESC(FeatureSet*) parent_features,
                           const upb_MessageDef* containing_type,
                           upb_MessageDef* m) {
   const UPB_DESC(OneofDescriptorProto)* const* oneofs;
@@ -642,6 +647,10 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   size_t n_oneof, n_field, n_enum, n_ext, n_msg;
   size_t n_ext_range, n_res_range, n_res_name;
   upb_StringView name;
+
+  UPB_DEF_SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
+  m->resolved_features = _upb_DefBuilder_ResolveFeatures(
+      ctx, parent_features, UPB_DESC(MessageOptions_features)(m->opts));
 
   // Must happen before _upb_DefBuilder_Add()
   m->file = _upb_DefBuilder_File(ctx);
@@ -671,14 +680,12 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   ok = upb_strtable_init(&m->jtof, n_field, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  UPB_DEF_SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
-
   m->oneof_count = n_oneof;
-  m->oneofs = _upb_OneofDefs_New(ctx, n_oneof, oneofs, m);
+  m->oneofs = _upb_OneofDefs_New(ctx, n_oneof, oneofs, m->resolved_features, m);
 
   m->field_count = n_field;
-  m->fields =
-      _upb_FieldDefs_New(ctx, n_field, fields, m->full_name, m, &m->is_sorted);
+  m->fields = _upb_FieldDefs_New(ctx, n_field, fields, m->resolved_features,
+                                 m->full_name, m, &m->is_sorted);
 
   // Message Sets may not contain fields.
   if (UPB_UNLIKELY(UPB_DESC(MessageOptions_message_set_wire_format)(m->opts))) {
@@ -688,7 +695,8 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   }
 
   m->ext_range_count = n_ext_range;
-  m->ext_ranges = _upb_ExtensionRanges_New(ctx, n_ext_range, ext_ranges, m);
+  m->ext_ranges = _upb_ExtensionRanges_New(ctx, n_ext_range, ext_ranges,
+                                           m->resolved_features, m);
 
   m->res_range_count = n_res_range;
   m->res_ranges =
@@ -706,23 +714,29 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   const UPB_DESC(EnumDescriptorProto)* const* enums =
       UPB_DESC(DescriptorProto_enum_type)(msg_proto, &n_enum);
   m->nested_enum_count = n_enum;
-  m->nested_enums = _upb_EnumDefs_New(ctx, n_enum, enums, m);
+  m->nested_enums =
+      _upb_EnumDefs_New(ctx, n_enum, enums, m->resolved_features, m);
 
   const UPB_DESC(FieldDescriptorProto)* const* exts =
       UPB_DESC(DescriptorProto_extension)(msg_proto, &n_ext);
   m->nested_ext_count = n_ext;
-  m->nested_exts = _upb_Extensions_New(ctx, n_ext, exts, m->full_name, m);
+  m->nested_exts = _upb_Extensions_New(ctx, n_ext, exts, m->resolved_features,
+                                       m->full_name, m);
 
   const UPB_DESC(DescriptorProto)* const* msgs =
       UPB_DESC(DescriptorProto_nested_type)(msg_proto, &n_msg);
   m->nested_msg_count = n_msg;
-  m->nested_msgs = _upb_MessageDefs_New(ctx, n_msg, msgs, m);
+  m->nested_msgs =
+      _upb_MessageDefs_New(ctx, n_msg, msgs, m->resolved_features, m);
 }
 
 // Allocate and initialize an array of |n| message defs.
-upb_MessageDef* _upb_MessageDefs_New(
-    upb_DefBuilder* ctx, int n, const UPB_DESC(DescriptorProto) * const* protos,
-    const upb_MessageDef* containing_type) {
+upb_MessageDef* _upb_MessageDefs_New(upb_DefBuilder* ctx, int n,
+                                     const UPB_DESC(DescriptorProto*)
+                                         const* protos,
+                                     const UPB_DESC(FeatureSet*)
+                                         parent_features,
+                                     const upb_MessageDef* containing_type) {
   _upb_DefType_CheckPadding(sizeof(upb_MessageDef));
 
   const char* name = containing_type ? containing_type->full_name
@@ -730,7 +744,8 @@ upb_MessageDef* _upb_MessageDefs_New(
 
   upb_MessageDef* m = _upb_DefBuilder_Alloc(ctx, sizeof(upb_MessageDef) * n);
   for (int i = 0; i < n; i++) {
-    create_msgdef(ctx, name, protos[i], containing_type, &m[i]);
+    create_msgdef(ctx, name, protos[i], parent_features, containing_type,
+                  &m[i]);
   }
   return m;
 }
