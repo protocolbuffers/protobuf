@@ -309,6 +309,7 @@ py_wheel(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
@@ -364,6 +365,7 @@ py_wheel(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
