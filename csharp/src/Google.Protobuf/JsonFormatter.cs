@@ -970,10 +970,7 @@ namespace Google.Protobuf
                 Justification = "The field for the value must still be present. It will be returned by reflection, will be in this collection, and its name can be resolved.")]
             internal static string GetOriginalName(object value)
             {
-                Dictionary<object, string> nameMapping = dictionaries.GetOrAdd(value.GetType(), static t =>
-                {
-                    return GetNameMapping(t);
-                });
+                Dictionary<object, string> nameMapping = dictionaries.GetOrAdd(value.GetType(), static t => GetNameMapping(t));
 
                 // If this returns false, originalName will be null, which is what we want.
                 nameMapping.TryGetValue(value, out string originalName);
