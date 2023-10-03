@@ -46,10 +46,12 @@ cc_test(
     deps = [
         "@com_google_googletest//:gtest_main",
         "//upb:mem",
+        "//upb:mem_internal",
         "//upb:port",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/random:distributions",
         "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/time",
     ],
 )
 

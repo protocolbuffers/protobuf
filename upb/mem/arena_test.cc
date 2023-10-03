@@ -19,6 +19,8 @@
 #include "absl/synchronization/notification.h"
 
 // Must be last.
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "upb/port/def.inc"
 
 namespace {
@@ -44,7 +46,7 @@ TEST(ArenaTest, FuseWithInitialBlock) {
   char buf2[1024];
   upb_Arena* arenas[] = {upb_Arena_Init(buf1, 1024, &upb_alloc_global),
                          upb_Arena_Init(buf2, 1024, &upb_alloc_global),
-                         upb_Arena_Init(NULL, 0, &upb_alloc_global)};
+                         upb_Arena_Init(nullptr, 0, &upb_alloc_global)};
   int size = sizeof(arenas) / sizeof(arenas[0]);
   for (int i = 0; i < size; ++i) {
     for (int j = 0; j < size; ++j) {
@@ -72,6 +74,15 @@ class Environment {
   void RandomNewFree(absl::BitGen& gen) {
     auto* old = SwapRandomly(gen, upb_Arena_New());
     if (old != nullptr) upb_Arena_Free(old);
+  }
+
+  void RandomIncRefCount(absl::BitGen& gen) {
+    auto* a = SwapRandomly(gen, nullptr);
+    if (a != nullptr) {
+      upb_Arena_IncRefFor(a, nullptr);
+      upb_Arena_DecRefFor(a, nullptr);
+      upb_Arena_Free(a);
+    }
   }
 
   void RandomFuse(absl::BitGen& gen) {
@@ -163,6 +174,40 @@ TEST(ArenaTest, FuzzFuseFuseRace) {
   auto end = absl::Now() + absl::Seconds(2);
   while (absl::Now() < end) {
     env.RandomFuse(gen);
+  }
+  done.Notify();
+  for (auto& t : threads) t.join();
+}
+
+TEST(ArenaTest, ArenaIncRef) {
+  upb_Arena* arena1 = upb_Arena_New();
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena1), 1);
+  upb_Arena_IncRefFor(arena1, nullptr);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena1), 2);
+  upb_Arena_DecRefFor(arena1, nullptr);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena1), 1);
+  upb_Arena_Free(arena1);
+}
+
+TEST(ArenaTest, FuzzFuseIncRefCountRace) {
+  Environment env;
+
+  absl::Notification done;
+  std::vector<std::thread> threads;
+  for (int i = 0; i < 10; ++i) {
+    threads.emplace_back([&]() {
+      absl::BitGen gen;
+      while (!done.HasBeenNotified()) {
+        env.RandomNewFree(gen);
+      }
+    });
+  }
+
+  absl::BitGen gen;
+  auto end = absl::Now() + absl::Seconds(2);
+  while (absl::Now() < end) {
+    env.RandomFuse(gen);
+    env.RandomIncRefCount(gen);
   }
   done.Notify();
   for (auto& t : threads) t.join();
