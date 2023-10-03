@@ -82,7 +82,10 @@ cc_library(
 
 cc_library(
     name = "versions",
-    hdrs = ["versions.h"],
+    hdrs = [
+        "versions.h",
+        "versions_suffix.h",
+    ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler",
     visibility = [

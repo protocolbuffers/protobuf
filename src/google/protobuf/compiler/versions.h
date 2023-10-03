@@ -31,21 +31,9 @@
 #ifndef GOOGLE_PROTOBUF_VERSIONS_H__
 #define GOOGLE_PROTOBUF_VERSIONS_H__
 
-#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/versions_suffix.h"
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace internal {
 // Defines compiler version strings for Protobuf code generators.
-//
-// Note that the version suffix "-main" implies the main branch. For example,
-// 4.25-main reflects a main branch version under development towards 25.x
-// release, and thus should not be used for production.
-//
-// Unlike other repo versions, this file should be updated together with
-// version.json whenever possible and reflect the correct version numbers
-// correspondingly.
 //
 // Currently, they are embedded into comments at each gencode for public
 // Protobuf C++, Java and Python. Further, we will add version strings for rest
@@ -58,11 +46,8 @@ namespace internal {
 //
 // Please avoid changing them manually, as they should be updated automatically
 // by Protobuf release process.
-constexpr absl::string_view kProtoCppVersionString = "4.25-main";
-constexpr absl::string_view kProtoJavaVersionString = "3.25-main";
-constexpr absl::string_view kProtoPythonVersionString = "4.25-main";
-}  // namespace internal
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+#define PROTOBUF_CPP_VERSION_STRING "4.24.0" PROTOBUF_GENCODE_VERSION_SUFFIX
+#define PROTOBUF_JAVA_VERSION_STRING "3.24.0" PROTOBUF_GENCODE_VERSION_SUFFIX
+#define PROTOBUF_PYTHON_VERSION_STRING "4.24.0" PROTOBUF_GENCODE_VERSION_SUFFIX
+
 #endif  // GOOGLE_PROTOBUF_VERSIONS_H__

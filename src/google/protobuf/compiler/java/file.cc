@@ -248,7 +248,7 @@ void FileGenerator::Generate(io::Printer* printer) {
       "filename", file_->name());
   if (options_.opensource_runtime) {
     printer->Print("// Protobuf Java Version: $protobuf_java_version$\n",
-                   "protobuf_java_version", internal::kProtoJavaVersionString);
+                   "protobuf_java_version", PROTOBUF_JAVA_VERSION_STRING);
   }
   if (!java_package_.empty()) {
     printer->Print(
@@ -608,7 +608,7 @@ static void GenerateSibling(
       "\n",
       "filename", descriptor->file()->name());
   printer.Print("// Protobuf Java Version: $protobuf_java_version$\n",
-                "protobuf_java_version", internal::kProtoJavaVersionString);
+                "protobuf_java_version", PROTOBUF_JAVA_VERSION_STRING);
   if (!java_package.empty()) {
     printer.Print(
         "package $package$;\n"

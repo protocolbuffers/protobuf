@@ -314,7 +314,7 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       "// source: $filename$\n");
   if (options_.opensource_runtime) {
     p->Print("// Protobuf C++ Version: $protobuf_cpp_version$\n",
-             "protobuf_cpp_version", internal::kProtoCppVersionString);
+             "protobuf_cpp_version", PROTOBUF_CPP_VERSION_STRING);
   }
   p->Print("\n");
   p->Emit({{"cb", cb}, {"guard", guard}}, R"(
