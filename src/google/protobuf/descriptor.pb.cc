@@ -2594,12 +2594,12 @@ FileDescriptorProto::FileDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000008u)
-                ? CreateMaybeMessage<::google::protobuf::FileOptions>(arena, *from._impl_.options_)
-                : nullptr;
-  _impl_.source_code_info_ = (cached_has_bits & 0x00000010u)
-                ? CreateMaybeMessage<::google::protobuf::SourceCodeInfo>(arena, *from._impl_.source_code_info_)
-                : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000008u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FileOptions>(
+                              arena, *from._impl_.options_)
+                        : nullptr;
+  _impl_.source_code_info_ = (cached_has_bits & 0x00000010u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceCodeInfo>(
+                              arena, *from._impl_.source_code_info_)
+                        : nullptr;
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorProto)
@@ -3174,9 +3174,9 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions>(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::ExtensionRangeOptions>(
+                              arena, *from._impl_.options_)
+                        : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, start_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -3694,9 +3694,9 @@ DescriptorProto::DescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000002u)
-                ? CreateMaybeMessage<::google::protobuf::MessageOptions>(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::MessageOptions>(
+                              arena, *from._impl_.options_)
+                        : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto)
 }
@@ -4522,9 +4522,9 @@ ExtensionRangeOptions::ExtensionRangeOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
+                              arena, *from._impl_.features_)
+                        : nullptr;
   _impl_.verification_ = from._impl_.verification_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions)
@@ -4877,9 +4877,9 @@ FieldDescriptorProto::FieldDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000020u)
-                ? CreateMaybeMessage<::google::protobuf::FieldOptions>(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000020u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FieldOptions>(
+                              arena, *from._impl_.options_)
+                        : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, number_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -5401,9 +5401,9 @@ OneofDescriptorProto::OneofDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000002u)
-                ? CreateMaybeMessage<::google::protobuf::OneofOptions>(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::OneofOptions>(
+                              arena, *from._impl_.options_)
+                        : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofDescriptorProto)
 }
@@ -5884,9 +5884,9 @@ EnumDescriptorProto::EnumDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000002u)
-                ? CreateMaybeMessage<::google::protobuf::EnumOptions>(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::EnumOptions>(
+                              arena, *from._impl_.options_)
+                        : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto)
 }
@@ -6224,9 +6224,9 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000002u)
-                ? CreateMaybeMessage<::google::protobuf::EnumValueOptions>(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::EnumValueOptions>(
+                              arena, *from._impl_.options_)
+                        : nullptr;
   _impl_.number_ = from._impl_.number_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueDescriptorProto)
@@ -6516,9 +6516,9 @@ ServiceDescriptorProto::ServiceDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000002u)
-                ? CreateMaybeMessage<::google::protobuf::ServiceOptions>(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::ServiceOptions>(
+                              arena, *from._impl_.options_)
+                        : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceDescriptorProto)
 }
@@ -6814,9 +6814,9 @@ MethodDescriptorProto::MethodDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (cached_has_bits & 0x00000008u)
-                ? CreateMaybeMessage<::google::protobuf::MethodOptions>(arena, *from._impl_.options_)
-                : nullptr;
+  _impl_.options_ = (cached_has_bits & 0x00000008u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::MethodOptions>(
+                              arena, *from._impl_.options_)
+                        : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, client_streaming_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -7263,9 +7263,9 @@ FileOptions::FileOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000400u)
-                ? CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000400u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
+                              arena, *from._impl_.features_)
+                        : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, java_multiple_files_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -8102,9 +8102,9 @@ MessageOptions::MessageOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
+                              arena, *from._impl_.features_)
+                        : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, message_set_wire_format_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -8754,9 +8754,9 @@ FieldOptions::FieldOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
+                              arena, *from._impl_.features_)
+                        : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, ctype_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -9296,9 +9296,9 @@ OneofOptions::OneofOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
+                              arena, *from._impl_.features_)
+                        : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofOptions)
 }
@@ -9562,9 +9562,9 @@ EnumOptions::EnumOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
+                              arena, *from._impl_.features_)
+                        : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, allow_alias_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -9913,9 +9913,9 @@ EnumValueOptions::EnumValueOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
+                              arena, *from._impl_.features_)
+                        : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, deprecated_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -10243,9 +10243,9 @@ ServiceOptions::ServiceOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
+                              arena, *from._impl_.features_)
+                        : nullptr;
   _impl_.deprecated_ = from._impl_.deprecated_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceOptions)
@@ -10545,9 +10545,9 @@ MethodOptions::MethodOptions(
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
+                              arena, *from._impl_.features_)
+                        : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, deprecated_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -11889,9 +11889,9 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_)
-                : nullptr;
+  _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
+                              arena, *from._impl_.features_)
+                        : nullptr;
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)

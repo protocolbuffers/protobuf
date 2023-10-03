@@ -299,7 +299,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Message creating functor: used in MergeFrom<T>()
   template <typename T>
   static MessageLite* CopyMessage(Arena* arena, const MessageLite& src) {
-    T* msg = Arena::CreateMaybeMessage<T>(arena);
+    T* msg = static_cast<T*>(Arena::DefaultConstruct<T>(arena));
     msg->MergeFrom(static_cast<const T&>(src));
     return msg;
   }
@@ -862,7 +862,7 @@ class GenericTypeHandler {
   using Movable = IsMovable<GenericType>;
 
   static inline GenericType* New(Arena* arena) {
-    return Arena::CreateMaybeMessage<Type>(arena);
+    return static_cast<GenericType*>(Arena::DefaultConstruct<Type>(arena));
   }
   static inline GenericType* New(Arena* arena, GenericType&& value) {
     return Arena::Create<GenericType>(arena, std::move(value));
@@ -1345,7 +1345,7 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena)
     : RepeatedPtrFieldBase(arena) {
   // We can't have StaticValidityCheck here because that requires Element to be
   // a complete type, and in split repeated fields cases, we call
-  // CreateMaybeMessage<RepeatedPtrField<T>> for incomplete Ts.
+  // CreateMessage<RepeatedPtrField<T>> for incomplete Ts.
 }
 
 template <typename Element>

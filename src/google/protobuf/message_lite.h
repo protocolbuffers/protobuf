@@ -501,16 +501,14 @@ class PROTOBUF_EXPORT MessageLite {
   }
 
   template <typename T>
-  static T* CreateMaybeMessage(Arena* arena) {
-    return Arena::CreateMaybeMessage<T>(arena);
+  PROTOBUF_ALWAYS_INLINE static T* DefaultConstruct(Arena* arena) {
+    return static_cast<T*>(Arena::DefaultConstruct<T>(arena));
   }
 
-#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
   template <typename T>
-  static T* CreateMaybeMessage(Arena* arena, const T& from) {
-    return Arena::CreateMaybeMessage<T>(arena, from);
+  PROTOBUF_ALWAYS_INLINE static T* CopyConstruct(Arena* arena, const T& from) {
+    return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
   }
-#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
 
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 

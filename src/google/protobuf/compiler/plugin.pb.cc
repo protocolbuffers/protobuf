@@ -662,9 +662,9 @@ CodeGeneratorRequest::CodeGeneratorRequest(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.compiler_version_ = (cached_has_bits & 0x00000002u)
-                ? CreateMaybeMessage<::google::protobuf::compiler::Version>(arena, *from._impl_.compiler_version_)
-                : nullptr;
+  _impl_.compiler_version_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::compiler::Version>(
+                              arena, *from._impl_.compiler_version_)
+                        : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
@@ -1010,9 +1010,9 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.generated_code_info_ = (cached_has_bits & 0x00000008u)
-                ? CreateMaybeMessage<::google::protobuf::GeneratedCodeInfo>(arena, *from._impl_.generated_code_info_)
-                : nullptr;
+  _impl_.generated_code_info_ = (cached_has_bits & 0x00000008u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::GeneratedCodeInfo>(
+                              arena, *from._impl_.generated_code_info_)
+                        : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
