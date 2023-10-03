@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_MAP_FIELD_INL_H__
 #define GOOGLE_PROTOBUF_MAP_FIELD_INL_H__
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -17,6 +18,7 @@
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_type_handler.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
 
 // must be last
@@ -86,8 +88,8 @@ inline void SetMapKey(MapKey* map_key, const MapKey& value) {
 
 // ------------------------TypeDefinedMapFieldBase---------------
 template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::SetMapIteratorValue(
-    MapIterator* map_iter) const {
+void TypeDefinedMapFieldBase<Key, T>::SetMapIteratorValueImpl(
+    MapIterator* map_iter) {
   if (map_iter->iter_.Equals(UntypedMapBase::EndIterator())) return;
   auto iter = typename Map<Key, T>::const_iterator(map_iter->iter_);
   SetMapKey(&map_iter->key_, iter->first);
@@ -95,56 +97,60 @@ void TypeDefinedMapFieldBase<Key, T>::SetMapIteratorValue(
 }
 
 template <typename Key, typename T>
-bool TypeDefinedMapFieldBase<Key, T>::ContainsMapKey(
-    const MapKey& map_key) const {
-  return GetMap().contains(UnwrapMapKey<Key>(map_key));
-}
-
-template <typename Key, typename T>
-bool TypeDefinedMapFieldBase<Key, T>::InsertOrLookupMapValueNoSync(
-    const MapKey& map_key, MapValueRef* val) {
-  auto res = map_.try_emplace(UnwrapMapKey<Key>(map_key));
+bool TypeDefinedMapFieldBase<Key, T>::InsertOrLookupMapValueNoSyncImpl(
+    MapFieldBase& map, const MapKey& map_key, MapValueRef* val) {
+  auto res = static_cast<TypeDefinedMapFieldBase&>(map).map_.try_emplace(
+      UnwrapMapKey<Key>(map_key));
   val->SetValue(&res.first->second);
   return res.second;
 }
 
 template <typename Key, typename T>
-bool TypeDefinedMapFieldBase<Key, T>::LookupMapValue(
-    const MapKey& map_key, MapValueConstRef* val) const {
-  const auto& map = GetMap();
+bool TypeDefinedMapFieldBase<Key, T>::LookupMapValueImpl(
+    const MapFieldBase& self, const MapKey& map_key, MapValueConstRef* val) {
+  const auto& map = static_cast<const TypeDefinedMapFieldBase&>(self).GetMap();
   auto iter = map.find(UnwrapMapKey<Key>(map_key));
   if (map.end() == iter) {
     return false;
   }
-  val->SetValueOrCopy(&iter->second);
+  if (val != nullptr) {
+    val->SetValueOrCopy(&iter->second);
+  }
   return true;
 }
 
 template <typename Key, typename T>
-bool TypeDefinedMapFieldBase<Key, T>::DeleteMapValue(const MapKey& map_key) {
-  return MutableMap()->erase(UnwrapMapKey<Key>(map_key));
+bool TypeDefinedMapFieldBase<Key, T>::DeleteMapValueImpl(
+    MapFieldBase& map, const MapKey& map_key) {
+  return static_cast<TypeDefinedMapFieldBase&>(map).MutableMap()->erase(
+      UnwrapMapKey<Key>(map_key));
 }
 
 template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::Swap(MapFieldBase* other) {
-  MapFieldBase::Swap(other);
-  auto* other_field = DownCast<TypeDefinedMapFieldBase*>(other);
-  map_.swap(other_field->map_);
+void TypeDefinedMapFieldBase<Key, T>::SwapImpl(MapFieldBase& lhs,
+                                               MapFieldBase& rhs) {
+  MapFieldBase::SwapImpl(lhs, rhs);
+  static_cast<TypeDefinedMapFieldBase&>(lhs).map_.swap(
+      static_cast<TypeDefinedMapFieldBase&>(rhs).map_);
 }
 
 template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::MergeFrom(const MapFieldBase& other) {
-  SyncMapWithRepeatedField();
+void TypeDefinedMapFieldBase<Key, T>::MergeFromImpl(MapFieldBase& base,
+                                                    const MapFieldBase& other) {
+  auto& self = static_cast<TypeDefinedMapFieldBase&>(base);
+  self.SyncMapWithRepeatedField();
   const auto& other_field = static_cast<const TypeDefinedMapFieldBase&>(other);
   other_field.SyncMapWithRepeatedField();
-  internal::MapMergeFrom(map_, other_field.map_);
-  SetMapDirty();
+  internal::MapMergeFrom(self.map_, other_field.map_);
+  self.SetMapDirty();
 }
 
 template <typename Key, typename T>
-size_t TypeDefinedMapFieldBase<Key, T>::SpaceUsedExcludingSelfNoLock() const {
+size_t TypeDefinedMapFieldBase<Key, T>::SpaceUsedExcludingSelfNoLockImpl(
+    const MapFieldBase& map) {
+  auto& self = static_cast<const TypeDefinedMapFieldBase&>(map);
   size_t size = 0;
-  if (auto* p = maybe_payload()) {
+  if (auto* p = self.maybe_payload()) {
     size += p->repeated_field.SpaceUsedExcludingSelfLong();
   }
   // We can't compile this expression for DynamicMapField even though it is
@@ -152,14 +158,15 @@ size_t TypeDefinedMapFieldBase<Key, T>::SpaceUsedExcludingSelfNoLock() const {
   std::get<std::is_same<Map<Key, T>, Map<MapKey, MapValueRef>>::value>(
       std::make_tuple(
           [&](const auto& map) { size += map.SpaceUsedExcludingSelfLong(); },
-          [](const auto&) {}))(map_);
-
+          [](const auto&) {}))(self.map_);
   return size;
 }
 
 template <typename Key, typename T>
-void TypeDefinedMapFieldBase<Key, T>::UnsafeShallowSwap(MapFieldBase* other) {
-  InternalSwap(DownCast<TypeDefinedMapFieldBase*>(other));
+void TypeDefinedMapFieldBase<Key, T>::UnsafeShallowSwapImpl(MapFieldBase& lhs,
+                                                            MapFieldBase& rhs) {
+  static_cast<TypeDefinedMapFieldBase&>(lhs).InternalSwap(
+      static_cast<TypeDefinedMapFieldBase*>(&rhs));
 }
 
 template <typename Key, typename T>
@@ -174,8 +181,9 @@ void TypeDefinedMapFieldBase<Key, T>::InternalSwap(
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
-const Message* MapField<Derived, Key, T, kKeyFieldType,
-                        kValueFieldType>::GetPrototype() const {
+const Message*
+MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::GetPrototypeImpl(
+    const MapFieldBase&) {
   return Derived::internal_default_instance();
 }
 

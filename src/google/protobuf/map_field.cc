@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/absl_check.h"
+#include "google/protobuf/map.h"
 #include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/port.h"
 
@@ -46,10 +48,12 @@ MapFieldBase::~MapFieldBase() {
   delete maybe_payload();
 }
 
-const UntypedMapBase& MapFieldBase::GetMapImpl(bool is_mutable) const {
-  SyncMapWithRepeatedField();
-  if (is_mutable) const_cast<MapFieldBase*>(this)->SetMapDirty();
-  return GetMapRaw();
+const UntypedMapBase& MapFieldBase::GetMapImpl(const MapFieldBaseForParse& map,
+                                               bool is_mutable) {
+  const auto& self = static_cast<const MapFieldBase&>(map);
+  self.SyncMapWithRepeatedField();
+  if (is_mutable) const_cast<MapFieldBase&>(self).SetMapDirty();
+  return self.GetMapRaw();
 }
 
 void MapFieldBase::MapBegin(MapIterator* map_iter) const {
@@ -121,24 +125,24 @@ MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
   return *ToPayload(p);
 }
 
-void MapFieldBase::Swap(MapFieldBase* other) {
-  if (arena() == other->arena()) {
-    InternalSwap(other);
+void MapFieldBase::SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
+  if (lhs.arena() == rhs.arena()) {
+    lhs.InternalSwap(&rhs);
     return;
   }
-  auto* p1 = maybe_payload();
-  auto* p2 = other->maybe_payload();
+  auto* p1 = lhs.maybe_payload();
+  auto* p2 = rhs.maybe_payload();
   if (p1 == nullptr && p2 == nullptr) return;
 
-  if (p1 == nullptr) p1 = &payload();
-  if (p2 == nullptr) p2 = &other->payload();
+  if (p1 == nullptr) p1 = &lhs.payload();
+  if (p2 == nullptr) p2 = &rhs.payload();
   p1->repeated_field.Swap(&p2->repeated_field);
   SwapRelaxed(p1->state, p2->state);
 }
 
-void MapFieldBase::UnsafeShallowSwap(MapFieldBase* other) {
-  ABSL_DCHECK_EQ(arena(), other->arena());
-  InternalSwap(other);
+void MapFieldBase::UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
+  ABSL_DCHECK_EQ(lhs.arena(), rhs.arena());
+  lhs.InternalSwap(&rhs);
 }
 
 void MapFieldBase::InternalSwap(MapFieldBase* other) {
@@ -156,14 +160,6 @@ size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
     ConstAccess();
   }
   return size;
-}
-
-size_t MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
-  if (auto* p = maybe_payload()) {
-    return p->repeated_field.SpaceUsedExcludingSelfLong();
-  } else {
-    return 0;
-  }
 }
 
 bool MapFieldBase::IsMapValid() const {
@@ -402,11 +398,15 @@ bool MapFieldBase::InsertOrLookupMapValue(const MapKey& map_key,
 
 // ------------------DynamicMapField------------------
 DynamicMapField::DynamicMapField(const Message* default_entry)
-    : default_entry_(default_entry) {}
+    : DynamicMapField::TypeDefinedMapFieldBase(&kVTable),
+      default_entry_(default_entry) {}
 
 DynamicMapField::DynamicMapField(const Message* default_entry, Arena* arena)
-    : TypeDefinedMapFieldBase<MapKey, MapValueRef>(arena),
+    : TypeDefinedMapFieldBase<MapKey, MapValueRef>(&kVTable, arena),
       default_entry_(default_entry) {}
+
+constexpr DynamicMapField::VTable DynamicMapField::kVTable =
+    MakeVTable<DynamicMapField>();
 
 DynamicMapField::~DynamicMapField() {
   ABSL_DCHECK_EQ(arena(), nullptr);
@@ -418,14 +418,15 @@ DynamicMapField::~DynamicMapField() {
   map_.clear();
 }
 
-void DynamicMapField::ClearMapNoSync() {
-  if (arena() == nullptr) {
-    for (auto& elem : map_) {
+void DynamicMapField::ClearMapNoSyncImpl(MapFieldBase& base) {
+  auto& self = static_cast<DynamicMapField&>(base);
+  if (self.arena() == nullptr) {
+    for (auto& elem : self.map_) {
       elem.second.DeleteData();
     }
   }
 
-  map_.clear();
+  self.map_.clear();
 }
 
 void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
@@ -460,12 +461,14 @@ void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
   }
 }
 
-bool DynamicMapField::InsertOrLookupMapValueNoSync(const MapKey& map_key,
-                                                   MapValueRef* val) {
-  Map<MapKey, MapValueRef>::iterator iter = map_.find(map_key);
-  if (iter == map_.end()) {
-    MapValueRef& map_val = map_[map_key];
-    AllocateMapValue(&map_val);
+bool DynamicMapField::InsertOrLookupMapValueNoSyncImpl(MapFieldBase& base,
+                                                       const MapKey& map_key,
+                                                       MapValueRef* val) {
+  auto& self = static_cast<DynamicMapField&>(base);
+  Map<MapKey, MapValueRef>::iterator iter = self.map_.find(map_key);
+  if (iter == self.map_.end()) {
+    MapValueRef& map_val = self.map_[map_key];
+    self.AllocateMapValue(&map_val);
     val->CopyFrom(map_val);
     return true;
   }
@@ -475,9 +478,11 @@ bool DynamicMapField::InsertOrLookupMapValueNoSync(const MapKey& map_key,
   return false;
 }
 
-void DynamicMapField::MergeFrom(const MapFieldBase& other) {
-  ABSL_DCHECK(IsMapValid() && other.IsMapValid());
-  Map<MapKey, MapValueRef>* map = MutableMap();
+void DynamicMapField::MergeFromImpl(MapFieldBase& base,
+                                    const MapFieldBase& other) {
+  auto& self = static_cast<DynamicMapField&>(base);
+  ABSL_DCHECK(self.IsMapValid() && other.IsMapValid());
+  Map<MapKey, MapValueRef>* map = self.MutableMap();
   const DynamicMapField& other_field =
       reinterpret_cast<const DynamicMapField&>(other);
   for (Map<MapKey, MapValueRef>::const_iterator other_it =
@@ -486,15 +491,15 @@ void DynamicMapField::MergeFrom(const MapFieldBase& other) {
     Map<MapKey, MapValueRef>::iterator iter = map->find(other_it->first);
     MapValueRef* map_val;
     if (iter == map->end()) {
-      map_val = &map_[other_it->first];
-      AllocateMapValue(map_val);
+      map_val = &self.map_[other_it->first];
+      self.AllocateMapValue(map_val);
     } else {
       map_val = &iter->second;
     }
 
     // Copy map value
     const FieldDescriptor* field_descriptor =
-        default_entry_->GetDescriptor()->map_value();
+        self.default_entry_->GetDescriptor()->map_value();
     switch (field_descriptor->cpp_type()) {
       case FieldDescriptor::CPPTYPE_INT32: {
         map_val->SetInt32Value(other_it->second.GetInt32Value());
@@ -541,17 +546,20 @@ void DynamicMapField::MergeFrom(const MapFieldBase& other) {
   }
 }
 
-const Message* DynamicMapField::GetPrototype() const { return default_entry_; }
+const Message* DynamicMapField::GetPrototypeImpl(const MapFieldBase& map) {
+  return static_cast<const DynamicMapField&>(map).default_entry_;
+}
 
-size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
+size_t DynamicMapField::SpaceUsedExcludingSelfNoLockImpl(
+    const MapFieldBase& map) {
+  auto& self = static_cast<const DynamicMapField&>(map);
   size_t size = 0;
-  if (auto* p = maybe_payload()) {
+  if (auto* p = self.maybe_payload()) {
     size += p->repeated_field.SpaceUsedExcludingSelfLong();
   }
-  size += sizeof(map_);
-  size_t map_size = map_.size();
+  size_t map_size = self.map_.size();
   if (map_size) {
-    Map<MapKey, MapValueRef>::const_iterator it = map_.begin();
+    Map<MapKey, MapValueRef>::const_iterator it = self.map_.begin();
     size += sizeof(it->first) * map_size;
     size += sizeof(it->second) * map_size;
     // If key is string, add the allocated space.
@@ -576,7 +584,7 @@ size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
       HANDLE_TYPE(ENUM, int32_t);
 #undef HANDLE_TYPE
       case FieldDescriptor::CPPTYPE_MESSAGE: {
-        while (it != map_.end()) {
+        while (it != self.map_.end()) {
           const Message& message = it->second.GetMessageValue();
           size += message.GetReflection()->SpaceUsedLong(message);
           ++it;

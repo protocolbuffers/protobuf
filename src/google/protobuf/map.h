@@ -806,15 +806,23 @@ inline void UntypedMapIterator::SearchFrom(size_t start_bucket) {
 // code, since that would bring in Message too.
 class MapFieldBaseForParse {
  public:
-  const UntypedMapBase& GetMap() const { return GetMapImpl(false); }
+  const UntypedMapBase& GetMap() const {
+    return vtable_->get_map(*this, false);
+  }
   UntypedMapBase* MutableMap() {
-    return &const_cast<UntypedMapBase&>(GetMapImpl(true));
+    return &const_cast<UntypedMapBase&>(vtable_->get_map(*this, true));
   }
 
  protected:
+  struct VTable {
+    const UntypedMapBase& (*get_map)(const MapFieldBaseForParse&,
+                                     bool is_mutable);
+  };
+  explicit constexpr MapFieldBaseForParse(const VTable* vtable)
+      : vtable_(vtable) {}
   ~MapFieldBaseForParse() = default;
 
-  virtual const UntypedMapBase& GetMapImpl(bool is_mutable) const = 0;
+  const VTable* vtable_;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.
