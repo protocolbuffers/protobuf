@@ -651,11 +651,6 @@ void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
                                             MessageLite* to) {
   to->CheckTypeAndMergeFrom(from);
 }
-template <>
-void GenericTypeHandler<std::string>::Merge(const std::string& from,
-                                            std::string* to) {
-  *to = from;
-}
 
 // Non-inline variants of std::string specializations for
 // various InternalMetadata routines.

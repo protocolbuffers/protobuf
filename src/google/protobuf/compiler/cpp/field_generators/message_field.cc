@@ -133,12 +133,13 @@ class SingularMessage : public FieldGeneratorBase {
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{CreateMaybeMessage<$Submsg$>(arena, *from.$name$_)}");
+    p->Emit(
+        "$name$_{$superclass$::CopyConstruct<$Submsg$>(arena, *from.$name$_)}");
   }
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field$);
+      $field$ = $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field$);
     )cc");
   }
 
@@ -262,7 +263,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $StrongRef$;
           $set_hasbit$;
           if ($field_$ == nullptr) {
-            auto* p = CreateMaybeMessage<$Submsg$>(GetArena());
+            auto* p = $superclass$::DefaultConstruct<$Submsg$>(GetArena());
             $field_$ = reinterpret_cast<$MemberType$*>(p);
           }
           return $cast_field_$;
@@ -443,7 +444,8 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     p->Emit(R"cc(
       $DCHK$(from.$field_$ != nullptr);
       if (_this->$field_$ == nullptr) {
-        _this->$field_$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field_$);
+        _this->$field_$ =
+            $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field_$);
       } else {
         _this->$field_$->MergeFrom(*from.$field_$);
       }
@@ -474,13 +476,15 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   if (has_hasbit_) {
     p->Emit(R"cc(
       if ((from.$has_hasbit$) != 0) {
-        _this->$field_$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field_$);
+        _this->$field_$ =
+            $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field_$);
       }
     )cc");
   } else {
     p->Emit(R"cc(
       if (from._internal_has_$name$()) {
-        _this->$field_$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field_$);
+        _this->$field_$ =
+            $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field_$);
       }
     )cc");
   }
@@ -661,7 +665,8 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name$();
-        $field_$ = $weak_cast$(CreateMaybeMessage<$Submsg$>(GetArena()));
+        $field_$ =
+            $weak_cast$($superclass$::DefaultConstruct<$Submsg$>(GetArena()));
       }
       return $cast_field_$;
     }
@@ -855,9 +860,8 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
-          $field_$.Set(
-              CreateMaybeMessage<$pb$::$Weak$RepeatedPtrField<$Submsg$>>(
-                  GetArena()));
+          $field_$.Set($superclass$::DefaultConstruct<
+                       $pb$::$Weak$RepeatedPtrField<$Submsg$>>(GetArena()));
         }
         return $field_$.Get();
       }

@@ -190,7 +190,7 @@ class PROTOC_EXPORT JavaFeatures final :
   // implements Message ----------------------------------------------
 
   JavaFeatures* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<JavaFeatures>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<JavaFeatures>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const JavaFeatures& from);
