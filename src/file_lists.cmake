@@ -505,6 +505,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions_suffix.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.h
 )
 
