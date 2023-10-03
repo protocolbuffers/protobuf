@@ -232,8 +232,8 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     const RepeatedPtrFieldBase& from, CopyFn copy_fn) {
   ABSL_DCHECK_NE(&from, this);
   int new_size = current_size_ + from.current_size_;
-  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size));
-  auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
+  void** dst = InternalReserve(new_size);
+  const void* const* src = from.elements();
   auto end = src + from.current_size_;
   if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
     int recycled = MergeIntoClearedMessages(from);
@@ -242,7 +242,7 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
   }
   Arena* arena = GetArena();
   for (; src < end; ++src, ++dst) {
-    *dst = copy_fn(arena, **src);
+    *dst = copy_fn(arena, *src);
   }
   ExchangeCurrentSize(new_size);
   if (new_size > allocated_size()) {
@@ -281,6 +281,10 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
   if (new_size > allocated_size()) {
     rep()->allocated_size = new_size;
   }
+}
+
+void* NewStringElement(Arena* arena) {
+  return Arena::Create<std::string>(arena);
 }
 
 }  // namespace internal

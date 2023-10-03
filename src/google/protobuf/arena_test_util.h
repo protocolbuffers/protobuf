@@ -62,6 +62,11 @@ struct ArenaTestPeer {
   static auto PeekCleanupListForTesting(Arena* arena) {
     return arena->PeekCleanupListForTesting();
   }
+  template <typename T, typename... U>
+  static constexpr auto GetConstructType() {
+    return Arena::GetConstructType<T, U...>();
+  }
+  using ConstructType = Arena::ConstructType;
 };
 
 struct CleanupGrowthInfo {

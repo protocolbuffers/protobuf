@@ -1405,14 +1405,12 @@ class FileGenerator::ForwardDeclarations {
         // However, it increases the size of the pb.cc translation units so it
         // is a tradeoff.
         p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
-          template <>
-          $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(Arena*);
+          extern template void* Arena::DefaultConstruct<$class$>(Arena*);
         )cc");
         if (!IsMapEntryMessage(c.second)) {
           p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
-            template <>
-            $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(
-                Arena*, const $class$&);
+            extern template void* Arena::CopyConstruct<$class$>(Arena*,
+                                                                const void*);
           )cc");
         }
       }
