@@ -298,8 +298,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
  public:
   explicit constexpr MapFieldBase(const VTable* vtable)
       : MapFieldBaseForParse(vtable) {}
-  explicit MapFieldBase(const VTable* vtable, Arena* arena)
-      : MapFieldBaseForParse(vtable), payload_{ToTaggedPtr(arena)} {}
   MapFieldBase(const MapFieldBase&) = delete;
   MapFieldBase& operator=(const MapFieldBase&) = delete;
 
@@ -349,7 +347,9 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   // Like above. Returns mutable pointer to the internal repeated field.
   RepeatedPtrFieldBase* MutableRepeatedField();
 
-  const VTable* vtable() const { return static_cast<const VTable*>(vtable_); }
+  const VTable* vtable() const {
+    return static_cast<const VTable*>(MapFieldBaseForParse::vtable());
+  }
 
   bool ContainsMapKey(const MapKey& map_key) const {
     return LookupMapValue(map_key, static_cast<MapValueConstRef*>(nullptr));
@@ -458,7 +458,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     CLEAN = 2,                    // data in map and repeated field are same
   };
 
-  struct ReflectionPayload {
+  struct ReflectionPayload : PayloadBase {
     explicit ReflectionPayload(Arena* arena) : repeated_field(arena) {}
     RepeatedPtrField<Message> repeated_field;
 
@@ -467,16 +467,12 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     std::atomic<State> state{STATE_MODIFIED_MAP};
   };
 
-  Arena* arena() const {
-    auto p = payload_.load(std::memory_order_acquire);
-    if (IsPayload(p)) return ToPayload(p)->repeated_field.GetArena();
-    return ToArena(p);
-  }
+  Arena* arena() const { return GetMapRaw().arena(); }
 
   // Returns the reflection payload. Returns null if it does not exist yet.
   ReflectionPayload* maybe_payload() const {
-    auto p = payload_.load(std::memory_order_acquire);
-    return IsPayload(p) ? ToPayload(p) : nullptr;
+    return static_cast<ReflectionPayload*>(
+        MapFieldBaseForParse::maybe_payload());
   }
   // Returns the reflection payload, and constructs one if does not exist yet.
   ReflectionPayload& payload() const {
@@ -527,29 +523,9 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   enum class TaggedPtr : uintptr_t {};
   static constexpr uintptr_t kHasPayloadBit = 1;
 
-  static ReflectionPayload* ToPayload(TaggedPtr p) {
-    ABSL_DCHECK(IsPayload(p));
-    auto* res = reinterpret_cast<ReflectionPayload*>(static_cast<uintptr_t>(p) -
-                                                     kHasPayloadBit);
-    PROTOBUF_ASSUME(res != nullptr);
-    return res;
+  static ReflectionPayload* ToPayload(const void* p) {
+    return static_cast<ReflectionPayload*>(MapFieldBaseForParse::ToPayload(p));
   }
-  static Arena* ToArena(TaggedPtr p) {
-    ABSL_DCHECK(!IsPayload(p));
-    return reinterpret_cast<Arena*>(p);
-  }
-  static TaggedPtr ToTaggedPtr(ReflectionPayload* p) {
-    return static_cast<TaggedPtr>(reinterpret_cast<uintptr_t>(p) +
-                                  kHasPayloadBit);
-  }
-  static TaggedPtr ToTaggedPtr(Arena* p) {
-    return static_cast<TaggedPtr>(reinterpret_cast<uintptr_t>(p));
-  }
-  static bool IsPayload(TaggedPtr p) {
-    return static_cast<uintptr_t>(p) & kHasPayloadBit;
-  }
-
-  mutable std::atomic<TaggedPtr> payload_{};
 };
 
 // This class provides common Map Reflection implementations for generated
@@ -569,10 +545,13 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   TypeDefinedMapFieldBase& operator=(const TypeDefinedMapFieldBase&) = delete;
 
   TypeDefinedMapFieldBase(const VTable* vtable, Arena* arena)
-      : MapFieldBase(vtable, arena), map_(arena) {}
+      : MapFieldBase(vtable), map_(arena) {}
 
  protected:
-  ~TypeDefinedMapFieldBase() { map_.~Map(); }
+  ~TypeDefinedMapFieldBase() {
+    ABSL_DCHECK_EQ(arena(), nullptr);
+    map_.~Map();
+  }
 
   // Not all overrides are marked `final` here because DynamicMapField overrides
   // them. DynamicMapField does extra memory management for the elements and

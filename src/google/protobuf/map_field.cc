@@ -7,6 +7,7 @@
 
 #include "google/protobuf/map_field.h"
 
+#include <atomic>
 #include <utility>
 #include <vector>
 
@@ -44,7 +45,6 @@ VariantKey RealKeyToVariantKey<MapKey>::operator()(const MapKey& value) const {
 }
 
 MapFieldBase::~MapFieldBase() {
-  ABSL_DCHECK_EQ(arena(), nullptr);
   delete maybe_payload();
 }
 
@@ -108,12 +108,14 @@ static void SwapRelaxed(std::atomic<T>& a, std::atomic<T>& b) {
 }
 
 MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
-  auto p = payload_.load(std::memory_order_acquire);
+  const void* p = vtable_or_payload_.load(std::memory_order_acquire);
   if (!IsPayload(p)) {
-    auto* arena = ToArena(p);
+    auto* arena = this->arena();
     auto* payload = Arena::Create<ReflectionPayload>(arena, arena);
+    payload->vtable = ToVTable(p);
     auto new_p = ToTaggedPtr(payload);
-    if (payload_.compare_exchange_strong(p, new_p, std::memory_order_acq_rel)) {
+    if (vtable_or_payload_.compare_exchange_strong(p, new_p,
+                                                   std::memory_order_acq_rel)) {
       // We were able to store it.
       p = new_p;
     } else {
@@ -146,7 +148,7 @@ void MapFieldBase::UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
 }
 
 void MapFieldBase::InternalSwap(MapFieldBase* other) {
-  SwapRelaxed(payload_, other->payload_);
+  SwapRelaxed(vtable_or_payload_, other->vtable_or_payload_);
 }
 
 size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {

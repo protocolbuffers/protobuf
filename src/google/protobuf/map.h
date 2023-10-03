@@ -15,6 +15,7 @@
 #define GOOGLE_PROTOBUF_MAP_H__
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
@@ -807,10 +808,10 @@ inline void UntypedMapIterator::SearchFrom(size_t start_bucket) {
 class MapFieldBaseForParse {
  public:
   const UntypedMapBase& GetMap() const {
-    return vtable_->get_map(*this, false);
+    return vtable()->get_map(*this, false);
   }
   UntypedMapBase* MutableMap() {
-    return &const_cast<UntypedMapBase&>(vtable_->get_map(*this, true));
+    return &const_cast<UntypedMapBase&>(vtable()->get_map(*this, true));
   }
 
  protected:
@@ -819,10 +820,51 @@ class MapFieldBaseForParse {
                                      bool is_mutable);
   };
   explicit constexpr MapFieldBaseForParse(const VTable* vtable)
-      : vtable_(vtable) {}
+      : vtable_or_payload_(vtable) {}
   ~MapFieldBaseForParse() = default;
 
-  const VTable* vtable_;
+  static constexpr uintptr_t kHasPayloadBit = 1;
+
+  struct PayloadBase {
+    const VTable* vtable;
+  };
+
+  static constexpr const void* ToTaggedPtr(const VTable* v) { return v; }
+  static void* ToTaggedPtr(PayloadBase* v) {
+    return reinterpret_cast<void*>(
+        (reinterpret_cast<uintptr_t>(v) + kHasPayloadBit));
+  }
+  static bool IsPayload(const void* p) {
+    return reinterpret_cast<uintptr_t>(p) & kHasPayloadBit;
+  }
+
+  const VTable* vtable() const {
+    const void* p = vtable_or_payload_.load(std::memory_order_acquire);
+    return IsPayload(p) ? ToPayload(p)->vtable : ToVTable(p);
+  }
+
+  static const VTable* ToVTable(const void* p) {
+    ABSL_DCHECK(!IsPayload(p));
+    return static_cast<const VTable*>(p);
+  }
+
+  static PayloadBase* ToPayload(const void* p) {
+    ABSL_DCHECK(IsPayload(p));
+    auto* res = reinterpret_cast<PayloadBase*>(reinterpret_cast<uintptr_t>(p) -
+                                               kHasPayloadBit);
+    PROTOBUF_ASSUME(res != nullptr);
+    return res;
+  }
+
+  PayloadBase* maybe_payload() const {
+    const void* p = vtable_or_payload_.load(std::memory_order_acquire);
+    return IsPayload(p) ? ToPayload(p) : nullptr;
+  }
+
+  // This pointer is overloaded:
+  // - When !kHasPayloadBit, it is a `const VTable*`.
+  // - When kHasPayloadBit, it is a `PayloadBase*` (note non-const)
+  mutable std::atomic<const void*> vtable_or_payload_;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.
