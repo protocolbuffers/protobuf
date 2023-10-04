@@ -400,7 +400,8 @@ void ImmutableMessageFieldGenerator::GenerateKotlinDslMembers(
   GenerateKotlinOrNull(printer);
 }
 
-void ImmutableMessageFieldGenerator::GenerateKotlinOrNull(io::Printer* printer) const {
+void ImmutableMessageFieldGenerator::GenerateKotlinOrNull(
+    io::Printer* printer) const {
   if (FieldDescriptorLegacy(descriptor_).has_optional_keyword()) {
     printer->Print(variables_,
                    "public val $classname$Kt.Dsl.$name$OrNull: $kt_type$?\n"
@@ -731,10 +732,11 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearCode(
 void ImmutableMessageOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($has_oneof_case_message$ &&\n"
-                 "    $name$Builder_ != null) {\n"
-                 "  result.$oneof_name$_ = $name$Builder_.build();\n"
-                 "}\n");
+                 "case $number$:\n"
+                 "  if ($name$Builder_ != null) {\n"
+                 "    result.$oneof_name$_ = $name$Builder_.build();\n"
+                 "  }\n"
+                 "  break;\n");
 }
 
 void ImmutableMessageOneofFieldGenerator::GenerateMergingCode(
@@ -828,8 +830,9 @@ void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(variables_, "@SuppressWarnings(\"serial\")\n"
-                             "private java.util.List<$type$> $name$_;\n");
+  printer->Print(variables_,
+                 "@SuppressWarnings(\"serial\")\n"
+                 "private java.util.List<$type$> $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,

@@ -631,16 +631,20 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
 
   // Build Oneofs
   if (!oneofs_.empty()) {
-    printer->Print("private void buildPartialOneofs($classname$ result) {\n",
-                   "classname",
-                   name_resolver_->GetImmutableClassName(descriptor_));
-    printer->Indent();
+    // For each oneof, build a helper method to build it.
     for (auto& kv : oneofs_) {
       const OneofDescriptor* oneof = kv.second;
       printer->Print(
-          "result.$oneof_name$Case_ = $oneof_name$Case_;\n"
-          "result.$oneof_name$_ = this.$oneof_name$_;\n",
+          "private void buildPartialOneof$oneof_name$($classname$ result) {\n",
+          "classname", name_resolver_->GetImmutableClassName(descriptor_),
           "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
+      printer->Indent();
+      printer->Print(
+          "result.$oneof_name$Case_ = $oneof_name$Case_;\n"
+          "result.$oneof_name$_ = this.$oneof_name$_;\n"
+          "switch ($oneof_name$Case_) {\n",
+          "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
+      printer->Indent();
       for (int i = 0; i < oneof->field_count(); ++i) {
         if (oneof->field(i)->message_type() != nullptr) {
           const ImmutableFieldGenerator& field =
@@ -648,6 +652,20 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
           field.GenerateBuildingCode(printer);
         }
       }
+      printer->Print("default: break;\n");
+      printer->Outdent();
+      printer->Print("}\n");
+      printer->Outdent();
+      printer->Print("}\n\n");
+    }
+    printer->Print("private void buildPartialOneofs($classname$ result) {\n",
+                   "classname",
+                   name_resolver_->GetImmutableClassName(descriptor_));
+    printer->Indent();
+    for (auto& kv : oneofs_) {
+      const OneofDescriptor* oneof = kv.second;
+      printer->Print("buildPartialOneof$oneof_name$(result);\n", "oneof_name",
+                     context_->GetOneofGeneratorInfo(oneof)->name);
     }
     printer->Outdent();
     printer->Print("}\n\n");
