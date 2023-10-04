@@ -62,6 +62,13 @@ enum Edition {
   // A placeholder for an unknown edition value.
   EDITION_UNKNOWN = 0;
 
+  // Legacy syntax "editions".  These pre-date editions, but behave much like
+  // distinct editions.  These can't be used to specify the edition of proto
+  // files, but feature definitions must supply proto2/proto3 defaults for
+  // backwards compatibility.
+  EDITION_PROTO2 = 998;
+  EDITION_PROTO3 = 999;
+
   // Editions that have been released.  The specific values are arbitrary and
   // should not be depended on, but they will always be time-ordered for easy
   // comparison.
