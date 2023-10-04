@@ -216,9 +216,9 @@ TEST(FeatureResolverTest, DefaultsGeneratedPoolCustom) {
           pool.FindMessageTypeByName("google.protobuf.FeatureSet"),
           {pool.FindExtensionByName("pb.test")}, EDITION_2023, EDITION_2023);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 1);
-  ASSERT_EQ(defaults->defaults().at(0).edition(), EDITION_2023);
-  FeatureSet merged = defaults->defaults().at(0).features();
+  ASSERT_EQ(defaults->defaults().size(), 3);
+  ASSERT_EQ(defaults->defaults().at(2).edition(), EDITION_2023);
+  FeatureSet merged = defaults->defaults().at(2).features();
 
   EXPECT_EQ(merged.field_presence(), FeatureSet::EXPLICIT);
   EXPECT_TRUE(merged.HasExtension(pb::test));
@@ -778,7 +778,7 @@ TEST_F(FeatureResolverPoolTest,
       }
       optional MessageFeature message_field_feature = 12 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition: EDITION_2023, value: "9987" }
+        edition_defaults = { edition: EDITION_PROTO2, value: "9987" }
       ];
     }
   )schema");
@@ -809,6 +809,7 @@ TEST_F(FeatureResolverPoolTest,
         targets = TARGET_TYPE_FIELD,
         edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "int_field: 2" },
         edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "int_field: 1" },
+        edition_defaults = { edition: EDITION_PROTO2, value: "" },
         edition_defaults = { edition: EDITION_2023, value: "9987" }
       ];
     }
@@ -840,7 +841,8 @@ TEST_F(FeatureResolverPoolTest,
         targets = TARGET_TYPE_FIELD,
         edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "int_field: 2" },
         edition_defaults = { edition: EDITION_2023, value: "int_field: 1" },
-        edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "9987" }
+        edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "9987" },
+        edition_defaults = { edition: EDITION_PROTO2, value: "" }
       ];
     }
   )schema");
@@ -870,7 +872,7 @@ TEST_F(FeatureResolverPoolTest,
     message Foo {
       optional int32 int_field_feature = 12 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition: EDITION_2023, value: "1.23" }
+        edition_defaults = { edition: EDITION_PROTO2, value: "1.23" }
       ];
     }
   )schema");
@@ -897,7 +899,7 @@ TEST_F(FeatureResolverPoolTest,
       optional int32 int_field_feature = 12 [
         targets = TARGET_TYPE_FIELD,
         edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "1.5" },
-        edition_defaults = { edition: EDITION_2023, value: "1" }
+        edition_defaults = { edition: EDITION_PROTO2, value: "1" }
       ];
     }
   )schema");
@@ -951,7 +953,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumTooEarly) {
     message Foo {
       optional int32 int_field_feature = 12 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition: EDITION_2023, value: "1" }
+        edition_defaults = { edition: EDITION_PROTO2, value: "1" }
       ];
     }
   )schema");
@@ -977,7 +979,8 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
       optional int32 int_file_feature = 1 [
         targets = TARGET_TYPE_FIELD,
         edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "2" },
-        edition_defaults = { edition: EDITION_2023, value: "1" }
+        edition_defaults = { edition: EDITION_2023, value: "1" },
+        edition_defaults = { edition: EDITION_PROTO2, value: "0" }
       ];
     }
   )schema");
@@ -991,6 +994,30 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
   EXPECT_THAT(*defaults, EqualsProto(R"pb(
     minimum_edition: EDITION_99997_TEST_ONLY
     maximum_edition: EDITION_99999_TEST_ONLY
+    defaults {
+      edition: EDITION_PROTO2
+      features {
+        field_presence: EXPLICIT
+        enum_type: CLOSED
+        repeated_field_encoding: EXPANDED
+        utf8_validation: UNVERIFIED
+        message_encoding: LENGTH_PREFIXED
+        json_format: LEGACY_BEST_EFFORT
+        [pb.test] { int_file_feature: 0 }
+      }
+    }
+    defaults {
+      edition: EDITION_PROTO3
+      features {
+        field_presence: IMPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.test] { int_file_feature: 0 }
+      }
+    }
     defaults {
       edition: EDITION_2023
       features {

@@ -935,6 +935,8 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: EDITION_PROTO2, value: "EXPLICIT" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "IMPLICIT" },
     edition_defaults = { edition: EDITION_2023, value: "EXPLICIT" }
   ];
 
@@ -947,7 +949,8 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_2023, value: "OPEN" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "CLOSED" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "OPEN" }
   ];
 
   enum RepeatedFieldEncoding {
@@ -959,7 +962,8 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_2023, value: "PACKED" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "EXPANDED" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "PACKED" }
   ];
 
   enum Utf8Validation {
@@ -971,7 +975,8 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_2023, value: "VERIFY" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "UNVERIFIED" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "VERIFY" }
   ];
 
   enum MessageEncoding {
@@ -983,7 +988,7 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_2023, value: "LENGTH_PREFIXED" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "LENGTH_PREFIXED" }
   ];
 
   enum JsonFormat {
@@ -996,7 +1001,8 @@ message FeatureSet {
     targets = TARGET_TYPE_MESSAGE,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_2023, value: "ALLOW" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "LEGACY_BEST_EFFORT" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "ALLOW" }
   ];
 
   reserved 999;

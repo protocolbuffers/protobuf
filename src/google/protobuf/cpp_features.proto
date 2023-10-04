@@ -24,6 +24,7 @@ message CppFeatures {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_2023, value: "false" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "true" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "false" }
   ];
 }

@@ -70,11 +70,11 @@ static const ::_pb::Message* const file_default_instances[] = {
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
     "\n\"google/protobuf/cpp_features.proto\022\002pb"
-    "\032 google/protobuf/descriptor.proto\"A\n\013Cp"
-    "pFeatures\0222\n\022legacy_closed_enum\030\001 \001(\010B\026\210"
-    "\001\001\230\001\004\230\001\001\242\001\n\022\005false\030\350\007::\n\003cpp\022\033.google.pr"
-    "otobuf.FeatureSet\030\350\007 \001(\0132\017.pb.CppFeature"
-    "s"
+    "\032 google/protobuf/descriptor.proto\"M\n\013Cp"
+    "pFeatures\022>\n\022legacy_closed_enum\030\001 \001(\010B\"\210"
+    "\001\001\230\001\004\230\001\001\242\001\t\022\004true\030\346\007\242\001\n\022\005false\030\347\007::\n\003cpp"
+    "\022\033.google.protobuf.FeatureSet\030\350\007 \001(\0132\017.p"
+    "b.CppFeatures"
 };
 static const ::_pbi::DescriptorTable* const descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_deps[1] =
     {
@@ -84,7 +84,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2ep
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto = {
     false,
     false,
-    201,
+    213,
     descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
     "google/protobuf/cpp_features.proto",
     &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_once,

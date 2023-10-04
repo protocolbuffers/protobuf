@@ -1748,6 +1748,28 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
                 defaults {
+                  edition: EDITION_PROTO2
+                  features {
+                    field_presence: EXPLICIT
+                    enum_type: CLOSED
+                    repeated_field_encoding: EXPANDED
+                    utf8_validation: UNVERIFIED
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: LEGACY_BEST_EFFORT
+                  }
+                }
+                defaults {
+                  edition: EDITION_PROTO3
+                  features {
+                    field_presence: IMPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                }
+                defaults {
                   edition: EDITION_2023
                   features {
                     field_presence: EXPLICIT
@@ -1774,6 +1796,28 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
+                defaults {
+                  edition: EDITION_PROTO2
+                  features {
+                    field_presence: EXPLICIT
+                    enum_type: CLOSED
+                    repeated_field_encoding: EXPANDED
+                    utf8_validation: UNVERIFIED
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: LEGACY_BEST_EFFORT
+                  }
+                }
+                defaults {
+                  edition: EDITION_PROTO3
+                  features {
+                    field_presence: IMPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                }
                 defaults {
                   edition: EDITION_2023
                   features {
@@ -1802,6 +1846,28 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
+                defaults {
+                  edition: EDITION_PROTO2
+                  features {
+                    field_presence: EXPLICIT
+                    enum_type: CLOSED
+                    repeated_field_encoding: EXPANDED
+                    utf8_validation: UNVERIFIED
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: LEGACY_BEST_EFFORT
+                  }
+                }
+                defaults {
+                  edition: EDITION_PROTO3
+                  features {
+                    field_presence: IMPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                }
                 defaults {
                   edition: EDITION_2023
                   features {
@@ -1832,18 +1898,26 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_EQ(defaults.minimum_edition(), EDITION_2023);
   EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
-  ASSERT_EQ(defaults.defaults_size(), 3);
-  EXPECT_EQ(defaults.defaults(0).edition(), EDITION_2023);
-  EXPECT_EQ(defaults.defaults(1).edition(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults.defaults(2).edition(), EDITION_99998_TEST_ONLY);
+  ASSERT_EQ(defaults.defaults_size(), 5);
+  EXPECT_EQ(defaults.defaults(0).edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults.defaults(1).edition(), EDITION_PROTO3);
+  EXPECT_EQ(defaults.defaults(2).edition(), EDITION_2023);
+  EXPECT_EQ(defaults.defaults(3).edition(), EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(defaults.defaults(4).edition(), EDITION_99998_TEST_ONLY);
   EXPECT_EQ(
       defaults.defaults(0).features().GetExtension(pb::test).int_file_feature(),
-      1);
+      0);
   EXPECT_EQ(
       defaults.defaults(1).features().GetExtension(pb::test).int_file_feature(),
-      2);
+      0);
   EXPECT_EQ(
       defaults.defaults(2).features().GetExtension(pb::test).int_file_feature(),
+      1);
+  EXPECT_EQ(
+      defaults.defaults(3).features().GetExtension(pb::test).int_file_feature(),
+      2);
+  EXPECT_EQ(
+      defaults.defaults(4).features().GetExtension(pb::test).int_file_feature(),
       3);
 }
 

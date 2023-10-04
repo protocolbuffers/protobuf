@@ -4214,6 +4214,26 @@ TEST_F(ParseEditionsTest, UnknownEdition) {
       "1:18: Unknown edition \"UNKNOWN\".\n");
 }
 
+TEST_F(ParseEditionsTest, LegacyProto2Edition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "PROTO2";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: Unknown edition \"PROTO2\".\n");
+}
+
+TEST_F(ParseEditionsTest, LegacyProto3Edition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "PROTO3";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: Unknown edition \"PROTO3\".\n");
+}
+
 TEST_F(ParseEditionsTest, SyntaxEditions) {
   ExpectHasEarlyExitErrors(
       R"schema(

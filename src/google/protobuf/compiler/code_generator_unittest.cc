@@ -264,6 +264,28 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
   EXPECT_THAT(generator.BuildFeatureSetDefaults(),
               IsOkAndHolds(EqualsProto(R"pb(
                 defaults {
+                  edition: EDITION_PROTO2
+                  features {
+                    field_presence: EXPLICIT
+                    enum_type: CLOSED
+                    repeated_field_encoding: EXPANDED
+                    utf8_validation: UNVERIFIED
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: LEGACY_BEST_EFFORT
+                  }
+                }
+                defaults {
+                  edition: EDITION_PROTO3
+                  features {
+                    field_presence: IMPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                }
+                defaults {
                   edition: EDITION_2023
                   features {
                     field_presence: EXPLICIT
