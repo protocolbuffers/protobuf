@@ -186,8 +186,7 @@ struct WeakRepeatedPtrField {
   T* Add() { return weak.Add(); }
   void Clear() { base().template Clear<TypeHandler>(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {
-    if (other.empty()) return;
-    base().template MergeFrom<MessageLite>(other.base());
+    base().template MergeFrom<TypeHandler>(other.base());
   }
   void InternalSwap(WeakRepeatedPtrField* PROTOBUF_RESTRICT other) {
     base().InternalSwap(&other->base());
