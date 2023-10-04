@@ -57,6 +57,15 @@ fn test_optional_fixed64_accessors() {
     msg.optional_fixed64_set(None);
     assert_eq!(msg.optional_fixed64_opt(), Optional::Unset(0));
     assert_eq!(msg.optional_fixed64(), 0);
+
+    assert_eq!(msg.default_fixed64_mut().get(), 48);
+    msg.default_fixed64_mut().set(480);
+    assert_eq!(msg.default_fixed64_mut().get(), 480);
+    msg.default_fixed64_mut().clear();
+    assert_eq!(msg.default_fixed64_mut().get(), 48);
+    assert_eq!(msg.default_fixed64_opt(), Optional::Unset(48));
+    msg.default_fixed64_mut().or_default();
+    assert_eq!(msg.default_fixed64_opt(), Optional::Set(48));
 }
 
 #[test]

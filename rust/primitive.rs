@@ -7,8 +7,11 @@
 
 use crate::__internal::Private;
 use crate::__runtime::InnerPrimitiveMut;
-use crate::vtable::{PrimitiveVTable, ProxiedWithRawVTable};
-use crate::{Mut, MutProxy, Proxied, SettableValue, View, ViewProxy};
+use crate::vtable::{
+    PrimitiveOptionalVTable, PrimitiveVTable, ProxiedWithRawOptionalVTable, ProxiedWithRawVTable,
+    RawVTableOptionalMutatorData,
+};
+use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
 
 #[derive(Debug)]
 pub struct PrimitiveMut<'a, T: ProxiedWithRawVTable> {
@@ -102,6 +105,43 @@ macro_rules! impl_singular_primitives {
 
             fn make_mut(_private: Private, inner: InnerPrimitiveMut<'_, Self>) -> Mut<'_, Self> {
                 PrimitiveMut::from_inner(Private, inner)
+            }
+          }
+
+          impl ProxiedWithPresence for $t {
+            type PresentMutData<'a> = RawVTableOptionalMutatorData<'a, $t>;
+            type AbsentMutData<'a> = RawVTableOptionalMutatorData<'a, $t>;
+
+            fn clear_present_field(
+                present_mutator: Self::PresentMutData<'_>,
+            ) -> Self::AbsentMutData<'_> {
+                present_mutator.clear()
+            }
+
+            fn set_absent_to_default(
+                absent_mutator: Self::AbsentMutData<'_>,
+            ) -> Self::PresentMutData<'_> {
+                let mut result = absent_mutator;
+                result.set(result.vtable.default);
+                result
+            }
+          }
+
+          impl ProxiedWithRawOptionalVTable for $t {
+            type OptionalVTable = PrimitiveOptionalVTable<$t>;
+
+            fn upcast_vtable(
+                _private: Private,
+                optional_vtable: &'static Self::OptionalVTable,
+            ) -> &'static Self::VTable {
+                &optional_vtable.base
+            }
+          }
+
+          impl<'msg> RawVTableOptionalMutatorData<'msg, $t> {
+            pub(crate) fn clear(self) -> Self {
+              unsafe { (self.vtable.clearer)(self.msg_ref.msg()) }
+              self
             }
           }
       )*

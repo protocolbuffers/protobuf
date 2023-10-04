@@ -137,8 +137,8 @@ impl<'msg, T: ProxiedWithRawVTable + ?Sized> RawVTableMutator<'msg, T> {
 /// This has the same representation for "present" and "absent" data;
 /// differences like default values are obviated by the vtable.
 pub struct RawVTableOptionalMutatorData<'msg, T: ProxiedWithRawOptionalVTable + ?Sized> {
-    msg_ref: MutatorMessageRef<'msg>,
-    vtable: &'static T::OptionalVTable,
+    pub(crate) msg_ref: MutatorMessageRef<'msg>,
+    pub(crate) vtable: &'static T::OptionalVTable,
 }
 
 unsafe impl<'msg, T: ProxiedWithRawOptionalVTable + ?Sized> Sync
@@ -258,6 +258,15 @@ pub struct PrimitiveVTable<T> {
     pub(crate) getter: unsafe extern "C" fn(msg: RawMessage) -> T,
 }
 
+#[doc(hidden)]
+#[derive(Debug)]
+// A generic thunk vtable for mutating an `optional` primitive field.
+pub struct PrimitiveOptionalVTable<T> {
+    pub(crate) base: PrimitiveVTable<T>,
+    pub(crate) clearer: unsafe extern "C" fn(msg: RawMessage),
+    pub(crate) default: T,
+}
+
 impl<T> PrimitiveVTable<T> {
     #[doc(hidden)]
     pub const fn new(
@@ -266,6 +275,19 @@ impl<T> PrimitiveVTable<T> {
         setter: unsafe extern "C" fn(msg: RawMessage, val: T),
     ) -> Self {
         Self { getter, setter }
+    }
+}
+
+impl<T> PrimitiveOptionalVTable<T> {
+    #[doc(hidden)]
+    pub const fn new(
+        _private: Private,
+        getter: unsafe extern "C" fn(msg: RawMessage) -> T,
+        setter: unsafe extern "C" fn(msg: RawMessage, val: T),
+        clearer: unsafe extern "C" fn(msg: RawMessage),
+        default: T,
+    ) -> Self {
+        Self { base: PrimitiveVTable { getter, setter }, clearer, default }
     }
 }
 

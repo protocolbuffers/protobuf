@@ -5,6 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <cmath>
+
+#include "absl/log/absl_log.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
@@ -23,6 +27,56 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
           {"field", field.desc().name()},
           {"Scalar", PrimitiveRsTypeName(field.desc())},
           {"hazzer_thunk", Thunk(field, "has")},
+          {"default_value",
+           [&] {
+             switch (field.desc().type()) {
+               case FieldDescriptor::TYPE_DOUBLE:
+                 if (std::isfinite(field.desc().default_value_double())) {
+                   return absl::StrFormat("%f",
+                                          field.desc().default_value_double());
+                 } else {
+                   // TODO: handle NaN and infinities
+                   return absl::StrFormat("0.0");
+                 }
+               case FieldDescriptor::TYPE_FLOAT:
+                 if (std::isfinite(field.desc().default_value_float())) {
+                   return absl::StrFormat("%f",
+                                          field.desc().default_value_float());
+                 } else {
+                   // TODO: handle NaN and infinities
+                   return absl::StrFormat("0.0");
+                 }
+               case FieldDescriptor::TYPE_INT32:
+               case FieldDescriptor::TYPE_SFIXED32:
+               case FieldDescriptor::TYPE_SINT32:
+                 return absl::StrFormat("%d",
+                                        field.desc().default_value_int32());
+               case FieldDescriptor::TYPE_INT64:
+               case FieldDescriptor::TYPE_SFIXED64:
+               case FieldDescriptor::TYPE_SINT64:
+                 return absl::StrFormat("%d",
+                                        field.desc().default_value_int64());
+               case FieldDescriptor::TYPE_FIXED64:
+               case FieldDescriptor::TYPE_UINT64:
+                 return absl::StrFormat("%u",
+                                        field.desc().default_value_uint64());
+               case FieldDescriptor::TYPE_FIXED32:
+               case FieldDescriptor::TYPE_UINT32:
+                 return absl::StrFormat("%u",
+                                        field.desc().default_value_uint32());
+               case FieldDescriptor::TYPE_BOOL:
+                 return absl::StrFormat("%v",
+                                        field.desc().default_value_bool());
+               case FieldDescriptor::TYPE_STRING:
+               case FieldDescriptor::TYPE_GROUP:
+               case FieldDescriptor::TYPE_MESSAGE:
+               case FieldDescriptor::TYPE_BYTES:
+               case FieldDescriptor::TYPE_ENUM:
+                 ABSL_LOG(FATAL) << "Non-singular scalar field type passed: "
+                                 << field.desc().type_name();
+             }
+             ABSL_LOG(FATAL) << "unreachable";
+           }()},
           {"getter",
            [&] {
              field.Emit({}, R"rs(
@@ -38,7 +92,7 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
              field.Emit({}, R"rs(
                   pub fn r#$field$_opt(&self) -> $pb$::Optional<$Scalar$> {
                     if !unsafe { $hazzer_thunk$(self.inner.msg) } {
-                      return $pb$::Optional::Unset(<$Scalar$>::default());
+                      return $pb$::Optional::Unset($default_value$);
                     }
                     let value = unsafe { $getter_thunk$(self.inner.msg) };
                     $pb$::Optional::Set(value)
@@ -64,8 +118,28 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
           {"field_mutator_getter",
            [&] {
              if (field.desc().has_presence()) {
-               // TODO: implement mutator for fields with presence.
-               return;
+               field.Emit({}, R"rs(
+                  pub fn r#$field$_mut(&mut self) -> $pb$::FieldEntry<'_, $Scalar$> {
+                    static VTABLE: $pbi$::PrimitiveOptionalVTable<$Scalar$> =
+                      $pbi$::PrimitiveOptionalVTable::new(
+                        $pbi$::Private,
+                        $getter_thunk$,
+                        $setter_thunk$,
+                        $clearer_thunk$,
+                        $default_value$,
+                      );
+
+                      unsafe {
+                        let has = $hazzer_thunk$(self.inner.msg);
+                        $pbi$::new_vtable_field_entry::<$Scalar$>(
+                          $pbi$::Private,
+                          $pbr$::MutatorMessageRef::new($pbi$::Private, &mut self.inner),
+                          &VTABLE,
+                          has,
+                        )
+                      }
+                  }
+                )rs");
              } else {
                field.Emit({}, R"rs(
                   pub fn r#$field$_mut(&mut self) -> $pb$::PrimitiveMut<'_, $Scalar$> {
