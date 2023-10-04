@@ -13,8 +13,6 @@ import os
 import sys
 import sysconfig
 
-# We must use setuptools, not distutils, because we need to use the
-# namespace_packages option for the "google" package.
 from setuptools import setup, Extension, find_packages
 
 

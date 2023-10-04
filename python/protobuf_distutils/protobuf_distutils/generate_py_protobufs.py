@@ -12,9 +12,10 @@ __author__ = 'dlj@google.com (David L. Jones)'
 import glob
 import sys
 import os
-import distutils.spawn as spawn
-from distutils.cmd import Command
-from distutils.errors import DistutilsOptionError, DistutilsExecError
+import subprocess
+from setuptools import Command
+from setuptools.errors import DistutilsOptionError, DistutilsExecError
+import shutil
 
 class generate_py_protobufs(Command):
     """Generates Python sources for .proto files."""
@@ -107,7 +108,7 @@ class generate_py_protobufs(Command):
         if self.protoc is None:
             self.protoc = os.getenv('PROTOC')
         if self.protoc is None:
-            self.protoc = spawn.find_executable('protoc')
+            self.protoc = shutil.which('protoc')
 
     def run(self):
         # All proto file paths were adjusted in finalize_options to be relative
@@ -115,10 +116,8 @@ class generate_py_protobufs(Command):
         proto_paths = ['--proto_path=' + self.proto_root_path]
         proto_paths.extend(['--proto_path=' + x for x in self.extra_proto_paths])
 
-        # Run protoc. It was already resolved, so don't try to resolve
-        # through PATH.
-        spawn.spawn(
+        # Run protoc.
+        subprocess.run(
             [self.protoc,
              '--python_out=' + self.output_dir,
-            ] + proto_paths + self.proto_files,
-            search_path=0)
+            ] + proto_paths + self.proto_files)
