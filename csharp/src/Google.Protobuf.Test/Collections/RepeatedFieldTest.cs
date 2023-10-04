@@ -877,5 +877,59 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(0, list.Count);
             Assert.AreEqual(8, list.Capacity);
         }
+
+        [Test]
+        public void AsStructEnumerable_Empty()
+        {
+            var list = new RepeatedField<int>();
+            var enumerable = list.AsStructEnumerable();
+            var enumerator = enumerable.GetEnumerator();
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current.ToString());
+            Assert.IsFalse(enumerator.MoveNext());
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current.ToString());
+        }
+
+        [Test]
+        public void AsStructEnumerable_NonEmpty()
+        {
+            var list = new RepeatedField<int> { 1, 5 };
+            var enumerable = list.AsStructEnumerable();
+            var enumerator = enumerable.GetEnumerator();
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current.ToString());
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(1, enumerator.Current);
+
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(5, enumerator.Current);
+
+            Assert.IsFalse(enumerator.MoveNext());
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current.ToString());
+
+            // Note: Reset isn't exposed as a public method, only via the interface.
+            // This follows what LinkedList.Enumerator does.
+        }
+
+        [Test]
+        public void AsStructEnumerable_NonEmpty_AsInterface()
+        {
+            var list = new RepeatedField<int> { 1, 5 };
+            IEnumerable<int> enumerable = list.AsStructEnumerable();
+            IEnumerator<int> enumerator = enumerable.GetEnumerator();
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current.ToString());
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(1, enumerator.Current);
+
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(5, enumerator.Current);
+
+            Assert.IsFalse(enumerator.MoveNext());
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current.ToString());
+
+            enumerator.Reset();
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current.ToString());
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(1, enumerator.Current);
+            // We assume the behavior after this point is as before...
+        }
     }
 }
