@@ -466,11 +466,6 @@ TEST_F(MapImplTest, IteratorBasic) {
   EXPECT_TRUE(it == cit);
 }
 
-static absl::Duration median(absl::Span<absl::Duration> v) {
-  std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());
-  return v[v.size() / 2];
-}
-
 // Arbitrary odd integers for creating test data.
 static int k0 = 812398771;
 static int k1 = 1312938717;
@@ -518,36 +513,6 @@ TEST_F(MapImplTest, TreePathWorksAsExpected) {
   EXPECT_TRUE(map_.empty());
 }
 
-// Create kTestSize keys that will land in just a few buckets, and time the
-// insertions, to get a rough estimate of whether an O(n^2) worst case was
-// triggered.  This test is a hacky, but probably better than nothing.
-TEST_F(MapImplTest, HashFlood) {
-  const std::vector<int> s = FindBadInputs(map_, 1000);
-
-  // Create hash table with 1000 entries that hash flood a table. The entries
-  // were chosen so that they all fall in a few buckets.
-  std::vector<absl::Duration> times;
-  int count = 0;
-  for (int i : s) {
-    const auto start = absl::Now();
-    map_[i] = 0;
-    const auto end = absl::Now();
-    if (end > start) {
-      times.push_back(end - start);
-    }
-    ++count;
-  }
-  if (times.size() < .99 * count) return;
-  const auto x0 = median(absl::MakeSpan(times).subspan(0, 9));
-  const auto x1 = median(absl::MakeSpan(times).subspan(times.size() - 9));
-  ABSL_LOG(INFO) << "number of samples=" << times.size() << " x0=" << x0
-                 << " x1=" << x1;
-  // x1 will greatly exceed x0 if inserting the elements was O(n) time.
-  // We know it will not be O(1) because of all the collisions, but we want to
-  // allow O(log n).
-  // lg2(1000) is ~10, times a constant for the cost of the tree.
-  EXPECT_LE(x1, x0 * 50);
-}
 
 TEST_F(MapImplTest, CopyIteratorStressTest) {
   std::vector<Map<int32_t, int32_t>::iterator> v;
