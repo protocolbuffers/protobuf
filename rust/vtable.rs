@@ -258,6 +258,15 @@ pub struct PrimitiveVTable<T> {
     pub(crate) getter: unsafe extern "C" fn(msg: RawMessage) -> T,
 }
 
+#[doc(hidden)]
+#[derive(Debug)]
+/// A generic thunk vtable for mutating an `optional` primitive field.
+pub struct PrimitiveOptionalMutVTable<T> {
+    pub(crate) base: PrimitiveVTable<T>,
+    pub(crate) clearer: unsafe extern "C" fn(msg: RawMessage),
+    pub(crate) default: T,
+}
+
 impl<T> PrimitiveVTable<T> {
     #[doc(hidden)]
     pub const fn new(
@@ -266,6 +275,19 @@ impl<T> PrimitiveVTable<T> {
         setter: unsafe extern "C" fn(msg: RawMessage, val: T),
     ) -> Self {
         Self { getter, setter }
+    }
+}
+
+impl<T> PrimitiveOptionalMutVTable<T> {
+    #[doc(hidden)]
+    pub const fn new(
+        _private: Private,
+        getter: unsafe extern "C" fn(msg: RawMessage) -> T,
+        setter: unsafe extern "C" fn(msg: RawMessage, val: T),
+        clearer: unsafe extern "C" fn(msg: RawMessage),
+        default: T,
+    ) -> Self {
+        Self { base: PrimitiveVTable { getter, setter }, clearer, default }
     }
 }
 
@@ -398,3 +420,36 @@ impl<'msg> RawVTableOptionalMutatorData<'msg, [u8]> {
         self
     }
 }
+
+macro_rules! impl_raw_vtable_optional_mutator_data {
+  ($($t:ty),*) => {
+      $(
+          impl<'msg> RawVTableOptionalMutatorData<'msg, $t> {
+              pub(crate) fn set_absent_to_default(self) -> Self {
+                // SAFETY:
+                // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
+                //   promised by the caller of `new`.
+                self.set(self.vtable.default)
+              }
+
+              pub(crate) fn set(self, val: $t) -> Self {
+                // SAFETY:
+                // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
+                //   promised by the caller of `new`.
+                unsafe { (self.vtable.base.setter)(self.msg_ref.msg(), val.into()) }
+                self
+              }
+
+              pub(crate) fn clear(self) -> Self {
+                // SAFETY:
+                // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
+                //   promised by the caller of `new`.
+                unsafe { (self.vtable.clearer)(self.msg_ref.msg()) }
+                self
+              }
+          }
+      )*
+  }
+}
+
+impl_raw_vtable_optional_mutator_data!(bool, f32, f64, i32, i64, u32, u64);
