@@ -225,15 +225,15 @@ namespace Google.Protobuf.Reflection {
             "GAEgAygFQgIQARITCgtzb3VyY2VfZmlsZRgCIAEoCRINCgViZWdpbhgDIAEo",
             "BRILCgNlbmQYBCABKAUSSAoIc2VtYW50aWMYBSABKA4yNi5nb29nbGUucHJv",
             "dG9idWYuR2VuZXJhdGVkQ29kZUluZm8uQW5ub3RhdGlvbi5TZW1hbnRpYyIo",
-            "CghTZW1hbnRpYxIICgROT05FEAASBwoDU0VUEAESCQoFQUxJQVMQAirAAQoH",
-            "RWRpdGlvbhITCg9FRElUSU9OX1VOS05PV04QABIRCgxFRElUSU9OXzIwMjMQ",
-            "6AcSFwoTRURJVElPTl8xX1RFU1RfT05MWRABEhcKE0VESVRJT05fMl9URVNU",
-            "X09OTFkQAhIdChdFRElUSU9OXzk5OTk3X1RFU1RfT05MWRCdjQYSHQoXRURJ",
-            "VElPTl85OTk5OF9URVNUX09OTFkQno0GEh0KF0VESVRJT05fOTk5OTlfVEVT",
-            "VF9PTkxZEJ+NBkJ+ChNjb20uZ29vZ2xlLnByb3RvYnVmQhBEZXNjcmlwdG9y",
-            "UHJvdG9zSAFaLWdvb2dsZS5nb2xhbmcub3JnL3Byb3RvYnVmL3R5cGVzL2Rl",
-            "c2NyaXB0b3JwYvgBAaICA0dQQqoCGkdvb2dsZS5Qcm90b2J1Zi5SZWZsZWN0",
-            "aW9u"));
+            "CghTZW1hbnRpYxIICgROT05FEAASBwoDU0VUEAESCQoFQUxJQVMQAirqAQoH",
+            "RWRpdGlvbhITCg9FRElUSU9OX1VOS05PV04QABITCg5FRElUSU9OX1BST1RP",
+            "MhDmBxITCg5FRElUSU9OX1BST1RPMxDnBxIRCgxFRElUSU9OXzIwMjMQ6AcS",
+            "FwoTRURJVElPTl8xX1RFU1RfT05MWRABEhcKE0VESVRJT05fMl9URVNUX09O",
+            "TFkQAhIdChdFRElUSU9OXzk5OTk3X1RFU1RfT05MWRCdjQYSHQoXRURJVElP",
+            "Tl85OTk5OF9URVNUX09OTFkQno0GEh0KF0VESVRJT05fOTk5OTlfVEVTVF9P",
+            "TkxZEJ+NBkJ+ChNjb20uZ29vZ2xlLnByb3RvYnVmQhBEZXNjcmlwdG9yUHJv",
+            "dG9zSAFaLWdvb2dsZS5nb2xhbmcub3JnL3Byb3RvYnVmL3R5cGVzL2Rlc2Ny",
+            "aXB0b3JwYvgBAaICA0dQQqoCGkdvb2dsZS5Qcm90b2J1Zi5SZWZsZWN0aW9u"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Reflection.Edition), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -275,6 +275,14 @@ namespace Google.Protobuf.Reflection {
     /// A placeholder for an unknown edition value.
     /// </summary>
     [pbr::OriginalName("EDITION_UNKNOWN")] Unknown = 0,
+    /// <summary>
+    /// Legacy syntax "editions".  These pre-date editions, but behave much like
+    /// distinct editions.  These can't be used to specify the edition of proto
+    /// files, but feature definitions must supply proto2/proto3 defaults for
+    /// backwards compatibility.
+    /// </summary>
+    [pbr::OriginalName("EDITION_PROTO2")] Proto2 = 998,
+    [pbr::OriginalName("EDITION_PROTO3")] Proto3 = 999,
     /// <summary>
     /// Editions that have been released.  The specific values are arbitrary and
     /// should not be depended on, but they will always be time-ordered for easy
