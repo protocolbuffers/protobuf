@@ -77,6 +77,11 @@ std::string Thunk(Context<T> field, absl::string_view op) {
   if (field.is_upb() && op == "get") {
     // upb getter is simply the field name (no "get" in the name).
     format = "_$1";
+  } else if (field.is_upb() && op == "get_new") {
+    // upb non-mutable getters return NULL messages by default, so we need
+    // a mechanism to create a fresh one ourselves
+    absl::StrAppend(&thunk, "_new");
+    return thunk;
   } else if (field.is_upb() && op == "case") {
     // upb oneof case function is x_case compared to has/set/clear which are in
     // the other order e.g. clear_x.

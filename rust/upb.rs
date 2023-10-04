@@ -33,7 +33,7 @@ const UPB_MALLOC_ALIGN: usize = 8;
 #[derive(Debug)]
 pub struct Arena {
     // Safety invariant: this must always be a valid arena
-    raw: RawArena,
+    pub raw: RawArena,
     _not_sync: PhantomData<UnsafeCell<()>>,
 }
 

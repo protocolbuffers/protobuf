@@ -29,14 +29,27 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
     prefix = field.desc().containing_type()->name();
   }
   field.Emit(
-      {
-          {"prefix", prefix},
-          {"field", field.desc().name()},
-          {"getter_thunk", Thunk(field, "get")},
-      },
+      {{"prefix", prefix},
+       {"field", field.desc().name()},
+       {"getter_thunk", Thunk(field, "get")},
+       {"getter_new_thunk", Thunk(field, "get_new")},
+       {"create_view",
+        [&] {
+          if (field.is_cpp()) {
+            field.Emit({}, R"rs(unreachable!(), )rs");
+          } else {
+            field.Emit(
+                {},
+                R"rs($prefix$View::new($pbi$::Private, unsafe { $getter_new_thunk$(self.inner.arena.raw) }),)rs");
+          }
+        }}},
       R"rs(
           pub fn r#$field$(&self) -> $prefix$View {
-            $prefix$View::new($pbi$::Private, unsafe { $getter_thunk$(self.inner.msg) } )
+            let fetched_field = unsafe { $getter_thunk$(self.inner.msg) };
+            match fetched_field {
+                None => $create_view$,
+                Some(field) => $prefix$View::new($pbi$::Private, field),
+              }
           }
         )rs");
 }
@@ -47,7 +60,7 @@ void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
           {"getter_thunk", Thunk(field, "get")},
       },
       R"rs(
-                  fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::RawMessage;
+                  fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> Option<$pbi$::RawMessage>;
                )rs");
 }
 
