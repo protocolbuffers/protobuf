@@ -126,6 +126,8 @@ jobs:
 
     name: MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: macos-12
+    env:
+      BUNDLE_GEMFILE: ${{ github.workspace }}/ruby/Gemfile
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
@@ -136,9 +138,14 @@ jobs:
         uses: ruby/setup-ruby@ee26e27437bde475b19a6bf8cb73c9fa658876a2 # v1.134.0
         with:
           ruby-version: ${{ matrix.version }}
+          bundler: "2.1.4" # Required by rules_ruby
+          bundler-cache: true
 
       - name: Validate version
         run: ruby --version | grep ${{ matrix.version }} || (echo "Invalid Ruby version - $(ruby --version)" && exit 1)
+      
+      - name: Fix binstubs
+        run: bundle exec rake rails:update:bin
 
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v2
