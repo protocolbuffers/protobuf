@@ -338,6 +338,9 @@ class PROTOBUF_EXPORT InlinedStringField {
   static constexpr bool IsDefault(const std::string*) { return false; }
 
  private:
+  // ScopedCheckInvariants checks all string in-variants at destruction.
+  class ScopedCheckInvariants;
+
   void Destruct() { get_mutable()->~basic_string(); }
 
   PROTOBUF_NDEBUG_INLINE std::string* get_mutable();
