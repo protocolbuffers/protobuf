@@ -7739,6 +7739,110 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
                                })pb"));
 }
 
+TEST_F(FeaturesTest, ReusesFeaturesFromParent) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    options { features { field_presence: IMPLICIT } }
+    message_type {
+      name: "Foo"
+      options { deprecated: true }
+      field {
+        name: "bar"
+        number: 1
+        label: LABEL_REPEATED
+        type: TYPE_INT64
+        options { deprecated: true }
+      }
+    }
+  )pb");
+  EXPECT_EQ(&GetFeatures(file), &GetFeatures(file->message_type(0)));
+  EXPECT_EQ(&GetFeatures(file), &GetFeatures(file->message_type(0)->field(0)));
+}
+
+TEST_F(FeaturesTest, ReusesFeaturesFromSibling) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    options { features { field_presence: IMPLICIT } }
+    message_type {
+      name: "Foo"
+      options { deprecated: true }
+      field {
+        name: "bar1"
+        number: 1
+        label: LABEL_OPTIONAL
+        type: TYPE_INT64
+        options {
+          deprecated: true
+          features { field_presence: EXPLICIT }
+        }
+      }
+      field {
+        name: "baz"
+        number: 2
+        label: LABEL_OPTIONAL
+        type: TYPE_STRING
+        options { features { field_presence: EXPLICIT } }
+      }
+    }
+  )pb");
+  const Descriptor* message = file->message_type(0);
+  EXPECT_NE(&GetFeatures(file), &GetFeatures(message->field(0)));
+  EXPECT_EQ(&GetFeatures(message->field(0)), &GetFeatures(message->field(1)));
+}
+
+TEST_F(FeaturesTest, ReusesFeaturesFromDifferentFile) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file1 = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    options { features { field_presence: IMPLICIT } }
+  )pb");
+  const FileDescriptor* file2 = BuildFile(R"pb(
+    name: "bar.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    options { features { field_presence: IMPLICIT } }
+  )pb");
+  EXPECT_EQ(&GetFeatures(file1), &GetFeatures(file2));
+}
+
+TEST_F(FeaturesTest, ReusesFeaturesExtension) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file1 = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    options {
+      features {
+        [pb.TestMessage.test_message] { int_file_feature: 8 }
+        [pb.TestMessage.Nested.test_nested] { int_file_feature: 7 }
+        [pb.test] { int_file_feature: 9 }
+      }
+    }
+  )pb");
+  const FileDescriptor* file2 = BuildFile(R"pb(
+    name: "bar.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    options {
+      features {
+        [pb.test] { int_file_feature: 9 }
+        [pb.TestMessage.test_message] { int_file_feature: 8 }
+        [pb.TestMessage.Nested.test_nested] { int_file_feature: 7 }
+      }
+    }
+  )pb");
+  EXPECT_EQ(&GetFeatures(file1), &GetFeatures(file2));
+}
+
 TEST_F(FeaturesTest, RestoresLabelRoundTrip) {
   BuildDescriptorMessagesInTestPool();
   const FileDescriptor* file = BuildFile(R"pb(
