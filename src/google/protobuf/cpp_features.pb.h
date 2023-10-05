@@ -81,7 +81,6 @@ class PROTOBUF_EXPORT CppFeatures final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR CppFeatures(::google::protobuf::internal::ConstantInitialized);
 
-  CppFeatures(::google::protobuf::Arena* arena, const CppFeatures& from);
   inline CppFeatures(const CppFeatures& from)
       : CppFeatures(nullptr, from) {}
   CppFeatures(CppFeatures&& from) noexcept
@@ -193,6 +192,7 @@ class PROTOBUF_EXPORT CppFeatures final :
   }
   protected:
   explicit CppFeatures(::google::protobuf::Arena* arena);
+  CppFeatures(::google::protobuf::Arena* arena, const CppFeatures& from);
   public:
 
   static const ClassData _class_data_;

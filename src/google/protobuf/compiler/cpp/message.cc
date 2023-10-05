@@ -1281,7 +1281,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "$classname$(::$proto_ns$::internal::ConstantInitialized);\n"
       "\n"
 #ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
-      "$classname$(::$proto_ns$::Arena* arena, const $classname$& from);\n"
       "inline $classname$(const $classname$& from)\n"
       "    : $classname$(nullptr, from) {}\n"
 #else   // PROTOBUF_EXPLICIT_CONSTRUCTORS
@@ -1292,13 +1291,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "  *this = ::std::move(from);\n"
       "}\n"
       "\n"
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-      "inline $classname$(::$proto_ns$::Arena* arena,"
-      " const $classname$& from)\n"
-      "  : $classname$(arena) {\n"
-      "  MergeFrom(from);\n"
-      "}\n"
-#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
       "inline $classname$& operator=(const $classname$& from) {\n"
       "  CopyFrom(from);\n"
       "  return *this;\n"
@@ -1585,7 +1577,17 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       // protos to give access to this constructor, breaking the invariants
       // we rely on.
       "protected:\n"
-      "explicit $classname$(::$proto_ns$::Arena* arena);\n");
+      "explicit $classname$(::$proto_ns$::Arena* arena);\n"
+#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
+      "$classname$(::$proto_ns$::Arena* arena, const $classname$& from);\n"
+#else   // PROTOBUF_EXPLICIT_CONSTRUCTORS
+      "inline $classname$(::$proto_ns$::Arena* arena,"
+      " const $classname$& from)\n"
+      "  : $classname$(arena) {\n"
+      "  MergeFrom(from);\n"
+      "}\n"
+#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
+  );
 
   switch (NeedsArenaDestructor()) {
     case ArenaDtorNeeds::kOnDemand:

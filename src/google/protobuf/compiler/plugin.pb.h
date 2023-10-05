@@ -129,7 +129,6 @@ class PROTOC_EXPORT Version final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Version(::google::protobuf::internal::ConstantInitialized);
 
-  Version(::google::protobuf::Arena* arena, const Version& from);
   inline Version(const Version& from)
       : Version(nullptr, from) {}
   Version(Version&& from) noexcept
@@ -241,6 +240,7 @@ class PROTOC_EXPORT Version final :
   }
   protected:
   explicit Version(::google::protobuf::Arena* arena);
+  Version(::google::protobuf::Arena* arena, const Version& from);
   public:
 
   static const ClassData _class_data_;
@@ -351,7 +351,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse_File(::google::protobuf::internal::ConstantInitialized);
 
-  CodeGeneratorResponse_File(::google::protobuf::Arena* arena, const CodeGeneratorResponse_File& from);
   inline CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from)
       : CodeGeneratorResponse_File(nullptr, from) {}
   CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept
@@ -463,6 +462,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   }
   protected:
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* arena);
+  CodeGeneratorResponse_File(::google::protobuf::Arena* arena, const CodeGeneratorResponse_File& from);
   public:
 
   static const ClassData _class_data_;
@@ -589,7 +589,6 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse(::google::protobuf::internal::ConstantInitialized);
 
-  CodeGeneratorResponse(::google::protobuf::Arena* arena, const CodeGeneratorResponse& from);
   inline CodeGeneratorResponse(const CodeGeneratorResponse& from)
       : CodeGeneratorResponse(nullptr, from) {}
   CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept
@@ -701,6 +700,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   }
   protected:
   explicit CodeGeneratorResponse(::google::protobuf::Arena* arena);
+  CodeGeneratorResponse(::google::protobuf::Arena* arena, const CodeGeneratorResponse& from);
   public:
 
   static const ClassData _class_data_;
@@ -828,7 +828,6 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorRequest(::google::protobuf::internal::ConstantInitialized);
 
-  CodeGeneratorRequest(::google::protobuf::Arena* arena, const CodeGeneratorRequest& from);
   inline CodeGeneratorRequest(const CodeGeneratorRequest& from)
       : CodeGeneratorRequest(nullptr, from) {}
   CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept
@@ -940,6 +939,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   }
   protected:
   explicit CodeGeneratorRequest(::google::protobuf::Arena* arena);
+  CodeGeneratorRequest(::google::protobuf::Arena* arena, const CodeGeneratorRequest& from);
   public:
 
   static const ClassData _class_data_;

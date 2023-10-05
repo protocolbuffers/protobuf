@@ -710,7 +710,6 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR UninterpretedOption_NamePart(::google::protobuf::internal::ConstantInitialized);
 
-  UninterpretedOption_NamePart(::google::protobuf::Arena* arena, const UninterpretedOption_NamePart& from);
   inline UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from)
       : UninterpretedOption_NamePart(nullptr, from) {}
   UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
@@ -822,6 +821,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   }
   protected:
   explicit UninterpretedOption_NamePart(::google::protobuf::Arena* arena);
+  UninterpretedOption_NamePart(::google::protobuf::Arena* arena, const UninterpretedOption_NamePart& from);
   public:
 
   static const ClassData _class_data_;
@@ -906,7 +906,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR SourceCodeInfo_Location(::google::protobuf::internal::ConstantInitialized);
 
-  SourceCodeInfo_Location(::google::protobuf::Arena* arena, const SourceCodeInfo_Location& from);
   inline SourceCodeInfo_Location(const SourceCodeInfo_Location& from)
       : SourceCodeInfo_Location(nullptr, from) {}
   SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
@@ -1018,6 +1017,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   }
   protected:
   explicit SourceCodeInfo_Location(::google::protobuf::Arena* arena);
+  SourceCodeInfo_Location(::google::protobuf::Arena* arena, const SourceCodeInfo_Location& from);
   public:
 
   static const ClassData _class_data_;
@@ -1180,7 +1180,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation(::google::protobuf::internal::ConstantInitialized);
 
-  GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena, const GeneratedCodeInfo_Annotation& from);
   inline GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from)
       : GeneratedCodeInfo_Annotation(nullptr, from) {}
   GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
@@ -1292,6 +1291,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   }
   protected:
   explicit GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena);
+  GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena, const GeneratedCodeInfo_Annotation& from);
   public:
 
   static const ClassData _class_data_;
@@ -1444,7 +1444,6 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FieldOptions_EditionDefault(::google::protobuf::internal::ConstantInitialized);
 
-  FieldOptions_EditionDefault(::google::protobuf::Arena* arena, const FieldOptions_EditionDefault& from);
   inline FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from)
       : FieldOptions_EditionDefault(nullptr, from) {}
   FieldOptions_EditionDefault(FieldOptions_EditionDefault&& from) noexcept
@@ -1556,6 +1555,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   }
   protected:
   explicit FieldOptions_EditionDefault(::google::protobuf::Arena* arena);
+  FieldOptions_EditionDefault(::google::protobuf::Arena* arena, const FieldOptions_EditionDefault& from);
   public:
 
   static const ClassData _class_data_;
@@ -1640,7 +1640,6 @@ class PROTOBUF_EXPORT FeatureSet final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FeatureSet(::google::protobuf::internal::ConstantInitialized);
 
-  FeatureSet(::google::protobuf::Arena* arena, const FeatureSet& from);
   inline FeatureSet(const FeatureSet& from)
       : FeatureSet(nullptr, from) {}
   FeatureSet(FeatureSet&& from) noexcept
@@ -1752,6 +1751,7 @@ class PROTOBUF_EXPORT FeatureSet final :
   }
   protected:
   explicit FeatureSet(::google::protobuf::Arena* arena);
+  FeatureSet(::google::protobuf::Arena* arena, const FeatureSet& from);
   public:
 
   static const ClassData _class_data_;
@@ -2188,7 +2188,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration(::google::protobuf::internal::ConstantInitialized);
 
-  ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena, const ExtensionRangeOptions_Declaration& from);
   inline ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from)
       : ExtensionRangeOptions_Declaration(nullptr, from) {}
   ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept
@@ -2300,6 +2299,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   }
   protected:
   explicit ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena);
+  ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena, const ExtensionRangeOptions_Declaration& from);
   public:
 
   static const ClassData _class_data_;
@@ -2429,7 +2429,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange(::google::protobuf::internal::ConstantInitialized);
 
-  EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena, const EnumDescriptorProto_EnumReservedRange& from);
   inline EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from)
       : EnumDescriptorProto_EnumReservedRange(nullptr, from) {}
   EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept
@@ -2541,6 +2540,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   }
   protected:
   explicit EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena);
+  EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena, const EnumDescriptorProto_EnumReservedRange& from);
   public:
 
   static const ClassData _class_data_;
@@ -2619,7 +2619,6 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange(::google::protobuf::internal::ConstantInitialized);
 
-  DescriptorProto_ReservedRange(::google::protobuf::Arena* arena, const DescriptorProto_ReservedRange& from);
   inline DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from)
       : DescriptorProto_ReservedRange(nullptr, from) {}
   DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
@@ -2731,6 +2730,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   }
   protected:
   explicit DescriptorProto_ReservedRange(::google::protobuf::Arena* arena);
+  DescriptorProto_ReservedRange(::google::protobuf::Arena* arena, const DescriptorProto_ReservedRange& from);
   public:
 
   static const ClassData _class_data_;
@@ -2809,7 +2809,6 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR UninterpretedOption(::google::protobuf::internal::ConstantInitialized);
 
-  UninterpretedOption(::google::protobuf::Arena* arena, const UninterpretedOption& from);
   inline UninterpretedOption(const UninterpretedOption& from)
       : UninterpretedOption(nullptr, from) {}
   UninterpretedOption(UninterpretedOption&& from) noexcept
@@ -2921,6 +2920,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   }
   protected:
   explicit UninterpretedOption(::google::protobuf::Arena* arena);
+  UninterpretedOption(::google::protobuf::Arena* arena, const UninterpretedOption& from);
   public:
 
   static const ClassData _class_data_;
@@ -3091,7 +3091,6 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR SourceCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
-  SourceCodeInfo(::google::protobuf::Arena* arena, const SourceCodeInfo& from);
   inline SourceCodeInfo(const SourceCodeInfo& from)
       : SourceCodeInfo(nullptr, from) {}
   SourceCodeInfo(SourceCodeInfo&& from) noexcept
@@ -3203,6 +3202,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   }
   protected:
   explicit SourceCodeInfo(::google::protobuf::Arena* arena);
+  SourceCodeInfo(::google::protobuf::Arena* arena, const SourceCodeInfo& from);
   public:
 
   static const ClassData _class_data_;
@@ -3276,7 +3276,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo(::google::protobuf::internal::ConstantInitialized);
 
-  GeneratedCodeInfo(::google::protobuf::Arena* arena, const GeneratedCodeInfo& from);
   inline GeneratedCodeInfo(const GeneratedCodeInfo& from)
       : GeneratedCodeInfo(nullptr, from) {}
   GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept
@@ -3388,6 +3387,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   }
   protected:
   explicit GeneratedCodeInfo(::google::protobuf::Arena* arena);
+  GeneratedCodeInfo(::google::protobuf::Arena* arena, const GeneratedCodeInfo& from);
   public:
 
   static const ClassData _class_data_;
@@ -3461,7 +3461,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::internal::ConstantInitialized);
 
-  FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena, const FeatureSetDefaults_FeatureSetEditionDefault& from);
   inline FeatureSetDefaults_FeatureSetEditionDefault(const FeatureSetDefaults_FeatureSetEditionDefault& from)
       : FeatureSetDefaults_FeatureSetEditionDefault(nullptr, from) {}
   FeatureSetDefaults_FeatureSetEditionDefault(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
@@ -3573,6 +3572,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   }
   protected:
   explicit FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena);
+  FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena, const FeatureSetDefaults_FeatureSetEditionDefault& from);
   public:
 
   static const ClassData _class_data_;
@@ -3655,7 +3655,6 @@ class PROTOBUF_EXPORT ServiceOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR ServiceOptions(::google::protobuf::internal::ConstantInitialized);
 
-  ServiceOptions(::google::protobuf::Arena* arena, const ServiceOptions& from);
   inline ServiceOptions(const ServiceOptions& from)
       : ServiceOptions(nullptr, from) {}
   ServiceOptions(ServiceOptions&& from) noexcept
@@ -3767,6 +3766,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
   }
   protected:
   explicit ServiceOptions(::google::protobuf::Arena* arena);
+  ServiceOptions(::google::protobuf::Arena* arena, const ServiceOptions& from);
   public:
 
   static const ClassData _class_data_;
@@ -4048,7 +4048,6 @@ class PROTOBUF_EXPORT OneofOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR OneofOptions(::google::protobuf::internal::ConstantInitialized);
 
-  OneofOptions(::google::protobuf::Arena* arena, const OneofOptions& from);
   inline OneofOptions(const OneofOptions& from)
       : OneofOptions(nullptr, from) {}
   OneofOptions(OneofOptions&& from) noexcept
@@ -4160,6 +4159,7 @@ class PROTOBUF_EXPORT OneofOptions final :
   }
   protected:
   explicit OneofOptions(::google::protobuf::Arena* arena);
+  OneofOptions(::google::protobuf::Arena* arena, const OneofOptions& from);
   public:
 
   static const ClassData _class_data_;
@@ -4428,7 +4428,6 @@ class PROTOBUF_EXPORT MethodOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR MethodOptions(::google::protobuf::internal::ConstantInitialized);
 
-  MethodOptions(::google::protobuf::Arena* arena, const MethodOptions& from);
   inline MethodOptions(const MethodOptions& from)
       : MethodOptions(nullptr, from) {}
   MethodOptions(MethodOptions&& from) noexcept
@@ -4540,6 +4539,7 @@ class PROTOBUF_EXPORT MethodOptions final :
   }
   protected:
   explicit MethodOptions(::google::protobuf::Arena* arena);
+  MethodOptions(::google::protobuf::Arena* arena, const MethodOptions& from);
   public:
 
   static const ClassData _class_data_;
@@ -4855,7 +4855,6 @@ class PROTOBUF_EXPORT MessageOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR MessageOptions(::google::protobuf::internal::ConstantInitialized);
 
-  MessageOptions(::google::protobuf::Arena* arena, const MessageOptions& from);
   inline MessageOptions(const MessageOptions& from)
       : MessageOptions(nullptr, from) {}
   MessageOptions(MessageOptions&& from) noexcept
@@ -4967,6 +4966,7 @@ class PROTOBUF_EXPORT MessageOptions final :
   }
   protected:
   explicit MessageOptions(::google::protobuf::Arena* arena);
+  MessageOptions(::google::protobuf::Arena* arena, const MessageOptions& from);
   public:
 
   static const ClassData _class_data_;
@@ -5300,7 +5300,6 @@ class PROTOBUF_EXPORT FileOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FileOptions(::google::protobuf::internal::ConstantInitialized);
 
-  FileOptions(::google::protobuf::Arena* arena, const FileOptions& from);
   inline FileOptions(const FileOptions& from)
       : FileOptions(nullptr, from) {}
   FileOptions(FileOptions&& from) noexcept
@@ -5412,6 +5411,7 @@ class PROTOBUF_EXPORT FileOptions final :
   }
   protected:
   explicit FileOptions(::google::protobuf::Arena* arena);
+  FileOptions(::google::protobuf::Arena* arena, const FileOptions& from);
   public:
 
   static const ClassData _class_data_;
@@ -6021,7 +6021,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FieldOptions(::google::protobuf::internal::ConstantInitialized);
 
-  FieldOptions(::google::protobuf::Arena* arena, const FieldOptions& from);
   inline FieldOptions(const FieldOptions& from)
       : FieldOptions(nullptr, from) {}
   FieldOptions(FieldOptions&& from) noexcept
@@ -6133,6 +6132,7 @@ class PROTOBUF_EXPORT FieldOptions final :
   }
   protected:
   explicit FieldOptions(::google::protobuf::Arena* arena);
+  FieldOptions(::google::protobuf::Arena* arena, const FieldOptions& from);
   public:
 
   static const ClassData _class_data_;
@@ -6652,7 +6652,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FeatureSetDefaults(::google::protobuf::internal::ConstantInitialized);
 
-  FeatureSetDefaults(::google::protobuf::Arena* arena, const FeatureSetDefaults& from);
   inline FeatureSetDefaults(const FeatureSetDefaults& from)
       : FeatureSetDefaults(nullptr, from) {}
   FeatureSetDefaults(FeatureSetDefaults&& from) noexcept
@@ -6764,6 +6763,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   }
   protected:
   explicit FeatureSetDefaults(::google::protobuf::Arena* arena);
+  FeatureSetDefaults(::google::protobuf::Arena* arena, const FeatureSetDefaults& from);
   public:
 
   static const ClassData _class_data_;
@@ -6864,7 +6864,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions(::google::protobuf::internal::ConstantInitialized);
 
-  ExtensionRangeOptions(::google::protobuf::Arena* arena, const ExtensionRangeOptions& from);
   inline ExtensionRangeOptions(const ExtensionRangeOptions& from)
       : ExtensionRangeOptions(nullptr, from) {}
   ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
@@ -6976,6 +6975,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   }
   protected:
   explicit ExtensionRangeOptions(::google::protobuf::Arena* arena);
+  ExtensionRangeOptions(::google::protobuf::Arena* arena, const ExtensionRangeOptions& from);
   public:
 
   static const ClassData _class_data_;
@@ -7299,7 +7299,6 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumValueOptions(::google::protobuf::internal::ConstantInitialized);
 
-  EnumValueOptions(::google::protobuf::Arena* arena, const EnumValueOptions& from);
   inline EnumValueOptions(const EnumValueOptions& from)
       : EnumValueOptions(nullptr, from) {}
   EnumValueOptions(EnumValueOptions&& from) noexcept
@@ -7411,6 +7410,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   }
   protected:
   explicit EnumValueOptions(::google::protobuf::Arena* arena);
+  EnumValueOptions(::google::protobuf::Arena* arena, const EnumValueOptions& from);
   public:
 
   static const ClassData _class_data_;
@@ -7705,7 +7705,6 @@ class PROTOBUF_EXPORT EnumOptions final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumOptions(::google::protobuf::internal::ConstantInitialized);
 
-  EnumOptions(::google::protobuf::Arena* arena, const EnumOptions& from);
   inline EnumOptions(const EnumOptions& from)
       : EnumOptions(nullptr, from) {}
   EnumOptions(EnumOptions&& from) noexcept
@@ -7817,6 +7816,7 @@ class PROTOBUF_EXPORT EnumOptions final :
   }
   protected:
   explicit EnumOptions(::google::protobuf::Arena* arena);
+  EnumOptions(::google::protobuf::Arena* arena, const EnumOptions& from);
   public:
 
   static const ClassData _class_data_;
@@ -8124,7 +8124,6 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR OneofDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  OneofDescriptorProto(::google::protobuf::Arena* arena, const OneofDescriptorProto& from);
   inline OneofDescriptorProto(const OneofDescriptorProto& from)
       : OneofDescriptorProto(nullptr, from) {}
   OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
@@ -8236,6 +8235,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   }
   protected:
   explicit OneofDescriptorProto(::google::protobuf::Arena* arena);
+  OneofDescriptorProto(::google::protobuf::Arena* arena, const OneofDescriptorProto& from);
   public:
 
   static const ClassData _class_data_;
@@ -8324,7 +8324,6 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR MethodDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  MethodDescriptorProto(::google::protobuf::Arena* arena, const MethodDescriptorProto& from);
   inline MethodDescriptorProto(const MethodDescriptorProto& from)
       : MethodDescriptorProto(nullptr, from) {}
   MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
@@ -8436,6 +8435,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   }
   protected:
   explicit MethodDescriptorProto(::google::protobuf::Arena* arena);
+  MethodDescriptorProto(::google::protobuf::Arena* arena, const MethodDescriptorProto& from);
   public:
 
   static const ClassData _class_data_;
@@ -8588,7 +8588,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FieldDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  FieldDescriptorProto(::google::protobuf::Arena* arena, const FieldDescriptorProto& from);
   inline FieldDescriptorProto(const FieldDescriptorProto& from)
       : FieldDescriptorProto(nullptr, from) {}
   FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
@@ -8700,6 +8699,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   }
   protected:
   explicit FieldDescriptorProto(::google::protobuf::Arena* arena);
+  FieldDescriptorProto(::google::protobuf::Arena* arena, const FieldDescriptorProto& from);
   public:
 
   static const ClassData _class_data_;
@@ -8986,7 +8986,6 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumValueDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  EnumValueDescriptorProto(::google::protobuf::Arena* arena, const EnumValueDescriptorProto& from);
   inline EnumValueDescriptorProto(const EnumValueDescriptorProto& from)
       : EnumValueDescriptorProto(nullptr, from) {}
   EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
@@ -9098,6 +9097,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   }
   protected:
   explicit EnumValueDescriptorProto(::google::protobuf::Arena* arena);
+  EnumValueDescriptorProto(::google::protobuf::Arena* arena, const EnumValueDescriptorProto& from);
   public:
 
   static const ClassData _class_data_;
@@ -9199,7 +9199,6 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange(::google::protobuf::internal::ConstantInitialized);
 
-  DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena, const DescriptorProto_ExtensionRange& from);
   inline DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from)
       : DescriptorProto_ExtensionRange(nullptr, from) {}
   DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
@@ -9311,6 +9310,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   }
   protected:
   explicit DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena);
+  DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena, const DescriptorProto_ExtensionRange& from);
   public:
 
   static const ClassData _class_data_;
@@ -9406,7 +9406,6 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR ServiceDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  ServiceDescriptorProto(::google::protobuf::Arena* arena, const ServiceDescriptorProto& from);
   inline ServiceDescriptorProto(const ServiceDescriptorProto& from)
       : ServiceDescriptorProto(nullptr, from) {}
   ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
@@ -9518,6 +9517,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   }
   protected:
   explicit ServiceDescriptorProto(::google::protobuf::Arena* arena);
+  ServiceDescriptorProto(::google::protobuf::Arena* arena, const ServiceDescriptorProto& from);
   public:
 
   static const ClassData _class_data_;
@@ -9626,7 +9626,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  EnumDescriptorProto(::google::protobuf::Arena* arena, const EnumDescriptorProto& from);
   inline EnumDescriptorProto(const EnumDescriptorProto& from)
       : EnumDescriptorProto(nullptr, from) {}
   EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
@@ -9738,6 +9737,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   }
   protected:
   explicit EnumDescriptorProto(::google::protobuf::Arena* arena);
+  EnumDescriptorProto(::google::protobuf::Arena* arena, const EnumDescriptorProto& from);
   public:
 
   static const ClassData _class_data_;
@@ -9898,7 +9898,6 @@ class PROTOBUF_EXPORT DescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR DescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  DescriptorProto(::google::protobuf::Arena* arena, const DescriptorProto& from);
   inline DescriptorProto(const DescriptorProto& from)
       : DescriptorProto(nullptr, from) {}
   DescriptorProto(DescriptorProto&& from) noexcept
@@ -10010,6 +10009,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
   }
   protected:
   explicit DescriptorProto(::google::protobuf::Arena* arena);
+  DescriptorProto(::google::protobuf::Arena* arena, const DescriptorProto& from);
   public:
 
   static const ClassData _class_data_;
@@ -10271,7 +10271,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FileDescriptorProto(::google::protobuf::internal::ConstantInitialized);
 
-  FileDescriptorProto(::google::protobuf::Arena* arena, const FileDescriptorProto& from);
   inline FileDescriptorProto(const FileDescriptorProto& from)
       : FileDescriptorProto(nullptr, from) {}
   FileDescriptorProto(FileDescriptorProto&& from) noexcept
@@ -10383,6 +10382,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   }
   protected:
   explicit FileDescriptorProto(::google::protobuf::Arena* arena);
+  FileDescriptorProto(::google::protobuf::Arena* arena, const FileDescriptorProto& from);
   public:
 
   static const ClassData _class_data_;
@@ -10689,7 +10689,6 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FileDescriptorSet(::google::protobuf::internal::ConstantInitialized);
 
-  FileDescriptorSet(::google::protobuf::Arena* arena, const FileDescriptorSet& from);
   inline FileDescriptorSet(const FileDescriptorSet& from)
       : FileDescriptorSet(nullptr, from) {}
   FileDescriptorSet(FileDescriptorSet&& from) noexcept
@@ -10801,6 +10800,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   }
   protected:
   explicit FileDescriptorSet(::google::protobuf::Arena* arena);
+  FileDescriptorSet(::google::protobuf::Arena* arena, const FileDescriptorSet& from);
   public:
 
   static const ClassData _class_data_;
