@@ -9,10 +9,12 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <limits>
+#include <string>
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
@@ -28,7 +30,7 @@ namespace protobuf {
 
 namespace internal {
 
-void RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
+void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   ABSL_DCHECK(extend_amount > 0);
   constexpr size_t ptr_size = sizeof(rep()->elements[0]);
   int new_capacity = total_size_ + extend_amount;
@@ -74,6 +76,7 @@ void RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   tagged_rep_or_elem_ =
       reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_rep) + 1);
   total_size_ = new_capacity;
+  return &new_rep->elements[current_size_];
 }
 
 void RepeatedPtrFieldBase::Reserve(int capacity) {
@@ -151,8 +154,92 @@ template PROTOBUF_EXPORT_TEMPLATE_DEFINE void
 memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
     char* PROTOBUF_RESTRICT, char* PROTOBUF_RESTRICT);
 
-}  // namespace internal
+template <>
+void RepeatedPtrFieldBase::MergeFrom<std::string>(
+    const RepeatedPtrFieldBase& from) {
+  ABSL_DCHECK_NE(&from, this);
+  int new_size = current_size_ + from.current_size_;
+  auto dst = reinterpret_cast<std::string**>(InternalReserve(new_size));
+  auto src = reinterpret_cast<std::string* const*>(from.elements());
+  auto end = src + from.current_size_;
+  auto end_assign = src + std::min(ClearedCount(), from.current_size_);
+  for (; src < end_assign; ++dst, ++src) {
+    (*dst)->assign(**src);
+  }
+  if (Arena* const arena = arena_) {
+    for (; src < end; ++dst, ++src) {
+      *dst = Arena::Create<std::string>(arena, **src);
+    }
+  } else {
+    for (; src < end; ++dst, ++src) {
+      *dst = new std::string(**src);
+    }
+  }
+  ExchangeCurrentSize(new_size);
+  if (new_size > allocated_size()) {
+    rep()->allocated_size = new_size;
+  }
+}
 
+
+int RepeatedPtrFieldBase::MergeIntoClearedMessages(
+    const RepeatedPtrFieldBase& from) {
+  auto dst = reinterpret_cast<MessageLite**>(elements() + current_size_);
+  auto src = reinterpret_cast<MessageLite* const*>(from.elements());
+  int count = std::min(ClearedCount(), from.current_size_);
+  for (int i = 0; i < count; ++i) {
+    dst[i]->CheckTypeAndMergeFrom(*src[i]);
+  }
+  return count;
+}
+
+void RepeatedPtrFieldBase::MergeFromConcreteMessage(
+    const RepeatedPtrFieldBase& from, CopyFn copy_fn) {
+  ABSL_DCHECK_NE(&from, this);
+  int new_size = current_size_ + from.current_size_;
+  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size));
+  auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
+  auto end = src + from.current_size_;
+  if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
+    int recycled = MergeIntoClearedMessages(from);
+    dst += recycled;
+    src += recycled;
+  }
+  Arena* arena = GetOwningArena();
+  for (; src < end; ++src, ++dst) {
+    *dst = copy_fn(arena, **src);
+  }
+  ExchangeCurrentSize(new_size);
+  if (new_size > allocated_size()) {
+    rep()->allocated_size = new_size;
+  }
+}
+
+template <>
+void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
+    const RepeatedPtrFieldBase& from) {
+  ABSL_DCHECK_NE(&from, this);
+  int new_size = current_size_ + from.current_size_;
+  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size));
+  auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
+  auto end = src + from.current_size_;
+  if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
+    int recycled = MergeIntoClearedMessages(from);
+    dst += recycled;
+    src += recycled;
+  }
+  Arena* arena = GetOwningArena();
+  for (; src < end; ++src, ++dst) {
+    *dst = (*src)->New(arena);
+    (*dst)->CheckTypeAndMergeFrom(**src);
+  }
+  ExchangeCurrentSize(new_size);
+  if (new_size > allocated_size()) {
+    rep()->allocated_size = new_size;
+  }
+}
+
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
