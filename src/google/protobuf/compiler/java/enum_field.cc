@@ -116,6 +116,7 @@ ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
     : descriptor_(descriptor),
       message_bit_index_(messageBitIndex),
       builder_bit_index_(builderBitIndex),
+      context_(context),
       name_resolver_(context->GetNameResolver()) {
   SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
                    context->GetFieldGeneratorInfo(descriptor), name_resolver_,
@@ -254,7 +255,8 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
 
 void ImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
     io::Printer* printer) const {
-  WriteFieldDocComment(printer, descriptor_, /* kdoc */ true);
+  WriteFieldDocComment(printer, descriptor_, context_->options(),
+                       /* kdoc */ true);
   printer->Print(variables_,
                  "$kt_deprecation$public var $kt_name$: $kt_type$\n"
                  "  @JvmName(\"${$get$kt_capitalized_name$$}$\")\n"
@@ -1048,7 +1050,8 @@ void RepeatedImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
       "public class ${$$kt_capitalized_name$Proxy$}$ private constructor()"
       " : com.google.protobuf.kotlin.DslProxy()\n");
 
-  WriteFieldDocComment(printer, descriptor_, /* kdoc */ true);
+  WriteFieldDocComment(printer, descriptor_, context_->options(),
+                       /* kdoc */ true);
   printer->Print(variables_,
                  "$kt_deprecation$public val $kt_name$: "
                  "com.google.protobuf.kotlin.DslList"
