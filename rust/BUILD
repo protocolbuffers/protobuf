@@ -6,7 +6,9 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 
 package(
-    default_visibility = ["//src/google/protobuf:__subpackages__"],
+    default_visibility = [
+        "//src/google/protobuf:__subpackages__",
+    ],
 )
 
 licenses(["notice"])
