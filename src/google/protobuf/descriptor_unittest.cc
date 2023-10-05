@@ -9238,7 +9238,7 @@ TEST_F(FeaturesTest, MergeFeatureValidationFailed) {
         options { features { field_presence: FIELD_PRESENCE_UNKNOWN } }
       )pb",
       "foo.proto: foo.proto: EDITIONS: Feature field "
-      "google.protobuf.FeatureSet.field_presence must resolve to a known value, found "
+      "`field_presence` must resolve to a known value, found "
       "FIELD_PRESENCE_UNKNOWN\n");
 }
 

@@ -169,24 +169,28 @@ absl::Status FillDefaults(Edition edition, Message& msg) {
   return absl::OkStatus();
 }
 
-absl::Status ValidateMergedFeatures(const Message& msg) {
-  const Descriptor& descriptor = *msg.GetDescriptor();
-  const Reflection& reflection = *msg.GetReflection();
-  for (int i = 0; i < descriptor.field_count(); ++i) {
-    const FieldDescriptor& field = *descriptor.field(i);
-    // Validate enum features.
-    if (field.enum_type() != nullptr) {
-      ABSL_DCHECK(reflection.HasField(msg, &field));
-      int int_value = reflection.GetEnumValue(msg, &field);
-      const EnumValueDescriptor* value =
-          field.enum_type()->FindValueByNumber(int_value);
-      ABSL_DCHECK(value != nullptr);
-      if (value->number() == 0) {
-        return Error("Feature field ", field.full_name(),
-                     " must resolve to a known value, found ", value->name());
-      }
-    }
+absl::Status ValidateMergedFeatures(const FeatureSet& features) {
+// Avoid using reflection here because this is called early in the descriptor
+// builds.  Instead, a reflection-based test will be used to keep this in sync
+// with descriptor.proto.  These checks should be run on every global feature
+// in FeatureSet.
+#define CHECK_ENUM_FEATURE(FIELD, CAMELCASE, UPPERCASE)               \
+  if (!FeatureSet::CAMELCASE##_IsValid(features.FIELD()) ||           \
+      features.FIELD() == FeatureSet::UPPERCASE##_UNKNOWN) {          \
+    return Error("Feature field `" #FIELD                             \
+                 "` must resolve to a known value, found " #UPPERCASE \
+                 "_UNKNOWN");                                         \
   }
+
+  CHECK_ENUM_FEATURE(field_presence, FieldPresence, FIELD_PRESENCE)
+  CHECK_ENUM_FEATURE(enum_type, EnumType, ENUM_TYPE)
+  CHECK_ENUM_FEATURE(repeated_field_encoding, RepeatedFieldEncoding,
+                     REPEATED_FIELD_ENCODING)
+  CHECK_ENUM_FEATURE(utf8_validation, Utf8Validation, UTF8_VALIDATION)
+  CHECK_ENUM_FEATURE(message_encoding, MessageEncoding, MESSAGE_ENCODING)
+  CHECK_ENUM_FEATURE(json_format, JsonFormat, JSON_FORMAT)
+
+#undef CHECK_ENUM_FEATURE
 
   return absl::OkStatus();
 }
@@ -276,6 +280,8 @@ absl::StatusOr<FeatureResolver> FeatureResolver::Create(
             edition_default.edition(), ".");
       }
     }
+    RETURN_IF_ERROR(ValidateMergedFeatures(edition_default.features()));
+
     prev_edition = edition_default.edition();
   }
 

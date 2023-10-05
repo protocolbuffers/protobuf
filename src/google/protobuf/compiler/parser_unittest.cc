@@ -4326,8 +4326,8 @@ TEST_F(ParseEditionsTest, InvalidMerge) {
             features.enum_type = ENUM_TYPE_UNKNOWN
           ];
         })schema",
-      "5:17: Feature field google.protobuf.FeatureSet.field_presence must resolve to a "
-      "known value, found FIELD_PRESENCE_UNKNOWN\n");
+      "5:17: Feature field `field_presence` must resolve to a known value, "
+      "found FIELD_PRESENCE_UNKNOWN\n");
 }
 
 TEST_F(ParseEditionsTest, FeaturesWithoutEditions) {
