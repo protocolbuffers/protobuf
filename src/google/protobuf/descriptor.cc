@@ -1461,6 +1461,10 @@ class DescriptorPool::Tables {
   bool AddFile(const FileDescriptor* file);
   bool AddExtension(const FieldDescriptor* field);
 
+  // Caches a feature set and returns a stable reference to the cached
+  // allocation owned by the pool.
+  const FeatureSet* InternFeatureSet(FeatureSet&& features);
+
   // -----------------------------------------------------------------
   // Allocating memory.
 
@@ -1505,6 +1509,12 @@ class DescriptorPool::Tables {
   SymbolsByNameSet symbols_by_name_;
   DescriptorsByNameSet<FileDescriptor> files_by_name_;
   ExtensionsGroupedByDescriptorMap extensions_;
+
+  // A cache of all unique feature sets seen.  Since we expect this number to be
+  // relatively low compared to descriptors, it's significantly cheaper to share
+  // these within the pool than have each file create its own feature sets.
+  absl::flat_hash_map<std::string, std::unique_ptr<FeatureSet>>
+      feature_set_cache_;
 
   struct CheckPoint {
     explicit CheckPoint(const Tables* tables)
@@ -1906,6 +1916,18 @@ bool DescriptorPool::Tables::AddExtension(const FieldDescriptor* field) {
   } else {
     return false;
   }
+}
+
+const FeatureSet* DescriptorPool::Tables::InternFeatureSet(
+    FeatureSet&& features) {
+  // Use the serialized feature set as the cache key.  If multiple equivalent
+  // feature sets serialize to different strings, that just bloats the cache a
+  // little.
+  auto& result = feature_set_cache_[features.SerializeAsString()];
+  if (result == nullptr) {
+    result = absl::make_unique<FeatureSet>(std::move(features));
+  }
+  return result.get();
 }
 
 // -------------------------------------------------------------------
@@ -5304,15 +5326,13 @@ void DescriptorBuilder::ResolveFeaturesImpl(
   if (options != nullptr && options->has_features()) {
     // Remove the features from the child's options proto to avoid leaking
     // internal details.
-    FeatureSet* mutable_features = alloc.AllocateArray<FeatureSet>(1);
-    descriptor->proto_features_ = mutable_features;
-    options->mutable_features()->Swap(mutable_features);
+    descriptor->proto_features_ =
+        tables_->InternFeatureSet(std::move(*options->mutable_features()));
     options->clear_features();
   } else if (!force_merge) {
     // Nothing to merge, and we aren't forcing it.
     return;
   }
-  FeatureSet* merged_features = alloc.AllocateArray<FeatureSet>(1);
 
   // Calculate the merged features for this target.
   absl::StatusOr<FeatureSet> merged = feature_resolver_->MergeFeatures(
@@ -5323,8 +5343,7 @@ void DescriptorBuilder::ResolveFeaturesImpl(
     return;
   }
 
-  merged_features->Swap(&merged.value());
-  descriptor->merged_features_ = merged_features;
+  descriptor->merged_features_ = tables_->InternFeatureSet(*std::move(merged));
 }
 
 template <class DescriptorT>
@@ -5462,7 +5481,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<std::string>(2 * values.size());  // name + full_name
   for (const auto& v : values) {
     if (v.has_options()) alloc.PlanArray<EnumValueOptions>(1);
-    if (HasFeatures(v.options())) alloc.PlanArray<FeatureSet>(2);
   }
 }
 
@@ -5473,7 +5491,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<std::string>(2 * enums.size());  // name + full_name
   for (const auto& e : enums) {
     if (e.has_options()) alloc.PlanArray<EnumOptions>(1);
-    if (HasFeatures(e.options())) alloc.PlanArray<FeatureSet>(2);
     PlanAllocationSize(e.value(), alloc);
     alloc.PlanArray<EnumDescriptor::ReservedRange>(e.reserved_range_size());
     alloc.PlanArray<const std::string*>(e.reserved_name_size());
@@ -5488,7 +5505,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<std::string>(2 * oneofs.size());  // name + full_name
   for (const auto& oneof : oneofs) {
     if (oneof.has_options()) alloc.PlanArray<OneofOptions>(1);
-    if (HasFeatures(oneof.options())) alloc.PlanArray<FeatureSet>(2);
   }
 }
 
@@ -5498,7 +5514,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<FieldDescriptor>(fields.size());
   for (const auto& field : fields) {
     if (field.has_options()) alloc.PlanArray<FieldOptions>(1);
-    if (HasFeatures(field.options())) alloc.PlanArray<FeatureSet>(2);
     alloc.PlanFieldNames(field.name(),
                          field.has_json_name() ? &field.json_name() : nullptr);
     if (field.has_default_value() && field.has_type() &&
@@ -5516,7 +5531,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<Descriptor::ExtensionRange>(ranges.size());
   for (const auto& r : ranges) {
     if (r.has_options()) alloc.PlanArray<ExtensionRangeOptions>(1);
-    if (HasFeatures(r.options())) alloc.PlanArray<FeatureSet>(2);
   }
 }
 
@@ -5528,7 +5542,6 @@ static void PlanAllocationSize(
 
   for (const auto& message : messages) {
     if (message.has_options()) alloc.PlanArray<MessageOptions>(1);
-    if (HasFeatures(message.options())) alloc.PlanArray<FeatureSet>(2);
     PlanAllocationSize(message.nested_type(), alloc);
     PlanAllocationSize(message.field(), alloc);
     PlanAllocationSize(message.extension(), alloc);
@@ -5548,7 +5561,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<std::string>(2 * methods.size());  // name + full_name
   for (const auto& m : methods) {
     if (m.has_options()) alloc.PlanArray<MethodOptions>(1);
-    if (HasFeatures(m.options())) alloc.PlanArray<FeatureSet>(2);
   }
 }
 
@@ -5559,7 +5571,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<std::string>(2 * services.size());  // name + full_name
   for (const auto& service : services) {
     if (service.has_options()) alloc.PlanArray<ServiceOptions>(1);
-    if (HasFeatures(service.options())) alloc.PlanArray<FeatureSet>(2);
     PlanAllocationSize(service.method(), alloc);
   }
 }
@@ -5570,12 +5581,6 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
   alloc.PlanArray<FileDescriptorTables>(1);
   alloc.PlanArray<std::string>(2);  // name + package
   if (proto.has_options()) alloc.PlanArray<FileOptions>(1);
-  if (proto.has_edition()) {
-    alloc.PlanArray<FeatureSet>(1);
-    if (HasFeatures(proto.options())) {
-      alloc.PlanArray<FeatureSet>(1);
-    }
-  }
   if (proto.has_source_code_info()) alloc.PlanArray<SourceCodeInfo>(1);
 
   PlanAllocationSize(proto.service(), alloc);
