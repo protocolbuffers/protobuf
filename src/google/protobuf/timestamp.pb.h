@@ -79,7 +79,6 @@ class PROTOBUF_EXPORT Timestamp final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Timestamp(::google::protobuf::internal::ConstantInitialized);
 
-  Timestamp(::google::protobuf::Arena* arena, const Timestamp& from);
   inline Timestamp(const Timestamp& from)
       : Timestamp(nullptr, from) {}
   Timestamp(Timestamp&& from) noexcept
@@ -191,6 +190,7 @@ class PROTOBUF_EXPORT Timestamp final :
   }
   protected:
   explicit Timestamp(::google::protobuf::Arena* arena);
+  Timestamp(::google::protobuf::Arena* arena, const Timestamp& from);
   public:
 
   static const ClassData _class_data_;

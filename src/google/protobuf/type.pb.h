@@ -213,7 +213,6 @@ class PROTOBUF_EXPORT Option final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Option(::google::protobuf::internal::ConstantInitialized);
 
-  Option(::google::protobuf::Arena* arena, const Option& from);
   inline Option(const Option& from)
       : Option(nullptr, from) {}
   Option(Option&& from) noexcept
@@ -325,6 +324,7 @@ class PROTOBUF_EXPORT Option final :
   }
   protected:
   explicit Option(::google::protobuf::Arena* arena);
+  Option(::google::protobuf::Arena* arena, const Option& from);
   public:
 
   static const ClassData _class_data_;
@@ -412,7 +412,6 @@ class PROTOBUF_EXPORT Field final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Field(::google::protobuf::internal::ConstantInitialized);
 
-  Field(::google::protobuf::Arena* arena, const Field& from);
   inline Field(const Field& from)
       : Field(nullptr, from) {}
   Field(Field&& from) noexcept
@@ -524,6 +523,7 @@ class PROTOBUF_EXPORT Field final :
   }
   protected:
   explicit Field(::google::protobuf::Arena* arena);
+  Field(::google::protobuf::Arena* arena, const Field& from);
   public:
 
   static const ClassData _class_data_;
@@ -786,7 +786,6 @@ class PROTOBUF_EXPORT EnumValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR EnumValue(::google::protobuf::internal::ConstantInitialized);
 
-  EnumValue(::google::protobuf::Arena* arena, const EnumValue& from);
   inline EnumValue(const EnumValue& from)
       : EnumValue(nullptr, from) {}
   EnumValue(EnumValue&& from) noexcept
@@ -898,6 +897,7 @@ class PROTOBUF_EXPORT EnumValue final :
   }
   protected:
   explicit EnumValue(::google::protobuf::Arena* arena);
+  EnumValue(::google::protobuf::Arena* arena, const EnumValue& from);
   public:
 
   static const ClassData _class_data_;
@@ -999,7 +999,6 @@ class PROTOBUF_EXPORT Type final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Type(::google::protobuf::internal::ConstantInitialized);
 
-  Type(::google::protobuf::Arena* arena, const Type& from);
   inline Type(const Type& from)
       : Type(nullptr, from) {}
   Type(Type&& from) noexcept
@@ -1111,6 +1110,7 @@ class PROTOBUF_EXPORT Type final :
   }
   protected:
   explicit Type(::google::protobuf::Arena* arena);
+  Type(::google::protobuf::Arena* arena, const Type& from);
   public:
 
   static const ClassData _class_data_;
@@ -1298,7 +1298,6 @@ class PROTOBUF_EXPORT Enum final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Enum(::google::protobuf::internal::ConstantInitialized);
 
-  Enum(::google::protobuf::Arena* arena, const Enum& from);
   inline Enum(const Enum& from)
       : Enum(nullptr, from) {}
   Enum(Enum&& from) noexcept
@@ -1410,6 +1409,7 @@ class PROTOBUF_EXPORT Enum final :
   }
   protected:
   explicit Enum(::google::protobuf::Arena* arena);
+  Enum(::google::protobuf::Arena* arena, const Enum& from);
   public:
 
   static const ClassData _class_data_;

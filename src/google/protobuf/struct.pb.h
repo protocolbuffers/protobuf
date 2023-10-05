@@ -124,7 +124,6 @@ class PROTOBUF_EXPORT ListValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR ListValue(::google::protobuf::internal::ConstantInitialized);
 
-  ListValue(::google::protobuf::Arena* arena, const ListValue& from);
   inline ListValue(const ListValue& from)
       : ListValue(nullptr, from) {}
   ListValue(ListValue&& from) noexcept
@@ -236,6 +235,7 @@ class PROTOBUF_EXPORT ListValue final :
   }
   protected:
   explicit ListValue(::google::protobuf::Arena* arena);
+  ListValue(::google::protobuf::Arena* arena, const ListValue& from);
   public:
 
   static const ClassData _class_data_;
@@ -307,7 +307,6 @@ class PROTOBUF_EXPORT Struct final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Struct(::google::protobuf::internal::ConstantInitialized);
 
-  Struct(::google::protobuf::Arena* arena, const Struct& from);
   inline Struct(const Struct& from)
       : Struct(nullptr, from) {}
   Struct(Struct&& from) noexcept
@@ -419,6 +418,7 @@ class PROTOBUF_EXPORT Struct final :
   }
   protected:
   explicit Struct(::google::protobuf::Arena* arena);
+  Struct(::google::protobuf::Arena* arena, const Struct& from);
   public:
 
   static const ClassData _class_data_;
@@ -519,7 +519,6 @@ class PROTOBUF_EXPORT Value final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Value(::google::protobuf::internal::ConstantInitialized);
 
-  Value(::google::protobuf::Arena* arena, const Value& from);
   inline Value(const Value& from)
       : Value(nullptr, from) {}
   Value(Value&& from) noexcept
@@ -641,6 +640,7 @@ class PROTOBUF_EXPORT Value final :
   }
   protected:
   explicit Value(::google::protobuf::Arena* arena);
+  Value(::google::protobuf::Arena* arena, const Value& from);
   public:
 
   static const ClassData _class_data_;

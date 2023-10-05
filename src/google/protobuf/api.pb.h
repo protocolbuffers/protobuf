@@ -87,7 +87,6 @@ class PROTOBUF_EXPORT Mixin final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Mixin(::google::protobuf::internal::ConstantInitialized);
 
-  Mixin(::google::protobuf::Arena* arena, const Mixin& from);
   inline Mixin(const Mixin& from)
       : Mixin(nullptr, from) {}
   Mixin(Mixin&& from) noexcept
@@ -199,6 +198,7 @@ class PROTOBUF_EXPORT Mixin final :
   }
   protected:
   explicit Mixin(::google::protobuf::Arena* arena);
+  Mixin(::google::protobuf::Arena* arena, const Mixin& from);
   public:
 
   static const ClassData _class_data_;
@@ -286,7 +286,6 @@ class PROTOBUF_EXPORT Method final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Method(::google::protobuf::internal::ConstantInitialized);
 
-  Method(::google::protobuf::Arena* arena, const Method& from);
   inline Method(const Method& from)
       : Method(nullptr, from) {}
   Method(Method&& from) noexcept
@@ -398,6 +397,7 @@ class PROTOBUF_EXPORT Method final :
   }
   protected:
   explicit Method(::google::protobuf::Arena* arena);
+  Method(::google::protobuf::Arena* arena, const Method& from);
   public:
 
   static const ClassData _class_data_;
@@ -559,7 +559,6 @@ class PROTOBUF_EXPORT Api final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Api(::google::protobuf::internal::ConstantInitialized);
 
-  Api(::google::protobuf::Arena* arena, const Api& from);
   inline Api(const Api& from)
       : Api(nullptr, from) {}
   Api(Api&& from) noexcept
@@ -671,6 +670,7 @@ class PROTOBUF_EXPORT Api final :
   }
   protected:
   explicit Api(::google::protobuf::Arena* arena);
+  Api(::google::protobuf::Arena* arena, const Api& from);
   public:
 
   static const ClassData _class_data_;

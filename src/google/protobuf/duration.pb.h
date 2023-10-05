@@ -79,7 +79,6 @@ class PROTOBUF_EXPORT Duration final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Duration(::google::protobuf::internal::ConstantInitialized);
 
-  Duration(::google::protobuf::Arena* arena, const Duration& from);
   inline Duration(const Duration& from)
       : Duration(nullptr, from) {}
   Duration(Duration&& from) noexcept
@@ -191,6 +190,7 @@ class PROTOBUF_EXPORT Duration final :
   }
   protected:
   explicit Duration(::google::protobuf::Arena* arena);
+  Duration(::google::protobuf::Arena* arena, const Duration& from);
   public:
 
   static const ClassData _class_data_;

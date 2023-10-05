@@ -103,7 +103,6 @@ class PROTOBUF_EXPORT UInt64Value final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR UInt64Value(::google::protobuf::internal::ConstantInitialized);
 
-  UInt64Value(::google::protobuf::Arena* arena, const UInt64Value& from);
   inline UInt64Value(const UInt64Value& from)
       : UInt64Value(nullptr, from) {}
   UInt64Value(UInt64Value&& from) noexcept
@@ -215,6 +214,7 @@ class PROTOBUF_EXPORT UInt64Value final :
   }
   protected:
   explicit UInt64Value(::google::protobuf::Arena* arena);
+  UInt64Value(::google::protobuf::Arena* arena, const UInt64Value& from);
   public:
 
   static const ClassData _class_data_;
@@ -278,7 +278,6 @@ class PROTOBUF_EXPORT UInt32Value final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR UInt32Value(::google::protobuf::internal::ConstantInitialized);
 
-  UInt32Value(::google::protobuf::Arena* arena, const UInt32Value& from);
   inline UInt32Value(const UInt32Value& from)
       : UInt32Value(nullptr, from) {}
   UInt32Value(UInt32Value&& from) noexcept
@@ -390,6 +389,7 @@ class PROTOBUF_EXPORT UInt32Value final :
   }
   protected:
   explicit UInt32Value(::google::protobuf::Arena* arena);
+  UInt32Value(::google::protobuf::Arena* arena, const UInt32Value& from);
   public:
 
   static const ClassData _class_data_;
@@ -453,7 +453,6 @@ class PROTOBUF_EXPORT StringValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR StringValue(::google::protobuf::internal::ConstantInitialized);
 
-  StringValue(::google::protobuf::Arena* arena, const StringValue& from);
   inline StringValue(const StringValue& from)
       : StringValue(nullptr, from) {}
   StringValue(StringValue&& from) noexcept
@@ -565,6 +564,7 @@ class PROTOBUF_EXPORT StringValue final :
   }
   protected:
   explicit StringValue(::google::protobuf::Arena* arena);
+  StringValue(::google::protobuf::Arena* arena, const StringValue& from);
   public:
 
   static const ClassData _class_data_;
@@ -634,7 +634,6 @@ class PROTOBUF_EXPORT Int64Value final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Int64Value(::google::protobuf::internal::ConstantInitialized);
 
-  Int64Value(::google::protobuf::Arena* arena, const Int64Value& from);
   inline Int64Value(const Int64Value& from)
       : Int64Value(nullptr, from) {}
   Int64Value(Int64Value&& from) noexcept
@@ -746,6 +745,7 @@ class PROTOBUF_EXPORT Int64Value final :
   }
   protected:
   explicit Int64Value(::google::protobuf::Arena* arena);
+  Int64Value(::google::protobuf::Arena* arena, const Int64Value& from);
   public:
 
   static const ClassData _class_data_;
@@ -809,7 +809,6 @@ class PROTOBUF_EXPORT Int32Value final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Int32Value(::google::protobuf::internal::ConstantInitialized);
 
-  Int32Value(::google::protobuf::Arena* arena, const Int32Value& from);
   inline Int32Value(const Int32Value& from)
       : Int32Value(nullptr, from) {}
   Int32Value(Int32Value&& from) noexcept
@@ -921,6 +920,7 @@ class PROTOBUF_EXPORT Int32Value final :
   }
   protected:
   explicit Int32Value(::google::protobuf::Arena* arena);
+  Int32Value(::google::protobuf::Arena* arena, const Int32Value& from);
   public:
 
   static const ClassData _class_data_;
@@ -984,7 +984,6 @@ class PROTOBUF_EXPORT FloatValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FloatValue(::google::protobuf::internal::ConstantInitialized);
 
-  FloatValue(::google::protobuf::Arena* arena, const FloatValue& from);
   inline FloatValue(const FloatValue& from)
       : FloatValue(nullptr, from) {}
   FloatValue(FloatValue&& from) noexcept
@@ -1096,6 +1095,7 @@ class PROTOBUF_EXPORT FloatValue final :
   }
   protected:
   explicit FloatValue(::google::protobuf::Arena* arena);
+  FloatValue(::google::protobuf::Arena* arena, const FloatValue& from);
   public:
 
   static const ClassData _class_data_;
@@ -1159,7 +1159,6 @@ class PROTOBUF_EXPORT DoubleValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR DoubleValue(::google::protobuf::internal::ConstantInitialized);
 
-  DoubleValue(::google::protobuf::Arena* arena, const DoubleValue& from);
   inline DoubleValue(const DoubleValue& from)
       : DoubleValue(nullptr, from) {}
   DoubleValue(DoubleValue&& from) noexcept
@@ -1271,6 +1270,7 @@ class PROTOBUF_EXPORT DoubleValue final :
   }
   protected:
   explicit DoubleValue(::google::protobuf::Arena* arena);
+  DoubleValue(::google::protobuf::Arena* arena, const DoubleValue& from);
   public:
 
   static const ClassData _class_data_;
@@ -1334,7 +1334,6 @@ class PROTOBUF_EXPORT BytesValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR BytesValue(::google::protobuf::internal::ConstantInitialized);
 
-  BytesValue(::google::protobuf::Arena* arena, const BytesValue& from);
   inline BytesValue(const BytesValue& from)
       : BytesValue(nullptr, from) {}
   BytesValue(BytesValue&& from) noexcept
@@ -1446,6 +1445,7 @@ class PROTOBUF_EXPORT BytesValue final :
   }
   protected:
   explicit BytesValue(::google::protobuf::Arena* arena);
+  BytesValue(::google::protobuf::Arena* arena, const BytesValue& from);
   public:
 
   static const ClassData _class_data_;
@@ -1515,7 +1515,6 @@ class PROTOBUF_EXPORT BoolValue final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR BoolValue(::google::protobuf::internal::ConstantInitialized);
 
-  BoolValue(::google::protobuf::Arena* arena, const BoolValue& from);
   inline BoolValue(const BoolValue& from)
       : BoolValue(nullptr, from) {}
   BoolValue(BoolValue&& from) noexcept
@@ -1627,6 +1626,7 @@ class PROTOBUF_EXPORT BoolValue final :
   }
   protected:
   explicit BoolValue(::google::protobuf::Arena* arena);
+  BoolValue(::google::protobuf::Arena* arena, const BoolValue& from);
   public:
 
   static const ClassData _class_data_;

@@ -79,7 +79,6 @@ class PROTOBUF_EXPORT FieldMask final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR FieldMask(::google::protobuf::internal::ConstantInitialized);
 
-  FieldMask(::google::protobuf::Arena* arena, const FieldMask& from);
   inline FieldMask(const FieldMask& from)
       : FieldMask(nullptr, from) {}
   FieldMask(FieldMask&& from) noexcept
@@ -191,6 +190,7 @@ class PROTOBUF_EXPORT FieldMask final :
   }
   protected:
   explicit FieldMask(::google::protobuf::Arena* arena);
+  FieldMask(::google::protobuf::Arena* arena, const FieldMask& from);
   public:
 
   static const ClassData _class_data_;

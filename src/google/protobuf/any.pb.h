@@ -79,7 +79,6 @@ class PROTOBUF_EXPORT Any final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Any(::google::protobuf::internal::ConstantInitialized);
 
-  Any(::google::protobuf::Arena* arena, const Any& from);
   inline Any(const Any& from)
       : Any(nullptr, from) {}
   Any(Any&& from) noexcept
@@ -226,6 +225,7 @@ class PROTOBUF_EXPORT Any final :
   }
   protected:
   explicit Any(::google::protobuf::Arena* arena);
+  Any(::google::protobuf::Arena* arena, const Any& from);
   public:
 
   static const ClassData _class_data_;

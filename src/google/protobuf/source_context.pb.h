@@ -79,7 +79,6 @@ class PROTOBUF_EXPORT SourceContext final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR SourceContext(::google::protobuf::internal::ConstantInitialized);
 
-  SourceContext(::google::protobuf::Arena* arena, const SourceContext& from);
   inline SourceContext(const SourceContext& from)
       : SourceContext(nullptr, from) {}
   SourceContext(SourceContext&& from) noexcept
@@ -191,6 +190,7 @@ class PROTOBUF_EXPORT SourceContext final :
   }
   protected:
   explicit SourceContext(::google::protobuf::Arena* arena);
+  SourceContext(::google::protobuf::Arena* arena, const SourceContext& from);
   public:
 
   static const ClassData _class_data_;

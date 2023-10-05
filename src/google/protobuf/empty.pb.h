@@ -79,7 +79,6 @@ class PROTOBUF_EXPORT Empty final :
   template<typename = void>
   explicit PROTOBUF_CONSTEXPR Empty(::google::protobuf::internal::ConstantInitialized);
 
-  Empty(::google::protobuf::Arena* arena, const Empty& from);
   inline Empty(const Empty& from)
       : Empty(nullptr, from) {}
   Empty(Empty&& from) noexcept
@@ -177,6 +176,7 @@ class PROTOBUF_EXPORT Empty final :
   }
   protected:
   explicit Empty(::google::protobuf::Arena* arena);
+  Empty(::google::protobuf::Arena* arena, const Empty& from);
   public:
 
   ::google::protobuf::Metadata GetMetadata() const final;
