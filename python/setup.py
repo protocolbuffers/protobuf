@@ -10,12 +10,12 @@
 
 # pylint:disable=missing-module-docstring
 # pylint:disable=g-bad-import-order
-from distutils import util
 import fnmatch
 import glob
 import os
 import pkg_resources
 import re
+import shutil
 import subprocess
 import sys
 import sysconfig
@@ -23,14 +23,10 @@ import sysconfig
 # pylint:disable=g-importing-member
 # pylint:disable=g-multiple-import
 
-# We must use setuptools, not distutils, because we need to use the
-# namespace_packages option for the "google" package.
 from setuptools import setup, Extension, find_packages
 
-from distutils.command.build_ext import build_ext as _build_ext
-from distutils.command.build_py import build_py as _build_py
-from distutils.command.clean import clean as _clean
-from distutils.spawn import find_executable
+from setuptools.command.build_ext import build_ext as _build_ext
+from setuptools.command.build_py import build_py as _build_py
 
 # Find the Protocol Compiler.
 if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
@@ -48,7 +44,7 @@ elif os.path.exists('../vsprojects/Debug/protoc.exe'):
 elif os.path.exists('../vsprojects/Release/protoc.exe'):
   protoc = '../vsprojects/Release/protoc.exe'
 else:
-  protoc = find_executable('protoc')
+  protoc = shutil.which('protoc')
 
 
 def GetVersion():
@@ -144,21 +140,6 @@ def GenerateUnittestProtos():
   GenProto('google/protobuf/pyext/python.proto', False)
 
 
-class CleanCmd(_clean):
-  """Custom clean command for building the protobuf extension."""
-
-  def run(self):
-    # Delete generated files in the code tree.
-    for (dirpath, unused_dirnames, filenames) in os.walk('.'):
-      for filename in filenames:
-        filepath = os.path.join(dirpath, filename)
-        if (filepath.endswith('_pb2.py') or filepath.endswith('.pyc') or
-            filepath.endswith('.so') or filepath.endswith('.o')):
-          os.remove(filepath)
-    # _clean is an old-style class, so super() doesn't work.
-    _clean.run(self)
-
-
 class BuildPyCmd(_build_py):
   """Custom build_py command for building the protobuf runtime."""
 
@@ -231,7 +212,7 @@ def GetOptionFromArgv(option_str):
 
 
 def _GetFlagValues(flag_long, flag_short):
-  """Searches sys.argv for distutils-style flags and yields values."""
+  """Searches sys.argv for setuptools-style flags and yields values."""
 
   expect_value = flag_long.endswith('=')
   flag_res = [re.compile(r'--?%s(=(.*))?' %
@@ -362,8 +343,10 @@ if __name__ == '__main__':
                          pkg_resources.parse_version('10.9.0')):
         os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
         os.environ['_PYTHON_HOST_PLATFORM'] = re.sub(
-            r'macosx-[0-9]+\.[0-9]+-(.+)', r'macosx-10.9-\1',
-            util.get_platform())
+            r'macosx-[0-9]+\.[0-9]+-(.+)',
+            r'macosx-10.9-\1',
+            sysconfig.get_platform(),
+        )
 
     # https://github.com/Theano/Theano/issues/4926
     if sys.platform == 'win32':
@@ -442,7 +425,6 @@ if __name__ == '__main__':
       ),
       test_suite='google.protobuf.internal',
       cmdclass={
-          'clean': CleanCmd,
           'build_py': BuildPyCmd,
           'build_ext': BuildExtCmd,
           'test_conformance': TestConformanceCmd,

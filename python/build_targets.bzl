@@ -465,7 +465,6 @@ def build_targets(name):
             "google/protobuf/python_protobuf.h",
             "internal.bzl",
             "python_version_test.py",
-            "release.sh",
             "setup.cfg",
             "setup.py",
             "tox.ini",
