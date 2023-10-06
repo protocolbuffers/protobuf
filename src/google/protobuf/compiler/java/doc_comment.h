@@ -12,6 +12,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_DOC_COMMENT_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_DOC_COMMENT_H__
 
+#include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 
 // Must be included last.
@@ -47,20 +48,22 @@ enum FieldAccessorType {
 void WriteMessageDocComment(io::Printer* printer, const Descriptor* message,
                             const bool kdoc = false);
 void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
-                          const bool kdoc = false);
+                          Options options, const bool kdoc = false);
 void WriteFieldAccessorDocComment(io::Printer* printer,
                                   const FieldDescriptor* field,
-                                  const FieldAccessorType type,
+                                  const FieldAccessorType type, Options options,
                                   const bool builder = false,
                                   const bool kdoc = false);
 void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
                                            const FieldDescriptor* field,
                                            const FieldAccessorType type,
+                                           Options options,
                                            const bool builder = false,
                                            const bool kdoc = false);
 void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
                                              const FieldDescriptor* field,
                                              const FieldAccessorType type,
+                                             Options options,
                                              const bool builder = false,
                                              const bool kdoc = false);
 void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,

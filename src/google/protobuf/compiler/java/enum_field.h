@@ -72,6 +72,7 @@ class ImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
   int message_bit_index_;
   int builder_bit_index_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
+  Context* context_;
   ClassNameResolver* name_resolver_;
 };
 

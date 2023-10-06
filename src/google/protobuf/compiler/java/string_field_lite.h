@@ -110,6 +110,7 @@ class RepeatedImmutableStringFieldLiteGenerator
  private:
   const FieldDescriptor* descriptor_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
+  Context* context_;
   ClassNameResolver* name_resolver_;
 };
 

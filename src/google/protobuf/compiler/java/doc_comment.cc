@@ -11,9 +11,11 @@
 
 #include "google/protobuf/compiler/java/doc_comment.h"
 
+#include <string>
 #include <vector>
 
 #include "absl/strings/str_split.h"
+#include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -187,13 +189,13 @@ static std::string FirstLineOf(const std::string& value) {
 }
 
 static void WriteDebugString(io::Printer* printer, const FieldDescriptor* field,
-                      const bool kdoc) {
+                             const Options options, const bool kdoc) {
+  std::string field_comment = FirstLineOf(field->DebugString());
   if (kdoc) {
-    printer->Print(" * `$def$`\n", "def",
-                   EscapeKdoc(FirstLineOf(field->DebugString())));
+    printer->Print(" * `$def$`\n", "def", EscapeKdoc(field_comment));
   } else {
     printer->Print(" * <code>$def$</code>\n", "def",
-                   EscapeJavadoc(FirstLineOf(field->DebugString())));
+                   EscapeJavadoc(field_comment));
   }
 }
 
@@ -215,7 +217,7 @@ void WriteMessageDocComment(io::Printer* printer, const Descriptor* message,
 }
 
 void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
-                          const bool kdoc) {
+                          const Options options, const bool kdoc) {
   // We start the comment with the main body based on the comments from the
   // .proto file (if present). We then continue with the field declaration,
   // e.g.:
@@ -224,13 +226,7 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
   // If the field is a group, the debug string might end with {.
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, kdoc);
-  if (kdoc) {
-    printer->Print(" * `$def$`\n", "def",
-                   EscapeKdoc(FirstLineOf(field->DebugString())));
-  } else {
-    printer->Print(" * <code>$def$</code>\n", "def",
-                   EscapeJavadoc(FirstLineOf(field->DebugString())));
-  }
+  WriteDebugString(printer, field, options, kdoc);
   printer->Print(" */\n");
 }
 
@@ -261,10 +257,11 @@ void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
 void WriteFieldAccessorDocComment(io::Printer* printer,
                                   const FieldDescriptor* field,
                                   const FieldAccessorType type,
-                                  const bool builder, const bool kdoc) {
+                                  const Options options, const bool builder,
+                                  const bool kdoc) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, kdoc);
-  WriteDebugString(printer, field, kdoc);
+  WriteDebugString(printer, field, options, kdoc);
   if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:
@@ -319,11 +316,12 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
 void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
                                            const FieldDescriptor* field,
                                            const FieldAccessorType type,
+                                           const Options options,
                                            const bool builder,
                                            const bool kdoc) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, kdoc);
-  WriteDebugString(printer, field, kdoc);
+  WriteDebugString(printer, field, options, kdoc);
   if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:
@@ -389,11 +387,12 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
 void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
                                              const FieldDescriptor* field,
                                              const FieldAccessorType type,
+                                             const Options options,
                                              const bool builder,
                                              const bool kdoc) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, kdoc);
-  WriteDebugString(printer, field, kdoc);
+  WriteDebugString(printer, field, options, kdoc);
   if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:
