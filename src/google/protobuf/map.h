@@ -467,6 +467,8 @@ class UntypedMapBase;
 
 class UntypedMapIterator {
  public:
+  using size_type = uint32_t;
+
   // Invariants:
   // node_ is always correct. This is handy because the most common
   // operations are operator* and operator-> and they only use node_.
@@ -478,12 +480,12 @@ class UntypedMapIterator {
 
   explicit UntypedMapIterator(const UntypedMapBase* m);
 
-  UntypedMapIterator(NodeBase* n, const UntypedMapBase* m, size_t index)
+  UntypedMapIterator(NodeBase* n, const UntypedMapBase* m, size_type index)
       : node_(n), m_(m), bucket_index_(index) {}
 
   // Advance through buckets, looking for the first that isn't empty.
   // If nothing non-empty is found then leave node_ == nullptr.
-  void SearchFrom(size_t start_bucket);
+  void SearchFrom(size_type start_bucket);
 
   // The definition of operator== is handled by the derived type. If we were
   // to do it in this class it would allow comparing iterators of different
@@ -504,7 +506,7 @@ class UntypedMapIterator {
 
   NodeBase* node_;
   const UntypedMapBase* m_;
-  size_t bucket_index_;
+  size_type bucket_index_;
 };
 
 // Base class for all Map instantiations.
@@ -517,7 +519,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   using Tree = internal::TreeForMap;
 
  public:
-  using size_type = size_t;
+  using size_type = uint32_t;
 
   explicit constexpr UntypedMapBase(Arena* arena)
       : num_elements_(0),
@@ -545,9 +547,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     std::swap(alloc_, other->alloc_);
   }
 
-  static size_type max_size() {
-    return static_cast<size_type>(1) << (sizeof(void**) >= 8 ? 60 : 28);
-  }
+  static size_type max_size() { return std::numeric_limits<size_type>::max(); }
   size_type size() const { return num_elements_; }
   bool empty() const { return size() == 0; }
 
@@ -781,10 +781,10 @@ inline UntypedMapIterator::UntypedMapIterator(const UntypedMapBase* m) : m_(m) {
   }
 }
 
-inline void UntypedMapIterator::SearchFrom(size_t start_bucket) {
+inline void UntypedMapIterator::SearchFrom(size_type start_bucket) {
   ABSL_DCHECK(m_->index_of_first_non_null_ == m_->num_buckets_ ||
               !m_->TableEntryIsEmpty(m_->index_of_first_non_null_));
-  for (size_t i = start_bucket; i < m_->num_buckets_; ++i) {
+  for (size_type i = start_bucket; i < m_->num_buckets_; ++i) {
     TableEntryPtr entry = m_->table_[i];
     if (entry == TableEntryPtr{}) continue;
     bucket_index_ = i;
@@ -1022,7 +1022,7 @@ class KeyMapBase : public UntypedMapBase {
   }
 
   // Resize to the given number of buckets.
-  void Resize(size_t new_num_buckets) {
+  void Resize(size_type new_num_buckets) {
     if (num_buckets_ == kGlobalEmptyTableSize) {
       // This is the global empty array.
       // Just overwrite with a new one. No need to transfer or free anything.
@@ -1068,7 +1068,7 @@ class KeyMapBase : public UntypedMapBase {
   // stale.  Fix them as needed.  Then return true iff node_ points to a
   // Node in a list.  If false is returned then *it is modified to be
   // a valid iterator for node_.
-  bool revalidate_if_necessary(size_t& bucket_index, KeyNode* node,
+  bool revalidate_if_necessary(size_type& bucket_index, KeyNode* node,
                                TreeIterator* it) const {
     // Force bucket_index to be in range.
     bucket_index &= (num_buckets_ - 1);
@@ -1133,7 +1133,9 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using reference = value_type&;
   using const_reference = const value_type&;
 
-  using size_type = size_t;
+  // The largest valid serialization for a message is INT_MAX, so we can't have
+  // more than 32-bits worth of elements.
+  using size_type = uint32_t;
   using hasher = typename TS::hash;
 
   constexpr Map() : Base(nullptr) { StaticValidityCheck(); }
