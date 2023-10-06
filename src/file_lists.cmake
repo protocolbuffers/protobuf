@@ -111,6 +111,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/parser.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_edition_defaults.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h
