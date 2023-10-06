@@ -5318,6 +5318,26 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   }
 }
 
+void upb_Arena_IncRefFor(upb_Arena* arena, const void* owner) {
+  _upb_ArenaRoot r;
+retry:
+  r = _upb_Arena_FindRoot(arena);
+  if (upb_Atomic_CompareExchangeWeak(
+          &r.root->parent_or_count, &r.tagged_count,
+          _upb_Arena_TaggedFromRefcount(
+              _upb_Arena_RefCountFromTagged(r.tagged_count) + 1),
+          memory_order_release, memory_order_acquire)) {
+    // We incremented it successfully, so we are done.
+    return;
+  }
+  // We failed update due to parent switching on the arena.
+  goto retry;
+}
+
+void upb_Arena_DecRefFor(upb_Arena* arena, const void* owner) {
+  upb_Arena_Free(arena);
+}
+
 
 
 // Must be last.
