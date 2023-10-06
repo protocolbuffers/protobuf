@@ -8,13 +8,17 @@
 #include "google/protobuf/inlined_string_field.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <string>
+#include <utility>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/message_lite.h"
@@ -29,11 +33,21 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+#if defined(NDEBUG) || !defined(GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE)
+
+class InlinedStringField::ScopedCheckInvariants {
+ public:
+  constexpr explicit ScopedCheckInvariants(const InlinedStringField*) {}
+};
+
+#endif  // NDEBUG || !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
+
 
 std::string* InlinedStringField::Mutable(const LazyString& /*default_value*/,
                                          Arena* arena, bool donated,
                                          uint32_t* donating_states,
                                          uint32_t mask, MessageLite* msg) {
+  ScopedCheckInvariants invariants(this);
   if (arena == nullptr || !donated) {
     return UnsafeMutablePointer();
   }
@@ -43,6 +57,7 @@ std::string* InlinedStringField::Mutable(const LazyString& /*default_value*/,
 std::string* InlinedStringField::Mutable(Arena* arena, bool donated,
                                          uint32_t* donating_states,
                                          uint32_t mask, MessageLite* msg) {
+  ScopedCheckInvariants invariants(this);
   if (arena == nullptr || !donated) {
     return UnsafeMutablePointer();
   }
