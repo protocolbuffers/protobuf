@@ -476,6 +476,7 @@ cc_library(
         "wire_format.cc",
     ],
     hdrs = [
+        "cpp_edition_defaults.h",
         "cpp_features.pb.h",
         "descriptor.h",
         "descriptor.pb.h",

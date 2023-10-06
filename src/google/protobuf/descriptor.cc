@@ -50,6 +50,7 @@
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/any.h"
+#include "google/protobuf/cpp_edition_defaults.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_database.h"
@@ -1092,12 +1093,12 @@ bool AllowedExtendeeInProto3(const std::string& name) {
 
 const FeatureSetDefaults& GetCppFeatureSetDefaults() {
   static const FeatureSetDefaults* default_spec = [] {
-    auto default_spec = FeatureResolver::CompileDefaults(
-        FeatureSet::descriptor(),
-        {pb::CppFeatures::descriptor()->file()->extension(0)},
-        PROTOBUF_MINIMUM_EDITION, PROTOBUF_MAXIMUM_EDITION);
-    ABSL_CHECK(default_spec.ok()) << default_spec.status();
-    return new FeatureSetDefaults(std::move(default_spec).value());
+    auto* defaults = new FeatureSetDefaults();
+    internal::ParseNoReflection(
+        absl::string_view{PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
+                          sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
+        *defaults);
+    return defaults;
   }();
   return *default_spec;
 }
