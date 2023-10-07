@@ -414,8 +414,8 @@ template <>
 PROTOBUF_NOINLINE
 #endif
     Arena*
-    GenericTypeHandler<Message>::GetOwningArena(Message* value) {
-  return value->GetOwningArena();
+    GenericTypeHandler<Message>::GetArena(Message* value) {
+  return value->GetArena();
 }
 
 template void InternalMetadata::DoClear<UnknownFieldSet>();

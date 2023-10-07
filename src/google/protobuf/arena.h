@@ -261,7 +261,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // again.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static void Destroy(T* obj) {
-    if (InternalGetOwningArena(obj) == nullptr) delete obj;
+    if (InternalGetArena(obj) == nullptr) delete obj;
   }
 
   // Allocates memory with the specific size and alignment.
@@ -392,21 +392,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     struct Rank1 {};
     struct Rank0 : Rank1 {};
 
-    static Arena* GetOwningArena(const T* p) {
-      return GetOwningArena(Rank0{}, p);
-    }
-
-    template <typename U>
-    static auto GetOwningArena(Rank0, const U* p)
-        -> EnableIfArena<decltype(p->GetOwningArena())> {
-      return p->GetOwningArena();
-    }
-
-    template <typename U>
-    static Arena* GetOwningArena(Rank1, const U*) {
-      return nullptr;
-    }
-
     static void InternalSwap(T* a, T* b) { a->InternalSwap(b); }
 
     static Arena* GetArena(T* p) { return GetArena(Rank0{}, p); }
@@ -457,20 +442,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     friend class Arena;
     friend class TestUtil::ReflectionTester;
   };
-
-  // Provides access to protected GetOwningArena to generated messages.  For
-  // internal use only.
-  template <typename T>
-  static Arena* InternalGetOwningArena(const T* p) {
-    return InternalHelper<T>::GetOwningArena(p);
-  }
-
-  // Wraps InternalGetArena() and will be removed soon.
-  // For internal use only.
-  template <typename T>
-  static Arena* InternalGetArenaForAllocation(T* p) {
-    return InternalHelper<T>::GetArena(p);
-  }
 
   // Provides access to protected GetArena to generated messages.
   // For internal use only.

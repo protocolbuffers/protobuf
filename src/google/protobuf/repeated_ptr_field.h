@@ -386,10 +386,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   PROTOBUF_NDEBUG_INLINE void Swap(RepeatedPtrFieldBase* other) {
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() != nullptr &&
-        GetOwningArena() == other->GetOwningArena())
+    if (GetArena() != nullptr && GetArena() == other->GetArena())
 #else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() == other->GetOwningArena())
+    if (GetArena() == other->GetArena())
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
     {
       InternalSwap(other);
@@ -495,10 +494,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   void AddCleared(Value<TypeHandler>* value) {
-    ABSL_DCHECK(GetOwningArena() == nullptr)
-        << "AddCleared() can only be used on a "
-           "RepeatedPtrField not on an arena.";
-    ABSL_DCHECK(TypeHandler::GetOwningArena(value) == nullptr)
+    ABSL_DCHECK(GetArena() == nullptr) << "AddCleared() can only be used on a "
+                                          "RepeatedPtrField not on an arena.";
+    ABSL_DCHECK(TypeHandler::GetArena(value) == nullptr)
         << "AddCleared() can only accept values not on an arena.";
     MaybeExtend();
     if (using_sso()) {
@@ -510,7 +508,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   PROTOBUF_NODISCARD Value<TypeHandler>* ReleaseCleared() {
-    ABSL_DCHECK(GetOwningArena() == nullptr)
+    ABSL_DCHECK(GetArena() == nullptr)
         << "ReleaseCleared() can only be used on a RepeatedPtrField not on "
         << "an arena.";
     ABSL_DCHECK(tagged_rep_or_elem_ != nullptr);
@@ -527,8 +525,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // AddAllocated version that implements arena-safe copying behavior.
   template <typename TypeHandler>
   void AddAllocatedInternal(Value<TypeHandler>* value, std::true_type) {
-    Arena* element_arena = TypeHandler::GetOwningArena(value);
-    Arena* arena = GetOwningArena();
+    Arena* element_arena = TypeHandler::GetArena(value);
+    Arena* arena = GetArena();
     if (arena == element_arena && allocated_size() < total_size_) {
       // Fast path: underlying arena representation (tagged pointer) is equal to
       // our arena pointer, and we can add to array without resizing it (at
@@ -594,7 +592,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // First, release an element.
     Value<TypeHandler>* result = UnsafeArenaReleaseLast<TypeHandler>();
     // Now perform a copy if we're on an arena.
-    Arena* arena = GetOwningArena();
+    Arena* arena = GetArena();
 
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
     auto* new_result = copy<TypeHandler>(result);
@@ -611,7 +609,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // this is the same as UnsafeArenaReleaseLast(). Note that we
     // ABSL_DCHECK-fail if we're on an arena, since the user really should
     // implement the copy operation in this case.
-    ABSL_DCHECK(GetOwningArena() == nullptr)
+    ABSL_DCHECK(GetArena() == nullptr)
         << "ReleaseLast() called on a RepeatedPtrField that is on an arena, "
         << "with a type that does not implement MergeFrom. This is unsafe; "
         << "please implement MergeFrom for your type.";
@@ -621,16 +619,15 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   PROTOBUF_NOINLINE void SwapFallback(RepeatedPtrFieldBase* other) {
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    ABSL_DCHECK(GetOwningArena() == nullptr ||
-                other->GetOwningArena() != GetOwningArena());
+    ABSL_DCHECK(GetArena() == nullptr || other->GetArena() != GetArena());
 #else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    ABSL_DCHECK(other->GetOwningArena() != GetOwningArena());
+    ABSL_DCHECK(other->GetArena() != GetArena());
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
 
     // Copy semantics in this case. We try to improve efficiency by placing the
     // temporary on |other|'s arena so that messages are copied twice rather
     // than three times.
-    RepeatedPtrFieldBase temp(other->GetOwningArena());
+    RepeatedPtrFieldBase temp(other->GetArena());
     if (!this->empty()) {
       temp.MergeFrom<typename TypeHandler::Type>(*this);
     }
@@ -640,9 +637,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   // Gets the Arena on which this RepeatedPtrField stores its elements.
-  inline Arena* GetArena() const { return GetOwningArena(); }
-
-  inline Arena* GetOwningArena() const { return arena_; }
+  inline Arena* GetArena() const { return arena_; }
 
  private:
   using InternalArenaConstructable_ = void;
@@ -885,8 +880,8 @@ class GenericTypeHandler {
     delete value;
 #endif
   }
-  static inline Arena* GetOwningArena(GenericType* value) {
-    return Arena::InternalGetOwningArena(value);
+  static inline Arena* GetArena(GenericType* value) {
+    return Arena::InternalGetArena(value);
   }
 
   static inline void Clear(GenericType* value) { value->Clear(); }
@@ -908,9 +903,8 @@ inline MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
   return NewFromPrototypeHelper(prototype, arena);
 }
 template <>
-inline Arena* GenericTypeHandler<MessageLite>::GetOwningArena(
-    MessageLite* value) {
-  return value->GetOwningArena();
+inline Arena* GenericTypeHandler<MessageLite>::GetArena(MessageLite* value) {
+  return value->GetArena();
 }
 
 template <typename GenericType>
@@ -937,8 +931,7 @@ template <>
 PROTOBUF_EXPORT Message* GenericTypeHandler<Message>::NewFromPrototype(
     const Message* prototype, Arena* arena);
 template <>
-PROTOBUF_EXPORT Arena* GenericTypeHandler<Message>::GetOwningArena(
-    Message* value);
+PROTOBUF_EXPORT Arena* GenericTypeHandler<Message>::GetArena(Message* value);
 
 class StringTypeHandler {
  public:
@@ -955,7 +948,7 @@ class StringTypeHandler {
                                               Arena* arena) {
     return New(arena);
   }
-  static inline Arena* GetOwningArena(std::string*) { return nullptr; }
+  static inline Arena* GetArena(std::string*) { return nullptr; }
   static inline void Delete(std::string* value, Arena* arena) {
     if (arena == nullptr) {
       delete value;
@@ -1307,9 +1300,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
 
-  // Internal version of GetArena().
-  inline Arena* GetOwningArena() const;
-
   // Implementations for ExtractSubrange(). The copying behavior must be
   // included only if the type supports the necessary operations (e.g.,
   // MergeFrom()), so we must resolve this at compile time. ExtractSubrange()
@@ -1394,7 +1384,7 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // other is on an arena. This field can't be on an arena because arena
   // construction always uses the Arena* accepting constructor.
-  if (other.GetOwningArena()) {
+  if (other.GetArena()) {
     CopyFrom(other);
   } else {
     InternalSwap(&other);
@@ -1408,9 +1398,9 @@ inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
-    if (GetOwningArena() != other.GetOwningArena()
+    if (GetArena() != other.GetArena()
 #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        || GetOwningArena() == nullptr
+        || GetArena() == nullptr
 #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       CopyFrom(other);
@@ -1492,7 +1482,7 @@ inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
   ABSL_DCHECK_GE(num, 0);
   ABSL_DCHECK_LE(start + num, size());
   void** subrange = raw_mutable_data() + start;
-  Arena* arena = GetOwningArena();
+  Arena* arena = GetArena();
   for (int i = 0; i < num; ++i) {
     using H = CommonHandler<TypeHandler>;
     H::Delete(static_cast<Element*>(subrange[i]), arena);
@@ -1523,7 +1513,7 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
       << "Releasing elements without transferring ownership is an unsafe "
          "operation.  Use UnsafeArenaExtractSubrange.";
   if (elements != nullptr) {
-    Arena* arena = GetOwningArena();
+    Arena* arena = GetArena();
     auto* extracted = data() + start;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
     // Always copy.
@@ -1559,7 +1549,7 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
   // ExtractSubrange() must return heap-allocated objects by contract, and we
   // cannot fulfill this contract if we are an on arena, we must ABSL_DCHECK()
   // that we are not on an arena.
-  ABSL_DCHECK(GetOwningArena() == nullptr)
+  ABSL_DCHECK(GetArena() == nullptr)
       << "ExtractSubrange() when arena is non-nullptr is only supported when "
       << "the Element type supplies a MergeFrom() operation to make copies.";
   UnsafeArenaExtractSubrange(start, num, elements);
@@ -1644,7 +1634,7 @@ template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaSwap(
     RepeatedPtrField* other) {
   if (this == other) return;
-  ABSL_DCHECK_EQ(GetOwningArena(), other->GetOwningArena());
+  ABSL_DCHECK_EQ(GetArena(), other->GetArena());
   RepeatedPtrFieldBase::InternalSwap(other);
 }
 
@@ -1664,11 +1654,6 @@ inline Arena* RepeatedPtrField<Element>::GetArena() const {
   return RepeatedPtrFieldBase::GetArena();
 }
 #endif  // !PROTOBUF_FUTURE_REMOVE_CONST_REPEATEDFIELD_GETARENA_API
-
-template <typename Element>
-inline Arena* RepeatedPtrField<Element>::GetOwningArena() const {
-  return RepeatedPtrFieldBase::GetOwningArena();
-}
 
 template <typename Element>
 inline size_t RepeatedPtrField<Element>::SpaceUsedExcludingSelfLong() const {
