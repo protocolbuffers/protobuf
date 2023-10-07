@@ -13,18 +13,28 @@
 
 #include "upb/message/accessors.h"
 
+#include <string.h>
+
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 #include <gtest/gtest.h>
 #include "google/protobuf/test_messages_proto2.upb.h"
+#include "google/protobuf/test_messages_proto2.upb_minitable.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
+#include "google/protobuf/test_messages_proto3.upb_minitable.h"
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/status.h"
 #include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
 #include "upb/message/array.h"
+#include "upb/message/message.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/encode.hpp"
 #include "upb/mini_descriptor/internal/modifiers.h"
-#include "upb/test/test.upb.h"
-#include "upb/wire/decode.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/message.h"
 
 // Must be last
 #include "upb/port/def.inc"
@@ -53,12 +63,14 @@ const uint64_t kTestUInt64 = 0xFEDCBAFF87654321;
 
 const upb_MiniTableField* find_proto3_field(int field_number) {
   return upb_MiniTable_FindFieldByNumber(
-      &protobuf_test_messages_proto3_TestAllTypesProto3_msg_init, field_number);
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init,
+      field_number);
 }
 
 const upb_MiniTableField* find_proto2_field(int field_number) {
   return upb_MiniTable_FindFieldByNumber(
-      &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init, field_number);
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+      field_number);
 }
 
 TEST(GeneratedCode, HazzersProto2) {
@@ -265,7 +277,7 @@ TEST(GeneratedCode, SubMessage) {
 
   const upb_MiniTableField* nested_message_a_field =
       upb_MiniTable_FindFieldByNumber(
-          &protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_msg_init,
+          &protobuf_0test_0messages__proto2__TestAllTypesProto2__NestedMessage_msg_init,
           kFieldOptionalNestedMessageA);
   EXPECT_EQ(5, upb_Message_GetInt32(sub_message, nested_message_a_field, 0));
 
@@ -281,11 +293,11 @@ TEST(GeneratedCode, SubMessage) {
   upb_Message_SetInt32(new_nested_message, nested_message_a_field, 123,
                        nullptr);
   upb_Message_SetMessage(
-      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
+      msg, &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
       optional_message_field, new_nested_message);
 
   upb_Message* mutable_message = upb_Message_GetOrCreateMutableMessage(
-      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
+      msg, &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
       optional_message_field, arena);
   EXPECT_EQ(
       true,
@@ -358,10 +370,10 @@ TEST(GeneratedCode, GetMutableMessage) {
   const upb_MiniTableField* optional_message_field =
       find_proto2_field(kFieldOptionalNestedMessage);
   upb_Message* msg1 = upb_Message_GetOrCreateMutableMessage(
-      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
+      msg, &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
       optional_message_field, arena);
   upb_Message* msg2 = upb_Message_GetOrCreateMutableMessage(
-      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
+      msg, &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
       optional_message_field, arena);
   // Verify that newly constructed sub message is stored in msg.
   EXPECT_EQ(msg1, msg2);

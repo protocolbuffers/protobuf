@@ -73,10 +73,6 @@ std::string SourceFilename(upb::FileDefPtr file) {
   return StripExtension(file.name()) + ".upb.c";
 }
 
-std::string MessageInitName(upb::MessageDefPtr descriptor) {
-  return absl::StrCat(MessageName(descriptor), "_msg_init");
-}
-
 std::string MessageMiniTableRef(upb::MessageDefPtr descriptor,
                                 const Options& options) {
   if (options.bootstrap) {
