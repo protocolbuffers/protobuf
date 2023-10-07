@@ -97,10 +97,11 @@ void RepeatedPtrFieldBase::DestroyProtos() {
 
 template <typename F>
 auto* RepeatedPtrFieldBase::AddInternal(F factory) {
-  using Result = decltype(factory(GetArena()));
+  Arena* const arena = GetArena();
+  using Result = decltype(factory(arena));
   if (tagged_rep_or_elem_ == nullptr) {
     ExchangeCurrentSize(1);
-    tagged_rep_or_elem_ = factory(GetArena());
+    tagged_rep_or_elem_ = factory(arena);
     return static_cast<Result>(tagged_rep_or_elem_);
   }
   if (using_sso()) {
@@ -122,7 +123,7 @@ auto* RepeatedPtrFieldBase::AddInternal(F factory) {
   Rep* r = rep();
   ++r->allocated_size;
   void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
-  result = factory(GetArena());
+  result = factory(arena);
   return static_cast<Result>(result);
 }
 
