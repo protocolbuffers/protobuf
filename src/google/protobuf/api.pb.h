@@ -100,9 +100,9 @@ class PROTOBUF_EXPORT Mixin final :
   }
   inline Mixin& operator=(Mixin&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()
+    if (GetArena() == from.GetArena()
   #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetOwningArena() != nullptr
+        && GetArena() != nullptr
   #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
@@ -146,10 +146,10 @@ class PROTOBUF_EXPORT Mixin final :
   inline void Swap(Mixin* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() != nullptr &&
-        GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() != nullptr &&
+        GetArena() == other->GetArena()) {
    #else  // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
@@ -158,7 +158,7 @@ class PROTOBUF_EXPORT Mixin final :
   }
   void UnsafeArenaSwap(Mixin* other) {
     if (other == this) return;
-    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
   }
 
@@ -299,9 +299,9 @@ class PROTOBUF_EXPORT Method final :
   }
   inline Method& operator=(Method&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()
+    if (GetArena() == from.GetArena()
   #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetOwningArena() != nullptr
+        && GetArena() != nullptr
   #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
@@ -345,10 +345,10 @@ class PROTOBUF_EXPORT Method final :
   inline void Swap(Method* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() != nullptr &&
-        GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() != nullptr &&
+        GetArena() == other->GetArena()) {
    #else  // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
@@ -357,7 +357,7 @@ class PROTOBUF_EXPORT Method final :
   }
   void UnsafeArenaSwap(Method* other) {
     if (other == this) return;
-    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
   }
 
@@ -572,9 +572,9 @@ class PROTOBUF_EXPORT Api final :
   }
   inline Api& operator=(Api&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()
+    if (GetArena() == from.GetArena()
   #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetOwningArena() != nullptr
+        && GetArena() != nullptr
   #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
@@ -618,10 +618,10 @@ class PROTOBUF_EXPORT Api final :
   inline void Swap(Api* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() != nullptr &&
-        GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() != nullptr &&
+        GetArena() == other->GetArena()) {
    #else  // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
@@ -630,7 +630,7 @@ class PROTOBUF_EXPORT Api final :
   }
   void UnsafeArenaSwap(Api* other) {
     if (other == this) return;
-    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
   }
 
@@ -1134,8 +1134,7 @@ inline void Api::set_allocated_source_context(::google::protobuf::SourceContext*
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::MessageLite*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageLite*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
