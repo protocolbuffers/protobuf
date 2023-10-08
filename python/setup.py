@@ -35,9 +35,9 @@ elif os.path.exists('../bazel-bin/protoc'):
   protoc = '../bazel-bin/protoc'
 elif os.path.exists('../bazel-bin/protoc.exe'):
   protoc = '../bazel-bin/protoc.exe'
-elif os.path.exists('protoc'):
+elif os.path.exists('../protoc'):
   protoc = '../protoc'
-elif os.path.exists('protoc.exe'):
+elif os.path.exists('../protoc.exe'):
   protoc = '../protoc.exe'
 elif os.path.exists('../vsprojects/Debug/protoc.exe'):
   protoc = '../vsprojects/Debug/protoc.exe'
