@@ -141,22 +141,22 @@ ConformanceTestSuite::ConformanceRequestSetting::NewTestMessage() const {
   return std::unique_ptr<Message>(prototype_message_for_compare_->New());
 }
 
-std::string ConformanceTestSuite::ConformanceRequestSetting::GetTestName()
-    const {
-  std::string rname;
+std::string
+ConformanceTestSuite::ConformanceRequestSetting::GetSyntaxIdentifier() const {
   switch (FileDescriptorLegacy(prototype_message_.GetDescriptor()->file())
               .syntax()) {
     case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
-      rname = ".Proto3.";
-      break;
+      return "Proto3";
     case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
-      rname = ".Proto2.";
-      break;
+      return "Proto2";
     default:
-      break;
+      return "Unknown";
   }
+}
 
-  return absl::StrCat(ConformanceLevelToString(level_), rname,
+string ConformanceTestSuite::ConformanceRequestSetting::GetTestName() const {
+  return absl::StrCat(ConformanceLevelToString(level_), ".",
+                      GetSyntaxIdentifier(), ".",
                       InputFormatString(input_format_), ".", test_name_, ".",
                       OutputFormatString(output_format_));
 }

@@ -349,7 +349,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
   ConformanceResponse response;
   std::string effective_test_name =
       absl::StrCat(setting.ConformanceLevelToString(level), ".",
-                   SyntaxIdentifier(), ".ProtobufInput.", test_name);
+                   setting.GetSyntaxIdentifier(), ".ProtobufInput.", test_name);
 
   suite_.RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kParseError) {
@@ -522,9 +522,9 @@ void BinaryAndJsonConformanceSuiteImpl<
                                     test_name, input_json);
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  std::string effective_test_name =
-      absl::StrCat(setting.ConformanceLevelToString(level), ".",
-                   SyntaxIdentifier(), ".JsonInput.", test_name, ".Validator");
+  std::string effective_test_name = absl::StrCat(
+      setting.ConformanceLevelToString(level), ".",
+      setting.GetSyntaxIdentifier(), ".JsonInput.", test_name, ".Validator");
 
   suite_.RunTest(effective_test_name, request, &response);
 
@@ -3202,7 +3202,7 @@ BinaryAndJsonConformanceSuiteImpl<MessageType>::GetFieldForType(
   }
   ABSL_LOG(FATAL) << "Couldn't find field with type: " << repeated_string
                   << packed_string << FieldDescriptor::TypeName(type) << " for "
-                  << SyntaxIdentifier();
+                  << d->full_name();
   return nullptr;
 }
 
@@ -3226,7 +3226,7 @@ BinaryAndJsonConformanceSuiteImpl<MessageType>::GetFieldForMapType(
   ABSL_LOG(FATAL) << "Couldn't find map field with type: "
                   << FieldDescriptor::TypeName(key_type) << " and "
                   << FieldDescriptor::TypeName(key_type) << " for "
-                  << SyntaxIdentifier();
+                  << d->full_name();
   return nullptr;
 }
 
@@ -3244,7 +3244,7 @@ BinaryAndJsonConformanceSuiteImpl<MessageType>::GetFieldForOneofType(
 
   ABSL_LOG(FATAL) << "Couldn't find oneof field with type: "
                   << FieldDescriptor::TypeName(type) << " for "
-                  << SyntaxIdentifier();
+                  << d->full_name();
   return nullptr;
 }
 
