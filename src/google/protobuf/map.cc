@@ -50,7 +50,7 @@ void UntypedMapBase::EraseFromTree(size_type b,
   }
 }
 
-size_t UntypedMapBase::VariantBucketNumber(VariantKey key) const {
+auto UntypedMapBase::VariantBucketNumber(VariantKey key) const -> size_type {
   return BucketNumberFromHash(key.Hash());
 }
 
@@ -206,7 +206,7 @@ size_t UntypedMapBase::SpaceUsedInTable(size_t sizeof_node) const {
   size += sizeof_node * num_elements_;
   // For each tree, count the overhead of those nodes.
   // Two buckets at a time because we only care about trees.
-  for (size_t b = 0; b < num_buckets_; ++b) {
+  for (size_type b = 0; b < num_buckets_; ++b) {
     if (TableEntryIsTree(b)) {
       size += sizeof(Tree);
       size += sizeof(Tree::value_type) * TableEntryToTree(table_[b])->size();
