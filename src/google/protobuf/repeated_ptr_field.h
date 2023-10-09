@@ -443,11 +443,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   void AddAllocated(Value<TypeHandler>* value) {
     typename TypeImplementsMergeBehavior<Value<TypeHandler>>::type t;
+    ABSL_DCHECK_NE(value, nullptr);
     AddAllocatedInternal<TypeHandler>(value, t);
   }
 
   template <typename TypeHandler>
   void UnsafeArenaAddAllocated(Value<TypeHandler>* value) {
+    ABSL_DCHECK_NE(value, nullptr);
     // Make room for the new pointer.
     if (current_size_ == total_size_) {
       // The array is completely full with no cleared objects, so grow it.
@@ -1179,6 +1181,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   //   (ii) if this field holds strings, the passed-in string *must* be
   //   heap-allocated, not arena-allocated. There is no way to dynamically check
   //   this at runtime, so User Beware.
+  // Requires:  value != nullptr
   void AddAllocated(Element* value);
 
   // Removes and returns the last element, passing ownership to the caller.
@@ -1201,6 +1204,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // If you put temp_field on the arena this fails, because the ownership
   // transfers to the arena at the "AddAllocated" call and is not released
   // anymore, causing a double delete. UnsafeArenaAddAllocated prevents this.
+  // Requires:  value != nullptr
   void UnsafeArenaAddAllocated(Element* value);
 
   // Removes and returns the last element.  Unlike ReleaseLast, the returned
