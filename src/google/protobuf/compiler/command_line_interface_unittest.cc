@@ -1436,7 +1436,7 @@ TEST_F(CommandLineInterfaceTest, FeatureValidationError) {
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
       "--experimental_editions foo.proto");
   ExpectErrorSubstring(
-      "FeatureSet.field_presence must resolve to a known value, found "
+      "`field_presence` must resolve to a known value, found "
       "FIELD_PRESENCE_UNKNOWN");
 }
 

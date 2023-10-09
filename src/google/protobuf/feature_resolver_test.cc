@@ -298,26 +298,17 @@ TEST(FeatureResolverTest, DefaultsMessageMerge) {
 }
 
 TEST(FeatureResolverTest, CreateFromUnsortedDefaults) {
-  FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
-    minimum_edition: EDITION_2_TEST_ONLY
-    maximum_edition: EDITION_99997_TEST_ONLY
-    defaults {
-      edition: EDITION_2_TEST_ONLY
-      features {}
-    }
-    defaults {
-      edition: EDITION_99997_TEST_ONLY
-      features {}
-    }
-    defaults {
-      edition: EDITION_2023
-      features {}
-    }
-  )pb");
+  auto valid_defaults = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {}, EDITION_PROTO2, EDITION_2023);
+  ASSERT_OK(valid_defaults);
+  FeatureSetDefaults defaults = *valid_defaults;
+
+  defaults.mutable_defaults()->SwapElements(0, 1);
+
   EXPECT_THAT(FeatureResolver::Create(EDITION_2023, defaults),
               HasError(AllOf(HasSubstr("not strictly increasing."),
-                             HasSubstr("Edition 99997_TEST_ONLY is greater "
-                                       "than or equal to edition 2023"))));
+                             HasSubstr("Edition PROTO3 is greater "
+                                       "than or equal to edition PROTO2"))));
 }
 
 TEST(FeatureResolverTest, CreateUnknownEdition) {
@@ -341,6 +332,29 @@ TEST(FeatureResolverTest, CreateMissingEdition) {
   )pb");
   EXPECT_THAT(FeatureResolver::Create(EDITION_2023, defaults),
               HasError(HasSubstr("Invalid edition UNKNOWN")));
+}
+
+TEST(FeatureResolverTest, CreateUnknownEnumFeature) {
+  auto valid_defaults = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {}, EDITION_2023, EDITION_2023);
+  ASSERT_OK(valid_defaults);
+
+  // Use reflection to make sure we validate every enum feature in FeatureSet.
+  const Descriptor& descriptor = *FeatureSet::descriptor();
+  for (int i = 0; i < descriptor.field_count(); ++i) {
+    const FieldDescriptor& field = *descriptor.field(i);
+
+    FeatureSetDefaults defaults = *valid_defaults;
+    FeatureSet* features =
+        defaults.mutable_defaults()->Mutable(0)->mutable_features();
+    const Reflection& reflection = *features->GetReflection();
+
+    // Clear the feature, which should be invalid.
+    reflection.ClearField(features, &field);
+    EXPECT_THAT(FeatureResolver::Create(EDITION_2023, defaults),
+                HasError(AllOf(HasSubstr(field.name()),
+                               HasSubstr("must resolve to a known value"))));
+  }
 }
 
 TEST(FeatureResolverTest, CompileDefaultsMissingDescriptor) {
@@ -469,51 +483,26 @@ TEST(FeatureResolverTest, MergeFeaturesParentOverrides) {
   EXPECT_EQ(ext.enum_field_feature(), pb::TestFeatures::ENUM_VALUE4);
 }
 
-TEST(FeatureResolverTest, MergeFeaturesFieldPresenceUnknown) {
+TEST(FeatureResolverTest, MergeFeaturesUnknownEnumFeature) {
   absl::StatusOr<FeatureResolver> resolver = SetupFeatureResolver(EDITION_2023);
   ASSERT_OK(resolver);
-  FeatureSet child = ParseTextOrDie(R"pb(
-    field_presence: FIELD_PRESENCE_UNKNOWN
-  )pb");
-  EXPECT_THAT(
-      resolver->MergeFeatures(FeatureSet(), child),
-      HasError(AllOf(HasSubstr("field google.protobuf.FeatureSet.field_presence"),
-                     HasSubstr("FIELD_PRESENCE_UNKNOWN"))));
-}
 
-TEST(FeatureResolverTest, MergeFeaturesEnumTypeUnknown) {
-  absl::StatusOr<FeatureResolver> resolver = SetupFeatureResolver(EDITION_2023);
-  ASSERT_OK(resolver);
-  FeatureSet child = ParseTextOrDie(R"pb(
-    enum_type: ENUM_TYPE_UNKNOWN
-  )pb");
-  EXPECT_THAT(resolver->MergeFeatures(FeatureSet(), child),
-              HasError(AllOf(HasSubstr("field google.protobuf.FeatureSet.enum_type"),
-                             HasSubstr("ENUM_TYPE_UNKNOWN"))));
-}
+  // Use reflection to make sure we validate every enum feature in FeatureSet.
+  const Descriptor& descriptor = *FeatureSet::descriptor();
+  for (int i = 0; i < descriptor.field_count(); ++i) {
+    const FieldDescriptor& field = *descriptor.field(i);
 
-TEST(FeatureResolverTest, MergeFeaturesRepeatedFieldEncodingUnknown) {
-  absl::StatusOr<FeatureResolver> resolver = SetupFeatureResolver(EDITION_2023);
-  ASSERT_OK(resolver);
-  FeatureSet child = ParseTextOrDie(R"pb(
-    repeated_field_encoding: REPEATED_FIELD_ENCODING_UNKNOWN
-  )pb");
-  EXPECT_THAT(resolver->MergeFeatures(FeatureSet(), child),
-              HasError(AllOf(
-                  HasSubstr("field google.protobuf.FeatureSet.repeated_field_encoding"),
-                  HasSubstr("REPEATED_FIELD_ENCODING_UNKNOWN"))));
-}
+    FeatureSet features;
+    const Reflection& reflection = *features.GetReflection();
 
-TEST(FeatureResolverTest, MergeFeaturesMessageEncodingUnknown) {
-  absl::StatusOr<FeatureResolver> resolver = SetupFeatureResolver(EDITION_2023);
-  ASSERT_OK(resolver);
-  FeatureSet child = ParseTextOrDie(R"pb(
-    message_encoding: MESSAGE_ENCODING_UNKNOWN
-  )pb");
-  EXPECT_THAT(
-      resolver->MergeFeatures(FeatureSet(), child),
-      HasError(AllOf(HasSubstr("field google.protobuf.FeatureSet.message_encoding"),
-                     HasSubstr("MESSAGE_ENCODING_UNKNOWN"))));
+    // Set the feature to a value of 0, which is unknown by convention.
+    reflection.SetEnumValue(&features, &field, 0);
+    EXPECT_THAT(
+        resolver->MergeFeatures(FeatureSet(), features),
+        HasError(AllOf(
+            HasSubstr(field.name()), HasSubstr("must resolve to a known value"),
+            HasSubstr(field.enum_type()->FindValueByNumber(0)->name()))));
+  }
 }
 
 TEST(FeatureResolverTest, MergeFeaturesExtensionEnumUnknown) {
