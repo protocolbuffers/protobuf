@@ -49,4 +49,6 @@ message Box {
   optional google.protobuf.Value val = 6;
   optional float f = 7;
   optional double d = 8;
+  optional int32 value = 9 [json_name = "old_value"];
+  optional int32 new_value = 10 [json_name = "value"];
 }
