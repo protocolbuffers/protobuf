@@ -240,8 +240,8 @@ inline bool FieldDescriptorProto_Type_Parse(absl::string_view name, FieldDescrip
 }
 enum FieldDescriptorProto_Label : int {
   FieldDescriptorProto_Label_LABEL_OPTIONAL = 1,
-  FieldDescriptorProto_Label_LABEL_REQUIRED = 2,
   FieldDescriptorProto_Label_LABEL_REPEATED = 3,
+  FieldDescriptorProto_Label_LABEL_REQUIRED = 2,
 };
 
 PROTOBUF_EXPORT bool FieldDescriptorProto_Label_IsValid(int value);
@@ -8747,8 +8747,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   using Label = FieldDescriptorProto_Label;
   static constexpr Label LABEL_OPTIONAL = FieldDescriptorProto_Label_LABEL_OPTIONAL;
-  static constexpr Label LABEL_REQUIRED = FieldDescriptorProto_Label_LABEL_REQUIRED;
   static constexpr Label LABEL_REPEATED = FieldDescriptorProto_Label_LABEL_REPEATED;
+  static constexpr Label LABEL_REQUIRED = FieldDescriptorProto_Label_LABEL_REQUIRED;
   static inline bool Label_IsValid(int value) {
     return FieldDescriptorProto_Label_IsValid(value);
   }

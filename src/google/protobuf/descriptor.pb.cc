@@ -1721,8 +1721,8 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
     "BYTES\020\014\022\017\n\013TYPE_UINT32\020\r\022\r\n\tTYPE_ENUM\020\016\022"
     "\021\n\rTYPE_SFIXED32\020\017\022\021\n\rTYPE_SFIXED64\020\020\022\017\n"
     "\013TYPE_SINT32\020\021\022\017\n\013TYPE_SINT64\020\022\"C\n\005Label"
-    "\022\022\n\016LABEL_OPTIONAL\020\001\022\022\n\016LABEL_REQUIRED\020\002"
-    "\022\022\n\016LABEL_REPEATED\020\003\"T\n\024OneofDescriptorP"
+    "\022\022\n\016LABEL_OPTIONAL\020\001\022\022\n\016LABEL_REPEATED\020\003"
+    "\022\022\n\016LABEL_REQUIRED\020\002\"T\n\024OneofDescriptorP"
     "roto\022\014\n\004name\030\001 \001(\t\022.\n\007options\030\002 \001(\0132\035.go"
     "ogle.protobuf.OneofOptions\"\244\002\n\023EnumDescr"
     "iptorProto\022\014\n\004name\030\001 \001(\t\0228\n\005value\030\002 \003(\0132"
@@ -2048,8 +2048,8 @@ bool FieldDescriptorProto_Label_IsValid(int value) {
   (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_OPTIONAL;
-constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_REQUIRED;
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_REPEATED;
+constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_REQUIRED;
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::Label_MIN;
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::Label_MAX;
 constexpr int FieldDescriptorProto::Label_ARRAYSIZE;

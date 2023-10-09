@@ -227,9 +227,10 @@ message FieldDescriptorProto {
     TYPE_BOOL = 8;
     TYPE_STRING = 9;
     // Tag-delimited aggregate.
-    // Group type is deprecated and not supported in proto3. However, Proto3
+    // Group type is deprecated and not supported after google.protobuf. However, Proto3
     // implementations should still be able to parse the group wire format and
-    // treat group fields as unknown fields.
+    // treat group fields as unknown fields.  In Editions, the group wire format
+    // can be enabled via the `message_encoding` feature.
     TYPE_GROUP = 10;
     TYPE_MESSAGE = 11;  // Length-delimited aggregate.
 
@@ -246,8 +247,11 @@ message FieldDescriptorProto {
   enum Label {
     // 0 is reserved for errors
     LABEL_OPTIONAL = 1;
-    LABEL_REQUIRED = 2;
     LABEL_REPEATED = 3;
+    // The required label is only allowed in google.protobuf.  In proto3 and Editions
+    // it's explicitly prohibited.  In Editions, the `field_presence` feature
+    // can be used to get this behavior.
+    LABEL_REQUIRED = 2;
   }
 
   optional string name = 1;
@@ -640,7 +644,9 @@ message FieldOptions {
   // a more efficient representation on the wire. Rather than repeatedly
   // writing the tag and type for each element, the entire array is encoded as
   // a single length-delimited blob. In proto3, only explicit setting it to
-  // false will avoid using packed encoding.
+  // false will avoid using packed encoding.  This option is prohibited in
+  // Editions, but the `repeated_field_encoding` feature can be used to control
+  // the behavior.
   optional bool packed = 2;
 
   // The jstype option determines the JavaScript type used for values of the
