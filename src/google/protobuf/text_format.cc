@@ -2759,6 +2759,17 @@ PROTOBUF_NOINLINE void TextFormat::OutOfLinePrintString(
   generator->PrintString(absl::StrCat(values...));
 }
 
+template <size_t n>
+PROTOBUF_NOINLINE void TextFormat::OutOfLinePrintSeparator(
+    BaseTextGenerator* generator, bool single_line_mode,
+    const char (&trueBranch)[n], const char (&falseBranch)[n]) {
+  if (single_line_mode) {
+    generator->PrintLiteral(trueBranch);
+  } else {
+    generator->PrintLiteral(falseBranch);
+  }
+}
+
 void TextFormat::Printer::PrintUnknownFields(
     const UnknownFieldSet& unknown_fields, BaseTextGenerator* generator,
     int recursion_budget) const {
@@ -2770,22 +2781,14 @@ void TextFormat::Printer::PrintUnknownFields(
         OutOfLinePrintString(generator, field.number());
         generator->PrintMaybeWithMarker(MarkerToken(), ": ");
         OutOfLinePrintString(generator, field.varint());
-        if (single_line_mode_) {
-          generator->PrintLiteral(" ");
-        } else {
-          generator->PrintLiteral("\n");
-        }
+        OutOfLinePrintSeparator(generator, single_line_mode_, " ", "\n");
         break;
       case UnknownField::TYPE_FIXED32: {
         OutOfLinePrintString(generator, field.number());
         generator->PrintMaybeWithMarker(MarkerToken(), ": ", "0x");
         OutOfLinePrintString(generator,
                              absl::Hex(field.fixed32(), absl::kZeroPad8));
-        if (single_line_mode_) {
-          generator->PrintLiteral(" ");
-        } else {
-          generator->PrintLiteral("\n");
-        }
+        OutOfLinePrintSeparator(generator, single_line_mode_, " ", "\n");
         break;
       }
       case UnknownField::TYPE_FIXED64: {
@@ -2793,11 +2796,7 @@ void TextFormat::Printer::PrintUnknownFields(
         generator->PrintMaybeWithMarker(MarkerToken(), ": ", "0x");
         OutOfLinePrintString(generator,
                              absl::Hex(field.fixed64(), absl::kZeroPad16));
-        if (single_line_mode_) {
-          generator->PrintLiteral(" ");
-        } else {
-          generator->PrintLiteral("\n");
-        }
+        OutOfLinePrintSeparator(generator, single_line_mode_, " ", "\n");
         break;
       }
       case UnknownField::TYPE_LENGTH_DELIMITED: {
@@ -2833,11 +2832,7 @@ void TextFormat::Printer::PrintUnknownFields(
           // recursion budget). So it is probably just a plain string.
           generator->PrintMaybeWithMarker(MarkerToken(), ": ", "\"");
           generator->PrintString(absl::CEscape(value));
-          if (single_line_mode_) {
-            generator->PrintLiteral("\" ");
-          } else {
-            generator->PrintLiteral("\"\n");
-          }
+          OutOfLinePrintSeparator(generator, single_line_mode_, "\" ", "\"\n");
         }
         break;
       }
