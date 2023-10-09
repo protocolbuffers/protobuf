@@ -9983,6 +9983,51 @@ TEST_F(FeaturesTest, InvalidJsonUniquenessCustomError) {
       "conflicts with the custom JSON name of field \"bar\".\n");
 }
 
+TEST_F(FeaturesTest, InvalidRequiredLabel) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_REQUIRED
+            type: TYPE_STRING
+          }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NAME: Required label is not allowed under editions. "
+      " Use the feature field_presence = LEGACY_REQUIRED to control this "
+      "behavior.\n");
+}
+
+TEST_F(FeaturesTest, InvalidGroupLabel) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            type_name: ".Foo"
+            label: LABEL_OPTIONAL
+            type: TYPE_GROUP
+          }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NAME: Group types are not allowed under editions.  "
+      "Use the feature message_encoding = DELIMITED to control this "
+      "behavior.\n");
+}
+
 // Test that the result of FileDescriptor::DebugString() can be used to create
 // the original descriptors.
 class FeaturesDebugStringTest

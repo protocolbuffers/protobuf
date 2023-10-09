@@ -7920,6 +7920,19 @@ void DescriptorBuilder::ValidateFieldFeatures(
   // Rely on our legacy validation for proto2/proto3 files.
   if (IsLegacyFeatureSet(field->features())) return;
 
+  // Double check proto descriptors in editions.  These would usually be caught
+  // by the parser, but may not be for dynamically built descriptors.
+  if (proto.label() == FieldDescriptorProto::LABEL_REQUIRED) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Required label is not allowed under editions.  Use the feature "
+             "field_presence = LEGACY_REQUIRED to control this behavior.");
+  }
+  if (proto.type() == FieldDescriptorProto::TYPE_GROUP) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Group types are not allowed under editions.  Use the feature "
+             "message_encoding = DELIMITED to control this behavior.");
+  }
+
   // Validate legacy options that have been migrated to features.
   if (field->options().has_packed()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
