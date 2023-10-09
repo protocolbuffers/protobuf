@@ -10619,7 +10619,6 @@ typedef enum {
   // Only inside message table.
   UPB_DEFTYPE_FIELD = 0,
   UPB_DEFTYPE_ONEOF = 1,
-  UPB_DEFTYPE_FIELD_JSONNAME = 2,
 } upb_deftype_t;
 
 #ifdef __cplusplus
