@@ -233,3 +233,5 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 *   [protobuf-decoder-explainer - Web page which decodes and explains pasted
     binary Protocol
     Buffers](https://github.com/jamesdbrock/protobuf-decoder-explainer)
+*   [protovalidate - libraries which perform runtime validation of protobuf messages based on user-defined validation rules](https://github.com/bufbuild/protovalidate)
+    * [protoc-gen-validate - its predecessor, with the same purpose](https://github.com/bufbuild/protoc-gen-validate)
