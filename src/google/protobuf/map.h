@@ -78,6 +78,10 @@ class DynamicMapField;
 
 class GeneratedMessageReflection;
 
+// The largest valid serialization for a message is INT_MAX, so we can't have
+// more than 32-bits worth of elements.
+using map_index_t = uint32_t;
+
 // Internal type traits that can be used to define custom key/value types. These
 // are only be specialized by protobuf internals, and never by users.
 template <typename T, typename VoidT = void>
@@ -467,8 +471,6 @@ class UntypedMapBase;
 
 class UntypedMapIterator {
  public:
-  using size_type = uint32_t;
-
   // Invariants:
   // node_ is always correct. This is handy because the most common
   // operations are operator* and operator-> and they only use node_.
@@ -480,12 +482,12 @@ class UntypedMapIterator {
 
   explicit UntypedMapIterator(const UntypedMapBase* m);
 
-  UntypedMapIterator(NodeBase* n, const UntypedMapBase* m, size_type index)
+  UntypedMapIterator(NodeBase* n, const UntypedMapBase* m, map_index_t index)
       : node_(n), m_(m), bucket_index_(index) {}
 
   // Advance through buckets, looking for the first that isn't empty.
   // If nothing non-empty is found then leave node_ == nullptr.
-  void SearchFrom(size_type start_bucket);
+  void SearchFrom(map_index_t start_bucket);
 
   // The definition of operator== is handled by the derived type. If we were
   // to do it in this class it would allow comparing iterators of different
@@ -506,7 +508,7 @@ class UntypedMapIterator {
 
   NodeBase* node_;
   const UntypedMapBase* m_;
-  size_type bucket_index_;
+  map_index_t bucket_index_;
 };
 
 // Base class for all Map instantiations.
@@ -519,7 +521,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   using Tree = internal::TreeForMap;
 
  public:
-  using size_type = uint32_t;
+  using size_type = size_t;
 
   explicit constexpr UntypedMapBase(Arena* arena)
       : num_elements_(0),
@@ -547,7 +549,9 @@ class PROTOBUF_EXPORT UntypedMapBase {
     std::swap(alloc_, other->alloc_);
   }
 
-  static size_type max_size() { return std::numeric_limits<size_type>::max(); }
+  static size_type max_size() {
+    return std::numeric_limits<map_index_t>::max();
+  }
   size_type size() const { return num_elements_; }
   bool empty() const { return size() == 0; }
 
@@ -563,7 +567,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   struct NodeAndBucket {
     NodeBase* node;
-    size_type bucket;
+    map_index_t bucket;
   };
 
   // Returns whether we should insert after the head of the list. For
@@ -582,7 +586,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   // Helper for InsertUnique.  Handles the case where bucket b is a
   // not-too-long linked list.
-  void InsertUniqueInList(size_type b, NodeBase* node) {
+  void InsertUniqueInList(map_index_t b, NodeBase* node) {
     if (!TableEntryIsEmpty(b) && ShouldInsertAfterHead(node)) {
       auto* first = TableEntryToNode(table_[b]);
       node->next = first->next;
@@ -593,30 +597,30 @@ class PROTOBUF_EXPORT UntypedMapBase {
     }
   }
 
-  bool TableEntryIsEmpty(size_type b) const {
+  bool TableEntryIsEmpty(map_index_t b) const {
     return internal::TableEntryIsEmpty(table_[b]);
   }
-  bool TableEntryIsNonEmptyList(size_type b) const {
+  bool TableEntryIsNonEmptyList(map_index_t b) const {
     return internal::TableEntryIsNonEmptyList(table_[b]);
   }
-  bool TableEntryIsTree(size_type b) const {
+  bool TableEntryIsTree(map_index_t b) const {
     return internal::TableEntryIsTree(table_[b]);
   }
-  bool TableEntryIsList(size_type b) const {
+  bool TableEntryIsList(map_index_t b) const {
     return internal::TableEntryIsList(table_[b]);
   }
 
   // Return whether table_[b] is a linked list that seems awfully long.
   // Requires table_[b] to point to a non-empty linked list.
-  bool TableEntryIsTooLong(size_type b) {
+  bool TableEntryIsTooLong(map_index_t b) {
     return internal::TableEntryIsTooLong(TableEntryToNode(table_[b]));
   }
 
   // Return a power of two no less than max(kMinTableSize, n).
   // Assumes either n < kMinTableSize or n is a power of two.
-  size_type TableSize(size_type n) {
-    return n < static_cast<size_type>(kMinTableSize)
-               ? static_cast<size_type>(kMinTableSize)
+  map_index_t TableSize(map_index_t n) {
+    return n < static_cast<map_index_t>(kMinTableSize)
+               ? static_cast<map_index_t>(kMinTableSize)
                : n;
   }
 
@@ -642,20 +646,20 @@ class PROTOBUF_EXPORT UntypedMapBase {
     AllocFor<NodeBase>(alloc_).deallocate(node, node_size / sizeof(NodeBase));
   }
 
-  void DeleteTable(TableEntryPtr* table, size_type n) {
+  void DeleteTable(TableEntryPtr* table, map_index_t n) {
     AllocFor<TableEntryPtr>(alloc_).deallocate(table, n);
   }
 
   NodeBase* DestroyTree(Tree* tree);
   using GetKey = VariantKey (*)(NodeBase*);
-  void InsertUniqueInTree(size_type b, GetKey get_key, NodeBase* node);
+  void InsertUniqueInTree(map_index_t b, GetKey get_key, NodeBase* node);
   void TransferTree(Tree* tree, GetKey get_key);
   TableEntryPtr ConvertToTree(NodeBase* node, GetKey get_key);
-  void EraseFromTree(size_type b, typename Tree::iterator tree_it);
+  void EraseFromTree(map_index_t b, typename Tree::iterator tree_it);
 
-  size_type VariantBucketNumber(VariantKey key) const;
+  map_index_t VariantBucketNumber(VariantKey key) const;
 
-  size_type BucketNumberFromHash(uint64_t h) const {
+  map_index_t BucketNumberFromHash(uint64_t h) const {
     // We xor the hash value against the random seed so that we effectively
     // have a random hash function.
     h ^= seed_;
@@ -667,8 +671,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
     return (MultiplyWithOverflow(kPhi, h) >> 32) & (num_buckets_ - 1);
   }
 
-  TableEntryPtr* CreateEmptyTable(size_type n) {
-    ABSL_DCHECK_GE(n, size_type{kMinTableSize});
+  TableEntryPtr* CreateEmptyTable(map_index_t n) {
+    ABSL_DCHECK_GE(n, map_index_t{kMinTableSize});
     ABSL_DCHECK_EQ(n & (n - 1), 0u);
     TableEntryPtr* result = AllocFor<TableEntryPtr>(alloc_).allocate(n);
     memset(result, 0, n * sizeof(result[0]));
@@ -676,11 +680,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   // Return a randomish value.
-  size_type Seed() const {
+  map_index_t Seed() const {
     // We get a little bit of randomness from the address of the map. The
     // lower bits are not very random, due to alignment, so we discard them
     // and shift the higher bits into their place.
-    size_type s = reinterpret_cast<uintptr_t>(this) >> 4;
+    map_index_t s = reinterpret_cast<uintptr_t>(this) >> 4;
 #if !defined(GOOGLE_PROTOBUF_NO_RDTSC)
 #if defined(__APPLE__)
     // Use a commpage-based fast time function on Apple environments (MacOS,
@@ -752,17 +756,17 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   void ClearTable(ClearInput input);
 
-  NodeAndBucket FindFromTree(size_type b, VariantKey key,
+  NodeAndBucket FindFromTree(map_index_t b, VariantKey key,
                              Tree::iterator* it) const;
 
   // Space used for the table, trees, and nodes.
   // Does not include the indirect space used. Eg the data of a std::string.
   size_t SpaceUsedInTable(size_t sizeof_node) const;
 
-  size_type num_elements_;
-  size_type num_buckets_;
-  size_type seed_;
-  size_type index_of_first_non_null_;
+  map_index_t num_elements_;
+  map_index_t num_buckets_;
+  map_index_t seed_;
+  map_index_t index_of_first_non_null_;
   TableEntryPtr* table_;  // an array with num_buckets_ entries
   Allocator alloc_;
 };
@@ -781,10 +785,10 @@ inline UntypedMapIterator::UntypedMapIterator(const UntypedMapBase* m) : m_(m) {
   }
 }
 
-inline void UntypedMapIterator::SearchFrom(size_type start_bucket) {
+inline void UntypedMapIterator::SearchFrom(map_index_t start_bucket) {
   ABSL_DCHECK(m_->index_of_first_non_null_ == m_->num_buckets_ ||
               !m_->TableEntryIsEmpty(m_->index_of_first_non_null_));
-  for (size_type i = start_bucket; i < m_->num_buckets_; ++i) {
+  for (map_index_t i = start_bucket; i < m_->num_buckets_; ++i) {
     TableEntryPtr entry = m_->table_[i];
     if (entry == TableEntryPtr{}) continue;
     bucket_index_ = i;
@@ -897,7 +901,7 @@ class KeyMapBase : public UntypedMapBase {
   friend class TcParser;
   friend struct MapTestPeer;
 
-  PROTOBUF_NOINLINE void erase_no_destroy(size_type b, KeyNode* node) {
+  PROTOBUF_NOINLINE void erase_no_destroy(map_index_t b, KeyNode* node) {
     TreeIterator tree_it;
     const bool is_list = revalidate_if_necessary(b, node, &tree_it);
     if (is_list) {
@@ -919,7 +923,7 @@ class KeyMapBase : public UntypedMapBase {
 
   NodeAndBucket FindHelper(typename TS::ViewType k,
                            TreeIterator* it = nullptr) const {
-    size_type b = BucketNumber(k);
+    map_index_t b = BucketNumber(k);
     if (TableEntryIsNonEmptyList(b)) {
       auto* node = internal::TableEntryToNode(table_[b]);
       do {
@@ -948,7 +952,7 @@ class KeyMapBase : public UntypedMapBase {
     } else if (ResizeIfLoadIsOutOfRange(num_elements_ + 1)) {
       p = FindHelper(node->key());
     }
-    const size_type b = p.bucket;  // bucket number
+    const map_index_t b = p.bucket;  // bucket number
     InsertUnique(b, node);
     ++num_elements_;
     return to_erase;
@@ -958,7 +962,7 @@ class KeyMapBase : public UntypedMapBase {
   // and bucket b is not a tree, create a tree for buckets b.
   // Requires count(*KeyPtrFromNodePtr(node)) == 0 and that b is the correct
   // bucket.  num_elements_ is not modified.
-  void InsertUnique(size_type b, KeyNode* node) {
+  void InsertUnique(map_index_t b, KeyNode* node) {
     ABSL_DCHECK(index_of_first_non_null_ == num_buckets_ ||
                 !TableEntryIsEmpty(index_of_first_non_null_));
     // In practice, the code that led to this point may have already
@@ -1022,7 +1026,7 @@ class KeyMapBase : public UntypedMapBase {
   }
 
   // Resize to the given number of buckets.
-  void Resize(size_type new_num_buckets) {
+  void Resize(map_index_t new_num_buckets) {
     if (num_buckets_ == kGlobalEmptyTableSize) {
       // This is the global empty array.
       // Just overwrite with a new one. No need to transfer or free anything.
@@ -1034,12 +1038,12 @@ class KeyMapBase : public UntypedMapBase {
 
     ABSL_DCHECK_GE(new_num_buckets, kMinTableSize);
     const auto old_table = table_;
-    const size_type old_table_size = num_buckets_;
+    const map_index_t old_table_size = num_buckets_;
     num_buckets_ = new_num_buckets;
     table_ = CreateEmptyTable(num_buckets_);
-    const size_type start = index_of_first_non_null_;
+    const map_index_t start = index_of_first_non_null_;
     index_of_first_non_null_ = num_buckets_;
-    for (size_type i = start; i < old_table_size; ++i) {
+    for (map_index_t i = start; i < old_table_size; ++i) {
       if (internal::TableEntryIsNonEmptyList(old_table[i])) {
         TransferList(static_cast<KeyNode*>(TableEntryToNode(old_table[i])));
       } else if (internal::TableEntryIsTree(old_table[i])) {
@@ -1058,7 +1062,7 @@ class KeyMapBase : public UntypedMapBase {
     } while (node != nullptr);
   }
 
-  size_type BucketNumber(typename TS::ViewType k) const {
+  map_index_t BucketNumber(typename TS::ViewType k) const {
     ABSL_DCHECK_EQ(BucketNumberFromHash(hash_function()(k)),
                    VariantBucketNumber(RealKeyToVariantKey<Key>{}(k)));
     return BucketNumberFromHash(hash_function()(k));
@@ -1068,7 +1072,7 @@ class KeyMapBase : public UntypedMapBase {
   // stale.  Fix them as needed.  Then return true iff node_ points to a
   // Node in a list.  If false is returned then *it is modified to be
   // a valid iterator for node_.
-  bool revalidate_if_necessary(size_type& bucket_index, KeyNode* node,
+  bool revalidate_if_necessary(map_index_t& bucket_index, KeyNode* node,
                                TreeIterator* it) const {
     // Force bucket_index to be in range.
     bucket_index &= (num_buckets_ - 1);
@@ -1133,9 +1137,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using reference = value_type&;
   using const_reference = const value_type&;
 
-  // The largest valid serialization for a message is INT_MAX, so we can't have
-  // more than 32-bits worth of elements.
-  using size_type = uint32_t;
+  using size_type = size_t;
   using hasher = typename TS::hash;
 
   constexpr Map() : Base(nullptr) { StaticValidityCheck(); }
@@ -1585,7 +1587,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     if (this->ResizeIfLoadIsOutOfRange(this->num_elements_ + 1)) {
       p = this->FindHelper(TS::ToView(k));
     }
-    const size_type b = p.bucket;  // bucket number
+    const auto b = p.bucket;  // bucket number
     // If K is not key_type, make the conversion to key_type explicit.
     using TypeToInit = typename std::conditional<
         std::is_same<typename std::decay<K>::type, key_type>::value, K&&,

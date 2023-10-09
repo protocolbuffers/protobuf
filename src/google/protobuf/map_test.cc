@@ -160,6 +160,17 @@ TEST(MapTest, CopyConstructMessagesWithArena) {
   EXPECT_EQ(map1["2"].GetArena(), &arena);
 }
 
+// We changed the internal implementation to use a smaller size type, but the
+// public API will still use size_t to avoid changing the API. Test that.
+TEST(MapTest, SizeTypeIsSizeT) {
+  using M = Map<int, int>;
+  EXPECT_TRUE((std::is_same<M::size_type, size_t>::value));
+  EXPECT_TRUE((std::is_same<decltype(M().size()), size_t>::value));
+  size_t x = 0;
+  x = std::max(M().size(), x);
+  (void)x;
+}
+
 template <typename Aligned, bool on_arena = false>
 void MapTest_Aligned() {
   Arena arena;
