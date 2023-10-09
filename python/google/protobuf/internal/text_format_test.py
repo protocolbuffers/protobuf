@@ -854,10 +854,11 @@ class TextFormatParserTests(TextFormatBase):
   # itself for string fields.  It also demonstrates escaped binary data.
   # The ur"" string prefix is unfortunately missing from Python 3
   # so we resort to double escaping our \s so that they come through.
-  _UNICODE_SAMPLE = u"""
+  _UNICODE_SAMPLE = """
       optional_bytes: 'Á short desçription'
       optional_string: 'Á short desçription'
       repeated_bytes: '\\303\\201 short des\\303\\247ription'
+      repeated_bytes: '\\u00c1 short des\\u00e7ription'
       repeated_bytes: '\\x12\\x34\\x56\\x78\\x90\\xab\\xcd\\xef'
       repeated_string: '\\xd0\\x9f\\xd1\\x80\\xd0\\xb8\\xd0\\xb2\\xd0\\xb5\\xd1\\x82'
       """
@@ -873,8 +874,9 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(m.optional_bytes, self._GOLDEN_BYTES)
     self.assertEqual(m.optional_string, self._GOLDEN_UNICODE)
     self.assertEqual(m.repeated_bytes[0], self._GOLDEN_BYTES)
-    # repeated_bytes[1] contained simple \ escaped non-UTF-8 raw binary data.
-    self.assertEqual(m.repeated_bytes[1], self._GOLDEN_BYTES_1)
+    self.assertEqual(m.repeated_bytes[1], self._GOLDEN_BYTES)
+    # repeated_bytes[2] contained simple \ escaped non-UTF-8 raw binary data.
+    self.assertEqual(m.repeated_bytes[2], self._GOLDEN_BYTES_1)
     # repeated_string[0] contained \ escaped data representing the UTF-8
     # representation of _GOLDEN_STR_0 - it needs to decode as such.
     self.assertEqual(m.repeated_string[0], self._GOLDEN_STR_0)
@@ -885,8 +887,9 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(m.optional_bytes, self._GOLDEN_BYTES)
     self.assertEqual(m.optional_string, self._GOLDEN_UNICODE)
     self.assertEqual(m.repeated_bytes[0], self._GOLDEN_BYTES)
+    self.assertEqual(m.repeated_bytes[1], self._GOLDEN_BYTES)
     # repeated_bytes[1] contained simple \ escaped non-UTF-8 raw binary data.
-    self.assertEqual(m.repeated_bytes[1], self._GOLDEN_BYTES_1)
+    self.assertEqual(m.repeated_bytes[2], self._GOLDEN_BYTES_1)
     # repeated_string[0] contained \ escaped data representing the UTF-8
     # representation of _GOLDEN_STR_0 - it needs to decode as such.
     self.assertEqual(m.repeated_string[0], self._GOLDEN_STR_0)
