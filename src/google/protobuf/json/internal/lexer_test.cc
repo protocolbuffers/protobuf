@@ -294,6 +294,15 @@ TEST(LexerTest, SimpleString) {
   });
 }
 
+TEST(LexerTest, UTFBoundaries) {
+  Do(R"json("\u0001\u07FF\uFFFF\uDBFF\uDFFF")json",
+     [](io::ZeroCopyInputStream* stream) {
+       EXPECT_THAT(Value::Parse(stream),
+                   IsOkAndHolds(ValueIs<std::string>(
+                       "\x01\xdf\xbf\xef\xbf\xbf\xf4\x8f\xbf\xbf")));
+     });
+}
+
 TEST(NonStandard, SingleQuoteString) {
   DoLegacy(R"json('My String')json", [=](const Value& value) {
     EXPECT_THAT(value, ValueIs<std::string>("My String"));
