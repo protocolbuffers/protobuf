@@ -90,7 +90,6 @@ void RepeatedPtrFieldBase::DestroyProtos() {
   ABSL_DCHECK(arena_ == nullptr);
   if (using_sso()) {
     delete static_cast<MessageLite*>(tagged_rep_or_elem_);
-
   } else {
     Rep* r = rep();
     int n = r->allocated_size;
@@ -100,8 +99,11 @@ void RepeatedPtrFieldBase::DestroyProtos() {
     }
     const size_t size = total_size_ * sizeof(elements[0]) + kRepHeaderSize;
     internal::SizedDelete(r, size);
-    tagged_rep_or_elem_ = nullptr;
   }
+
+  // TODO:  Eliminate this store when invoked from the destructor,
+  // since it is dead.
+  tagged_rep_or_elem_ = nullptr;
 }
 
 void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
