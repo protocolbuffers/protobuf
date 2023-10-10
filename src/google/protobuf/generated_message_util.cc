@@ -368,7 +368,7 @@ void GenericSwap(MessageLite* m1, MessageLite* m2) {
 MessageLite* GetOwnedMessageInternal(Arena* message_arena,
                                      MessageLite* submessage,
                                      Arena* submessage_arena) {
-  ABSL_DCHECK(submessage->GetArena() == submessage_arena);
+  ABSL_DCHECK(Arena::InternalGetOwningArena(submessage) == submessage_arena);
   ABSL_DCHECK(message_arena != submessage_arena);
   ABSL_DCHECK_EQ(submessage_arena, nullptr);
   if (message_arena != nullptr && submessage_arena == nullptr) {

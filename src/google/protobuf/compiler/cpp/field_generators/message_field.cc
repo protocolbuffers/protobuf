@@ -287,7 +287,8 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
             //~ When $Submsg$ is a cross-file type, have to read the arena
             //~ through the virtual method, because the type isn't defined in
             //~ this file, only forward-declated.
-            $pb$::Arena* submessage_arena = $base_cast$(value)->GetArena();
+            $pb$::Arena* submessage_arena =
+                $pb$::Arena::InternalGetOwningArena($base_cast$(value));
             if (message_arena != submessage_arena) {
               value = $pbi$::GetOwnedMessage(message_arena, value, submessage_arena);
             }
@@ -574,7 +575,8 @@ void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
       $pb$::Arena* message_arena = GetArena();
       clear_$oneof_name$();
       if ($name$) {
-        $pb$::Arena* submessage_arena = $foreign_cast$($name$)->GetArena();
+        $pb$::Arena* submessage_arena =
+            $pb$::Arena::InternalGetOwningArena($foreign_cast$($name$));
         if (message_arena != submessage_arena) {
           $name$ = $pbi$::GetOwnedMessage(message_arena, $name$, submessage_arena);
         }

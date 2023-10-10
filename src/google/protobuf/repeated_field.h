@@ -293,10 +293,7 @@ class RepeatedField final
   // Gets the Arena on which this RepeatedField stores its elements.
   // Note: this can be inaccurate for split default fields so we make this
   // function non-const.
-  inline Arena* GetArena() {
-    return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
-                              : rep()->arena;
-  }
+  inline Arena* GetArena() { return GetOwningArena(); }
 
   // For internal use only.
   //
@@ -329,6 +326,12 @@ class RepeatedField final
   static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize = sizeof(Rep);
 
   RepeatedField(Arena* arena, const RepeatedField& rhs);
+
+  // Gets the Arena on which this RepeatedField stores its elements.
+  inline Arena* GetOwningArena() const {
+    return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
+                              : rep()->arena;
+  }
 
   // Swaps entire contents with "other". Should be called only if the caller can
   // guarantee that both repeated fields are on the same arena or are on the
@@ -497,7 +500,7 @@ RepeatedField<Element>::~RepeatedField() {
 #ifndef NDEBUG
   // Try to trigger segfault / asan failure in non-opt builds if arena_
   // lifetime has ended before the destructor.
-  auto arena = GetArena();
+  auto arena = GetOwningArena();
   if (arena) (void)arena->SpaceAllocated();
 #endif
   if (total_size_ > 0) {
@@ -522,7 +525,7 @@ inline RepeatedField<Element>::RepeatedField(RepeatedField&& other) noexcept
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // other is on an arena. This field can't be on an arena because arena
   // construction always uses the Arena* accepting constructor.
-  if (other.GetArena()) {
+  if (other.GetOwningArena()) {
     CopyFrom(other);
   } else {
     InternalSwap(&other);
@@ -536,9 +539,9 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
-    if (GetArena() != other.GetArena()
+    if (GetOwningArena() != other.GetOwningArena()
 #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        || GetArena() == nullptr
+        || GetOwningArena() == nullptr
 #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       CopyFrom(other);
@@ -831,13 +834,14 @@ template <typename Element>
 void RepeatedField<Element>::Swap(RepeatedField* other) {
   if (this == other) return;
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  if (GetOwningArena() != nullptr &&
+      GetOwningArena() == other->GetOwningArena()) {
 #else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  if (GetArena() == other->GetArena()) {
+  if (GetOwningArena() == other->GetOwningArena()) {
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
     InternalSwap(other);
   } else {
-    RepeatedField<Element> temp(other->GetArena());
+    RepeatedField<Element> temp(other->GetOwningArena());
     temp.MergeFrom(*this);
     CopyFrom(*other);
     other->UnsafeArenaSwap(&temp);
@@ -847,7 +851,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
 template <typename Element>
 void RepeatedField<Element>::UnsafeArenaSwap(RepeatedField* other) {
   if (this == other) return;
-  ABSL_DCHECK_EQ(GetArena(), other->GetArena());
+  ABSL_DCHECK_EQ(GetOwningArena(), other->GetOwningArena());
   InternalSwap(other);
 }
 
@@ -936,7 +940,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
                                                               int new_size) {
   ABSL_DCHECK_GT(new_size, total_size_);
   Rep* new_rep;
-  Arena* arena = GetArena();
+  Arena* arena = GetOwningArena();
 
   new_size = internal::CalculateReserveSize<Element, kRepHeaderSize>(
       total_size_, new_size);

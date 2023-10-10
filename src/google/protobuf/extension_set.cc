@@ -626,8 +626,9 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
     ClearExtension(number);
     return;
   }
-  ABSL_DCHECK(message->GetArena() == nullptr || message->GetArena() == arena_);
-  Arena* message_arena = message->GetArena();
+  ABSL_DCHECK(message->GetOwningArena() == nullptr ||
+              message->GetOwningArena() == arena_);
+  Arena* message_arena = message->GetOwningArena();
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;

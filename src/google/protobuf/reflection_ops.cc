@@ -415,14 +415,16 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
 
 void GenericSwap(Message* lhs, Message* rhs) {
 #ifndef PROTOBUF_FORCE_COPY_IN_SWAP
-  ABSL_DCHECK(lhs->GetArena() != rhs->GetArena());
-  ABSL_DCHECK(lhs->GetArena() != nullptr || rhs->GetArena() != nullptr);
+  ABSL_DCHECK(Arena::InternalGetOwningArena(lhs) !=
+              Arena::InternalGetOwningArena(rhs));
+  ABSL_DCHECK(Arena::InternalGetOwningArena(lhs) != nullptr ||
+              Arena::InternalGetOwningArena(rhs) != nullptr);
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
   // At least one of these must have an arena, so make `rhs` point to it.
-  Arena* arena = rhs->GetArena();
+  Arena* arena = Arena::InternalGetOwningArena(rhs);
   if (arena == nullptr) {
     std::swap(lhs, rhs);
-    arena = rhs->GetArena();
+    arena = Arena::InternalGetOwningArena(rhs);
   }
 
   // Improve efficiency by placing the temporary on an arena so that messages
