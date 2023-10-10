@@ -510,7 +510,13 @@ public final class Timestamps {
     }
     String hours = value.substring(0, pos);
     String minutes = value.substring(pos + 1);
-    return (Long.parseLong(hours) * 60 + Long.parseLong(minutes)) * 60;
+    try {
+      return (Long.parseLong(hours) * 60 + Long.parseLong(minutes)) * 60;
+    } catch (NumberFormatException e) {
+      ParseException ex = new ParseException("Invalid offset value: " + value, 0);
+      ex.initCause(e);
+      throw ex;
+    }
   }
 
   static int parseNanos(String value) throws ParseException {

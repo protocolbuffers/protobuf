@@ -28,6 +28,7 @@ import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link Timestamps}. */
 @RunWith(JUnit4.class)
+@SuppressWarnings("JavaUtilDate")
 public class TimestampsTest {
   private static final int MILLIS_PER_SECOND = 1000;
   private static final long MILLIS = 1409130915111L;
@@ -169,6 +170,7 @@ public class TimestampsTest {
     }
 
     @Override
+    @SuppressWarnings("ProtoTimestampGetSecondsGetNano")
     public void run() {
       int index = 0;
       while (!stopParsingThreads) {
@@ -347,6 +349,22 @@ public class TimestampsTest {
       assertWithMessage("IllegalArgumentException is expected.").fail();
     } catch (IllegalArgumentException expected) {
       Assert.assertNotNull(expected.getMessage());
+    }
+  }
+
+  @Test
+  public void testTimestampInvalidOffsetWithDot() {
+    try {
+      Timestamps.parse("2021-08-19T10:24:25-07.:00");
+      assertWithMessage("ParseException is expected.").fail();
+    } catch (ParseException expected) {
+      assertThat(expected).hasMessageThat().isNotNull();
+    }
+    try {
+      Timestamps.parseUnchecked("2021-08-19T10:24:25-07.:00");
+      assertWithMessage("IllegalArgumentException is expected.").fail();
+    } catch (IllegalArgumentException expected) {
+      assertThat(expected).hasMessageThat().isNotNull();
     }
   }
 
