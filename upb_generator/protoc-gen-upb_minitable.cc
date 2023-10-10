@@ -670,8 +670,9 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
 }
 
 bool ParseOptions(Plugin* plugin) {
-  for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
-    plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
+  const auto param = ParseGeneratorParameter(plugin->parameter());
+  if (!param.empty()) {
+    plugin->SetError(absl::Substitute("Unknown parameter: $0", param[0].first));
     return false;
   }
 
