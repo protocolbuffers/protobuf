@@ -127,6 +127,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
+        "//third_party/gtest_rust/googletest",
         "//rust:protobuf_cpp",
         "//rust/test:unittest_cc_rust_proto",
     ],
@@ -143,6 +144,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
+        "//third_party/gtest_rust/googletest",
         "//rust:protobuf_upb",
         "//rust/test:unittest_upb_rust_proto",
     ],
