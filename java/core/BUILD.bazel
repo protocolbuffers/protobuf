@@ -103,6 +103,14 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/Writer.java",
 ]
 
+filegroup(
+    name = "java_features_proto_source",
+    srcs = ["src/main/java/com/google/protobuf/java_features.proto"],
+    visibility = [
+        "//src/google/protobuf/compiler/java:__pkg__",
+    ],
+)
+
 internal_gen_well_known_protos_java(
     name = "gen_well_known_protos_javalite",
     javalite = True,

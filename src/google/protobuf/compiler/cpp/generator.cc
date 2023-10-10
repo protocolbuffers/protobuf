@@ -142,6 +142,9 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     } else if (key == "proto_h") {
       file_options.proto_h = true;
     } else if (key == "proto_static_reflection_h") {
+    } else if (key == "bootstrap") {
+      // Bootstrap mode generates protos that we need to build the compiler.
+      file_options.bootstrap = true;
     } else if (key == "annotate_accessor") {
       file_options.annotate_accessor = true;
     } else if (key == "protos_for_field_listener_events") {

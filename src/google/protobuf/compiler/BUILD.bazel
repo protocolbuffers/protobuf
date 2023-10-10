@@ -127,6 +127,23 @@ cc_library(
     ],
 )
 
+# This is a build of the protobuf compiler without code generators.
+cc_binary(
+    name = "protoc_minimal",
+    srcs = [
+        "main_no_generators.cc",
+    ],
+    stamp = 0,
+    visibility = [
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [
+        ":command_line_interface",
+        "//src/google/protobuf:port_def",
+        "@com_google_absl//absl/log:initialize",
+    ],
+)
+
 cc_library(
     name = "protoc_lib",
     srcs = [

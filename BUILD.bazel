@@ -194,6 +194,15 @@ cc_binary(
     deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
 
+# descriptor.proto with /src prefix stripped for bootstrapping
+# This is like proto_library's strip_import_prefix = "/src"
+genrule(
+    name = "strip_prefix_descriptor_proto_srcs",
+    srcs = [":descriptor_proto_srcs"],
+    outs = ["google/protobuf/descriptor.proto"],
+    cmd = "mkdir -p @D & cp $< $@",
+    visibility = ["//src/google/protobuf/compiler/java:__pkg__"],
+)
 ################################################################################
 # C++ runtime
 ################################################################################

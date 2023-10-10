@@ -5,6 +5,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
+load("//src/google/protobuf:bootstrap.bzl", "bootstrap_proto")
 
 cc_library(
     name = "names",
@@ -42,6 +43,27 @@ cc_library(
     ],
 )
 
+genrule(
+    name = "bootstrap_java_features_proto_source",
+    srcs = [
+        "//java/core:java_features_proto_source",
+    ],
+    outs = ["java_features.proto"],
+    cmd = "cp $< $@",
+)
+
+bootstrap_proto(
+    name = "java_features_bootstrap_generate",
+    outs = [
+        "java_features.pb.cc",
+        "java_features.pb.h",
+    ],
+    proto = ":bootstrap_java_features_proto_source",
+    deps = [
+        "//:strip_prefix_descriptor_proto_srcs",
+    ],
+)
+
 cc_library(
     name = "java",
     srcs = [
@@ -57,6 +79,7 @@ cc_library(
         "file.cc",
         "generator.cc",
         "generator_factory.cc",
+        "java_features.pb.cc",
         "kotlin_generator.cc",
         "map_field.cc",
         "map_field_lite.cc",
@@ -87,6 +110,7 @@ cc_library(
         "file.h",
         "generator.h",
         "generator_factory.h",
+        "java_features.pb.h",
         "kotlin_generator.h",
         "map_field.h",
         "map_field_lite.h",
@@ -113,6 +137,7 @@ cc_library(
     deps = [
         ":names",
         ":names_internal",
+        "//src/google/protobuf:arena",
         "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",

@@ -101,6 +101,18 @@ cc_library(
     ],
 )
 
+cc_binary(
+    name = "protoc-gen-cpp",
+    srcs = ["main.cc"],
+    visibility = [
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [
+        ":cpp",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
 proto_library(
     name = "test_bad_identifiers_proto",
     testonly = 1,
