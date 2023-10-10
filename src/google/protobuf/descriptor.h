@@ -54,6 +54,7 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+#include "google/protobuf/types.h"
 
 #ifdef SWIG
 #define PROTOBUF_EXPORT
@@ -740,36 +741,48 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   FieldDescriptor& operator=(const FieldDescriptor&) = delete;
 #endif
 
-  // Identifies a field type.  0 is reserved for errors.  The order is weird
-  // for historical reasons.  Types 12 and up are new in proto2.
-  enum Type {
-    TYPE_DOUBLE = 1,    // double, exactly eight bytes on the wire.
-    TYPE_FLOAT = 2,     // float, exactly four bytes on the wire.
-    TYPE_INT64 = 3,     // int64, varint on the wire.  Negative numbers
-                        // take 10 bytes.  Use TYPE_SINT64 if negative
-                        // values are likely.
-    TYPE_UINT64 = 4,    // uint64, varint on the wire.
-    TYPE_INT32 = 5,     // int32, varint on the wire.  Negative numbers
-                        // take 10 bytes.  Use TYPE_SINT32 if negative
-                        // values are likely.
-    TYPE_FIXED64 = 6,   // uint64, exactly eight bytes on the wire.
-    TYPE_FIXED32 = 7,   // uint32, exactly four bytes on the wire.
-    TYPE_BOOL = 8,      // bool, varint on the wire.
-    TYPE_STRING = 9,    // UTF-8 text.
-    TYPE_GROUP = 10,    // Tag-delimited message.  Deprecated.
-    TYPE_MESSAGE = 11,  // Length-delimited message.
-
-    TYPE_BYTES = 12,     // Arbitrary byte array.
-    TYPE_UINT32 = 13,    // uint32, varint on the wire
-    TYPE_ENUM = 14,      // Enum, varint on the wire
-    TYPE_SFIXED32 = 15,  // int32, exactly four bytes on the wire
-    TYPE_SFIXED64 = 16,  // int64, exactly eight bytes on the wire
-    TYPE_SINT32 = 17,    // int32, ZigZag-encoded varint on the wire
-    TYPE_SINT64 = 18,    // int64, ZigZag-encoded varint on the wire
-
-    MAX_TYPE = 18,  // Constant useful for defining lookup tables
-                    // indexed by Type.
-  };
+  // Identifies a field type. 0 is reserved for errors.
+  using Type = FieldType;
+  // int32, varint on the wire.  Negative numbers take 10 bytes.  Use
+  // TYPE_SINT32 if negative values are likely.
+  static constexpr Type TYPE_INT32 = Type::TYPE_INT32;
+  // int64, varint on the wire.  Negative numbers take 10 bytes.  Use
+  // TYPE_SINT64 if negative values are likely.
+  static constexpr Type TYPE_INT64 = Type::TYPE_INT64;
+  // int32, ZigZag-encoded varint on the wire
+  static constexpr Type TYPE_SINT32 = Type::TYPE_SINT32;
+  // int64, ZigZag-encoded varint on the wire
+  static constexpr Type TYPE_SINT64 = Type::TYPE_SINT64;
+  // int32, exactly four bytes on the wire
+  static constexpr Type TYPE_SFIXED32 = Type::TYPE_SFIXED32;
+  // int64, exactly eight bytes on the wire
+  static constexpr Type TYPE_SFIXED64 = Type::TYPE_SFIXED64;
+  // uint32, varint on the wire
+  static constexpr Type TYPE_UINT32 = Type::TYPE_UINT32;
+  // uint64, varint on the wire.
+  static constexpr Type TYPE_UINT64 = Type::TYPE_UINT64;
+  // uint32, exactly four bytes on the wire.
+  static constexpr Type TYPE_FIXED32 = Type::TYPE_FIXED32;
+  // uint64, exactly eight bytes on the wire.
+  static constexpr Type TYPE_FIXED64 = Type::TYPE_FIXED64;
+  // double, exactly eight bytes on the wire.
+  static constexpr Type TYPE_DOUBLE = Type::TYPE_DOUBLE;
+  // float, exactly four bytes on the wire.
+  static constexpr Type TYPE_FLOAT = Type::TYPE_FLOAT;
+  // bool, varint on the wire.
+  static constexpr Type TYPE_BOOL = Type::TYPE_BOOL;
+  // Enum, varint on the wire
+  static constexpr Type TYPE_ENUM = Type::TYPE_ENUM;
+  // UTF-8 text.
+  static constexpr Type TYPE_STRING = Type::TYPE_STRING;
+  // Arbitrary byte array.
+  static constexpr Type TYPE_BYTES = Type::TYPE_BYTES;
+  // Length-delimited message.
+  static constexpr Type TYPE_MESSAGE = Type::TYPE_MESSAGE;
+  // Tag-delimited message.  Deprecated.
+  static constexpr Type TYPE_GROUP = Type::TYPE_GROUP;
+  // Constant useful for defining lookup tables indexed by Type.
+  static constexpr Type MAX_TYPE = Type::MAX_TYPE;
 
   // Specifies the C++ data type used to represent the field.  There is a
   // fixed mapping from Type to CppType where each Type maps to exactly one
