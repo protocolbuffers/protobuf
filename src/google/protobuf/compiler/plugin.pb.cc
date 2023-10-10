@@ -130,76 +130,77 @@ static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin
 static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto[1];
 static constexpr const ::_pb::ServiceDescriptor**
     file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto = nullptr;
-const ::uint32_t TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
-    protodesc_cold) = {
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_._has_bits_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_.major_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_.minor_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_.patch_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_.suffix_),
-    1,
-    2,
-    3,
-    0,
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_._has_bits_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.file_to_generate_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.parameter_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.compiler_version_),
-    ~0u,
-    0,
-    ~0u,
-    ~0u,
-    1,
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_._has_bits_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.name_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.insertion_point_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.content_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.generated_code_info_),
-    0,
-    1,
-    2,
-    3,
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_._has_bits_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.error_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.supported_features_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.file_),
-    0,
-    1,
-    ~0u,
+const ::uint32_t
+    TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+        protodesc_cold) = {
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_._has_bits_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_.major_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_.minor_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_.patch_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::Version, _impl_.suffix_),
+        1,
+        2,
+        3,
+        0,
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_._has_bits_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.file_to_generate_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.parameter_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.compiler_version_),
+        ~0u,
+        0,
+        ~0u,
+        ~0u,
+        1,
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_._has_bits_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.name_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.insertion_point_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.content_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.generated_code_info_),
+        0,
+        1,
+        2,
+        3,
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_._has_bits_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.error_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.supported_features_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.file_),
+        0,
+        1,
+        ~0u,
 };
 
 static const ::_pbi::MigrationSchema
-    schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, 12, -1, sizeof(::google::protobuf::compiler::Version)},
         {16, 29, -1, sizeof(::google::protobuf::compiler::CodeGeneratorRequest)},
         {34, 46, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
@@ -212,7 +213,8 @@ static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::compiler::_CodeGeneratorResponse_File_default_instance_._instance,
     &::google::protobuf::compiler::_CodeGeneratorResponse_default_instance_._instance,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+    protodesc_cold) = {
     "\n%google/protobuf/compiler/plugin.proto\022"
     "\030google.protobuf.compiler\032 google/protob"
     "uf/descriptor.proto\"F\n\007Version\022\r\n\005major\030"

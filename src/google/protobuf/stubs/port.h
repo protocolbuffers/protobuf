@@ -21,42 +21,6 @@
 // Must be last.
 #include "google/protobuf/port_def.inc"  // NOLINT
 
-#undef PROTOBUF_LITTLE_ENDIAN
-#ifdef _WIN32
-  // Assuming windows is always little-endian.
-  // TODO: The PROTOBUF_LITTLE_ENDIAN is not only used for
-  // optimization but also for correctness. We should define an
-  // different macro to test the big-endian code path in coded_stream.
-  #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-    #define PROTOBUF_LITTLE_ENDIAN 1
-  #endif
-#if defined(_MSC_VER) && _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
-// If MSVC has "/RTCc" set, it will complain about truncating casts at
-// runtime.  This file contains some intentional truncating casts.
-#pragma runtime_checks("c", off)
-#endif
-#else
-#if (defined(__APPLE__) || defined(__NEWLIB__))
-#include <machine/endian.h>  // __BYTE_ORDER
-#elif defined(__FreeBSD__)
-#include <sys/endian.h>  // __BYTE_ORDER
-#elif (defined(sun) || defined(__sun)) && (defined(__SVR4) || defined(__svr4__))
-#include <sys/isa_defs.h>  // __BYTE_ORDER
-#elif defined(_AIX) || defined(__TOS_AIX__)
-#include <sys/machine.h>  // BYTE_ORDER
-#elif defined(__QNX__)
-#include <sys/param.h>  // BYTE_ORDER
-#else
-#include <endian.h>  // __BYTE_ORDER
-#endif
-#if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) ||   \
-     (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || \
-     (defined(BYTE_ORDER) && BYTE_ORDER == LITTLE_ENDIAN)) &&      \
-    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-#define PROTOBUF_LITTLE_ENDIAN 1
-#endif
-#endif
-
 // These #includes are for the byte swap functions declared later on.
 #ifdef _MSC_VER
 #include <stdlib.h>  // NOLINT(build/include)
@@ -212,7 +176,7 @@ PROTOBUF_EXPORT uint32_t ghtonl(uint32_t x);
 
 class BigEndian {
  public:
-#ifdef PROTOBUF_LITTLE_ENDIAN
+#ifdef ABSL_IS_LITTLE_ENDIAN
 
   static uint16_t FromHost16(uint16_t x) { return bswap_16(x); }
   static uint16_t ToHost16(uint16_t x) { return bswap_16(x); }

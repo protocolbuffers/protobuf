@@ -29,7 +29,7 @@ namespace internal {
 // rather than Message.
 class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
  public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final { return true; }
   size_t ByteSizeLong() const final;
   int GetCachedSize() const { return _cached_size_.Get(); }

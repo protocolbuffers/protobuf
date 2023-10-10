@@ -204,13 +204,13 @@ class RepeatedField final
   // Calling this routine inside a loop can cause quadratic behavior.
   void ExtractSubrange(int start, int num, Element* elements);
 
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear();
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   void MergeFrom(const RepeatedField& other);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void CopyFrom(const RepeatedField& other);
+  ABSL_ATTRIBUTE_REINITIALIZES void CopyFrom(const RepeatedField& other);
 
   // Replaces the contents with RepeatedField(begin, end).
   template <typename Iter>
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Assign(Iter begin, Iter end);
+  ABSL_ATTRIBUTE_REINITIALIZES void Assign(Iter begin, Iter end);
 
   // Reserves space to expand the field to at least the given size.  If the
   // array is grown, it will always be at least doubled in size.

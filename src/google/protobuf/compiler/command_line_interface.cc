@@ -1899,7 +1899,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
         break;  // only for --decode_raw
       }
       // --decode (not raw) is handled the same way as the rest of the modes.
-      PROTOBUF_FALLTHROUGH_INTENDED;
+      ABSL_FALLTHROUGH_INTENDED;
     case MODE_ENCODE:
     case MODE_PRINT:
       missing_proto_definitions =

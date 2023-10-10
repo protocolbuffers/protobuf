@@ -170,7 +170,7 @@ class PROTOBUF_EXPORT CppFeatures final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;

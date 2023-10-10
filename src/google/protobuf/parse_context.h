@@ -883,7 +883,7 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 
 template <typename T>
 PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
-#if defined(__aarch64__) && defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN)
   // This optimization is not supported in big endian mode
   uint64_t first8;
   std::memcpy(&first8, p, sizeof(first8));
@@ -1178,7 +1178,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
     out->Reserve(old_entries + num);
     int block_size = num * sizeof(T);
     auto dst = out->AddNAlreadyReserved(num);
-#ifdef PROTOBUF_LITTLE_ENDIAN
+#ifdef ABSL_IS_LITTLE_ENDIAN
     std::memcpy(dst, ptr, block_size);
 #else
     for (int i = 0; i < num; i++)
@@ -1197,7 +1197,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   int old_entries = out->size();
   out->Reserve(old_entries + num);
   auto dst = out->AddNAlreadyReserved(num);
-#ifdef PROTOBUF_LITTLE_ENDIAN
+#ifdef ABSL_IS_LITTLE_ENDIAN
   ABSL_CHECK(dst != nullptr) << out << "," << num;
   std::memcpy(dst, ptr, block_size);
 #else
