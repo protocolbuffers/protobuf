@@ -4540,6 +4540,8 @@ class DescriptorBuilder {
   // AddError(). Do not look at their options, which have not been interpreted.
   void ValidateOptions(const FileDescriptor* file,
                        const FileDescriptorProto& proto);
+  void ValidateFileFeatures(const FileDescriptor* file,
+                            const FileDescriptorProto& proto);
   void ValidateOptions(const Descriptor* message, const DescriptorProto& proto);
   void ValidateOptions(const OneofDescriptor* oneof,
                        const OneofDescriptorProto& proto);
@@ -7655,6 +7657,8 @@ static bool IsLite(const FileDescriptor* file) {
 
 void DescriptorBuilder::ValidateOptions(const FileDescriptor* file,
                                         const FileDescriptorProto& proto) {
+  ValidateFileFeatures(file, proto);
+
   // Lite files can only be imported by other Lite files.
   if (!IsLite(file)) {
     for (int i = 0; i < file->dependency_count(); i++) {
@@ -7913,6 +7917,14 @@ static bool IsStringMapType(const FieldDescriptor& field) {
     }
   }
   return false;
+}
+
+void DescriptorBuilder::ValidateFileFeatures(const FileDescriptor* file,
+                                             const FileDescriptorProto& proto) {
+  if (file->features().field_presence() == FeatureSet::LEGACY_REQUIRED) {
+    AddError(file->name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
+             "Required presence can't be specified by default.");
+  }
 }
 
 void DescriptorBuilder::ValidateFieldFeatures(

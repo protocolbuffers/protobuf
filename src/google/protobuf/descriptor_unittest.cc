@@ -9256,6 +9256,18 @@ TEST_F(FeaturesTest, FeaturesOutsideEditions) {
       "editions.\n");
 }
 
+TEST_F(FeaturesTest, InvalidRequiredByDefault) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        options { features { field_presence: LEGACY_REQUIRED } }
+      )pb",
+      "foo.proto: foo.proto: EDITIONS: Required presence can't be specified "
+      "by default.\n");
+}
 TEST_F(FeaturesTest, InvalidFieldPacked) {
   BuildDescriptorMessagesInTestPool();
   BuildFileWithErrors(
