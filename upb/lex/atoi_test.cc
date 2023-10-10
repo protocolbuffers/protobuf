@@ -7,6 +7,8 @@
 
 #include "upb/lex/atoi.h"
 
+#include <string.h>
+
 #include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
 
@@ -31,7 +33,7 @@ TEST(AtoiTest, Uint64) {
 
   // Integer overflow
   const char* u = "1000000000000000000000000000000";
-  EXPECT_EQ(NULL, upb_BufToUint64(u, u + strlen(u), &val));
+  EXPECT_EQ(nullptr, upb_BufToUint64(u, u + strlen(u), &val));
 
   // Not an integer
   const char* v = "foobar";
@@ -58,19 +60,19 @@ TEST(AtoiTest, Int64) {
   EXPECT_EQ(s + 1, upb_BufToInt64(s, s + 1, &val, &neg));
   EXPECT_EQ(val, 1);
   EXPECT_EQ(neg, false);
-  EXPECT_EQ(s + 4, upb_BufToInt64(s, s + 4, &val, NULL));
+  EXPECT_EQ(s + 4, upb_BufToInt64(s, s + 4, &val, nullptr));
   EXPECT_EQ(val, 1234);
-  EXPECT_EQ(s + 4, upb_BufToInt64(s, s + 5, &val, NULL));
+  EXPECT_EQ(s + 4, upb_BufToInt64(s, s + 5, &val, nullptr));
   EXPECT_EQ(val, 1234);
 
   const char* t = "-42.6";
   EXPECT_EQ(t + 2, upb_BufToInt64(t, t + 2, &val, &neg));
   EXPECT_EQ(val, -4);
   EXPECT_EQ(neg, true);
-  EXPECT_EQ(t + 3, upb_BufToInt64(t, t + 3, &val, NULL));
+  EXPECT_EQ(t + 3, upb_BufToInt64(t, t + 3, &val, nullptr));
   EXPECT_EQ(val, -42);
   EXPECT_EQ(neg, true);
-  EXPECT_EQ(t + 3, upb_BufToInt64(t, t + 5, &val, NULL));
+  EXPECT_EQ(t + 3, upb_BufToInt64(t, t + 5, &val, nullptr));
   EXPECT_EQ(val, -42);
 
   const int64_t values[] = {
@@ -83,7 +85,7 @@ TEST(AtoiTest, Int64) {
     std::string v = absl::StrCat(values[i]);
     const char* ptr = v.c_str();
     const char* end = ptr + strlen(ptr);
-    EXPECT_EQ(end, upb_BufToInt64(ptr, end, &val, NULL));
+    EXPECT_EQ(end, upb_BufToInt64(ptr, end, &val, nullptr));
     EXPECT_EQ(val, values[i]);
   }
 }

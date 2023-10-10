@@ -30,11 +30,15 @@
 
 #include "upb/json/encode.h"
 
+#include <cstddef>
+#include <string>
+
 #include "google/protobuf/struct.upb.h"
 #include <gtest/gtest.h>
 #include "upb/base/status.hpp"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
+#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
 
@@ -45,8 +49,8 @@ static std::string JsonEncode(const upb_test_Box* msg, int options) {
   upb::MessageDefPtr m(upb_test_Box_getmsgdef(defpool.ptr()));
   EXPECT_TRUE(m.ptr() != nullptr);
 
-  size_t json_size = upb_JsonEncode(msg, m.ptr(), defpool.ptr(), options, NULL,
-                                    0, status.ptr());
+  size_t json_size = upb_JsonEncode(msg, m.ptr(), defpool.ptr(), options,
+                                    nullptr, 0, status.ptr());
   char* json_buf = (char*)upb_Arena_Malloc(a.ptr(), json_size + 1);
 
   size_t size = upb_JsonEncode(msg, m.ptr(), defpool.ptr(), options, json_buf,

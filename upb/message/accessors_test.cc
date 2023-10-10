@@ -223,7 +223,7 @@ TEST(GeneratedCode, Strings) {
       msg, upb_StringView_FromString(kTestStr1));
   EXPECT_EQ(true, upb_Message_HasField(msg, optional_string_field));
   upb_StringView value = upb_Message_GetString(msg, optional_string_field,
-                                               upb_StringView{NULL, 0});
+                                               upb_StringView{nullptr, 0});
   std::string read_value = std::string(value.data, value.size);
   EXPECT_EQ(kTestStr1, read_value);
   // Clear.

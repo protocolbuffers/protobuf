@@ -62,8 +62,8 @@ void CheckRequired(absl::string_view json,
 
   // Verify that we can pass a NULL pointer to entries when we don't care about
   // them.
-  EXPECT_EQ(!missing.empty(),
-            upb_util_HasUnsetRequired(test_msg, m.ptr(), defpool.ptr(), NULL));
+  EXPECT_EQ(!missing.empty(), upb_util_HasUnsetRequired(
+                                  test_msg, m.ptr(), defpool.ptr(), nullptr));
 }
 
 // message HasRequiredField {
