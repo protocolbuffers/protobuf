@@ -75,6 +75,11 @@ struct JsonLocation {
   // Creates an absl::InvalidArgumentError with line/column information.
   absl::Status Invalid(absl::string_view message,
                        SourceLocation sl = SourceLocation::current()) const;
+
+  void Advance(size_t bytes) {
+    offset += static_cast<int>(bytes);
+    col += static_cast<int>(bytes);
+  }
 };
 
 template <typename T>
@@ -234,7 +239,7 @@ class JsonLexer {
   void Pop() { ++options_.recursion_depth; }
 
   // Parses the next four bytes as a 16-bit hex numeral.
-  absl::StatusOr<uint16_t> ParseU16HexCodepoint();
+  absl::StatusOr<LocationWith<uint16_t>> ParseU16HexCodepoint();
 
   // Parses a Unicode escape (\uXXXX); this may be a surrogate pair, so it may
   // consume the character that follows. Both are encoded as utf8 into

@@ -165,9 +165,10 @@ absl::Status JsonLexer::SkipValue() {
   return absl::OkStatus();
 }
 
-absl::StatusOr<uint16_t> JsonLexer::ParseU16HexCodepoint() {
+absl::StatusOr<LocationWith<uint16_t>> JsonLexer::ParseU16HexCodepoint() {
   absl::StatusOr<LocationWith<MaybeOwnedString>> escape = Take(4);
   RETURN_IF_ERROR(escape.status());
+  json_loc_.Advance(4);
 
   uint16_t u16 = 0;
   for (char c : escape->value.AsView()) {
@@ -178,13 +179,13 @@ absl::StatusOr<uint16_t> JsonLexer::ParseU16HexCodepoint() {
     } else if (c >= 'A' && c <= 'F') {
       c = c - 'A' + 10;
     } else {
-      return Invalid("invalid Unicode escape");
+      return escape->loc.Invalid("invalid Unicode escape");
     }
     u16 <<= 4;
     u16 |= c;
   }
 
-  return u16;
+  return LocationWith<uint16_t>{u16, escape->loc};
 }
 
 absl::Status JsonLexer::SkipToToken() {
@@ -244,6 +245,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseRawNumber() {
 
   RETURN_IF_ERROR(number.status());
   absl::string_view number_text = number->value.AsView();
+  json_loc_.Advance(number_text.size());
 
   if (number_text.empty() || number_text == "-") {
     return number->loc.Invalid("expected a number");
@@ -301,7 +303,7 @@ absl::StatusOr<size_t> JsonLexer::ParseUnicodeEscape(char out_utf8[4]) {
   auto hex = ParseU16HexCodepoint();
   RETURN_IF_ERROR(hex.status());
 
-  uint32_t rune = *hex;
+  uint32_t rune = hex->value;
   if (rune >= 0xd800 && rune <= 0xdbff) {
     // Surrogate pair: two 16-bit codepoints become a 32-bit codepoint.
     uint32_t high = rune;
@@ -310,16 +312,16 @@ absl::StatusOr<size_t> JsonLexer::ParseUnicodeEscape(char out_utf8[4]) {
     auto hex = ParseU16HexCodepoint();
     RETURN_IF_ERROR(hex.status());
 
-    uint32_t low = *hex;
+    uint32_t low = hex->value;
     if (low < 0xdc00 || low > 0xdfff) {
-      return Invalid("invalid low surrogate");
+      return hex->loc.Invalid("invalid low surrogate");
     }
 
     rune = (high & 0x3ff) << 10;
     rune |= (low & 0x3ff);
     rune += 0x10000;
   } else if (rune >= 0xdc00 && rune <= 0xdfff) {
-    return Invalid("unpaired low surrogate");
+    return hex->loc.Invalid("unpaired low surrogate");
   }
 
   // Write as UTF-8.
@@ -342,7 +344,7 @@ absl::StatusOr<size_t> JsonLexer::ParseUnicodeEscape(char out_utf8[4]) {
     out_utf8[3] = ((rune >> 0) & 0x3f) | 0x80;
     return 4;
   } else {
-    return Invalid("invalid codepoint");
+    return hex->loc.Invalid("invalid codepoint");
   }
 }
 
@@ -504,6 +506,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseBareWord() {
       [](size_t, char c) { return c == '_' || absl::ascii_isalnum(c); });
   RETURN_IF_ERROR(ident.status());
   absl::string_view text = ident->value.AsView();
+  json_loc_.Advance(text.size());
 
   if (text.empty() || absl::ascii_isdigit(text[0]) || text == "null" ||
       text == "true" || text == "false") {
