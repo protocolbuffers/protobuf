@@ -103,7 +103,8 @@ void EmitPubUseOfOwnMessages(Context<FileDescriptor>& primary_file,
 }
 
 // Emits `pub use <crate_name>::<public package>::Msg` for all messages of a
-// `dep` into the `primary_file`.
+// `dep` into the `primary_file`. This should only be called for 'import public'
+// deps.
 //
 // `dep` is a primary src of a dependency of the current `proto_library`.
 // TODO: Add support for public import of non-primary srcs of deps.
@@ -112,7 +113,7 @@ void EmitPubUseForImportedMessages(Context<FileDescriptor>& primary_file,
   std::string crate_name = GetCrateName(dep);
   for (int i = 0; i < dep.desc().message_type_count(); ++i) {
     auto msg = primary_file.WithDesc(dep.desc().message_type(i));
-    auto path = GetCrateRelativeQualifiedPath(msg);  // TODO: b/300080946
+    auto path = GetCrateRelativeQualifiedPath(msg);
     primary_file.Emit({{"crate", crate_name}, {"pkg::Msg", path}},
                       R"rs(
                         pub use $crate$::$pkg::Msg$;
