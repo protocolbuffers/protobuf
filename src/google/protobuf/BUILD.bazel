@@ -389,6 +389,7 @@ cc_library(
         "arena.h",
         "arenastring.h",
         "arenaz_sampler.h",
+        "descriptor_lite.h",
         "endian.h",
         "explicitly_constructed.h",
         "extension_set.h",
