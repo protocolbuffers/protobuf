@@ -16,8 +16,8 @@ jobs:
         config:
           - { name: Optimized, flags: --config=opt }
           - { name: Debug, flags: --config=dbg }
-          - { name: ASAN, flags: --config=asan }
-          - { name: MSAN, flags: --config=docker-msan }
+          - { name: ASAN, flags: --config=asan, runner: ubuntu-22-large }
+          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-large }
           - { name: TSAN, flags: --config=tsan }
           - { name: UBSAN, flags: --config=ubsan }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
@@ -37,7 +37,7 @@ jobs:
             targets: "//src/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-6361b3a6e5c97e9951d03a4de28542fc45f1adab"
     name: Linux ${{ matrix.config.name }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
       - name: Checkout pending changes
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
