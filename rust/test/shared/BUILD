@@ -24,6 +24,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
+        "//third_party/gtest_rust/googletest",
         "//rust/test:child_upb_rust_proto",
         "//rust/test:parent_upb_rust_proto",
     ],
@@ -37,6 +38,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
+        "//third_party/gtest_rust/googletest",
         "//rust/test:child_cc_rust_proto",
         "//rust/test:parent_cc_rust_proto",
     ],
@@ -78,6 +80,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
+        "//third_party/gtest_rust/googletest",
         "//rust/test:reserved_cc_rust_proto",
         "//rust/test:unittest_cc_rust_proto",
     ],
@@ -91,6 +94,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
+        "//third_party/gtest_rust/googletest",
         "//rust/test:reserved_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
     ],
@@ -191,7 +195,10 @@ rust_test(
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
-    deps = ["//rust/test:unittest_upb_rust_proto"],
+    deps = [
+        "//third_party/gtest_rust/googletest",
+        "//rust/test:unittest_upb_rust_proto",
+    ],
 )
 
 rust_test(
@@ -201,7 +208,10 @@ rust_test(
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
-    deps = ["//rust/test:unittest_cc_rust_proto"],
+    deps = [
+        "//third_party/gtest_rust/googletest",
+        "//rust/test:unittest_cc_rust_proto",
+    ],
 )
 
 rust_test(

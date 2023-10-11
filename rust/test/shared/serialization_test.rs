@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use googletest::prelude::*;
 use unittest_proto::proto2_unittest::TestAllTypes;
 
 #[test]
@@ -19,9 +20,9 @@ fn serialize_deserialize_message() {
     let mut msg2 = TestAllTypes::new();
     assert!(msg2.deserialize(&serialized).is_ok());
 
-    assert_eq!(msg.optional_int64(), msg2.optional_int64());
-    assert_eq!(msg.optional_bool(), msg2.optional_bool());
-    assert_eq!(msg.optional_bytes(), msg2.optional_bytes());
+    assert_that!(msg.optional_int64(), eq(msg2.optional_int64()));
+    assert_that!(msg.optional_bool(), eq(msg2.optional_bool()));
+    assert_that!(msg.optional_bytes(), eq(msg2.optional_bytes()));
 }
 
 #[test]
