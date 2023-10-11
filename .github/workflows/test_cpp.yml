@@ -19,9 +19,8 @@ jobs:
         config:
           - { name: Optimized, flags: --config=opt }
           - { name: Debug, flags: --config=dbg }
-          # TODO Re-enable these once the disk space issues have been resolved.
-          #- { name: ASAN, flags: --config=asan }
-          #- { name: MSAN, flags: --config=docker-msan }
+          - { name: ASAN, flags: --config=asan, runner: ubuntu-22-large }
+          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-large }
           - { name: TSAN, flags: --config=tsan }
           - { name: UBSAN, flags: --config=ubsan }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
@@ -38,7 +37,7 @@ jobs:
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test"
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17"
     name: Linux ${{ matrix.config.name }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
