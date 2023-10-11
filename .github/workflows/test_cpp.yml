@@ -19,8 +19,8 @@ jobs:
         config:
           - { name: Optimized, flags: --config=opt }
           - { name: Debug, flags: --config=dbg }
-          - { name: ASAN, flags: --config=asan, runner: ubuntu-22-large }
-          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-large }
+          - { name: ASAN, flags: --config=asan --remote_download_minimal }
+          - { name: MSAN, flags: --config=docker-msan --remote_download_minimal }
           - { name: TSAN, flags: --config=tsan }
           - { name: UBSAN, flags: --config=ubsan }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
@@ -39,6 +39,7 @@ jobs:
     name: Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
+      - run: df -h
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
@@ -50,6 +51,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/${{ matrix.config.name }}
           bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }}
+      - run: df -h
 
   linux-gcc:
     strategy:
@@ -59,6 +61,7 @@ jobs:
     name: Linux GCC ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
+      - run: df -h
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
@@ -70,6 +73,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
           bazel: test //pkg/... //src/... @com_google_protobuf_examples//...
+      - run: df -h
 
   linux-release:
     strategy:
@@ -84,6 +88,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
+      - run: df -h
       - name: Cross compile protoc for ${{ matrix.arch }}
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
@@ -109,6 +114,7 @@ jobs:
             cmake --build . --parallel 20;
             ctest --parallel 20;
             sccache -s"
+      - run: df -h
 
   linux-cmake:
     strategy:
@@ -129,6 +135,7 @@ jobs:
     name: Linux CMake ${{ matrix.name}}
     runs-on: ubuntu-latest
     steps:
+      - run: df -h
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
@@ -149,6 +156,7 @@ jobs:
             /test.sh ${{ matrix.flags}} ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_BUILD_TESTS=ON -Dprotobuf_USE_EXTERNAL_GTEST=ON
             -Dprotobuf_ABSL_PROVIDER=package
+      - run: df -h
 
   linux-cmake-install:
     name: Linux CMake Install
