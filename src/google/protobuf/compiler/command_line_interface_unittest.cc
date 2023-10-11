@@ -1489,7 +1489,7 @@ TEST_F(CommandLineInterfaceTest, InvalidMinimumEditionError) {
       "--experimental_editions foo.proto");
   ExpectErrorSubstring(
       "generator --test_out specifies a minimum edition 1_TEST_ONLY which is "
-      "not the protoc minimum 2023");
+      "not the protoc minimum PROTO2");
 }
 
 TEST_F(CommandLineInterfaceTest, InvalidMaximumEditionError) {
@@ -1780,7 +1780,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     json_format: ALLOW
                   }
                 }
-                minimum_edition: EDITION_2023
+                minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_2023
               )pb"));
 }
@@ -1829,7 +1829,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     json_format: ALLOW
                   }
                 }
-                minimum_edition: EDITION_2023
+                minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_99997_TEST_ONLY
               )pb"));
 }
@@ -1896,7 +1896,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_EQ(defaults.minimum_edition(), EDITION_2023);
+  EXPECT_EQ(defaults.minimum_edition(), EDITION_PROTO2);
   EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
   ASSERT_EQ(defaults.defaults_size(), 5);
   EXPECT_EQ(defaults.defaults(0).edition(), EDITION_PROTO2);
@@ -1906,10 +1906,10 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   EXPECT_EQ(defaults.defaults(4).edition(), EDITION_99998_TEST_ONLY);
   EXPECT_EQ(
       defaults.defaults(0).features().GetExtension(pb::test).int_file_feature(),
-      0);
+      -2);
   EXPECT_EQ(
       defaults.defaults(1).features().GetExtension(pb::test).int_file_feature(),
-      0);
+      -3);
   EXPECT_EQ(
       defaults.defaults(2).features().GetExtension(pb::test).int_file_feature(),
       1);

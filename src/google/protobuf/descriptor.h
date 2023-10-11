@@ -2705,10 +2705,6 @@ inline FieldDescriptor::Type FieldDescriptor::type() const {
   return static_cast<Type>(type_);
 }
 
-inline bool FieldDescriptor::is_required() const {
-  return label() == LABEL_REQUIRED;
-}
-
 inline bool FieldDescriptor::is_optional() const {
   return label() == LABEL_OPTIONAL;
 }

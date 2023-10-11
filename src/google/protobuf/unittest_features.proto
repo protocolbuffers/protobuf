@@ -30,7 +30,8 @@ message TestFeatures {
   optional int32 int_file_feature = 1 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "0" },
+    edition_defaults = { edition: EDITION_PROTO2, value: "-2" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "-3" },
     edition_defaults = { edition: EDITION_2023, value: "1" },
     edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "2" },
     edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "3" }

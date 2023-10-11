@@ -7229,7 +7229,7 @@ class FeaturesTest : public FeaturesBaseTest {
         {GetExtensionReflection(pb::cpp), GetExtensionReflection(pb::test),
          GetExtensionReflection(pb::TestMessage::test_message),
          GetExtensionReflection(pb::TestMessage::Nested::test_nested)},
-        EDITION_2023, EDITION_99999_TEST_ONLY);
+        EDITION_PROTO2, EDITION_99999_TEST_ONLY);
     ASSERT_OK(default_spec);
     pool_.SetFeatureSetDefaults(std::move(default_spec).value());
   }
@@ -7312,7 +7312,8 @@ TEST_F(FeaturesTest, Proto2Features) {
   const FieldDescriptor* field = message->field(0);
   const FieldDescriptor* group = message->field(1);
   EXPECT_THAT(file->options(), EqualsProto(""));
-  EXPECT_THAT(GetFeatures(file), EqualsProto(R"pb(
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), -2);
+  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
@@ -7320,7 +7321,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
                 [pb.cpp] { legacy_closed_enum: true })pb"));
-  EXPECT_THAT(GetFeatures(field), EqualsProto(R"pb(
+  EXPECT_THAT(GetCoreFeatures(field), EqualsProto(R"pb(
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
@@ -7328,7 +7329,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: LEGACY_BEST_EFFORT
                 [pb.cpp] { legacy_closed_enum: true })pb"));
-  EXPECT_THAT(GetFeatures(group), EqualsProto(R"pb(
+  EXPECT_THAT(GetCoreFeatures(group), EqualsProto(R"pb(
                 field_presence: EXPLICIT
                 enum_type: CLOSED
                 repeated_field_encoding: EXPANDED
@@ -7385,7 +7386,8 @@ TEST_F(FeaturesTest, Proto3Features) {
   const Descriptor* message = file->message_type(0);
   const FieldDescriptor* field = message->field(0);
   EXPECT_THAT(file->options(), EqualsProto(""));
-  EXPECT_THAT(GetFeatures(file), EqualsProto(R"pb(
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), -3);
+  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
@@ -7393,7 +7395,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 [pb.cpp] { legacy_closed_enum: false })pb"));
-  EXPECT_THAT(GetFeatures(field), EqualsProto(R"pb(
+  EXPECT_THAT(GetCoreFeatures(field), EqualsProto(R"pb(
                 field_presence: IMPLICIT
                 enum_type: OPEN
                 repeated_field_encoding: PACKED
@@ -7962,7 +7964,7 @@ TEST_F(FeaturesTest, InvalidEdition) {
         name: "foo.proto" syntax: "editions" edition: EDITION_1_TEST_ONLY
       )pb",
       "foo.proto: foo.proto: EDITIONS: Edition 1_TEST_ONLY is earlier than the "
-      "minimum supported edition 2023\n");
+      "minimum supported edition PROTO2\n");
 }
 
 TEST_F(FeaturesTest, FileFeatures) {

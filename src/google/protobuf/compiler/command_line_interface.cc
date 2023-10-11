@@ -1554,7 +1554,7 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
                       << " specifies a maximum edition "
                       << output.generator->GetMaximumEdition()
                       << " which is not the protoc maximum "
-                      << PROTOBUF_MINIMUM_EDITION << ".";
+                      << PROTOBUF_MAXIMUM_EDITION << ".";
       return false;
     }
     for (const FieldDescriptor* ext :

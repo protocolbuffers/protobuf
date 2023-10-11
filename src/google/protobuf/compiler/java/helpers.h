@@ -350,7 +350,9 @@ inline bool ExposePublicParser(const FileDescriptor* descriptor) {
 // ints.
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
   // TODO: Check Java legacy_enum_field_treated_as_closed feature.
-  return !field->legacy_enum_field_treated_as_closed();
+  return field->type() != FieldDescriptor::TYPE_ENUM ||
+         FileDescriptorLegacy(field->file()).syntax() ==
+             FileDescriptorLegacy::SYNTAX_PROTO3;
 }
 
 // Check whether a message has repeated fields.
