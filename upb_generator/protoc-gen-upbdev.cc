@@ -32,6 +32,9 @@
 #include <string>
 
 #include "google/protobuf/compiler/plugin.upb.h"
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
 #include "upb_generator/subprocess.h"
 #include "upb_generator/upbdev.h"
 
@@ -61,7 +64,7 @@ int main() {
   const upb_StringView sv =
       upbdev_ProcessInput(input.data(), input.size(), a, &status);
   if (!upb_Status_IsOk(&status)) {
-    std::cerr << status.msg << std::endl;
+    std::cerr << status.msg << '\n';
     return -1;
   }
 
@@ -75,14 +78,14 @@ int main() {
   const bool ok = subprocess.Communicate(json_request, &json_response, &error);
   if (!ok) {
     // Dump the JSON request to stderr if we can't launch the next plugin.
-    std::cerr << json_request << std::endl;
+    std::cerr << json_request << '\n';
     return -1;
   }
 
   // Decode, serialize, and write the JSON response.
   upbdev_ProcessOutput(json_response.data(), json_response.size(), a, &status);
   if (!upb_Status_IsOk(&status)) {
-    std::cerr << status.msg << std::endl;
+    std::cerr << status.msg << '\n';
     return -1;
   }
 

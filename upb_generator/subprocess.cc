@@ -357,7 +357,7 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
 bool Subprocess::Communicate(const std::string& input_data,
                              std::string* output_data, std::string* error) {
   if (child_stdin_ == -1) {
-    std::cerr << "Must call Start() first." << std::endl;
+    std::cerr << "Must call Start() first." << '\n';
     UPB_ASSERT(child_stdin_ != -1);
   }
 
@@ -387,7 +387,7 @@ bool Subprocess::Communicate(const std::string& input_data,
         // Interrupted by signal.  Try again.
         continue;
       } else {
-        std::cerr << "select: " << strerror(errno) << std::endl;
+        std::cerr << "select: " << strerror(errno) << '\n';
         UPB_ASSERT(0);
       }
     }
@@ -434,7 +434,7 @@ bool Subprocess::Communicate(const std::string& input_data,
   int status;
   while (waitpid(child_pid_, &status, 0) == -1) {
     if (errno != EINTR) {
-      std::cerr << "waitpid: " << strerror(errno) << std::endl;
+      std::cerr << "waitpid: " << strerror(errno) << '\n';
       UPB_ASSERT(0);
     }
   }

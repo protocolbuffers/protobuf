@@ -362,6 +362,8 @@ cc_binary(
     deps = [
         ":plugin_upb_proto",
         ":upbdev",
+        "//upb:base",
+        "//upb:mem",
         "//upb:port",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
