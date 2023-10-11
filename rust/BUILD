@@ -52,6 +52,7 @@ PROTOBUF_SHARED = [
     "optional.rs",
     "primitive.rs",
     "proxied.rs",
+    "repeated.rs",
     "shared.rs",
     "string.rs",
     "vtable.rs",
@@ -93,7 +94,10 @@ rust_library(
     srcs = PROTOBUF_SHARED + ["cpp.rs"],
     crate_root = "shared.rs",
     rustc_flags = ["--cfg=cpp_kernel"],
-    deps = [":utf8"],
+    deps = [
+        ":utf8",
+        "//rust/cpp_kernel:cpp_api",
+    ],
 )
 
 rust_test(

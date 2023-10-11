@@ -77,9 +77,10 @@ std::string Thunk(Context<T> field, absl::string_view op) {
   if (field.is_upb() && op == "get") {
     // upb getter is simply the field name (no "get" in the name).
     format = "_$1";
-  } else if (field.is_upb() && op == "case") {
-    // upb oneof case function is x_case compared to has/set/clear which are in
-    // the other order e.g. clear_x.
+  } else if (field.is_upb() &&
+             (op == "case" || op == "mutable_upb_array" || op == "upb_array")) {
+    // some upb functions are in the order x_op compared to has/set/clear which
+    // are in the other order e.g. op_x.
     format = "_$1_$0";
   } else {
     format = "_$0_$1";
@@ -102,6 +103,22 @@ std::string Thunk(Context<OneofDescriptor> field, absl::string_view op) {
 std::string Thunk(Context<Descriptor> msg, absl::string_view op) {
   absl::string_view prefix = msg.is_cpp() ? "__rust_proto_thunk__" : "";
   return absl::StrCat(prefix, GetUnderscoreDelimitedFullName(msg), "_", op);
+}
+
+std::string RepeatedMutThunk(Context<FieldDescriptor> field) {
+  if (field.is_upb()) {
+    return "_" + Thunk(field, "mutable_upb_array");
+  } else {
+    return Thunk(field, "getter_mut");
+  }
+}
+
+std::string RepeatedThunk(Context<FieldDescriptor> field) {
+  if (field.is_upb()) {
+    return "_" + Thunk(field, "upb_array");
+  } else {
+    return Thunk(field, "getter");
+  }
 }
 
 std::string PrimitiveRsTypeName(const FieldDescriptor& desc) {

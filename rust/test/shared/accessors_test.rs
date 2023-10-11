@@ -397,3 +397,25 @@ fn test_oneof_accessors() {
     // This should show it set to the OneofBytes but its not supported yet.
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 }
+
+#[test]
+fn test_repeated_scalar_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert_eq!(msg.repeated_int32().len(), 0);
+    assert_eq!(msg.repeated_int32().get(0), None);
+
+    let mut ints = msg.repeated_int32_mut();
+    ints.push(1);
+    assert_eq!(ints.len(), 1);
+    assert_eq!(ints.get(0), Some(1));
+    ints.set(0, 2);
+    assert_eq!(ints.get(0), Some(2));
+
+    ints.push(1);
+    assert_eq!(ints.into_iter().collect::<Vec<_>>(), vec![2, 1]);
+
+    assert_eq!(msg.repeated_bool().len(), 0);
+    msg.repeated_bool_mut().push(true);
+    assert_eq!(msg.repeated_bool_mut().into_iter().collect::<Vec<_>>(), vec![true]);
+    assert_eq!(msg.repeated_bool().len(), 1);
+}

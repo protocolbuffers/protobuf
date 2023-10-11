@@ -7,7 +7,7 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::{Private, RawArena, RawMessage};
+use crate::__internal::{Private, RawArena, RawMessage, RawRepeatedField};
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
 use std::fmt;
@@ -182,6 +182,248 @@ pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
     val
 }
 
+// RepeatedField impls delegate out to `extern "C"` functions exposed by
+// `cpp_api.h` and store either a RepeatedField* or a RepeatedPtrField*
+// depending on the type.
+#[derive(Clone, Copy)]
+pub struct RepeatedField<'msg, T: ?Sized> {
+    inner: RepeatedFieldInner<'msg>,
+    _phantom: PhantomData<&'msg mut T>,
+}
+
+// CPP runtime-specific arguments for initializing a RepeatedField.
+#[derive(Clone, Copy)]
+pub struct RepeatedFieldInner<'msg> {
+    pub raw: RawRepeatedField,
+    pub _phantom: PhantomData<&'msg ()>,
+}
+
+impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
+    pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
+        RepeatedField { inner, _phantom: PhantomData }
+    }
+}
+impl<'msg> RepeatedField<'msg, i32> {}
+
+// This private module manually implements RepeatedField methods for each
+// primitive. This is working around
+// [`concat_idents`](https://doc.rust-lang.org/1.72.1/std/macro.concat_idents.html)
+// not being stabilized, and not taking a dependency on the third-party `paste`
+// crate.
+mod repeated_scalar_impls {
+    use super::*;
+
+    extern "C" {
+        pub fn __pb_rust_RepeatedField_i32_new() -> RawRepeatedField;
+        pub fn __pb_rust_RepeatedField_i32_size(raw: RawRepeatedField) -> usize;
+        pub fn __pb_rust_RepeatedField_i32_add(raw: RawRepeatedField, val: i32);
+        pub fn __pb_rust_RepeatedField_i32_get(raw: RawRepeatedField, index: usize) -> i32;
+        pub fn __pb_rust_RepeatedField_i32_set(raw: RawRepeatedField, index: usize, val: i32);
+
+        pub fn __pb_rust_RepeatedField_u32_new() -> RawRepeatedField;
+        pub fn __pb_rust_RepeatedField_u32_size(raw: RawRepeatedField) -> usize;
+        pub fn __pb_rust_RepeatedField_u32_add(raw: RawRepeatedField, val: u32);
+        pub fn __pb_rust_RepeatedField_u32_get(raw: RawRepeatedField, index: usize) -> u32;
+        pub fn __pb_rust_RepeatedField_u32_set(raw: RawRepeatedField, index: usize, val: u32);
+
+        pub fn __pb_rust_RepeatedField_i64_new() -> RawRepeatedField;
+        pub fn __pb_rust_RepeatedField_i64_size(raw: RawRepeatedField) -> usize;
+        pub fn __pb_rust_RepeatedField_i64_add(raw: RawRepeatedField, val: i64);
+        pub fn __pb_rust_RepeatedField_i64_get(raw: RawRepeatedField, index: usize) -> i64;
+        pub fn __pb_rust_RepeatedField_i64_set(raw: RawRepeatedField, index: usize, val: i64);
+
+        pub fn __pb_rust_RepeatedField_u64_new() -> RawRepeatedField;
+        pub fn __pb_rust_RepeatedField_u64_size(raw: RawRepeatedField) -> usize;
+        pub fn __pb_rust_RepeatedField_u64_add(raw: RawRepeatedField, val: u64);
+        pub fn __pb_rust_RepeatedField_u64_get(raw: RawRepeatedField, index: usize) -> u64;
+        pub fn __pb_rust_RepeatedField_u64_set(raw: RawRepeatedField, index: usize, val: u64);
+
+        pub fn __pb_rust_RepeatedField_f32_new() -> RawRepeatedField;
+        pub fn __pb_rust_RepeatedField_f32_size(raw: RawRepeatedField) -> usize;
+        pub fn __pb_rust_RepeatedField_f32_add(raw: RawRepeatedField, val: f32);
+        pub fn __pb_rust_RepeatedField_f32_get(raw: RawRepeatedField, index: usize) -> f32;
+        pub fn __pb_rust_RepeatedField_f32_set(raw: RawRepeatedField, index: usize, val: f32);
+
+        pub fn __pb_rust_RepeatedField_f64_new() -> RawRepeatedField;
+        pub fn __pb_rust_RepeatedField_f64_size(raw: RawRepeatedField) -> usize;
+        pub fn __pb_rust_RepeatedField_f64_add(raw: RawRepeatedField, val: f64);
+        pub fn __pb_rust_RepeatedField_f64_get(raw: RawRepeatedField, index: usize) -> f64;
+        pub fn __pb_rust_RepeatedField_f64_set(raw: RawRepeatedField, index: usize, val: f64);
+
+        pub fn __pb_rust_RepeatedField_bool_new() -> RawRepeatedField;
+        pub fn __pb_rust_RepeatedField_bool_size(raw: RawRepeatedField) -> usize;
+        pub fn __pb_rust_RepeatedField_bool_add(raw: RawRepeatedField, val: bool);
+        pub fn __pb_rust_RepeatedField_bool_get(raw: RawRepeatedField, index: usize) -> bool;
+        pub fn __pb_rust_RepeatedField_bool_set(raw: RawRepeatedField, index: usize, val: bool);
+    }
+
+    pub trait RepeatedScalarOps {
+        #[allow(clippy::new_ret_no_self)]
+        fn new() -> RawRepeatedField;
+        fn push(f: RawRepeatedField, v: Self);
+        fn len(f: RawRepeatedField) -> usize;
+        fn get(f: RawRepeatedField, i: usize) -> Self;
+        fn set(f: RawRepeatedField, i: usize, v: Self);
+    }
+
+    impl RepeatedScalarOps for i32 {
+        fn new() -> RawRepeatedField {
+            unsafe { __pb_rust_RepeatedField_i32_new() }
+        }
+        fn push(f: RawRepeatedField, v: Self) {
+            unsafe { __pb_rust_RepeatedField_i32_add(f, v) }
+        }
+        fn len(f: RawRepeatedField) -> usize {
+            unsafe { __pb_rust_RepeatedField_i32_size(f) }
+        }
+        fn get(f: RawRepeatedField, i: usize) -> Self {
+            unsafe { __pb_rust_RepeatedField_i32_get(f, i) }
+        }
+        fn set(f: RawRepeatedField, i: usize, v: Self) {
+            unsafe { __pb_rust_RepeatedField_i32_set(f, i, v) }
+        }
+    }
+
+    impl RepeatedScalarOps for i64 {
+        fn new() -> RawRepeatedField {
+            unsafe { __pb_rust_RepeatedField_i64_new() }
+        }
+        fn push(f: RawRepeatedField, v: Self) {
+            unsafe { __pb_rust_RepeatedField_i64_add(f, v) }
+        }
+        fn len(f: RawRepeatedField) -> usize {
+            unsafe { __pb_rust_RepeatedField_i64_size(f) }
+        }
+        fn get(f: RawRepeatedField, i: usize) -> Self {
+            unsafe { __pb_rust_RepeatedField_i64_get(f, i) }
+        }
+        fn set(f: RawRepeatedField, i: usize, v: Self) {
+            unsafe { __pb_rust_RepeatedField_i64_set(f, i, v) }
+        }
+    }
+
+    impl RepeatedScalarOps for u32 {
+        fn new() -> RawRepeatedField {
+            unsafe { __pb_rust_RepeatedField_u32_new() }
+        }
+        fn push(f: RawRepeatedField, v: Self) {
+            unsafe { __pb_rust_RepeatedField_u32_add(f, v) }
+        }
+        fn len(f: RawRepeatedField) -> usize {
+            unsafe { __pb_rust_RepeatedField_u32_size(f) }
+        }
+        fn get(f: RawRepeatedField, i: usize) -> Self {
+            unsafe { __pb_rust_RepeatedField_u32_get(f, i) }
+        }
+        fn set(f: RawRepeatedField, i: usize, v: Self) {
+            unsafe { __pb_rust_RepeatedField_u32_set(f, i, v) }
+        }
+    }
+
+    impl RepeatedScalarOps for u64 {
+        fn new() -> RawRepeatedField {
+            unsafe { __pb_rust_RepeatedField_u64_new() }
+        }
+        fn push(f: RawRepeatedField, v: Self) {
+            unsafe { __pb_rust_RepeatedField_u64_add(f, v) }
+        }
+        fn len(f: RawRepeatedField) -> usize {
+            unsafe { __pb_rust_RepeatedField_u64_size(f) }
+        }
+        fn get(f: RawRepeatedField, i: usize) -> Self {
+            unsafe { __pb_rust_RepeatedField_u64_get(f, i) }
+        }
+        fn set(f: RawRepeatedField, i: usize, v: Self) {
+            unsafe { __pb_rust_RepeatedField_u64_set(f, i, v) }
+        }
+    }
+
+    impl RepeatedScalarOps for f32 {
+        fn new() -> RawRepeatedField {
+            unsafe { __pb_rust_RepeatedField_f32_new() }
+        }
+        fn push(f: RawRepeatedField, v: Self) {
+            unsafe { __pb_rust_RepeatedField_f32_add(f, v) }
+        }
+        fn len(f: RawRepeatedField) -> usize {
+            unsafe { __pb_rust_RepeatedField_f32_size(f) }
+        }
+        fn get(f: RawRepeatedField, i: usize) -> Self {
+            unsafe { __pb_rust_RepeatedField_f32_get(f, i) }
+        }
+        fn set(f: RawRepeatedField, i: usize, v: Self) {
+            unsafe { __pb_rust_RepeatedField_f32_set(f, i, v) }
+        }
+    }
+
+    impl RepeatedScalarOps for f64 {
+        fn new() -> RawRepeatedField {
+            unsafe { __pb_rust_RepeatedField_f64_new() }
+        }
+        fn push(f: RawRepeatedField, v: Self) {
+            unsafe { __pb_rust_RepeatedField_f64_add(f, v) }
+        }
+        fn len(f: RawRepeatedField) -> usize {
+            unsafe { __pb_rust_RepeatedField_f64_size(f) }
+        }
+        fn get(f: RawRepeatedField, i: usize) -> Self {
+            unsafe { __pb_rust_RepeatedField_f64_get(f, i) }
+        }
+        fn set(f: RawRepeatedField, i: usize, v: Self) {
+            unsafe { __pb_rust_RepeatedField_f64_set(f, i, v) }
+        }
+    }
+
+    impl RepeatedScalarOps for bool {
+        fn new() -> RawRepeatedField {
+            unsafe { __pb_rust_RepeatedField_bool_new() }
+        }
+        fn push(f: RawRepeatedField, v: Self) {
+            unsafe { __pb_rust_RepeatedField_bool_add(f, v) }
+        }
+        fn len(f: RawRepeatedField) -> usize {
+            unsafe { __pb_rust_RepeatedField_bool_size(f) }
+        }
+        fn get(f: RawRepeatedField, i: usize) -> Self {
+            unsafe { __pb_rust_RepeatedField_bool_get(f, i) }
+        }
+        fn set(f: RawRepeatedField, i: usize, v: Self) {
+            unsafe { __pb_rust_RepeatedField_bool_set(f, i, v) }
+        }
+    }
+
+    impl<'msg, T: RepeatedScalarOps> RepeatedField<'msg, T> {
+        #[allow(clippy::new_without_default, dead_code)]
+        pub fn new() -> Self {
+            Self::from_inner(
+                Private,
+                RepeatedFieldInner::<'msg> { raw: T::new(), _phantom: PhantomData },
+            )
+        }
+        pub fn push(&mut self, val: T) {
+            T::push(self.inner.raw, val)
+        }
+        pub fn len(&self) -> usize {
+            T::len(self.inner.raw)
+        }
+        pub fn is_empty(&self) -> bool {
+            self.len() == 0
+        }
+        pub fn get(&self, index: usize) -> Option<T> {
+            if index >= self.len() {
+                return None;
+            }
+            Some(T::get(self.inner.raw, index))
+        }
+        pub fn set(&mut self, index: usize, val: T) {
+            if index >= self.len() {
+                return;
+            }
+            T::set(self.inner.raw, index, val)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -200,5 +442,28 @@ mod tests {
         let (ptr, len) = allocate_byte_array(b"Hello world");
         let serialized_data = SerializedData { data: NonNull::new(ptr).unwrap(), len: len };
         assert_eq!(&*serialized_data, b"Hello world");
+    }
+
+    #[test]
+    fn repeated_field() {
+        let mut r = RepeatedField::<i32>::new();
+        assert_eq!(r.len(), 0);
+        r.push(32);
+        assert_eq!(r.get(0), Some(32));
+
+        let mut r = RepeatedField::<u32>::new();
+        assert_eq!(r.len(), 0);
+        r.push(32);
+        assert_eq!(r.get(0), Some(32));
+
+        let mut r = RepeatedField::<f64>::new();
+        assert_eq!(r.len(), 0);
+        r.push(0.1234f64);
+        assert_eq!(r.get(0), Some(0.1234));
+
+        let mut r = RepeatedField::<bool>::new();
+        assert_eq!(r.len(), 0);
+        r.push(true);
+        assert_eq!(r.get(0), Some(true));
     }
 }

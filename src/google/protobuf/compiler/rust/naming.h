@@ -30,6 +30,9 @@ std::string Thunk(Context<OneofDescriptor> field, absl::string_view op);
 
 std::string Thunk(Context<Descriptor> msg, absl::string_view op);
 
+std::string RepeatedMutThunk(Context<FieldDescriptor> field);
+std::string RepeatedThunk(Context<FieldDescriptor> field);
+
 std::string PrimitiveRsTypeName(const FieldDescriptor& desc);
 
 std::string FieldInfoComment(Context<FieldDescriptor> field);
