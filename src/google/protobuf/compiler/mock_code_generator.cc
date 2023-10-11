@@ -204,7 +204,8 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
                                  GeneratorContext* context,
                                  std::string* error) const {
   if (FileDescriptorLegacy(file).syntax() ==
-      FileDescriptorLegacy::SYNTAX_EDITIONS) {
+          FileDescriptorLegacy::SYNTAX_EDITIONS &&
+      (suppressed_features_ & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
     internal::VisitDescriptors(*file, [&](const auto& descriptor) {
       const FeatureSet& features = GetResolvedSourceFeatures(descriptor);
       ABSL_CHECK(features.HasExtension(pb::test))

@@ -119,11 +119,11 @@ class PROTOC_EXPORT CodeGenerator {
 
   // Returns the minimum edition (inclusive) supported by this generator.  Any
   // proto files with an edition before this will result in an error.
-  virtual Edition GetMinimumEdition() const { return PROTOBUF_MINIMUM_EDITION; }
+  virtual Edition GetMinimumEdition() const { return Edition::EDITION_UNKNOWN; }
 
   // Returns the maximum edition (inclusive) supported by this generator.  Any
   // proto files with an edition after this will result in an error.
-  virtual Edition GetMaximumEdition() const { return PROTOBUF_MAXIMUM_EDITION; }
+  virtual Edition GetMaximumEdition() const { return Edition::EDITION_UNKNOWN; }
 
   // Builds a default feature set mapping for this generator.
   //

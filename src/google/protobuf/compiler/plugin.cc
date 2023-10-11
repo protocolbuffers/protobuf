@@ -94,15 +94,18 @@ bool GenerateCode(const CodeGeneratorRequest& request,
                   CodeGeneratorResponse* response, std::string* error_msg) {
   DescriptorPool pool;
 
-  // Initialize feature set default mapping.
-  absl::StatusOr<FeatureSetDefaults> defaults =
-      generator.BuildFeatureSetDefaults();
-  if (!defaults.ok()) {
-    *error_msg = absl::StrCat("error generating feature defaults: ",
-                              defaults.status().message());
-    return false;
+  if (generator.GetSupportedFeatures() &
+      CodeGenerator::FEATURE_SUPPORTS_EDITIONS) {
+    // Initialize feature set default mapping.
+    absl::StatusOr<FeatureSetDefaults> defaults =
+        generator.BuildFeatureSetDefaults();
+    if (!defaults.ok()) {
+      *error_msg = absl::StrCat("error generating feature defaults: ",
+                                defaults.status().message());
+      return false;
+    }
+    pool.SetFeatureSetDefaults(*defaults);
   }
-  pool.SetFeatureSetDefaults(*defaults);
 
   for (int i = 0; i < request.proto_file_size(); i++) {
     const FileDescriptor* file = pool.BuildFile(request.proto_file(i));
