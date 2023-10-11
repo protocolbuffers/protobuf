@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_IO_TEST_ZERO_COPY_STREAM_H__
 
 #include <deque>
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <utility>
@@ -30,6 +31,8 @@ namespace internal {
 class TestZeroCopyInputStream final : public ZeroCopyInputStream {
  public:
   // The input stream will provide the buffers exactly as passed here.
+  TestZeroCopyInputStream(std::initializer_list<std::string> buffers)
+      : buffers_(buffers.begin(), buffers.end()) {}
   explicit TestZeroCopyInputStream(const std::vector<std::string>& buffers)
       : buffers_(buffers.begin(), buffers.end()) {}
 
