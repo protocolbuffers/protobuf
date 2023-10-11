@@ -16,6 +16,7 @@
 #include <limits>
 #include <string>
 
+#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/implicit_weak_message.h"
@@ -120,6 +121,32 @@ void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
   Rep* r = rep();
   ++r->allocated_size;
   return r->elements[ExchangeCurrentSize(current_size_ + 1)] = obj;
+}
+
+void* RepeatedPtrFieldBase::AddOutOfLineHelper(ElementFactory factory) {
+  if (tagged_rep_or_elem_ == nullptr) {
+    ExchangeCurrentSize(1);
+    tagged_rep_or_elem_ = factory(GetArena());
+    return tagged_rep_or_elem_;
+  }
+  if (using_sso()) {
+    if (ExchangeCurrentSize(1) == 0) return tagged_rep_or_elem_;
+  } else {
+    absl::PrefetchToLocalCache(rep());
+  }
+  if (PROTOBUF_PREDICT_FALSE(current_size_ == total_size_)) {
+    InternalExtend(1);
+  } else {
+    Rep* r = rep();
+    if (current_size_ != r->allocated_size) {
+      return r->elements[ExchangeCurrentSize(current_size_ + 1)];
+    }
+  }
+  Rep* r = rep();
+  ++r->allocated_size;
+  void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
+  result = factory(GetArena());
+  return result;
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {

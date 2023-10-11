@@ -72,11 +72,16 @@ class RepeatedPtrOverPtrsIterator;
 
 namespace internal {
 
+template <typename Element>
+inline void* NewT(Arena* a) {
+  return GenericTypeHandler<Element>::New(a);
+}
+
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
 inline void memswap(char* PROTOBUF_RESTRICT a, char* PROTOBUF_RESTRICT b) {
   // `PROTOBUF_RESTRICT` tells compiler that blocks do not overlapping which
-  // allows it to genererate optimized code for swap_ranges.
+  // allows it to generate optimized code for swap_ranges.
   std::swap_ranges(a, a + N, b);
 }
 
@@ -159,6 +164,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   static constexpr int kSSOCapacity = 1;
 
+  using ElementFactory = void* (*)(Arena*);
+
  protected:
   // We use the same Handler for all Message types to deduplicate generated
   // code.
@@ -214,8 +221,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return cast<TypeHandler>(element_at(index));
   }
 
+  template <typename Handler>
+  Value<Handler>* Add() {
+    return cast<Handler>(AddOutOfLineHelper(NewT<Value<Handler>>));
+  }
+
   template <typename TypeHandler>
-  Value<TypeHandler>* Add(const Value<TypeHandler>* prototype = nullptr) {
+  Value<TypeHandler>* Add(const Value<TypeHandler>* prototype) {
     if (current_size_ < allocated_size()) {
       return cast<TypeHandler>(
           element_at(ExchangeCurrentSize(current_size_ + 1)));
@@ -816,6 +828,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // array, including potentially resizing the array with Reserve if
   // needed
   void* AddOutOfLineHelper(void* obj);
+  void* AddOutOfLineHelper(ElementFactory factory);
 
   // A few notes on internal representation:
   //
