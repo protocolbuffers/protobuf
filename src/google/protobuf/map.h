@@ -70,6 +70,7 @@ template <typename Derived, typename Key, typename T,
 class MapField;
 
 struct MapTestPeer;
+struct MapBenchmarkPeer;
 
 template <typename Key, typename T>
 class TypeDefinedMapFieldBase;
@@ -563,6 +564,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
  protected:
   friend class TcParser;
   friend struct MapTestPeer;
+  friend struct MapBenchmarkPeer;
   friend class UntypedMapIterator;
 
   struct NodeAndBucket {
@@ -900,6 +902,7 @@ class KeyMapBase : public UntypedMapBase {
  protected:
   friend class TcParser;
   friend struct MapTestPeer;
+  friend struct MapBenchmarkPeer;
 
   PROTOBUF_NOINLINE void erase_no_destroy(map_index_t b, KeyNode* node) {
     TreeIterator tree_it;
@@ -1665,6 +1668,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   friend class internal::MapFieldLite;
   friend class internal::TcParser;
   friend struct internal::MapTestPeer;
+  friend struct internal::MapBenchmarkPeer;
 };
 
 namespace internal {
