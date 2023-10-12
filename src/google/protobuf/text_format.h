@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
@@ -73,6 +74,10 @@ PROTOBUF_EXPORT enum class FieldReporterLevel {
 namespace io {
 class ErrorCollector;  // tokenizer.h
 }
+
+namespace text_format_unittest_util {
+class UnsetFieldsMetadataTestUtil;
+}  // namespace text_format_unittest_util
 
 namespace internal {
 // Enum used to set printing options for StringifyMessage.
@@ -719,11 +724,54 @@ class PROTOBUF_EXPORT TextFormat {
     // the maximum allowed nesting of proto messages.
     void SetRecursionLimit(int limit) { recursion_limit_ = limit; }
 
-    // If called, the parser will report an error if a parsed field had no
+    // Uniquely addresses fields in a message that was explicitly unset in
+    // textproto. Example:
+    // "some_int_field: 0"
+    // where some_int_field is non-optional.
+    //
+    // This class should only be used to pass data between the text_format
+    // parser and the Partially() matcher, and thus its Constructor and fields
+    // are private with only `friend` exposure.
+    struct UnsetFieldsMetadata {
+      UnsetFieldsMetadata() = default;
+
+     private:
+      // Uniquely addresses an unset proto field.
+      struct ExplicitlyUnsetProtoFieldAddress {
+        template <typename H>
+        friend H AbslHashValue(H h, const ExplicitlyUnsetProtoFieldAddress a) {
+          return H::combine(std::move(h), a.field_pointer);
+        }
+        bool operator==(const ExplicitlyUnsetProtoFieldAddress o) const {
+          return field_pointer == o.field_pointer;
+        }
+        ExplicitlyUnsetProtoFieldAddress() = delete;
+        ExplicitlyUnsetProtoFieldAddress(const Message& message,
+                                         const Reflection& reflection,
+                                         const FieldDescriptor& fd);
+
+        // This can be extended to contain additional addressing info, eg a bit
+        // offset for a bit field if the layout of the Message class is
+        // optimized. Make sure you modify the hash and == above if adding new
+        // fields.
+        const void* field_pointer{};
+      };
+      // List of addresses of explicitly unset proto fields.
+      absl::flat_hash_set<ExplicitlyUnsetProtoFieldAddress> addresses;
+
+      friend class ::google::protobuf::text_format_unittest_util::
+          UnsetFieldsMetadataTestUtil;
+      friend class ::google::protobuf::util::MessageDifferencer;
+      friend class ::google::protobuf::TextFormat::Parser;
+    };
+
+    // If called, the parser will report the addresses of a parsed field had no
     // effect on the resulting proto (for example, fields with no presence that
-    // were set to their default value).
-    void ErrorOnNoOpFields(bool return_error) {
-      error_on_no_op_fields_ = return_error;
+    // were set to their default value). These can be passed to the Partially()
+    // matcher as an indicator to explicitly check these fields are missing
+    // in the actual.
+    void OutputNoOpFields(UnsetFieldsMetadata* no_op_fields) {
+      no_op_fields_ = no_op_fields;
     }
 
    private:
@@ -748,7 +796,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool allow_relaxed_whitespace_;
     bool allow_singular_overwrites_;
     int recursion_limit_;
-    bool error_on_no_op_fields_ = false;
+    UnsetFieldsMetadata* no_op_fields_{};
   };
 
 
