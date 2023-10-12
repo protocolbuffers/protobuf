@@ -4,14 +4,14 @@
      ::_pbi::TcParser::GenericFallbackLite,  // fallback
    }, {{
 -    // optional int32 int32_field = 1;
-+    // int32 int32_field = 1 [features = {
++    // int32 int32_field = 1;
      {::_pbi::TcParser::FastV32S1,
       {8, 0, 0, PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_)}},
    }}, {{
      65535, 65535
    }}, {{
 -    // optional int32 int32_field = 1;
-+    // int32 int32_field = 1 [features = {
++    // int32 int32_field = 1;
      {PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_), _Internal::kHasBitsOffset + 0, 0,
      (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
    }},
@@ -20,7 +20,7 @@
  
    cached_has_bits = _impl_._has_bits_[0];
 -  // optional int32 int32_field = 1;
-+  // int32 int32_field = 1 [features = {
++  // int32 int32_field = 1;
    if (cached_has_bits & 0x00000001u) {
      target = ::proto2::internal::WireFormatLite::
          WriteInt32ToArrayWithField<1>(
@@ -29,7 +29,7 @@
    (void) cached_has_bits;
  
 -  // optional int32 int32_field = 1;
-+  // int32 int32_field = 1 [features = {
++  // int32 int32_field = 1;
    cached_has_bits = _impl_._has_bits_[0];
    if (cached_has_bits & 0x00000001u) {
      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
@@ -40,7 +40,7 @@
      kInt32FieldFieldNumber = 1,
    };
 -  // optional int32 int32_field = 1;
-+  // int32 int32_field = 1 [features = {
++  // int32 int32_field = 1;
    bool has_int32_field() const;
    void clear_int32_field() ;
    ::int32_t int32_field() const;
@@ -49,7 +49,7 @@
  // SimpleProto3
  
 -// optional int32 int32_field = 1;
-+// int32 int32_field = 1 [features = {
++// int32 int32_field = 1;
  inline bool SimpleProto3::has_int32_field() const {
    bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
    return value;

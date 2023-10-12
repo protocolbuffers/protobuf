@@ -8,6 +8,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/editions/golden/test_messages_proto2.pb.h"
 #include "google/protobuf/editions/golden/test_messages_proto3.pb.h"
 #include "google/protobuf/editions/proto/test_editions_default_features.pb.h"
