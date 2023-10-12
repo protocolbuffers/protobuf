@@ -29,6 +29,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -247,7 +248,7 @@ bool FileGenerator::ShouldSkipDependencyImports(
   // Skip feature imports, which are a visible (but non-functional) deviation
   // between editions and legacy syntax.
   if (options_.strip_nonfunctional_codegen &&
-      dep->name() == "third_party/protobuf/cpp_features.proto") {
+      IsKnownFeatureProto(dep->name())) {
     return true;
   }
 

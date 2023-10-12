@@ -5,7 +5,6 @@ proto_library(
     testonly = True,
     srcs = ["golden/test_messages_proto2.proto"],
     strip_import_prefix = "/src",
-    deps = ["//src/google/protobuf:cpp_features_proto"],
 )
 
 cc_proto_library(
@@ -26,7 +25,6 @@ proto_library(
         "//:struct_proto",
         "//:timestamp_proto",
         "//:wrappers_proto",
-        "//src/google/protobuf:cpp_features_proto",
     ],
 )
 
