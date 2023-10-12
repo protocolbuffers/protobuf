@@ -218,6 +218,11 @@ class TimeUtilTest(TimeUtilTestBase):
     message.FromNanoseconds(-1999)
     self.assertEqual(-1, message.ToMicroseconds())
 
+  def testTimezoneFromDatetimeClassMethod(self):
+    naive_epoch_morning = datetime.datetime(1970, 1, 1, 8, 0, 0, 1)
+    message = timestamp_pb2.Timestamp.FromDatetime(naive_epoch_morning)
+    self.assertEqual(naive_epoch_morning, message.ToDatetime())
+
   def testTimezoneNaiveDatetimeConversionNearEpoch(self):
     message = timestamp_pb2.Timestamp()
     naive_utc_epoch = datetime.datetime(1970, 1, 1)

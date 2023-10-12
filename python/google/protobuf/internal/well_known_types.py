@@ -72,6 +72,14 @@ class Any(object):
     return '/' in self.type_url and self.TypeName() == descriptor.full_name
 
 
+class _FromDatetimeDescriptor:
+
+  def __get__(self, instance, owner):
+    return (
+        instance._InstanceFromDatetime if instance else owner._ClassFromDatetime
+    )
+
+
 class Timestamp(object):
   """Class for Timestamp message type."""
 
@@ -239,7 +247,7 @@ class Timestamp(object):
       # Note the tz conversion has to come after the timedelta arithmetic.
       return (_EPOCH_DATETIME_AWARE + delta).astimezone(tzinfo)
 
-  def FromDatetime(self, dt):
+  def _InstanceFromDatetime(self, dt):
     """Converts datetime to Timestamp.
 
     Args:
@@ -255,6 +263,18 @@ class Timestamp(object):
     self.seconds = calendar.timegm(dt.utctimetuple())
     self.nanos = dt.microsecond * _NANOS_PER_MICROSECOND
 
+  @classmethod
+  def _ClassFromDatetime(cls, dt):
+    """Returns a new Timestamp from the given datetime.
+
+    Args:
+      dt: A datetime. If it's timezone-naive, it's assumed to be in UTC.
+    """
+    instance = cls()
+    instance.FromDatetime(dt)
+    return instance
+
+  FromDatetime = _FromDatetimeDescriptor()
 
 class Duration(object):
   """Class for Duration message type."""
