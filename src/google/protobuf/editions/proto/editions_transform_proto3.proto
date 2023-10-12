@@ -9,6 +9,11 @@ syntax = "proto3";
 
 package protobuf_editions_test;
 
+enum TestEnumProto3 {
+  TEST_ENUM_PROTO3_UNKNOWN = 0;
+  TEST_ENUM_PROTO3_VALUE = 1;
+}
+
 message TestMessageProto3 {
   string string_field = 1;
 

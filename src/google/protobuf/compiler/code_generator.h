@@ -230,6 +230,9 @@ PROTOC_EXPORT void ParseGeneratorParameter(
 // Strips ".proto" or ".protodevel" from the end of a filename.
 PROTOC_EXPORT std::string StripProto(absl::string_view filename);
 
+// Returns true if the proto path corresponds to a known feature file.
+PROTOC_EXPORT bool IsKnownFeatureProto(absl::string_view filename);
+
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
