@@ -35,7 +35,7 @@ def pyproto_test_wrapper(name, deps = []):
 #         main = src,
 #         deps = [
 #             "//third_party/py/google/protobuf/internal:" + name + "_for_deps",
-#             "//net/proto2/python/public:use_upb_protos",
+#             "//third_party/py/google/protobuf:use_upb_protos",
 #         ],
 #         target_compatible_with = select({
 #             "@platforms//os:windows": ["@platforms//:incompatible"],
