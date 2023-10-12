@@ -339,6 +339,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator_factory.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/map_field_lite.cc
@@ -449,6 +450,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator_factory.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/map_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/map_field_lite.h
@@ -582,6 +584,26 @@ set(plugin_proto_hdrs
 # @//src/google/protobuf/compiler:plugin_proto
 set(plugin_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin_proto-descriptor-set.proto.bin
+)
+
+# @//java/core:java_features_proto
+set(java_features_proto_proto_srcs
+  ${protobuf_SOURCE_DIR}/java/core/src/main/java/com/google/protobuf/java_features.proto
+)
+
+# @//java/core:java_features_proto
+set(java_features_proto_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.proto.pb.cc
+)
+
+# @//java/core:java_features_proto
+set(java_features_proto_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.proto.pb.h
+)
+
+# @//java/core:java_features_proto
+set(java_features_proto_files
+  ${protobuf_SOURCE_DIR}/java/core/java_features_proto-descriptor-set.proto.bin
 )
 
 # @//pkg:common_test
