@@ -16,7 +16,6 @@
 #include <limits>
 #include <string>
 
-#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/implicit_weak_message.h"
@@ -107,46 +106,8 @@ void RepeatedPtrFieldBase::DestroyProtos() {
   tagged_rep_or_elem_ = nullptr;
 }
 
-void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
-  if (tagged_rep_or_elem_ == nullptr) {
-    ABSL_DCHECK_EQ(current_size_, 0);
-    ABSL_DCHECK(using_sso());
-    ABSL_DCHECK_EQ(allocated_size(), 0);
-    ExchangeCurrentSize(1);
-    return tagged_rep_or_elem_ = obj;
-  }
-  if (using_sso() || rep()->allocated_size == total_size_) {
-    InternalExtend(1);  // Equivalent to "Reserve(total_size_ + 1)"
-  }
-  Rep* r = rep();
-  ++r->allocated_size;
-  return r->elements[ExchangeCurrentSize(current_size_ + 1)] = obj;
-}
-
 void* RepeatedPtrFieldBase::AddOutOfLineHelper(ElementFactory factory) {
-  if (tagged_rep_or_elem_ == nullptr) {
-    ExchangeCurrentSize(1);
-    tagged_rep_or_elem_ = factory(GetArena());
-    return tagged_rep_or_elem_;
-  }
-  if (using_sso()) {
-    if (ExchangeCurrentSize(1) == 0) return tagged_rep_or_elem_;
-  } else {
-    absl::PrefetchToLocalCache(rep());
-  }
-  if (PROTOBUF_PREDICT_FALSE(current_size_ == total_size_)) {
-    InternalExtend(1);
-  } else {
-    Rep* r = rep();
-    if (current_size_ != r->allocated_size) {
-      return r->elements[ExchangeCurrentSize(current_size_ + 1)];
-    }
-  }
-  Rep* r = rep();
-  ++r->allocated_size;
-  void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
-  result = factory(GetArena());
-  return result;
+  return AddInternal(factory);
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
@@ -164,15 +125,15 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
   ExchangeCurrentSize(current_size_ - num);
 }
 
+MessageLite* RepeatedPtrFieldBase::AddMessage(const MessageLite* prototype) {
+  return AddInternal([prototype](Arena* a) { return prototype->New(a); });
+}
+
 MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
-  if (current_size_ < allocated_size()) {
-    return reinterpret_cast<MessageLite*>(
-        element_at(ExchangeCurrentSize(current_size_ + 1)));
-  }
-  MessageLite* result = prototype
-                            ? prototype->New(arena_)
-                            : Arena::CreateMessage<ImplicitWeakMessage>(arena_);
-  return static_cast<MessageLite*>(AddOutOfLineHelper(result));
+  return AddInternal([prototype](Arena* a) -> MessageLite* {
+    return prototype ? prototype->New(a)
+                     : Arena::CreateMessage<ImplicitWeakMessage>(a);
+  });
 }
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message) {

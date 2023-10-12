@@ -32,6 +32,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/internal_visibility.h"
@@ -226,29 +227,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return cast<Handler>(AddOutOfLineHelper(NewT<Value<Handler>>));
   }
 
-  template <typename TypeHandler>
-  Value<TypeHandler>* Add(const Value<TypeHandler>* prototype) {
-    if (current_size_ < allocated_size()) {
-      return cast<TypeHandler>(
-          element_at(ExchangeCurrentSize(current_size_ + 1)));
-    }
-    auto* result = TypeHandler::NewFromPrototype(prototype, arena_);
-    return cast<TypeHandler>(AddOutOfLineHelper(result));
-  }
-
   template <
       typename TypeHandler,
       typename std::enable_if<TypeHandler::Movable::value>::type* = nullptr>
   inline void Add(Value<TypeHandler>&& value) {
-    if (current_size_ < allocated_size()) {
-      *cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1))) =
-          std::move(value);
-      return;
-    }
-    MaybeExtend();
-    if (!using_sso()) ++rep()->allocated_size;
-    auto* result = TypeHandler::New(arena_, std::move(value));
-    element_at(ExchangeCurrentSize(current_size_ + 1)) = result;
+    *Add<TypeHandler>() = std::move(value);
   }
 
   template <typename TypeHandler>
@@ -293,9 +276,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   // Creates and adds an element using the given prototype, without introducing
-  // a link-time dependency on the concrete message type. This method is used to
-  // implement implicit weak fields. The prototype may be nullptr, in which case
-  // an ImplicitWeakMessage will be used as a placeholder.
+  // a link-time dependency on the concrete message type.
+  //
+  // Pre-condition: prototype must not be nullptr.
+  MessageLite* AddMessage(const MessageLite* prototype);
+
+  // This method is similar to `AddMessage` except that prototype may be nullptr
+  // in which case an ImplicitWeakMessage will be used as a placeholder. It is
+  // used to implement implicit weak fields.
   MessageLite* AddWeak(const MessageLite* prototype);
 
   template <typename TypeHandler>
@@ -824,11 +812,47 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return InternalExtend(n - total_size_);
   }
 
-  // Internal helper for Add: adds "obj" as the next element in the
-  // array, including potentially resizing the array with Reserve if
-  // needed
-  void* AddOutOfLineHelper(void* obj);
+  // Internal helper for Add that keeps definition out-of-line.
   void* AddOutOfLineHelper(ElementFactory factory);
+
+  // Common implementation used by various Add* methods. `factory` is an object
+  // used to construct a new element unless there are spare cleared elements
+  // ready for reuse. Returns pointer to the new element.
+  //
+  // Note: avoid inlining this function in methods such as `Add()` as this would
+  // drastically increase binary size due to template instantiation and implicit
+  // inlining. Instead, use wrapper functions with out-of-line definition
+  // similar to `AddOutOfLineHelper`.
+  template <typename F>
+  typename std::invoke_result<F, Arena*>::type AddInternal(F&& factory) {
+    using Result = typename std::invoke_result<F, Arena*>::type;
+    if (tagged_rep_or_elem_ == nullptr) {
+      ExchangeCurrentSize(1);
+      tagged_rep_or_elem_ = std::invoke(std::forward<F>(factory), GetArena());
+      return static_cast<Result>(tagged_rep_or_elem_);
+    }
+    if (using_sso()) {
+      if (ExchangeCurrentSize(1) == 0) {
+        return static_cast<Result>(tagged_rep_or_elem_);
+      }
+    } else {
+      absl::PrefetchToLocalCache(rep());
+    }
+    if (PROTOBUF_PREDICT_FALSE(current_size_ == total_size_)) {
+      InternalExtend(1);
+    } else {
+      Rep* r = rep();
+      if (current_size_ != r->allocated_size) {
+        return static_cast<Result>(
+            r->elements[ExchangeCurrentSize(current_size_ + 1)]);
+      }
+    }
+    Rep* r = rep();
+    ++r->allocated_size;
+    void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
+    result = std::invoke(std::forward<F>(factory), GetArena());
+    return static_cast<Result>(result);
+  }
 
   // A few notes on internal representation:
   //
