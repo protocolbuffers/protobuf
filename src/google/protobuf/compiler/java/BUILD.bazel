@@ -57,6 +57,7 @@ cc_library(
         "file.cc",
         "generator.cc",
         "generator_factory.cc",
+        "java_features.pb.cc",
         "kotlin_generator.cc",
         "map_field.cc",
         "map_field_lite.cc",
@@ -87,6 +88,7 @@ cc_library(
         "file.h",
         "generator.h",
         "generator_factory.h",
+        "java_features.pb.h",
         "kotlin_generator.h",
         "map_field.h",
         "map_field_lite.h",
@@ -113,10 +115,12 @@ cc_library(
     deps = [
         ":names",
         ":names_internal",
+        "//src/google/protobuf:arena",
         "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:retention",
+        "//src/google/protobuf/compiler:versions",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
@@ -167,9 +171,12 @@ pkg_files(
 
 filegroup(
     name = "test_srcs",
-    srcs = glob([
-        "*_test.cc",
-        "*unittest.cc",
-    ], allow_empty = True),
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )

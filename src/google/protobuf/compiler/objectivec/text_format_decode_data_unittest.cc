@@ -1,35 +1,13 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2014 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
 
+#include <cstdint>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -41,6 +19,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
+
 namespace {
 
 TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_RawStrings) {
@@ -106,12 +85,13 @@ TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_ByteCodes) {
 
   // Long name so multiple decode ops are needed.
 
-  // clang-format off
   input_for_decode =
-      "longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000";
+      "longFieldNameIsLoooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "ooooooooooooooooong1000";
   desired_output_for_decode =
-      "long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000";
-  // clang-format on
+      "long_field_name_is_"
+      "looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oong_1000";
   expected = std::string("\x04\xA5\xA4\xA2\xBF\x1F\x0E\x84\x0", 9);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
@@ -176,11 +156,12 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
   decode_data.AddString(3, "abcdefghIJ", "_AbcdefghIJ");
   decode_data.AddString(2, "abcdefghIJ", "Abcd_EfghIJ");
   decode_data.AddString(4, "abcdefghIJ", "ABCD__EfghI_j");
-  // clang-format off
   decode_data.AddString(1000,
-                        "longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000",
-                        "long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000");
-  // clang-format on
+                        "longFieldNameIsLoooooooooooooooooooooooooooooooooooooo"
+                        "ooooooooooooooooooooooooooooooooooong1000",
+                        "long_field_name_is_"
+                        "looooooooooooooooooooooooooooooooooooooooooooooooooooo"
+                        "oooooooooooooooooooong_1000");
 
   EXPECT_EQ(5, decode_data.num_entries());
 
@@ -243,6 +224,7 @@ TEST(ObjCHelperDeathTest, TextFormatDecodeData_Failures) {
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
 }  // namespace
+
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf

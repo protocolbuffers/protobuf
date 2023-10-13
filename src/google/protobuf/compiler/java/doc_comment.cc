@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -34,9 +11,11 @@
 
 #include "google/protobuf/compiler/java/doc_comment.h"
 
+#include <string>
 #include <vector>
 
 #include "absl/strings/str_split.h"
+#include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -210,13 +189,13 @@ static std::string FirstLineOf(const std::string& value) {
 }
 
 static void WriteDebugString(io::Printer* printer, const FieldDescriptor* field,
-                      const bool kdoc) {
+                             const Options options, const bool kdoc) {
+  std::string field_comment = FirstLineOf(field->DebugString());
   if (kdoc) {
-    printer->Print(" * `$def$`\n", "def",
-                   EscapeKdoc(FirstLineOf(field->DebugString())));
+    printer->Print(" * `$def$`\n", "def", EscapeKdoc(field_comment));
   } else {
     printer->Print(" * <code>$def$</code>\n", "def",
-                   EscapeJavadoc(FirstLineOf(field->DebugString())));
+                   EscapeJavadoc(field_comment));
   }
 }
 
@@ -238,7 +217,7 @@ void WriteMessageDocComment(io::Printer* printer, const Descriptor* message,
 }
 
 void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
-                          const bool kdoc) {
+                          const Options options, const bool kdoc) {
   // We start the comment with the main body based on the comments from the
   // .proto file (if present). We then continue with the field declaration,
   // e.g.:
@@ -247,13 +226,7 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
   // If the field is a group, the debug string might end with {.
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, kdoc);
-  if (kdoc) {
-    printer->Print(" * `$def$`\n", "def",
-                   EscapeKdoc(FirstLineOf(field->DebugString())));
-  } else {
-    printer->Print(" * <code>$def$</code>\n", "def",
-                   EscapeJavadoc(FirstLineOf(field->DebugString())));
-  }
+  WriteDebugString(printer, field, options, kdoc);
   printer->Print(" */\n");
 }
 
@@ -284,10 +257,11 @@ void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
 void WriteFieldAccessorDocComment(io::Printer* printer,
                                   const FieldDescriptor* field,
                                   const FieldAccessorType type,
-                                  const bool builder, const bool kdoc) {
+                                  const Options options, const bool builder,
+                                  const bool kdoc) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, kdoc);
-  WriteDebugString(printer, field, kdoc);
+  WriteDebugString(printer, field, options, kdoc);
   if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:
@@ -342,11 +316,12 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
 void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
                                            const FieldDescriptor* field,
                                            const FieldAccessorType type,
+                                           const Options options,
                                            const bool builder,
                                            const bool kdoc) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, kdoc);
-  WriteDebugString(printer, field, kdoc);
+  WriteDebugString(printer, field, options, kdoc);
   if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:
@@ -412,11 +387,12 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
 void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
                                              const FieldDescriptor* field,
                                              const FieldAccessorType type,
+                                             const Options options,
                                              const bool builder,
                                              const bool kdoc) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, kdoc);
-  WriteDebugString(printer, field, kdoc);
+  WriteDebugString(printer, field, options, kdoc);
   if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:

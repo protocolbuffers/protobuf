@@ -16,6 +16,9 @@ readonly BazelBin="${BAZEL:-bazel} ${BAZEL_STARTUP_FLAGS}"
 ${BazelBin} test src:cmake_lists_staleness_test "$@" || ./bazel-bin/src/cmake_lists_staleness_test --fix
 ${BazelBin} test src/google/protobuf:well_known_types_staleness_test "$@" || ./bazel-bin/src/google/protobuf/well_known_types_staleness_test --fix
 ${BazelBin} test objectivec:well_known_types_staleness_test "$@" || ./bazel-bin/objectivec/well_known_types_staleness_test --fix
+${BazelBin} test php:test_amalgamation_staleness "$@" || ./bazel-bin/php/test_amalgamation_staleness --fix
+${BazelBin} test ruby/ext/google/protobuf_c:test_amalgamation_staleness "$@" || ./bazel-bin/ruby/ext/google/protobuf_c/test_amalgamation_staleness --fix
+${BazelBin} test upb/cmake:test_generated_files "$@" || ./bazel-bin/upb/cmake/test_generated_files --fix
 
 # Generate C# code.
 # This doesn't currently have Bazel staleness tests, but there's an existing

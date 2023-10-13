@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -69,7 +46,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// TODO(gerbens) make this factorized better. This should not have to hop
+// TODO make this factorized better. This should not have to hop
 // to reflection. Currently uses GeneratedMessageReflection and thus is
 // defined in generated_message_reflection.cc
 void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
@@ -102,9 +79,14 @@ void Message::CopyFrom(const Message& from) {
 
   auto* class_to = GetClassData();
   auto* class_from = from.GetClassData();
-  auto* copy_to_from = class_to ? class_to->copy_to_from : nullptr;
 
-  if (class_to == nullptr || class_to != class_from) {
+  if (class_from != nullptr && class_from == class_to) {
+    // Fail if "from" is a descendant of "to" as such copy is not allowed.
+    ABSL_DCHECK(!internal::IsDescendant(*this, from))
+        << "Source of CopyFrom cannot be a descendant of the target.";
+    Clear();
+    class_to->merge_to_from(*this, from);
+  } else {
     const Descriptor* descriptor = GetDescriptor();
     ABSL_CHECK_EQ(from.GetDescriptor(), descriptor)
         << ": Tried to copy from a message with a different type. "
@@ -113,20 +95,8 @@ void Message::CopyFrom(const Message& from) {
         << ", "
            "from: "
         << from.GetDescriptor()->full_name();
-    copy_to_from = [](Message& to, const Message& from) {
-      ReflectionOps::Copy(from, &to);
-    };
+    ReflectionOps::Copy(from, this);
   }
-  copy_to_from(*this, from);
-}
-
-void Message::CopyWithSourceCheck(Message& to, const Message& from) {
-  // Fail if "from" is a descendant of "to" as such copy is not allowed.
-  ABSL_DCHECK(!internal::IsDescendant(to, from))
-      << "Source of CopyFrom cannot be a descendant of the target.";
-
-  to.Clear();
-  to.GetClassData()->merge_to_from(to, from);
 }
 
 std::string Message::GetTypeName() const {
@@ -179,14 +149,15 @@ uint8_t* Message::_InternalSerialize(uint8_t* target,
 
 size_t Message::ByteSizeLong() const {
   size_t size = WireFormat::ByteSize(*this);
-  SetCachedSize(internal::ToCachedSize(size));
-  return size;
-}
 
-void Message::SetCachedSize(int /* size */) const {
-  ABSL_LOG(FATAL) << "Message class \"" << GetDescriptor()->full_name()
-                  << "\" implements neither SetCachedSize() nor ByteSize().  "
-                     "Must implement one or the other.";
+  auto* cached_size = AccessCachedSize();
+  ABSL_CHECK(cached_size != nullptr)
+      << "Message class \"" << GetDescriptor()->full_name()
+      << "\" implements neither AccessCachedSize() nor ByteSizeLong().  "
+         "Must implement one or the other.";
+  cached_size->Set(internal::ToCachedSize(size));
+
+  return size;
 }
 
 size_t Message::ComputeUnknownFieldsSize(
@@ -209,10 +180,6 @@ size_t Message::MaybeComputeUnknownFieldsSize(
 
 size_t Message::SpaceUsedLong() const {
   return GetReflection()->SpaceUsedLong(*this);
-}
-
-uint64_t Message::GetInvariantPerBuild(uint64_t salt) {
-  return salt;
 }
 
 namespace internal {

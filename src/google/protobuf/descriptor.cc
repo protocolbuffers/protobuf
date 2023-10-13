@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -44,6 +21,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
@@ -57,6 +35,7 @@
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -71,6 +50,7 @@
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/any.h"
+#include "google/protobuf/cpp_edition_defaults.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_database.h"
@@ -1111,55 +1091,16 @@ bool AllowedExtendeeInProto3(const std::string& name) {
          allowed_proto3_extendees->end();
 }
 
-// Create global defaults for proto2/proto3 compatibility.
-FeatureSet* CreateProto2DefaultFeatures() {
-  FeatureSet* features = new FeatureSet();
-  features->set_field_presence(FeatureSet::EXPLICIT);
-  features->set_enum_type(FeatureSet::CLOSED);
-  features->set_repeated_field_encoding(FeatureSet::EXPANDED);
-  features->set_message_encoding(FeatureSet::LENGTH_PREFIXED);
-  features->set_json_format(FeatureSet::LEGACY_BEST_EFFORT);
-  features->MutableExtension(pb::cpp)->set_legacy_closed_enum(true);
-  features->MutableExtension(pb::cpp)->set_utf8_validation(
-      pb::CppFeatures::VERIFY_DLOG);
-
-  return features;
-}
-
-const FeatureSet& GetProto2Features() {
-  static const FeatureSet* kProto2Features = CreateProto2DefaultFeatures();
-  return *kProto2Features;
-}
-
-const FeatureSet& GetProto2GroupFeatures() {
-  static const FeatureSet* kProto2GroupFeatures = [] {
-    FeatureSet* features = CreateProto2DefaultFeatures();
-    features->set_message_encoding(FeatureSet::DELIMITED);
-    return features;
+const FeatureSetDefaults& GetCppFeatureSetDefaults() {
+  static const FeatureSetDefaults* default_spec = [] {
+    auto* defaults = new FeatureSetDefaults();
+    internal::ParseNoReflection(
+        absl::string_view{PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
+                          sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
+        *defaults);
+    return defaults;
   }();
-  return *kProto2GroupFeatures;
-}
-
-const FeatureSet& GetProto3Features() {
-  static const FeatureSet* kProto3Features = [] {
-    FeatureSet* features = new FeatureSet();
-    features->set_field_presence(FeatureSet::IMPLICIT);
-    features->set_enum_type(FeatureSet::OPEN);
-    features->set_repeated_field_encoding(FeatureSet::PACKED);
-    features->set_message_encoding(FeatureSet::LENGTH_PREFIXED);
-    features->set_json_format(FeatureSet::ALLOW);
-    features->MutableExtension(pb::cpp)->set_legacy_closed_enum(false);
-    features->MutableExtension(pb::cpp)->set_utf8_validation(
-        pb::CppFeatures::VERIFY_PARSE);
-    return features;
-  }();
-  return *kProto3Features;
-}
-
-bool IsLegacyFeatureSet(const FeatureSet& features) {
-  return &features == &GetProto2Features() ||
-         &features == &GetProto2GroupFeatures() ||
-         &features == &GetProto3Features();
+  return *default_spec;
 }
 
 template <typename ProtoT>
@@ -1183,14 +1124,6 @@ bool HasFeatures(const OptionsT& options) {
 }
 
 const FeatureSet& GetParentFeatures(const FileDescriptor* file) {
-  if (FileDescriptorLegacy(file).syntax() ==
-      FileDescriptorLegacy::SYNTAX_PROTO3) {
-    return GetProto3Features();
-  }
-  if (FileDescriptorLegacy(file).syntax() ==
-      FileDescriptorLegacy::SYNTAX_PROTO2) {
-    return GetProto2Features();
-  }
   return FeatureSet::default_instance();
 }
 
@@ -1268,7 +1201,7 @@ class FileDescriptorTables {
   // Finding items.
 
   // Returns a null Symbol (symbol.IsNull() is true) if not found.
-  // TODO(sbenza): All callers to this function know the type they are looking
+  // TODO: All callers to this function know the type they are looking
   // for. If we propagate that information statically we can make the query
   // faster.
   inline Symbol FindNestedSymbol(const void* parent,
@@ -1472,6 +1405,10 @@ class DescriptorPool::Tables {
   bool AddFile(const FileDescriptor* file);
   bool AddExtension(const FieldDescriptor* field);
 
+  // Caches a feature set and returns a stable reference to the cached
+  // allocation owned by the pool.
+  const FeatureSet* InternFeatureSet(FeatureSet&& features);
+
   // -----------------------------------------------------------------
   // Allocating memory.
 
@@ -1516,6 +1453,12 @@ class DescriptorPool::Tables {
   SymbolsByNameSet symbols_by_name_;
   DescriptorsByNameSet<FileDescriptor> files_by_name_;
   ExtensionsGroupedByDescriptorMap extensions_;
+
+  // A cache of all unique feature sets seen.  Since we expect this number to be
+  // relatively low compared to descriptors, it's significantly cheaper to share
+  // these within the pool than have each file create its own feature sets.
+  absl::flat_hash_map<std::string, std::unique_ptr<FeatureSet>>
+      feature_set_cache_;
 
   struct CheckPoint {
     explicit CheckPoint(const Tables* tables)
@@ -1919,6 +1862,18 @@ bool DescriptorPool::Tables::AddExtension(const FieldDescriptor* field) {
   }
 }
 
+const FeatureSet* DescriptorPool::Tables::InternFeatureSet(
+    FeatureSet&& features) {
+  // Use the serialized feature set as the cache key.  If multiple equivalent
+  // feature sets serialize to different strings, that just bloats the cache a
+  // little.
+  auto& result = feature_set_cache_[features.SerializeAsString()];
+  if (result == nullptr) {
+    result = absl::make_unique<FeatureSet>(std::move(features));
+  }
+  return result.get();
+}
+
 // -------------------------------------------------------------------
 
 template <typename Type>
@@ -2168,7 +2123,7 @@ void DescriptorPool::InternalAddGeneratedFile(
 
 // Find*By* methods ==================================================
 
-// TODO(kenton):  There's a lot of repeated code here, but I'm not sure if
+// TODO:  There's a lot of repeated code here, but I'm not sure if
 //   there's any good way to factor it out.  Think about this some time when
 //   there's nothing more important to do (read: never).
 
@@ -2567,7 +2522,7 @@ Descriptor::FindExtensionRangeContainingNumber(int number) const {
 
 const Descriptor::ReservedRange* Descriptor::FindReservedRangeContainingNumber(
     int number) const {
-  // TODO(chrisn): Consider a non-linear search.
+  // TODO: Consider a non-linear search.
   for (int i = 0; i < reserved_range_count(); i++) {
     if (number >= reserved_range(i)->start && number < reserved_range(i)->end) {
       return reserved_range(i);
@@ -2578,7 +2533,7 @@ const Descriptor::ReservedRange* Descriptor::FindReservedRangeContainingNumber(
 
 const EnumDescriptor::ReservedRange*
 EnumDescriptor::FindReservedRangeContainingNumber(int number) const {
-  // TODO(chrisn): Consider a non-linear search.
+  // TODO: Consider a non-linear search.
   for (int i = 0; i < reserved_range_count(); i++) {
     if (number >= reserved_range(i)->start &&
         number <= reserved_range(i)->end) {
@@ -2797,7 +2752,7 @@ void FileDescriptor::CopyHeadingTo(FileDescriptorProto* proto) const {
     proto->set_package(package());
   }
 
-  // TODO(liujisi): Also populate when syntax="proto2".
+  // TODO: Also populate when syntax="proto2".
   FileDescriptorLegacy::Syntax syntax = FileDescriptorLegacy(this).syntax();
   if (syntax == FileDescriptorLegacy::Syntax::SYNTAX_PROTO3 ||
       syntax == FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
@@ -3246,8 +3201,7 @@ std::string FileDescriptor::DebugStringWithOptions(
     if (FileDescriptorLegacy(this).syntax() ==
         FileDescriptorLegacy::SYNTAX_EDITIONS) {
       absl::SubstituteAndAppend(&contents, "edition = \"$0\";\n\n", edition());
-    } else  // NOLINT(readability/braces)
-    {
+    } else {
       absl::SubstituteAndAppend(&contents, "syntax = \"$0\";\n\n",
                                 FileDescriptorLegacy::SyntaxName(
                                     FileDescriptorLegacy(this).syntax()));
@@ -3806,17 +3760,12 @@ bool EnumDescriptor::is_closed() const {
 
 bool FieldDescriptor::is_packed() const {
   if (!is_packable()) return false;
-  if (features().repeated_field_encoding() != FeatureSet::PACKED) {
-    return (options_ != nullptr) && options_->packed();
-  } else {
-    return options_ == nullptr || !options_->has_packed() || options_->packed();
-  }
+  return features().repeated_field_encoding() == FeatureSet::PACKED;
 }
 
 static bool IsStrictUtf8(const FieldDescriptor* field) {
   return internal::InternalFeatureHelper::GetFeatures(*field)
-             .GetExtension(pb::cpp)
-             .utf8_validation() == pb::CppFeatures::VERIFY_PARSE;
+             .utf8_validation() == FeatureSet::VERIFY;
 }
 
 bool FieldDescriptor::requires_utf8_validation() const {
@@ -3829,13 +3778,13 @@ bool FieldDescriptor::has_presence() const {
          features().field_presence() != FeatureSet::IMPLICIT;
 }
 
+bool FieldDescriptor::is_required() const {
+  return features().field_presence() == FeatureSet::LEGACY_REQUIRED;
+}
+
 bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
   return type() == TYPE_ENUM &&
          (features().GetExtension(pb::cpp).legacy_closed_enum() ||
-          enum_type()->is_closed());
-  return type() == TYPE_ENUM &&
-         (FileDescriptorLegacy(file_).syntax() ==
-              FileDescriptorLegacy::Syntax::SYNTAX_PROTO2 ||
           enum_type()->is_closed());
 }
 
@@ -4254,12 +4203,6 @@ class DescriptorBuilder {
       DescriptorPool::ErrorCollector::ErrorLocation error_location,
       bool force_merge = false);
 
-  // Performs descriptor-specific overrides of proto2/proto3 defaults for
-  // descriptors outside editions.
-  template <class DescriptorT>
-  const FeatureSet* GetLegacyFeatureOverride(const FeatureSet* parent_features,
-                                             const DescriptorT* descriptor);
-
   void PostProcessFieldFeatures(FieldDescriptor& field);
 
   // Allocates an array of two strings, the first one is a copy of
@@ -4372,12 +4315,12 @@ class DescriptorBuilder {
     // Interprets the uninterpreted options in the specified Options message.
     // On error, calls AddError() on the underlying builder and returns false.
     // Otherwise returns true.
-    bool InterpretOptions(OptionsToInterpret* options_to_interpret);
+    bool InterpretOptionExtensions(OptionsToInterpret* options_to_interpret);
 
     // Interprets the uninterpreted feature options in the specified Options
     // message. On error, calls AddError() on the underlying builder and returns
     // false. Otherwise returns true.
-    bool InterpretFeatures(OptionsToInterpret* options_to_interpret);
+    bool InterpretNonExtensionOptions(OptionsToInterpret* options_to_interpret);
 
     // Updates the given source code info by re-writing uninterpreted option
     // locations to refer to the corresponding interpreted option.
@@ -4387,7 +4330,7 @@ class DescriptorBuilder {
 
    private:
     bool InterpretOptionsImpl(OptionsToInterpret* options_to_interpret,
-                              bool features);
+                              bool skip_extensions);
 
     // Interprets uninterpreted_option_ on the specified message, which
     // must be the mutable copy of the original options message to which
@@ -4400,7 +4343,7 @@ class DescriptorBuilder {
     bool InterpretSingleOption(Message* options,
                                const std::vector<int>& src_path,
                                const std::vector<int>& options_path,
-                               bool features);
+                               bool skip_extensions);
 
     // Adds the uninterpreted_option to the given options message verbatim.
     // Used when AllowUnknownDependencies() is in effect and we can't find
@@ -4530,6 +4473,8 @@ class DescriptorBuilder {
   // AddError(). Do not look at their options, which have not been interpreted.
   void ValidateOptions(const FileDescriptor* file,
                        const FileDescriptorProto& proto);
+  void ValidateFileFeatures(const FileDescriptor* file,
+                            const FileDescriptorProto& proto);
   void ValidateOptions(const Descriptor* message, const DescriptorProto& proto);
   void ValidateOptions(const OneofDescriptor* oneof,
                        const OneofDescriptorProto& proto);
@@ -4577,14 +4522,7 @@ class DescriptorBuilder {
 
 const FileDescriptor* DescriptorPool::BuildFile(
     const FileDescriptorProto& proto) {
-  ABSL_CHECK(fallback_database_ == nullptr)
-      << "Cannot call BuildFile on a DescriptorPool that uses a "
-         "DescriptorDatabase.  You must instead find a way to get your file "
-         "into the underlying database.";
-  ABSL_CHECK(mutex_ == nullptr);  // Implied by the above ABSL_CHECK.
-  tables_->known_bad_symbols_.clear();
-  tables_->known_bad_files_.clear();
-  return DescriptorBuilder::New(this, tables_.get(), nullptr)->BuildFile(proto);
+  return BuildFileCollectingErrors(proto, nullptr);
 }
 
 const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
@@ -4596,6 +4534,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
   ABSL_CHECK(mutex_ == nullptr);  // Implied by the above ABSL_CHECK.
   tables_->known_bad_symbols_.clear();
   tables_->known_bad_files_.clear();
+  build_started_ = true;
   return DescriptorBuilder::New(this, tables_.get(), error_collector)
       ->BuildFile(proto);
 }
@@ -4603,6 +4542,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     const FileDescriptorProto& proto) const {
   mutex_->AssertHeld();
+  build_started_ = true;
   if (tables_->known_bad_files_.contains(proto.name())) {
     return nullptr;
   }
@@ -4613,6 +4553,14 @@ const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     tables_->known_bad_files_.insert(proto.name());
   }
   return result;
+}
+
+void DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
+  ABSL_CHECK(!build_started_)
+      << "Feature set defaults can't be changed once the pool has started "
+         "building.";
+  feature_set_defaults_spec_ =
+      absl::make_unique<FeatureSetDefaults>(std::move(spec));
 }
 
 DescriptorBuilder::DescriptorBuilder(
@@ -5292,6 +5240,44 @@ typename DescriptorT::OptionsType* DescriptorBuilder::AllocateOptionsImpl(
   return options;
 }
 
+template <class ProtoT, class OptionsT>
+static void InferLegacyProtoFeatures(const ProtoT& proto,
+                                     const OptionsT& options,
+                                     FileDescriptorLegacy::Syntax syntax,
+                                     FeatureSet& features) {}
+
+static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
+                                     const FieldOptions& options,
+                                     FileDescriptorLegacy::Syntax syntax,
+                                     FeatureSet& features) {
+  if (proto.label() == FieldDescriptorProto::LABEL_REQUIRED) {
+    features.set_field_presence(FeatureSet::LEGACY_REQUIRED);
+  }
+  if (proto.type() == FieldDescriptorProto::TYPE_GROUP) {
+    features.set_message_encoding(FeatureSet::DELIMITED);
+  }
+  if (options.packed()) {
+    features.set_repeated_field_encoding(FeatureSet::PACKED);
+  }
+  if (syntax == FileDescriptorLegacy::SYNTAX_PROTO3) {
+    if (options.has_packed() && !options.packed()) {
+      features.set_repeated_field_encoding(FeatureSet::EXPANDED);
+    }
+  }
+}
+
+template <class DescriptorT>
+FileDescriptorLegacy::Syntax GetDescriptorSyntax(
+    const DescriptorT* descriptor) {
+  return FileDescriptorLegacy(descriptor->file()).syntax();
+}
+
+template <>
+FileDescriptorLegacy::Syntax GetDescriptorSyntax(
+    const FileDescriptor* descriptor) {
+  return FileDescriptorLegacy(descriptor).syntax();
+}
+
 template <class DescriptorT>
 void DescriptorBuilder::ResolveFeaturesImpl(
     const typename DescriptorT::Proto& proto, DescriptorT* descriptor,
@@ -5299,42 +5285,48 @@ void DescriptorBuilder::ResolveFeaturesImpl(
     DescriptorPool::ErrorCollector::ErrorLocation error_location,
     bool force_merge) {
   const FeatureSet& parent_features = GetParentFeatures(descriptor);
-
-  descriptor->merged_features_ =
-      GetLegacyFeatureOverride(&parent_features, descriptor);
   descriptor->proto_features_ = &FeatureSet::default_instance();
-  if (!feature_resolver_.has_value()) {
-    if (options != nullptr && options->has_features()) {
-      AddError(descriptor->name(), proto, error_location,
-               "Features are only valid under editions.");
-    }
-    return;
-  }
+  descriptor->merged_features_ = &FeatureSet::default_instance();
+
+  ABSL_CHECK(feature_resolver_.has_value());
 
   if (options != nullptr && options->has_features()) {
     // Remove the features from the child's options proto to avoid leaking
     // internal details.
-    FeatureSet* mutable_features = alloc.AllocateArray<FeatureSet>(1);
-    descriptor->proto_features_ = mutable_features;
-    options->mutable_features()->Swap(mutable_features);
+    descriptor->proto_features_ =
+        tables_->InternFeatureSet(std::move(*options->mutable_features()));
     options->clear_features();
-  } else if (!force_merge) {
+  }
+
+  FeatureSet base_features = *descriptor->proto_features_;
+
+  // Handle feature inference from proto2/proto3.
+  if (GetDescriptorSyntax(descriptor) !=
+      FileDescriptorLegacy::SYNTAX_EDITIONS) {
+    if (descriptor->proto_features_ != &FeatureSet::default_instance()) {
+      AddError(descriptor->name(), proto, error_location,
+               "Features are only valid under editions.");
+    }
+    InferLegacyProtoFeatures(proto, *options, GetDescriptorSyntax(descriptor),
+                             base_features);
+  }
+
+  if (base_features.ByteSizeLong() == 0 && !force_merge) {
     // Nothing to merge, and we aren't forcing it.
+    descriptor->merged_features_ = &parent_features;
     return;
   }
-  FeatureSet* merged_features = alloc.AllocateArray<FeatureSet>(1);
 
   // Calculate the merged features for this target.
-  absl::StatusOr<FeatureSet> merged = feature_resolver_->MergeFeatures(
-      parent_features, *descriptor->proto_features_);
+  absl::StatusOr<FeatureSet> merged =
+      feature_resolver_->MergeFeatures(parent_features, base_features);
   if (!merged.ok()) {
     AddError(descriptor->name(), proto, error_location,
              [&] { return std::string(merged.status().message()); });
     return;
   }
 
-  merged_features->Swap(&merged.value());
-  descriptor->merged_features_ = merged_features;
+  descriptor->merged_features_ = tables_->InternFeatureSet(*std::move(merged));
 }
 
 template <class DescriptorT>
@@ -5357,31 +5349,14 @@ void DescriptorBuilder::ResolveFeatures(const FileDescriptorProto& proto,
                       /*force_merge=*/true);
 }
 
-template <typename DescriptorT>
-const FeatureSet* DescriptorBuilder::GetLegacyFeatureOverride(
-    const FeatureSet* parent_features, const DescriptorT* descriptor) {
-  return parent_features;
-}
-
-template <>
-const FeatureSet* DescriptorBuilder::GetLegacyFeatureOverride(
-    const FeatureSet* parent_features, const FieldDescriptor* descriptor) {
-  // Groups use delimited message encoding.
-  if (parent_features == &GetProto2Features() &&
-      descriptor->type_ == FieldDescriptor::TYPE_GROUP) {
-    return &GetProto2GroupFeatures();
-  }
-  return parent_features;
-}
-
 void DescriptorBuilder::PostProcessFieldFeatures(FieldDescriptor& field) {
-  // TODO(b/285013359) This can be replace by a runtime check in `is_required`
+  // TODO This can be replace by a runtime check in `is_required`
   // once the `label` getter is hidden.
   if (field.features().field_presence() == FeatureSet::LEGACY_REQUIRED &&
       field.label_ == FieldDescriptor::LABEL_OPTIONAL) {
     field.label_ = FieldDescriptor::LABEL_REQUIRED;
   }
-  // TODO(b/285024320) This can be replace by a runtime check of `is_delimited`
+  // TODO This can be replace by a runtime check of `is_delimited`
   // once the `TYPE_GROUP` value is removed.
   if (field.type_ == FieldDescriptor::TYPE_MESSAGE &&
       field.features().message_encoding() == FeatureSet::DELIMITED) {
@@ -5448,7 +5423,7 @@ PROTOBUF_NOINLINE static bool ExistingFileMatchesProto(
     const FileDescriptor* existing_file, const FileDescriptorProto& proto) {
   FileDescriptorProto existing_proto;
   existing_file->CopyTo(&existing_proto);
-  // TODO(liujisi): Remove it when CopyTo supports copying syntax params when
+  // TODO: Remove it when CopyTo supports copying syntax params when
   // syntax="proto2".
   if (FileDescriptorLegacy(existing_file).syntax() ==
           FileDescriptorLegacy::Syntax::SYNTAX_PROTO2 &&
@@ -5472,7 +5447,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<std::string>(2 * values.size());  // name + full_name
   for (const auto& v : values) {
     if (v.has_options()) alloc.PlanArray<EnumValueOptions>(1);
-    if (HasFeatures(v.options())) alloc.PlanArray<FeatureSet>(2);
   }
 }
 
@@ -5483,7 +5457,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<std::string>(2 * enums.size());  // name + full_name
   for (const auto& e : enums) {
     if (e.has_options()) alloc.PlanArray<EnumOptions>(1);
-    if (HasFeatures(e.options())) alloc.PlanArray<FeatureSet>(2);
     PlanAllocationSize(e.value(), alloc);
     alloc.PlanArray<EnumDescriptor::ReservedRange>(e.reserved_range_size());
     alloc.PlanArray<const std::string*>(e.reserved_name_size());
@@ -5498,7 +5471,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<std::string>(2 * oneofs.size());  // name + full_name
   for (const auto& oneof : oneofs) {
     if (oneof.has_options()) alloc.PlanArray<OneofOptions>(1);
-    if (HasFeatures(oneof.options())) alloc.PlanArray<FeatureSet>(2);
   }
 }
 
@@ -5508,7 +5480,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<FieldDescriptor>(fields.size());
   for (const auto& field : fields) {
     if (field.has_options()) alloc.PlanArray<FieldOptions>(1);
-    if (HasFeatures(field.options())) alloc.PlanArray<FeatureSet>(2);
     alloc.PlanFieldNames(field.name(),
                          field.has_json_name() ? &field.json_name() : nullptr);
     if (field.has_default_value() && field.has_type() &&
@@ -5526,7 +5497,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<Descriptor::ExtensionRange>(ranges.size());
   for (const auto& r : ranges) {
     if (r.has_options()) alloc.PlanArray<ExtensionRangeOptions>(1);
-    if (HasFeatures(r.options())) alloc.PlanArray<FeatureSet>(2);
   }
 }
 
@@ -5538,7 +5508,6 @@ static void PlanAllocationSize(
 
   for (const auto& message : messages) {
     if (message.has_options()) alloc.PlanArray<MessageOptions>(1);
-    if (HasFeatures(message.options())) alloc.PlanArray<FeatureSet>(2);
     PlanAllocationSize(message.nested_type(), alloc);
     PlanAllocationSize(message.field(), alloc);
     PlanAllocationSize(message.extension(), alloc);
@@ -5558,7 +5527,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<std::string>(2 * methods.size());  // name + full_name
   for (const auto& m : methods) {
     if (m.has_options()) alloc.PlanArray<MethodOptions>(1);
-    if (HasFeatures(m.options())) alloc.PlanArray<FeatureSet>(2);
   }
 }
 
@@ -5569,7 +5537,6 @@ static void PlanAllocationSize(
   alloc.PlanArray<std::string>(2 * services.size());  // name + full_name
   for (const auto& service : services) {
     if (service.has_options()) alloc.PlanArray<ServiceOptions>(1);
-    if (HasFeatures(service.options())) alloc.PlanArray<FeatureSet>(2);
     PlanAllocationSize(service.method(), alloc);
   }
 }
@@ -5578,15 +5545,8 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
                                internal::FlatAllocator& alloc) {
   alloc.PlanArray<FileDescriptor>(1);
   alloc.PlanArray<FileDescriptorTables>(1);
-  alloc.PlanArray<std::string>(
-      2 + (proto.has_edition() ? 1 : 0));  // name + package
+  alloc.PlanArray<std::string>(2);  // name + package
   if (proto.has_options()) alloc.PlanArray<FileOptions>(1);
-  if (proto.has_edition()) {
-    alloc.PlanArray<FeatureSet>(1);
-    if (HasFeatures(proto.options())) {
-      alloc.PlanArray<FeatureSet>(1);
-    }
-  }
   if (proto.has_source_code_info()) alloc.PlanArray<SourceCodeInfo>(1);
 
   PlanAllocationSize(proto.service(), alloc);
@@ -5622,7 +5582,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   }
 
   // Check to see if this file is already on the pending files list.
-  // TODO(kenton):  Allow recursive imports?  It may not work with some
+  // TODO:  Allow recursive imports?  It may not work with some
   //   (most?) programming languages.  E.g., in C++, a forward declaration
   //   of a type is not sufficient to allow it to be used even in a
   //   generated header file due to inlining.  This could perhaps be
@@ -5688,26 +5648,37 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   FileDescriptor* result = alloc.AllocateArray<FileDescriptor>(1);
   file_ = result;
 
-  if (proto.has_edition()) {
-    Symbol symbol = FindSymbolNotEnforcingDeps("google.protobuf.FeatureSet");
-    const Descriptor* descriptor = symbol.descriptor();
-    if (descriptor == nullptr) {
-      // descriptor.proto is not in the pool. This means no custom features are
-      // used so we are safe to proceed with the compiled FeatureSet message
-      // type.
-      descriptor = FeatureSet::descriptor();
-    }
-    ABSL_CHECK(descriptor);
+  // TODO: Report error when the syntax is empty after all the protos
+  // have added the syntax statement.
+  if (proto.syntax().empty() || proto.syntax() == "proto2") {
+    file_->syntax_ = FileDescriptorLegacy::SYNTAX_PROTO2;
+    file_->edition_ = Edition::EDITION_PROTO2;
+  } else if (proto.syntax() == "proto3") {
+    file_->syntax_ = FileDescriptorLegacy::SYNTAX_PROTO3;
+    file_->edition_ = Edition::EDITION_PROTO3;
+  } else if (proto.syntax() == "editions") {
+    file_->syntax_ = FileDescriptorLegacy::SYNTAX_EDITIONS;
+    file_->edition_ = proto.edition();
+  } else {
+    file_->syntax_ = FileDescriptorLegacy::SYNTAX_UNKNOWN;
+    file_->edition_ = Edition::EDITION_UNKNOWN;
+    AddError(proto.name(), proto, DescriptorPool::ErrorCollector::OTHER, [&] {
+      return absl::StrCat("Unrecognized syntax: ", proto.syntax());
+    });
+  }
 
-    absl::StatusOr<FeatureResolver> feature_resolver =
-        FeatureResolver::Create(proto.edition(), descriptor);
-    if (!feature_resolver.ok()) {
-      AddError(
-          proto.name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
-          [&] { return std::string(feature_resolver.status().message()); });
-    } else {
-      feature_resolver_.emplace(std::move(feature_resolver).value());
-    }
+  const FeatureSetDefaults& defaults =
+      pool_->feature_set_defaults_spec_ == nullptr
+          ? GetCppFeatureSetDefaults()
+          : *pool_->feature_set_defaults_spec_;
+
+  absl::StatusOr<FeatureResolver> feature_resolver =
+      FeatureResolver::Create(file_->edition_, defaults);
+  if (!feature_resolver.ok()) {
+    AddError(proto.name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
+             [&] { return std::string(feature_resolver.status().message()); });
+  } else {
+    feature_resolver_.emplace(std::move(feature_resolver).value());
   }
 
   result->is_placeholder_ = false;
@@ -5727,26 +5698,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   if (!proto.has_name()) {
     AddError("", proto, DescriptorPool::ErrorCollector::OTHER,
              "Missing field: FileDescriptorProto.name.");
-  }
-
-  // TODO(liujisi): Report error when the syntax is empty after all the protos
-  // have added the syntax statement.
-  if (proto.syntax().empty() || proto.syntax() == "proto2") {
-    file_->syntax_ = FileDescriptorLegacy::SYNTAX_PROTO2;
-  } else if (proto.syntax() == "proto3") {
-    file_->syntax_ = FileDescriptorLegacy::SYNTAX_PROTO3;
-  } else if (proto.syntax() == "editions") {
-    file_->syntax_ = FileDescriptorLegacy::SYNTAX_EDITIONS;
-  } else {
-    file_->syntax_ = FileDescriptorLegacy::SYNTAX_UNKNOWN;
-    AddError(proto.name(), proto, DescriptorPool::ErrorCollector::OTHER, [&] {
-      return absl::StrCat("Unrecognized syntax: ", proto.syntax());
-    });
-  }
-  if (proto.has_edition()) {
-    file_->edition_ = alloc.AllocateStrings(proto.edition());
-  } else {
-    file_->edition_ = nullptr;
   }
 
   result->name_ = alloc.AllocateStrings(proto.name());
@@ -5814,16 +5765,6 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       // dangerous to try to do anything with it.  The recursive import error
       // will be detected and reported in DescriptorBuilder::BuildFile().
       return nullptr;
-    }
-
-    // Look for feature extensions in regular imports.
-    if (feature_resolver_.has_value() && dependency != nullptr) {
-      absl::Status status = feature_resolver_->RegisterExtensions(*dependency);
-      if (!status.ok()) {
-        AddError(dependency->name(), proto,
-                 DescriptorPool::ErrorCollector::EDITIONS,
-                 [&] { return std::string(status.message()); });
-      }
     }
 
     if (dependency == nullptr) {
@@ -5947,48 +5888,45 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     SuggestFieldNumbers(result, proto);
   }
 
-  // Interpret only the feature options first.  This has to be done in two
-  // passes, since options defined in this file may have features attached
-  // to them.
+  // Interpret only the non-extension options first, including features and
+  // their extensions.  This has to be done in two passes, since option
+  // extensions defined in this file may have features attached to them.
   if (!had_errors_) {
     OptionInterpreter option_interpreter(this);
     for (std::vector<OptionsToInterpret>::iterator iter =
              options_to_interpret_.begin();
          iter != options_to_interpret_.end(); ++iter) {
-      option_interpreter.InterpretFeatures(&(*iter));
+      option_interpreter.InterpretNonExtensionOptions(&(*iter));
     }
-  }
-  // Handle feature resolution.  This must occur after option interpretation,
-  // but before validation.
-  internal::VisitDescriptors(
-      *result, proto, [&](const auto& descriptor, const auto& proto) {
-        using OptionsT =
-            typename std::remove_const<typename std::remove_pointer<
-                decltype(descriptor.options_)>::type>::type;
-        using DescriptorT = typename std::remove_const<
-            typename std::remove_reference<decltype(descriptor)>::type>::type;
+    // Handle feature resolution.  This must occur after option interpretation,
+    // but before validation.
+    internal::VisitDescriptors(
+        *result, proto, [&](const auto& descriptor, const auto& proto) {
+          using OptionsT =
+              typename std::remove_const<typename std::remove_pointer<
+                  decltype(descriptor.options_)>::type>::type;
+          using DescriptorT = typename std::remove_const<
+              typename std::remove_reference<decltype(descriptor)>::type>::type;
 
-        ResolveFeatures(
-            proto, const_cast<DescriptorT*>(&descriptor),
-            const_cast<OptionsT*>(  // NOLINT(google3-runtime-proto-const-cast)
-                descriptor.options_),
-            alloc);
-      });
+          ResolveFeatures(
+              proto, const_cast<DescriptorT*>(&descriptor),
+              const_cast<  // NOLINT(google3-runtime-proto-const-cast)
+                  OptionsT*>(descriptor.options_),
+              alloc);
+        });
 
-  // Post-process cleanup for field features.
-  internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
-    PostProcessFieldFeatures(const_cast<FieldDescriptor&>(field));
-  });
+    // Post-process cleanup for field features.
+    internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
+      PostProcessFieldFeatures(const_cast<FieldDescriptor&>(field));
+    });
 
-  // Interpret any remaining uninterpreted options gathered into
-  // options_to_interpret_ during descriptor building.  Cross-linking has made
-  // extension options known, so all interpretations should now succeed.
-  if (!had_errors_) {
-    OptionInterpreter option_interpreter(this);
+    // Interpret any remaining uninterpreted options gathered into
+    // options_to_interpret_ during descriptor building.  Cross-linking has made
+    // extension options known, so all interpretations should now succeed.
     for (std::vector<OptionsToInterpret>::iterator iter =
              options_to_interpret_.begin();
          iter != options_to_interpret_.end(); ++iter) {
-      option_interpreter.InterpretOptions(&(*iter));
+      option_interpreter.InterpretOptionExtensions(&(*iter));
     }
     options_to_interpret_.clear();
     if (info != nullptr) {
@@ -6329,7 +6267,7 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     if (descriptor->features().json_format() ==
             FeatureSet::LEGACY_BEST_EFFORT &&
         involves_default) {
-      // TODO(b/261750676) Upgrade this to an error once downstream protos
+      // TODO Upgrade this to an error once downstream protos
       // have been fixed.
       AddWarning(message_name, field, DescriptorPool::ErrorCollector::NAME,
                  make_error);
@@ -6387,7 +6325,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->label_ = static_cast<FieldDescriptor::Label>(
       absl::implicit_cast<int>(proto.label()));
 
-  if (result->is_required()) {
+  if (result->label() == FieldDescriptor::LABEL_REQUIRED) {
     // An extension cannot have a required field (b/13365836).
     if (result->is_extension_) {
       AddError(result->full_name(), proto,
@@ -7287,7 +7225,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
     // In case of weak fields we force building the dependency. We need to know
     // if the type exist or not. If it doesn't exist we substitute Empty which
     // should only be done if the type can't be found in the generated pool.
-    // TODO(gerbens) Ideally we should query the database directly to check
+    // TODO Ideally we should query the database directly to check
     // if weak fields exist or not so that we don't need to force building
     // weak dependencies. However the name lookup rules for symbols are
     // somewhat complicated, so I defer it too another CL.
@@ -7495,7 +7433,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
         // Conflicting extension numbers should be an error. However, before
         // turning this into an error we need to fix all existing broken
         // protos first.
-        // TODO(xiaofeng): Change this to an error.
+        // TODO: Change this to an error.
         AddWarning(field->full_name(), proto,
                    DescriptorPool::ErrorCollector::NUMBER, make_error);
       }
@@ -7666,7 +7604,7 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
 // Determine if the file uses optimize_for = LITE_RUNTIME, being careful to
 // avoid problems that exist at init time.
 static bool IsLite(const FileDescriptor* file) {
-  // TODO(kenton):  I don't even remember how many of these conditions are
+  // TODO:  I don't even remember how many of these conditions are
   //   actually possible.  I'm just being super-safe.
   return file != nullptr &&
          &file->options() != &FileOptions::default_instance() &&
@@ -7675,6 +7613,8 @@ static bool IsLite(const FileDescriptor* file) {
 
 void DescriptorBuilder::ValidateOptions(const FileDescriptor* file,
                                         const FileDescriptorProto& proto) {
+  ValidateFileFeatures(file, proto);
+
   // Lite files can only be imported by other Lite files.
   if (!IsLite(file)) {
     for (int i = 0; i < file->dependency_count(); i++) {
@@ -7924,10 +7864,52 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
   }
 }
 
+static bool IsStringMapType(const FieldDescriptor& field) {
+  if (!field.is_map()) return false;
+  for (int i = 0; i < field.message_type()->field_count(); ++i) {
+    if (field.message_type()->field(i)->type() ==
+        FieldDescriptor::TYPE_STRING) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void DescriptorBuilder::ValidateFileFeatures(const FileDescriptor* file,
+                                             const FileDescriptorProto& proto) {
+  if (file->features().field_presence() == FeatureSet::LEGACY_REQUIRED) {
+    AddError(file->name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
+             "Required presence can't be specified by default.");
+  }
+}
+
 void DescriptorBuilder::ValidateFieldFeatures(
     const FieldDescriptor* field, const FieldDescriptorProto& proto) {
   // Rely on our legacy validation for proto2/proto3 files.
-  if (IsLegacyFeatureSet(field->features())) return;
+  if (FileDescriptorLegacy(field->file()).syntax() !=
+      FileDescriptorLegacy::SYNTAX_EDITIONS) {
+    return;
+  }
+
+  // Double check proto descriptors in editions.  These would usually be caught
+  // by the parser, but may not be for dynamically built descriptors.
+  if (proto.label() == FieldDescriptorProto::LABEL_REQUIRED) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Required label is not allowed under editions.  Use the feature "
+             "field_presence = LEGACY_REQUIRED to control this behavior.");
+  }
+  if (proto.type() == FieldDescriptorProto::TYPE_GROUP) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Group types are not allowed under editions.  Use the feature "
+             "message_encoding = DELIMITED to control this behavior.");
+  }
+
+  // Validate legacy options that have been migrated to features.
+  if (field->options().has_packed()) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Field option packed is not allowed under editions.  Use the "
+             "repeated_field_encoding feature to control this behavior.");
+  }
 
   // Validate fully resolved features.
   if (field->has_default_value() &&
@@ -7982,6 +7964,12 @@ void DescriptorBuilder::ValidateFieldFeatures(
       field->proto_features_->has_repeated_field_encoding()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Only repeated fields can specify repeated field encoding.");
+  }
+  if (field->type() != FieldDescriptor::TYPE_STRING &&
+      !IsStringMapType(*field) &&
+      field->proto_features_->has_utf8_validation()) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Only string fields can specify utf8 validation.");
   }
   if (!field->is_packable() &&
       field->proto_features_->repeated_field_encoding() == FeatureSet::PACKED) {
@@ -8169,7 +8157,7 @@ void DescriptorBuilder::ValidateExtensionRangeOptions(
 
 
     if (!range_options.declaration().empty()) {
-      // TODO(b/278783756): remove the "has_verification" check once the default
+      // TODO: remove the "has_verification" check once the default
       // is flipped to DECLARATION.
       if (range_options.has_verification() &&
           range_options.verification() == ExtensionRangeOptions::UNVERIFIED) {
@@ -8389,16 +8377,16 @@ DescriptorBuilder::OptionInterpreter::OptionInterpreter(
 
 DescriptorBuilder::OptionInterpreter::~OptionInterpreter() {}
 
-bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
+bool DescriptorBuilder::OptionInterpreter::InterpretOptionExtensions(
     OptionsToInterpret* options_to_interpret) {
-  return InterpretOptionsImpl(options_to_interpret, /*features=*/false);
+  return InterpretOptionsImpl(options_to_interpret, /*skip_extensions=*/false);
 }
-bool DescriptorBuilder::OptionInterpreter::InterpretFeatures(
+bool DescriptorBuilder::OptionInterpreter::InterpretNonExtensionOptions(
     OptionsToInterpret* options_to_interpret) {
-  return InterpretOptionsImpl(options_to_interpret, /*features=*/true);
+  return InterpretOptionsImpl(options_to_interpret, /*skip_extensions=*/true);
 }
 bool DescriptorBuilder::OptionInterpreter::InterpretOptionsImpl(
-    OptionsToInterpret* options_to_interpret, bool features) {
+    OptionsToInterpret* options_to_interpret, bool skip_extensions) {
   // Note that these may be in different pools, so we can't use the same
   // descriptor and reflection objects on both.
   Message* options = options_to_interpret->options;
@@ -8434,7 +8422,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptionsImpl(
         &original_options->GetReflection()->GetRepeatedMessage(
             *original_options, original_uninterpreted_options_field, i));
     if (!InterpretSingleOption(options, src_path,
-                               options_to_interpret->element_path, features)) {
+                               options_to_interpret->element_path,
+                               skip_extensions)) {
       // Error already added by InterpretSingleOption().
       failed = true;
       break;
@@ -8484,20 +8473,29 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptionsImpl(
 
 bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     Message* options, const std::vector<int>& src_path,
-    const std::vector<int>& options_path, bool features) {
+    const std::vector<int>& options_path, bool skip_extensions) {
   // First do some basic validation.
   if (uninterpreted_option_->name_size() == 0) {
     // This should never happen unless the parser has gone seriously awry or
     // someone has manually created the uninterpreted option badly.
+    if (skip_extensions) {
+      // Come back to it later.
+      return true;
+    }
     return AddNameError(
         []() -> std::string { return "Option must have a name."; });
   }
   if (uninterpreted_option_->name(0).name_part() == "uninterpreted_option") {
+    if (skip_extensions) {
+      // Come back to it later.
+      return true;
+    }
     return AddNameError([]() -> std::string {
       return "Option must not use reserved name \"uninterpreted_option\".";
     });
   }
-  if (features != (uninterpreted_option_->name(0).name_part() == "features")) {
+
+  if (skip_extensions == uninterpreted_option_->name(0).is_extension()) {
     // Allow feature and option interpretation to occur in two phases.  This is
     // necessary because features *are* options and need to be interpreted
     // before resolving them.  However, options can also *have* features
@@ -9566,15 +9564,14 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
 }  // namespace cpp
 }  // namespace internal
 
-absl::string_view FileDescriptor::edition() const {
-  // ASLR will help give this a random value across processes.
-  static const void* kAntiHyrumText = &kAntiHyrumText;
-  absl::string_view anti_hyrum_string(
-      reinterpret_cast<const char*>(kAntiHyrumText),
-      (reinterpret_cast<size_t>(kAntiHyrumText) >> 3) % sizeof(void*));
+Edition FileDescriptor::edition() const { return edition_; }
 
-  return edition_ == nullptr ? anti_hyrum_string : *edition_;
+namespace internal {
+absl::string_view ShortEditionName(Edition edition) {
+  return absl::StripPrefix(Edition_Name(edition), "EDITION_");
 }
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 

@@ -81,6 +81,20 @@ cc_library(
 )
 
 cc_library(
+    name = "versions",
+    hdrs = [
+        "versions.h",
+        "versions_suffix.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler",
+    visibility = [
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = ["@com_google_absl//absl/strings"],
+)
+
+cc_library(
     name = "command_line_interface",
     srcs = [
         "command_line_interface.cc",
@@ -200,7 +214,11 @@ filegroup(
 filegroup(
     name = "plugin_proto_src",
     srcs = ["plugin.proto"],
-    visibility = ["@upb//:__subpackages__"],
+    visibility = [
+        "//upb_generator:__subpackages__",
+        # For compatibility with workspaces that still use the old upb repo
+        "@upb//:__subpackages__",
+    ],
 )
 
 exports_files(
@@ -221,6 +239,9 @@ cc_library(
     visibility = ["//pkg:__pkg__"],
     deps = [
         ":code_generator",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:descriptor_legacy",
+        "//src/google/protobuf:descriptor_visitor",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",

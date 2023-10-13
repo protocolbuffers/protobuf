@@ -12,6 +12,11 @@ elseif(protobuf_JSONCPP_PROVIDER STREQUAL "package")
   find_package(jsoncpp REQUIRED)
 endif()
 
+set(protoc_cpp_args)
+if (protobuf_BUILD_SHARED_LIBS)
+  set(protoc_cpp_args "dllexport_decl=PROTOBUF_TEST_EXPORTS:")
+endif ()
+
 add_custom_command(
   OUTPUT
     ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
@@ -19,7 +24,7 @@ add_custom_command(
   DEPENDS ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/conformance/conformance.proto
   COMMAND ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/conformance/conformance.proto
       --proto_path=${protobuf_SOURCE_DIR}/conformance
-      --cpp_out=${protobuf_SOURCE_DIR}/conformance
+      --cpp_out=${protoc_cpp_args}${protobuf_SOURCE_DIR}/conformance
 )
 
 add_custom_command(
@@ -33,33 +38,39 @@ add_custom_command(
   COMMAND ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.proto
                  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.proto
       --proto_path=${protobuf_SOURCE_DIR}/src
-      --cpp_out=${protobuf_SOURCE_DIR}/src
+      --cpp_out=${protoc_cpp_args}${protobuf_SOURCE_DIR}/src
 )
+
+add_library(libconformance_common ${protobuf_SHARED_OR_STATIC}
+  ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
+  ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
+)
+target_link_libraries(libconformance_common
+  ${protobuf_LIB_PROTOBUF}
+  ${protobuf_ABSL_USED_TARGETS}
+)
+if(protobuf_BUILD_SHARED_LIBS)
+  target_compile_definitions(libconformance_common
+    PUBLIC  PROTOBUF_USE_DLLS
+    PRIVATE LIBPROTOBUF_TEST_EXPORTS)
+endif()
 
 add_executable(conformance_test_runner
   ${protobuf_SOURCE_DIR}/conformance/binary_json_conformance_suite.cc
   ${protobuf_SOURCE_DIR}/conformance/binary_json_conformance_suite.h
-  ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
-  ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_test.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_test_runner.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_test_main.cc
   ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.cc
   ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
 )
 
 add_executable(conformance_cpp
-  ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
-  ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_cpp.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
 )
 
 target_include_directories(
@@ -73,10 +84,16 @@ target_include_directories(
 target_include_directories(conformance_test_runner PRIVATE ${ABSL_ROOT_DIR})
 target_include_directories(conformance_cpp PRIVATE ${ABSL_ROOT_DIR})
 
-target_link_libraries(conformance_test_runner ${protobuf_LIB_PROTOBUF})
-target_link_libraries(conformance_test_runner ${protobuf_ABSL_USED_TARGETS})
-target_link_libraries(conformance_cpp ${protobuf_LIB_PROTOBUF})
-target_link_libraries(conformance_cpp ${protobuf_ABSL_USED_TARGETS})
+target_link_libraries(conformance_test_runner
+  libconformance_common
+  ${protobuf_LIB_PROTOBUF}
+  ${protobuf_ABSL_USED_TARGETS}
+)
+target_link_libraries(conformance_cpp
+  libconformance_common
+  ${protobuf_LIB_PROTOBUF}
+  ${protobuf_ABSL_USED_TARGETS}
+)
 
 add_test(NAME conformance_cpp_test
   COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/conformance_test_runner

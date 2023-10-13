@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_ARENASTRING_H__
 #define GOOGLE_PROTOBUF_ARENASTRING_H__
@@ -397,9 +374,8 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // logic in Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
   inline PROTOBUF_NDEBUG_INLINE static void InternalSwap(ArenaStringPtr* rhs,
-                                                         Arena* rhs_arena,
                                                          ArenaStringPtr* lhs,
-                                                         Arena* lhs_arena);
+                                                         Arena* arena);
 
   // Internal setter used only at parse time to directly set a donated string
   // value.
@@ -519,17 +495,14 @@ inline void ArenaStringPtr::SetBytes(const void* p, size_t n, Arena* arena) {
   Set(absl::string_view{static_cast<const char*>(p), n}, arena);
 }
 
-// Make sure rhs_arena allocated rhs, and lhs_arena allocated lhs.
-inline PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(  //
-    ArenaStringPtr* rhs, Arena* rhs_arena,                        //
-    ArenaStringPtr* lhs, Arena* lhs_arena) {
+inline PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(
+    ArenaStringPtr* rhs, ArenaStringPtr* lhs, Arena* arena) {
   // Silence unused variable warnings in release buildls.
-  (void)rhs_arena;
-  (void)lhs_arena;
+  (void)arena;
   std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  auto force_realloc = [](ArenaStringPtr* p, Arena* arena) {
-    if (p->IsDefault()) return;
+  for (auto* p : {lhs, rhs}) {
+    if (p->IsDefault()) continue;
     std::string* old_value = p->tagged_ptr_.Get();
     std::string* new_value =
         p->IsFixedSizeArena()
@@ -541,11 +514,7 @@ inline PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(  //
     } else {
       p->tagged_ptr_.SetMutableArena(new_value);
     }
-  };
-  // Because, at this point, tagged_ptr_ has been swapped, arena should also be
-  // swapped.
-  force_realloc(lhs, rhs_arena);
-  force_realloc(rhs, lhs_arena);
+  }
 #endif  // PROTOBUF_FORCE_COPY_IN_SWAP
 }
 

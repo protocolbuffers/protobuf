@@ -1,32 +1,9 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Unittest for google.protobuf.internal.descriptor."""
 
@@ -60,6 +37,7 @@ message NestedMessage {
     FOREIGN_FOO = 4;
     FOREIGN_BAR = 5;
     FOREIGN_BAZ = 6;
+    FOREIGN_BAX = 32;
   }
   optional int32 bb = 1;
 }
@@ -95,6 +73,7 @@ class DescriptorTest(unittest.TestCase):
     enum_proto.value.add(name='FOREIGN_FOO', number=4)
     enum_proto.value.add(name='FOREIGN_BAR', number=5)
     enum_proto.value.add(name='FOREIGN_BAZ', number=6)
+    enum_proto.value.add(name='FOREIGN_BAX', number=32)
 
     file_proto.message_type.add(name='ResponseMessage')
     service_proto = file_proto.service.add(name='DescriptorTestService')
@@ -553,6 +532,7 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(self.my_file.package, 'protobuf_unittest')
     self.assertEqual(self.my_file.pool, self.pool)
     self.assertFalse(self.my_file.has_options)
+    self.assertEqual(self.my_file.syntax, 'proto2')
     file_proto = descriptor_pb2.FileDescriptorProto()
     self.my_file.CopyToProto(file_proto)
     self.assertEqual(self.my_file.serialized_pb,
@@ -690,7 +670,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertRaises(StopIteration, next, reversed_iterator)
     expected_list[0] = 'change value'
     self.assertNotEqual(expected_list, sequence)
-    # TODO(jieluo): Change __repr__ support for DescriptorSequence.
+    # TODO: Change __repr__ support for DescriptorSequence.
     if api_implementation.Type() == 'python':
       self.assertEqual(str(list(sequence)), str(sequence))
     else:
@@ -720,7 +700,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertEqual(mapping.get(key), item)
     with self.assertRaises(TypeError):
       mapping.get()
-    # TODO(jieluo): Fix python and cpp extension diff.
+    # TODO: Fix python and cpp extension diff.
     if api_implementation.Type() == 'cpp':
       self.assertEqual(None, mapping.get([]))
     else:
@@ -740,7 +720,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertNotEqual(mapping, excepted_dict)
     self.assertRaises(KeyError, mapping.__getitem__, 'key_error')
     self.assertRaises(KeyError, mapping.__getitem__, len(mapping) + 1)
-    # TODO(jieluo): Add __repr__ support for DescriptorMapping.
+    # TODO: Add __repr__ support for DescriptorMapping.
     if api_implementation.Type() == 'cpp':
       self.assertEqual(str(mapping)[0], '<')
     else:
@@ -810,6 +790,15 @@ class GeneratedDescriptorTest(unittest.TestCase):
                      oneof_descriptor.full_name)
     self.assertEqual(0, oneof_descriptor.index)
 
+  def testDescriptorSlice(self):
+    message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
+    nested = message_descriptor.nested_types[:]
+    self.assertEqual(message_descriptor.nested_types, nested)
+    fields = message_descriptor.fields
+    fields_list = list(fields)
+    self.assertEqual(fields_list[:], fields[:])
+    self.assertEqual(fields_list[2::2], fields[2::2])
+    self.assertEqual(fields_list[3:19:3], fields[3:19:3])
 
 class DescriptorCopyToProtoTest(unittest.TestCase):
   """Tests for CopyTo functions of Descriptor."""
@@ -883,6 +872,10 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
       value: <
         name: 'FOREIGN_BAZ'
         number: 6
+      >
+      value: <
+        name: 'FOREIGN_BAX'
+        number: 32
       >
       """
 
@@ -1079,7 +1072,7 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
   @unittest.skipIf(
       api_implementation.Type() == 'python',
       'Pure python does not raise error.')
-  # TODO(jieluo): Fix pure python to check with the proto type.
+  # TODO: Fix pure python to check with the proto type.
   def testCopyToProto_TypeError(self):
     file_proto = descriptor_pb2.FileDescriptorProto()
     self.assertRaises(TypeError,
@@ -1132,8 +1125,12 @@ class MakeDescriptorTest(unittest.TestCase):
     result = descriptor.MakeDescriptor(message_type)
     self.assertEqual(result.fields[0].cpp_type,
                      descriptor.FieldDescriptor.CPPTYPE_UINT64)
+    self.assertEqual(result.fields[0].cpp_type,
+                     result.fields[0].CPPTYPE_UINT64)
     self.assertEqual(result.fields[1].cpp_type,
                      descriptor.FieldDescriptor.CPPTYPE_MESSAGE)
+    self.assertEqual(result.fields[1].cpp_type,
+                     result.fields[1].CPPTYPE_MESSAGE)
     self.assertEqual(result.fields[1].message_type.containing_type,
                      result)
     self.assertEqual(result.nested_types[0].fields[0].full_name,

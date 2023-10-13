@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/objectivec/generator.h"
 
@@ -45,9 +22,11 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/file.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -278,7 +257,10 @@ bool ObjectiveCGenerator::GenerateAll(
       // Controls if minimal imports should be generated from a files imports.
       // Since custom options require imports, they current cause generated
       // imports even though there is nothing captured in the generated code,
-      // this provides smaller imports only for the things referenced.
+      // this provides smaller imports only for the things referenced. This
+      // could break code in complex cases where code uses types via long
+      // import chains with public imports mixed through the way, as things
+      // that aren't really needed for the local usages could be pruned.
       if (!StringToBool(options[i].second,
                         &generation_options.generate_minimal_imports)) {
         *error =
@@ -319,10 +301,12 @@ bool ObjectiveCGenerator::GenerateAll(
     }
   }
 
-  // Multi source generation forces off the use of fwd decls in favor of
-  // imports.
+  // Multi source generation forces:
+  // - off the use of fwd decls in favor of imports
+  // - on the minimal imports support
   if (generation_options.experimental_multi_source_generation) {
     generation_options.headers_use_forward_declarations = false;
+    generation_options.generate_minimal_imports = true;
   }
   if (generation_options.experimental_strip_nonfunctional_codegen) {
     generation_options.generate_minimal_imports = true;

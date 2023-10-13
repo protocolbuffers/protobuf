@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Authors: wink@google.com (Wink Saville),
 //          kenton@google.com (Kenton Varda)
@@ -39,6 +16,7 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 
+#include <atomic>
 #include <climits>
 #include <iosfwd>
 #include <string>
@@ -83,6 +61,62 @@ class ZeroCopyOutputStream;
 
 }  // namespace io
 namespace internal {
+
+// Allow easy change to regular int on platforms where the atomic might have a
+// perf impact.
+//
+// CachedSize is like std::atomic<int> but with some important changes:
+//
+// 1) CachedSize uses Get / Set rather than load / store.
+// 2) CachedSize always uses relaxed ordering.
+// 3) CachedSize is assignable and copy-constructible.
+// 4) CachedSize has a constexpr default constructor, and a constexpr
+//    constructor that takes an int argument.
+// 5) If the compiler supports the __atomic_load_n / __atomic_store_n builtins,
+//    then CachedSize is trivially copyable.
+//
+// Developed at https://godbolt.org/z/vYcx7zYs1 ; supports gcc, clang, MSVC.
+class PROTOBUF_EXPORT CachedSize {
+ private:
+  using Scalar = int;
+
+ public:
+  constexpr CachedSize() noexcept : atom_(Scalar{}) {}
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr CachedSize(Scalar desired) noexcept : atom_(desired) {}
+#if PROTOBUF_BUILTIN_ATOMIC
+  constexpr CachedSize(const CachedSize& other) = default;
+
+  Scalar Get() const noexcept {
+    return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
+  }
+
+  void Set(Scalar desired) noexcept {
+    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
+  }
+#else
+  CachedSize(const CachedSize& other) noexcept : atom_(other.Get()) {}
+  CachedSize& operator=(const CachedSize& other) noexcept {
+    Set(other.Get());
+    return *this;
+  }
+
+  Scalar Get() const noexcept {  //
+    return atom_.load(std::memory_order_relaxed);
+  }
+
+  void Set(Scalar desired) noexcept {
+    atom_.store(desired, std::memory_order_relaxed);
+  }
+#endif
+
+ private:
+#if PROTOBUF_BUILTIN_ATOMIC
+  Scalar atom_;
+#else
+  std::atomic<Scalar> atom_;
+#endif
+};
 
 class SwapFieldHelper;
 
@@ -451,14 +485,14 @@ class PROTOBUF_EXPORT MessageLite {
   // sub-message is changed, all of its parents' cached sizes would need to be
   // invalidated, which is too much work for an otherwise inlined setter
   // method.)
-  virtual int GetCachedSize() const = 0;
+  int GetCachedSize() const;
 
   virtual const char* _InternalParse(const char* /*ptr*/,
                                      internal::ParseContext* /*ctx*/) {
     return nullptr;
   }
 
-  virtual void OnDemandRegisterArenaDtor(Arena* /*arena*/) {}
+  void OnDemandRegisterArenaDtor(Arena* arena);
 
  protected:
   // Message implementations require access to internally visible API.
@@ -487,11 +521,28 @@ class PROTOBUF_EXPORT MessageLite {
   // of this message or its internal memory could be changed.
   Arena* GetOwningArena() const { return _internal_metadata_.arena(); }
 
-  // Returns the arena, used for allocating internal objects(e.g., child
-  // messages, etc), or owning incoming objects (e.g., set allocated).
-  Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
+  struct ClassData {
+    // Note: The order of arguments in the functions is chosen so that it has
+    // the same ABI as the member function that calls them. Eg the `this`
+    // pointer becomes the first argument in the free function.
+    void (*merge_to_from)(Message& to, const Message& from_msg);
+    void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
+  };
+
+  // GetClassData() returns a pointer to a ClassData struct which
+  // exists in global memory and is unique to each subclass.  This uniqueness
+  // property is used in order to quickly determine whether two messages are
+  // of the same type.
+  //
+  // This is a work in progress. Currently only SPEED messages return an
+  // instance. In the future all message types will return one.
+  virtual const ClassData* GetClassData() const;
 
   internal::InternalMetadata _internal_metadata_;
+
+  // The default implementation means there is no cached size and ByteSize
+  // should be called instead.
+  virtual internal::CachedSize* AccessCachedSize() const;
 
  public:
   enum ParseFlags {

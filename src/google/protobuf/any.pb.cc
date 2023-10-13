@@ -26,21 +26,21 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 #endif  // __llvm__
 namespace google {
 namespace protobuf {
-        template <typename>
+
+inline constexpr Any::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : type_url_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        value_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        _cached_size_{0},
+        _any_metadata_{&type_url_, &value_} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR Any::Any(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.type_url_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_.value_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_._any_metadata_)*/ {&_impl_.type_url_,
-                                    &_impl_.value_},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct AnyDefaultTypeInternal {
   PROTOBUF_CONSTEXPR AnyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~AnyDefaultTypeInternal() {}
@@ -150,54 +150,36 @@ Any::Any(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
 }
-Any::Any(const Any& from) : ::google::protobuf::Message() {
+inline PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
+    const Impl_& from)
+      : type_url_(arena, from.type_url_),
+        value_(arena, from.value_),
+        _cached_size_{0},
+        _any_metadata_{&type_url_, &value_} {}
+
+Any::Any(
+    ::google::protobuf::Arena* arena,
+    const Any& from)
+    : ::google::protobuf::Message(arena) {
   Any* const _this = this;
   (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.type_url_){},
-      decltype(_impl_.value_){},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_._any_metadata_)*/ {
-          &_impl_.type_url_,
-          &_impl_.value_,
-      },
-  };
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  _impl_.type_url_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        _impl_.type_url_.Set("", GetArenaForAllocation());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (!from._internal_type_url().empty()) {
-    _this->_impl_.type_url_.Set(from._internal_type_url(), _this->GetArenaForAllocation());
-  }
-  _impl_.value_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        _impl_.value_.Set("", GetArenaForAllocation());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (!from._internal_value().empty()) {
-    _this->_impl_.value_.Set(from._internal_value(), _this->GetArenaForAllocation());
-  }
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
 }
+inline PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : type_url_(arena),
+        value_(arena),
+        _cached_size_{0},
+        _any_metadata_{&type_url_, &value_} {}
+
 inline void Any::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.type_url_){},
-      decltype(_impl_.value_){},
-      /*decltype(_impl_._cached_size_)*/ {},
-      /*decltype(_impl_._any_metadata_)*/ {&_impl_.type_url_,
-                                    &_impl_.value_},
-  };
-  _impl_.type_url_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        _impl_.type_url_.Set("", GetArenaForAllocation());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.value_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        _impl_.value_.Set("", GetArenaForAllocation());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 Any::~Any() {
   // @@protoc_insertion_point(destructor:google.protobuf.Any)
@@ -205,13 +187,10 @@ Any::~Any() {
   SharedDtor();
 }
 inline void Any::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.type_url_.Destroy();
   _impl_.value_.Destroy();
-  _impl_._any_metadata_.~AnyMetadata();
-}
-void Any::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void Any::Clear() {
@@ -326,11 +305,12 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Any::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Any::MergeImpl
+    Any::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
-const ::google::protobuf::Message::ClassData*Any::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Any::GetClassData() const {
+  return &_class_data_;
+}
 
 void Any::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Any*>(&to_msg);
@@ -360,15 +340,16 @@ PROTOBUF_NOINLINE bool Any::IsInitialized() const {
   return true;
 }
 
-void Any::InternalSwap(Any* other) {
+::_pbi::CachedSize* Any::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
+void Any::InternalSwap(Any* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, lhs_arena,
-                                       &other->_impl_.type_url_, rhs_arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, lhs_arena,
-                                       &other->_impl_.value_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, &other->_impl_.type_url_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
 }
 
 ::google::protobuf::Metadata Any::GetMetadata() const {

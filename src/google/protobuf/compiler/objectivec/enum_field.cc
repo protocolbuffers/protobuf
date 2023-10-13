@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/objectivec/enum_field.h"
 
@@ -39,6 +16,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -51,16 +29,19 @@ namespace {
 
 void SetEnumVariables(
     const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options,
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
   const std::string type = EnumName(descriptor->enum_type());
   const std::string enum_desc_func = absl::StrCat(type, "_EnumDescriptor");
-  (*variables)["storage_type"] = type;
-  // For non repeated fields, if it was defined in a different file, the
-  // property decls need to use "enum NAME" rather than just "NAME" to support
-  // the forward declaration of the enums.
-  if (!descriptor->is_repeated() &&
+  (*variables)["enum_name"] = type;
+  // When using fwd decls, for non repeated fields, if it was defined in a
+  // different file, the property decls need to use "enum NAME" rather than just
+  // "NAME" to support the forward declaration of the enums.
+  if (generation_options.headers_use_forward_declarations &&
+      !descriptor->is_repeated() &&
+      !IsProtobufLibraryBundledProtoFile(descriptor->enum_type()->file()) &&
       (descriptor->file() != descriptor->enum_type()->file())) {
-    (*variables)["property_type"] = absl::StrCat("enum ", type);
+    (*variables)["property_type"] = absl::StrCat("enum ", type, " ");
   }
   (*variables)["enum_verifier"] = absl::StrCat(type, "_IsValidValue");
   (*variables)["enum_desc_func"] = enum_desc_func;
@@ -73,9 +54,11 @@ void SetEnumVariables(
 }
 }  // namespace
 
-EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor)
-    : SingleFieldGenerator(descriptor) {
-  SetEnumVariables(descriptor, &variables_);
+EnumFieldGenerator::EnumFieldGenerator(
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : SingleFieldGenerator(descriptor, generation_options) {
+  SetEnumVariables(descriptor, generation_options, &variables_);
 }
 
 void EnumFieldGenerator::GenerateCFunctionDeclarations(
@@ -135,8 +118,7 @@ void EnumFieldGenerator::DetermineForwardDeclarations(
   if (include_external_types &&
       descriptor_->file() != descriptor_->enum_type()->file() &&
       !IsProtobufLibraryBundledProtoFile(descriptor_->enum_type()->file())) {
-    // Enum name is already in "storage_type".
-    const std::string& name = variable("storage_type");
+    const std::string& name = variable("enum_name");
     fwd_decls->insert(absl::StrCat("GPB_ENUM_FWD_DECLARE(", name, ");"));
   }
 }
@@ -149,16 +131,16 @@ void EnumFieldGenerator::DetermineNeededFiles(
 }
 
 RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : RepeatedFieldGenerator(descriptor) {
-  SetEnumVariables(descriptor, &variables_);
-  variables_["array_storage_type"] = "GPBEnumArray";
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : RepeatedFieldGenerator(descriptor, generation_options) {
+  SetEnumVariables(descriptor, generation_options, &variables_);
 }
 
 void RepeatedEnumFieldGenerator::EmitArrayComment(io::Printer* printer) const {
   auto vars = printer->WithVars(variables_);
   printer->Emit(R"objc(
-    // |$name$| contains |$storage_type$|
+    // |$name$| contains |$enum_name$|
   )objc");
 }
 

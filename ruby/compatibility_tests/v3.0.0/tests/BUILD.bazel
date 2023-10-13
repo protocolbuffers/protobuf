@@ -11,42 +11,42 @@ internal_ruby_proto_library(
 
 ruby_test(
     name = "basic",
+    srcs = ["basic.rb"],
     deps = [
         ":test_ruby_protos",
         "//ruby:protobuf",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["basic.rb"],
 )
 
 ruby_test(
     name = "generated_code_test",
+    srcs = ["generated_code_test.rb"],
     deps = [
         ":test_ruby_protos",
         "//ruby:protobuf",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["generated_code_test.rb"],
 )
 
 ruby_test(
     name = "repeated_field_test",
+    srcs = ["repeated_field_test.rb"],
     deps = [
         ":test_ruby_protos",
         "//ruby:protobuf",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["repeated_field_test.rb"],
 )
 
 ruby_test(
     name = "stress",
+    srcs = ["stress.rb"],
     deps = [
         ":test_ruby_protos",
         "//ruby:protobuf",
-        "@protobuf_bundle//:test-unit"
+        "@protobuf_bundle//:test-unit",
     ],
-    srcs = ["stress.rb"],
 )
 
 ################################################################################
@@ -57,7 +57,7 @@ pkg_files(
     name = "dist_files",
     srcs = glob([
         "**/*.rb",
-        "**/*.proto"
+        "**/*.proto",
     ]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//ruby/compatibility_tests/v3.0.0:__pkg__"],

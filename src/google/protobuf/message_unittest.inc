@@ -1,33 +1,10 @@
 // -*- c++ -*-
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -69,6 +46,7 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/test_util2.h"
 
 
@@ -93,8 +71,9 @@ using google::protobuf::io::win32::open;
 #endif
 #endif
 
+
 TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
-  // TODO(kenton):  Test more helpers?  They're all two-liners so it seems
+  // TODO:  Test more helpers?  They're all two-liners so it seems
   //   like a waste of time.
 
   UNITTEST::TestAllTypes message;
@@ -157,7 +136,7 @@ TEST(MESSAGE_TEST_NAME, ParsePackedFromFileDescriptor) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParseHelpers) {
-  // TODO(kenton):  Test more helpers?  They're all two-liners so it seems
+  // TODO:  Test more helpers?  They're all two-liners so it seems
   //   like a waste of time.
   std::string data;
 
@@ -766,6 +745,7 @@ inline bool IsOptimizeForCodeSize(const Descriptor* descriptor) {
   return descriptor->file()->options().optimize_for() == FileOptions::CODE_SIZE;
 }
 
+
 TEST(MESSAGE_TEST_NAME, Swap) {
   UNITTEST::NestedTestAllTypes o;
   constexpr int kDepth = 5;
@@ -826,6 +806,69 @@ TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
   Message* test_all_types_pointer_nullptr = nullptr;
   EXPECT_EQ(nullptr, DynamicCastToGenerated<UNITTEST::TestAllTypes>(
                          test_all_types_pointer_nullptr));
+
+  Message& test_all_types_pointer_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_ref));
+
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const_ref));
+}
+
+TEST(MESSAGE_TEST_NAME, DynamicCastToGeneratedInvalidReferenceType) {
+  UNITTEST::TestAllTypes test_all_types;
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  ASSERT_DEATH(DynamicCastToGenerated<UNITTEST::TestRequired>(
+                   test_all_types_pointer_const_ref),
+               "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+                   UNITTEST::TestRequired::default_instance().GetTypeName());
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedValidType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message* test_all_types_pointer = &test_all_types;
+  EXPECT_EQ(&test_all_types, DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer));
+
+  const Message* test_all_types_pointer_const = &test_all_types;
+  EXPECT_EQ(&test_all_types, DownCastToGenerated<const UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const));
+
+  Message* test_all_types_pointer_nullptr = nullptr;
+  EXPECT_EQ(nullptr, DownCastToGenerated<UNITTEST::TestAllTypes>(
+                         test_all_types_pointer_nullptr));
+
+  Message& test_all_types_pointer_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_ref));
+
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const_ref));
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidPointerType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message* test_all_types_pointer = &test_all_types;
+
+  ASSERT_DEBUG_DEATH(
+      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
+      "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+          UNITTEST::TestRequired::default_instance().GetTypeName());
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidReferenceType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message& test_all_types_pointer = test_all_types;
+
+  ASSERT_DEBUG_DEATH(
+      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
+      "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+          UNITTEST::TestRequired::default_instance().GetTypeName());
 }
 
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
@@ -2015,6 +2058,34 @@ TEST(MESSAGE_TEST_NAME, TestRegressionOnParseFailureNotSettingHasBits) {
     EXPECT_FALSE(message.ParseFromString(with_error));
     validate_message(message);
   }
+}
+
+TEST(MESSAGE_TEST_NAME, TestRegressionOverwrittenLazyOneofDoesNotLeak) {
+  UNITTEST::TestAllTypes message;
+  auto* lazy = message.mutable_oneof_lazy_nested_message();
+  // We need to add enough payload to make the lazy field overflow the SSO of
+  // Cord. However, NestedMessage does not have enough fields for that. Just add
+  // some unknown payload to it. Use something that the validator will allow to
+  // stay as lazy.
+  lazy->GetReflection()->MutableUnknownFields(lazy)->AddFixed64(10, 10);
+  lazy->GetReflection()->MutableUnknownFields(lazy)->AddFixed64(11, 10);
+  // Validate that the size is large enough.
+  ASSERT_GT(lazy->ByteSizeLong(), 15);
+
+  // Append two instances of the oneof: first the lazy field, then any other to
+  // cause a switch during parsing.
+  std::string str;
+  ASSERT_TRUE(message.AppendToString(&str));
+  message.set_oneof_uint32(7);
+  ASSERT_TRUE(message.AppendToString(&str));
+
+  EXPECT_TRUE(UNITTEST::TestAllTypes().ParseFromString(str));
+  Arena arena;
+  // This call had a bug where the LazyField was not destroyed in any way
+  // causing the Cord inside it to leak its contents.
+  EXPECT_TRUE(
+      Arena::CreateMessage<UNITTEST::TestAllTypes>(&arena)->ParseFromString(
+          str));
 }
 
 }  // namespace protobuf

@@ -141,9 +141,9 @@ cc_library(
 
 cc_test(
     name = "lexer_test",
+    timeout = "long",
     srcs = ["internal/lexer_test.cc"],
     copts = COPTS,
-    timeout = "long",
     deps = [
         ":lexer",
         ":test_input_stream",

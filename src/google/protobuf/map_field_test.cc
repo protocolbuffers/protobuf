@@ -1,33 +1,11 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
+#include <cstdint>
 #include <memory>
 
 #include <gmock/gmock.h>
@@ -47,6 +25,7 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -58,27 +37,18 @@ namespace internal {
 
 using unittest::TestAllTypes;
 
-class MapFieldBaseStub : public TypeDefinedMapFieldBase<int32_t, int32_t> {
- public:
-  using InternalArenaConstructable_ = void;
-  typedef void DestructorSkippable_;
-  MapFieldBaseStub() {}
-  virtual ~MapFieldBaseStub() {}
-  explicit MapFieldBaseStub(Arena* arena)
-      : MapFieldBaseStub::TypeDefinedMapFieldBase(arena) {}
-
-  const Message* GetPrototype() const override {
-    return unittest::TestMap_MapInt32Int32Entry_DoNotUse::
-        internal_default_instance();
+struct MapFieldTestPeer {
+  static auto GetArena(const RepeatedPtrFieldBase& v) { return v.GetArena(); }
+  template <typename T>
+  static auto& GetMap(T& t) {
+    return t.map_;
   }
-
-  Arena* GetArenaForInternalRepeatedField() {
-    auto* repeated_field = MutableRepeatedField();
-    return repeated_field->GetArena();
-  }
-
-  using MapFieldBaseStub::TypeDefinedMapFieldBase::map_;
 };
+
+using TestMapField = ::google::protobuf::internal::MapField<
+    unittest::TestMap_MapInt32Int32Entry_DoNotUse, ::int32_t, ::int32_t,
+    ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+    ::google::protobuf::internal::WireFormatLite::TYPE_INT32>;
 
 class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
  protected:
@@ -161,7 +131,7 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
   Arena arena(options);
 
   {
-    // TODO(liujisi): Re-write the test to ensure the memory for the map and
+    // TODO: Re-write the test to ensure the memory for the map and
     // repeated fields are allocated from arenas.
     // NoHeapChecker no_heap;
 
@@ -175,24 +145,24 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
   }
 
   {
-    // TODO(liujisi): Re-write the test to ensure the memory for the map and
+    // TODO: Re-write the test to ensure the memory for the map and
     // repeated fields are allocated from arenas.
     // NoHeapChecker no_heap;
 
-    MapFieldBaseStub* map_field =
-        Arena::CreateMessage<MapFieldBaseStub>(&arena);
+    TestMapField* map_field = Arena::CreateMessage<TestMapField>(&arena);
 
     // Trigger conversion to repeated field.
     EXPECT_TRUE(map_field->MutableRepeatedField() != nullptr);
 
-    EXPECT_EQ(map_field->GetArenaForInternalRepeatedField(), &arena);
+    EXPECT_EQ(MapFieldTestPeer::GetArena(map_field->GetRepeatedField()),
+              &arena);
   }
 }
 
 TEST_P(MapFieldBasePrimitiveTest, EnforceNoArena) {
-  std::unique_ptr<MapFieldBaseStub> map_field(
-      Arena::CreateMessage<MapFieldBaseStub>(nullptr));
-  EXPECT_EQ(map_field->GetArenaForInternalRepeatedField(), nullptr);
+  std::unique_ptr<TestMapField> map_field(
+      Arena::CreateMessage<TestMapField>(nullptr));
+  EXPECT_EQ(MapFieldTestPeer::GetArena(map_field->GetRepeatedField()), nullptr);
 }
 
 namespace {

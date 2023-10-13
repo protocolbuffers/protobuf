@@ -22,13 +22,16 @@ namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
-        template <typename>
+
+inline constexpr Duration::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : seconds_{::int64_t{0}},
+        nanos_{0},
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR Duration::Duration(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.seconds_)*/ ::int64_t{0},
-      /*decltype(_impl_.nanos_)*/ 0,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct DurationDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DurationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~DurationDefaultTypeInternal() {}
@@ -125,19 +128,24 @@ Duration::Duration(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Duration)
 }
-Duration::Duration(const Duration& from)
-    : ::google::protobuf::Message(), _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:google.protobuf.Duration)
+Duration::Duration(
+    ::google::protobuf::Arena* arena, const Duration& from)
+    : Duration(arena) {
+  MergeFrom(from);
 }
+inline PROTOBUF_NDEBUG_INLINE Duration::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _cached_size_{0} {}
+
 inline void Duration::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.seconds_){::int64_t{0}},
-      decltype(_impl_.nanos_){0},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char *>(&_impl_) +
+               offsetof(Impl_, seconds_),
+           0,
+           offsetof(Impl_, nanos_) -
+               offsetof(Impl_, seconds_) +
+               sizeof(Impl_::nanos_));
 }
 Duration::~Duration() {
   // @@protoc_insertion_point(destructor:google.protobuf.Duration)
@@ -145,10 +153,8 @@ Duration::~Duration() {
   SharedDtor();
 }
 inline void Duration::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void Duration::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
+  ABSL_DCHECK(GetArena() == nullptr);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void Duration::Clear() {
@@ -261,11 +267,12 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Duration::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Duration::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Duration::MergeImpl
+    Duration::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
-const ::google::protobuf::Message::ClassData*Duration::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Duration::GetClassData() const {
+  return &_class_data_;
+}
 
 void Duration::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Duration*>(&to_msg);
@@ -295,7 +302,10 @@ PROTOBUF_NOINLINE bool Duration::IsInitialized() const {
   return true;
 }
 
-void Duration::InternalSwap(Duration* other) {
+::_pbi::CachedSize* Duration::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
+void Duration::InternalSwap(Duration* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::google::protobuf::internal::memswap<

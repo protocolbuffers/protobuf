@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -176,7 +153,7 @@ final class MessageSchema<T> implements Schema<T> {
   private final boolean hasExtensions;
   private final boolean lite;
   private final ProtoSyntax syntax;
-  // TODO(xiaofeng): Make both full-runtime and lite-runtime support cached field size.
+  // TODO: Make both full-runtime and lite-runtime support cached field size.
   private final boolean useCachedSizeField;
 
   /** Represents [checkInitialized positions, map field positions, repeated field offsets]. */
@@ -491,7 +468,7 @@ final class MessageSchema<T> implements Schema<T> {
             || oneofFieldType == 17 /* FieldType.GROUP */) {
           objects[bufferIndex / INTS_PER_FIELD * 2 + 1] = messageInfoObjects[objectsPosition++];
         } else if (oneofFieldType == 12 /* FieldType.ENUM */) {
-          // TODO(b/279034699): Remove proto2 check once legacy gencode not setting this bit
+          // TODO: Remove proto2 check once legacy gencode not setting this bit
           // no longer needs to be supported.
           if (messageInfo.getSyntax().equals(ProtoSyntax.PROTO2)
               || (fieldTypeWithExtraBits & LEGACY_ENUM_IS_CLOSED_BIT) != 0) {
@@ -537,7 +514,7 @@ final class MessageSchema<T> implements Schema<T> {
         } else if (fieldType == 12 /* FieldType.ENUM */
             || fieldType == 30 /* FieldType.ENUM_LIST */
             || fieldType == 44 /* FieldType.ENUM_LIST_PACKED */) {
-          // TODO(b/279034699): Remove proto2 check once legacy gencode not setting this bit
+          // TODO: Remove proto2 check once legacy gencode not setting this bit
           // no longer needs to be supported.
           if (messageInfo.getSyntax() == ProtoSyntax.PROTO2
               || (fieldTypeWithExtraBits & LEGACY_ENUM_IS_CLOSED_BIT) != 0) {
@@ -1502,7 +1479,7 @@ final class MessageSchema<T> implements Schema<T> {
       if (fieldType <= 17) {
         // Performance optimization to cache the presence field which is shared for multiple
         // fields.
-        // TODO(b/279034699): Improve caching for case when fields alternate between having and not
+        // TODO: Improve caching for case when fields alternate between having and not
         // having presence by caching presence field for last field with presence only.
         if (presenceOrCachedSizeFieldOffset != currentPresenceFieldOffset) {
           currentPresenceFieldOffset = presenceOrCachedSizeFieldOffset;
@@ -1958,7 +1935,7 @@ final class MessageSchema<T> implements Schema<T> {
                   getMessageFieldSchema(i));
           break;
         case 50: // MAP:
-          // TODO(dweis): Use schema cache.
+          // TODO: Use schema cache.
           size +=
               mapFieldSchema.getSerializedSize(
                   number, unsafe.getObject(message, offset), getMapFieldDefaultEntry(i));
@@ -2086,7 +2063,7 @@ final class MessageSchema<T> implements Schema<T> {
   }
 
   @Override
-  // TODO(nathanmittler): Consider serializing oneof fields last so that only one entry per
+  // TODO: Consider serializing oneof fields last so that only one entry per
   // oneof is actually serialized. This would mean that we would violate the serialization order
   // contract. It should also be noted that Go currently does this.
   public void writeTo(T message, Writer writer) throws IOException {
@@ -2125,7 +2102,7 @@ final class MessageSchema<T> implements Schema<T> {
 
         // Performance optimization to cache the presence field which is shared for multiple
         // fields.
-        // TODO(b/279034699): Improve caching for case when fields alternate between having and not
+        // TODO: Improve caching for case when fields alternate between having and not
         // having presence by caching presence field for last field with presence only.
         if (presenceFieldOffset != currentPresenceFieldOffset) {
           currentPresenceFieldOffset = presenceFieldOffset;
@@ -2328,7 +2305,7 @@ final class MessageSchema<T> implements Schema<T> {
               numberAt(pos), (List<Long>) unsafe.getObject(message, offset), writer, false);
           break;
         case 35: // DOUBLE_LIST_PACKED:
-          // TODO(xiaofeng): Make use of cached field size to speed up serialization.
+          // TODO: Make use of cached field size to speed up serialization.
           SchemaUtil.writeDoubleList(
               numberAt(pos), (List<Double>) unsafe.getObject(message, offset), writer, true);
           break;
@@ -2393,7 +2370,7 @@ final class MessageSchema<T> implements Schema<T> {
               getMessageFieldSchema(pos));
           break;
         case 50: // MAP:
-          // TODO(dweis): Use schema cache.
+          // TODO: Use schema cache.
           writeMapHelper(writer, number, unsafe.getObject(message, offset), pos);
           break;
         case 51: // ONEOF_DOUBLE:
@@ -2844,7 +2821,7 @@ final class MessageSchema<T> implements Schema<T> {
               getMessageFieldSchema(pos));
           break;
         case 50: // MAP:
-          // TODO(dweis): Use schema cache.
+          // TODO: Use schema cache.
           writeMapHelper(writer, number, UnsafeUtil.getObject(message, offset(typeAndOffset)), pos);
           break;
         case 51: // ONEOF_DOUBLE:
@@ -3440,7 +3417,7 @@ final class MessageSchema<T> implements Schema<T> {
 
   @SuppressWarnings("ReferenceEquality")
   static UnknownFieldSetLite getMutableUnknownFields(Object message) {
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     UnknownFieldSetLite unknownFields = ((GeneratedMessageLite) message).unknownFields;
     if (unknownFields == UnknownFieldSetLite.getDefaultInstance()) {
@@ -4329,7 +4306,7 @@ final class MessageSchema<T> implements Schema<T> {
       return;
     }
 
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (message instanceof GeneratedMessageLite) {
       GeneratedMessageLite<?, ?> generatedMessage = ((GeneratedMessageLite<?, ?>) message);
@@ -4415,7 +4392,7 @@ final class MessageSchema<T> implements Schema<T> {
       throws IOException {
     long offset = offset(typeAndOffsetAt(pos));
     Object mapField = UnsafeUtil.getObject(message, offset);
-    // TODO(xiaofeng): Consider creating separate implementations for full and lite. In lite
+    // TODO: Consider creating separate implementations for full and lite. In lite
     // runtime map field will never be null but here we still need to check null because the
     // code is shared by both full and lite. It might be better if full/lite uses different
     // schema implementations.
@@ -4600,7 +4577,7 @@ final class MessageSchema<T> implements Schema<T> {
     if (metadata.valueType.getJavaType() != WireFormat.JavaType.MESSAGE) {
       return true;
     }
-    // TODO(dweis): Use schema cache.
+    // TODO: Use schema cache.
     Schema schema = null;
     for (Object nested : map.values()) {
       if (schema == null) {
@@ -4705,7 +4682,7 @@ final class MessageSchema<T> implements Schema<T> {
       return false;
     }
 
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (message instanceof GeneratedMessageLite<?, ?>) {
       return ((GeneratedMessageLite<?, ?>) message).isMutable();

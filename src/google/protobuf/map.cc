@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/map.h"
 
@@ -58,7 +35,7 @@ NodeBase* UntypedMapBase::DestroyTree(Tree* tree) {
   return head;
 }
 
-void UntypedMapBase::EraseFromTree(size_type b,
+void UntypedMapBase::EraseFromTree(map_index_t b,
                                    typename Tree::iterator tree_it) {
   ABSL_DCHECK(TableEntryIsTree(b));
   Tree* tree = TableEntryToTree(table_[b]);
@@ -73,11 +50,11 @@ void UntypedMapBase::EraseFromTree(size_type b,
   }
 }
 
-size_t UntypedMapBase::VariantBucketNumber(VariantKey key) const {
+map_index_t UntypedMapBase::VariantBucketNumber(VariantKey key) const {
   return BucketNumberFromHash(key.Hash());
 }
 
-void UntypedMapBase::InsertUniqueInTree(size_type b, GetKey get_key,
+void UntypedMapBase::InsertUniqueInTree(map_index_t b, GetKey get_key,
                                         NodeBase* node) {
   if (TableEntryIsNonEmptyList(b)) {
     // To save in binary size, we delegate to an out-of-line function to do
@@ -104,7 +81,7 @@ void UntypedMapBase::TransferTree(Tree* tree, GetKey get_key) {
   do {
     NodeBase* next = node->next;
 
-    size_type b = VariantBucketNumber(get_key(node));
+    map_index_t b = VariantBucketNumber(get_key(node));
     // This is similar to InsertUnique, but with erasure.
     if (TableEntryIsEmpty(b)) {
       InsertUniqueInList(b, node);
@@ -145,8 +122,8 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
   if (alloc_.arena() == nullptr) {
     const auto loop = [=](auto destroy_node) {
       const TableEntryPtr* table = table_;
-      for (size_type b = index_of_first_non_null_, end = num_buckets_; b < end;
-           ++b) {
+      for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
+           b < end; ++b) {
         NodeBase* node =
             PROTOBUF_PREDICT_FALSE(internal::TableEntryIsTree(table[b]))
                 ? DestroyTree(TableEntryToTree(table[b]))
@@ -210,7 +187,7 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
   }
 }
 
-auto UntypedMapBase::FindFromTree(size_type b, VariantKey key,
+auto UntypedMapBase::FindFromTree(map_index_t b, VariantKey key,
                                   Tree::iterator* it) const -> NodeAndBucket {
   Tree* tree = TableEntryToTree(table_[b]);
   auto tree_it = tree->find(key);
@@ -229,7 +206,7 @@ size_t UntypedMapBase::SpaceUsedInTable(size_t sizeof_node) const {
   size += sizeof_node * num_elements_;
   // For each tree, count the overhead of those nodes.
   // Two buckets at a time because we only care about trees.
-  for (size_t b = 0; b < num_buckets_; ++b) {
+  for (map_index_t b = 0; b < num_buckets_; ++b) {
     if (TableEntryIsTree(b)) {
       size += sizeof(Tree);
       size += sizeof(Tree::value_type) * TableEntryToTree(table_[b])->size();

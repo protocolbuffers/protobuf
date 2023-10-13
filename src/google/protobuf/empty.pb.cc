@@ -116,7 +116,10 @@ Empty::Empty(::google::protobuf::Arena* arena)
     : ::google::protobuf::internal::ZeroFieldsBase(arena) {
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Empty)
 }
-Empty::Empty(const Empty& from) : ::google::protobuf::internal::ZeroFieldsBase() {
+Empty::Empty(
+    ::google::protobuf::Arena* arena,
+    const Empty& from)
+    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
   Empty* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -126,13 +129,6 @@ Empty::Empty(const Empty& from) : ::google::protobuf::internal::ZeroFieldsBase()
 }
 
 
-
-
-const ::google::protobuf::Message::ClassData Empty::_class_data_ = {
-    ::google::protobuf::internal::ZeroFieldsBase::CopyImpl,
-    ::google::protobuf::internal::ZeroFieldsBase::MergeImpl,
-};
-const ::google::protobuf::Message::ClassData*Empty::GetClassData() const { return &_class_data_; }
 
 
 

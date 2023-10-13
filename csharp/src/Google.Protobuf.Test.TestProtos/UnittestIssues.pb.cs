@@ -114,6 +114,7 @@ namespace UnitTest.Issues.TestProtos {
   /// Issue 307: when generating doubly-nested types, any references
   /// should be of the form A.Types.B.Types.C.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Issue307 : pb::IMessage<Issue307>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -269,6 +270,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedOnce : pb::IMessage<NestedOnce>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -424,6 +426,7 @@ namespace UnitTest.Issues.TestProtos {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static partial class Types {
+          [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
           public sealed partial class NestedTwice : pb::IMessage<NestedTwice>
           #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
               , pb::IBufferMessage
@@ -586,6 +589,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NegativeEnumMessage : pb::IMessage<NegativeEnumMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -832,6 +836,7 @@ namespace UnitTest.Issues.TestProtos {
   }
 
   [global::System.ObsoleteAttribute]
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DeprecatedChild : pb::IMessage<DeprecatedChild>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -984,6 +989,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DeprecatedFieldsMessage : pb::IMessage<DeprecatedFieldsMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1347,6 +1353,7 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>
   /// Issue 45: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=45
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ItemField : pb::IMessage<ItemField>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1536,6 +1543,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ReservedNames : pb::IMessage<ReservedNames>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1768,6 +1776,7 @@ namespace UnitTest.Issues.TestProtos {
       /// <summary>
       /// Force a nested type called Types
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class SomeNestedType : pb::IMessage<SomeNestedType>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -1937,6 +1946,7 @@ namespace UnitTest.Issues.TestProtos {
   /// Alternatively, consider just adding this to
   /// unittest_proto3.proto if multiple platforms want it.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestJsonFieldOrdering : pb::IMessage<TestJsonFieldOrdering>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2433,6 +2443,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestJsonName : pb::IMessage<TestJsonName>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2704,6 +2715,7 @@ namespace UnitTest.Issues.TestProtos {
   /// oneof case, which is itself a message type, the submessages should
   /// be merged.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneofMerging : pb::IMessage<OneofMerging>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2993,6 +3005,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class Nested : pb::IMessage<Nested>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -3224,6 +3237,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NullValueOutsideStruct : pb::IMessage<NullValueOutsideStruct>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3513,6 +3527,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NullValueNotInOneof : pb::IMessage<NullValueNotInOneof>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3702,6 +3717,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MixedRegularAndOptional : pb::IMessage<MixedRegularAndOptional>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3942,6 +3958,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneofWithNoneField : pb::IMessage<OneofWithNoneField>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4229,6 +4246,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneofWithNoneName : pb::IMessage<OneofWithNoneName>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4519,6 +4537,7 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>
   /// Issue 8810
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DisambiguateCommonMembers : pb::IMessage<DisambiguateCommonMembers>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -5115,6 +5134,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Issue11987Message : pb::IMessage<Issue11987Message>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage

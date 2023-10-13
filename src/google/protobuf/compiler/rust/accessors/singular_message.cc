@@ -1,36 +1,17 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
+#include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -39,29 +20,46 @@ namespace compiler {
 namespace rust {
 
 void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
+  Context<Descriptor> d = field.WithDesc(field.desc().message_type());
+  auto prefix = "crate::" + GetCrateRelativeQualifiedPath(d);
+  // here we defer unit tests with messages that have import inside their
+  // pkg name e.g. unittest_import.proto
+  if (absl::StrContains(prefix, "import")) {
+    // TODO: Handle imports correctly, default to $Msg$View for now
+    prefix = field.desc().containing_type()->name();
+  }
   field.Emit(
       {
+          {"prefix", prefix},
           {"field", field.desc().name()},
+          {"getter_thunk", Thunk(field, "get")},
       },
       R"rs(
-          // inMsgImpl
-          pub fn r#$field$(&self) -> $Msg$View {
-            $Msg$View { msg: self.msg, _phantom: std::marker::PhantomData }
+          pub fn r#$field$(&self) -> $prefix$View {
+            $prefix$View::new($pbi$::Private, unsafe { $getter_thunk$(self.inner.msg) } )
           }
         )rs");
 }
 
 void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
-  field.Emit({},
-             R"rs(
-                 // inExternC
+  field.Emit(
+      {
+          {"getter_thunk", Thunk(field, "get")},
+      },
+      R"rs(
+                  fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::RawMessage;
                )rs");
 }
 
 void SingularMessage::InThunkCc(Context<FieldDescriptor> field) const {
-  field.Emit({},
+  field.Emit({{"QualifiedMsg",
+               cpp::QualifiedClassName(field.desc().containing_type())},
+              {"getter_thunk", Thunk(field, "get")},
+              {"field", cpp::FieldName(&field.desc())}},
              R"cc(
-               // inThunkCC
+               const void* $getter_thunk$($QualifiedMsg$* msg) {
+                 return static_cast<const void*>(&msg->$field$());
+               }
              )cc");
 }
 

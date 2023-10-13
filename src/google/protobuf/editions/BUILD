@@ -5,7 +5,6 @@ proto_library(
     testonly = True,
     srcs = ["golden/test_messages_proto2.proto"],
     strip_import_prefix = "/src",
-    deps = ["//src/google/protobuf:cpp_features_proto"],
 )
 
 cc_proto_library(
@@ -26,7 +25,6 @@ proto_library(
         "//:struct_proto",
         "//:timestamp_proto",
         "//:wrappers_proto",
-        "//src/google/protobuf:cpp_features_proto",
     ],
 )
 
@@ -56,7 +54,7 @@ cc_test(
         ":test_editions_default_features_cc_proto",
         ":test_messages_proto2_cc_proto",
         ":test_messages_proto3_cc_proto",
-        "//src/google/protobuf",
+        "//:protobuf",
         "//src/google/protobuf:test_textproto",
         "@com_google_googletest//:gtest_main",
     ],

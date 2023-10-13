@@ -1,7 +1,9 @@
 Protocol Buffers - Google's data interchange format
 ===================================================
 
-Copyright 2008 Google Inc.
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/protocolbuffers/protobuf/badge)](https://securityscorecards.dev/viewer/?uri=github.com/protocolbuffers/protobuf)
+
+Copyright 2023 Google LLC
 
 Overview
 --------

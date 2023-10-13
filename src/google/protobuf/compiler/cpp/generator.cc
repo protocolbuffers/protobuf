@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -99,17 +76,6 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
        "ABSL_DCHEC"
        "K"},
   };
-}
-
-static bool IsStringMapType(const FieldDescriptor& field) {
-  if (!field.is_map()) return false;
-  for (int i = 0; i < field.message_type()->field_count(); ++i) {
-    if (field.message_type()->field(i)->type() ==
-        FieldDescriptor::TYPE_STRING) {
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // namespace
@@ -375,14 +341,6 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
           absl::StrCat("Field ", field.full_name(),
                        " has a closed enum type with implicit presence."));
     }
-    if (resolved_features.GetExtension(::pb::cpp).utf8_validation() ==
-        pb::CppFeatures::UTF8_VALIDATION_UNKNOWN) {
-      status = absl::FailedPreconditionError(absl::StrCat(
-          "Field ", field.full_name(),
-          " has an unknown value for the utf8_validation feature. ",
-          resolved_features.DebugString(),
-          "\nRawFeatures: ", unresolved_features));
-    }
 
     if (field.containing_type() == nullptr ||
         !field.containing_type()->options().map_entry()) {
@@ -396,14 +354,6 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
             absl::StrCat("Field ", field.full_name(),
                          " specifies the legacy_closed_enum feature but has "
                          "non-enum type."));
-      }
-      if (field.type() != FieldDescriptor::TYPE_STRING &&
-          !IsStringMapType(field) &&
-          unresolved_features.has_utf8_validation()) {
-        status = absl::FailedPreconditionError(
-            absl::StrCat("Field ", field.full_name(),
-                         " specifies the utf8_validation feature but is not of "
-                         "string type."));
       }
     }
 

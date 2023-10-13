@@ -9,7 +9,7 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
 load("@rules_rust//rust:defs.bzl", "rust_common")
-load("@upb//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
 proto_common = proto_common_do_not_use
@@ -145,10 +145,10 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
     Returns:
       A DepVariantInfo provider.
     """
-    toolchain = ctx.toolchains["@rules_rust//rust:toolchain"]
+    toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     output_hash = repr(hash(src.path))
 
-    # TODO(b/270124215): Use the import! macro once available
+    # TODO: Use the import! macro once available
     crate_name = ctx.label.name.replace("-", "_")
 
     lib_name = "{prefix}{name}-{lib_hash}{extension}".format(
@@ -168,7 +168,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
     lib = ctx.actions.declare_file(lib_name)
     rmeta = ctx.actions.declare_file(rmeta_name)
 
-    # TODO(b/270125787): Use higher level rules_rust API once available.
+    # TODO: Use higher level rules_rust API once available.
     providers = rustc_compile_action(
         ctx = ctx,
         attr = attr,
@@ -326,7 +326,7 @@ def _make_proto_library_aspect(is_upb):
         fragments = ["cpp"],
         host_fragments = ["cpp"],
         toolchains = [
-            str(Label("@rules_rust//rust:toolchain")),
+            "@rules_rust//rust:toolchain_type",
             "@bazel_tools//tools/cpp:toolchain_type",
         ],
         incompatible_use_toolchain_transition = True,

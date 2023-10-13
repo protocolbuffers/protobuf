@@ -113,6 +113,8 @@ gen_file_lists(
         "//src/google/protobuf:cpp_features_proto": "cpp_features_proto",
         "//src/google/protobuf:descriptor_proto": "descriptor_proto",
         "//src/google/protobuf/compiler:plugin_proto": "plugin_proto",
+        "//java/core:java_features_proto": "java_features_proto,src/google/protobuf/compiler/java/",
+
         # Test libraries:
         ":common_test": "common_test",
         ":lite_test_util": "lite_test_util",
@@ -234,10 +236,10 @@ cc_dist_library(
     ],
     tags = ["manual"],
     deps = [
+        "//src/google/protobuf:internal_visibility_for_testing",
         "//src/google/protobuf:test_textproto",
         "//src/google/protobuf/compiler:command_line_interface_tester",
         "//src/google/protobuf/compiler:mock_code_generator",
         "//src/google/protobuf/testing",
-        "//src/google/protobuf:internal_visibility_for_testing",
     ],
 )

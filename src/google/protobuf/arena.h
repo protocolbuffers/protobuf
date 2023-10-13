@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // This file defines an Arena allocator for better allocation performance.
 
@@ -390,7 +367,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // message, or nullptr otherwise. If possible, the call resolves at compile
   // time. Note that we can often devirtualize calls to `value->GetArena()` so
   // usually calling this method is unnecessary.
-  // TODO(b/271599886): remove this function.
+  // TODO: remove this function.
   template <typename T>
   ABSL_DEPRECATED(
       "This will be removed in a future release. Call value->GetArena() "
@@ -412,8 +389,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     // mutually exclusive fashion, we use implicit conversions to base classes
     // to force an explicit ranking for our preferences.  The lowest ranked
     // version that compiles will be accepted.
-    struct Rank2 {};
-    struct Rank1 : Rank2 {};
+    struct Rank1 {};
     struct Rank0 : Rank1 {};
 
     static Arena* GetOwningArena(const T* p) {
@@ -433,31 +409,16 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
     static void InternalSwap(T* a, T* b) { a->InternalSwap(b); }
 
-    static Arena* GetArenaForAllocation(T* p) {
-      return GetArenaForAllocation(Rank0{}, p);
-    }
-
-    static Arena* GetArena(T* p) {
-      // Rather than replicate probing for `GetArena` with fallback to nullptr,
-      // we borrow the implementation of `GetArenaForAllocation` but skip
-      // `Rank0` which probes for `GetArenaForAllocation`.
-      return GetArenaForAllocation(Rank1{}, p);
-    }
+    static Arena* GetArena(T* p) { return GetArena(Rank0{}, p); }
 
     template <typename U>
-    static auto GetArenaForAllocation(Rank0, U* p)
-        -> EnableIfArena<decltype(p->GetArenaForAllocation())> {
-      return p->GetArenaForAllocation();
-    }
-
-    template <typename U>
-    static auto GetArenaForAllocation(Rank1, U* p)
+    static auto GetArena(Rank0, U* p)
         -> EnableIfArena<decltype(p->GetArena())> {
       return p->GetArena();
     }
 
     template <typename U>
-    static Arena* GetArenaForAllocation(Rank2, U*) {
+    static Arena* GetArena(Rank1, U*) {
       return nullptr;
     }
 
@@ -504,11 +465,18 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     return InternalHelper<T>::GetOwningArena(p);
   }
 
-  // Provides access to protected GetArenaForAllocation to generated messages.
+  // Wraps InternalGetArena() and will be removed soon.
   // For internal use only.
   template <typename T>
   static Arena* InternalGetArenaForAllocation(T* p) {
-    return InternalHelper<T>::GetArenaForAllocation(p);
+    return InternalHelper<T>::GetArena(p);
+  }
+
+  // Provides access to protected GetArena to generated messages.
+  // For internal use only.
+  template <typename T>
+  static Arena* InternalGetArena(T* p) {
+    return InternalHelper<T>::GetArena(p);
   }
 
   // Helper typetraits that indicates support for arenas in a type T at compile

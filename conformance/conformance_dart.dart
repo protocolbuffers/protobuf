@@ -1,10 +1,10 @@
+import 'dart:io';
+
 import 'package:pb_runtime/ffi/bytes.dart';
-import 'package:third_party.protobuf.conformance/conformance.upb.dart';
+import 'package:pb_runtime/pb_runtime.dart' as pb;
 import 'package:third_party.protobuf/test_messages_proto2.upb.dart';
 import 'package:third_party.protobuf/test_messages_proto3.upb.dart';
-
-import 'dart:io';
-import 'package:pb_runtime/pb_runtime.dart' as pb;
+import 'package:third_party.protobuf.conformance/conformance.upb.dart';
 
 List<int>? readFromStdin(int numBytes) {
   final bytesOut = <int>[];

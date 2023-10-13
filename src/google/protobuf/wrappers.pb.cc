@@ -22,12 +22,15 @@ namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
-        template <typename>
+
+inline constexpr UInt64Value::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : value_{::uint64_t{0u}},
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR UInt64Value::UInt64Value(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ ::uint64_t{0u},
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct UInt64ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UInt64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~UInt64ValueDefaultTypeInternal() {}
@@ -38,12 +41,15 @@ struct UInt64ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
-        template <typename>
+
+inline constexpr UInt32Value::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : value_{0u},
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR UInt32Value::UInt32Value(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ 0u,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct UInt32ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UInt32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~UInt32ValueDefaultTypeInternal() {}
@@ -54,15 +60,17 @@ struct UInt32ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
-        template <typename>
+
+inline constexpr StringValue::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : value_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR StringValue::StringValue(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct StringValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR StringValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~StringValueDefaultTypeInternal() {}
@@ -73,12 +81,15 @@ struct StringValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StringValueDefaultTypeInternal _StringValue_default_instance_;
-        template <typename>
+
+inline constexpr Int64Value::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : value_{::int64_t{0}},
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR Int64Value::Int64Value(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ ::int64_t{0},
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct Int64ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Int64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~Int64ValueDefaultTypeInternal() {}
@@ -89,12 +100,15 @@ struct Int64ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
-        template <typename>
+
+inline constexpr Int32Value::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : value_{0},
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR Int32Value::Int32Value(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ 0,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct Int32ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Int32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~Int32ValueDefaultTypeInternal() {}
@@ -105,12 +119,15 @@ struct Int32ValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
-        template <typename>
+
+inline constexpr FloatValue::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : value_{0},
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR FloatValue::FloatValue(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ 0,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct FloatValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FloatValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FloatValueDefaultTypeInternal() {}
@@ -121,12 +138,15 @@ struct FloatValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FloatValueDefaultTypeInternal _FloatValue_default_instance_;
-        template <typename>
+
+inline constexpr DoubleValue::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : value_{0},
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ 0,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct DoubleValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DoubleValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~DoubleValueDefaultTypeInternal() {}
@@ -137,15 +157,17 @@ struct DoubleValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
-        template <typename>
+
+inline constexpr BytesValue::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : value_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR BytesValue::BytesValue(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ {
-          &::_pbi::fixed_address_empty_string,
-          ::_pbi::ConstantInitialized{},
-      },
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct BytesValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR BytesValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~BytesValueDefaultTypeInternal() {}
@@ -156,12 +178,15 @@ struct BytesValueDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 BytesValueDefaultTypeInternal _BytesValue_default_instance_;
-        template <typename>
+
+inline constexpr BoolValue::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : value_{false},
+        _cached_size_{0} {}
+
+template <typename>
 PROTOBUF_CONSTEXPR BoolValue::BoolValue(::_pbi::ConstantInitialized)
-    : _impl_{
-      /*decltype(_impl_.value_)*/ false,
-      /*decltype(_impl_._cached_size_)*/ {},
-    } {}
+    : _impl_(::_pbi::ConstantInitialized()) {}
 struct BoolValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR BoolValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~BoolValueDefaultTypeInternal() {}
@@ -351,18 +376,19 @@ DoubleValue::DoubleValue(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DoubleValue)
 }
-DoubleValue::DoubleValue(const DoubleValue& from)
-    : ::google::protobuf::Message(), _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:google.protobuf.DoubleValue)
+DoubleValue::DoubleValue(
+    ::google::protobuf::Arena* arena, const DoubleValue& from)
+    : DoubleValue(arena) {
+  MergeFrom(from);
 }
+inline PROTOBUF_NDEBUG_INLINE DoubleValue::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _cached_size_{0} {}
+
 inline void DoubleValue::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){0},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 DoubleValue::~DoubleValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.DoubleValue)
@@ -370,10 +396,8 @@ DoubleValue::~DoubleValue() {
   SharedDtor();
 }
 inline void DoubleValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void DoubleValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
+  ABSL_DCHECK(GetArena() == nullptr);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void DoubleValue::Clear() {
@@ -474,11 +498,12 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> DoubleValue::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData DoubleValue::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    DoubleValue::MergeImpl
+    DoubleValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
-const ::google::protobuf::Message::ClassData*DoubleValue::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* DoubleValue::GetClassData() const {
+  return &_class_data_;
+}
 
 void DoubleValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<DoubleValue*>(&to_msg);
@@ -510,7 +535,10 @@ PROTOBUF_NOINLINE bool DoubleValue::IsInitialized() const {
   return true;
 }
 
-void DoubleValue::InternalSwap(DoubleValue* other) {
+::_pbi::CachedSize* DoubleValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
+void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -532,18 +560,19 @@ FloatValue::FloatValue(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FloatValue)
 }
-FloatValue::FloatValue(const FloatValue& from)
-    : ::google::protobuf::Message(), _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:google.protobuf.FloatValue)
+FloatValue::FloatValue(
+    ::google::protobuf::Arena* arena, const FloatValue& from)
+    : FloatValue(arena) {
+  MergeFrom(from);
 }
+inline PROTOBUF_NDEBUG_INLINE FloatValue::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _cached_size_{0} {}
+
 inline void FloatValue::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){0},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 FloatValue::~FloatValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.FloatValue)
@@ -551,10 +580,8 @@ FloatValue::~FloatValue() {
   SharedDtor();
 }
 inline void FloatValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void FloatValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
+  ABSL_DCHECK(GetArena() == nullptr);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void FloatValue::Clear() {
@@ -655,11 +682,12 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> FloatValue::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData FloatValue::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    FloatValue::MergeImpl
+    FloatValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
-const ::google::protobuf::Message::ClassData*FloatValue::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* FloatValue::GetClassData() const {
+  return &_class_data_;
+}
 
 void FloatValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FloatValue*>(&to_msg);
@@ -691,7 +719,10 @@ PROTOBUF_NOINLINE bool FloatValue::IsInitialized() const {
   return true;
 }
 
-void FloatValue::InternalSwap(FloatValue* other) {
+::_pbi::CachedSize* FloatValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
+void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -713,18 +744,19 @@ Int64Value::Int64Value(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int64Value)
 }
-Int64Value::Int64Value(const Int64Value& from)
-    : ::google::protobuf::Message(), _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:google.protobuf.Int64Value)
+Int64Value::Int64Value(
+    ::google::protobuf::Arena* arena, const Int64Value& from)
+    : Int64Value(arena) {
+  MergeFrom(from);
 }
+inline PROTOBUF_NDEBUG_INLINE Int64Value::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _cached_size_{0} {}
+
 inline void Int64Value::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){::int64_t{0}},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 Int64Value::~Int64Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Int64Value)
@@ -732,10 +764,8 @@ Int64Value::~Int64Value() {
   SharedDtor();
 }
 inline void Int64Value::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void Int64Value::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
+  ABSL_DCHECK(GetArena() == nullptr);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void Int64Value::Clear() {
@@ -827,11 +857,12 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int64Value::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Int64Value::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Int64Value::MergeImpl
+    Int64Value::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
-const ::google::protobuf::Message::ClassData*Int64Value::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Int64Value::GetClassData() const {
+  return &_class_data_;
+}
 
 void Int64Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Int64Value*>(&to_msg);
@@ -858,7 +889,10 @@ PROTOBUF_NOINLINE bool Int64Value::IsInitialized() const {
   return true;
 }
 
-void Int64Value::InternalSwap(Int64Value* other) {
+::_pbi::CachedSize* Int64Value::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
+void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -880,18 +914,19 @@ UInt64Value::UInt64Value(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt64Value)
 }
-UInt64Value::UInt64Value(const UInt64Value& from)
-    : ::google::protobuf::Message(), _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt64Value)
+UInt64Value::UInt64Value(
+    ::google::protobuf::Arena* arena, const UInt64Value& from)
+    : UInt64Value(arena) {
+  MergeFrom(from);
 }
+inline PROTOBUF_NDEBUG_INLINE UInt64Value::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _cached_size_{0} {}
+
 inline void UInt64Value::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){::uint64_t{0u}},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 UInt64Value::~UInt64Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.UInt64Value)
@@ -899,10 +934,8 @@ UInt64Value::~UInt64Value() {
   SharedDtor();
 }
 inline void UInt64Value::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void UInt64Value::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
+  ABSL_DCHECK(GetArena() == nullptr);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void UInt64Value::Clear() {
@@ -994,11 +1027,12 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt64Value::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData UInt64Value::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    UInt64Value::MergeImpl
+    UInt64Value::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
-const ::google::protobuf::Message::ClassData*UInt64Value::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* UInt64Value::GetClassData() const {
+  return &_class_data_;
+}
 
 void UInt64Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<UInt64Value*>(&to_msg);
@@ -1025,7 +1059,10 @@ PROTOBUF_NOINLINE bool UInt64Value::IsInitialized() const {
   return true;
 }
 
-void UInt64Value::InternalSwap(UInt64Value* other) {
+::_pbi::CachedSize* UInt64Value::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
+void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -1047,18 +1084,19 @@ Int32Value::Int32Value(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int32Value)
 }
-Int32Value::Int32Value(const Int32Value& from)
-    : ::google::protobuf::Message(), _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:google.protobuf.Int32Value)
+Int32Value::Int32Value(
+    ::google::protobuf::Arena* arena, const Int32Value& from)
+    : Int32Value(arena) {
+  MergeFrom(from);
 }
+inline PROTOBUF_NDEBUG_INLINE Int32Value::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _cached_size_{0} {}
+
 inline void Int32Value::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){0},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 Int32Value::~Int32Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Int32Value)
@@ -1066,10 +1104,8 @@ Int32Value::~Int32Value() {
   SharedDtor();
 }
 inline void Int32Value::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void Int32Value::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
+  ABSL_DCHECK(GetArena() == nullptr);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void Int32Value::Clear() {
@@ -1161,11 +1197,12 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int32Value::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData Int32Value::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    Int32Value::MergeImpl
+    Int32Value::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
-const ::google::protobuf::Message::ClassData*Int32Value::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* Int32Value::GetClassData() const {
+  return &_class_data_;
+}
 
 void Int32Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Int32Value*>(&to_msg);
@@ -1192,7 +1229,10 @@ PROTOBUF_NOINLINE bool Int32Value::IsInitialized() const {
   return true;
 }
 
-void Int32Value::InternalSwap(Int32Value* other) {
+::_pbi::CachedSize* Int32Value::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
+void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -1214,18 +1254,19 @@ UInt32Value::UInt32Value(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt32Value)
 }
-UInt32Value::UInt32Value(const UInt32Value& from)
-    : ::google::protobuf::Message(), _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt32Value)
+UInt32Value::UInt32Value(
+    ::google::protobuf::Arena* arena, const UInt32Value& from)
+    : UInt32Value(arena) {
+  MergeFrom(from);
 }
+inline PROTOBUF_NDEBUG_INLINE UInt32Value::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _cached_size_{0} {}
+
 inline void UInt32Value::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){0u},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 UInt32Value::~UInt32Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.UInt32Value)
@@ -1233,10 +1274,8 @@ UInt32Value::~UInt32Value() {
   SharedDtor();
 }
 inline void UInt32Value::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void UInt32Value::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
+  ABSL_DCHECK(GetArena() == nullptr);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void UInt32Value::Clear() {
@@ -1328,11 +1367,12 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt32Value::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData UInt32Value::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    UInt32Value::MergeImpl
+    UInt32Value::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
-const ::google::protobuf::Message::ClassData*UInt32Value::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* UInt32Value::GetClassData() const {
+  return &_class_data_;
+}
 
 void UInt32Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<UInt32Value*>(&to_msg);
@@ -1359,7 +1399,10 @@ PROTOBUF_NOINLINE bool UInt32Value::IsInitialized() const {
   return true;
 }
 
-void UInt32Value::InternalSwap(UInt32Value* other) {
+::_pbi::CachedSize* UInt32Value::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
+void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -1381,18 +1424,19 @@ BoolValue::BoolValue(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BoolValue)
 }
-BoolValue::BoolValue(const BoolValue& from)
-    : ::google::protobuf::Message(), _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:google.protobuf.BoolValue)
+BoolValue::BoolValue(
+    ::google::protobuf::Arena* arena, const BoolValue& from)
+    : BoolValue(arena) {
+  MergeFrom(from);
 }
+inline PROTOBUF_NDEBUG_INLINE BoolValue::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : _cached_size_{0} {}
+
 inline void BoolValue::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){false},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 BoolValue::~BoolValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.BoolValue)
@@ -1400,10 +1444,8 @@ BoolValue::~BoolValue() {
   SharedDtor();
 }
 inline void BoolValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
-}
-void BoolValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
+  ABSL_DCHECK(GetArena() == nullptr);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void BoolValue::Clear() {
@@ -1494,11 +1536,12 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BoolValue::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData BoolValue::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    BoolValue::MergeImpl
+    BoolValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
-const ::google::protobuf::Message::ClassData*BoolValue::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* BoolValue::GetClassData() const {
+  return &_class_data_;
+}
 
 void BoolValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<BoolValue*>(&to_msg);
@@ -1525,7 +1568,10 @@ PROTOBUF_NOINLINE bool BoolValue::IsInitialized() const {
   return true;
 }
 
-void BoolValue::InternalSwap(BoolValue* other) {
+::_pbi::CachedSize* BoolValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
+void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
         swap(_impl_.value_, other->_impl_.value_);
@@ -1547,35 +1593,32 @@ StringValue::StringValue(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.StringValue)
 }
-StringValue::StringValue(const StringValue& from) : ::google::protobuf::Message() {
+inline PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
+    const Impl_& from)
+      : value_(arena, from.value_),
+        _cached_size_{0} {}
+
+StringValue::StringValue(
+    ::google::protobuf::Arena* arena,
+    const StringValue& from)
+    : ::google::protobuf::Message(arena) {
   StringValue* const _this = this;
   (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  _impl_.value_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        _impl_.value_.Set("", GetArenaForAllocation());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (!from._internal_value().empty()) {
-    _this->_impl_.value_.Set(from._internal_value(), _this->GetArenaForAllocation());
-  }
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.StringValue)
 }
+inline PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : value_(arena),
+        _cached_size_{0} {}
+
 inline void StringValue::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
-  _impl_.value_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        _impl_.value_.Set("", GetArenaForAllocation());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 StringValue::~StringValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.StringValue)
@@ -1583,11 +1626,9 @@ StringValue::~StringValue() {
   SharedDtor();
 }
 inline void StringValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.value_.Destroy();
-}
-void StringValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void StringValue::Clear() {
@@ -1683,11 +1724,12 @@ const ::_pbi::TcParseTable<0, 1, 0, 41, 2> StringValue::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData StringValue::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    StringValue::MergeImpl
+    StringValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
-const ::google::protobuf::Message::ClassData*StringValue::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* StringValue::GetClassData() const {
+  return &_class_data_;
+}
 
 void StringValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<StringValue*>(&to_msg);
@@ -1714,13 +1756,15 @@ PROTOBUF_NOINLINE bool StringValue::IsInitialized() const {
   return true;
 }
 
-void StringValue::InternalSwap(StringValue* other) {
+::_pbi::CachedSize* StringValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
+void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, lhs_arena,
-                                       &other->_impl_.value_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
 }
 
 ::google::protobuf::Metadata StringValue::GetMetadata() const {
@@ -1739,35 +1783,32 @@ BytesValue::BytesValue(::google::protobuf::Arena* arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BytesValue)
 }
-BytesValue::BytesValue(const BytesValue& from) : ::google::protobuf::Message() {
+inline PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
+    const Impl_& from)
+      : value_(arena, from.value_),
+        _cached_size_{0} {}
+
+BytesValue::BytesValue(
+    ::google::protobuf::Arena* arena,
+    const BytesValue& from)
+    : ::google::protobuf::Message(arena) {
   BytesValue* const _this = this;
   (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  _impl_.value_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        _impl_.value_.Set("", GetArenaForAllocation());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (!from._internal_value().empty()) {
-    _this->_impl_.value_.Set(from._internal_value(), _this->GetArenaForAllocation());
-  }
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BytesValue)
 }
+inline PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
+    ::google::protobuf::internal::InternalVisibility visibility,
+    ::google::protobuf::Arena* arena)
+      : value_(arena),
+        _cached_size_{0} {}
+
 inline void BytesValue::SharedCtor(::_pb::Arena* arena) {
-  (void)arena;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){},
-      /*decltype(_impl_._cached_size_)*/ {},
-  };
-  _impl_.value_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        _impl_.value_.Set("", GetArenaForAllocation());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 BytesValue::~BytesValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.BytesValue)
@@ -1775,11 +1816,9 @@ BytesValue::~BytesValue() {
   SharedDtor();
 }
 inline void BytesValue::SharedDtor() {
-  ABSL_DCHECK(GetArenaForAllocation() == nullptr);
+  ABSL_DCHECK(GetArena() == nullptr);
   _impl_.value_.Destroy();
-}
-void BytesValue::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
+  _impl_.~Impl_();
 }
 
 PROTOBUF_NOINLINE void BytesValue::Clear() {
@@ -1870,11 +1909,12 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BytesValue::_table_ = {
 }
 
 const ::google::protobuf::Message::ClassData BytesValue::_class_data_ = {
-    ::google::protobuf::Message::CopyWithSourceCheck,
-    BytesValue::MergeImpl
+    BytesValue::MergeImpl,
+    nullptr,  // OnDemandRegisterArenaDtor
 };
-const ::google::protobuf::Message::ClassData*BytesValue::GetClassData() const { return &_class_data_; }
-
+const ::google::protobuf::Message::ClassData* BytesValue::GetClassData() const {
+  return &_class_data_;
+}
 
 void BytesValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<BytesValue*>(&to_msg);
@@ -1901,13 +1941,15 @@ PROTOBUF_NOINLINE bool BytesValue::IsInitialized() const {
   return true;
 }
 
-void BytesValue::InternalSwap(BytesValue* other) {
+::_pbi::CachedSize* BytesValue::AccessCachedSize() const {
+  return &_impl_._cached_size_;
+}
+void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, lhs_arena,
-                                       &other->_impl_.value_, rhs_arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
 }
 
 ::google::protobuf::Metadata BytesValue::GetMetadata() const {

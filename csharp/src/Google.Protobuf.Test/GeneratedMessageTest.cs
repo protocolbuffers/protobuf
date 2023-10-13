@@ -1,33 +1,10 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System;
@@ -334,7 +311,7 @@ namespace Google.Protobuf
 
             output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
 
-            var key = 10; // Field 1 
+            var key = 10; // Field 1
             var value = 20; // Field 2
             var extra = 30; // Field 3
 
@@ -692,6 +669,79 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void MapStringString_DeterministicTrue_ThenBytesIdentical()
+        {
+            // Define three strings consisting of different versions of the letter I.
+            // LATIN CAPITAL LETTER I (U+0049)
+            string capitalLetterI = "I";
+            // LATIN SMALL LETTER I (U+0069)
+            string smallLetterI   = "i";
+            // LATIN SMALL LETTER DOTLESS I (U+0131)
+            string smallLetterDotlessI = "\u0131";
+            var testMap1 = new TestMap();
+
+            testMap1.MapStringString.Add(smallLetterDotlessI, "value_"+smallLetterDotlessI);
+            testMap1.MapStringString.Add(smallLetterI, "value_"+smallLetterI);
+            testMap1.MapStringString.Add(capitalLetterI, "content_"+capitalLetterI);
+            var bytes1 = SerializeTestMap(testMap1, true);
+
+            var testMap2 = new TestMap();
+            testMap2.MapStringString.Add(capitalLetterI, "content_"+capitalLetterI);
+            testMap2.MapStringString.Add(smallLetterI, "value_"+smallLetterI);
+            testMap2.MapStringString.Add(smallLetterDotlessI, "value_"+smallLetterDotlessI);
+
+            var bytes2 = SerializeTestMap(testMap2, true);
+            var parsedBytes2 = TestMap.Parser.ParseFrom(bytes2);
+            var parsedBytes1 = TestMap.Parser.ParseFrom(bytes1);
+            Assert.IsTrue(bytes1.SequenceEqual(bytes2));
+        }
+
+        [Test]
+        public void MapInt32Bytes_DeterministicTrue_ThenBytesIdentical()
+        {
+            var testMap1 = new TestMap();
+            testMap1.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test1"));
+            testMap1.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            var bytes1 = SerializeTestMap(testMap1, true);
+
+            var testMap2 = new TestMap();
+            testMap2.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            testMap2.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test1"));
+            var bytes2 = SerializeTestMap(testMap2, true);
+
+            Assert.IsTrue(bytes1.SequenceEqual(bytes2));
+        }
+
+        [Test]
+        public void MapInt32Bytes_DeterministicFalse_ThenBytesDifferent()
+        {
+            var testMap1 = new TestMap();
+            testMap1.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test1"));
+            testMap1.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            var bytes1 = SerializeTestMap(testMap1, false);
+
+            var testMap2 = new TestMap();
+            testMap2.MapInt32Bytes.Add(2, ByteString.CopyFromUtf8("test2"));
+            testMap2.MapInt32Bytes.Add(1, ByteString.CopyFromUtf8("test1"));
+            var bytes2 = SerializeTestMap(testMap2, false);
+
+            Assert.IsFalse(bytes1.SequenceEqual(bytes2));
+        }
+
+        private byte[] SerializeTestMap(TestMap testMap, bool deterministic)
+        {
+            using var memoryStream = new MemoryStream();
+            var codedOutputStream = new CodedOutputStream(memoryStream);
+            codedOutputStream.Deterministic = deterministic;
+
+            testMap.WriteTo(codedOutputStream);
+            codedOutputStream.Flush();
+
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            return memoryStream.ToArray();
+        }
+
+        [Test]
         public void DiscardUnknownFields_RealDataStillRead()
         {
             var message = SampleMessages.CreateFullTestAllTypes();
@@ -709,7 +759,7 @@ namespace Google.Protobuf
                 stream.ToArray(),
                 parsed =>
                 {
-                    // TODO(jieluo): Add test back when DiscardUnknownFields API is supported.
+                    // TODO: Add test back when DiscardUnknownFields API is supported.
                     // Assert.AreEqual(message, parsed);
                 });
         }
@@ -726,7 +776,7 @@ namespace Google.Protobuf
                 data,
                 parsed =>
                 {
-                    // TODO(jieluo): Add test back when DiscardUnknownFields API is supported.
+                    // TODO: Add test back when DiscardUnknownFields API is supported.
                     // Assert.AreNotEqual(new Empty(), empty);
                 });
         }

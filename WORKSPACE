@@ -15,9 +15,11 @@ protobuf_deps()
 # Bazel platform rules.
 http_archive(
     name = "platforms",
-    sha256 = "a879ea428c6d56ab0ec18224f976515948822451473a80d06c2e50af0bbe5121",
-    strip_prefix = "platforms-da5541f26b7de1dc8e04c075c99df5351742a4a2",
-    urls = ["https://github.com/bazelbuild/platforms/archive/da5541f26b7de1dc8e04c075c99df5351742a4a2.zip"],  # 2022-05-27
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+    ],
+    sha256 = "3a561c99e7bdbe9173aa653fd579fe849f1d8d67395780ab4770b1f381431d51",
 )
 
 http_archive(
@@ -105,13 +107,9 @@ ruby_bundle(
     gemfile = "//ruby:Gemfile",
 )
 
-load("@upb//bazel:workspace_deps.bzl", "upb_deps")
-
-upb_deps()
-
 http_archive(
     name = "lua",
-    build_file = "@upb//bazel:lua.BUILD",
+    build_file = "//bazel:lua.BUILD",
     sha256 = "b9e2e4aad6789b3b63a056d442f7b39f0ecfca3ae0f1fc0ae4e9614401b69f4b",
     strip_prefix = "lua-5.2.4",
     urls = [
@@ -132,11 +130,11 @@ http_archive(
     urls = ["https://github.com/googleapis/googleapis/archive/30ed2662a85403cbdeb9ea38df1e414a2a276b83.zip"],
     strip_prefix = "googleapis-30ed2662a85403cbdeb9ea38df1e414a2a276b83",
     sha256 = "4dfc28101127d22abd6f0f6308d915d490c4594c0cfcf7643769c446d6763a46",
-    build_file = "@upb//benchmarks:BUILD.googleapis",
+    build_file = "//benchmarks:BUILD.googleapis",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("@upb//bazel:system_python.bzl", "system_python")
+load("//bazel:system_python.bzl", "system_python")
 
 system_python(
     name = "system_python",
@@ -147,10 +145,7 @@ load("@system_python//:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "pip_deps",
-    requirements = "@upb//python:requirements.txt",
-    requirements_overrides = {
-        "3.11": "@upb//python:requirements_311.txt",
-    },
+    requirements = "//python:requirements.txt",
 )
 
 load("@pip_deps//:requirements.bzl", "install_deps")

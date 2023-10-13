@@ -39,10 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
       - name: Setup composer
         uses: protocolbuffers/protobuf-ci/composer-setup@v2
         with:
@@ -75,13 +74,12 @@ jobs:
     name: Linux 32-bit ${{ matrix.version}}${{ matrix.suffix_name }}${{ matrix.test_name }}
     runs-on: ubuntu-latest
     env:
-      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:97f50ab24582380012d7ddef5f82f08e19b9dff55d09a4a8d90a87421ae66a45
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:8275360dc5d676f3470872d79087901c0e4153453976bea908a92c82e8d209ea
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
 
       - name: Cross compile protoc for i386
         id: cross-compile
@@ -101,7 +99,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
           image: ${{ env.image }}
-          skip-staleness-check: true
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
@@ -117,7 +114,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -140,7 +137,6 @@ jobs:
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
           platform: linux/arm64
-          skip-staleness-check: true
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
           command: >-
@@ -160,10 +156,9 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
 
       - name: Uninstall problematic libgd
         run: brew uninstall --ignore-dependencies gd
@@ -186,11 +181,10 @@ jobs:
           directory: php
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bash@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: php_macos/${{ matrix.version }}
-          bash: |
+          command: |
             pushd php
             php -v
             php -m
@@ -203,8 +197,4 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}
-          bash: >-
-            bazelisk $BAZEL_STARTUP_FLAGS \
-              test $BAZEL_FLAGS \
-              --action_env=PATH --test_env=PATH \
-              //php:conformance_test_c
+          bazel: test //php:conformance_test_c --action_env=PATH --test_env=PATH
