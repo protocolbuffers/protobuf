@@ -1296,7 +1296,7 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
           }
         }
 
-        return ParseField<Traits>(lex, desc, name.value.AsView(), msg);
+        return ParseField<Traits>(lex, desc, name.value.ToString(), msg);
       });
 }
 }  // namespace
