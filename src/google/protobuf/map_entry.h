@@ -141,8 +141,6 @@ class MapEntry : public Message {
   // implemented via reflection. This means that a MapEntry does not behave the
   // same as an equivalent object made via DynamicMessage.
 
-  std::string GetTypeName() const final { return ""; }
-
   const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
     while (!ctx->Done(&ptr)) {
       uint32_t tag;
