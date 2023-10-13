@@ -291,6 +291,7 @@ class Descriptor(_NestedDescriptorBase):
         serialized_start=None,
         serialized_end=None,
         syntax=None,
+        edition=None,
         is_map_entry=False,
         create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()
@@ -304,7 +305,7 @@ class Descriptor(_NestedDescriptorBase):
                serialized_options=None,
                is_extendable=True, extension_ranges=None, oneofs=None,
                file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
-               syntax=None, is_map_entry=False, create_key=None):
+               syntax=None, edition=None, is_map_entry=False, create_key=None):
     """Arguments to __init__() are as described in the description
     of Descriptor fields above.
 
@@ -1055,7 +1056,7 @@ class FileDescriptor(DescriptorBase):
     def __new__(cls, name, package, options=None,
                 serialized_options=None, serialized_pb=None,
                 dependencies=None, public_dependencies=None,
-                syntax=None, pool=None, create_key=None):
+                syntax=None, edition=None, pool=None, create_key=None):
       # FileDescriptor() is called from various places, not only from generated
       # files, to register dynamic proto files and messages.
       # pylint: disable=g-explicit-bool-comparison
@@ -1067,7 +1068,7 @@ class FileDescriptor(DescriptorBase):
   def __init__(self, name, package, options=None,
                serialized_options=None, serialized_pb=None,
                dependencies=None, public_dependencies=None,
-               syntax=None, pool=None, create_key=None):
+               syntax=None, edition=None, pool=None, create_key=None):
     """Constructor."""
     if create_key is not _internal_create_key:
       _Deprecated('FileDescriptor')
