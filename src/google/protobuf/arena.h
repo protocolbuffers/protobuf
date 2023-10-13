@@ -26,7 +26,7 @@ using type_info = ::type_info;
 #include <typeinfo>
 #endif
 
-#include "absl/meta/type_traits.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
@@ -461,7 +461,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // Provides access to protected GetOwningArena to generated messages.  For
   // internal use only.
   template <typename T>
-  static Arena* InternalGetOwningArena(const T* p) {
+  static Arena* InternalGetOwningArena(T* p) {
+    ABSL_DCHECK_EQ(InternalHelper<T>::GetOwningArena(p),
+                   InternalHelper<T>::GetArena(p));
     return InternalHelper<T>::GetOwningArena(p);
   }
 
@@ -476,6 +478,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // For internal use only.
   template <typename T>
   static Arena* InternalGetArena(T* p) {
+    ABSL_DCHECK_EQ(InternalHelper<T>::GetOwningArena(p),
+                   InternalHelper<T>::GetArena(p));
     return InternalHelper<T>::GetArena(p);
   }
 

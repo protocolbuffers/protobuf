@@ -1323,6 +1323,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // Internal version of GetArena().
   inline Arena* GetOwningArena() const;
 
+
   // Implementations for ExtractSubrange(). The copying behavior must be
   // included only if the type supports the necessary operations (e.g.,
   // MergeFrom()), so we must resolve this at compile time. ExtractSubrange()

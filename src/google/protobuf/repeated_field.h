@@ -333,6 +333,7 @@ class RepeatedField final
                               : rep()->arena;
   }
 
+
   // Swaps entire contents with "other". Should be called only if the caller can
   // guarantee that both repeated fields are on the same arena or are on the
   // heap. Swapping between different arenas is disallowed and caught by a
