@@ -41,6 +41,7 @@ cc_test(
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:port_def",
         "//src/google/protobuf/io",
+        "//src/google/protobuf/io:test_zero_copy_stream",
         "//src/google/protobuf/util:json_format_cc_proto",
         "//src/google/protobuf/util:json_format_proto3_cc_proto",
         "//src/google/protobuf/util:type_resolver_util",
