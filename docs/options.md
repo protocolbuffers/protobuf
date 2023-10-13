@@ -479,8 +479,8 @@ with info about your project (name and website) so we can add an entry for you.
 
 1.  RabbitMQ
 
-*   Website: https://github.com/guihouchang/protoc-gen-go-event
-*   Extensions: 1184
+    *   Website: https://github.com/guihouchang/protoc-gen-go-event
+    *   Extensions: 1184
 
 1.  Wire use_array
 
