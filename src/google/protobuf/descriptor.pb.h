@@ -11545,8 +11545,7 @@ inline void FileDescriptorProto::set_allocated_options(::google::protobuf::FileO
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FileOptions*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FileOptions*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -11642,8 +11641,7 @@ inline void FileDescriptorProto::set_allocated_source_code_info(::google::protob
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::SourceCodeInfo*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -11899,8 +11897,7 @@ inline void DescriptorProto_ExtensionRange::set_allocated_options(::google::prot
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -12425,8 +12422,7 @@ inline void DescriptorProto::set_allocated_options(::google::protobuf::MessageOp
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::MessageOptions*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageOptions*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -13004,8 +13000,7 @@ inline void ExtensionRangeOptions::set_allocated_features(::google::protobuf::Fe
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -13603,8 +13598,7 @@ inline void FieldDescriptorProto::set_allocated_options(::google::protobuf::Fiel
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FieldOptions*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FieldOptions*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -13803,8 +13797,7 @@ inline void OneofDescriptorProto::set_allocated_options(::google::protobuf::Oneo
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::OneofOptions*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::OneofOptions*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -14084,8 +14077,7 @@ inline void EnumDescriptorProto::set_allocated_options(::google::protobuf::EnumO
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::EnumOptions*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::EnumOptions*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -14434,8 +14426,7 @@ inline void EnumValueDescriptorProto::set_allocated_options(::google::protobuf::
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::EnumValueOptions*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::EnumValueOptions*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -14655,8 +14646,7 @@ inline void ServiceDescriptorProto::set_allocated_options(::google::protobuf::Se
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::ServiceOptions*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::ServiceOptions*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -14969,8 +14959,7 @@ inline void MethodDescriptorProto::set_allocated_options(::google::protobuf::Met
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::MethodOptions*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MethodOptions*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -16117,8 +16106,7 @@ inline void FileOptions::set_allocated_features(::google::protobuf::FeatureSet* 
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -16407,8 +16395,7 @@ inline void MessageOptions::set_allocated_features(::google::protobuf::FeatureSe
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -17011,8 +16998,7 @@ inline void FieldOptions::set_allocated_features(::google::protobuf::FeatureSet*
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -17161,8 +17147,7 @@ inline void OneofOptions::set_allocated_features(::google::protobuf::FeatureSet*
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -17395,8 +17380,7 @@ inline void EnumOptions::set_allocated_features(::google::protobuf::FeatureSet* 
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -17573,8 +17557,7 @@ inline void EnumValueOptions::set_allocated_features(::google::protobuf::Feature
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -17751,8 +17734,7 @@ inline void ServiceOptions::set_allocated_features(::google::protobuf::FeatureSe
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -17986,8 +17968,7 @@ inline void MethodOptions::set_allocated_features(::google::protobuf::FeatureSet
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -18796,8 +18777,7 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_features(
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena =
-        ::google::protobuf::Arena::InternalGetOwningArena(reinterpret_cast<::google::protobuf::FeatureSet*>(value));
+    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
