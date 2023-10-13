@@ -48,8 +48,6 @@ embed_edition_defaults(
 cc_binary(
     name = "internal_defaults_escape",
     srcs = ["internal_defaults_escape.cc"],
-    # This needs to be public for users of embed_edition_defaults.
-    visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf",
         "@com_google_absl//absl/strings",
