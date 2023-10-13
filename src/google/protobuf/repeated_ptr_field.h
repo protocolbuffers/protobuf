@@ -722,10 +722,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   void* const* elements() const {
-    return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
+    return using_sso() ? &tagged_rep_or_elem_ : rep()->elements;
   }
   void** elements() {
-    return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
+    return using_sso() ? &tagged_rep_or_elem_ : rep()->elements;
   }
 
   void*& element_at(int index) {
