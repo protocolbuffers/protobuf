@@ -277,6 +277,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // them from being inlined by the compiler. This is different from
 // PROTOBUF_NO_INLINE, which is a user-supplied macro that disables forced
 // inlining by PROTOBUF_(ALWAYS|NDEBUG)_INLINE.
+//
+// For forward-declared functions, make sure to apply PROTOBUF_NOINLINE to all
+// the declarations, not just the definition, or else whole-program optimization
+// may not honor the attribute.
 #ifdef PROTOBUF_NOINLINE
 #error PROTOBUF_NOINLINE was previously defined
 #endif
