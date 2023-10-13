@@ -723,7 +723,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
 #if GTEST_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(
         r->SetAllocatedMessage(arena1_message, arena2_submessage, msg_field),
-        "GetOwningArena");
+        "GetArena");
 #endif
     EXPECT_NE(arena2_submessage,
               arena1_message->mutable_optional_nested_message());
@@ -736,7 +736,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
 #if GTEST_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(
       r->SetAllocatedMessage(heap_message, arena1_submessage, msg_field),
-      "GetOwningArena");
+      "GetArena");
 #endif
   EXPECT_NE(arena1_submessage, heap_message->mutable_optional_nested_message());
   delete heap_message;

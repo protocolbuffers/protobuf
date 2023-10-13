@@ -1064,16 +1064,16 @@ void Reflection::Swap(Message* message1, Message* message2) const {
   // Check that both messages are in the same arena (or both on the heap). We
   // need to copy all data if not, due to ownership semantics.
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  if (message1->GetOwningArena() == nullptr ||
-      message1->GetOwningArena() != message2->GetOwningArena()) {
+  if (message1->GetArena() == nullptr ||
+      message1->GetArena() != message2->GetArena()) {
 #else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  if (message1->GetOwningArena() != message2->GetOwningArena()) {
+  if (message1->GetArena() != message2->GetArena()) {
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
     // One of the two is guaranteed to have an arena.  Switch things around
     // to guarantee that message1 has an arena.
-    Arena* arena = message1->GetOwningArena();
+    Arena* arena = message1->GetArena();
     if (arena == nullptr) {
-      arena = message2->GetOwningArena();
+      arena = message2->GetArena();
       std::swap(message1, message2);  // Swapping names for pointers!
     }
 
@@ -1203,7 +1203,7 @@ bool Reflection::HasField(const Message& message,
 }
 
 void Reflection::UnsafeArenaSwap(Message* lhs, Message* rhs) const {
-  ABSL_DCHECK_EQ(lhs->GetOwningArena(), rhs->GetOwningArena());
+  ABSL_DCHECK_EQ(lhs->GetArena(), rhs->GetArena());
   InternalSwap(lhs, rhs);
 }
 
@@ -2311,17 +2311,15 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
 
 void Reflection::SetAllocatedMessage(Message* message, Message* sub_message,
                                      const FieldDescriptor* field) const {
-  ABSL_DCHECK(sub_message == nullptr ||
-              sub_message->GetOwningArena() == nullptr ||
-              sub_message->GetOwningArena() == message->GetArena());
+  ABSL_DCHECK(sub_message == nullptr || sub_message->GetArena() == nullptr ||
+              sub_message->GetArena() == message->GetArena());
 
   // If message and sub-message are in different memory ownership domains
   // (different arenas, or one is on heap and one is not), then we may need to
   // do a copy.
   if (sub_message != nullptr &&
-      sub_message->GetOwningArena() != message->GetArena()) {
-    if (sub_message->GetOwningArena() == nullptr &&
-        message->GetArena() != nullptr) {
+      sub_message->GetArena() != message->GetArena()) {
+    if (sub_message->GetArena() == nullptr && message->GetArena() != nullptr) {
       // Case 1: parent is on an arena and child is heap-allocated. We can add
       // the child to the arena's Own() list to free on arena destruction, then
       // set our pointer.
