@@ -310,7 +310,7 @@ static NumToEntryTable MakeNumToEntryTable(
       if (fnum - last_skip_entry_start > 96) start_new_block = true;
     }
     if (start_new_block) {
-      num_to_entry_table.blocks.push_back(SkipEntryBlock{fnum});
+      num_to_entry_table.blocks.push_back(SkipEntryBlock{fnum, {}});
       block = &num_to_entry_table.blocks.back();
       start_new_block = false;
     }
