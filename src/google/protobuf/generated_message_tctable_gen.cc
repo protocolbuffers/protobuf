@@ -525,7 +525,7 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
       if (fnum - last_skip_entry_start > 96) start_new_block = true;
     }
     if (start_new_block) {
-      num_to_entry_table.blocks.push_back({fnum});
+      num_to_entry_table.blocks.push_back({fnum, {}});
       block = &num_to_entry_table.blocks.back();
       start_new_block = false;
     }
@@ -740,7 +740,7 @@ TailCallTableInfo::TailCallTableInfo(
   // offset in the first auxiliary entry, which is kInlinedStringAuxIdx.
   if (!inlined_string_indices.empty()) {
     aux_entries.resize(kInlinedStringAuxIdx + 1);  // Allocate our slot
-    aux_entries[kInlinedStringAuxIdx] = {kInlinedStringDonatedOffset};
+    aux_entries[kInlinedStringAuxIdx] = {kInlinedStringDonatedOffset, {}};
   }
 
   // If this message is split, store the split pointer offset in the second
@@ -750,8 +750,8 @@ TailCallTableInfo::TailCallTableInfo(
     if (option_provider.GetForField(field).should_split) {
       static_assert(kSplitOffsetAuxIdx + 1 == kSplitSizeAuxIdx, "");
       aux_entries.resize(kSplitSizeAuxIdx + 1);  // Allocate our 2 slots
-      aux_entries[kSplitOffsetAuxIdx] = {kSplitOffset};
-      aux_entries[kSplitSizeAuxIdx] = {kSplitSizeof};
+      aux_entries[kSplitOffsetAuxIdx] = {kSplitOffset, {}};
+      aux_entries[kSplitSizeAuxIdx] = {kSplitSizeof, {}};
       break;
     }
   }
@@ -762,7 +762,7 @@ TailCallTableInfo::TailCallTableInfo(
     field_entries.push_back(
         {field, internal::cpp ::HasHasbit(field)
                     ? has_bit_indices[static_cast<size_t>(field->index())]
-                    : -1});
+                    : -1, 0, 0, 0});
     auto& entry = field_entries.back();
     entry.type_card = MakeTypeCardForField(field, message_options, options);
 
@@ -776,7 +776,7 @@ TailCallTableInfo::TailCallTableInfo(
           // If we don't use codegen we can't add these.
           auto* map_value = field->message_type()->map_value();
           if (auto* sub = map_value->message_type()) {
-            aux_entries.push_back({kCreateInArena});
+            aux_entries.push_back({kCreateInArena, {}});
             aux_entries.back().desc = sub;
           } else if (map_value->type() == FieldDescriptor::TYPE_ENUM &&
                      !cpp::HasPreservingUnknownEnumSemantics(map_value)) {
@@ -790,7 +790,7 @@ TailCallTableInfo::TailCallTableInfo(
           if (options.lazy_opt == field_layout::kTvEager) {
             aux_entries.push_back({kMessageVerifyFunc, {field}});
           } else {
-            aux_entries.push_back({kNothing});
+            aux_entries.push_back({kNothing, {}});
           }
         } else {
           field_entries.back().aux_idx =
@@ -838,7 +838,7 @@ TailCallTableInfo::TailCallTableInfo(
       // For mini parsing, the donation state index is stored as an `offset`
       // auxiliary entry.
       entry.aux_idx = aux_entries.size();
-      aux_entries.push_back({kNumericOffset});
+      aux_entries.push_back({kNumericOffset, {}});
       aux_entries.back().offset = idx;
       // For fast table parsing, the donation state index is stored instead of
       // the aux_idx (this will limit the range to 8 bits).

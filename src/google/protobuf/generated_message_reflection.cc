@@ -3221,7 +3221,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
   void* p = ::operator new(sizeof(Table));
   auto* full_table = ::new (p)
       Table{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr},
-            {{{&internal::TcParser::ReflectionParseLoop, {}}}}};
+            {{{&internal::TcParser::ReflectionParseLoop, {}}}}, {}, {}};
   ABSL_DCHECK_EQ(static_cast<void*>(&full_table->header),
                  static_cast<void*>(full_table));
   return &full_table->header;
