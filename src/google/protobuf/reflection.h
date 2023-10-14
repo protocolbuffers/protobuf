@@ -339,6 +339,11 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
         Get(data, index, static_cast<Value*>(&scratch_space))));
   }
 
+  template <typename T>
+  void Set(Field* data, int index, const typename RefTypeTraits<T>::AccessorValueType& value) const {
+    Set(data, index, static_cast<const Value*>(&value));
+  }
+
   template <typename T, typename ValueType>
   void Set(Field* data, int index, const ValueType& value) const {
     typedef typename RefTypeTraits<T>::AccessorValueType ActualType;
@@ -351,6 +356,11 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
     // we make a copy to get a temporary ActualType object and use it.
     ActualType tmp = static_cast<ActualType>(value);
     Set(data, index, static_cast<const Value*>(&tmp));
+  }
+
+  template <typename T>
+  void Add(Field* data, const typename RefTypeTraits<T>::AccessorValueType& value) const {
+    Add(data, static_cast<const Value*>(&value));
   }
 
   template <typename T, typename ValueType>
