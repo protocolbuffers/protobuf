@@ -35,7 +35,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   ABSL_DCHECK(extend_amount > 0);
   constexpr size_t ptr_size = sizeof(rep()->elements[0]);
   int new_capacity = total_size_ + extend_amount;
-  Arena* arena = GetOwningArena();
+  Arena* arena = GetArena();
   new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
       total_size_, new_capacity);
   ABSL_CHECK_LE(
@@ -234,7 +234,7 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     dst += recycled;
     src += recycled;
   }
-  Arena* arena = GetOwningArena();
+  Arena* arena = GetArena();
   for (; src < end; ++src, ++dst) {
     *dst = copy_fn(arena, **src);
   }
@@ -257,7 +257,7 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
     dst += recycled;
     src += recycled;
   }
-  Arena* arena = GetOwningArena();
+  Arena* arena = GetArena();
   for (; src < end; ++src, ++dst) {
     *dst = (*src)->New(arena);
     (*dst)->CheckTypeAndMergeFrom(**src);
