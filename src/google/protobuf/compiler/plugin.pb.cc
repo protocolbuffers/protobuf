@@ -811,8 +811,8 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
 
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(3, _Internal::compiler_version(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        3, _Internal::compiler_version(this),
         _Internal::compiler_version(this).GetCachedSize(), target, stream);
   }
 
@@ -1163,8 +1163,8 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
 
   // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
   if (cached_has_bits & 0x00000008u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(16, _Internal::generated_code_info(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        16, _Internal::generated_code_info(this),
         _Internal::generated_code_info(this).GetCachedSize(), target, stream);
   }
 
