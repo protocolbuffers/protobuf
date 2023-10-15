@@ -489,39 +489,42 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!is_group()) {
-    p->Emit(
-        "target = $pbi$::WireFormatLite::\n"
-        "  InternalWrite$declared_type$($number$, _Internal::$name$(this),\n"
-        "    _Internal::$name$(this).GetCachedSize(), target, stream);\n");
+    p->Emit(R"cc(
+      target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
+          $number$, _Internal::$name$(this),
+          _Internal::$name$(this).GetCachedSize(), target, stream);
+    )cc");
   } else {
-    p->Emit(
-        "target = stream->EnsureSpace(target);\n"
-        "target = $pbi$::WireFormatLite::\n"
-        "  InternalWrite$declared_type$(\n"
-        "    $number$, _Internal::$name$(this), target, stream);\n");
+    p->Emit(R"cc(
+      target = stream->EnsureSpace(target);
+      target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
+          $number$, _Internal::$name$(this), target, stream);
+    )cc");
   }
 }
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
-  p->Emit(
-      "total_size += $tag_size$ +\n"
-      "  $pbi$::WireFormatLite::$declared_type$Size(\n"
-      "    *$field_$);\n");
+  p->Emit(R"cc(
+    total_size +=
+        $tag_size$ + $pbi$::WireFormatLite::$declared_type$Size(*$field_$);
+  )cc");
 }
 
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!has_required_) return;
 
   if (HasHasbit(field_)) {
-    p->Emit(
-        "if (($has_hasbit$) != 0) {\n"
-        "  if (!$field_$->IsInitialized()) return false;\n"
-        "}\n");
+    p->Emit(R"cc(
+      if (($has_hasbit$) != 0) {
+        if (!$field_$->IsInitialized()) return false;
+      }
+    )cc");
   } else {
-    p->Emit(
-        "if (_internal_has_$name$()) {\n"
-        "  if (!$field_$->IsInitialized()) return false;\n"
-        "}\n");
+    p->Emit(R"cc(
+      if (_internal_has_$name$()) {
+        if (!$field_$->IsInitialized()) return false;
+      }
+    )cc");
   }
 }
 
@@ -701,10 +704,9 @@ void OneofMessage::GenerateConstructorCode(io::Printer* p) const {
 void OneofMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!has_required_) return;
 
-  p->Emit(
-      "if ($has_field$) {\n"
-      "  if (!$field_$->IsInitialized()) return false;\n"
-      "}\n");
+  p->Emit(R"cc(
+    if ($has_field$ && !$field_$->IsInitialized()) return false;
+  )cc");
 }
 
 class RepeatedMessage : public FieldGeneratorBase {
