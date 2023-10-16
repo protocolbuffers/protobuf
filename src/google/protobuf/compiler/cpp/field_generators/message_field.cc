@@ -704,10 +704,9 @@ void OneofMessage::GenerateConstructorCode(io::Printer* p) const {
 void OneofMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!has_required_) return;
 
-  p->Emit(
-      "if ($has_field$) {\n"
-      "  if (!$field_$->IsInitialized()) return false;\n"
-      "}\n");
+  p->Emit(R"cc(
+    if ($has_field$ && !$field_$->IsInitialized()) return false;
+  )cc");
 }
 
 class RepeatedMessage : public FieldGeneratorBase {
