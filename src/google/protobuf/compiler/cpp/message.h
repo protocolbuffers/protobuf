@@ -89,14 +89,12 @@ class MessageGenerator {
   // Generate constructors and destructor.
   void GenerateStructors(io::Printer* p);
 
-#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
   void GenerateZeroInitFields(io::Printer* p) const;
   void GenerateCopyInitFields(io::Printer* p) const;
 
   void GenerateImplMemberInit(io::Printer* p, InitType init_type);
 
   void GenerateArenaEnabledCopyConstructor(io::Printer* p);
-#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
 
   // The compiler typically generates multiple copies of each constructor and
   // destructor: http://gcc.gnu.org/bugs.html#nonbugs_cxx

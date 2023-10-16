@@ -505,12 +505,10 @@ class PROTOBUF_EXPORT MessageLite {
     return Arena::CreateMaybeMessage<T>(arena);
   }
 
-#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
   template <typename T>
   static T* CreateMaybeMessage(Arena* arena, const T& from) {
     return Arena::CreateMaybeMessage<T>(arena, from);
   }
-#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
 
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
