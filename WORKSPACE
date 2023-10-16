@@ -183,3 +183,18 @@ load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_regi
 rules_rust_dependencies()
 
 rust_register_toolchains(edition = "2021")
+load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository")
+# to repin, invoke `CARGO_BAZEL_REPIN=1 bazel sync --only=crate_index`
+crates_repository(
+    name = "crate_index",
+    cargo_lockfile = "//:Cargo.lock",
+    lockfile = "//:Cargo.bazel.lock",
+    packages = {
+        "googletest": crate.spec(
+            version = ">0.0.0",
+        ),
+    },
+)
+
+load("@crate_index//:defs.bzl", "crate_repositories")
+crate_repositories()
