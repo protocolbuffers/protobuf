@@ -431,19 +431,15 @@ void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
-  if (opts_->opensource_runtime) {
-    // TODO Remove this when we don't need to destruct default
-    // instances.  In google3 a default instance will never get deleted so we
-    // don't need to worry about that but in opensource protobuf default
-    // instances are deleted in shutdown process and we need to take special
-    // care when handling them.
-    p->Emit("if (this != internal_default_instance()) ");
-  }
   if (should_split()) {
-    p->Emit("delete $cached_split_ptr$->$name$_;\n");
-    return;
+    p->Emit(R"cc(
+      delete $cached_split_ptr$->$name$_;
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      delete $field_$;
+    )cc");
   }
-  p->Emit("delete $field_$;\n");
 }
 
 using internal::cpp::HasHasbit;

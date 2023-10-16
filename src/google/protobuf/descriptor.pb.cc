@@ -2640,8 +2640,8 @@ inline void FileDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.package_.Destroy();
   _impl_.syntax_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
-  if (this != internal_default_instance()) delete _impl_.source_code_info_;
+  delete _impl_.options_;
+  delete _impl_.source_code_info_;
   _impl_.~Impl_();
 }
 
@@ -3208,7 +3208,7 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
 }
 inline void DescriptorProto_ExtensionRange::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.options_;
+  delete _impl_.options_;
   _impl_.~Impl_();
 }
 
@@ -3725,7 +3725,7 @@ DescriptorProto::~DescriptorProto() {
 inline void DescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  delete _impl_.options_;
   _impl_.~Impl_();
 }
 
@@ -4547,7 +4547,7 @@ ExtensionRangeOptions::~ExtensionRangeOptions() {
 }
 inline void ExtensionRangeOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.features_;
+  delete _impl_.features_;
   _impl_.~Impl_();
 }
 
@@ -4920,7 +4920,7 @@ inline void FieldDescriptorProto::SharedDtor() {
   _impl_.type_name_.Destroy();
   _impl_.default_value_.Destroy();
   _impl_.json_name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  delete _impl_.options_;
   _impl_.~Impl_();
 }
 
@@ -5421,7 +5421,7 @@ OneofDescriptorProto::~OneofDescriptorProto() {
 inline void OneofDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  delete _impl_.options_;
   _impl_.~Impl_();
 }
 
@@ -5906,7 +5906,7 @@ EnumDescriptorProto::~EnumDescriptorProto() {
 inline void EnumDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  delete _impl_.options_;
   _impl_.~Impl_();
 }
 
@@ -6248,7 +6248,7 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
 inline void EnumValueDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  delete _impl_.options_;
   _impl_.~Impl_();
 }
 
@@ -6534,7 +6534,7 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
 inline void ServiceDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  delete _impl_.options_;
   _impl_.~Impl_();
 }
 
@@ -6846,7 +6846,7 @@ inline void MethodDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.input_type_.Destroy();
   _impl_.output_type_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.options_;
+  delete _impl_.options_;
   _impl_.~Impl_();
 }
 
@@ -7312,7 +7312,7 @@ inline void FileOptions::SharedDtor() {
   _impl_.php_namespace_.Destroy();
   _impl_.php_metadata_namespace_.Destroy();
   _impl_.ruby_package_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.features_;
+  delete _impl_.features_;
   _impl_.~Impl_();
 }
 
@@ -8128,7 +8128,7 @@ MessageOptions::~MessageOptions() {
 }
 inline void MessageOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.features_;
+  delete _impl_.features_;
   _impl_.~Impl_();
 }
 
@@ -8781,7 +8781,7 @@ FieldOptions::~FieldOptions() {
 }
 inline void FieldOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.features_;
+  delete _impl_.features_;
   _impl_.~Impl_();
 }
 
@@ -9308,7 +9308,7 @@ OneofOptions::~OneofOptions() {
 }
 inline void OneofOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.features_;
+  delete _impl_.features_;
   _impl_.~Impl_();
 }
 
@@ -9585,7 +9585,7 @@ EnumOptions::~EnumOptions() {
 }
 inline void EnumOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.features_;
+  delete _impl_.features_;
   _impl_.~Impl_();
 }
 
@@ -9935,7 +9935,7 @@ EnumValueOptions::~EnumValueOptions() {
 }
 inline void EnumValueOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.features_;
+  delete _impl_.features_;
   _impl_.~Impl_();
 }
 
@@ -10258,7 +10258,7 @@ ServiceOptions::~ServiceOptions() {
 }
 inline void ServiceOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.features_;
+  delete _impl_.features_;
   _impl_.~Impl_();
 }
 
@@ -10565,7 +10565,7 @@ MethodOptions::~MethodOptions() {
 }
 inline void MethodOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.features_;
+  delete _impl_.features_;
   _impl_.~Impl_();
 }
 
@@ -11900,7 +11900,7 @@ FeatureSetDefaults_FeatureSetEditionDefault::~FeatureSetDefaults_FeatureSetEditi
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.features_;
+  delete _impl_.features_;
   _impl_.~Impl_();
 }
 

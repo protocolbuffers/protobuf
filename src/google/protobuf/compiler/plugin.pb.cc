@@ -689,7 +689,7 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
 inline void CodeGeneratorRequest::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.parameter_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.compiler_version_;
+  delete _impl_.compiler_version_;
   _impl_.~Impl_();
 }
 
@@ -1037,7 +1037,7 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.insertion_point_.Destroy();
   _impl_.content_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.generated_code_info_;
+  delete _impl_.generated_code_info_;
   _impl_.~Impl_();
 }
 
