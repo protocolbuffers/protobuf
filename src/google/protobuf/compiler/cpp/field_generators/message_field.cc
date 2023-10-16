@@ -514,15 +514,17 @@ void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!has_required_) return;
 
   if (HasHasbit(field_)) {
-    p->Emit(
-        "if (($has_hasbit$) != 0) {\n"
-        "  if (!$field_$->IsInitialized()) return false;\n"
-        "}\n");
+    p->Emit(R"cc(
+      if (($has_hasbit$) != 0) {
+        if (!$field_$->IsInitialized()) return false;
+      }
+    )cc");
   } else {
-    p->Emit(
-        "if (_internal_has_$name$()) {\n"
-        "  if (!$field_$->IsInitialized()) return false;\n"
-        "}\n");
+    p->Emit(R"cc(
+      if (_internal_has_$name$()) {
+        if (!$field_$->IsInitialized()) return false;
+      }
+    )cc");
   }
 }
 
