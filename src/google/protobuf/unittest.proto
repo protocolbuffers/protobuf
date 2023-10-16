@@ -1810,3 +1810,38 @@ message EnumsForBenchmark {
     C31670 = 31670;
   }
 }
+
+message TestMessageWithManyRepeatedPtrFields {
+  repeated string repeated_string_1 = 1;
+  repeated string repeated_string_2 = 2;
+  repeated string repeated_string_3 = 3;
+  repeated string repeated_string_4 = 4;
+  repeated string repeated_string_5 = 5;
+  repeated string repeated_string_6 = 6;
+  repeated string repeated_string_7 = 7;
+  repeated string repeated_string_8 = 8;
+  repeated string repeated_string_9 = 9;
+  repeated string repeated_string_10 = 10;
+  repeated string repeated_string_11 = 11;
+  repeated string repeated_string_12 = 12;
+  repeated string repeated_string_13 = 13;
+  repeated string repeated_string_14 = 14;
+  repeated string repeated_string_15 = 15;
+  repeated string repeated_string_16 = 16;
+  repeated string repeated_string_17 = 17;
+  repeated string repeated_string_18 = 18;
+  repeated string repeated_string_19 = 19;
+  repeated string repeated_string_20 = 20;
+  repeated string repeated_string_21 = 21;
+  repeated string repeated_string_22 = 22;
+  repeated string repeated_string_23 = 23;
+  repeated string repeated_string_24 = 24;
+  repeated string repeated_string_25 = 25;
+  repeated string repeated_string_26 = 26;
+  repeated string repeated_string_27 = 27;
+  repeated string repeated_string_28 = 28;
+  repeated string repeated_string_29 = 29;
+  repeated string repeated_string_30 = 30;
+  repeated string repeated_string_31 = 31;
+  repeated string repeated_string_32 = 32;
+}
