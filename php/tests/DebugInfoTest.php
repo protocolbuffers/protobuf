@@ -34,18 +34,25 @@ use Google\Protobuf\GPBEmpty;
 
 class DebugInfoTest extends TestBase
 {
+    public function setUp(): void
+    {
+        if (extension_loaded('protobuf')) {
+            $this->markTestSkipped('__debugInfo is not supported for the protobuf extension');
+        }
+    }
+
     public function testVarDumpOutput()
     {
         $m = new DoubleValue();
         $m->setValue(1.5);
         var_dump($m);
-        $this->expectOutputString(<<<EOL
-object(Google\Protobuf\DoubleValue)#12 (1) {
+        $regex = <<<EOL
+object(Google\Protobuf\DoubleValue)#%s (1) {
   ["value"]=>
   float(1.5)
 }
-
-EOL);
+EOL;
+        $this->expectOutputRegex('/' . sprintf(preg_quote($regex), '\d+') . '/');
     }
 
     public function testTopLevelDoubleValue()
