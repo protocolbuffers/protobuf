@@ -311,9 +311,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Message creating functor: used in MergeFrom<T>()
   template <typename T>
   static MessageLite* CopyMessage(Arena* arena, const MessageLite& src) {
-    T* msg = Arena::CreateMaybeMessage<T>(arena);
-    msg->MergeFrom(static_cast<const T&>(src));
-    return msg;
+    return Arena::CreateMaybeMessage<T>(arena, static_cast<const T&>(src));
   }
 
   // Appends all message values from `from` to this instance.
