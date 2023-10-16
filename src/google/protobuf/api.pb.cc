@@ -545,9 +545,8 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
   // .google.protobuf.SourceContext source_context = 5;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
-        *_impl_.source_context_);
+    total_size +=
+        1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.source_context_);
   }
 
   // .google.protobuf.Syntax syntax = 7;

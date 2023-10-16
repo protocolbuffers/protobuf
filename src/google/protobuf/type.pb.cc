@@ -725,9 +725,8 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
   // .google.protobuf.SourceContext source_context = 5;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
-        *_impl_.source_context_);
+    total_size +=
+        1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.source_context_);
   }
 
   // .google.protobuf.Syntax syntax = 6;
@@ -1532,9 +1531,8 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
   // .google.protobuf.SourceContext source_context = 4;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
-        *_impl_.source_context_);
+    total_size +=
+        1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.source_context_);
   }
 
   // .google.protobuf.Syntax syntax = 5;
@@ -2045,9 +2043,8 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
   // .google.protobuf.Any value = 2;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
-        *_impl_.value_);
+    total_size +=
+        1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.value_);
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
