@@ -693,14 +693,14 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
       break;
     }
     case kStructValue: {
-      target = ::google::protobuf::internal::WireFormatLite::
-        InternalWriteMessage(5, _Internal::struct_value(this),
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          5, _Internal::struct_value(this),
           _Internal::struct_value(this).GetCachedSize(), target, stream);
       break;
     }
     case kListValue: {
-      target = ::google::protobuf::internal::WireFormatLite::
-        InternalWriteMessage(6, _Internal::list_value(this),
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          6, _Internal::list_value(this),
           _Internal::list_value(this).GetCachedSize(), target, stream);
       break;
     }

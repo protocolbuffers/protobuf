@@ -475,8 +475,8 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
   cached_has_bits = _impl_._has_bits_[0];
   // .google.protobuf.SourceContext source_context = 5;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(5, _Internal::source_context(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        5, _Internal::source_context(this),
         _Internal::source_context(this).GetCachedSize(), target, stream);
   }
 
