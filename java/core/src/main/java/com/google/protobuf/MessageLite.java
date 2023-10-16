@@ -38,6 +38,16 @@ import java.io.OutputStream;
  */
 @CheckReturnValue
 public interface MessageLite extends MessageLiteOrBuilder {
+  /**
+   * Get an instance of the type with no fields set. Because no fields are set, all getters for
+   * singular fields will return default values and repeated fields will appear empty. This may or
+   * may not be a singleton. This differs from the {@code getDefaultInstance()} method of generated
+   * message classes in that this method is an abstract method of the {@code MessageLite} interface
+   * whereas {@code getDefaultInstance()} is a static method of a specific class. They return the
+   * same thing.
+   */
+  @Override
+  MessageLite getDefaultInstanceForType();
 
   /**
    * Serializes the message and writes it to {@code output}. This does not flush or close the

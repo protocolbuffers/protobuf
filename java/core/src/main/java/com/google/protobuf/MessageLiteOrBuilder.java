@@ -23,7 +23,7 @@ public interface MessageLiteOrBuilder {
    * whereas {@code getDefaultInstance()} is a static method of a specific class. They return the
    * same thing.
    */
-  MessageLite getDefaultInstanceForType();
+  MessageLiteOrBuilder getDefaultInstanceForType();
 
   /**
    * Returns true if all required fields in the message and all embedded messages are set, false
