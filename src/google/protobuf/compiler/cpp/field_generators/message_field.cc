@@ -504,10 +504,10 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
 }
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
-  p->Emit(
-      "total_size += $tag_size$ +\n"
-      "  $pbi$::WireFormatLite::$declared_type$Size(\n"
-      "    *$field_$);\n");
+  p->Emit(R"cc(
+    total_size +=
+        $tag_size$ + $pbi$::WireFormatLite::$declared_type$Size(*$field_$);
+  )cc");
 }
 
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
