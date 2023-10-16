@@ -146,7 +146,7 @@ We also make some semantic changes:
 *   `proto3_optional` is rejected as a parse error (use the feature instead).
 
 Migrating from proto2/3 involves deleting all `optional`/`required` labels and
-adding `IMPLICT` and `LEGACY_REQUIURED` annotations where necessary.
+adding `IMPLICIT` and `LEGACY_REQUIURED` annotations where necessary.
 
 #### Alternatives
 

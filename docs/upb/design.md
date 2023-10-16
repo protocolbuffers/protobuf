@@ -288,7 +288,7 @@ Dart for a message with only primitive fields currently looks something like:
   _accessor = $pb.instance.registry.newMessageAccessor(desc);
 ```
 
-The implementation of `newMessageAccesor()` is mainly just a wrapper around
+The implementation of `newMessageAccessor()` is mainly just a wrapper around
 `upb_MiniTable_Build()`, which builds a MiniTable from a MiniDescriptor. In the
 code generator, the MiniDescriptor can be obtained from the
 `upb_MessageDef_MiniDescriptorEncode()` API; users should never need to encode a

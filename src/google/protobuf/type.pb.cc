@@ -506,7 +506,7 @@ inline void Type::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.source_context_;
+  delete _impl_.source_context_;
   _impl_.~Impl_();
 }
 
@@ -655,8 +655,8 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
   cached_has_bits = _impl_._has_bits_[0];
   // .google.protobuf.SourceContext source_context = 5;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(5, _Internal::source_context(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        5, _Internal::source_context(this),
         _Internal::source_context(this).GetCachedSize(), target, stream);
   }
 
@@ -725,9 +725,8 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
   // .google.protobuf.SourceContext source_context = 5;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
-        *_impl_.source_context_);
+    total_size +=
+        1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.source_context_);
   }
 
   // .google.protobuf.Syntax syntax = 6;
@@ -1334,7 +1333,7 @@ inline void Enum::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.source_context_;
+  delete _impl_.source_context_;
   _impl_.~Impl_();
 }
 
@@ -1468,8 +1467,8 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
   cached_has_bits = _impl_._has_bits_[0];
   // .google.protobuf.SourceContext source_context = 4;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(4, _Internal::source_context(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        4, _Internal::source_context(this),
         _Internal::source_context(this).GetCachedSize(), target, stream);
   }
 
@@ -1532,9 +1531,8 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
   // .google.protobuf.SourceContext source_context = 4;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
-        *_impl_.source_context_);
+    total_size +=
+        1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.source_context_);
   }
 
   // .google.protobuf.Syntax syntax = 5;
@@ -1929,7 +1927,7 @@ Option::~Option() {
 inline void Option::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.value_;
+  delete _impl_.value_;
   _impl_.~Impl_();
 }
 
@@ -2014,8 +2012,8 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
   cached_has_bits = _impl_._has_bits_[0];
   // .google.protobuf.Any value = 2;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(2, _Internal::value(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        2, _Internal::value(this),
         _Internal::value(this).GetCachedSize(), target, stream);
   }
 
@@ -2045,9 +2043,8 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
   // .google.protobuf.Any value = 2;
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
-        *_impl_.value_);
+    total_size +=
+        1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.value_);
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);

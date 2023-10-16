@@ -137,9 +137,9 @@ class PROTOBUF_EXPORT ListValue final :
   }
   inline ListValue& operator=(ListValue&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()
+    if (GetArena() == from.GetArena()
   #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetOwningArena() != nullptr
+        && GetArena() != nullptr
   #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
@@ -183,10 +183,10 @@ class PROTOBUF_EXPORT ListValue final :
   inline void Swap(ListValue* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() != nullptr &&
-        GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() != nullptr &&
+        GetArena() == other->GetArena()) {
    #else  // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
@@ -195,7 +195,7 @@ class PROTOBUF_EXPORT ListValue final :
   }
   void UnsafeArenaSwap(ListValue* other) {
     if (other == this) return;
-    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
   }
 
@@ -320,9 +320,9 @@ class PROTOBUF_EXPORT Struct final :
   }
   inline Struct& operator=(Struct&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()
+    if (GetArena() == from.GetArena()
   #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetOwningArena() != nullptr
+        && GetArena() != nullptr
   #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
@@ -366,10 +366,10 @@ class PROTOBUF_EXPORT Struct final :
   inline void Swap(Struct* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() != nullptr &&
-        GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() != nullptr &&
+        GetArena() == other->GetArena()) {
    #else  // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
@@ -378,7 +378,7 @@ class PROTOBUF_EXPORT Struct final :
   }
   void UnsafeArenaSwap(Struct* other) {
     if (other == this) return;
-    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
   }
 
@@ -532,9 +532,9 @@ class PROTOBUF_EXPORT Value final :
   }
   inline Value& operator=(Value&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()
+    if (GetArena() == from.GetArena()
   #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetOwningArena() != nullptr
+        && GetArena() != nullptr
   #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
@@ -588,10 +588,10 @@ class PROTOBUF_EXPORT Value final :
   inline void Swap(Value* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() != nullptr &&
-        GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() != nullptr &&
+        GetArena() == other->GetArena()) {
    #else  // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() == other->GetOwningArena()) {
+    if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
@@ -600,7 +600,7 @@ class PROTOBUF_EXPORT Value final :
   }
   void UnsafeArenaSwap(Value* other) {
     if (other == this) return;
-    ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
+    ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
   }
 

@@ -689,7 +689,7 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
 inline void CodeGeneratorRequest::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.parameter_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.compiler_version_;
+  delete _impl_.compiler_version_;
   _impl_.~Impl_();
 }
 
@@ -811,8 +811,8 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
 
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(3, _Internal::compiler_version(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        3, _Internal::compiler_version(this),
         _Internal::compiler_version(this).GetCachedSize(), target, stream);
   }
 
@@ -877,9 +877,8 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
 
     // optional .google.protobuf.compiler.Version compiler_version = 3;
     if (cached_has_bits & 0x00000002u) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          *_impl_.compiler_version_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.compiler_version_);
     }
 
   }
@@ -1038,7 +1037,7 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.insertion_point_.Destroy();
   _impl_.content_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.generated_code_info_;
+  delete _impl_.generated_code_info_;
   _impl_.~Impl_();
 }
 
@@ -1163,8 +1162,8 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
 
   // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
   if (cached_has_bits & 0x00000008u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(16, _Internal::generated_code_info(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        16, _Internal::generated_code_info(this),
         _Internal::generated_code_info(this).GetCachedSize(), target, stream);
   }
 
@@ -1207,9 +1206,8 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
 
     // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
     if (cached_has_bits & 0x00000008u) {
-      total_size += 2 +
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          *_impl_.generated_code_info_);
+      total_size +=
+          2 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.generated_code_info_);
     }
 
   }

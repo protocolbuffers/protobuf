@@ -10,7 +10,6 @@ use nested_proto::nest::Outer;
 #[test]
 fn test_simple_nested_proto() {
     let outer_msg = Outer::new();
-    // TODO: passing cpp, segfaulting upb
     assert_eq!(outer_msg.inner().num(), 0);
     assert!(!outer_msg.inner().boolean());
 }

@@ -135,7 +135,13 @@ uint32_t upb_FieldDef_Number(const upb_FieldDef* f) { return f->number_; }
 
 bool upb_FieldDef_IsExtension(const upb_FieldDef* f) { return f->is_extension; }
 
-bool upb_FieldDef_IsPacked(const upb_FieldDef* f) { return f->is_packed; }
+bool _upb_FieldDef_IsPackable(const upb_FieldDef* f) {
+  return upb_FieldDef_IsRepeated(f) && upb_FieldDef_IsPrimitive(f);
+}
+
+bool upb_FieldDef_IsPacked(const upb_FieldDef* f) {
+  return _upb_FieldDef_IsPackable(f) && f->is_packed;
+}
 
 const char* upb_FieldDef_Name(const upb_FieldDef* f) {
   return _upb_DefBuilder_FullToShort(f->full_name);
@@ -271,7 +277,7 @@ bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f) {
 }
 
 uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f) {
-  uint64_t out = f->is_packed ? kUpb_FieldModifier_IsPacked : 0;
+  uint64_t out = upb_FieldDef_IsPacked(f) ? kUpb_FieldModifier_IsPacked : 0;
 
   switch (f->label_) {
     case kUpb_Label_Optional:
@@ -658,10 +664,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
   if (UPB_DESC(FieldOptions_has_packed)(f->opts)) {
     f->is_packed = UPB_DESC(FieldOptions_packed)(f->opts);
   } else {
-    // Repeated fields default to packed for proto3 only.
-    f->is_packed = has_type && upb_FieldDef_IsPrimitive(f) &&
-                   f->label_ == kUpb_Label_Repeated &&
-                   upb_FileDef_Syntax(f->file) == kUpb_Syntax_Proto3;
+    f->is_packed = upb_FileDef_Syntax(f->file) == kUpb_Syntax_Proto3;
   }
 
   f->has_presence =
@@ -775,10 +778,6 @@ static void resolve_subdef(upb_DefBuilder* ctx, const char* prefix,
         case UPB_DEFTYPE_ENUM:
           f->sub.enumdef = def;
           f->type_ = kUpb_FieldType_Enum;
-          if (!UPB_DESC(FieldOptions_has_packed)(f->opts)) {
-            f->is_packed = f->label_ == kUpb_Label_Repeated &&
-                           upb_FileDef_Syntax(f->file) == kUpb_Syntax_Proto3;
-          }
           break;
         case UPB_DEFTYPE_MSG:
           f->sub.msgdef = def;

@@ -1557,7 +1557,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
     }
   };
 
-  auto* arena = field.GetOwningArena();
+  auto* arena = field.GetArena();
   SerialArena* serial_arena;
   if (PROTOBUF_PREDICT_TRUE(arena != nullptr &&
                             arena->impl_.GetSerialArenaFast(&serial_arena) &&
@@ -2260,7 +2260,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
       const char* ptr2 = ptr;
       uint32_t next_tag;
 
-      auto* arena = field.GetOwningArena();
+      auto* arena = field.GetArena();
       SerialArena* serial_arena;
       if (PROTOBUF_PREDICT_TRUE(
               arena != nullptr &&

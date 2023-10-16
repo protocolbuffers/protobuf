@@ -14,7 +14,31 @@
 # Once we have a couple of these tests we will investigate ways to remove boilerplate (for example
 # by introducing a build macro that registers 2 rust_test targets).
 
-load("@rules_rust//rust:defs.bzl", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+
+rust_library(
+    name = "matchers_upb",
+    srcs = ["matchers.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
+    deps = [
+        "//third_party/gtest_rust/googletest",
+        "//rust:protobuf_upb",
+    ],
+)
+
+rust_library(
+    name = "matchers_cpp",
+    srcs = ["matchers.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    deps = [
+        "//third_party/gtest_rust/googletest",
+        "//rust:protobuf_cpp",
+    ],
+)
 
 rust_test(
     name = "child_parent_upb_test",
@@ -125,6 +149,7 @@ rust_test(
     srcs = ["accessors_test.rs"],
     aliases = {
         "//rust:protobuf_cpp": "protobuf",
+        "//rust/test/shared:matchers_cpp": "matchers",
     },
     tags = [
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
@@ -134,6 +159,7 @@ rust_test(
         "//third_party/gtest_rust/googletest",
         "//rust:protobuf_cpp",
         "//rust/test:unittest_cc_rust_proto",
+        "//rust/test/shared:matchers_cpp",
     ],
 )
 
@@ -142,6 +168,7 @@ rust_test(
     srcs = ["accessors_test.rs"],
     aliases = {
         "//rust:protobuf_upb": "protobuf",
+        "//rust/test/shared:matchers_upb": "matchers",
     },
     tags = [
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
@@ -151,6 +178,7 @@ rust_test(
         "//third_party/gtest_rust/googletest",
         "//rust:protobuf_upb",
         "//rust/test:unittest_upb_rust_proto",
+        "//rust/test/shared:matchers_upb",
     ],
 )
 
@@ -220,10 +248,8 @@ rust_test(
     deps = ["//rust/test:nested_cc_rust_proto"],
 )
 
-# TODO: enable once we emit default messages for upb at the rust level
-# The default submsg that upb emits is NULL (whereas cpp returns a default constructed msg)
-#rust_test(
-#    name = "simple_nested_upb_test",
-#    srcs = ["simple_nested_test.rs"],
-#    deps = ["//rust/test:nested_upb_rust_proto"],
-#)
+rust_test(
+    name = "simple_nested_upb_test",
+    srcs = ["simple_nested_test.rs"],
+    deps = ["//rust/test:nested_upb_rust_proto"],
+)

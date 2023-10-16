@@ -35,7 +35,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   ABSL_DCHECK(extend_amount > 0);
   constexpr size_t ptr_size = sizeof(rep()->elements[0]);
   int new_capacity = total_size_ + extend_amount;
-  Arena* arena = GetOwningArena();
+  Arena* arena = GetArena();
   new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
       total_size_, new_capacity);
   ABSL_CHECK_LE(
@@ -217,6 +217,12 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
   auto src = reinterpret_cast<MessageLite* const*>(from.elements());
   int count = std::min(ClearedCount(), from.current_size_);
   for (int i = 0; i < count; ++i) {
+    ABSL_DCHECK(src[i] != nullptr);
+#if PROTOBUF_RTTI
+    // TODO: remove or replace with a cleaner check.
+    ABSL_DCHECK(typeid(*src[i]) == typeid(*src[0]))
+        << typeid(*src[i]).name() << " vs " << typeid(*src[0]).name();
+#endif
     dst[i]->CheckTypeAndMergeFrom(*src[i]);
   }
   return count;
@@ -234,7 +240,7 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     dst += recycled;
     src += recycled;
   }
-  Arena* arena = GetOwningArena();
+  Arena* arena = GetArena();
   for (; src < end; ++src, ++dst) {
     *dst = copy_fn(arena, **src);
   }
@@ -248,18 +254,27 @@ template <>
 void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
     const RepeatedPtrFieldBase& from) {
   ABSL_DCHECK_NE(&from, this);
+  ABSL_DCHECK(from.current_size_ > 0);
   int new_size = current_size_ + from.current_size_;
   auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size));
   auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
   auto end = src + from.current_size_;
+  const MessageLite* prototype = src[0];
+  ABSL_DCHECK(prototype != nullptr);
   if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
     int recycled = MergeIntoClearedMessages(from);
     dst += recycled;
     src += recycled;
   }
-  Arena* arena = GetOwningArena();
+  Arena* arena = GetArena();
   for (; src < end; ++src, ++dst) {
-    *dst = (*src)->New(arena);
+    ABSL_DCHECK(*src != nullptr);
+#if PROTOBUF_RTTI
+    // TODO: remove or replace with a cleaner check.
+    ABSL_DCHECK(typeid(**src) == typeid(*prototype))
+        << typeid(**src).name() << " vs " << typeid(*prototype).name();
+#endif
+    *dst = prototype->New(arena);
     (*dst)->CheckTypeAndMergeFrom(**src);
   }
   ExchangeCurrentSize(new_size);

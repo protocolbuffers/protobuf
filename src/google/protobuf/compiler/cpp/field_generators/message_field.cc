@@ -287,8 +287,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
             //~ When $Submsg$ is a cross-file type, have to read the arena
             //~ through the virtual method, because the type isn't defined in
             //~ this file, only forward-declated.
-            $pb$::Arena* submessage_arena =
-                $pb$::Arena::InternalGetOwningArena($base_cast$(value));
+            $pb$::Arena* submessage_arena = $base_cast$(value)->GetArena();
             if (message_arena != submessage_arena) {
               value = $pbi$::GetOwnedMessage(message_arena, value, submessage_arena);
             }
@@ -432,19 +431,15 @@ void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
-  if (opts_->opensource_runtime) {
-    // TODO Remove this when we don't need to destruct default
-    // instances.  In google3 a default instance will never get deleted so we
-    // don't need to worry about that but in opensource protobuf default
-    // instances are deleted in shutdown process and we need to take special
-    // care when handling them.
-    p->Emit("if (this != internal_default_instance()) ");
-  }
   if (should_split()) {
-    p->Emit("delete $cached_split_ptr$->$name$_;\n");
-    return;
+    p->Emit(R"cc(
+      delete $cached_split_ptr$->$name$_;
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      delete $field_$;
+    )cc");
   }
-  p->Emit("delete $field_$;\n");
 }
 
 using internal::cpp::HasHasbit;
@@ -490,39 +485,42 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!is_group()) {
-    p->Emit(
-        "target = $pbi$::WireFormatLite::\n"
-        "  InternalWrite$declared_type$($number$, _Internal::$name$(this),\n"
-        "    _Internal::$name$(this).GetCachedSize(), target, stream);\n");
+    p->Emit(R"cc(
+      target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
+          $number$, _Internal::$name$(this),
+          _Internal::$name$(this).GetCachedSize(), target, stream);
+    )cc");
   } else {
-    p->Emit(
-        "target = stream->EnsureSpace(target);\n"
-        "target = $pbi$::WireFormatLite::\n"
-        "  InternalWrite$declared_type$(\n"
-        "    $number$, _Internal::$name$(this), target, stream);\n");
+    p->Emit(R"cc(
+      target = stream->EnsureSpace(target);
+      target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
+          $number$, _Internal::$name$(this), target, stream);
+    )cc");
   }
 }
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
-  p->Emit(
-      "total_size += $tag_size$ +\n"
-      "  $pbi$::WireFormatLite::$declared_type$Size(\n"
-      "    *$field_$);\n");
+  p->Emit(R"cc(
+    total_size +=
+        $tag_size$ + $pbi$::WireFormatLite::$declared_type$Size(*$field_$);
+  )cc");
 }
 
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!has_required_) return;
 
   if (HasHasbit(field_)) {
-    p->Emit(
-        "if (($has_hasbit$) != 0) {\n"
-        "  if (!$field_$->IsInitialized()) return false;\n"
-        "}\n");
+    p->Emit(R"cc(
+      if (($has_hasbit$) != 0) {
+        if (!$field_$->IsInitialized()) return false;
+      }
+    )cc");
   } else {
-    p->Emit(
-        "if (_internal_has_$name$()) {\n"
-        "  if (!$field_$->IsInitialized()) return false;\n"
-        "}\n");
+    p->Emit(R"cc(
+      if (_internal_has_$name$()) {
+        if (!$field_$->IsInitialized()) return false;
+      }
+    )cc");
   }
 }
 
@@ -575,8 +573,7 @@ void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
       $pb$::Arena* message_arena = GetArena();
       clear_$oneof_name$();
       if ($name$) {
-        $pb$::Arena* submessage_arena =
-            $pb$::Arena::InternalGetOwningArena($foreign_cast$($name$));
+        $pb$::Arena* submessage_arena = $foreign_cast$($name$)->GetArena();
         if (message_arena != submessage_arena) {
           $name$ = $pbi$::GetOwnedMessage(message_arena, $name$, submessage_arena);
         }
@@ -703,10 +700,9 @@ void OneofMessage::GenerateConstructorCode(io::Printer* p) const {
 void OneofMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!has_required_) return;
 
-  p->Emit(
-      "if ($has_field$) {\n"
-      "  if (!$field_$->IsInitialized()) return false;\n"
-      "}\n");
+  p->Emit(R"cc(
+    if ($has_field$ && !$field_$->IsInitialized()) return false;
+  )cc");
 }
 
 class RepeatedMessage : public FieldGeneratorBase {

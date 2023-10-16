@@ -17,6 +17,7 @@ use std::mem::MaybeUninit;
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
 use std::slice;
+use std::sync::Once;
 
 /// See `upb/port/def.inc`.
 const UPB_MALLOC_ALIGN: usize = 8;
@@ -130,6 +131,38 @@ impl Drop for Arena {
     fn drop(&mut self) {
         unsafe {
             upb_Arena_Free(self.raw);
+        }
+    }
+}
+
+static mut INTERNAL_PTR: Option<RawMessage> = None;
+static INIT: Once = Once::new();
+
+// TODO:(b/304577017)
+const ALIGN: usize = 32;
+const UPB_SCRATCH_SPACE_BYTES: usize = 64_000;
+
+/// Holds a zero-initialized block of memory for use by upb.
+/// By default, if a message is not set in cpp, a default message is created.
+/// upb departs from this and returns a null ptr. However, since contiguous
+/// chunks of memory filled with zeroes are legit messages from upb's point of
+/// view, we can allocate a large block and refer to that when dealing
+/// with readonly access.
+pub struct ScratchSpace;
+impl ScratchSpace {
+    pub fn zeroed_block() -> RawMessage {
+        unsafe {
+            INIT.call_once(|| {
+                let layout =
+                    std::alloc::Layout::from_size_align(UPB_SCRATCH_SPACE_BYTES, ALIGN).unwrap();
+                let Some(ptr) =
+                    crate::__internal::RawMessage::new(std::alloc::alloc_zeroed(layout).cast())
+                else {
+                    std::alloc::handle_alloc_error(layout)
+                };
+                INTERNAL_PTR = Some(ptr)
+            });
+            INTERNAL_PTR.unwrap()
         }
     }
 }

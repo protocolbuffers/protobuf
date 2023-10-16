@@ -7,7 +7,6 @@
 
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/strip.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -28,26 +27,56 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
     // TODO: Handle imports correctly, default to $Msg$View for now
     prefix = field.desc().containing_type()->name();
   }
-  field.Emit(
-      {
-          {"prefix", prefix},
-          {"field", field.desc().name()},
-          {"getter_thunk", Thunk(field, "get")},
-      },
-      R"rs(
+  if (field.is_cpp()) {
+    field.Emit({{"prefix", prefix},
+                {"field", field.desc().name()},
+                {"getter_thunk", Thunk(field, "get")}},
+               R"rs(
           pub fn r#$field$(&self) -> $prefix$View {
-            $prefix$View::new($pbi$::Private, unsafe { $getter_thunk$(self.inner.msg) } )
+            // For C++ kernel, getters automatically return the
+            // default_instance if the field is unset.
+            let submsg = unsafe { $getter_thunk$(self.inner.msg) };
+            $prefix$View::new($pbi$::Private, submsg)
           }
         )rs");
+  } else {
+    field.Emit({{"prefix", prefix},
+                {"field", field.desc().name()},
+                {"getter_thunk", Thunk(field, "get")}},
+               R"rs(
+          pub fn r#$field$(&self) -> $prefix$View {
+            let submsg = unsafe { $getter_thunk$(self.inner.msg) };
+            // For upb, getters return null if the field is unset, so we need to
+            // check for null and return the default instance manually. Note that
+            // a null ptr received from upb manifests as Option::None
+            match submsg {
+                // TODO:(b/304357029)
+                None => $prefix$View::new($pbi$::Private, $pbr$::ScratchSpace::zeroed_block()),
+                Some(field) => $prefix$View::new($pbi$::Private, field),
+              }
+          }
+        )rs");
+  }
 }
 
 void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
   field.Emit(
       {
           {"getter_thunk", Thunk(field, "get")},
+          {"ReturnType",
+           [&] {
+             if (field.is_cpp()) {
+               // guaranteed to have a nonnull submsg for the cpp kernel
+               field.Emit({}, "$pbi$::RawMessage;");
+             } else {
+               // upb kernel may return NULL for a submsg, we can detect this
+               // in terra rust if the option returned is None
+               field.Emit({}, "Option<$pbi$::RawMessage>;");
+             }
+           }},
       },
       R"rs(
-                  fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::RawMessage;
+                  fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $ReturnType$;
                )rs");
 }
 

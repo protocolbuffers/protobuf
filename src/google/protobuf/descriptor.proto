@@ -974,14 +974,14 @@ message FeatureSet {
 
   enum Utf8Validation {
     UTF8_VALIDATION_UNKNOWN = 0;
-    UNVERIFIED = 1;
+    NONE = 1;
     VERIFY = 2;
   }
   optional Utf8Validation utf8_validation = 4 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "UNVERIFIED" },
+    edition_defaults = { edition: EDITION_PROTO2, value: "NONE" },
     edition_defaults = { edition: EDITION_PROTO3, value: "VERIFY" }
   ];
 
