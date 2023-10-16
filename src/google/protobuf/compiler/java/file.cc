@@ -442,6 +442,13 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   FieldDescriptorSet extensions;
   CollectExtensions(file_proto, *file_->pool(), &extensions, file_data);
 
+  if (options_.strip_nonfunctional_codegen) {
+    // Skip feature extensions, which are a visible (but non-functional)
+    // deviation between editions and legacy syntax.
+    absl::erase_if(extensions, [](const FieldDescriptor* field) {
+      return field->containing_type()->full_name() == "google.protobuf.FeatureSet";
+    });
+  }
   if (!extensions.empty()) {
     // Must construct an ExtensionRegistry containing all existing extensions
     // and use it to parse the descriptor data again to recognize extensions.
@@ -744,6 +751,13 @@ void FileGenerator::GenerateKotlinSiblings(
 
 bool FileGenerator::ShouldIncludeDependency(const FileDescriptor* descriptor,
                                             bool immutable_api) {
+  // Skip feature imports, which are a visible (but non-functional) deviation
+  // between editions and legacy syntax.
+  if (options_.strip_nonfunctional_codegen &&
+      IsKnownFeatureProto(descriptor->name())) {
+    return false;
+  }
+
   return true;
 }
 

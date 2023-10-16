@@ -487,14 +487,18 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
   int flags = 0;
   if (FileDescriptorLegacy(descriptor_->file()).syntax() ==
       FileDescriptorLegacy::Syntax::SYNTAX_PROTO2) {
-    flags |= 0x1;
+    if (!context_->options().strip_nonfunctional_codegen) {
+      flags |= 0x1;
+    }
   }
   if (descriptor_->options().message_set_wire_format()) {
     flags |= 0x2;
   }
   if (FileDescriptorLegacy(descriptor_->file()).syntax() ==
       FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
-    flags |= 0x4;
+    if (!context_->options().strip_nonfunctional_codegen) {
+      flags |= 0x4;
+    }
   }
 
   WriteIntToUtf16CharSequence(flags, &chars);

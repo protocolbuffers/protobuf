@@ -7877,9 +7877,21 @@ static bool IsStringMapType(const FieldDescriptor& field) {
 
 void DescriptorBuilder::ValidateFileFeatures(const FileDescriptor* file,
                                              const FileDescriptorProto& proto) {
+  // Rely on our legacy validation for proto2/proto3 files.
+  if (FileDescriptorLegacy(file).syntax() !=
+      FileDescriptorLegacy::SYNTAX_EDITIONS) {
+    return;
+  }
+
   if (file->features().field_presence() == FeatureSet::LEGACY_REQUIRED) {
     AddError(file->name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
              "Required presence can't be specified by default.");
+  }
+  if (file->options().java_string_check_utf8()) {
+    AddError(
+        file->name(), proto, DescriptorPool::ErrorCollector::EDITIONS,
+        "File option java_string_check_utf8 is not allowed under editions. Use "
+        "the (pb.java).utf8_validation feature to control this behavior.");
   }
 }
 

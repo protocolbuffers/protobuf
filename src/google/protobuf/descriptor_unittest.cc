@@ -9258,7 +9258,7 @@ TEST_F(FeaturesTest, FeaturesOutsideEditions) {
       "editions.\n");
 }
 
-TEST_F(FeaturesTest, InvalidRequiredByDefault) {
+TEST_F(FeaturesTest, InvalidFileRequiredPresence) {
   BuildDescriptorMessagesInTestPool();
   BuildFileWithErrors(
       R"pb(
@@ -9269,6 +9269,31 @@ TEST_F(FeaturesTest, InvalidRequiredByDefault) {
       )pb",
       "foo.proto: foo.proto: EDITIONS: Required presence can't be specified "
       "by default.\n");
+}
+
+TEST_F(FeaturesTest, InvalidFileJavaStringCheckUtf8) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        options { java_string_check_utf8: true }
+      )pb",
+      "foo.proto: foo.proto: EDITIONS: File option java_string_check_utf8 is "
+      "not allowed under editions. Use the (pb.java).utf8_validation feature "
+      "to control this behavior.\n");
+}
+
+TEST_F(FeaturesTest, Proto2FileJavaStringCheckUtf8) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(
+      R"pb(
+        name: "foo.proto"
+        syntax: "proto2"
+        options { java_string_check_utf8: true }
+      )pb");
+  EXPECT_EQ(file->options().java_string_check_utf8(), true);
 }
 TEST_F(FeaturesTest, InvalidFieldPacked) {
   BuildDescriptorMessagesInTestPool();

@@ -26,6 +26,7 @@ cc_library(
         "names.cc",
     ],
     hdrs = [
+        "generator.h",
         "helpers.h",
         "name_resolver.h",
         "names.h",
@@ -35,10 +36,22 @@ cc_library(
     include_prefix = "google/protobuf/compiler/java",
     visibility = ["//pkg:__pkg__"],
     deps = [
+        ":java_features_bootstrap",
         "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/container:flat_hash_set",
+    ],
+)
+
+cc_library(
+    name = "java_features_bootstrap",
+    srcs = ["java_features.pb.cc"],
+    hdrs = ["java_features.pb.h"],
+    include_prefix = "google/protobuf/compiler/java",
+    deps = [
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf:protobuf_nowkt",
     ],
 )
 
@@ -57,7 +70,6 @@ cc_library(
         "file.cc",
         "generator.cc",
         "generator_factory.cc",
-        "java_features.pb.cc",
         "kotlin_generator.cc",
         "map_field.cc",
         "map_field_lite.cc",
@@ -113,6 +125,7 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
+        ":java_features_bootstrap",
         ":names",
         ":names_internal",
         "//src/google/protobuf:arena",

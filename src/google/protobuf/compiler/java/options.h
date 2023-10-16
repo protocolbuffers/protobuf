@@ -24,7 +24,8 @@ struct Options {
         generate_mutable_code(false),
         generate_shared_code(false),
         enforce_lite(false),
-        annotate_code(false) {
+        annotate_code(false),
+        strip_nonfunctional_codegen(false) {
   }
 
   bool generate_immutable_code;
@@ -43,6 +44,8 @@ struct Options {
   // Name of a file where we will write a list of generated file names, one
   // per line.
   std::string output_list_file;
+  // If true, strip out nonfunctional codegen.
+  bool strip_nonfunctional_codegen;
 };
 
 }  // namespace java
