@@ -506,7 +506,7 @@ inline void Type::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.source_context_;
+  delete _impl_.source_context_;
   _impl_.~Impl_();
 }
 
@@ -1333,7 +1333,7 @@ inline void Enum::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.edition_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.source_context_;
+  delete _impl_.source_context_;
   _impl_.~Impl_();
 }
 
@@ -1927,7 +1927,7 @@ Option::~Option() {
 inline void Option::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.value_;
+  delete _impl_.value_;
   _impl_.~Impl_();
 }
 

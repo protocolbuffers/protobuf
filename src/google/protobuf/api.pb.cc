@@ -326,7 +326,7 @@ inline void Api::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   _impl_.name_.Destroy();
   _impl_.version_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.source_context_;
+  delete _impl_.source_context_;
   _impl_.~Impl_();
 }
 
