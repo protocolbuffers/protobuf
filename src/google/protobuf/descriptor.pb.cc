@@ -2873,15 +2873,15 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
 
   // optional .google.protobuf.FileOptions options = 8;
   if (cached_has_bits & 0x00000008u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(8, _Internal::options(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        8, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
   // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
   if (cached_has_bits & 0x00000010u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(9, _Internal::source_code_info(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        9, _Internal::source_code_info(this),
         _Internal::source_code_info(this).GetCachedSize(), target, stream);
   }
 
@@ -3308,8 +3308,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
 
   // optional .google.protobuf.ExtensionRangeOptions options = 3;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(3, _Internal::options(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        3, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -3926,8 +3926,8 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
 
   // optional .google.protobuf.MessageOptions options = 7;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(7, _Internal::options(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        7, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -4664,8 +4664,8 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
 
   // optional .google.protobuf.FeatureSet features = 50;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(50, _Internal::features(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        50, _Internal::features(this),
         _Internal::features(this).GetCachedSize(), target, stream);
   }
 
@@ -5143,8 +5143,8 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
 
   // optional .google.protobuf.FieldOptions options = 8;
   if (cached_has_bits & 0x00000020u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(8, _Internal::options(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        8, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -5515,8 +5515,8 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
 
   // optional .google.protobuf.OneofOptions options = 2;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(2, _Internal::options(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        2, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -6036,8 +6036,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
 
   // optional .google.protobuf.EnumOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(3, _Internal::options(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        3, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -6359,8 +6359,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
 
   // optional .google.protobuf.EnumValueOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(3, _Internal::options(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        3, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -6648,8 +6648,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
 
   // optional .google.protobuf.ServiceOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(3, _Internal::options(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        3, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -6997,8 +6997,8 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
 
   // optional .google.protobuf.MethodOptions options = 4;
   if (cached_has_bits & 0x00000008u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(4, _Internal::options(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        4, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
@@ -7732,8 +7732,8 @@ constexpr ::_pbi::TcParseTable<5, 22, 3, 202, 12> FileOptions::_table_ = {
 
   // optional .google.protobuf.FeatureSet features = 50;
   if (cached_has_bits & 0x00000400u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(50, _Internal::features(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        50, _Internal::features(this),
         _Internal::features(this).GetCachedSize(), target, stream);
   }
 
@@ -8284,8 +8284,8 @@ constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
 
   // optional .google.protobuf.FeatureSet features = 12;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(12, _Internal::features(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        12, _Internal::features(this),
         _Internal::features(this).GetCachedSize(), target, stream);
   }
 
@@ -9030,8 +9030,8 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
 
   // optional .google.protobuf.FeatureSet features = 21;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(21, _Internal::features(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        21, _Internal::features(this),
         _Internal::features(this).GetCachedSize(), target, stream);
   }
 
@@ -9401,8 +9401,8 @@ constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
   cached_has_bits = _impl_._has_bits_[0];
   // optional .google.protobuf.FeatureSet features = 1;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(1, _Internal::features(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        1, _Internal::features(this),
         _Internal::features(this).GetCachedSize(), target, stream);
   }
 
@@ -9720,8 +9720,8 @@ constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
 
   // optional .google.protobuf.FeatureSet features = 7;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(7, _Internal::features(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        7, _Internal::features(this),
         _Internal::features(this).GetCachedSize(), target, stream);
   }
 
@@ -10054,8 +10054,8 @@ constexpr ::_pbi::TcParseTable<3, 4, 2, 0, 7> EnumValueOptions::_table_ = {
 
   // optional .google.protobuf.FeatureSet features = 2;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(2, _Internal::features(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        2, _Internal::features(this),
         _Internal::features(this).GetCachedSize(), target, stream);
   }
 
@@ -10368,8 +10368,8 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
 
   // optional .google.protobuf.FeatureSet features = 34;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(34, _Internal::features(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        34, _Internal::features(this),
         _Internal::features(this).GetCachedSize(), target, stream);
   }
 
@@ -10697,8 +10697,8 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
 
   // optional .google.protobuf.FeatureSet features = 35;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(35, _Internal::features(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        35, _Internal::features(this),
         _Internal::features(this).GetCachedSize(), target, stream);
   }
 
@@ -11993,8 +11993,8 @@ constexpr ::_pbi::TcParseTable<1, 2, 2, 0, 2> FeatureSetDefaults_FeatureSetEditi
   cached_has_bits = _impl_._has_bits_[0];
   // optional .google.protobuf.FeatureSet features = 2;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessage(2, _Internal::features(this),
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        2, _Internal::features(this),
         _Internal::features(this).GetCachedSize(), target, stream);
   }
 

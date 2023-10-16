@@ -489,16 +489,17 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!is_group()) {
-    p->Emit(
-        "target = $pbi$::WireFormatLite::\n"
-        "  InternalWrite$declared_type$($number$, _Internal::$name$(this),\n"
-        "    _Internal::$name$(this).GetCachedSize(), target, stream);\n");
+    p->Emit(R"cc(
+      target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
+          $number$, _Internal::$name$(this),
+          _Internal::$name$(this).GetCachedSize(), target, stream);
+    )cc");
   } else {
-    p->Emit(
-        "target = stream->EnsureSpace(target);\n"
-        "target = $pbi$::WireFormatLite::\n"
-        "  InternalWrite$declared_type$(\n"
-        "    $number$, _Internal::$name$(this), target, stream);\n");
+    p->Emit(R"cc(
+      target = stream->EnsureSpace(target);
+      target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
+          $number$, _Internal::$name$(this), target, stream);
+    )cc");
   }
 }
 
