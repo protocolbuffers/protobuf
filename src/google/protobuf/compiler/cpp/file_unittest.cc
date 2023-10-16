@@ -76,6 +76,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestNestedExtension",
       "TestMultipleExtensionRanges",
       "TestMixedFieldsAndExtensions",
+      "TestMessageWithManyRepeatedPtrFields",
       "TestMessageSize",
       "TestJsonName",
       "TestIsInitialized.SubMessage.SubGroup",

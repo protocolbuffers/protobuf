@@ -53,6 +53,7 @@ namespace protobuf {
 namespace {
 
 using ::protobuf_unittest::TestAllTypes;
+using ::protobuf_unittest::TestMessageWithManyRepeatedPtrFields;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Ge;
