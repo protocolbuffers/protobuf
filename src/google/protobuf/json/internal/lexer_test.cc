@@ -27,9 +27,9 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/variant.h"
+#include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "google/protobuf/json/internal/test_input_stream.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
@@ -197,22 +197,19 @@ void Do(absl::string_view json,
       std::string second(json.substr(i, j));
       std::string third(json.substr(i + j));
 
-      TestInputStream in = {first, second, third};
+      io::internal::TestZeroCopyInputStream in{first, second, third};
       test(&in);
       if (testing::Test::HasFailure()) {
         return;
       }
 
       if (verify_all_consumed) {
-        if (!absl::c_all_of(third,
-                            [](char c) { return absl::ascii_isspace(c); })) {
-          ASSERT_GE(in.Consumed(), 3);
-        } else if (!absl::c_all_of(
-                       second, [](char c) { return absl::ascii_isspace(c); })) {
-          ASSERT_GE(in.Consumed(), 2);
-        } else {
-          ASSERT_GE(in.Consumed(), 1);
-        }
+        // Check that any unread bytes are just whitespace.
+        int64_t byte_count = in.ByteCount();
+        ASSERT_LE(byte_count, json.size());
+        EXPECT_TRUE(
+            absl::c_all_of(json.substr(byte_count, json.size() - byte_count),
+                           [](char c) { return absl::ascii_isspace(c); }));
       }
     }
   }

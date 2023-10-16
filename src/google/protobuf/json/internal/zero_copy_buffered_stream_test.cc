@@ -14,7 +14,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
-#include "google/protobuf/json/internal/test_input_stream.h"
+#include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 namespace google {
@@ -46,7 +46,7 @@ MATCHER_P(StatusIs, status,
 #define ASSERT_OK(x) ASSERT_THAT(x, StatusIs(absl::StatusCode::kOk))
 
 TEST(ZcBufferTest, ReadUnbuffered) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   {
@@ -69,7 +69,7 @@ TEST(ZcBufferTest, ReadUnbuffered) {
 }
 
 TEST(ZcBufferTest, ReadBuffered) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   {
@@ -86,7 +86,7 @@ TEST(ZcBufferTest, ReadBuffered) {
 }
 
 TEST(ZcBufferTest, HoldAcrossSeam) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   auto chunk = stream.Take(3);
@@ -100,7 +100,7 @@ TEST(ZcBufferTest, HoldAcrossSeam) {
 }
 
 TEST(ZcBufferTest, BufferAcrossSeam) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   auto chunk = stream.Take(2);
@@ -113,8 +113,24 @@ TEST(ZcBufferTest, BufferAcrossSeam) {
   EXPECT_THAT(chunk, IsOkAndHolds("fo"));
 }
 
+TEST(ZcBufferTest, TakeEof) {
+  io::internal::TestZeroCopyInputStream in{"foo", "bar"};
+  ZeroCopyBufferedStream stream(&in);
+
+  // This should fail since there are not enough bytes available.
+  auto chunk = stream.Take(7);
+  EXPECT_FALSE(chunk.ok());
+  EXPECT_TRUE(stream.IsBuffering());
+
+  // Subsequent calls to Take() should still succeed.
+  auto chunk2 = stream.Take(2);
+  auto chunk3 = stream.Take(4);
+  EXPECT_THAT(chunk2, IsOkAndHolds("fo"));
+  EXPECT_THAT(chunk3, IsOkAndHolds("obar"));
+}
+
 TEST(ZcBufferTest, MarkUnbuffered) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   ASSERT_OK(stream.Advance(1));
@@ -125,7 +141,7 @@ TEST(ZcBufferTest, MarkUnbuffered) {
 }
 
 TEST(ZcBufferTest, MarkBuffered) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   ASSERT_OK(stream.Advance(1));
