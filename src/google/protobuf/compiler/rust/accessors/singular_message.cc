@@ -18,6 +18,8 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
+const int DEFAULT_SCRATCH_SPACE_BYTES = 4096;
+
 void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
   Context<Descriptor> d = field.WithDesc(field.desc().message_type());
   auto prefix = "crate::" + GetCrateRelativeQualifiedPath(d);
@@ -42,7 +44,8 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
   } else {
     field.Emit({{"prefix", prefix},
                 {"field", field.desc().name()},
-                {"getter_thunk", Thunk(field, "get")}},
+                {"getter_thunk", Thunk(field, "get")},
+                {"DEFAULT_SCRATCH_SPACE_BYTES", DEFAULT_SCRATCH_SPACE_BYTES}},
                R"rs(
           pub fn r#$field$(&self) -> $prefix$View {
             let submsg = unsafe { $getter_thunk$(self.inner.msg) };
@@ -51,7 +54,7 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
             // a null ptr received from upb manifests as Option::None
             match submsg {
                 // TODO:(b/304357029)
-                None => $prefix$View::new($pbi$::Private, $pbr$::ScratchSpace::zeroed_block()),
+                None => $prefix$View::new($pbi$::Private, $pbr$::ScratchSpace::get_default_rawmessage::<$DEFAULT_SCRATCH_SPACE_BYTES$>($pbi$::Private)),
                 Some(field) => $prefix$View::new($pbi$::Private, field),
               }
           }

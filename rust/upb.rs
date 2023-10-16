@@ -17,7 +17,6 @@ use std::mem::MaybeUninit;
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
 use std::slice;
-use std::sync::Once;
 
 /// See `upb/port/def.inc`.
 const UPB_MALLOC_ALIGN: usize = 8;
@@ -135,35 +134,43 @@ impl Drop for Arena {
     }
 }
 
-static mut INTERNAL_PTR: Option<RawMessage> = None;
-static INIT: Once = Once::new();
-
-// TODO:(b/304577017)
-const ALIGN: usize = 32;
-const UPB_SCRATCH_SPACE_BYTES: usize = 64_000;
-
-/// Holds a zero-initialized block of memory for use by upb.
+/// Returns a blank RawMessage for readonly use by upb.
+/// Internally, this holds an aligned zero-initialized block of memory.
 /// By default, if a message is not set in cpp, a default message is created.
 /// upb departs from this and returns a null ptr. However, since contiguous
 /// chunks of memory filled with zeroes are legit messages from upb's point of
-/// view, we can allocate a large block and refer to that when dealing
-/// with readonly access.
+/// view, we can allocate a large block and refer to that when dealing with
+/// readonly access.
 pub struct ScratchSpace;
 impl ScratchSpace {
-    pub fn zeroed_block() -> RawMessage {
-        unsafe {
-            INIT.call_once(|| {
-                let layout =
-                    std::alloc::Layout::from_size_align(UPB_SCRATCH_SPACE_BYTES, ALIGN).unwrap();
-                let Some(ptr) =
-                    crate::__internal::RawMessage::new(std::alloc::alloc_zeroed(layout).cast())
-                else {
-                    std::alloc::handle_alloc_error(layout)
-                };
-                INTERNAL_PTR = Some(ptr)
-            });
-            INTERNAL_PTR.unwrap()
-        }
+    const fn get_aligned_zero_buffer<const N: usize>() -> &'static [u8; N] {
+        // 32-bit alignment
+        #[repr(align(32))]
+        struct AlignedBuffer<const N: usize>([u8; N]);
+
+        const ZERO_BUFFER_128: AlignedBuffer<128> = AlignedBuffer([0; 128]);
+        const ZERO_BUFFER_4096: AlignedBuffer<4096> = AlignedBuffer([0; 4096]);
+        const ZERO_BUFFER_65536: AlignedBuffer<65536> = AlignedBuffer([0; 65536]);
+
+        let p: *const [u8] = match N {
+            0..=128 => &ZERO_BUFFER_128.0,
+            129..=4096 => &ZERO_BUFFER_4096.0,
+            4097..=65536 => &ZERO_BUFFER_65536.0,
+            _ => panic!("upb scratchspace :: Need a bigger buffer"),
+        };
+
+        // If `TryFrom` were `const`, this could be done with that instead of `unsafe`.
+        // SAFETY: `p` points to a constant initialized buffer of at least `N` bytes
+        unsafe { &*p.cast() }
+    }
+
+    pub fn get_default_rawmessage<const N: usize>(_private: Private) -> RawMessage {
+        // SAFETY: get_aligned_zero_buffer returns a zeroed buffer of at least `N` bytes
+        return unsafe {
+            NonNull::new_unchecked(
+                (Self::get_aligned_zero_buffer::<N>().as_ptr() as *mut u8).cast(),
+            )
+        };
     }
 }
 
