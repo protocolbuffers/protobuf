@@ -293,7 +293,10 @@ class RepeatedField final
   // Gets the Arena on which this RepeatedField stores its elements.
   // Note: this can be inaccurate for split default fields so we make this
   // function non-const.
-  inline Arena* GetArena() { return GetOwningArena(); }
+  inline Arena* GetArena() {
+    return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
+                              : rep()->arena;
+  }
 
   // For internal use only.
   //
@@ -326,12 +329,6 @@ class RepeatedField final
   static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize = sizeof(Rep);
 
   RepeatedField(Arena* arena, const RepeatedField& rhs);
-
-  // Gets the Arena on which this RepeatedField stores its elements.
-  inline Arena* GetOwningArena() const {
-    return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
-                              : rep()->arena;
-  }
 
 
   // Swaps entire contents with "other". Should be called only if the caller can

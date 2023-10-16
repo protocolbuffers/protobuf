@@ -221,6 +221,11 @@ class PROTOBUF_EXPORT MessageLite {
   // if arena is a nullptr.
   virtual MessageLite* New(Arena* arena) const = 0;
 
+  // Returns the arena, if any, that directly owns this message and its internal
+  // memory (Arena::Own is different in that the arena doesn't directly own the
+  // internal memory). This method is used in proto's implementation for
+  // swapping, moving and setting allocated, for deciding whether the ownership
+  // of this message or its internal memory could be changed.
   Arena* GetArena() const { return _internal_metadata_.arena(); }
 
   // Clear all fields of the message and set them to their default values.
@@ -510,13 +515,6 @@ class PROTOBUF_EXPORT MessageLite {
   }
 
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
-
-  // Returns the arena, if any, that directly owns this message and its internal
-  // memory (Arena::Own is different in that the arena doesn't directly own the
-  // internal memory). This method is used in proto's implementation for
-  // swapping, moving and setting allocated, for deciding whether the ownership
-  // of this message or its internal memory could be changed.
-  Arena* GetOwningArena() const { return _internal_metadata_.arena(); }
 
   // We use a secondary vtable for descriptor based methods. This way ClassData
   // does not growth with the number of descriptor methods. This avoids extra

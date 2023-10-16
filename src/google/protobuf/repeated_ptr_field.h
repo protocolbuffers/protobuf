@@ -651,8 +651,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Gets the Arena on which this RepeatedPtrField stores its elements.
   inline Arena* GetArena() const { return arena_; }
 
-  inline Arena* GetOwningArena() const { return arena_; }
-
  private:
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
@@ -1317,9 +1315,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
 
-  // Internal version of GetArena().
-  inline Arena* GetOwningArena() const;
-
 
   // Implementations for ExtractSubrange(). The copying behavior must be
   // included only if the type supports the necessary operations (e.g.,
@@ -1675,11 +1670,6 @@ inline Arena* RepeatedPtrField<Element>::GetArena() const {
   return RepeatedPtrFieldBase::GetArena();
 }
 #endif  // !PROTOBUF_FUTURE_REMOVE_CONST_REPEATEDFIELD_GETARENA_API
-
-template <typename Element>
-inline Arena* RepeatedPtrField<Element>::GetOwningArena() const {
-  return RepeatedPtrFieldBase::GetArena();
-}
 
 template <typename Element>
 inline size_t RepeatedPtrField<Element>::SpaceUsedExcludingSelfLong() const {

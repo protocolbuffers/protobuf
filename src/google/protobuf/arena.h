@@ -389,7 +389,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     // mutually exclusive fashion, we use implicit conversions to base classes
     // to force an explicit ranking for our preferences.  The lowest ranked
     // version that compiles will be accepted.
-    struct Rank1 {};
+    struct Rank2 {};
+    struct Rank1 : Rank2 {};
     struct Rank0 : Rank1 {};
 
     static Arena* GetOwningArena(const T* p) {
@@ -402,8 +403,15 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       return p->GetOwningArena();
     }
 
+    // TODO: remove this function.
     template <typename U>
-    static Arena* GetOwningArena(Rank1, const U*) {
+    static auto GetOwningArena(Rank1, const U* p)
+        -> EnableIfArena<decltype(p->GetArena())> {
+      return p->GetArena();
+    }
+
+    template <typename U>
+    static Arena* GetOwningArena(Rank2, const U*) {
       return nullptr;
     }
 
