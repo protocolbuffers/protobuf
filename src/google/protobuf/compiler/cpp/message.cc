@@ -299,7 +299,7 @@ bool IsCrossFileMaybeMap(const FieldDescriptor* field) {
 
 bool HasNonSplitOptionalString(const Descriptor* desc, const Options& options) {
   for (const auto* field : FieldRange(desc)) {
-    if (IsString(field, options) && !field->is_repeated() &&
+    if (IsString(field) && !field->is_repeated() &&
         !field->real_containing_oneof() && !ShouldSplit(field, options)) {
       return true;
     }
@@ -1384,7 +1384,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "\n",
       index_in_file_messages_);
 
-  if (IsAnyMessage(descriptor_, options_)) {
+  if (IsAnyMessage(descriptor_)) {
     format(
         "// implements Any -----------------------------------------------\n"
         "\n");
@@ -1870,7 +1870,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
     format("::$proto_ns$::internal::WeakFieldMap _weak_field_map_;\n");
   }
   // Generate _any_metadata_ for the Any type.
-  if (IsAnyMessage(descriptor_, options_)) {
+  if (IsAnyMessage(descriptor_)) {
     format("::$proto_ns$::internal::AnyMetadata _any_metadata_;\n");
   }
 
@@ -1983,7 +1983,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     return;
   }
 
-  if (IsAnyMessage(descriptor_, options_)) {
+  if (IsAnyMessage(descriptor_)) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
           "bool $classname$::GetAnyFieldDescriptors(\n"
@@ -2622,7 +2622,7 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   };
 
   auto init_any_metadata = [&] {
-    if (IsAnyMessage(descriptor_, options_)) {
+    if (IsAnyMessage(descriptor_)) {
       separator();
       p->Emit("_any_metadata_{&type_url_, &value_}");
     }
@@ -3124,7 +3124,7 @@ void MessageGenerator::GenerateCopyConstructorBodyImpl(io::Printer* p) const {
               decltype($weak_field_map$){from.$weak_field_map$},
             )cc");
           }
-          if (IsAnyMessage(descriptor_, options_)) {
+          if (IsAnyMessage(descriptor_)) {
             p->Emit(R"cc(
               /*decltype($any_metadata$)*/ {
                   &_impl_.type_url_,

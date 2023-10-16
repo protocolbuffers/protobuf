@@ -596,7 +596,7 @@ void SingularString::GenerateConstructorCode(io::Printer* p) const {
     $field_$.InitDefault();
   )cc");
 
-  if (IsString(field_, *opts_) && EmptyDefault()) {
+  if (IsString(field_) && EmptyDefault()) {
     p->Emit(R"cc(
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
       $field_$.Set("", GetArena());
