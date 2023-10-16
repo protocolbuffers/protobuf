@@ -8,6 +8,7 @@
 //! Tests covering accessors for singular bool, int32, int64, and bytes fields.
 
 use googletest::prelude::*;
+use matchers::{is_set, is_unset};
 use protobuf::Optional;
 use unittest_proto::proto2_unittest::{TestAllTypes, TestAllTypes_};
 
@@ -199,10 +200,10 @@ fn test_optional_bool_accessors() {
 #[test]
 fn test_optional_bytes_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_that!(msg.optional_bytes(), eq(b""));
+    assert_that!(*msg.optional_bytes(), empty());
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
-    assert_that!(msg.optional_bytes_mut().get(), eq(b""));
-    assert_that!(msg.optional_bytes_mut().is_unset(), eq(true));
+    assert_that!(*msg.optional_bytes_mut().get(), empty());
+    assert_that!(msg.optional_bytes_mut(), is_unset());
 
     {
         let s = Vec::from(&b"hello world"[..]);
@@ -210,34 +211,34 @@ fn test_optional_bytes_accessors() {
     }
     assert_that!(msg.optional_bytes(), eq(b"hello world"));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"hello world"[..])));
-    assert_that!(msg.optional_bytes_mut().is_set(), eq(true));
+    assert_that!(msg.optional_bytes_mut(), is_set());
     assert_that!(msg.optional_bytes_mut().get(), eq(b"hello world"));
 
     msg.optional_bytes_mut().or_default().set(b"accessors_test");
     assert_that!(msg.optional_bytes(), eq(b"accessors_test"));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"accessors_test"[..])));
-    assert_that!(msg.optional_bytes_mut().is_set(), eq(true));
+    assert_that!(msg.optional_bytes_mut(), is_set());
     assert_that!(msg.optional_bytes_mut().get(), eq(b"accessors_test"));
     assert_that!(msg.optional_bytes_mut().or_default().get(), eq(b"accessors_test"));
 
     msg.optional_bytes_mut().clear();
-    assert_that!(msg.optional_bytes(), eq(b""));
+    assert_that!(*msg.optional_bytes(), empty());
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
-    assert_that!(msg.optional_bytes_mut().is_unset(), eq(true));
+    assert_that!(msg.optional_bytes_mut(), is_unset());
 
     msg.optional_bytes_mut().set(b"");
-    assert_that!(msg.optional_bytes(), eq(b""));
+    assert_that!(*msg.optional_bytes(), empty());
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b""[..])));
 
     msg.optional_bytes_mut().clear();
     msg.optional_bytes_mut().or_default();
-    assert_that!(msg.optional_bytes(), eq(b""));
+    assert_that!(*msg.optional_bytes(), empty());
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b""[..])));
 
     msg.optional_bytes_mut().or_default().set(b"\xffbinary\x85non-utf8");
     assert_that!(msg.optional_bytes(), eq(b"\xffbinary\x85non-utf8"));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"\xffbinary\x85non-utf8"[..])));
-    assert_that!(msg.optional_bytes_mut().is_set(), eq(true));
+    assert_that!(msg.optional_bytes_mut(), is_set());
     assert_that!(msg.optional_bytes_mut().get(), eq(b"\xffbinary\x85non-utf8"));
     assert_that!(msg.optional_bytes_mut().or_default().get(), eq(b"\xffbinary\x85non-utf8"));
 }
@@ -248,7 +249,7 @@ fn test_nonempty_default_bytes_accessors() {
     assert_that!(msg.default_bytes(), eq(b"world"));
     assert_that!(msg.default_bytes_opt(), eq(Optional::Unset(&b"world"[..])));
     assert_that!(msg.default_bytes_mut().get(), eq(b"world"));
-    assert_that!(msg.default_bytes_mut().is_unset(), eq(true));
+    assert_that!(msg.default_bytes_mut(), is_unset());
 
     {
         let s = String::from("hello world");
@@ -256,23 +257,23 @@ fn test_nonempty_default_bytes_accessors() {
     }
     assert_that!(msg.default_bytes(), eq(b"hello world"));
     assert_that!(msg.default_bytes_opt(), eq(Optional::Set(&b"hello world"[..])));
-    assert_that!(msg.default_bytes_mut().is_set(), eq(true));
+    assert_that!(msg.default_bytes_mut(), is_set());
     assert_that!(msg.default_bytes_mut().get(), eq(b"hello world"));
 
     msg.default_bytes_mut().or_default().set(b"accessors_test");
     assert_that!(msg.default_bytes(), eq(b"accessors_test"));
     assert_that!(msg.default_bytes_opt(), eq(Optional::Set(&b"accessors_test"[..])));
-    assert_that!(msg.default_bytes_mut().is_set(), eq(true));
+    assert_that!(msg.default_bytes_mut(), is_set());
     assert_that!(msg.default_bytes_mut().get(), eq(b"accessors_test"));
     assert_that!(msg.default_bytes_mut().or_default().get(), eq(b"accessors_test"));
 
     msg.default_bytes_mut().clear();
     assert_that!(msg.default_bytes(), eq(b"world"));
     assert_that!(msg.default_bytes_opt(), eq(Optional::Unset(&b"world"[..])));
-    assert_that!(msg.default_bytes_mut().is_unset(), eq(true));
+    assert_that!(msg.default_bytes_mut(), is_unset());
 
     msg.default_bytes_mut().set(b"");
-    assert_that!(msg.default_bytes(), eq(b""));
+    assert_that!(*msg.default_bytes(), empty());
     assert_that!(msg.default_bytes_opt(), eq(Optional::Set(&b""[..])));
 
     msg.default_bytes_mut().clear();
@@ -283,7 +284,7 @@ fn test_nonempty_default_bytes_accessors() {
     msg.default_bytes_mut().or_default().set(b"\xffbinary\x85non-utf8");
     assert_that!(msg.default_bytes(), eq(b"\xffbinary\x85non-utf8"));
     assert_that!(msg.default_bytes_opt(), eq(Optional::Set(&b"\xffbinary\x85non-utf8"[..])));
-    assert_that!(msg.default_bytes_mut().is_set(), eq(true));
+    assert_that!(msg.default_bytes_mut(), is_set());
     assert_that!(msg.default_bytes_mut().get(), eq(b"\xffbinary\x85non-utf8"));
     assert_that!(msg.default_bytes_mut().or_default().get(), eq(b"\xffbinary\x85non-utf8"));
 }
@@ -294,7 +295,7 @@ fn test_optional_string_accessors() {
     assert_that!(msg.optional_string(), eq(""));
     assert_that!(msg.optional_string_opt(), eq(Optional::Unset("".into())));
     assert_that!(msg.optional_string_mut().get(), eq(""));
-    assert_that!(msg.optional_string_mut().is_unset(), eq(true));
+    assert_that!(msg.optional_string_mut(), is_unset());
 
     {
         let s = String::from("hello world");
@@ -302,20 +303,20 @@ fn test_optional_string_accessors() {
     }
     assert_that!(msg.optional_string(), eq("hello world"));
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("hello world".into())));
-    assert_that!(msg.optional_string_mut().is_set(), eq(true));
+    assert_that!(msg.optional_string_mut(), is_set());
     assert_that!(msg.optional_string_mut().get(), eq("hello world"));
 
     msg.optional_string_mut().or_default().set("accessors_test");
     assert_that!(msg.optional_string(), eq("accessors_test"));
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("accessors_test".into())));
-    assert_that!(msg.optional_string_mut().is_set(), eq(true));
+    assert_that!(msg.optional_string_mut(), is_set());
     assert_that!(msg.optional_string_mut().get(), eq("accessors_test"));
     assert_that!(msg.optional_string_mut().or_default().get(), eq("accessors_test"));
 
     msg.optional_string_mut().clear();
     assert_that!(msg.optional_string(), eq(""));
     assert_that!(msg.optional_string_opt(), eq(Optional::Unset("".into())));
-    assert_that!(msg.optional_string_mut().is_unset(), eq(true));
+    assert_that!(msg.optional_string_mut(), is_unset());
 
     msg.optional_string_mut().set("");
     assert_that!(msg.optional_string(), eq(""));
@@ -333,7 +334,7 @@ fn test_nonempty_default_string_accessors() {
     assert_that!(msg.default_string(), eq("hello"));
     assert_that!(msg.default_string_opt(), eq(Optional::Unset("hello".into())));
     assert_that!(msg.default_string_mut().get(), eq("hello"));
-    assert_that!(msg.default_string_mut().is_unset(), eq(true));
+    assert_that!(msg.default_string_mut(), is_unset());
 
     {
         let s = String::from("hello world");
@@ -341,20 +342,20 @@ fn test_nonempty_default_string_accessors() {
     }
     assert_that!(msg.default_string(), eq("hello world"));
     assert_that!(msg.default_string_opt(), eq(Optional::Set("hello world".into())));
-    assert_that!(msg.default_string_mut().is_set(), eq(true));
+    assert_that!(msg.default_string_mut(), is_set());
     assert_that!(msg.default_string_mut().get(), eq("hello world"));
 
     msg.default_string_mut().or_default().set("accessors_test");
     assert_that!(msg.default_string(), eq("accessors_test"));
     assert_that!(msg.default_string_opt(), eq(Optional::Set("accessors_test".into())));
-    assert_that!(msg.default_string_mut().is_set(), eq(true));
+    assert_that!(msg.default_string_mut(), is_set());
     assert_that!(msg.default_string_mut().get(), eq("accessors_test"));
     assert_that!(msg.default_string_mut().or_default().get(), eq("accessors_test"));
 
     msg.default_string_mut().clear();
     assert_that!(msg.default_string(), eq("hello"));
     assert_that!(msg.default_string_opt(), eq(Optional::Unset("hello".into())));
-    assert_that!(msg.default_string_mut().is_unset(), eq(true));
+    assert_that!(msg.default_string_mut(), is_unset());
 
     msg.default_string_mut().set("");
     assert_that!(msg.default_string(), eq(""));
