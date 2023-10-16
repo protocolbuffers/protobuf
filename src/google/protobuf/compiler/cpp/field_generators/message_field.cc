@@ -55,9 +55,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
                           ? default_ptr
                           : absl::Substitute("reinterpret_cast<const $0*>($1)",
                                              base, default_ptr)},
-      {"base_cast",
-       absl::Substitute("reinterpret_cast<$0*>",
-                        !is_foreign && !weak ? qualified_type : base)},
+      {"base_cast", !is_foreign && !weak
+                        ? ""
+                        : absl::Substitute("reinterpret_cast<$0*>", base)},
       Sub{"weak_cast",
           !weak ? "" : absl::Substitute("reinterpret_cast<$0*>", base)}
           .ConditionalFunctionCall(),

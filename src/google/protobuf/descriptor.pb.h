@@ -11541,11 +11541,11 @@ inline void FileDescriptorProto::set_allocated_options(::google::protobuf::FileO
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FileOptions*>(_impl_.options_);
+    delete (_impl_.options_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FileOptions*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -11637,11 +11637,11 @@ inline void FileDescriptorProto::set_allocated_source_code_info(::google::protob
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::SourceCodeInfo*>(_impl_.source_code_info_);
+    delete (_impl_.source_code_info_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -11893,11 +11893,11 @@ inline void DescriptorProto_ExtensionRange::set_allocated_options(::google::prot
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(_impl_.options_);
+    delete (_impl_.options_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -12418,11 +12418,11 @@ inline void DescriptorProto::set_allocated_options(::google::protobuf::MessageOp
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageOptions*>(_impl_.options_);
+    delete (_impl_.options_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageOptions*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -12996,11 +12996,11 @@ inline void ExtensionRangeOptions::set_allocated_features(::google::protobuf::Fe
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
+    delete (_impl_.features_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -13594,11 +13594,11 @@ inline void FieldDescriptorProto::set_allocated_options(::google::protobuf::Fiel
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FieldOptions*>(_impl_.options_);
+    delete (_impl_.options_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FieldOptions*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -13793,11 +13793,11 @@ inline void OneofDescriptorProto::set_allocated_options(::google::protobuf::Oneo
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::OneofOptions*>(_impl_.options_);
+    delete (_impl_.options_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::OneofOptions*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -14073,11 +14073,11 @@ inline void EnumDescriptorProto::set_allocated_options(::google::protobuf::EnumO
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::EnumOptions*>(_impl_.options_);
+    delete (_impl_.options_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::EnumOptions*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -14422,11 +14422,11 @@ inline void EnumValueDescriptorProto::set_allocated_options(::google::protobuf::
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::EnumValueOptions*>(_impl_.options_);
+    delete (_impl_.options_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::EnumValueOptions*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -14642,11 +14642,11 @@ inline void ServiceDescriptorProto::set_allocated_options(::google::protobuf::Se
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::ServiceOptions*>(_impl_.options_);
+    delete (_impl_.options_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::ServiceOptions*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -14955,11 +14955,11 @@ inline void MethodDescriptorProto::set_allocated_options(::google::protobuf::Met
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MethodOptions*>(_impl_.options_);
+    delete (_impl_.options_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MethodOptions*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -16102,11 +16102,11 @@ inline void FileOptions::set_allocated_features(::google::protobuf::FeatureSet* 
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
+    delete (_impl_.features_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -16391,11 +16391,11 @@ inline void MessageOptions::set_allocated_features(::google::protobuf::FeatureSe
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
+    delete (_impl_.features_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -16994,11 +16994,11 @@ inline void FieldOptions::set_allocated_features(::google::protobuf::FeatureSet*
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
+    delete (_impl_.features_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -17143,11 +17143,11 @@ inline void OneofOptions::set_allocated_features(::google::protobuf::FeatureSet*
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
+    delete (_impl_.features_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -17376,11 +17376,11 @@ inline void EnumOptions::set_allocated_features(::google::protobuf::FeatureSet* 
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
+    delete (_impl_.features_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -17553,11 +17553,11 @@ inline void EnumValueOptions::set_allocated_features(::google::protobuf::Feature
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
+    delete (_impl_.features_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -17730,11 +17730,11 @@ inline void ServiceOptions::set_allocated_features(::google::protobuf::FeatureSe
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
+    delete (_impl_.features_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -17964,11 +17964,11 @@ inline void MethodOptions::set_allocated_features(::google::protobuf::FeatureSet
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
+    delete (_impl_.features_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
@@ -18773,11 +18773,11 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_features(
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::FeatureSet*>(_impl_.features_);
+    delete (_impl_.features_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::FeatureSet*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
