@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ["7.4", "8.1", "8.2"]
+        version: ["8.0", "8.1", "8.2"]
     name: Build ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
