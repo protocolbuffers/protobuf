@@ -7,7 +7,10 @@
 
 #include "text_format_conformance_suite.h"
 
-#include "google/protobuf/any.pb.h"
+#include <cstddef>
+#include <string>
+#include <vector>
+
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "conformance_test.h"
@@ -20,12 +23,9 @@ namespace proto2_messages = protobuf_test_messages::proto2;
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using conformance::WireFormat;
-using google::protobuf::Message;
-using google::protobuf::TextFormat;
 using proto2_messages::TestAllTypesProto2;
 using proto2_messages::UnknownToTestAllTypes;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
-using std::string;
 
 namespace google {
 namespace protobuf {
@@ -61,7 +61,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
     const ConformanceRequestSetting& setting, Message* test_message) {
   const ConformanceRequest& request = setting.GetRequest();
   WireFormat requested_output = request.requested_output_format();
-  const string& test_name = setting.GetTestName();
+  const std::string& test_name = setting.GetTestName();
   ConformanceLevel level = setting.GetLevel();
 
   switch (response.result_case()) {
@@ -111,9 +111,9 @@ bool TextFormatConformanceTestSuite::ParseResponse(
   return true;
 }
 
-void TextFormatConformanceTestSuite::ExpectParseFailure(const string& test_name,
-                                                        ConformanceLevel level,
-                                                        const string& input) {
+void TextFormatConformanceTestSuite::ExpectParseFailure(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input) {
   TestAllTypesProto3 prototype;
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
@@ -122,7 +122,7 @@ void TextFormatConformanceTestSuite::ExpectParseFailure(const string& test_name,
       conformance::TEXT_FORMAT_TEST, prototype, test_name, input);
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  string effective_test_name =
+  std::string effective_test_name =
       absl::StrCat(setting.ConformanceLevelToString(level),
                    ".Proto3.TextFormatInput.", test_name);
 
@@ -138,36 +138,38 @@ void TextFormatConformanceTestSuite::ExpectParseFailure(const string& test_name,
 }
 
 void TextFormatConformanceTestSuite::RunValidTextFormatTest(
-    const string& test_name, ConformanceLevel level, const string& input_text) {
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_text) {
   TestAllTypesProto3 prototype;
   RunValidTextFormatTestWithMessage(test_name, level, input_text, prototype);
 }
 
 void TextFormatConformanceTestSuite::RunValidTextFormatTestProto2(
-    const string& test_name, ConformanceLevel level, const string& input_text) {
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_text) {
   TestAllTypesProto2 prototype;
   RunValidTextFormatTestWithMessage(test_name, level, input_text, prototype);
 }
 
 void TextFormatConformanceTestSuite::RunValidTextFormatTestWithExpected(
-    const string& test_name, ConformanceLevel level, const string& input_text,
-    const string& expected_text) {
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_text, const std::string& expected_text) {
   TestAllTypesProto3 prototype;
   RunValidTextFormatTestWithMessage(test_name, level, input_text, expected_text,
                                     prototype);
 }
 
 void TextFormatConformanceTestSuite::RunValidTextFormatTestProto2WithExpected(
-    const string& test_name, ConformanceLevel level, const string& input_text,
-    const string& expected_text) {
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_text, const std::string& expected_text) {
   TestAllTypesProto2 prototype;
   RunValidTextFormatTestWithMessage(test_name, level, input_text, expected_text,
                                     prototype);
 }
 
 void TextFormatConformanceTestSuite::RunValidTextFormatTestWithMessage(
-    const string& test_name, ConformanceLevel level, const string& input_text,
-    const Message& prototype) {
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_text, const Message& prototype) {
   ConformanceRequestSetting setting1(
       level, conformance::TEXT_FORMAT, conformance::PROTOBUF,
       conformance::TEXT_FORMAT_TEST, prototype, test_name, input_text);
@@ -179,8 +181,9 @@ void TextFormatConformanceTestSuite::RunValidTextFormatTestWithMessage(
 }
 
 void TextFormatConformanceTestSuite::RunValidTextFormatTestWithMessage(
-    const string& test_name, ConformanceLevel level, const string& input_text,
-    const string& expected_text, const Message& prototype) {
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_text, const std::string& expected_text,
+    const Message& prototype) {
   ConformanceRequestSetting setting1(
       level, conformance::TEXT_FORMAT, conformance::PROTOBUF,
       conformance::TEXT_FORMAT_TEST, prototype, test_name, input_text);
@@ -192,8 +195,8 @@ void TextFormatConformanceTestSuite::RunValidTextFormatTestWithMessage(
 }
 
 void TextFormatConformanceTestSuite::RunValidUnknownTextFormatTest(
-    const string& test_name, const Message& message) {
-  string serialized_input;
+    const std::string& test_name, const Message& message) {
+  std::string serialized_input;
   message.SerializeToString(&serialized_input);
   TestAllTypesProto3 prototype;
   ConformanceRequestSetting setting1(
@@ -509,16 +512,16 @@ void TextFormatConformanceTestSuite::RunTextFormatPerformanceTests() {
 // This is currently considered valid input by some languages but not others
 void TextFormatConformanceTestSuite::
     TestTextFormatPerformanceMergeMessageWithRepeatedField(
-        const string& test_type_name, const string& message_field) {
-  string recursive_message =
+        const std::string& test_type_name, const std::string& message_field) {
+  std::string recursive_message =
       absl::StrCat("recursive_message { ", message_field, " }");
 
-  string input;
+  std::string input;
   for (size_t i = 0; i < kPerformanceRepeatCount; i++) {
     absl::StrAppend(&input, recursive_message);
   }
 
-  string expected = "recursive_message { ";
+  std::string expected = "recursive_message { ";
   for (size_t i = 0; i < kPerformanceRepeatCount; i++) {
     absl::StrAppend(&expected, message_field, " ");
   }

@@ -8,7 +8,10 @@
 #ifndef TEXT_FORMAT_CONFORMANCE_SUITE_H_
 #define TEXT_FORMAT_CONFORMANCE_SUITE_H_
 
+#include <string>
+
 #include "conformance_test.h"
+#include "google/protobuf/message.h"
 
 namespace google {
 namespace protobuf {

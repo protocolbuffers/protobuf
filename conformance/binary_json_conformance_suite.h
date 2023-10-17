@@ -8,6 +8,7 @@
 #ifndef CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H
 #define CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
