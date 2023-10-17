@@ -74,6 +74,7 @@ bool IsForbidden(absl::string_view field_name) {
           "UnknownFields",
           // obsolete. kept for backwards compatibility of generated code
           "CachedSize",
+          "Descriptor",
       });
   return kForbiddenNames.contains(UnderscoresToCamelCase(field_name, true));
 }

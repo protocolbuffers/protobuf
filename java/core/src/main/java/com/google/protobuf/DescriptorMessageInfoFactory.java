@@ -63,7 +63,8 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
               "InitializationErrorString",
               "UnknownFields",
               // obsolete. kept for backwards compatibility of generated code
-              "CachedSize"));
+              "CachedSize",
+              "Descriptor"));
 
   // Disallow construction - it's a singleton.
   private DescriptorMessageInfoFactory() {}
