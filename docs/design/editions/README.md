@@ -35,3 +35,4 @@ The following topics are in this repository:
 *   [Edition Evolution](edition-evolution.md)
 *   [Edition Naming](edition-naming.md)
 *   [Editions Feature Visibility](editions-feature-visibility.md)
+*   [Legacy Syntax Editions](legacy-syntax-editions.md)
