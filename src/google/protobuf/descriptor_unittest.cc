@@ -7217,6 +7217,13 @@ TEST_F(ValidationErrorTest, UnusedImportWithOtherError) {
       "foo.proto: Foo.foo: EXTENDEE: \"Baz\" is not defined.\n");
 }
 
+TEST(EditionsTest, DenseRange) {
+  for (int i = static_cast<int>(PROTOBUF_MINIMUM_EDITION);
+       i <= static_cast<int>(PROTOBUF_MAXIMUM_EDITION); ++i) {
+    EXPECT_TRUE(Edition_IsValid(i));
+  }
+}
+
 using FeaturesBaseTest = ValidationErrorTest;
 
 class FeaturesTest : public FeaturesBaseTest {
