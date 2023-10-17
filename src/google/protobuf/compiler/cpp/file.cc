@@ -100,7 +100,7 @@ void UnmuteWuninitialized(io::Printer* p) {
 // in cases where we may declare proto B as a member of proto A using an object,
 // instead of a pointer.
 //
-// The proto dependencey graph can have cycles.  So instead of directly working
+// The proto dependency graph can have cycles.  So instead of directly working
 // with protos, we compute strong connected components (SCCs) composed of protos
 // with mutual dependence.  The dependency graph on SCCs is a directed acyclic
 // graph (DAG) and therefore a topological order can be computed for it i.e. an

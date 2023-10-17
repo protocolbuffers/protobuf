@@ -114,7 +114,7 @@ TEST(CppGeneratedCode, ScalarInt32) {
   // Test int32 defaults.
   EXPECT_EQ(testModel.value(), 0);
   EXPECT_FALSE(testModel.has_value());
-  // Floating point defautls.
+  // Floating point defaults.
   EXPECT_EQ(std::numeric_limits<float>::infinity(),
             testModel.float_value_with_default());
   EXPECT_EQ(-std::numeric_limits<double>::infinity(),
