@@ -614,7 +614,7 @@ TEST_F(UnknownFieldSetTest, DeleteSubrange) {
 
 void CheckDeleteByNumber(const std::vector<int>& field_numbers,
                          int deleted_number,
-                         const std::vector<int>& expected_field_nubmers) {
+                         const std::vector<int>& expected_field_numbers) {
   UnknownFieldSet unknown_fields;
   for (int i = 0; i < field_numbers.size(); ++i) {
     unknown_fields.AddFixed32(field_numbers[i], i);
@@ -622,7 +622,7 @@ void CheckDeleteByNumber(const std::vector<int>& field_numbers,
   unknown_fields.DeleteByNumber(deleted_number);
   ASSERT_EQ(expected_field_nubmers.size(), unknown_fields.field_count());
   for (int i = 0; i < expected_field_nubmers.size(); ++i) {
-    EXPECT_EQ(expected_field_nubmers[i], unknown_fields.field(i).number());
+    EXPECT_EQ(expected_field_numbers[i], unknown_fields.field(i).number());
   }
 }
 

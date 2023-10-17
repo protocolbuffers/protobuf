@@ -21,7 +21,7 @@ py_binary(
 )
 
 # py_proto_library() is private rule, only intended for internal use by upb.
-# Hopefully py_proto_library() will eventually be availble in rules_proto or
+# Hopefully py_proto_library() will eventually be available in rules_proto or
 # another upstream package.
 bzl_library(
     name = "py_proto_library_bzl",
