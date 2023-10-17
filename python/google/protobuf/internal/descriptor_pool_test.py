@@ -13,7 +13,12 @@ import copy
 import unittest
 import warnings
 
+from google.protobuf import descriptor
+from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pb2
+from google.protobuf import descriptor_pool
+from google.protobuf import message_factory
+from google.protobuf import symbol_database
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import descriptor_pool_test1_pb2
 from google.protobuf.internal import descriptor_pool_test2_pb2
@@ -23,14 +28,14 @@ from google.protobuf.internal import file_options_test_pb2
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import no_package_pb2
 from google.protobuf.internal import testing_refleaks
-from google.protobuf import descriptor
-from google.protobuf import descriptor_database
-from google.protobuf import descriptor_pool
-from google.protobuf import message_factory
-from google.protobuf import symbol_database
+
+from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_import_public_pb2
 from google.protobuf import unittest_pb2
+
+# pyformat: disable
+# pyformat: enable
 
 
 warnings.simplefilter('error', DeprecationWarning)
@@ -1068,6 +1073,194 @@ class AddDescriptorTest(unittest.TestCase):
         pool._AddExtensionDescriptor(0)
       with self.assertRaises(TypeError):
         pool._AddFileDescriptor(0)
+
+
+# TODO Expand these tests to upb and C++ once the DescriptorPool
+# API is unified.
+@unittest.skipIf(
+    api_implementation.Type() != 'python',
+    'Only pure python allows SetFeatureSetDefaults()',
+)
+@testing_refleaks.TestCase
+class FeatureSetDefaults(unittest.TestCase):
+
+  def testDefault(self):
+    pool = descriptor_pool.DescriptorPool()
+    file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
+    file = pool.AddSerializedFile(file_desc.SerializeToString())
+    self.assertFalse(
+        file._GetFeatures().HasExtension(unittest_features_pb2.test)
+    )
+
+  def testOverride(self):
+    pool = descriptor_pool.DescriptorPool()
+    defaults = descriptor_pb2.FeatureSetDefaults(
+        defaults=[
+            descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                edition=descriptor_pb2.Edition.EDITION_PROTO2,
+                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+            )
+        ],
+        minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
+        maximum_edition=descriptor_pb2.Edition.EDITION_2023,
+    )
+    defaults.defaults[0].features.Extensions[
+        unittest_features_pb2.test
+    ].int_file_feature = 9
+    pool.SetFeatureSetDefaults(defaults)
+    file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
+    file = pool.AddSerializedFile(file_desc.SerializeToString())
+    self.assertTrue(
+        file._GetFeatures().HasExtension(unittest_features_pb2.test)
+    )
+
+  def testInvalidEditionRange(self):
+    pool = descriptor_pool.DescriptorPool()
+    with self.assertRaisesRegex(ValueError, 'Invalid edition range'):
+      pool.SetFeatureSetDefaults(
+          descriptor_pb2.FeatureSetDefaults(
+              defaults=[
+                  descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                      edition=descriptor_pb2.Edition.EDITION_PROTO2,
+                      features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                  )
+              ],
+              minimum_edition=descriptor_pb2.Edition.EDITION_2023,
+              maximum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
+          )
+      )
+      file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
+      file = pool.AddSerializedFile(file_desc.SerializeToString())
+
+  def testNotStrictlyIncreasing(self):
+    pool = descriptor_pool.DescriptorPool()
+    with self.assertRaisesRegex(ValueError, 'not strictly increasing'):
+      pool.SetFeatureSetDefaults(
+          descriptor_pb2.FeatureSetDefaults(
+              defaults=[
+                  descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                      edition=descriptor_pb2.Edition.EDITION_PROTO3,
+                      features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                  ),
+                  descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                      edition=descriptor_pb2.Edition.EDITION_PROTO2,
+                      features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                  ),
+              ],
+              minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
+              maximum_edition=descriptor_pb2.Edition.EDITION_2023,
+          )
+      )
+
+  def testUnknownEdition(self):
+    pool = descriptor_pool.DescriptorPool()
+    with self.assertRaisesRegex(ValueError, 'Invalid edition'):
+      pool.SetFeatureSetDefaults(
+          descriptor_pb2.FeatureSetDefaults(
+              defaults=[
+                  descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                      edition=descriptor_pb2.Edition.EDITION_UNKNOWN,
+                      features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                  ),
+                  descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                      edition=descriptor_pb2.Edition.EDITION_PROTO2,
+                      features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                  ),
+              ],
+              minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
+              maximum_edition=descriptor_pb2.Edition.EDITION_2023,
+          )
+      )
+
+  def testChangeAfterBuild(self):
+    pool = descriptor_pool.DescriptorPool()
+    file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
+    file = pool.AddSerializedFile(file_desc.SerializeToString())
+    file._GetFeatures()
+    defaults = descriptor_pb2.FeatureSetDefaults(
+        defaults=[
+            descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                edition=descriptor_pb2.Edition.EDITION_PROTO2,
+                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+            )
+        ],
+        minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
+        maximum_edition=descriptor_pb2.Edition.EDITION_2023,
+    )
+    with self.assertRaisesRegex(ValueError, "defaults can't be changed"):
+      pool.SetFeatureSetDefaults(defaults)
+
+  def testChangeDefaultPool(self):
+    defaults = descriptor_pb2.FeatureSetDefaults(
+        defaults=[
+            descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                edition=descriptor_pb2.Edition.EDITION_PROTO2,
+                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+            )
+        ],
+        minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
+        maximum_edition=descriptor_pb2.Edition.EDITION_2023,
+    )
+    with self.assertRaisesRegex(ValueError, "defaults can't be changed"):
+      descriptor_pool.Default().SetFeatureSetDefaults(defaults)
+
+  def testNoValidFeatures(self):
+    pool = descriptor_pool.DescriptorPool()
+    defaults = descriptor_pb2.FeatureSetDefaults(
+        defaults=[
+            descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                edition=descriptor_pb2.Edition.EDITION_2023,
+                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+            )
+        ],
+        minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
+        maximum_edition=descriptor_pb2.Edition.EDITION_2023,
+    )
+    pool.SetFeatureSetDefaults(defaults)
+    file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
+    with self.assertRaisesRegex(TypeError, 'No valid default found'):
+      file = pool.AddSerializedFile(file_desc.SerializeToString())
+      file._GetFeatures()
+
+  def testBelowMinimum(self):
+    pool = descriptor_pool.DescriptorPool()
+    defaults = descriptor_pb2.FeatureSetDefaults(
+        defaults=[
+            descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                edition=descriptor_pb2.Edition.EDITION_PROTO3,
+                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+            )
+        ],
+        minimum_edition=descriptor_pb2.Edition.EDITION_PROTO3,
+        maximum_edition=descriptor_pb2.Edition.EDITION_2023,
+    )
+    pool.SetFeatureSetDefaults(defaults)
+    file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
+    with self.assertRaisesRegex(TypeError, 'earlier than the minimum'):
+      file = pool.AddSerializedFile(file_desc.SerializeToString())
+      file._GetFeatures()
+
+  def testAboveMaximum(self):
+    pool = descriptor_pool.DescriptorPool()
+    defaults = descriptor_pb2.FeatureSetDefaults(
+        defaults=[
+            descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                edition=descriptor_pb2.Edition.EDITION_PROTO2,
+                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+            )
+        ],
+        minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
+        maximum_edition=descriptor_pb2.Edition.EDITION_PROTO3,
+    )
+    pool.SetFeatureSetDefaults(defaults)
+    file_desc = descriptor_pb2.FileDescriptorProto(
+        name='some/file.proto',
+        syntax='editions',
+        edition=descriptor_pb2.Edition.EDITION_2023,
+    )
+    with self.assertRaisesRegex(TypeError, 'later than the maximum'):
+      file = pool.AddSerializedFile(file_desc.SerializeToString())
+      file._GetFeatures()
 
 
 TEST1_FILE = ProtoFile(
