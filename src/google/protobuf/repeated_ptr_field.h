@@ -863,7 +863,7 @@ void RepeatedPtrFieldBase::MergeFrom<std::string>(
     const RepeatedPtrFieldBase& from);
 
 
-void InternalOutOfLineDeleteMessageLite(MessageLite* message);
+PROTOBUF_EXPORT void InternalOutOfLineDeleteMessageLite(MessageLite* message);
 
 template <typename GenericType>
 class GenericTypeHandler {
