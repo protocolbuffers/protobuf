@@ -50,6 +50,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
@@ -280,7 +281,7 @@ std::string GetFieldRep(const DefPoolPair& pools, upb::FieldDefPtr field) {
 }
 
 void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
-                               Output& output) {
+                               const Options& options, Output& output) {
   output(
       R"cc(
         UPB_INLINE bool $0_has_$1(const struct $2* msg) {
@@ -330,6 +331,27 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
         CTypeConst(ext), ExtensionIdentBase(ext), ext.name(),
         MessageName(ext.containing_type()), ExtensionLayout(ext),
         GetFieldRep(pools, ext));
+
+    // Message extensions also have a Msg_mutable_foo() accessor that will
+    // create the sub-message if it doesn't already exist.
+    if (ext.ctype() == kUpb_CType_Message &&
+        !UPB_DESC(MessageOptions_map_entry)(ext.containing_type().options())) {
+      output(
+          R"cc(
+            UPB_INLINE struct $0* $1_mutable_$2(struct $3* msg,
+                                                upb_Arena* arena) {
+              struct $0* sub = (struct $0*)$1_$2(msg);
+              if (sub == NULL) {
+                sub = (struct $0*)_upb_Message_New($4, arena);
+                if (sub) $1_set_$2(msg, sub, arena);
+              }
+              return sub;
+            }
+          )cc",
+          MessageName(ext.message_type()), ExtensionIdentBase(ext), ext.name(),
+          MessageName(ext.containing_type()),
+          MessageMiniTableRef(ext.message_type(), options));
+    }
   }
 }
 
@@ -938,7 +960,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   }
 
   for (auto ext : this_file_exts) {
-    GenerateExtensionInHeader(pools, ext, output);
+    GenerateExtensionInHeader(pools, ext, options, output);
   }
 
   if (absl::string_view(file.name()) == "google/protobuf/descriptor.proto" ||
@@ -1137,17 +1159,17 @@ int main(int argc, char** argv) {
   upb::generator::Plugin plugin;
   upb::generator::Options options;
   if (!ParseOptions(&plugin, &options)) return 0;
-  plugin.GenerateFilesRaw([&](const UPB_DESC(FileDescriptorProto) * file_proto,
-                              bool generate) {
-    upb::Status status;
-    upb::FileDefPtr file = pools.AddFile(file_proto, &status);
-    if (!file) {
-      absl::string_view name = upb::generator::ToStringView(
-          UPB_DESC(FileDescriptorProto_name)(file_proto));
-      ABSL_LOG(FATAL) << "Couldn't add file " << name
-                      << " to DefPool: " << status.error_message();
-    }
-    if (generate) GenerateFile(pools, file, options, &plugin);
-  });
+  plugin.GenerateFilesRaw(
+      [&](const UPB_DESC(FileDescriptorProto) * file_proto, bool generate) {
+        upb::Status status;
+        upb::FileDefPtr file = pools.AddFile(file_proto, &status);
+        if (!file) {
+          absl::string_view name = upb::generator::ToStringView(
+              UPB_DESC(FileDescriptorProto_name)(file_proto));
+          ABSL_LOG(FATAL) << "Couldn't add file " << name
+                          << " to DefPool: " << status.error_message();
+        }
+        if (generate) GenerateFile(pools, file, options, &plugin);
+      });
   return 0;
 }

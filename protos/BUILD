@@ -62,6 +62,7 @@ cc_library(
         "//upb:message_promote",
         "//upb:message_types",
         "//upb:mini_table",
+        "//upb:port",
         "//upb:wire",
         "//upb:wire_types",
         "@com_google_absl//absl/status",

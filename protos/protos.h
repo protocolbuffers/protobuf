@@ -44,6 +44,9 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
+// Must be last:
+#include "upb/port/def.inc"
+
 namespace protos {
 
 using Arena = ::upb::Arena;
@@ -248,6 +251,9 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
 const upb_Message_Extension* GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena);
 
+upb_Message_Extension* GetPromoteOrCreateExtension(
+    upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena);
+
 void DeepCopy(upb_Message* target, const upb_Message* source,
               const upb_MiniTable* mini_table, upb_Arena* arena);
 
@@ -447,6 +453,30 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
     const T* message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   return GetExtension(protos::Ptr(message), id);
+}
+
+template <typename T, typename Extendee, typename Extension,
+          typename = EnableIfProtosClass<T>, typename = EnableIfMutableProto<T>>
+absl::StatusOr<Ptr<Extension>> MutableExtension(
+    Ptr<T> message,
+    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+  upb_Message* msg =
+      const_cast<upb_Message*>(internal::GetInternalMsg(message));
+  upb_Arena* arena = ::protos::internal::GetArena(message);
+  upb_Message_Extension* ext = const_cast<upb_Message_Extension*>(
+      ::protos::internal::GetOrPromoteExtension(msg, id.mini_table_ext(),
+                                                arena));
+  if (ext) {
+    return Ptr<Extension>(::protos::internal::CreateMessageProxy<Extension>(
+        ext->data.ptr, arena));
+  } else {
+    upb_Message* ext_msg = upb_Message_New(Extension::minitable(), arena);
+    bool ok = _upb_Message_SetExtensionField(msg, id.mini_table_ext(), &ext_msg,
+                                             arena);
+    UPB_ASSERT(ok);
+    return Ptr<Extension>(
+        ::protos::internal::CreateMessageProxy<Extension>(ext_msg, arena));
+  }
 }
 
 template <typename T>
