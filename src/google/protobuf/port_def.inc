@@ -572,14 +572,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_FORCE_COPY_DEFAULT_STRING was previously defined
 #endif
 
-// Set (and leave set) PROTOBUF_EXPLICIT_CONSTRUCTORS
-// This flag changes the internal implementation class and its uses from using
-// aggregate initialization to using explicit constructor based initialization.
-// TODO: remove this flag and make the code permanent.
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-#define PROTOBUF_EXPLICIT_CONSTRUCTORS
-#endif
-
 #ifdef PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION
 #error PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION was previously defined
 #endif

@@ -281,12 +281,6 @@ class RepeatedEnum : public FieldGeneratorBase {
       p->Emit(R"cc(
         $field_$.DeleteIfNotDefault();
       )cc");
-    } else {
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-      p->Emit(R"cc(
-        _internal_mutable_$name$()->~RepeatedField();
-      )cc");
-#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
     }
   }
 

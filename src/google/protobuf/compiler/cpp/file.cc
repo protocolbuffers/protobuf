@@ -1406,7 +1406,6 @@ class FileGenerator::ForwardDeclarations {
           template <>
           $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(Arena*);
         )cc");
-#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
         if (!IsMapEntryMessage(c.second)) {
           p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
             template <>
@@ -1414,7 +1413,6 @@ class FileGenerator::ForwardDeclarations {
                 Arena*, const $class$&);
           )cc");
         }
-#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
       }
     }
   }

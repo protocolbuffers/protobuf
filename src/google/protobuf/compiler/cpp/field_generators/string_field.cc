@@ -643,14 +643,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
 
 void SingularString::GenerateDestructorCode(io::Printer* p) const {
   if (is_inlined()) {
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-    // Explicitly calls ~InlinedStringField as its automatic call is disabled.
-    // Destructor has been implicitly skipped as a union.
     ABSL_DCHECK(!should_split());
-    p->Emit(R"cc(
-      $field_$.~InlinedStringField();
-    )cc");
-#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
     return;
   }
 
@@ -774,12 +767,6 @@ class RepeatedString : public FieldGeneratorBase {
       p->Emit(R"cc(
         $field_$.DeleteIfNotDefault();
       )cc");
-    } else {
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-      p->Emit(R"cc(
-        _internal_mutable_$name$()->~RepeatedPtrField();
-      )cc");
-#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
     }
   }
 
