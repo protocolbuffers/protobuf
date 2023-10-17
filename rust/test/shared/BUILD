@@ -151,6 +151,9 @@ rust_test(
         "//rust:protobuf_cpp": "protobuf",
         "//rust/test/shared:matchers_cpp": "matchers",
     },
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
     tags = [
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
@@ -170,6 +173,9 @@ rust_test(
         "//rust:protobuf_upb": "protobuf",
         "//rust/test/shared:matchers_upb": "matchers",
     },
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
     tags = [
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",

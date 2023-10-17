@@ -29,10 +29,6 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     return std::make_unique<UnsupportedField>();
   }
 
-  if (desc.is_repeated()) {
-    return std::make_unique<UnsupportedField>();
-  }
-
   switch (desc.type()) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_INT64:
@@ -47,11 +43,20 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     case FieldDescriptor::TYPE_FLOAT:
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_BOOL:
+      if (desc.is_repeated()) {
+        return std::make_unique<RepeatedScalar>();
+      }
       return std::make_unique<SingularScalar>();
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_STRING:
+      if (desc.is_repeated()) {
+        return std::make_unique<UnsupportedField>();
+      }
       return std::make_unique<SingularString>();
     case FieldDescriptor::TYPE_MESSAGE:
+      if (desc.is_repeated()) {
+        return std::make_unique<UnsupportedField>();
+      }
       return std::make_unique<SingularMessage>();
 
     default:

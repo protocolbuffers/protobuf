@@ -7,7 +7,7 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::{Private, RawArena, RawMessage};
+use crate::__internal::{Private, PtrAndLen, RawArena, RawMessage, RawRepeatedField};
 use std::alloc;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
@@ -284,6 +284,149 @@ pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
     }
 }
 
+/// RepeatedFieldInner contains a `upb_Array*` as well as a reference to an
+/// `Arena`, most likely that of the containing `Message`. upb requires an Arena
+/// to perform mutations on a repeated field.
+#[derive(Clone, Copy, Debug)]
+pub struct RepeatedFieldInner<'msg> {
+    pub raw: RawRepeatedField,
+    pub arena: &'msg Arena,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct RepeatedField<'msg, T: ?Sized> {
+    inner: RepeatedFieldInner<'msg>,
+    _phantom: PhantomData<&'msg mut T>,
+}
+
+impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
+    pub fn len(&self) -> usize {
+        unsafe { upb_Array_Size(self.inner.raw) }
+    }
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+    pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
+        Self { inner, _phantom: PhantomData }
+    }
+}
+
+// Transcribed from google3/third_party/upb/upb/message/value.h
+#[repr(C)]
+#[derive(Clone, Copy)]
+union upb_MessageValue {
+    bool_val: bool,
+    float_val: std::ffi::c_float,
+    double_val: std::ffi::c_double,
+    uint32_val: u32,
+    int32_val: i32,
+    uint64_val: u64,
+    int64_val: i64,
+    array_val: *const std::ffi::c_void,
+    map_val: *const std::ffi::c_void,
+    msg_val: *const std::ffi::c_void,
+    str_val: PtrAndLen,
+}
+
+// Transcribed from google3/third_party/upb/upb/base/descriptor_constants.h
+#[repr(C)]
+#[allow(dead_code)]
+enum UpbCType {
+    Bool = 1,
+    Float = 2,
+    Int32 = 3,
+    UInt32 = 4,
+    Enum = 5,
+    Message = 6,
+    Double = 7,
+    Int64 = 8,
+    UInt64 = 9,
+    String = 10,
+    Bytes = 11,
+}
+
+extern "C" {
+    #[allow(dead_code)]
+    fn upb_Array_New(a: RawArena, r#type: std::ffi::c_int) -> RawRepeatedField;
+    fn upb_Array_Size(arr: RawRepeatedField) -> usize;
+    fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
+    fn upb_Array_Get(arr: RawRepeatedField, i: usize) -> upb_MessageValue;
+    fn upb_Array_Append(arr: RawRepeatedField, val: upb_MessageValue, arena: RawArena);
+}
+
+macro_rules! impl_repeated_primitives {
+    ($(($rs_type:ty, $union_field:ident, $upb_tag:expr)),*) => {
+        $(
+            impl<'msg> RepeatedField<'msg, $rs_type> {
+                #[allow(dead_code)]
+                fn new(arena: &'msg Arena) -> Self {
+                    Self {
+                        inner: RepeatedFieldInner {
+                            raw: unsafe { upb_Array_New(arena.raw, $upb_tag as std::ffi::c_int) },
+                            arena,
+                        },
+                        _phantom: PhantomData,
+                    }
+                }
+                pub fn push(&mut self, val: $rs_type) {
+                    unsafe { upb_Array_Append(
+                        self.inner.raw,
+                        upb_MessageValue { $union_field: val },
+                        self.inner.arena.raw(),
+                    ) }
+                }
+                pub fn get(&self, i: usize) -> Option<$rs_type> {
+                    if i >= self.len() {
+                        None
+                    } else {
+                        unsafe { Some(upb_Array_Get(self.inner.raw, i).$union_field) }
+                    }
+                }
+                pub fn set(&self, i: usize, val: $rs_type) {
+                    if i >= self.len() {
+                        return;
+                    }
+                    unsafe { upb_Array_Set(
+                        self.inner.raw,
+                        i,
+                        upb_MessageValue { $union_field: val },
+                    ) }
+                }
+            }
+        )*
+    }
+}
+
+impl_repeated_primitives!(
+    (bool, bool_val, UpbCType::Bool),
+    (f32, float_val, UpbCType::Float),
+    (f64, double_val, UpbCType::Double),
+    (i32, int32_val, UpbCType::Int32),
+    (u32, uint32_val, UpbCType::UInt32),
+    (i64, int64_val, UpbCType::Int64),
+    (u64, uint64_val, UpbCType::UInt64)
+);
+
+/// Returns a static thread-local empty RepeatedFieldInner for use in a
+/// RepeatedView.
+///
+/// # Safety
+/// TODO: Split RepeatedFieldInner into mut and const variants to
+/// enforce safety. The returned array must never be mutated.
+pub unsafe fn empty_array() -> RepeatedFieldInner<'static> {
+    // TODO: Consider creating empty array in C.
+    fn new_repeated_field_inner() -> RepeatedFieldInner<'static> {
+        let arena = Box::leak::<'static>(Box::new(Arena::new()));
+        // Provide `i32` as a placeholder type.
+        RepeatedField::<'static, i32>::new(arena).inner
+    }
+    thread_local! {
+        static REPEATED_FIELD: RepeatedFieldInner<'static> = new_repeated_field_inner();
+    }
+
+    REPEATED_FIELD.with(|inner| *inner)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -308,5 +451,36 @@ mod tests {
             )
         };
         assert_eq!(&*serialized_data, b"Hello world");
+    }
+
+    #[test]
+    fn i32_array() {
+        let mut arena = Arena::new();
+        let mut arr = RepeatedField::<i32>::new(&arena);
+        assert_eq!(arr.len(), 0);
+        arr.push(1);
+        assert_eq!(arr.get(0), Some(1));
+        assert_eq!(arr.len(), 1);
+        arr.set(0, 3);
+        assert_eq!(arr.get(0), Some(3));
+        for i in 0..2048 {
+            arr.push(i);
+            assert_eq!(arr.get(arr.len() - 1), Some(i));
+        }
+    }
+    #[test]
+    fn u32_array() {
+        let mut arena = Arena::new();
+        let mut arr = RepeatedField::<u32>::new(&mut arena);
+        assert_eq!(arr.len(), 0);
+        arr.push(1);
+        assert_eq!(arr.get(0), Some(1));
+        assert_eq!(arr.len(), 1);
+        arr.set(0, 3);
+        assert_eq!(arr.get(0), Some(3));
+        for i in 0..2048 {
+            arr.push(i);
+            assert_eq!(arr.get(arr.len() - 1), Some(i));
+        }
     }
 }

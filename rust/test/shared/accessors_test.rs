@@ -9,6 +9,7 @@
 
 use googletest::prelude::*;
 use matchers::{is_set, is_unset};
+use paste::paste;
 use protobuf::Optional;
 use unittest_proto::proto2_unittest::{TestAllTypes, TestAllTypes_};
 
@@ -397,4 +398,52 @@ fn test_oneof_accessors() {
 
     // This should show it set to the OneofBytes but its not supported yet.
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
+}
+
+macro_rules! generate_repeated_numeric_test {
+    ($(($t: ty, $field: ident)),*) => {
+        paste! { $(
+            #[test]
+            fn [< test_repeated_ $field _accessors >]() {
+                let mut msg = TestAllTypes::new();
+                assert_that!(msg.[< repeated_ $field >]().len(), eq(0));
+                assert_that!(msg.[<repeated_ $field >]().get(0), none());
+
+                let mut mutator = msg.[<repeated_ $field _mut >]();
+                mutator.push(1 as $t);
+                assert_that!(mutator.len(), eq(1));
+                assert_that!(mutator.get(0), some(eq(1 as $t)));
+                mutator.set(0, 2 as $t);
+                assert_that!(mutator.get(0), some(eq(2 as $t)));
+                mutator.push(1 as $t);
+
+                assert_that!(mutator.into_iter().collect::<Vec<_>>(), eq(vec![2 as $t, 1 as $t]));
+            }
+        )* }
+    };
+}
+
+generate_repeated_numeric_test!(
+    (i32, int32),
+    (u32, uint32),
+    (i64, int64),
+    (u64, uint64),
+    (f32, float),
+    (f64, double)
+);
+
+#[test]
+fn test_repeated_bool_accessors() {
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.repeated_bool().len(), eq(0));
+    assert_that!(msg.repeated_bool().get(0), none());
+
+    let mut mutator = msg.repeated_bool_mut();
+    mutator.push(true);
+    assert_that!(mutator.len(), eq(1));
+    assert_that!(mutator.get(0), some(eq(true)));
+    mutator.set(0, false);
+    assert_that!(mutator.get(0), some(eq(false)));
+    mutator.push(true);
+    assert_that!(mutator.into_iter().collect::<Vec<_>>(), eq(vec![false, true]));
 }
