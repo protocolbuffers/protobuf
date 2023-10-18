@@ -51,7 +51,7 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
             // a null ptr received from upb manifests as Option::None
             match submsg {
                 // TODO:(b/304357029)
-                None => $prefix$View::new($pbi$::Private, $pbr$::ScratchSpace::zeroed_block()),
+                None => $prefix$View::new($pbi$::Private, $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
                 Some(field) => $prefix$View::new($pbi$::Private, field),
               }
           }
