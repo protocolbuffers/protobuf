@@ -213,6 +213,12 @@ TEST(ArenaTest, FuzzFuseIncRefCountRace) {
   for (auto& t : threads) t.join();
 }
 
+TEST(ArenaTest, IncRefCountShouldFailForInitialBlock) {
+  char buf1[1024];
+  upb_Arena* arena = upb_Arena_Init(buf1, 1024, &upb_alloc_global);
+  EXPECT_FALSE(upb_Arena_IncRefFor(arena, nullptr));
+}
+
 #endif
 
 }  // namespace
