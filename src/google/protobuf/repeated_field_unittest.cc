@@ -1677,6 +1677,14 @@ TEST(RepeatedPtrField, AddAllocated) {
   EXPECT_EQ(moo, &field.Get(index));
 }
 
+TEST(RepeatedPtrField, AddMethodsDontAcceptNull) {
+#if !defined(NDEBUG)
+  RepeatedPtrField<std::string> field;
+  EXPECT_DEATH(field.AddAllocated(nullptr), "nullptr");
+  EXPECT_DEATH(field.UnsafeArenaAddAllocated(nullptr), "nullptr");
+#endif
+}
+
 TEST(RepeatedPtrField, AddAllocatedDifferentArena) {
   RepeatedPtrField<TestAllTypes> field;
   Arena arena;
