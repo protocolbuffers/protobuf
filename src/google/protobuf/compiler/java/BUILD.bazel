@@ -10,7 +10,7 @@ cc_library(
     name = "names",
     hdrs = ["names.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/java",
+    strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
         ":names_internal",
@@ -33,7 +33,7 @@ cc_library(
         "options.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/java",
+    strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [
         ":java_features_bootstrap",
@@ -48,7 +48,7 @@ cc_library(
     name = "java_features_bootstrap",
     srcs = ["java_features.pb.cc"],
     hdrs = ["java_features.pb.h"],
-    include_prefix = "google/protobuf/compiler/java",
+    strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf:arena",
         "//src/google/protobuf:protobuf_nowkt",
@@ -119,7 +119,7 @@ cc_library(
         "string_field_lite.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/java",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",

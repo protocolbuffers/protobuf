@@ -10,7 +10,7 @@ cc_library(
     name = "names",
     hdrs = ["names.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/objectivec",
+    strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
         ":names_internal",
@@ -27,7 +27,7 @@ cc_library(
         "nsobject_methods.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/objectivec",
+    strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [
         ":line_consumer",
@@ -43,7 +43,7 @@ cc_library(
     srcs = ["line_consumer.cc"],
     hdrs = ["line_consumer.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/objectivec",
+    strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
@@ -87,7 +87,7 @@ cc_library(
         "text_format_decode_data.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/objectivec",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",

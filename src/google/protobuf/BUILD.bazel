@@ -162,6 +162,7 @@ cc_library(
     copts = COPTS,
     includes = ["wkt"],
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [":protobuf_nowkt"],
 )
@@ -198,7 +199,7 @@ cc_library(
         "port_def.inc",
         "port_undef.inc",
     ],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -212,7 +213,7 @@ cc_library(
     name = "varint_shuffle",
     hdrs = ["varint_shuffle.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -248,7 +249,7 @@ cc_library(
     name = "arena_align",
     srcs = ["arena_align.cc"],
     hdrs = ["arena_align.h"],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -264,7 +265,7 @@ cc_library(
 cc_library(
     name = "arena_cleanup",
     hdrs = ["arena_cleanup.h"],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -278,7 +279,7 @@ cc_library(
 cc_library(
     name = "arena_allocation_policy",
     hdrs = ["arena_allocation_policy.h"],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -291,7 +292,7 @@ cc_library(
 cc_library(
     name = "string_block",
     hdrs = ["string_block.h"],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     deps = [
         ":arena_align",
         "@com_google_absl//absl/base:core_headers",
@@ -320,7 +321,7 @@ cc_library(
         "serial_arena.h",
         "thread_safe_arena.h",
     ],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -343,7 +344,7 @@ cc_library(
     name = "internal_visibility",
     hdrs = ["internal_visibility.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -355,7 +356,7 @@ cc_library(
     testonly = 1,
     hdrs = ["internal_visibility_for_testing.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -419,8 +420,8 @@ cc_library(
             "-Wno-error",
         ],
     }),
-    include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     visibility = [
         "//:__pkg__",
         "//pkg:__pkg__",
@@ -506,8 +507,8 @@ cc_library(
         "wire_format.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     visibility = [
         "//:__pkg__",
         "//pkg:__pkg__",
@@ -549,8 +550,8 @@ cc_test(
 cc_library(
     name = "protobuf",
     copts = COPTS,
-    include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     visibility = [
         "//:__pkg__",
         "//pkg:__pkg__",
@@ -573,14 +574,15 @@ cc_library(
         "**/*.h",
         "**/*.inc",
     ]),
+    strip_include_prefix = "/src",
 )
 
 cc_library(
     name = "descriptor_legacy",
     hdrs = ["descriptor_legacy.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
         ":port_def",
@@ -593,8 +595,8 @@ cc_library(
     name = "descriptor_visitor",
     hdrs = ["descriptor_visitor.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
         ":port_def",
@@ -747,6 +749,22 @@ proto_library(
         ":type_proto",
         ":wrappers_proto",
     ],
+)
+
+proto_library(
+    name = "unittest_features_proto",
+    srcs = ["unittest_features.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//src/google/protobuf:__subpackages__"],
+    deps = [
+        ":descriptor_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "unittest_features_cc_proto",
+    visibility = ["//src/google/protobuf:__subpackages__"],
+    deps = [":unittest_features_proto"],
 )
 
 proto_library(

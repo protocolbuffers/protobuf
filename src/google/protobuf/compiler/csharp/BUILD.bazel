@@ -11,7 +11,7 @@ cc_library(
     srcs = ["names.cc"],
     hdrs = ["names.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/csharp",
+    strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
@@ -62,7 +62,7 @@ cc_library(
         "//build_defs:config_msvc": [],
         "//conditions:default": ["-Wno-overloaded-virtual"],
     }),
-    include_prefix = "google/protobuf/compiler/csharp",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",

@@ -11,7 +11,7 @@ cc_library(
     srcs = ["ruby_generator.cc"],
     hdrs = ["ruby_generator.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/ruby",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",

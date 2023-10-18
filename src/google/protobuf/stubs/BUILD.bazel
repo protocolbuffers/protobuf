@@ -22,8 +22,8 @@ cc_library(
         "status_macros.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/stubs",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf:port_def",
         "@com_google_absl//absl/log:absl_log",
@@ -40,7 +40,7 @@ cc_library(
     hdrs = [
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/stubs",
+    strip_include_prefix = "/src",
     textual_hdrs = [
         "callback.h",
         "common.h",

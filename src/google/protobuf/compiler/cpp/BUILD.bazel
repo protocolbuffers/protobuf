@@ -11,7 +11,7 @@ cc_library(
     name = "names",
     hdrs = ["names.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/cpp",
+    strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
         ":names_internal",
@@ -32,7 +32,7 @@ cc_library(
         "options.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/cpp",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler/rust:__subpackages__",
@@ -79,7 +79,7 @@ cc_library(
         "tracker.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/cpp",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",

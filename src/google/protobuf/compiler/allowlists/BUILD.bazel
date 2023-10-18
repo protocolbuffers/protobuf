@@ -7,7 +7,7 @@ cc_library(
     name = "allowlist",
     hdrs = ["allowlist.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/allowlists",
+    strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf/stubs",
         "@com_google_absl//absl/algorithm:container",
@@ -28,7 +28,7 @@ cc_library(
     ],
     hdrs = ["allowlists.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/allowlists",
+    strip_include_prefix = "/src",
     visibility = ["//src/google/protobuf:__subpackages__"],
     deps = [
         ":allowlist",

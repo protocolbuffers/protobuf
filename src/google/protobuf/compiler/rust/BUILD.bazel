@@ -10,7 +10,7 @@ cc_library(
     srcs = ["generator.cc"],
     hdrs = ["generator.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/rust",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",
@@ -34,7 +34,7 @@ cc_library(
     srcs = ["message.cc"],
     hdrs = ["message.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/rust",
+    strip_include_prefix = "/src",
     deps = [
         ":accessors",
         ":context",
@@ -62,7 +62,7 @@ cc_library(
         "accessors/accessors.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/rust",
+    strip_include_prefix = "/src",
     deps = [
         ":context",
         ":naming",
@@ -78,7 +78,7 @@ cc_library(
     srcs = ["context.cc"],
     hdrs = ["context.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/rust",
+    strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/io:printer",
@@ -96,7 +96,7 @@ cc_library(
     srcs = ["naming.cc"],
     hdrs = ["naming.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/rust",
+    strip_include_prefix = "/src",
     deps = [
         ":context",
         "//src/google/protobuf:protobuf_nowkt",
@@ -110,7 +110,7 @@ cc_library(
     srcs = ["oneof.cc"],
     hdrs = ["oneof.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/rust",
+    strip_include_prefix = "/src",
     deps = [
         ":context",
         ":naming",
@@ -124,7 +124,7 @@ cc_library(
     name = "relative_path",
     srcs = ["relative_path.cc"],
     hdrs = ["relative_path.h"],
-    include_prefix = "google/protobuf/compiler/rust",
+    strip_include_prefix = "/src",
     deps = [
         "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/log:absl_check",

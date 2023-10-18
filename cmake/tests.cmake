@@ -62,6 +62,7 @@ set(tests_files
   ${protobuf_test_files}
   ${compiler_test_files}
   ${annotation_test_util_srcs}
+  ${editions_test_files}
   ${io_test_files}
   ${util_test_files}
   ${stubs_test_files}
