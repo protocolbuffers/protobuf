@@ -261,7 +261,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // again.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static void Destroy(T* obj) {
-    if (InternalGetOwningArena(obj) == nullptr) delete obj;
+    if (InternalGetArena(obj) == nullptr) delete obj;
   }
 
   // Allocates memory with the specific size and alignment.

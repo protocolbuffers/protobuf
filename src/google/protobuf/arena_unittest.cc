@@ -561,16 +561,6 @@ TEST(ArenaTest, UnsafeArenaSwap) {
   TestUtil::ExpectAllFieldsSet(*message2);
 }
 
-TEST(ArenaTest, GetOwningArena) {
-  Arena arena;
-  auto* m1 = Arena::CreateMessage<TestAllTypes>(&arena);
-  EXPECT_EQ(Arena::InternalGetOwningArena(m1), &arena);
-  EXPECT_EQ(&arena, Arena::InternalGetOwningArena(
-                        m1->mutable_repeated_foreign_message()));
-  EXPECT_EQ(&arena,
-            Arena::InternalGetOwningArena(m1->mutable_repeated_int32()));
-}
-
 TEST(ArenaTest, SwapBetweenArenasUsingReflection) {
   Arena arena1;
   TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
