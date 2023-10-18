@@ -1354,16 +1354,14 @@ TEST_F(CommandLineInterfaceTest, AllowServicesHasService) {
   ExpectGenerated("test_generator", "", "foo.proto", "Foo");
 }
 
-TEST_F(CommandLineInterfaceTest, EditionsAreNotAllowed) {
+TEST_F(CommandLineInterfaceTest, NonExperimentalEditions) {
   CreateTempFile("foo.proto",
                  "edition = \"2023\";\n"
                  "message FooRequest {}\n");
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
 
-  ExpectErrorSubstring(
-      "This file uses editions, but --experimental_editions has not been "
-      "enabled.");
+  ExpectErrorSubstring("--experimental_editions has not been enabled");
 }
 
 TEST_F(CommandLineInterfaceTest, EditionsFlagExplicitTrue) {
@@ -1713,12 +1711,10 @@ TEST_F(CommandLineInterfaceTest, GeneratorNoEditionsSupport) {
                                      "Doesn't support editions",
                                      CodeGenerator::FEATURE_SUPPORTS_EDITIONS);
 
-  Run("protocol_compiler --experimental_editions "
+  Run("protocol_compiler "
       "--proto_path=$tmpdir foo.proto --no_editions_out=$tmpdir");
 
-  ExpectErrorSubstring(
-      "code generator --no_editions_out hasn't been updated to support "
-      "editions");
+  ExpectErrorSubstring("--experimental_editions has not been enabled");
 }
 
 TEST_F(CommandLineInterfaceTest, PluginNoEditionsSupport) {
@@ -1730,11 +1726,10 @@ TEST_F(CommandLineInterfaceTest, PluginNoEditionsSupport) {
   )schema");
 
   SetMockGeneratorTestCase("no_editions");
-  Run("protocol_compiler --experimental_editions "
+  Run("protocol_compiler "
       "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
 
-  ExpectErrorSubstring(
-      "code generator prefix-gen-plug hasn't been updated to support editions");
+  ExpectErrorSubstring("--experimental_editions has not been enabled");
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaults) {
