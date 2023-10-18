@@ -111,7 +111,7 @@ cc_library(
     hdrs = ["generated_code_support.h"],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/port:inc",
+        ":port_inc",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -133,7 +133,7 @@ cc_library(
     name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/port:inc",
+        ":port_inc",
     ],
     visibility = ["//visibility:public"],
 )
@@ -146,7 +146,7 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/port:inc",
+        ":port_inc",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -435,6 +435,12 @@ alias(
 alias(
     name = "port",
     actual = "//upb/port",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "port_inc",
+    actual = "//upb/port:inc",
     visibility = ["//visibility:public"],
 )
 
