@@ -67,7 +67,7 @@ TEST(AnalyzeProfileProtoTest, LikelyStringPresence) {
   options.print_unused_threshold = false;
   options.pool = DescriptorPool::generated_pool();
   EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
-               "Message google.protobuf.compiler.tools.AnalyzeThis\n"
+               "Message google::protobuf::compiler::tools::AnalyzeThis\n"
                "  string optional_string: INLINE\n");
 }
 
@@ -79,7 +79,7 @@ TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndUsed) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis"
       count: 100
-      field { name: "id" getters_count: 0 configs_count: 100 }
+      field { name: "id" getters_count: 1000 configs_count: 100 }
       field { name: "optional_string" getters_count: 100 configs_count: 100 }
       field { name: "optional_child" getters_count: 100 configs_count: 102 }
       field { name: "repeated_string" getters_count: 100 configs_count: 1 }
@@ -91,7 +91,7 @@ TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndUsed) {
   options.print_unused_threshold = false;
   options.pool = DescriptorPool::generated_pool();
   EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
-               "Message google.protobuf.compiler.tools.AnalyzeThis\n"
+               "Message google::protobuf::compiler::tools::AnalyzeThis\n"
                "  string optional_string: INLINE\n");
 }
 
@@ -103,20 +103,19 @@ TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndRarelyUsed) {
     message {
       name: "google::protobuf::compiler::tools::AnalyzeThis"
       count: 100
-      field { name: "id" getters_count: 0 configs_count: 100 }
-      field { name: "optional_string" getters_count: 100 configs_count: 100 }
+      field { name: "id" getters_count: 1 configs_count: 100 }
+      field { name: "optional_string" getters_count: 1 configs_count: 100 }
       field { name: "optional_child" getters_count: 100 configs_count: 1 }
-      field { name: "repeated_string" getters_count: 100 configs_count: 1 }
-      field { name: "repeated_child" getters_count: 100 configs_count: 1 }
-      field { name: "nested" getters_count: 0 configs_count: 1 }
+      field { name: "repeated_string" getters_count: 100 configs_count: 100 }
+      field { name: "repeated_child" getters_count: 100 configs_count: 100 }
+      field { name: "nested" getters_count: 1 configs_count: 100 }
     }
   )pb");
   AnalyzeProfileProtoOptions options;
   options.print_unused_threshold = false;
   options.pool = DescriptorPool::generated_pool();
   EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
-               "Message google.protobuf.compiler.tools.AnalyzeThis\n"
-               "  string optional_string: INLINE\n"
+               "Message google::protobuf::compiler::tools::AnalyzeThis\n"
                "  AnalyzeChild optional_child: LAZY\n");
 }
 
@@ -134,7 +133,7 @@ TEST(AnalyzeProfileProtoTest, NestedCppNameMatchedToPoolName) {
   options.print_unused_threshold = false;
   options.pool = DescriptorPool::generated_pool();
   EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
-               "Message google.protobuf.compiler.tools.AnalyzeThis.Nested\n"
+               "Message google::protobuf::compiler::tools::AnalyzeThis::Nested\n"
                "  string optional_string: INLINE\n");
 }
 

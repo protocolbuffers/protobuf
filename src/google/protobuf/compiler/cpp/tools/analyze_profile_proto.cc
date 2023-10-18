@@ -19,6 +19,7 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/compiler/access_info_map.h"
+#include "google/protobuf/compiler/split_map.h"
 #include "google/protobuf/compiler/profile_bootstrap.pb.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/log.h"
@@ -29,6 +30,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "third_party/re2/re2.h"
@@ -61,7 +63,7 @@ std::ostream& operator<<(std::ostream& s, PDProtoScale scale) {
   return s;
 }
 
-enum PDProtoOptimization { kNone, kLazy, kInline, kSplit };
+enum PDProtoOptimization { kNone, kUnverifiedLazy, kLazy, kInline, kSplit };
 
 std::ostream& operator<<(std::ostream& s, PDProtoOptimization optimization) {
   switch (optimization) {
@@ -69,6 +71,8 @@ std::ostream& operator<<(std::ostream& s, PDProtoOptimization optimization) {
       return s << "NONE";
     case PDProtoOptimization::kLazy:
       return s << "LAZY";
+    case PDProtoOptimization::kUnverifiedLazy:
+      return s << "UNVERIFIED_LAZY";
     case PDProtoOptimization::kInline:
       return s << "INLINE";
     case PDProtoOptimization::kSplit:
@@ -83,6 +87,16 @@ class PDProtoAnalyzer {
       : info_map_(access_info) {
     info_map_.SetAccessInfoParseHelper(
         std::make_unique<cpp::CppAccessInfoParseHelper>());
+    options_.access_info_map = &info_map_;
+    scc_analyzer_ = std::make_unique<cpp::MessageSCCAnalyzer>(options_);
+  }
+
+  void SetFile(const FileDescriptor* file) {
+    if (current_file_ != file) {
+      split_map_ = cpp::CreateSplitMap(file, options_);
+      options_.split_map = &split_map_;
+      current_file_ = file;
+    }
   }
 
   bool HasProfile(const Descriptor* descriptor) const {
@@ -110,25 +124,20 @@ class PDProtoAnalyzer {
   }
 
   PDProtoOptimization OptimizeField(const FieldDescriptor* field) {
-    PDProtoAnalysis analysis = AnalyzeField(field);
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      if (analysis.presence >= PDProtoScale::kLikely) {
-        if (cpp::CanStringBeInlined(field)) {
-          return PDProtoOptimization::kInline;
-        }
+    if (IsFieldInlined(field, options_)) {
+      return PDProtoOptimization::kInline;
+    }
+    if (IsLazy(field, options_, scc_analyzer_.get())) {
+      if (IsLazilyVerifiedLazy(field, options_)) {
+        return PDProtoOptimization::kUnverifiedLazy;
       }
+      return PDProtoOptimization::kLazy;
     }
 
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      if (analysis.presence > PDProtoScale::kRarely) {
-        // Exclude 'never' as that may simply mean we have no data.
-        if (analysis.usage == PDProtoScale::kRarely) {
-          if (!field->is_repeated()) {
-            return PDProtoOptimization::kLazy;
-          }
-        }
-      }
+    if (cpp::ShouldSplit(field, options_)) {
+      return PDProtoOptimization::kSplit;
     }
+
     return PDProtoOptimization::kNone;
   }
 
@@ -156,7 +165,11 @@ class PDProtoAnalyzer {
            info_map_.IsCold(field, AccessInfoMap::kWrite, kColdRatio);
   }
 
+  cpp::Options options_;
   AccessInfoMap info_map_;
+  SplitMap split_map_;
+  std::unique_ptr<cpp::MessageSCCAnalyzer> scc_analyzer_;
+  const FileDescriptor* current_file_ = nullptr;
 };
 
 size_t GetLongestName(const DescriptorPool& pool, absl::string_view name,
@@ -291,6 +304,7 @@ absl::Status AnalyzeProfileProtoToText(
     if (RE2::PartialMatch(message->name(), regex)) {
       if (const Descriptor* descriptor =
               FindMessageTypeByCppName(pool, message->name())) {
+        analyzer.SetFile(descriptor->file());
         if (analyzer.HasProfile(descriptor)) {
           bool message_header = false;
           for (int i = 0; i < descriptor->field_count(); ++i) {
@@ -301,7 +315,10 @@ absl::Status AnalyzeProfileProtoToText(
                 optimized != PDProtoOptimization::kNone) {
               if (!message_header) {
                 message_header = true;
-                stream << "Message " << descriptor->full_name() << "\n";
+                stream << "Message "
+                       << absl::StrReplaceAll(descriptor->full_name(),
+                                              {{".", "::"}})
+                       << "\n";
               }
               stream << "  " << TypeName(field) << " " << field->name() << ":";
 

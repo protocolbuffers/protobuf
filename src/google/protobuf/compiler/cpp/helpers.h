@@ -358,8 +358,17 @@ bool IsStringInliningEnabled(const Options& options);
 // Returns true if the provided field is a singular string and can be inlined.
 bool CanStringBeInlined(const FieldDescriptor* field);
 
-// Returns true if `field` should be inlined based on PDProto profile.
+// Returns true if `field` is a string field that can and should be inlined
+// based on PDProto profile.
 bool IsStringInlined(const FieldDescriptor* field, const Options& options);
+
+// Returns true if `field` should be inlined based on PDProto profile.
+// Currently we only enable inlining for string fields backed by a std::string
+// instance, but in the future we may expand this to message types.
+inline bool IsFieldInlined(const FieldDescriptor* field,
+                           const Options& options) {
+  return IsStringInlined(field, options);
+}
 
 // Does the given FileDescriptor use lazy fields?
 bool HasLazyFields(const FileDescriptor* file, const Options& options,
