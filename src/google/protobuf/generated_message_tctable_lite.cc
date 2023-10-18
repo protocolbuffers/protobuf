@@ -166,7 +166,7 @@ const TcParseTableBase::FieldEntry* TcParser::FindFieldEntry(
   }
   const uint16_t* lookup_table = table->field_lookup_begin();
   for (;;) {
-#ifdef PROTOBUF_LITTLE_ENDIAN
+#ifdef ABSL_IS_LITTLE_ENDIAN
     memcpy(&fstart, lookup_table, sizeof(fstart));
 #else
     fstart = lookup_table[0] | (lookup_table[1] << 16);

@@ -1266,7 +1266,7 @@ class FileDescriptorTables {
   FieldsByNumberSet fields_by_number_;  // Not including extensions.
   EnumValuesByNumberSet enum_values_by_number_;
   mutable EnumValuesByNumberSet unknown_enum_values_by_number_
-      PROTOBUF_GUARDED_BY(unknown_enum_values_mu_);
+      ABSL_GUARDED_BY(unknown_enum_values_mu_);
 
   // Populated on first request to save space, hence constness games.
   mutable absl::once_flag locations_by_path_once_;
