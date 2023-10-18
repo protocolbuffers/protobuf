@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "json/json.h"
 #include "conformance_test.h"
 #include "google/protobuf/descriptor.h"
@@ -33,6 +34,9 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
   bool ParseResponse(const conformance::ConformanceResponse& response,
                      const ConformanceRequestSetting& setting,
                      Message* test_message) override;
+  void SetTypeUrl(absl::string_view type_url) {
+    type_url_ = std::string(type_url);
+  }
 
   template <typename MessageType>
   friend class BinaryAndJsonConformanceSuiteImpl;
@@ -44,8 +48,8 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
 template <typename MessageType>
 class BinaryAndJsonConformanceSuiteImpl {
  public:
-  BinaryAndJsonConformanceSuiteImpl(BinaryAndJsonConformanceSuite* suite,
-                                    bool run_proto3_tests);
+  explicit BinaryAndJsonConformanceSuiteImpl(
+      BinaryAndJsonConformanceSuite* suite, bool run_proto3_tests);
 
  private:
   using ConformanceRequestSetting =
@@ -79,8 +83,7 @@ class BinaryAndJsonConformanceSuiteImpl {
                                    const Message& prototype);
   void RunValidJsonTestWithProtobufInput(
       const std::string& test_name, ConformanceLevel level,
-      const protobuf_test_messages::proto3::TestAllTypesProto3& input,
-      const std::string& equivalent_text_format);
+      const MessageType& input, const std::string& equivalent_text_format);
   void RunValidJsonIgnoreUnknownTest(const std::string& test_name,
                                      ConformanceLevel level,
                                      const std::string& input_json,

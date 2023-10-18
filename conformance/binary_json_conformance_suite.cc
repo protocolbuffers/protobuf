@@ -24,9 +24,12 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
 #include "json/json.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
+#include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
+#include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/endian.h"
 #include "google/protobuf/json/json.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
@@ -47,6 +50,10 @@ using google::protobuf::internal::little_endian::FromHost;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
+using TestAllTypesProto2Editions =
+    protobuf_test_messages::editions::proto2::TestAllTypesProto2;
+using TestAllTypesProto3Editions =
+    protobuf_test_messages::editions::proto3::TestAllTypesProto3;
 
 namespace {
 
@@ -325,12 +332,17 @@ bool BinaryAndJsonConformanceSuite::ParseResponse(
 void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
   type_resolver_.reset(NewTypeResolverForDescriptorPool(
       kTypeUrlPrefix, DescriptorPool::generated_pool()));
-  type_url_ = GetTypeUrl(TestAllTypesProto3::descriptor());
 
   BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto3>(
       this, /*run_proto3_tests=*/true);
   BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2>(
       this, /*run_proto3_tests=*/false);
+  if (maximum_edition_ >= Edition::EDITION_2023) {
+    BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto3Editions>(
+        this, /*run_proto3_tests=*/true);
+    BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2Editions>(
+        this, /*run_proto3_tests=*/false);
+  }
 }
 
 template <typename MessageType>
@@ -413,8 +425,7 @@ template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::
     RunValidJsonTestWithProtobufInput(
         const std::string& test_name, ConformanceLevel level,
-        const TestAllTypesProto3& input,
-        const std::string& equivalent_text_format) {
+        const MessageType& input, const std::string& equivalent_text_format) {
   ConformanceRequestSetting setting(
       level, conformance::PROTOBUF, conformance::JSON, conformance::JSON_TEST,
       input, test_name, input.SerializeAsString());
@@ -427,7 +438,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
                                   ConformanceLevel level,
                                   const std::string& input_json,
                                   const std::string& equivalent_text_format) {
-  TestAllTypesProto3 prototype;
+  MessageType prototype;
   ConformanceRequestSetting setting(
       level, conformance::JSON, conformance::PROTOBUF,
       conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST, prototype, test_name,
@@ -560,7 +571,7 @@ template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForJson(
     const std::string& test_name, ConformanceLevel level,
     const std::string& input_json) {
-  TestAllTypesProto3 prototype;
+  MessageType prototype;
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
   ConformanceRequestSetting setting(level, conformance::JSON, conformance::JSON,
@@ -568,8 +579,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForJson(
                                     test_name, input_json);
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  std::string effective_test_name = absl::StrCat(
-      setting.ConformanceLevelToString(level), ".Proto3.JsonInput.", test_name);
+  std::string effective_test_name =
+      absl::StrCat(setting.ConformanceLevelToString(level), ".",
+                   SyntaxIdentifier(), ".JsonInput.", test_name);
 
   suite_.RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kParseError) {
@@ -587,18 +599,19 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
     ExpectSerializeFailureForJson(const std::string& test_name,
                                   ConformanceLevel level,
                                   const std::string& text_format) {
-  TestAllTypesProto3 payload_message;
+  MessageType payload_message;
   ABSL_CHECK(TextFormat::ParseFromString(text_format, &payload_message))
       << "Failed to parse: " << text_format;
 
-  TestAllTypesProto3 prototype;
+  MessageType prototype;
   ConformanceRequestSetting setting(
       level, conformance::PROTOBUF, conformance::JSON, conformance::JSON_TEST,
       prototype, test_name, payload_message.SerializeAsString());
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  std::string effective_test_name = absl::StrCat(
-      setting.ConformanceLevelToString(level), ".", test_name, ".JsonOutput");
+  std::string effective_test_name =
+      absl::StrCat(setting.ConformanceLevelToString(level), ".",
+                   SyntaxIdentifier(), ".", test_name, ".JsonOutput");
 
   suite_.RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kSerializeError) {
@@ -1330,6 +1343,7 @@ BinaryAndJsonConformanceSuiteImpl<MessageType>::
     BinaryAndJsonConformanceSuiteImpl(BinaryAndJsonConformanceSuite* suite,
                                       bool run_proto3_tests)
     : suite_(*ABSL_DIE_IF_NULL(suite)), run_proto3_tests_(run_proto3_tests) {
+  suite_.SetTypeUrl(GetTypeUrl(MessageType::GetDescriptor()));
   RunAllTests();
 }
 
@@ -1666,15 +1680,18 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTests() {
         "FieldName13": 0
       })",
         [](const Json::Value& value) { return value.isMember("FieldName13"); });
-    RunValidJsonTestWithValidator(
-        "FieldNameExtension", RECOMMENDED,
-        R"({
-        "[protobuf_test_messages.proto2.extension_int32]": 1
+    std::vector<const FieldDescriptor*> extensions;
+    MessageType::GetDescriptor()->file()->pool()->FindAllExtensions(
+        MessageType::GetDescriptor(), &extensions);
+    RunValidJsonTestWithValidator("FieldNameExtension", RECOMMENDED,
+                                  absl::Substitute(R"({
+        "[$0]": 1
       })",
-        [](const Json::Value& value) {
-          return value.isMember(
-              "[protobuf_test_messages.proto2.extension_int32]");
-        });
+                                                   extensions[0]->full_name()),
+                                  [&](const Json::Value& value) {
+                                    return value.isMember(absl::StrCat(
+                                        "[", extensions[0]->full_name(), "]"));
+                                  });
     return;
   }
   RunValidJsonTest("HelloWorld", REQUIRED,
@@ -2175,7 +2192,7 @@ void BinaryAndJsonConformanceSuiteImpl<
                    R"({"optionalFloat": "-Infinity"})", "optional_float: -inf");
   // Non-canonical Nan will be correctly normalized.
   {
-    TestAllTypesProto3 message;
+    MessageType message;
     // IEEE floating-point standard 32-bit quiet NaN:
     //   0111 1111 1xxx xxxx xxxx xxxx xxxx xxxx
     message.set_optional_float(WireFormatLite::DecodeFloat(0x7FA12345));
@@ -2227,7 +2244,7 @@ void BinaryAndJsonConformanceSuiteImpl<
                    "optional_double: -inf");
   // Non-canonical Nan will be correctly normalized.
   {
-    TestAllTypesProto3 message;
+    MessageType message;
     message.set_optional_double(
         WireFormatLite::DecodeDouble(int64_t{0x7FFA123456789ABC}));
     RunValidJsonTestWithProtobufInput("DoubleFieldNormalizeQuietNan", REQUIRED,
@@ -3008,54 +3025,61 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForValue() {
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForAny() {
+  std::string type_url = GetTypeUrl(MessageType::GetDescriptor());
   RunValidJsonTest("Any", REQUIRED,
-                   R"({
+                   absl::Substitute(R"({
         "optionalAny": {
-          "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3",
+          "@type": "$0",
           "optionalInt32": 12345
   }
       })",
-                   R"(
+                                    GetTypeUrl(MessageType::GetDescriptor())),
+                   absl::Substitute(R"(
         optional_any: {
-    [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3] {
+          [$0] {
             optional_int32: 12345
-    }
-  }
-      )");
+          }
+        }
+      )",
+                                    type_url));
   RunValidJsonTest("AnyNested", REQUIRED,
-                   R"({
+                   absl::Substitute(R"({
         "optionalAny": {
           "@type": "type.googleapis.com/google.protobuf.Any",
           "value": {
-            "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3",
+            "@type": "$0",
             "optionalInt32": 12345
     }
   }
       })",
-                   R"(
+                                    type_url),
+                   absl::Substitute(R"(
         optional_any: {
-    [type.googleapis.com/google.protobuf.Any] {
-      [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3] {
+          [type.googleapis.com/google.protobuf.Any] {
+            [$0] {
               optional_int32: 12345
-      }
-    }
-  }
-      )");
+            }
+          }
+        }
+      )",
+                                    type_url));
   // The special "@type" tag is not required to appear first.
   RunValidJsonTest("AnyUnorderedTypeTag", REQUIRED,
-                   R"({
+                   absl::Substitute(R"({
         "optionalAny": {
           "optionalInt32": 12345,
-          "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3"
-  }
+          "@type": "$0"
+        }
       })",
-                   R"(
+                                    type_url),
+                   absl::Substitute(R"(
         optional_any: {
-    [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3] {
+          [$0] {
             optional_int32: 12345
-    }
-  }
-      )");
+          }
+        }
+      )",
+                                    type_url));
   // Well-known types in Any.
   RunValidJsonTest("AnyWithInt32ValueWrapper", REQUIRED,
                    R"({
@@ -3253,8 +3277,13 @@ std::string BinaryAndJsonConformanceSuiteImpl<MessageType>::SyntaxIdentifier()
     const {
   if constexpr (std::is_same<MessageType, TestAllTypesProto2>::value) {
     return "Proto2";
-  } else {
+  } else if constexpr (std::is_same<MessageType, TestAllTypesProto3>::value) {
     return "Proto3";
+  } else if constexpr (std::is_same<MessageType,
+                                    TestAllTypesProto2Editions>::value) {
+    return "Editions_Proto2";
+  } else {
+    return "Editions_Proto3";
   }
 }
 

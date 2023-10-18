@@ -149,6 +149,16 @@ ConformanceTestSuite::ConformanceRequestSetting::GetSyntaxIdentifier() const {
       return "Proto3";
     case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
       return "Proto2";
+    case FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS: {
+      std::string id = "Editions";
+      if (prototype_message_.GetDescriptor()->name() == "TestAllTypesProto2") {
+        absl::StrAppend(&id, "_Proto2");
+      } else if (prototype_message_.GetDescriptor()->name() ==
+                 "TestAllTypesProto3") {
+        absl::StrAppend(&id, "_Proto3");
+      }
+      return id;
+    }
     default:
       return "Unknown";
   }

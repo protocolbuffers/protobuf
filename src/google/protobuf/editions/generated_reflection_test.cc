@@ -6,13 +6,13 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <gtest/gtest.h>
-#include "google/protobuf/editions/golden/test_messages_proto2.pb.h"
+#include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
 
 namespace google {
 namespace protobuf {
 namespace {
 
-using ::protobuf_test_messages::proto2::TestAllTypesProto2;
+using ::protobuf_test_messages::editions::proto2::TestAllTypesProto2;
 
 // It's important that no calls that would initialize the generated pool occur
 // in any tests in this file. This test guarantees that there's no mutex

@@ -15,6 +15,8 @@
 #include "absl/log/die_if_null.h"
 #include "absl/strings/str_cat.h"
 #include "conformance_test.h"
+#include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
+#include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
@@ -25,6 +27,10 @@ using conformance::WireFormat;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto2::UnknownToTestAllTypes;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
+using TestAllTypesProto2Editions =
+    protobuf_test_messages::editions::proto2::TestAllTypesProto2;
+using TestAllTypesProto3Editions =
+    protobuf_test_messages::editions::proto3::TestAllTypesProto3;
 
 namespace google {
 namespace protobuf {
@@ -113,6 +119,10 @@ bool TextFormatConformanceTestSuite::ParseResponse(
 void TextFormatConformanceTestSuite::RunSuiteImpl() {
   TextFormatConformanceTestSuiteImpl<TestAllTypesProto2>(this);
   TextFormatConformanceTestSuiteImpl<TestAllTypesProto3>(this);
+  if (maximum_edition_ >= Edition::EDITION_2023) {
+    TextFormatConformanceTestSuiteImpl<TestAllTypesProto2Editions>(this);
+    TextFormatConformanceTestSuiteImpl<TestAllTypesProto3Editions>(this);
+  }
 }
 
 template <typename MessageType>

@@ -8,6 +8,7 @@ def conformance_test(
         testee,
         failure_list = None,
         text_format_failure_list = None,
+        maximum_edition = None,
         **kwargs):
     """Conformance test runner.
 
@@ -27,6 +28,8 @@ def conformance_test(
     if text_format_failure_list:
         args = args + ["--text_format_failure_list %s" % _strip_bazel(text_format_failure_list)]
         failure_lists = failure_lists + [text_format_failure_list]
+    if maximum_edition:
+        args = args + ["--maximum_edition %s" % maximum_edition]
 
     native.sh_test(
         name = name,

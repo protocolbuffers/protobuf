@@ -132,6 +132,7 @@ class ConformanceTestSuite {
       : verbose_(false),
         performance_(false),
         enforce_recommended_(false),
+        maximum_edition_(Edition::EDITION_PROTO3),
         failure_list_flag_name_("--failure_list") {}
   virtual ~ConformanceTestSuite() {}
 
@@ -147,6 +148,9 @@ class ConformanceTestSuite {
   // See the comments about ConformanceLevel below to learn more about the
   // difference between REQUIRED and RECOMMENDED test cases.
   void SetEnforceRecommended(bool value) { enforce_recommended_ = value; }
+
+  // Sets the maximum edition (inclusive) that should be tests for conformance.
+  void SetMaximumEdition(Edition edition) { maximum_edition_ = edition; }
 
   // Gets the flag name to the failure list file.
   // By default, this would return --failure_list
@@ -284,6 +288,7 @@ class ConformanceTestSuite {
   bool verbose_;
   bool performance_;
   bool enforce_recommended_;
+  Edition maximum_edition_;
   std::string output_;
   std::string output_dir_;
   std::string failure_list_flag_name_;
