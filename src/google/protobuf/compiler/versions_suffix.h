@@ -21,6 +21,6 @@
 //
 // Please avoid changing it manually, as they should be updated automatically by
 // the Protobuf release process.
-#define PROTOBUF_GENCODE_VERSION_SUFFIX "-rc1"
+#define PROTOBUF_GENCODE_VERSION_SUFFIX "-rc2"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_VERSIONS_SUFFIX_H__
