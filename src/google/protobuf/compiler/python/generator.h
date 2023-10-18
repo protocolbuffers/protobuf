@@ -12,6 +12,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_PYTHON_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_PYTHON_GENERATOR_H__
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -49,6 +50,7 @@ struct GeneratorOptions {
   bool generate_pyi = false;
   bool annotate_pyi = false;
   bool bootstrap = false;
+  bool strip_nonfunctional_codegen = false;
 };
 
 class PROTOC_EXPORT Generator : public CodeGenerator {
@@ -73,6 +75,9 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   GeneratorOptions ParseParameter(absl::string_view parameter,
                                   std::string* error) const;
   void PrintImports() const;
+  template <typename DescriptorT>
+  std::string GetResolvedFeatures(const DescriptorT& descriptor) const;
+  void PrintResolvedFeatures() const;
   void PrintFileDescriptor() const;
   void PrintAllEnumsInFile() const;
   void PrintNestedEnums(const Descriptor& descriptor) const;
@@ -140,6 +145,10 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   template <typename DescriptorProtoT>
   void PrintSerializedPbInterval(const DescriptorProtoT& descriptor_proto,
                                  absl::string_view name) const;
+
+  template <typename DescriptorT>
+  bool PrintDescriptorOptionsFixingCode(const DescriptorT& descriptor,
+                                        absl::string_view descriptor_str) const;
 
   void FixAllDescriptorOptions() const;
   void FixOptionsForField(const FieldDescriptor& field) const;
