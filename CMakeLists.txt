@@ -279,6 +279,7 @@ endif (MSVC)
 include_directories(
   ${ZLIB_INCLUDE_DIRECTORIES}
   ${protobuf_BINARY_DIR}
+  ${protobuf_BINARY_DIR}/src
   ${protobuf_SOURCE_DIR}/src)
 
 set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
