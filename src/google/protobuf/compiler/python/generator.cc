@@ -22,6 +22,8 @@
 #include "google/protobuf/compiler/python/generator.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <string>
@@ -31,14 +33,17 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/python/helpers.h"
 #include "google/protobuf/compiler/python/pyi_generator.h"
 #include "google/protobuf/compiler/retention.h"
@@ -46,9 +51,12 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/descriptor_visitor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/message.h"
 
 namespace google {
 namespace protobuf {
@@ -152,21 +160,6 @@ std::string StringifyDefaultValue(const FieldDescriptor& field) {
   return "";
 }
 
-std::string StringifySyntax(FileDescriptorLegacy::Syntax syntax) {
-  switch (syntax) {
-    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
-      return "proto2";
-    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
-      return "proto3";
-    case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
-    default:
-      ABSL_LOG(FATAL)
-          << "Unsupported syntax; this generator only supports proto2 "
-             "and proto3 syntax.";
-      return "";
-  }
-}
-
 }  // namespace
 
 Generator::Generator() : file_(nullptr) {}
@@ -194,6 +187,8 @@ GeneratorOptions Generator::ParseParameter(absl::string_view parameter,
       options.generate_pyi = true;
     } else if (option.first == "annotate_code") {
       options.annotate_pyi = true;
+    } else if (option.first == "experimental_strip_nonfunctional_codegen") {
+      options.strip_nonfunctional_codegen = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
     }
@@ -211,8 +206,15 @@ bool Generator::Generate(const FileDescriptor* file,
   // Generate pyi typing information
   if (options.generate_pyi) {
     python::PyiGenerator pyi_generator;
-    std::string pyi_options = options.annotate_pyi ? "annotate_code" : "";
-    if (!pyi_generator.Generate(file, pyi_options, context, error)) {
+    std::vector<std::string> pyi_options;
+    if (options.annotate_pyi) {
+      pyi_options.push_back("annotate_code");
+    }
+    if (options.strip_nonfunctional_codegen) {
+      pyi_options.push_back("experimental_strip_nonfunctional_codegen");
+    }
+    if (!pyi_generator.Generate(file, absl::StrJoin(pyi_options, ","), context,
+                                error)) {
       return false;
     }
   }
@@ -286,6 +288,7 @@ bool Generator::Generate(const FileDescriptor* file,
     PrintAllEnumsInFile();
     PrintMessageDescriptors();
     FixForeignFieldsInDescriptors();
+    PrintResolvedFeatures();
     printer_->Outdent();
     printer_->Print("else:\n");
     printer_->Indent();
@@ -417,13 +420,119 @@ void Generator::PrintImports() const {
   printer_->Print("\n");
 }
 
+template <typename DescriptorT>
+std::string Generator::GetResolvedFeatures(
+    const DescriptorT& descriptor) const {
+  if (!GeneratingDescriptorProto()) {
+    // Everything but descriptor.proto can handle proper feature resolution.
+    return "None";
+  }
+
+  // Load the resolved features from our pool.
+  const Descriptor* feature_set = file_->pool()->FindMessageTypeByName(
+      FeatureSet::GetDescriptor()->full_name());
+  auto message_factory = absl::make_unique<DynamicMessageFactory>();
+  auto features =
+      absl::WrapUnique(message_factory->GetPrototype(feature_set)->New());
+  features->ParseFromString(
+      GetResolvedSourceFeatures(descriptor).SerializeAsString());
+
+  // Collect all of the resolved features.
+  std::vector<std::string> feature_args;
+  const Reflection* reflection = features->GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+  reflection->ListFields(*features, &fields);
+  for (const auto* field : fields) {
+    // Assume these are all enums.  If we add non-enum global features or any
+    // python-specific features, we will need to come back and improve this
+    // logic.
+    ABSL_CHECK(field->enum_type() != nullptr)
+        << "Unexpected non-enum field found!";
+    if (field->options().retention() == FieldOptions::RETENTION_SOURCE) {
+      // Skip any source-retention features.
+      continue;
+    }
+    const EnumDescriptor* enm = field->enum_type();
+    const EnumValueDescriptor* value =
+        enm->FindValueByNumber(reflection->GetEnumValue(*features, field));
+
+    feature_args.emplace_back(absl::StrCat(
+        field->name(), "=",
+        absl::StrFormat("%s.values_by_name[\"%s\"].number",
+                        ModuleLevelDescriptorName(*enm), value->name())));
+  }
+  return absl::StrCat("_ResolvedFeatures(", absl::StrJoin(feature_args, ","),
+                      ")");
+}
+
+void Generator::PrintResolvedFeatures() const {
+  // Since features are used during the descriptor build, it's impossible to do
+  // feature resolution at the normal point for descriptor.proto. Instead, we do
+  // feature resolution here in the generator, and embed a custom object on all
+  // of the generated descriptors.  This object should act like any other
+  // FeatureSet message on normal descriptors, but will never have to be
+  // resolved by the python runtime.
+  ABSL_CHECK(GeneratingDescriptorProto());
+  printer_->Emit({{"resolved_features", GetResolvedFeatures(*file_)},
+                  {"descriptor_name", kDescriptorKey}},
+                 R"py(
+                  class _ResolvedFeatures:
+                    def __init__(self, features = None, **kwargs):
+                      if features:
+                        for k, v in features.FIELDS.items():
+                          setattr(self, k, getattr(features, k))
+                      else:
+                        for k, v in kwargs.items():
+                          setattr(self, k, v)
+                  $descriptor_name$._features = $resolved_features$
+                )py");
+
+#define MAKE_NESTED(desc, CPP_FIELD, PY_FIELD)                                \
+  [&] {                                                                       \
+    for (int i = 0; i < desc.CPP_FIELD##_count(); ++i) {                      \
+      printer_->Emit(                                                         \
+          {{"resolved_subfeatures", GetResolvedFeatures(*desc.CPP_FIELD(i))}, \
+           {"index", absl::StrCat(i)},                                        \
+           {"field", PY_FIELD}},                                              \
+          "$descriptor_name$.$field$[$index$]._features = "                   \
+          "$resolved_subfeatures$\n");                                        \
+    }                                                                         \
+  }
+
+  internal::VisitDescriptors(*file_, [&](const Descriptor& msg) {
+    printer_->Emit(
+        {{"resolved_features", GetResolvedFeatures(msg)},
+         {"descriptor_name", ModuleLevelDescriptorName(msg)},
+         {"field_features", MAKE_NESTED(msg, field, "fields")},
+         {"oneof_features", MAKE_NESTED(msg, oneof_decl, "oneofs")},
+         {"ext_features", MAKE_NESTED(msg, extension, "extensions")}},
+        R"py(
+          $descriptor_name$._features = $resolved_features$
+          $field_features$
+          $oneof_features$
+          $ext_features$
+        )py");
+  });
+  internal::VisitDescriptors(*file_, [&](const EnumDescriptor& enm) {
+    printer_->Emit({{"resolved_features", GetResolvedFeatures(enm)},
+                    {"descriptor_name", ModuleLevelDescriptorName(enm)},
+                    {"value_features", MAKE_NESTED(enm, value, "values")}},
+                   R"py(
+                    $descriptor_name$._features = $resolved_features$
+                    $value_features$
+                  )py");
+  });
+#undef MAKE_NESTED
+}
+
 // Prints the single file descriptor for this file.
 void Generator::PrintFileDescriptor() const {
   absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_name"] = kDescriptorKey;
   m["name"] = file_->name();
   m["package"] = file_->package();
-  m["syntax"] = StringifySyntax(FileDescriptorLegacy(file_).syntax());
+  m["syntax"] = std::string(
+      FileDescriptorLegacy::SyntaxName(FileDescriptorLegacy(file_).syntax()));
   m["options"] = OptionsValue(
       StripLocalSourceRetentionOptions(*file_).SerializeAsString());
   m["serialized_descriptor"] = absl::CHexEscape(file_descriptor_serialized_);
@@ -677,8 +786,7 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
       "options_value", OptionsValue(options_string), "extendable",
       message_descriptor.extension_range_count() > 0 ? "True" : "False",
       "syntax",
-      StringifySyntax(
-          FileDescriptorLegacy(message_descriptor.file()).syntax()));
+      FileDescriptorLegacy::SyntaxName(FileDescriptorLegacy(file_).syntax()));
   printer_->Print(",\n");
 
   // Extension ranges
@@ -1167,7 +1275,7 @@ void Generator::PrintSerializedPbInterval(
     const DescriptorProtoT& descriptor_proto, absl::string_view name) const {
   std::string sp;
   descriptor_proto.SerializeToString(&sp);
-  int offset = file_descriptor_serialized_.find(sp);
+  size_t offset = file_descriptor_serialized_.find(sp);
   ABSL_CHECK_GE(offset, 0);
 
   printer_->Print(
@@ -1177,26 +1285,34 @@ void Generator::PrintSerializedPbInterval(
       absl::StrCat(offset + sp.size()));
 }
 
-namespace {
-void PrintDescriptorOptionsFixingCode(absl::string_view descriptor,
-                                      absl::string_view options,
-                                      io::Printer* printer) {
+template <typename DescriptorT>
+bool Generator::PrintDescriptorOptionsFixingCode(
+    const DescriptorT& descriptor, absl::string_view descriptor_str) const {
+  std::string options = OptionsValue(
+      StripLocalSourceRetentionOptions(descriptor).SerializeAsString());
+
   // Reset the _options to None thus DescriptorBase.GetOptions() can
   // parse _options again after extensions are registered.
-  size_t dot_pos = descriptor.find('.');
+  size_t dot_pos = descriptor_str.find('.');
   std::string descriptor_name;
   if (dot_pos == std::string::npos) {
-    descriptor_name = absl::StrCat("_globals['", descriptor, "']");
+    descriptor_name = absl::StrCat("_globals['", descriptor_str, "']");
   } else {
-    descriptor_name = absl::StrCat("_globals['", descriptor.substr(0, dot_pos),
-                                   "']", descriptor.substr(dot_pos));
+    descriptor_name =
+        absl::StrCat("_globals['", descriptor_str.substr(0, dot_pos), "']",
+                     descriptor_str.substr(dot_pos));
   }
-  printer->Print(
+
+  if (options == "None") {
+    return false;
+  }
+
+  printer_->Print(
       "$descriptor_name$._options = None\n"
       "$descriptor_name$._serialized_options = $serialized_value$\n",
       "descriptor_name", descriptor_name, "serialized_value", options);
+  return true;
 }
-}  // namespace
 
 // Generates the start and end offsets for each entity in the serialized file
 // descriptor. The file argument must exactly match what was serialized into
@@ -1246,11 +1362,7 @@ void Generator::SetMessagePbInterval(const DescriptorProto& message_proto,
 // Prints expressions that set the options field of all descriptors.
 void Generator::FixAllDescriptorOptions() const {
   // Prints an expression that sets the file descriptor's options.
-  std::string file_options = OptionsValue(
-      StripLocalSourceRetentionOptions(*file_).SerializeAsString());
-  if (file_options != "None") {
-    PrintDescriptorOptionsFixingCode(kDescriptorKey, file_options, printer_);
-  } else {
+  if (!PrintDescriptorOptionsFixingCode(*file_, kDescriptorKey)) {
     printer_->Print("DESCRIPTOR._options = None\n");
   }
   // Prints expressions that set the options for all top level enums.
@@ -1275,35 +1387,23 @@ void Generator::FixAllDescriptorOptions() const {
 }
 
 void Generator::FixOptionsForOneof(const OneofDescriptor& oneof) const {
-  std::string oneof_options =
-      OptionsValue(StripLocalSourceRetentionOptions(oneof).SerializeAsString());
-  if (oneof_options != "None") {
-    std::string oneof_name = absl::Substitute(
-        "$0.$1['$2']", ModuleLevelDescriptorName(*oneof.containing_type()),
-        "oneofs_by_name", oneof.name());
-    PrintDescriptorOptionsFixingCode(oneof_name, oneof_options, printer_);
-  }
+  std::string oneof_name = absl::Substitute(
+      "$0.$1['$2']", ModuleLevelDescriptorName(*oneof.containing_type()),
+      "oneofs_by_name", oneof.name());
+  PrintDescriptorOptionsFixingCode(oneof, oneof_name);
 }
 
 // Prints expressions that set the options for an enum descriptor and its
 // value descriptors.
 void Generator::FixOptionsForEnum(const EnumDescriptor& enum_descriptor) const {
   std::string descriptor_name = ModuleLevelDescriptorName(enum_descriptor);
-  std::string enum_options = OptionsValue(
-      StripLocalSourceRetentionOptions(enum_descriptor).SerializeAsString());
-  if (enum_options != "None") {
-    PrintDescriptorOptionsFixingCode(descriptor_name, enum_options, printer_);
-  }
+  PrintDescriptorOptionsFixingCode(enum_descriptor, descriptor_name);
   for (int i = 0; i < enum_descriptor.value_count(); ++i) {
     const EnumValueDescriptor& value_descriptor = *enum_descriptor.value(i);
-    std::string value_options = OptionsValue(
-        StripLocalSourceRetentionOptions(value_descriptor).SerializeAsString());
-    if (value_options != "None") {
-      PrintDescriptorOptionsFixingCode(
-          absl::StrFormat("%s.values_by_name[\"%s\"]", descriptor_name.c_str(),
-                          value_descriptor.name().c_str()),
-          value_options, printer_);
-    }
+    PrintDescriptorOptionsFixingCode(
+        value_descriptor,
+        absl::StrFormat("%s.values_by_name[\"%s\"]", descriptor_name.c_str(),
+                        value_descriptor.name().c_str()));
   }
 }
 
@@ -1313,46 +1413,33 @@ void Generator::FixOptionsForService(
     const ServiceDescriptor& service_descriptor) const {
   std::string descriptor_name =
       ModuleLevelServiceDescriptorName(service_descriptor);
-  std::string service_options = OptionsValue(
-      StripLocalSourceRetentionOptions(service_descriptor).SerializeAsString());
-  if (service_options != "None") {
-    PrintDescriptorOptionsFixingCode(descriptor_name, service_options,
-                                     printer_);
-  }
+  PrintDescriptorOptionsFixingCode(service_descriptor, descriptor_name);
 
   for (int i = 0; i < service_descriptor.method_count(); ++i) {
     const MethodDescriptor* method = service_descriptor.method(i);
-    std::string method_options = OptionsValue(
-        StripLocalSourceRetentionOptions(*method).SerializeAsString());
-    if (method_options != "None") {
-      std::string method_name = absl::StrCat(
-          descriptor_name, ".methods_by_name['", method->name(), "']");
-      PrintDescriptorOptionsFixingCode(method_name, method_options, printer_);
-    }
+    PrintDescriptorOptionsFixingCode(
+        *method, absl::StrCat(descriptor_name, ".methods_by_name['",
+                              method->name(), "']"));
   }
 }
 
 // Prints expressions that set the options for field descriptors (including
 // extensions).
 void Generator::FixOptionsForField(const FieldDescriptor& field) const {
-  std::string field_options =
-      OptionsValue(StripLocalSourceRetentionOptions(field).SerializeAsString());
-  if (field_options != "None") {
-    std::string field_name;
-    if (field.is_extension()) {
-      if (field.extension_scope() == nullptr) {
-        // Top level extensions.
-        field_name = field.name();
-      } else {
-        field_name = FieldReferencingExpression(field.extension_scope(), field,
-                                                "extensions_by_name");
-      }
+  std::string field_name;
+  if (field.is_extension()) {
+    if (field.extension_scope() == nullptr) {
+      // Top level extensions.
+      field_name = field.name();
     } else {
-      field_name = FieldReferencingExpression(field.containing_type(), field,
-                                              "fields_by_name");
+      field_name = FieldReferencingExpression(field.extension_scope(), field,
+                                              "extensions_by_name");
     }
-    PrintDescriptorOptionsFixingCode(field_name, field_options, printer_);
+  } else {
+    field_name = FieldReferencingExpression(field.containing_type(), field,
+                                            "fields_by_name");
   }
+  PrintDescriptorOptionsFixingCode(field, field_name);
 }
 
 // Prints expressions that set the options for a message and all its inner
@@ -1381,13 +1468,8 @@ void Generator::FixOptionsForMessage(const Descriptor& descriptor) const {
     FixOptionsForField(field);
   }
   // Message option for this message.
-  std::string message_options = OptionsValue(
-      StripLocalSourceRetentionOptions(descriptor).SerializeAsString());
-  if (message_options != "None") {
-    std::string descriptor_name = ModuleLevelDescriptorName(descriptor);
-    PrintDescriptorOptionsFixingCode(descriptor_name, message_options,
-                                     printer_);
-  }
+  PrintDescriptorOptionsFixingCode(descriptor,
+                                   ModuleLevelDescriptorName(descriptor));
 }
 
 // If a dependency forwards other files through public dependencies, let's
