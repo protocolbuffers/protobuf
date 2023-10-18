@@ -192,7 +192,7 @@ class PROTOBUF_EXPORT UInt64Value final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -367,7 +367,7 @@ class PROTOBUF_EXPORT UInt32Value final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -542,7 +542,7 @@ class PROTOBUF_EXPORT StringValue final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -723,7 +723,7 @@ class PROTOBUF_EXPORT Int64Value final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -898,7 +898,7 @@ class PROTOBUF_EXPORT Int32Value final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -1073,7 +1073,7 @@ class PROTOBUF_EXPORT FloatValue final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -1248,7 +1248,7 @@ class PROTOBUF_EXPORT DoubleValue final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -1423,7 +1423,7 @@ class PROTOBUF_EXPORT BytesValue final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -1604,7 +1604,7 @@ class PROTOBUF_EXPORT BoolValue final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
