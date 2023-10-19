@@ -15,7 +15,7 @@ load(
 )
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
+    "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
 
@@ -52,7 +52,7 @@ proto_library(
     deps = ["//:descriptor_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "proto3_test_upb_proto",
     testonly = 1,
     deps = [":proto3_test_proto"],
@@ -77,7 +77,7 @@ upb_minitable_proto_library(
     deps = [":test_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_upb_proto",
     testonly = 1,
     visibility = ["//upb:__subpackages__"],
@@ -90,7 +90,7 @@ proto_library(
     deps = ["//:timestamp_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_cpp_upb_proto",
     deps = ["test_cpp_proto"],
 )
@@ -114,21 +114,21 @@ upb_minitable_proto_library(
     deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_messages_proto2_upb_proto",
     testonly = 1,
     visibility = ["//upb:__subpackages__"],
     deps = ["//src/google/protobuf:test_messages_proto2_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_messages_proto3_upb_proto",
     testonly = 1,
     visibility = ["//upb:__subpackages__"],
     deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "timestamp_upb_proto",
     deps = ["//:timestamp_proto"],
 )
@@ -252,7 +252,7 @@ upb_minitable_proto_library(
     deps = [":test_import_empty_srcs_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_import_empty_srcs_upb_proto",
     testonly = 1,
     deps = [":test_import_empty_srcs_proto"],

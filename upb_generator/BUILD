@@ -16,7 +16,7 @@ load(
 )
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
+    "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
 load(
@@ -39,7 +39,7 @@ proto_library(
     deps = ["//:compiler_plugin_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "code_generator_request_upb_proto",
     visibility = ["//upb:friends"],
     deps = [":code_generator_request"],
