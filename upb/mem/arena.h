@@ -47,7 +47,7 @@ UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
 UPB_API void upb_Arena_Free(upb_Arena* a);
 UPB_API bool upb_Arena_Fuse(upb_Arena* a, upb_Arena* b);
 
-void upb_Arena_IncRefFor(upb_Arena* arena, const void* owner);
+bool upb_Arena_IncRefFor(upb_Arena* arena, const void* owner);
 void upb_Arena_DecRefFor(upb_Arena* arena, const void* owner);
 
 void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size);

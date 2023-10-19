@@ -347,8 +347,10 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   }
 }
 
-void upb_Arena_IncRefFor(upb_Arena* arena, const void* owner) {
+bool upb_Arena_IncRefFor(upb_Arena* arena, const void* owner) {
   _upb_ArenaRoot r;
+  if (upb_Arena_HasInitialBlock(arena)) return false;
+
 retry:
   r = _upb_Arena_FindRoot(arena);
   if (upb_Atomic_CompareExchangeWeak(
@@ -357,7 +359,7 @@ retry:
               _upb_Arena_RefCountFromTagged(r.tagged_count) + 1),
           memory_order_release, memory_order_acquire)) {
     // We incremented it successfully, so we are done.
-    return;
+    return true;
   }
   // We failed update due to parent switching on the arena.
   goto retry;
