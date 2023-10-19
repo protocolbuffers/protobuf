@@ -403,9 +403,25 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
       }
       format(
           "&$1$._instance,\n"
-          "$2$,  // fallback\n"
-          "",
+          "$2$,  // fallback\n",
           DefaultInstanceName(descriptor_, options_), fallback);
+
+      std::vector<const FieldDescriptor*> subtable_fields;
+      for (const auto& aux : tc_table_info_->aux_entries) {
+        if (aux.type == internal::TailCallTableInfo::kSubTable) {
+          subtable_fields.push_back(aux.field);
+        }
+      }
+      const auto* hottest = FindHottestField(subtable_fields, options_);
+      if (hottest == nullptr) {
+        // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
+        // branches. Set the pointer to itself to avoid nullptr.
+        format("::_pbi::TcParser::GetTable<$1$>(),  // to_prefetch\n",
+               QualifiedClassName(descriptor_, options_));
+      } else {
+        format("::_pbi::TcParser::GetTable<$1$>(),  // to_prefetch\n",
+               QualifiedClassName(hottest->message_type(), options_));
+      }
     }
     format("}, {{\n");
     {

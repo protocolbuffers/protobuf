@@ -2437,6 +2437,7 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_FileDescriptorSet_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorSet>(),  // to_prefetch
   }, {{
     // repeated .google.protobuf.FileDescriptorProto file = 1;
     {::_pbi::TcParser::FastMtR1,
@@ -2719,6 +2720,7 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_FileDescriptorProto_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional string name = 1;
@@ -3271,6 +3273,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
     offsetof(decltype(_table_), aux_entries),
     &_DescriptorProto_ExtensionRange_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto_ExtensionRange>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional int32 start = 1;
@@ -3526,6 +3529,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_ta
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_DescriptorProto_ReservedRange_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto_ReservedRange>(),  // to_prefetch
   }, {{
     // optional int32 end = 2;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(DescriptorProto_ReservedRange, _impl_.end_), 1>(),
@@ -3802,6 +3806,7 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_DescriptorProto_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional string name = 1;
@@ -4287,6 +4292,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 71, 2> ExtensionRangeOptions_Declaration
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_ExtensionRangeOptions_Declaration_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::ExtensionRangeOptions_Declaration>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional int32 number = 1;
@@ -4623,6 +4629,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
     offsetof(decltype(_table_), aux_entries),
     &_ExtensionRangeOptions_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::ExtensionRangeOptions>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
@@ -5020,6 +5027,7 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
     offsetof(decltype(_table_), aux_entries),
     &_FieldDescriptorProto_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::FieldDescriptorProto>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional string name = 1;
@@ -5502,6 +5510,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_OneofDescriptorProto_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::OneofDescriptorProto>(),  // to_prefetch
   }, {{
     // optional .google.protobuf.OneofOptions options = 2;
     {::_pbi::TcParser::FastMtS1,
@@ -5735,6 +5744,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRa
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_EnumDescriptorProto_EnumReservedRange_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::EnumDescriptorProto_EnumReservedRange>(),  // to_prefetch
   }, {{
     // optional int32 end = 2;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(EnumDescriptorProto_EnumReservedRange, _impl_.end_), 1>(),
@@ -5996,6 +6006,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_EnumDescriptorProto_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::EnumDescriptorProto>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional string name = 1;
@@ -6339,6 +6350,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
     offsetof(decltype(_table_), aux_entries),
     &_EnumValueDescriptorProto_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::EnumValueDescriptorProto>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional string name = 1;
@@ -6628,6 +6640,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
     offsetof(decltype(_table_), aux_entries),
     &_ServiceDescriptorProto_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::ServiceDescriptorProto>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional string name = 1;
@@ -6951,6 +6964,7 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
     offsetof(decltype(_table_), aux_entries),
     &_MethodDescriptorProto_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::MethodDescriptorProto>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional string name = 1;
@@ -7454,6 +7468,7 @@ constexpr ::_pbi::TcParseTable<5, 22, 3, 202, 12> FileOptions::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_FileOptions_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::FileOptions>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional string java_package = 1;
@@ -8232,6 +8247,7 @@ constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_MessageOptions_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::MessageOptions>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool message_set_wire_format = 1 [default = false];
@@ -8593,6 +8609,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 57, 2> FieldOptions_EditionDefault::_tab
     offsetof(decltype(_table_), aux_entries),
     &_FieldOptions_EditionDefault_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_EditionDefault>(),  // to_prefetch
   }, {{
     // optional string value = 2;
     {::_pbi::TcParser::FastSS1,
@@ -8898,6 +8915,7 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_FieldOptions_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions>(),  // to_prefetch
   }, {{
     // optional bool debug_redact = 16 [default = false];
     {::_pbi::TcParser::FastV8S2,
@@ -9416,6 +9434,7 @@ constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_OneofOptions_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::OneofOptions>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional .google.protobuf.FeatureSet features = 1;
@@ -9699,6 +9718,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_EnumOptions_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::EnumOptions>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
@@ -10052,6 +10072,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 2, 0, 7> EnumValueOptions::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_EnumValueOptions_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::EnumValueOptions>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool deprecated = 1 [default = false];
@@ -10376,6 +10397,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_ServiceOptions_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::ServiceOptions>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool deprecated = 33 [default = false];
@@ -10690,6 +10712,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_MethodOptions_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::MethodOptions>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool deprecated = 33 [default = false];
@@ -11001,6 +11024,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_ta
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_UninterpretedOption_NamePart_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption_NamePart>(),  // to_prefetch
   }, {{
     // required bool is_extension = 2;
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(UninterpretedOption_NamePart, _impl_.is_extension_), 1>(),
@@ -11288,6 +11312,7 @@ constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_UninterpretedOption_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>(),  // to_prefetch
   }, {{
     // optional string aggregate_value = 8;
     {::_pbi::TcParser::FastSS1,
@@ -11675,6 +11700,7 @@ constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2> FeatureSet::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_FeatureSet_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -12031,6 +12057,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 2, 0, 2> FeatureSetDefaults_FeatureSetEditi
     offsetof(decltype(_table_), aux_entries),
     &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>(),  // to_prefetch
   }, {{
     // optional .google.protobuf.FeatureSet features = 2;
     {::_pbi::TcParser::FastMtS1,
@@ -12287,6 +12314,7 @@ constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 2> FeatureSetDefaults::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_FeatureSetDefaults_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::FeatureSetDefaults>(),  // to_prefetch
   }, {{
     // optional .google.protobuf.Edition minimum_edition = 4;
     {::_pbi::TcParser::FastEvS1,
@@ -12568,6 +12596,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_SourceCodeInfo_Location_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::SourceCodeInfo_Location>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // repeated int32 path = 1 [packed = true];
@@ -12878,6 +12907,7 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_SourceCodeInfo_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::SourceCodeInfo>(),  // to_prefetch
   }, {{
     // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
     {::_pbi::TcParser::FastMtR1,
@@ -13107,6 +13137,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
     offsetof(decltype(_table_), aux_entries),
     &_GeneratedCodeInfo_Annotation_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::GeneratedCodeInfo_Annotation>(),  // to_prefetch
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // repeated int32 path = 1 [packed = true];
@@ -13412,6 +13443,7 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_GeneratedCodeInfo_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    ::_pbi::TcParser::GetTable<::google::protobuf::GeneratedCodeInfo>(),  // to_prefetch
   }, {{
     // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
     {::_pbi::TcParser::FastMtR1,
