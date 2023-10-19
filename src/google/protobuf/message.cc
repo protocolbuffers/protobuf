@@ -195,8 +195,13 @@ static std::string GetTypeNameImpl(const MessageLite& msg) {
   return DownCast<const Message&>(msg).GetDescriptor()->full_name();
 }
 
+static std::string InitializationErrorStringImpl(const MessageLite& msg) {
+  return DownCast<const Message&>(msg).InitializationErrorString();
+}
+
 constexpr MessageLite::DescriptorMethods Message::kDescriptorMethods = {
     GetTypeNameImpl,
+    InitializationErrorStringImpl,
 };
 
 namespace internal {

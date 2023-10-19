@@ -235,7 +235,7 @@ class PROTOBUF_EXPORT MessageLite {
   // This is not implemented for Lite messages -- it just returns "(cannot
   // determine missing fields for lite message)".  However, it is implemented
   // for full messages.  See message.h.
-  virtual std::string InitializationErrorString() const;
+  std::string InitializationErrorString() const;
 
   // If |other| is the exact same class as this, calls MergeFrom(). Otherwise,
   // results are undefined (probably crash).
@@ -523,6 +523,7 @@ class PROTOBUF_EXPORT MessageLite {
   // costs in MessageLite.
   struct DescriptorMethods {
     std::string (*get_type_name)(const MessageLite&);
+    std::string (*initialization_error_string)(const MessageLite&);
   };
   struct ClassData {
     // Note: The order of arguments in the functions is chosen so that it has
