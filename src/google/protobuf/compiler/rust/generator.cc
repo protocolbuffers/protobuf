@@ -98,6 +98,7 @@ void EmitPubUseOfOwnMessages(Context<FileDescriptor>& primary_file,
                         pub use crate::$mod$::$Msg$;
                         // TODO Address use for imported crates
                         pub use crate::$mod$::$Msg$View;
+                        pub use crate::$mod$::$Msg$Mut;
                       )rs");
   }
 }

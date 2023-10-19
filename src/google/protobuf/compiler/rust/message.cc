@@ -181,19 +181,34 @@ bool IsSimpleScalar(FieldDescriptor::Type type) {
          type == FieldDescriptor::TYPE_BOOL;
 }
 
-void GenerateSubView(Context<FieldDescriptor> field) {
+void GenerateSubfield(Context<FieldDescriptor> field, bool is_mut) {
+  // If we're dealing with a muts, the getter must be supplied self.inner.msg()
+  // whereas non-muts have to be supplied self.msg
   field.Emit(
       {
+          {"inner", is_mut ? ".inner." : "."},
+          {"parentheses", is_mut ? "()" : ""},
           {"field", field.desc().name()},
           {"getter_thunk", Thunk(field, "get")},
           {"Scalar", PrimitiveRsTypeName(field.desc())},
       },
       R"rs(
-      pub fn r#$field$(&self) -> $Scalar$ { unsafe {
-        $getter_thunk$(self.msg)
-      } }
-    )rs");
+    pub fn r#$field$(&self) -> $Scalar$ { unsafe {
+      $getter_thunk$(self$inner$msg$parentheses$)
+    } }
+  )rs");
 }
+
+void TraverseSubfield(Context<Descriptor> msg, bool is_mut) {
+  for (int i = 0; i < msg.desc().field_count(); ++i) {
+    auto field = msg.WithDesc(*msg.desc().field(i));
+    if (field.desc().is_repeated()) continue;
+    if (!IsSimpleScalar(field.desc().type())) continue;
+    GenerateSubfield(field, is_mut);
+    msg.printer().PrintRaw("\n");
+  }
+}
+
 }  // namespace
 
 void GenerateRs(Context<Descriptor> msg) {
@@ -202,74 +217,70 @@ void GenerateRs(Context<Descriptor> msg) {
     return;
   }
   msg.Emit(
-      {
-          {"Msg", msg.desc().name()},
-          {"Msg::new", [&] { MessageNew(msg); }},
-          {"Msg::serialize", [&] { MessageSerialize(msg); }},
-          {"Msg::deserialize", [&] { MessageDeserialize(msg); }},
-          {"Msg::drop", [&] { MessageDrop(msg); }},
-          {"Msg_externs", [&] { MessageExterns(msg); }},
-          {"accessor_fns",
-           [&] {
-             for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto field = msg.WithDesc(*msg.desc().field(i));
-               msg.Emit({{"comment", FieldInfoComment(field)}}, R"rs(
+      {{"Msg", msg.desc().name()},
+       {"Msg::new", [&] { MessageNew(msg); }},
+       {"Msg::serialize", [&] { MessageSerialize(msg); }},
+       {"Msg::deserialize", [&] { MessageDeserialize(msg); }},
+       {"Msg::drop", [&] { MessageDrop(msg); }},
+       {"Msg_externs", [&] { MessageExterns(msg); }},
+       {"accessor_fns",
+        [&] {
+          for (int i = 0; i < msg.desc().field_count(); ++i) {
+            auto field = msg.WithDesc(*msg.desc().field(i));
+            msg.Emit({{"comment", FieldInfoComment(field)}}, R"rs(
                  // $comment$
                )rs");
-               GenerateAccessorMsgImpl(field);
-               msg.printer().PrintRaw("\n");
-             }
-           }},
-          {"oneof_accessor_fns",
-           [&] {
-             for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
-               GenerateOneofAccessors(
-                   msg.WithDesc(*msg.desc().real_oneof_decl(i)));
-               msg.printer().PrintRaw("\n");
-             }
-           }},
-          {"accessor_externs",
-           [&] {
-             for (int i = 0; i < msg.desc().field_count(); ++i) {
-               GenerateAccessorExternC(msg.WithDesc(*msg.desc().field(i)));
-               msg.printer().PrintRaw("\n");
-             }
-           }},
-          {"oneof_externs",
-           [&] {
-             for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
-               GenerateOneofExternC(
-                   msg.WithDesc(*msg.desc().real_oneof_decl(i)));
-               msg.printer().PrintRaw("\n");
-             }
-           }},
-          {"nested_msgs",
-           [&] {
-             // If we have no nested types or oneofs, bail out without emitting
-             // an empty mod SomeMsg_.
-             if (msg.desc().nested_type_count() == 0 &&
-                 msg.desc().real_oneof_decl_count() == 0) {
-               return;
-             }
-             msg.Emit({{"Msg", msg.desc().name()},
-                       {"nested_msgs",
-                        [&] {
-                          for (int i = 0; i < msg.desc().nested_type_count();
-                               ++i) {
-                            auto nested_msg =
-                                msg.WithDesc(msg.desc().nested_type(i));
-                            GenerateRs(nested_msg);
-                          }
-                        }},
-                       {"oneofs",
-                        [&] {
-                          for (int i = 0;
-                               i < msg.desc().real_oneof_decl_count(); ++i) {
-                            GenerateOneofDefinition(
-                                msg.WithDesc(*msg.desc().real_oneof_decl(i)));
-                          }
-                        }}},
-                      R"rs(
+            GenerateAccessorMsgImpl(field);
+            msg.printer().PrintRaw("\n");
+          }
+        }},
+       {"oneof_accessor_fns",
+        [&] {
+          for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+            GenerateOneofAccessors(
+                msg.WithDesc(*msg.desc().real_oneof_decl(i)));
+            msg.printer().PrintRaw("\n");
+          }
+        }},
+       {"accessor_externs",
+        [&] {
+          for (int i = 0; i < msg.desc().field_count(); ++i) {
+            GenerateAccessorExternC(msg.WithDesc(*msg.desc().field(i)));
+            msg.printer().PrintRaw("\n");
+          }
+        }},
+       {"oneof_externs",
+        [&] {
+          for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+            GenerateOneofExternC(msg.WithDesc(*msg.desc().real_oneof_decl(i)));
+            msg.printer().PrintRaw("\n");
+          }
+        }},
+       {"nested_msgs",
+        [&] {
+          // If we have no nested types or oneofs, bail out without emitting
+          // an empty mod SomeMsg_.
+          if (msg.desc().nested_type_count() == 0 &&
+              msg.desc().real_oneof_decl_count() == 0) {
+            return;
+          }
+          msg.Emit(
+              {{"Msg", msg.desc().name()},
+               {"nested_msgs",
+                [&] {
+                  for (int i = 0; i < msg.desc().nested_type_count(); ++i) {
+                    auto nested_msg = msg.WithDesc(msg.desc().nested_type(i));
+                    GenerateRs(nested_msg);
+                  }
+                }},
+               {"oneofs",
+                [&] {
+                  for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+                    GenerateOneofDefinition(
+                        msg.WithDesc(*msg.desc().real_oneof_decl(i)));
+                  }
+                }}},
+              R"rs(
                  #[allow(non_snake_case)]
                  pub mod $Msg$_ {
                    $nested_msgs$
@@ -277,18 +288,9 @@ void GenerateRs(Context<Descriptor> msg) {
                    $oneofs$
                  }  // mod $Msg$_
                 )rs");
-           }},
-          {"subviews",
-           [&] {
-             for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto field = msg.WithDesc(*msg.desc().field(i));
-               if (field.desc().is_repeated()) continue;
-               if (!IsSimpleScalar(field.desc().type())) continue;
-               GenerateSubView(field);
-               msg.printer().PrintRaw("\n");
-             }
-           }},
-      },
+        }},
+       {"subfields", [&] { TraverseSubfield(msg, false); }},
+       {"subfields_muts", [&] { TraverseSubfield(msg, true); }}},
       R"rs(
         #[allow(non_camel_case_types)]
         // TODO: Implement support for debug redaction
@@ -321,7 +323,7 @@ void GenerateRs(Context<Descriptor> msg) {
           pub fn new(_private: $pbi$::Private, msg: $pbi$::RawMessage) -> Self {
             Self { msg, _phantom: std::marker::PhantomData }
           }
-          $subviews$
+          $subfields$
         }
 
         // SAFETY:
@@ -352,8 +354,17 @@ void GenerateRs(Context<Descriptor> msg) {
 
         #[derive(Debug)]
         #[allow(dead_code)]
+        #[allow(non_camel_case_types)]
         pub struct $Msg$Mut<'a> {
           inner: $pbr$::MutatorMessageRef<'a>,
+        }
+
+        impl<'a> $Msg$Mut<'a> {
+          #[doc(hidden)]
+          pub fn new(_private: $pbi$::Private, msg: &'a mut $pbr$::MessageInner) -> Self {
+            Self { inner: $pbr$::MutatorMessageRef::new($pbi$::Private, msg) }
+          }
+          $subfields_muts$
         }
 
         // SAFETY:

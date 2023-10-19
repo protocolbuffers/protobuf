@@ -38,6 +38,10 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
             let submsg = unsafe { $getter_thunk$(self.inner.msg) };
             $prefix$View::new($pbi$::Private, submsg)
           }
+
+          pub fn $field$_mut(&mut self) -> $prefix$Mut {
+            $prefix$Mut::new($pbi$::Private, &mut self.inner)
+          }
         )rs");
   } else {
     field.Emit({{"prefix", prefix},
@@ -54,6 +58,10 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
                 None => $prefix$View::new($pbi$::Private, $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
                 Some(field) => $prefix$View::new($pbi$::Private, field),
               }
+          }
+
+          pub fn $field$_mut(&mut self) -> $prefix$Mut {
+            $prefix$Mut::new($pbi$::Private, &mut self.inner)
           }
         )rs");
   }

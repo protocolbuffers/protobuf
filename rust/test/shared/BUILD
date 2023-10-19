@@ -257,11 +257,17 @@ rust_test(
 rust_test(
     name = "simple_nested_cpp_test",
     srcs = ["simple_nested_test.rs"],
-    deps = ["//rust/test:nested_cc_rust_proto"],
+    deps = [
+        "//third_party/gtest_rust/googletest",
+        "//rust/test:nested_cc_rust_proto",
+    ],
 )
 
 rust_test(
     name = "simple_nested_upb_test",
     srcs = ["simple_nested_test.rs"],
-    deps = ["//rust/test:nested_upb_rust_proto"],
+    deps = [
+        "//third_party/gtest_rust/googletest",
+        "//rust/test:nested_upb_rust_proto",
+    ],
 )
