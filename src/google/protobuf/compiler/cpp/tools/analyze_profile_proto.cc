@@ -100,7 +100,7 @@ class PDProtoAnalyzer {
       }
     }
 
-    if (info_map_.InProfile(field) &&
+    if (info_map_.InProfile(field) && info_map_.HasUsage(field) &&
         info_map_.AccessCount(field, AccessInfoMap::kReadWriteOther) <=
             info_map_.GetUnlikelyUsedThreshold()) {
       analysis.usage = PDProtoScale::kRarely;
