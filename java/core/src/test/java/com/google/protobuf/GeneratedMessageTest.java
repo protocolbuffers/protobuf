@@ -9,6 +9,7 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -213,28 +214,28 @@ public class GeneratedMessageTest {
   @Test
   public void testGetExtensionFieldOutOfBound() {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
-    try {
-      builder.getRepeatedField(UnittestProto.repeatedNestedMessageExtension.getDescriptor(), 0);
-      assertWithMessage("Expected IndexOutOfBoundsException to be thrown").fail();
-    } catch (IndexOutOfBoundsException expected) {
-    }
-    try {
-      builder.getExtension(UnittestProto.repeatedNestedMessageExtension, 0);
-      assertWithMessage("Expected IndexOutOfBoundsException to be thrown").fail();
-    } catch (IndexOutOfBoundsException expected) {
-    }
+
+    assertThrows(
+        "Expected IndexOutOfBoundsException to be thrown",
+        IndexOutOfBoundsException.class,
+        () ->
+            builder.getRepeatedField(
+                UnittestProto.repeatedNestedMessageExtension.getDescriptor(), 0));
+    assertThrows(
+        "Expected IndexOutOfBoundsException to be thrown",
+        IndexOutOfBoundsException.class,
+        () -> builder.getExtension(UnittestProto.repeatedNestedMessageExtension, 0));
     TestAllExtensions extensionsMessage = builder.build();
-    try {
-      extensionsMessage.getRepeatedField(
-          UnittestProto.repeatedNestedMessageExtension.getDescriptor(), 0);
-      assertWithMessage("Expected IndexOutOfBoundsException to be thrown").fail();
-    } catch (IndexOutOfBoundsException expected) {
-    }
-    try {
-      extensionsMessage.getExtension(UnittestProto.repeatedNestedMessageExtension, 0);
-      assertWithMessage("Expected IndexOutOfBoundsException to be thrown").fail();
-    } catch (IndexOutOfBoundsException expected) {
-    }
+    assertThrows(
+        "Expected IndexOutOfBoundsException to be thrown",
+        IndexOutOfBoundsException.class,
+        () ->
+            extensionsMessage.getRepeatedField(
+                UnittestProto.repeatedNestedMessageExtension.getDescriptor(), 0));
+    assertThrows(
+        "Expected IndexOutOfBoundsException to be thrown",
+        IndexOutOfBoundsException.class,
+        () -> extensionsMessage.getExtension(UnittestProto.repeatedNestedMessageExtension, 0));
   }
 
   @Test
@@ -365,78 +366,51 @@ public class GeneratedMessageTest {
     if (list == Collections.emptyList()) {
       // OKAY -- Need to check this b/c EmptyList allows you to call clear.
     } else {
-      try {
-        list.clear();
-        assertWithMessage("List wasn't immutable").fail();
-      } catch (UnsupportedOperationException e) {
-        // good
-      }
+      assertThrows(
+          "List wasn't immutable", UnsupportedOperationException.class, () -> list.clear());
     }
   }
 
   @Test
   public void testSettersRejectNull() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    try {
-      builder.setOptionalString(null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.setOptionalBytes(null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.setOptionalNestedMessage((TestAllTypes.NestedMessage) null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.setOptionalNestedMessage((TestAllTypes.NestedMessage.Builder) null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.setOptionalNestedEnum(null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.addRepeatedString(null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.addRepeatedBytes(null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.addRepeatedNestedMessage((TestAllTypes.NestedMessage) null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.addRepeatedNestedMessage((TestAllTypes.NestedMessage.Builder) null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.addRepeatedNestedEnum(null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
+
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.setOptionalString(null));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.setOptionalNestedMessage((TestAllTypes.NestedMessage) null));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.setOptionalNestedMessage((TestAllTypes.NestedMessage.Builder) null));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.setOptionalNestedEnum(null));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.addRepeatedString(null));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.addRepeatedBytes(null));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.addRepeatedNestedMessage((TestAllTypes.NestedMessage) null));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.addRepeatedNestedMessage((TestAllTypes.NestedMessage.Builder) null));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.addRepeatedNestedEnum(null));
   }
 
   @Test
@@ -454,45 +428,35 @@ public class GeneratedMessageTest {
 
     builder.addRepeatedString("one");
     builder.addRepeatedString("two");
-    try {
-      builder.setRepeatedString(1, null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.setRepeatedString(1, null));
 
     builder.addRepeatedBytes(TestUtil.toBytes("one"));
     builder.addRepeatedBytes(TestUtil.toBytes("two"));
-    try {
-      builder.setRepeatedBytes(1, null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.setRepeatedBytes(1, null));
 
     builder.addRepeatedNestedMessage(TestAllTypes.NestedMessage.newBuilder().setBb(218).build());
     builder.addRepeatedNestedMessage(TestAllTypes.NestedMessage.newBuilder().setBb(456).build());
-    try {
-      builder.setRepeatedNestedMessage(1, (TestAllTypes.NestedMessage) null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.setRepeatedNestedMessage(1, (TestAllTypes.NestedMessage.Builder) null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.setRepeatedNestedMessage(1, (TestAllTypes.NestedMessage) null));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.setRepeatedNestedMessage(1, (TestAllTypes.NestedMessage.Builder) null));
 
     builder.addRepeatedNestedEnum(TestAllTypes.NestedEnum.FOO);
     builder.addRepeatedNestedEnum(TestAllTypes.NestedEnum.BAR);
-    try {
-      builder.setRepeatedNestedEnum(1, null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.setRepeatedNestedEnum(1, null));
   }
 
   @Test
@@ -518,33 +482,24 @@ public class GeneratedMessageTest {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
 
     ForeignMessage foreignMessage = ForeignMessage.newBuilder().setC(12).build();
-    try {
-      builder.addAllRepeatedForeignMessage(Arrays.asList(foreignMessage, (ForeignMessage) null));
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-
-    try {
-      builder.addAllRepeatedForeignEnum(Arrays.asList(ForeignEnum.FOREIGN_BAZ, null));
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-
-    try {
-      builder.addAllRepeatedString(Arrays.asList("one", null));
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
-
-    try {
-      builder.addAllRepeatedBytes(Arrays.asList(TestUtil.toBytes("one"), null));
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () ->
+            builder.addAllRepeatedForeignMessage(
+                Arrays.asList(foreignMessage, (ForeignMessage) null)));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.addAllRepeatedForeignEnum(Arrays.asList(ForeignEnum.FOREIGN_BAZ, null)));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.addAllRepeatedString(Arrays.asList("one", null)));
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.addAllRepeatedBytes(Arrays.asList(TestUtil.toBytes("one"), null)));
   }
 
   @Test
@@ -570,23 +525,19 @@ public class GeneratedMessageTest {
     assertThat(builder.getRepeatedString(1)).isEqualTo("two");
     assertThat(builder.getRepeatedString(2)).isEqualTo("three");
 
-    try {
-      builder.addAllRepeatedString(stringIterable);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (IllegalStateException e) {
-      // We expect this exception.
-    }
+    assertThrows(
+        "Exception was not thrown",
+        IllegalStateException.class,
+        () -> builder.addAllRepeatedString(stringIterable));
   }
 
   @Test
   public void testMergeFromOtherRejectsNull() throws Exception {
-    try {
-      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-      builder.mergeFrom((TestAllTypes) null);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (NullPointerException e) {
-      // We expect this exception.
-    }
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    assertThrows(
+        "Exception was not thrown",
+        NullPointerException.class,
+        () -> builder.mergeFrom((TestAllTypes) null));
   }
 
   @Test
@@ -781,13 +732,11 @@ public class GeneratedMessageTest {
   @Test
   public void testGetBuilderForNonMessageExtensionField() {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
-    try {
-      // This should throw an exception because the extension field is not a message.
-      builder.newBuilderForField(UnittestProto.optionalInt32Extension.getDescriptor());
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (UnsupportedOperationException e) {
-      // This exception is expected.
-    }
+    // This should throw an exception because the extension field is not a message.
+    assertThrows(
+        "Exception was not thrown",
+        UnsupportedOperationException.class,
+        () -> builder.newBuilderForField(UnittestProto.optionalInt32Extension.getDescriptor()));
   }
 
   @Test
@@ -1388,36 +1337,26 @@ public class GeneratedMessageTest {
   public void testGetFieldBuilderNotSupportedException() {
     Descriptor descriptor = TestAllTypes.getDescriptor();
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    try {
-      builder.getFieldBuilder(descriptor.findFieldByName("optional_int32"));
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (UnsupportedOperationException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.getFieldBuilder(descriptor.findFieldByName("optional_nested_enum"));
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (UnsupportedOperationException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.getFieldBuilder(descriptor.findFieldByName("repeated_int32"));
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (UnsupportedOperationException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.getFieldBuilder(descriptor.findFieldByName("repeated_nested_enum"));
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (UnsupportedOperationException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.getFieldBuilder(descriptor.findFieldByName("repeated_nested_message"));
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (UnsupportedOperationException e) {
-      // We expect this exception.
-    }
+    assertThrows(
+        "Exception was not thrown",
+        UnsupportedOperationException.class,
+        () -> builder.getFieldBuilder(descriptor.findFieldByName("optional_int32")));
+    assertThrows(
+        "Exception was not thrown",
+        UnsupportedOperationException.class,
+        () -> builder.getFieldBuilder(descriptor.findFieldByName("optional_nested_enum")));
+    assertThrows(
+        "Exception was not thrown",
+        UnsupportedOperationException.class,
+        () -> builder.getFieldBuilder(descriptor.findFieldByName("repeated_int32")));
+    assertThrows(
+        "Exception was not thrown",
+        UnsupportedOperationException.class,
+        () -> builder.getFieldBuilder(descriptor.findFieldByName("repeated_nested_enum")));
+    assertThrows(
+        "Exception was not thrown",
+        UnsupportedOperationException.class,
+        () -> builder.getFieldBuilder(descriptor.findFieldByName("repeated_nested_message")));
   }
 
   // Test that when the default outer class name conflicts with another type
@@ -1873,42 +1812,38 @@ public class GeneratedMessageTest {
   public void testGetRepeatedFieldBuilderNotSupportedException() {
     Descriptor descriptor = TestAllTypes.getDescriptor();
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    try {
-      builder.getRepeatedFieldBuilder(descriptor.findFieldByName("repeated_int32"), 0);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (UnsupportedOperationException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.getRepeatedFieldBuilder(descriptor.findFieldByName("repeated_nested_enum"), 0);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (UnsupportedOperationException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.getRepeatedFieldBuilder(descriptor.findFieldByName("optional_int32"), 0);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (UnsupportedOperationException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.getRepeatedFieldBuilder(descriptor.findFieldByName("optional_nested_enum"), 0);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (UnsupportedOperationException e) {
-      // We expect this exception.
-    }
-    try {
-      builder.getRepeatedFieldBuilder(descriptor.findFieldByName("optional_nested_message"), 0);
-      assertWithMessage("Exception was not thrown").fail();
-    } catch (UnsupportedOperationException e) {
-      // We expect this exception.
-    }
+
+    assertThrows(
+        "Exception was not thrown",
+        UnsupportedOperationException.class,
+        () -> builder.getRepeatedFieldBuilder(descriptor.findFieldByName("repeated_int32"), 0));
+    assertThrows(
+        "Exception was not thrown",
+        UnsupportedOperationException.class,
+        () ->
+            builder.getRepeatedFieldBuilder(descriptor.findFieldByName("repeated_nested_enum"), 0));
+    assertThrows(
+        "Exception was not thrown",
+        UnsupportedOperationException.class,
+        () -> builder.getRepeatedFieldBuilder(descriptor.findFieldByName("optional_int32"), 0));
+    assertThrows(
+        "Exception was not thrown",
+        UnsupportedOperationException.class,
+        () ->
+            builder.getRepeatedFieldBuilder(descriptor.findFieldByName("optional_nested_enum"), 0));
+    assertThrows(
+        "Exception was not thrown",
+        UnsupportedOperationException.class,
+        () ->
+            builder.getRepeatedFieldBuilder(
+                descriptor.findFieldByName("optional_nested_message"), 0));
   }
 
   private static final FieldDescriptor OPTIONAL_NESTED_MESSAGE_EXTENSION =
       UnittestProto.getDescriptor().findExtensionByName("optional_nested_message_extension");
   private static final FieldDescriptor REPEATED_NESTED_MESSAGE_EXTENSION =
       UnittestProto.getDescriptor().findExtensionByName("repeated_nested_message_extension");
+
   // A compile-time check that TestAllExtensions.Builder does in fact extend
   // GeneratedMessageV3.ExtendableBuilder. The tests below assume that it does.
   static {
