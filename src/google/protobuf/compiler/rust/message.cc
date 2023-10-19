@@ -181,19 +181,33 @@ bool IsSimpleScalar(FieldDescriptor::Type type) {
          type == FieldDescriptor::TYPE_BOOL;
 }
 
-void GenerateSubView(Context<FieldDescriptor> field) {
+void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
+  // If we're dealing with a Mut, the getter must be supplied self.inner.msg()
+  // whereas a View has to be supplied self.msg
   field.Emit(
       {
           {"field", field.desc().name()},
           {"getter_thunk", Thunk(field, "get")},
+          {"self", is_mut ? "self.inner.msg()" : "self.msg"},
           {"Scalar", PrimitiveRsTypeName(field.desc())},
       },
       R"rs(
-      pub fn r#$field$(&self) -> $Scalar$ { unsafe {
-        $getter_thunk$(self.msg)
-      } }
-    )rs");
+    pub fn r#$field$(&self) -> $Scalar$ {
+      unsafe { $getter_thunk$($self$) }
+    }
+  )rs");
 }
+
+void AccessorsForViewOrMut(Context<Descriptor> msg, bool is_mut) {
+  for (int i = 0; i < msg.desc().field_count(); ++i) {
+    auto field = msg.WithDesc(*msg.desc().field(i));
+    if (field.desc().is_repeated()) continue;
+    if (!IsSimpleScalar(field.desc().type())) continue;
+    GetterForViewOrMut(field, is_mut);
+    msg.printer().PrintRaw("\n");
+  }
+}
+
 }  // namespace
 
 void GenerateRs(Context<Descriptor> msg) {
@@ -278,17 +292,8 @@ void GenerateRs(Context<Descriptor> msg) {
                  }  // mod $Msg$_
                 )rs");
            }},
-          {"subviews",
-           [&] {
-             for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto field = msg.WithDesc(*msg.desc().field(i));
-               if (field.desc().is_repeated()) continue;
-               if (!IsSimpleScalar(field.desc().type())) continue;
-               GenerateSubView(field);
-               msg.printer().PrintRaw("\n");
-             }
-           }},
-      },
+          {"accessor_fns_for_views", [&] {AccessorsForViewOrMut(msg, false);}},
+          {"accessor_fns_for_muts", [&] {AccessorsForViewOrMut(msg, true);}}},
       R"rs(
         #[allow(non_camel_case_types)]
         // TODO: Implement support for debug redaction
@@ -321,7 +326,7 @@ void GenerateRs(Context<Descriptor> msg) {
           pub fn new(_private: $pbi$::Private, msg: $pbi$::RawMessage) -> Self {
             Self { msg, _phantom: std::marker::PhantomData }
           }
-          $subviews$
+          $accessor_fns_for_views$
         }
 
         // SAFETY:
@@ -352,8 +357,23 @@ void GenerateRs(Context<Descriptor> msg) {
 
         #[derive(Debug)]
         #[allow(dead_code)]
+        #[allow(non_camel_case_types)]
         pub struct $Msg$Mut<'a> {
           inner: $pbr$::MutatorMessageRef<'a>,
+        }
+
+        impl<'a> $Msg$Mut<'a> {
+          #[doc(hidden)]
+          pub fn new(_private: $pbi$::Private,
+                     parent: &'a mut $pbr$::MessageInner,
+                     msg: $pbi$::RawMessage)
+            -> Self {
+            Self {
+              inner: $pbr$::MutatorMessageRef::from_parent(
+                       $pbi$::Private, parent, msg)
+            }
+          }
+          $accessor_fns_for_muts$
         }
 
         // SAFETY:
