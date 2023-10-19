@@ -393,6 +393,37 @@ impl ProtoStr {
         // SAFETY: `string.as_bytes()` is valid UTF-8.
         unsafe { Self::from_utf8_unchecked(string.as_bytes()) }
     }
+
+    pub fn iter(&self) -> ProtoStrIterator {
+        ProtoStrIterator { protostr: self, idx: 0 }
+    }
+}
+
+impl<'a> IntoIterator for &'a ProtoStr {
+    type Item = &'a u8;
+    type IntoIter = std::slice::Iter<'a, u8>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
+    }
+}
+
+pub struct ProtoStrIterator<'a> {
+    protostr: &'a ProtoStr,
+    idx: usize,
+}
+
+impl<'a> Iterator for ProtoStrIterator<'a> {
+    type Item = u8;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.idx >= self.protostr.len() {
+            None
+        } else {
+            let res = Some(self.protostr.as_bytes()[self.idx]);
+            self.idx += 1;
+            res
+        }
+    }
 }
 
 impl AsRef<[u8]> for ProtoStr {
@@ -746,7 +777,7 @@ impl Hash for ProtoStrMut<'_> {
 impl Eq for ProtoStrMut<'_> {}
 impl<'msg> Ord for ProtoStrMut<'msg> {
     fn cmp(&self, other: &ProtoStrMut<'msg>) -> Ordering {
-        self.deref().cmp(other.deref())
+        Ord::cmp(&self.deref(), &other.deref())
     }
 }
 
