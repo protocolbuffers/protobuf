@@ -91,7 +91,7 @@ cc_library(
     hdrs = [
         "upb.hpp",
     ],
-    copts = UPB_DEFAULT_COPTS,
+    copts = UPB_DEFAULT_COPTS + ["-Wno-gnu-offsetof-extensions"],
     deprecation = "use upb:base and/or upb:mem instead",
     visibility = ["//visibility:public"],
     deps = [
