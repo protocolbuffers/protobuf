@@ -164,6 +164,7 @@ CppFeatures::GetClassData() const {
           CppFeatures::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
       };
   return &data;
 }
@@ -283,9 +284,6 @@ PROTOBUF_NOINLINE bool CppFeatures::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* CppFeatures::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

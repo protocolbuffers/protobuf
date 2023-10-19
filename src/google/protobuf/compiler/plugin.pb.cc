@@ -388,6 +388,7 @@ Version::GetClassData() const {
           Version::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
       };
   return &data;
 }
@@ -592,9 +593,6 @@ PROTOBUF_NOINLINE bool Version::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Version::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Version::InternalSwap(Version* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -705,6 +703,7 @@ CodeGeneratorRequest::GetClassData() const {
           CodeGeneratorRequest::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
       };
   return &data;
 }
@@ -942,9 +941,6 @@ PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* CodeGeneratorRequest::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1056,6 +1052,7 @@ CodeGeneratorResponse_File::GetClassData() const {
           CodeGeneratorResponse_File::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
       };
   return &data;
 }
@@ -1271,9 +1268,6 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse_File::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* CodeGeneratorResponse_File::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1361,6 +1355,7 @@ CodeGeneratorResponse::GetClassData() const {
           CodeGeneratorResponse::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
       };
   return &data;
 }
@@ -1541,9 +1536,6 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* CodeGeneratorResponse::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();

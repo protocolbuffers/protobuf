@@ -2403,6 +2403,7 @@ FileDescriptorSet::GetClassData() const {
           FileDescriptorSet::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
       };
   return &data;
 }
@@ -2521,9 +2522,6 @@ PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* FileDescriptorSet::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FileDescriptorSet::InternalSwap(FileDescriptorSet* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -2657,6 +2655,7 @@ FileDescriptorProto::GetClassData() const {
           FileDescriptorProto::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
       };
   return &data;
 }
@@ -3107,9 +3106,6 @@ PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* FileDescriptorProto::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FileDescriptorProto::InternalSwap(FileDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -3227,6 +3223,7 @@ DescriptorProto_ExtensionRange::GetClassData() const {
           DescriptorProto_ExtensionRange::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
       };
   return &data;
 }
@@ -3410,9 +3407,6 @@ PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* DescriptorProto_ExtensionRange::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -3486,6 +3480,7 @@ DescriptorProto_ReservedRange::GetClassData() const {
           DescriptorProto_ReservedRange::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
       };
   return &data;
 }
@@ -3638,9 +3633,6 @@ PROTOBUF_NOINLINE bool DescriptorProto_ReservedRange::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* DescriptorProto_ReservedRange::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -3750,6 +3742,7 @@ DescriptorProto::GetClassData() const {
           DescriptorProto::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
       };
   return &data;
 }
@@ -4122,9 +4115,6 @@ PROTOBUF_NOINLINE bool DescriptorProto::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* DescriptorProto::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void DescriptorProto::InternalSwap(DescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -4239,6 +4229,7 @@ ExtensionRangeOptions_Declaration::GetClassData() const {
           ExtensionRangeOptions_Declaration::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
       };
   return &data;
 }
@@ -4472,9 +4463,6 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions_Declaration::IsInitialized() const 
   return true;
 }
 
-::_pbi::CachedSize* ExtensionRangeOptions_Declaration::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Declaration* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -4578,6 +4566,7 @@ ExtensionRangeOptions::GetClassData() const {
           ExtensionRangeOptions::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
       };
   return &data;
 }
@@ -4802,9 +4791,6 @@ PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* ExtensionRangeOptions::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -4954,6 +4940,7 @@ FieldDescriptorProto::GetClassData() const {
           FieldDescriptorProto::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
       };
   return &data;
 }
@@ -5355,9 +5342,6 @@ PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* FieldDescriptorProto::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -5458,6 +5442,7 @@ OneofDescriptorProto::GetClassData() const {
           OneofDescriptorProto::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
       };
   return &data;
 }
@@ -5621,9 +5606,6 @@ PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* OneofDescriptorProto::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -5695,6 +5677,7 @@ EnumDescriptorProto_EnumReservedRange::GetClassData() const {
           EnumDescriptorProto_EnumReservedRange::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
       };
   return &data;
 }
@@ -5847,9 +5830,6 @@ PROTOBUF_NOINLINE bool EnumDescriptorProto_EnumReservedRange::IsInitialized() co
   return true;
 }
 
-::_pbi::CachedSize* EnumDescriptorProto_EnumReservedRange::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_EnumReservedRange* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -5949,6 +5929,7 @@ EnumDescriptorProto::GetClassData() const {
           EnumDescriptorProto::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
       };
   return &data;
 }
@@ -6188,9 +6169,6 @@ PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* EnumDescriptorProto::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -6294,6 +6272,7 @@ EnumValueDescriptorProto::GetClassData() const {
           EnumValueDescriptorProto::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
       };
   return &data;
 }
@@ -6482,9 +6461,6 @@ PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* EnumValueDescriptorProto::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -6583,6 +6559,7 @@ ServiceDescriptorProto::GetClassData() const {
           ServiceDescriptorProto::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
       };
   return &data;
 }
@@ -6773,9 +6750,6 @@ PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* ServiceDescriptorProto::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -6898,6 +6872,7 @@ MethodDescriptorProto::GetClassData() const {
           MethodDescriptorProto::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
       };
   return &data;
 }
@@ -7163,9 +7138,6 @@ PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* MethodDescriptorProto::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -7367,6 +7339,7 @@ FileOptions::GetClassData() const {
           FileOptions::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
       };
   return &data;
 }
@@ -8050,9 +8023,6 @@ PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* FileOptions::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -8186,6 +8156,7 @@ MessageOptions::GetClassData() const {
           MessageOptions::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
       };
   return &data;
 }
@@ -8464,9 +8435,6 @@ PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* MessageOptions::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void MessageOptions::InternalSwap(MessageOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -8554,6 +8522,7 @@ FieldOptions_EditionDefault::GetClassData() const {
           FieldOptions_EditionDefault::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
       };
   return &data;
 }
@@ -8709,9 +8678,6 @@ PROTOBUF_NOINLINE bool FieldOptions_EditionDefault::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* FieldOptions_EditionDefault::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -8845,6 +8811,7 @@ FieldOptions::GetClassData() const {
           FieldOptions::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
       };
   return &data;
 }
@@ -9276,9 +9243,6 @@ PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* FieldOptions::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FieldOptions::InternalSwap(FieldOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -9375,6 +9339,7 @@ OneofOptions::GetClassData() const {
           OneofOptions::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
       };
   return &data;
 }
@@ -9542,9 +9507,6 @@ PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* OneofOptions::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void OneofOptions::InternalSwap(OneofOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -9655,6 +9617,7 @@ EnumOptions::GetClassData() const {
           EnumOptions::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
       };
   return &data;
 }
@@ -9893,9 +9856,6 @@ PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* EnumOptions::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void EnumOptions::InternalSwap(EnumOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -10008,6 +9968,7 @@ EnumValueOptions::GetClassData() const {
           EnumValueOptions::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
       };
   return &data;
 }
@@ -10228,9 +10189,6 @@ PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* EnumValueOptions::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void EnumValueOptions::InternalSwap(EnumValueOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -10334,6 +10292,7 @@ ServiceOptions::GetClassData() const {
           ServiceOptions::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
       };
   return &data;
 }
@@ -10529,9 +10488,6 @@ PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* ServiceOptions::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void ServiceOptions::InternalSwap(ServiceOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -10644,6 +10600,7 @@ MethodOptions::GetClassData() const {
           MethodOptions::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
       };
   return &data;
 }
@@ -10869,9 +10826,6 @@ PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* MethodOptions::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void MethodOptions::InternalSwap(MethodOptions* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -10962,6 +10916,7 @@ UninterpretedOption_NamePart::GetClassData() const {
           UninterpretedOption_NamePart::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
       };
   return &data;
 }
@@ -11119,9 +11074,6 @@ PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* UninterpretedOption_NamePart::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -11236,6 +11188,7 @@ UninterpretedOption::GetClassData() const {
           UninterpretedOption::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
       };
   return &data;
 }
@@ -11517,9 +11470,6 @@ PROTOBUF_NOINLINE bool UninterpretedOption::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* UninterpretedOption::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void UninterpretedOption::InternalSwap(UninterpretedOption* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -11634,6 +11584,7 @@ FeatureSet::GetClassData() const {
           FeatureSet::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
       };
   return &data;
 }
@@ -11891,9 +11842,6 @@ PROTOBUF_NOINLINE bool FeatureSet::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* FeatureSet::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FeatureSet::InternalSwap(FeatureSet* PROTOBUF_RESTRICT other) {
   using std::swap;
   _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
@@ -11991,6 +11939,7 @@ FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
           FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
       };
   return &data;
 }
@@ -12148,9 +12097,6 @@ PROTOBUF_NOINLINE bool FeatureSetDefaults_FeatureSetEditionDefault::IsInitialize
   return true;
 }
 
-::_pbi::CachedSize* FeatureSetDefaults_FeatureSetEditionDefault::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FeatureSetDefaults_FeatureSetEditionDefault::InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -12246,6 +12192,7 @@ FeatureSetDefaults::GetClassData() const {
           FeatureSetDefaults::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
       };
   return &data;
 }
@@ -12422,9 +12369,6 @@ PROTOBUF_NOINLINE bool FeatureSetDefaults::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* FeatureSetDefaults::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FeatureSetDefaults::InternalSwap(FeatureSetDefaults* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -12522,6 +12466,7 @@ SourceCodeInfo_Location::GetClassData() const {
           SourceCodeInfo_Location::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
       };
   return &data;
 }
@@ -12768,9 +12713,6 @@ PROTOBUF_NOINLINE bool SourceCodeInfo_Location::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* SourceCodeInfo_Location::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -12844,6 +12786,7 @@ SourceCodeInfo::GetClassData() const {
           SourceCodeInfo::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
       };
   return &data;
 }
@@ -12960,9 +12903,6 @@ PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* SourceCodeInfo::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void SourceCodeInfo::InternalSwap(SourceCodeInfo* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -13063,6 +13003,7 @@ GeneratedCodeInfo_Annotation::GetClassData() const {
           GeneratedCodeInfo_Annotation::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
       };
   return &data;
 }
@@ -13299,9 +13240,6 @@ PROTOBUF_NOINLINE bool GeneratedCodeInfo_Annotation::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* GeneratedCodeInfo_Annotation::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -13378,6 +13316,7 @@ GeneratedCodeInfo::GetClassData() const {
           GeneratedCodeInfo::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
       };
   return &data;
 }
@@ -13494,9 +13433,6 @@ PROTOBUF_NOINLINE bool GeneratedCodeInfo::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* GeneratedCodeInfo::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

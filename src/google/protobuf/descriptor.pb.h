@@ -809,7 +809,6 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(UninterpretedOption_NamePart* other);
@@ -1003,7 +1002,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(SourceCodeInfo_Location* other);
@@ -1275,7 +1273,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(GeneratedCodeInfo_Annotation* other);
@@ -1537,7 +1534,6 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FieldOptions_EditionDefault* other);
@@ -1731,7 +1727,6 @@ class PROTOBUF_EXPORT FeatureSet final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FeatureSet* other);
@@ -2277,7 +2272,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(ExtensionRangeOptions_Declaration* other);
@@ -2516,7 +2510,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(EnumDescriptorProto_EnumReservedRange* other);
@@ -2704,7 +2697,6 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(DescriptorProto_ReservedRange* other);
@@ -2892,7 +2884,6 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(UninterpretedOption* other);
@@ -3172,7 +3163,6 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(SourceCodeInfo* other);
@@ -3355,7 +3345,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(GeneratedCodeInfo* other);
@@ -3538,7 +3527,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* other);
@@ -3730,7 +3718,6 @@ class PROTOBUF_EXPORT ServiceOptions final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(ServiceOptions* other);
@@ -4121,7 +4108,6 @@ class PROTOBUF_EXPORT OneofOptions final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(OneofOptions* other);
@@ -4499,7 +4485,6 @@ class PROTOBUF_EXPORT MethodOptions final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(MethodOptions* other);
@@ -4924,7 +4909,6 @@ class PROTOBUF_EXPORT MessageOptions final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(MessageOptions* other);
@@ -5367,7 +5351,6 @@ class PROTOBUF_EXPORT FileOptions final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FileOptions* other);
@@ -6086,7 +6069,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FieldOptions* other);
@@ -6715,7 +6697,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FeatureSetDefaults* other);
@@ -6925,7 +6906,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(ExtensionRangeOptions* other);
@@ -7358,7 +7338,6 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(EnumValueOptions* other);
@@ -7762,7 +7741,6 @@ class PROTOBUF_EXPORT EnumOptions final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(EnumOptions* other);
@@ -8179,7 +8157,6 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(OneofDescriptorProto* other);
@@ -8377,7 +8354,6 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(MethodDescriptorProto* other);
@@ -8639,7 +8615,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FieldDescriptorProto* other);
@@ -9035,7 +9010,6 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(EnumValueDescriptorProto* other);
@@ -9246,7 +9220,6 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(DescriptorProto_ExtensionRange* other);
@@ -9451,7 +9424,6 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(ServiceDescriptorProto* other);
@@ -9669,7 +9641,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(EnumDescriptorProto* other);
@@ -9939,7 +9910,6 @@ class PROTOBUF_EXPORT DescriptorProto final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(DescriptorProto* other);
@@ -10310,7 +10280,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FileDescriptorProto* other);
@@ -10726,7 +10695,6 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FileDescriptorSet* other);
