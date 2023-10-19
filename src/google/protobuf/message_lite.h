@@ -211,7 +211,7 @@ class PROTOBUF_EXPORT MessageLite {
   // Basic Operations ------------------------------------------------
 
   // Get the name of this message type, e.g. "foo.bar.BazProto".
-  virtual std::string GetTypeName() const = 0;
+  std::string GetTypeName() const;
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
@@ -518,12 +518,21 @@ class PROTOBUF_EXPORT MessageLite {
   // of this message or its internal memory could be changed.
   Arena* GetOwningArena() const { return _internal_metadata_.arena(); }
 
+  // We use a secondary vtable for descriptor based methods. This way ClassData
+  // does not growth with the number of descriptor methods. This avoids extra
+  // costs in MessageLite.
+  struct DescriptorMethods {
+    std::string (*get_type_name)(const MessageLite&);
+  };
   struct ClassData {
     // Note: The order of arguments in the functions is chosen so that it has
     // the same ABI as the member function that calls them. Eg the `this`
     // pointer becomes the first argument in the free function.
     void (*merge_to_from)(Message& to, const Message& from_msg);
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
+    // LITE objects (ie !descriptor_methods) collocate their name as a
+    // char[] just beyond the ClassData.
+    const DescriptorMethods* descriptor_methods;
   };
 
   // GetClassData() returns a pointer to a ClassData struct which
@@ -531,9 +540,9 @@ class PROTOBUF_EXPORT MessageLite {
   // property is used in order to quickly determine whether two messages are
   // of the same type.
   //
-  // This is a work in progress. Currently only SPEED messages return an
-  // instance. In the future all message types will return one.
-  virtual const ClassData* GetClassData() const;
+  // This is a work in progress. There are still some types (eg MapEntry) that
+  // return a default table instead of a unique one.
+  virtual const ClassData* GetClassData() const = 0;
 
   internal::InternalMetadata _internal_metadata_;
 

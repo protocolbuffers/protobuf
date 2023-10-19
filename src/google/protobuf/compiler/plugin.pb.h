@@ -241,10 +241,8 @@ class PROTOC_EXPORT Version final :
   protected:
   explicit Version(::google::protobuf::Arena* arena);
   Version(::google::protobuf::Arena* arena, const Version& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -463,10 +461,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   protected:
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* arena);
   CodeGeneratorResponse_File(::google::protobuf::Arena* arena, const CodeGeneratorResponse_File& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -701,10 +697,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   protected:
   explicit CodeGeneratorResponse(::google::protobuf::Arena* arena);
   CodeGeneratorResponse(::google::protobuf::Arena* arena, const CodeGeneratorResponse& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -940,10 +934,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   protected:
   explicit CodeGeneratorRequest(::google::protobuf::Arena* arena);
   CodeGeneratorRequest(::google::protobuf::Arena* arena, const CodeGeneratorRequest& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 

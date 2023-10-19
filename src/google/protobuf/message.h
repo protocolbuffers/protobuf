@@ -330,7 +330,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
 
-  std::string GetTypeName() const override;
   void Clear() override;
 
   // Returns whether all required fields have been set. Note that required
@@ -369,6 +368,15 @@ class PROTOBUF_EXPORT Message : public MessageLite {
                                   internal::CachedSize* cached_size) const;
   size_t MaybeComputeUnknownFieldsSize(size_t total_size,
                                        internal::CachedSize* cached_size) const;
+
+  // Reflection based version for reflection based types.
+  static void MergeImpl(Message& to, const Message& from);
+
+  static const DescriptorMethods kDescriptorMethods;
+
+  // Default implementation using reflection. Avoids bloat in MapEntry.
+  // Generated types will make their own.
+  const ClassData* GetClassData() const override;
 
 };
 
