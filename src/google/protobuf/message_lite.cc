@@ -68,6 +68,14 @@ void MessageLite::OnDemandRegisterArenaDtor(Arena* arena) {
 }
 
 std::string MessageLite::InitializationErrorString() const {
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+
+  if (data->descriptor_methods != nullptr) {
+    // For !LITE messages, we use the descriptor method function.
+    return data->descriptor_methods->initialization_error_string(*this);
+  }
+
   return "(cannot determine missing fields for lite message)";
 }
 
