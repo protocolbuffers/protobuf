@@ -150,7 +150,7 @@ const UPB_SCRATCH_SPACE_BYTES: usize = 64_000;
 /// with readonly access.
 pub struct ScratchSpace;
 impl ScratchSpace {
-    pub fn zeroed_block() -> RawMessage {
+    pub fn zeroed_block(_private: Private) -> RawMessage {
         unsafe {
             INIT.call_once(|| {
                 let layout =
@@ -455,7 +455,7 @@ mod tests {
 
     #[test]
     fn i32_array() {
-        let mut arena = Arena::new();
+        let arena = Arena::new();
         let mut arr = RepeatedField::<i32>::new(&arena);
         assert_eq!(arr.len(), 0);
         arr.push(1);
