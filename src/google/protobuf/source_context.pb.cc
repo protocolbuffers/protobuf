@@ -168,6 +168,16 @@ inline void SourceContext::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+SourceContext::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          SourceContext::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void SourceContext::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -260,13 +270,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData SourceContext::_class_data_ = {
-    SourceContext::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* SourceContext::GetClassData() const {
-  return &_class_data_;
-}
 
 void SourceContext::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<SourceContext*>(&to_msg);

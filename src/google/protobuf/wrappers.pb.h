@@ -215,10 +215,8 @@ class PROTOBUF_EXPORT UInt64Value final :
   protected:
   explicit UInt64Value(::google::protobuf::Arena* arena);
   UInt64Value(::google::protobuf::Arena* arena, const UInt64Value& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -390,10 +388,8 @@ class PROTOBUF_EXPORT UInt32Value final :
   protected:
   explicit UInt32Value(::google::protobuf::Arena* arena);
   UInt32Value(::google::protobuf::Arena* arena, const UInt32Value& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -565,10 +561,8 @@ class PROTOBUF_EXPORT StringValue final :
   protected:
   explicit StringValue(::google::protobuf::Arena* arena);
   StringValue(::google::protobuf::Arena* arena, const StringValue& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -746,10 +740,8 @@ class PROTOBUF_EXPORT Int64Value final :
   protected:
   explicit Int64Value(::google::protobuf::Arena* arena);
   Int64Value(::google::protobuf::Arena* arena, const Int64Value& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -921,10 +913,8 @@ class PROTOBUF_EXPORT Int32Value final :
   protected:
   explicit Int32Value(::google::protobuf::Arena* arena);
   Int32Value(::google::protobuf::Arena* arena, const Int32Value& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -1096,10 +1086,8 @@ class PROTOBUF_EXPORT FloatValue final :
   protected:
   explicit FloatValue(::google::protobuf::Arena* arena);
   FloatValue(::google::protobuf::Arena* arena, const FloatValue& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -1271,10 +1259,8 @@ class PROTOBUF_EXPORT DoubleValue final :
   protected:
   explicit DoubleValue(::google::protobuf::Arena* arena);
   DoubleValue(::google::protobuf::Arena* arena, const DoubleValue& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -1446,10 +1432,8 @@ class PROTOBUF_EXPORT BytesValue final :
   protected:
   explicit BytesValue(::google::protobuf::Arena* arena);
   BytesValue(::google::protobuf::Arena* arena, const BytesValue& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -1627,10 +1611,8 @@ class PROTOBUF_EXPORT BoolValue final :
   protected:
   explicit BoolValue(::google::protobuf::Arena* arena);
   BoolValue(::google::protobuf::Arena* arena, const BoolValue& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 

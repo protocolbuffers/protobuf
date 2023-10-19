@@ -159,6 +159,16 @@ inline void Timestamp::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+Timestamp::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          Timestamp::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void Timestamp::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -268,13 +278,6 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Timestamp::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Timestamp::_class_data_ = {
-    Timestamp::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Timestamp::GetClassData() const {
-  return &_class_data_;
-}
 
 void Timestamp::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Timestamp*>(&to_msg);

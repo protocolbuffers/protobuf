@@ -236,10 +236,8 @@ class PROTOBUF_EXPORT ListValue final :
   protected:
   explicit ListValue(::google::protobuf::Arena* arena);
   ListValue(::google::protobuf::Arena* arena, const ListValue& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -419,10 +417,8 @@ class PROTOBUF_EXPORT Struct final :
   protected:
   explicit Struct(::google::protobuf::Arena* arena);
   Struct(::google::protobuf::Arena* arena, const Struct& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -641,10 +637,8 @@ class PROTOBUF_EXPORT Value final :
   protected:
   explicit Value(::google::protobuf::Arena* arena);
   Value(::google::protobuf::Arena* arena, const Value& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 

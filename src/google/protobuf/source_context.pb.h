@@ -191,10 +191,8 @@ class PROTOBUF_EXPORT SourceContext final :
   protected:
   explicit SourceContext(::google::protobuf::Arena* arena);
   SourceContext(::google::protobuf::Arena* arena, const SourceContext& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 

@@ -286,6 +286,16 @@ inline void Struct::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+Struct::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          Struct::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void Struct::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Struct)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -400,13 +410,6 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Struct::_class_data_ = {
-    Struct::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Struct::GetClassData() const {
-  return &_class_data_;
-}
 
 void Struct::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Struct*>(&to_msg);
@@ -596,6 +599,16 @@ void Value::clear_kind() {
 }
 
 
+const ::google::protobuf::MessageLite::ClassData*
+Value::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          Value::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Value)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -768,13 +781,6 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Value::_class_data_ = {
-    Value::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Value::GetClassData() const {
-  return &_class_data_;
-}
 
 void Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Value*>(&to_msg);
@@ -892,6 +898,16 @@ inline void ListValue::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+ListValue::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          ListValue::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void ListValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ListValue)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -981,13 +997,6 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData ListValue::_class_data_ = {
-    ListValue::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* ListValue::GetClassData() const {
-  return &_class_data_;
-}
 
 void ListValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<ListValue*>(&to_msg);

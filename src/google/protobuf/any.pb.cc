@@ -195,6 +195,16 @@ inline void Any::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+Any::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          Any::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void Any::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -306,13 +316,6 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Any::_class_data_ = {
-    Any::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Any::GetClassData() const {
-  return &_class_data_;
-}
 
 void Any::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Any*>(&to_msg);

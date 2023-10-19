@@ -165,6 +165,16 @@ inline void FieldMask::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+FieldMask::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          FieldMask::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void FieldMask::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldMask)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -257,13 +267,6 @@ const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData FieldMask::_class_data_ = {
-    FieldMask::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* FieldMask::GetClassData() const {
-  return &_class_data_;
-}
 
 void FieldMask::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FieldMask*>(&to_msg);

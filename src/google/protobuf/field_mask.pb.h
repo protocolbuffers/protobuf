@@ -191,10 +191,8 @@ class PROTOBUF_EXPORT FieldMask final :
   protected:
   explicit FieldMask(::google::protobuf::Arena* arena);
   FieldMask(::google::protobuf::Arena* arena, const FieldMask& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
