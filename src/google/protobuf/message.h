@@ -373,10 +373,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   static const DescriptorMethods kDescriptorMethods;
 
-  // Default implementation using reflection. Avoids bloat in MapEntry.
-  // Generated types will make their own.
-  const ClassData* GetClassData() const override;
-
 };
 
 namespace internal {

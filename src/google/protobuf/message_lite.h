@@ -532,6 +532,19 @@ class PROTOBUF_EXPORT MessageLite {
     // LITE objects (ie !descriptor_methods) collocate their name as a
     // char[] just beyond the ClassData.
     const DescriptorMethods* descriptor_methods;
+
+    // Offset of the CachedSize member.
+    uint32_t cached_size_offset;
+
+    constexpr ClassData(void (*merge_to_from)(Message& to, const Message&),
+                        void (*on_demand_register_arena_dtor)(MessageLite&,
+                                                              Arena&),
+                        const DescriptorMethods* descriptor_methods,
+                        uint32_t cached_size_offset)
+        : merge_to_from(merge_to_from),
+          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+          descriptor_methods(descriptor_methods),
+          cached_size_offset(cached_size_offset) {}
   };
 
   // GetClassData() returns a pointer to a ClassData struct which
@@ -545,9 +558,9 @@ class PROTOBUF_EXPORT MessageLite {
 
   internal::InternalMetadata _internal_metadata_;
 
-  // The default implementation means there is no cached size and ByteSize
-  // should be called instead.
-  virtual internal::CachedSize* AccessCachedSize() const;
+  // Return the cached size object as described by
+  // ClassData::cached_size_offset.
+  internal::CachedSize& AccessCachedSize() const;
 
  public:
   enum ParseFlags {
