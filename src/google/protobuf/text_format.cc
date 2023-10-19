@@ -2769,7 +2769,12 @@ void TextFormat::Printer::PrintUnknownFields(
       case UnknownField::TYPE_VARINT:
         OutOfLinePrintString(generator, field.number());
         generator->PrintMaybeWithMarker(MarkerToken(), ": ");
-        OutOfLinePrintString(generator, field.varint());
+        if (redact_debug_string_) {
+          OutOfLinePrintString(generator, "UNKNOWN_VARINT ");
+          OutOfLinePrintString(generator, kFieldValueReplacement);
+        } else {
+          OutOfLinePrintString(generator, field.varint());
+        }
         if (single_line_mode_) {
           generator->PrintLiteral(" ");
         } else {
@@ -2778,9 +2783,15 @@ void TextFormat::Printer::PrintUnknownFields(
         break;
       case UnknownField::TYPE_FIXED32: {
         OutOfLinePrintString(generator, field.number());
-        generator->PrintMaybeWithMarker(MarkerToken(), ": ", "0x");
-        OutOfLinePrintString(generator,
-                             absl::Hex(field.fixed32(), absl::kZeroPad8));
+        if (redact_debug_string_) {
+          generator->PrintMaybeWithMarker(MarkerToken(), ": ",
+                                          "UNKNOWN_FIXED32 ");
+          OutOfLinePrintString(generator, kFieldValueReplacement);
+        } else {
+          generator->PrintMaybeWithMarker(MarkerToken(), ": ", "0x");
+          OutOfLinePrintString(generator,
+                               absl::Hex(field.fixed32(), absl::kZeroPad8));
+        }
         if (single_line_mode_) {
           generator->PrintLiteral(" ");
         } else {
@@ -2790,9 +2801,15 @@ void TextFormat::Printer::PrintUnknownFields(
       }
       case UnknownField::TYPE_FIXED64: {
         OutOfLinePrintString(generator, field.number());
-        generator->PrintMaybeWithMarker(MarkerToken(), ": ", "0x");
-        OutOfLinePrintString(generator,
-                             absl::Hex(field.fixed64(), absl::kZeroPad16));
+        if (redact_debug_string_) {
+          generator->PrintMaybeWithMarker(MarkerToken(), ": ",
+                                          "UNKNOWN_FIXED64 ");
+          OutOfLinePrintString(generator, kFieldValueReplacement);
+        } else {
+          generator->PrintMaybeWithMarker(MarkerToken(), ": ", "0x");
+          OutOfLinePrintString(generator,
+                               absl::Hex(field.fixed64(), absl::kZeroPad16));
+        }
         if (single_line_mode_) {
           generator->PrintLiteral(" ");
         } else {
@@ -2814,6 +2831,17 @@ void TextFormat::Printer::PrintUnknownFields(
             embedded_unknown_fields.ParseFromCodedStream(&input_stream)) {
           // This field is parseable as a Message.
           // So it is probably an embedded message.
+          if (redact_debug_string_) {
+            generator->PrintMaybeWithMarker(MarkerToken(), ": ",
+                                            "UNKNOWN_MESSAGE ");
+            OutOfLinePrintString(generator, kFieldValueReplacement);
+            if (single_line_mode_) {
+              generator->PrintLiteral(" ");
+            } else {
+              generator->PrintLiteral("\n");
+            }
+            break;
+          }
           if (single_line_mode_) {
             generator->PrintMaybeWithMarker(MarkerToken(), " ", "{ ");
           } else {
@@ -2831,6 +2859,17 @@ void TextFormat::Printer::PrintUnknownFields(
         } else {
           // This field is not parseable as a Message (or we ran out of
           // recursion budget). So it is probably just a plain string.
+          if (redact_debug_string_) {
+            generator->PrintMaybeWithMarker(MarkerToken(), ": ",
+                                            "UNKNOWN_STRING ");
+            OutOfLinePrintString(generator, kFieldValueReplacement);
+            if (single_line_mode_) {
+              generator->PrintLiteral(" ");
+            } else {
+              generator->PrintLiteral("\n");
+            }
+            break;
+          }
           generator->PrintMaybeWithMarker(MarkerToken(), ": ", "\"");
           generator->PrintString(absl::CEscape(value));
           if (single_line_mode_) {
@@ -2843,6 +2882,17 @@ void TextFormat::Printer::PrintUnknownFields(
       }
       case UnknownField::TYPE_GROUP:
         OutOfLinePrintString(generator, field.number());
+        if (redact_debug_string_) {
+          generator->PrintMaybeWithMarker(MarkerToken(), ": ",
+                                          "UNKNOWN_GROUP ");
+          OutOfLinePrintString(generator, kFieldValueReplacement);
+          if (single_line_mode_) {
+            generator->PrintLiteral(" ");
+          } else {
+            generator->PrintLiteral("\n");
+          }
+          break;
+        }
         if (single_line_mode_) {
           generator->PrintMaybeWithMarker(MarkerToken(), " ", "{ ");
         } else {
