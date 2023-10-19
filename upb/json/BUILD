@@ -3,7 +3,7 @@
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
+    "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
 
@@ -64,7 +64,7 @@ proto_library(
     deps = ["//:struct_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_upb_proto",
     testonly = 1,
     deps = [":test_proto"],
@@ -77,7 +77,7 @@ upb_proto_reflection_library(
 )
 
 # TODO: This target arguably belongs in //google/protobuf/BUILD
-upb_proto_library(
+upb_c_proto_library(
     name = "struct_upb_proto",
     testonly = 1,
     deps = ["//:struct_proto"],

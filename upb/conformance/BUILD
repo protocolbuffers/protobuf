@@ -12,7 +12,7 @@ load(
 )
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
+    "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
 
@@ -28,7 +28,7 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "conformance_upb_proto",
     testonly = 1,
     deps = ["//conformance:conformance_proto"],

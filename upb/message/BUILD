@@ -12,7 +12,7 @@ load(
 )
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
+    "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
 
@@ -235,7 +235,7 @@ upb_minitable_proto_library(
     deps = [":message_test_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "message_test_upb_proto",
     testonly = 1,
     deps = [":message_test_proto"],
@@ -377,7 +377,7 @@ upb_minitable_proto_library(
     deps = [":utf8_test_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "utf8_test_upb_proto",
     testonly = 1,
     deps = [":utf8_test_proto"],
