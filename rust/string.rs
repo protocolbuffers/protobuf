@@ -393,6 +393,42 @@ impl ProtoStr {
         // SAFETY: `string.as_bytes()` is valid UTF-8.
         unsafe { Self::from_utf8_unchecked(string.as_bytes()) }
     }
+
+    pub fn iter(&self) -> impl Iterator<Item = u8> + '_ {
+        ProtoStrIterator { protostr: self, idx: 0 }
+    }
+}
+
+impl<'a> IntoIterator for &'a ProtoStr {
+    type Item = u8;
+    type IntoIter = ProtoStrIterator<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ProtoStrIterator::new(self)
+    }
+}
+pub struct ProtoStrIterator<'a> {
+    protostr: &'a ProtoStr,
+    idx: usize,
+}
+
+impl<'a> ProtoStrIterator<'a> {
+    pub fn new(protostr: &'a ProtoStr) -> Self {
+        Self { protostr, idx: 0 }
+    }
+}
+
+impl<'a> Iterator for ProtoStrIterator<'a> {
+    type Item = u8;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.idx >= self.protostr.len() {
+            None
+        } else {
+            let res = Some(self.protostr.as_bytes()[self.idx]);
+            self.idx += 1;
+            res
+        }
+    }
 }
 
 impl AsRef<[u8]> for ProtoStr {
@@ -746,7 +782,7 @@ impl Hash for ProtoStrMut<'_> {
 impl Eq for ProtoStrMut<'_> {}
 impl<'msg> Ord for ProtoStrMut<'msg> {
     fn cmp(&self, other: &ProtoStrMut<'msg>) -> Ordering {
-        self.deref().cmp(other.deref())
+        Ord::cmp(&self.deref(), &other.deref())
     }
 }
 
@@ -1005,5 +1041,18 @@ mod tests {
             b"\xED\xA0\x80foo\xED\xBF\xBFbar",
             ['�', '�', '�', 'f', 'o', 'o', '�', '�', '�', 'b', 'a', 'r']
         );
+    }
+
+    #[test]
+    fn protostr_iteration() {
+        let test_str = test_proto_str(b"fuego");
+        let answer_sheet: Vec<u8> = vec![102, 117, 101, 103, 111];
+        let mut count = 0;
+        for x in test_str {
+            count += 1;
+        }
+        assert_eq!(count, 5);
+        assert_eq!(test_str.iter().collect::<Vec<_>>(), answer_sheet);
+        assert_eq!(String::from_utf8(answer_sheet).unwrap(), "fuego");
     }
 }
