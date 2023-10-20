@@ -18,7 +18,6 @@ package protobuf_test_messages.editions.proto2;
 option features.enum_type = CLOSED;
 option features.repeated_field_encoding = EXPANDED;
 option features.utf8_validation = NONE;
-option features.json_format = LEGACY_BEST_EFFORT;
 option java_package = "com.google.protobuf_test_messages.editions.proto2";
 option objc_class_prefix = "Proto2";
 

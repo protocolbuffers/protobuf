@@ -9,10 +9,7 @@ edition = "2023";
 
 package protobuf_editions_test;
 
-option features.enum_type = CLOSED;
-option features.repeated_field_encoding = EXPANDED;
 option features.utf8_validation = NONE;
-option features.json_format = LEGACY_BEST_EFFORT;
 
 message TestMessageUtf8Disabled {
   string string_field = 1;
