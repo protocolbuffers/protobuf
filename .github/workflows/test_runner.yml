@@ -12,9 +12,8 @@ name: Tests
 on:
   # continuous
   schedule:
-    # TODO Reduce this frequency
-    # Run every 15 minutes for now to gather statistics
-    - cron: "*/15 * * * *"
+    # Run every hour
+    - cron: "0 * * * *"
 
   # postsubmit
   push:
