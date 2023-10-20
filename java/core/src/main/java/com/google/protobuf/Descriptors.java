@@ -15,6 +15,9 @@ import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.DescriptorProtos.EnumOptions;
 import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProto;
 import com.google.protobuf.DescriptorProtos.EnumValueOptions;
+import com.google.protobuf.DescriptorProtos.FeatureSet;
+import com.google.protobuf.DescriptorProtos.FeatureSetDefaults;
+import com.google.protobuf.DescriptorProtos.FeatureSetDefaults.FeatureSetEditionDefault;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldOptions;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
@@ -27,6 +30,7 @@ import com.google.protobuf.DescriptorProtos.OneofOptions;
 import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.DescriptorProtos.ServiceOptions;
 import com.google.protobuf.Descriptors.FileDescriptor.Syntax;
+import com.google.protobuf.JavaFeaturesProto.JavaFeatures;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -65,6 +69,43 @@ public final class Descriptors {
   private static final EnumDescriptor[] EMPTY_ENUM_DESCRIPTORS = new EnumDescriptor[0];
   private static final ServiceDescriptor[] EMPTY_SERVICE_DESCRIPTORS = new ServiceDescriptor[0];
   private static final OneofDescriptor[] EMPTY_ONEOF_DESCRIPTORS = new OneofDescriptor[0];
+  private static FeatureSetDefaults JAVA_EDITION_DEFAULTS = null;
+
+  public static FeatureSet getEditionDefaults(Edition edition) {
+    if (JAVA_EDITION_DEFAULTS == null) {
+      try {
+        JAVA_EDITION_DEFAULTS =
+            FeatureSetDefaults.parseFrom(
+                JavaEditionDefaults.PROTOBUF_INTERNAL_JAVA_EDITION_DEFAULTS.getBytes(
+                    Internal.ISO_8859_1));
+      } catch (Exception e) {
+        throw new AssertionError(e);
+      }
+    }
+
+    if (edition.getNumber() < JAVA_EDITION_DEFAULTS.getMinimumEdition().getNumber()) {
+      throw new RuntimeException(
+          "Edition "
+              + edition
+              + " is lower than the minimum supported edition "
+              + JAVA_EDITION_DEFAULTS.getMinimumEdition()
+              + "!");
+    }
+    if (edition.getNumber() > JAVA_EDITION_DEFAULTS.getMaximumEdition().getNumber()) {
+      throw new RuntimeException(
+          "Edition "
+              + edition
+              + " is greater than the maximum supported edition "
+              + JAVA_EDITION_DEFAULTS.getMaximumEdition()
+              + "!");
+    }
+    for (FeatureSetEditionDefault editionDefault : JAVA_EDITION_DEFAULTS.getDefaultsList()) {
+      if (editionDefault.getEdition().getNumber() >= edition.getNumber()) {
+        return editionDefault.getFeatures();
+      }
+    }
+    return FeatureSet.getDefaultInstance();
+  }
 
   /**
    * Describes a {@code .proto} file, including everything defined within. That includes, in
@@ -76,6 +117,25 @@ public final class Descriptors {
     @Override
     public FileDescriptorProto toProto() {
       return proto;
+    }
+
+    @Override
+    public FeatureSet inferLegacyProtoFeatures() {
+      FeatureSet.Builder features = FeatureSet.newBuilder();
+      if (getFile().getEdition().getNumber() >= Edition.EDITION_2023.getNumber()) {
+        return features.build();
+      }
+
+      if (getFile().getEdition() == Edition.EDITION_PROTO2) {
+        if (proto.getOptions().getJavaStringCheckUtf8()) {
+          features.setExtension(
+              JavaFeaturesProto.java,
+              JavaFeatures.newBuilder()
+                  .setUtf8Validation(JavaFeatures.Utf8Validation.VERIFY)
+                  .build());
+        }
+      }
+      return features.build();
     }
 
     /** Get the file name. */
@@ -106,7 +166,7 @@ public final class Descriptors {
 
     /** Get the {@code FileOptions}, defined in {@code descriptor.proto}. */
     public FileOptions getOptions() {
-      return proto.getOptions();
+      return this.options;
     }
 
     /** Get a list of top-level message types declared in this file. */
@@ -169,6 +229,12 @@ public final class Descriptors {
 
     /** Get the edition of the .proto file. */
     public Edition getEdition() {
+      // TODO: probably don't expose this?
+      if (getSyntax().equals(Syntax.PROTO2)) {
+        return Edition.EDITION_PROTO2;
+      } else if (getSyntax().equals(Syntax.PROTO3)) {
+        return Edition.EDITION_PROTO3;
+      }
       return proto.getEdition();
     }
 
@@ -508,6 +574,7 @@ public final class Descriptors {
     }
 
     private FileDescriptorProto proto;
+    private FileOptions options;
     private final Descriptor[] messageTypes;
     private final EnumDescriptor[] enumTypes;
     private final ServiceDescriptor[] services;
@@ -522,8 +589,18 @@ public final class Descriptors {
         final DescriptorPool pool,
         boolean allowUnknownDependencies)
         throws DescriptorValidationException {
+      this.parent = null;
       this.pool = pool;
       this.proto = proto;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      // TODO: Clear features from options to hide in getOptions()
+      this.options = proto.getOptions();
+      // if (options.hasFeatures()) {
+      //   this.options = options.toBuilder().clearFeatures().build();
+      //   if (options.getSerializedSize() == 0) {
+      //     this.options = FileOptions.getDefaultInstance();
+      //   }
+      // }
       this.dependencies = dependencies.clone();
       HashMap<String, FileDescriptor> nameToFileMap = new HashMap<>();
       for (FileDescriptor file : dependencies) {
@@ -593,6 +670,8 @@ public final class Descriptors {
               .setPackage(packageName)
               .addMessageType(message.toProto())
               .build();
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      this.options = proto.getOptions();
       this.dependencies = new FileDescriptor[0];
       this.publicDependencies = new FileDescriptor[0];
 
@@ -630,6 +709,8 @@ public final class Descriptors {
      */
     private void setProto(final FileDescriptorProto proto) {
       this.proto = proto;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      this.options = proto.getOptions();
 
       for (int i = 0; i < messageTypes.length; i++) {
         messageTypes[i].setProto(proto.getMessageType(i));
@@ -715,7 +796,7 @@ public final class Descriptors {
 
     /** Get the {@code MessageOptions}, defined in {@code descriptor.proto}. */
     public MessageOptions getOptions() {
-      return proto.getOptions();
+      return this.options;
     }
 
     /** Get a list of this message type's fields. */
@@ -852,6 +933,7 @@ public final class Descriptors {
     private DescriptorProto proto;
     private final String fullName;
     private final FileDescriptor file;
+    private final MessageOptions options;
     private final Descriptor containingType;
     private final Descriptor[] nestedTypes;
     private final EnumDescriptor[] enumTypes;
@@ -883,6 +965,7 @@ public final class Descriptors {
       this.fullName = fullname;
       this.containingType = null;
 
+      this.options = proto.getOptions();
       this.nestedTypes = EMPTY_DESCRIPTORS;
       this.enumTypes = EMPTY_ENUM_DESCRIPTORS;
       this.fields = EMPTY_FIELD_DESCRIPTORS;
@@ -906,8 +989,11 @@ public final class Descriptors {
         throws DescriptorValidationException {
       this.index = index;
       this.proto = proto;
+      this.parent = parent;
       fullName = computeFullName(file, parent, proto.getName());
       this.file = file;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      this.options = proto.getOptions();
       containingType = parent;
 
       oneofs =
@@ -1086,6 +1172,38 @@ public final class Descriptors {
       return proto;
     }
 
+    @Override
+    public FeatureSet inferLegacyProtoFeatures() {
+      FeatureSet.Builder features = FeatureSet.newBuilder();
+      if (getFile().getEdition().getNumber() >= Edition.EDITION_2023.getNumber()) {
+        return features.build();
+      }
+      if (proto.getLabel() == FieldDescriptorProto.Label.LABEL_REQUIRED) {
+        features.setFieldPresence(FeatureSet.FieldPresence.LEGACY_REQUIRED);
+      }
+
+      if (proto.getType() == FieldDescriptorProto.Type.TYPE_GROUP) {
+        features.setMessageEncoding(FeatureSet.MessageEncoding.DELIMITED);
+      }
+
+      if (proto.getOptions().getPacked()) {
+        features.setRepeatedFieldEncoding(FeatureSet.RepeatedFieldEncoding.PACKED);
+      }
+
+      if (getFile().getEdition() == Edition.EDITION_PROTO3) {
+        if (proto.getOptions().hasPacked() && !proto.getOptions().getPacked()) {
+          features.setRepeatedFieldEncoding(FeatureSet.RepeatedFieldEncoding.EXPANDED);
+        }
+        if (isProto3Optional) {
+          features.setFieldPresence(FeatureSet.FieldPresence.EXPLICIT);
+        }
+        if (!proto.getOptions().getEnforceUtf8()) {
+          features.setUtf8Validation(FeatureSet.Utf8Validation.UNVERIFIED);
+        }
+      }
+      return features.build();
+    }
+
     /** Get the field's unqualified name. */
     @Override
     public String getName() {
@@ -1160,10 +1278,13 @@ public final class Descriptors {
         // Always enforce strict UTF-8 checking for map fields.
         return true;
       }
-      if (getFile().getSyntax() == Syntax.PROTO3) {
+      if (this.features
+          .getExtension(JavaFeaturesProto.java)
+          .getUtf8Validation()
+          .equals(JavaFeatures.Utf8Validation.VERIFY)) {
         return true;
       }
-      return getFile().getOptions().getJavaStringCheckUtf8();
+      return this.features.getUtf8Validation().equals(FeatureSet.Utf8Validation.VERIFY);
     }
 
     public boolean isMapField() {
@@ -1202,11 +1323,9 @@ public final class Descriptors {
       if (!isPackable()) {
         return false;
       }
-      if (getFile().getSyntax() == FileDescriptor.Syntax.PROTO2) {
-        return getOptions().getPacked();
-      } else {
-        return !getOptions().hasPacked() || getOptions().getPacked();
-      }
+      return this.features
+          .getRepeatedFieldEncoding()
+          .equals(FeatureSet.RepeatedFieldEncoding.PACKED);
     }
 
     /** Can this field be packed? That is, is it a repeated primitive field? */
@@ -1234,7 +1353,7 @@ public final class Descriptors {
 
     /** Get the {@code FieldOptions}, defined in {@code descriptor.proto}. */
     public FieldOptions getOptions() {
-      return proto.getOptions();
+      return this.options;
     }
 
     /** Is this field an extension? */
@@ -1288,7 +1407,7 @@ public final class Descriptors {
       return getType() == Type.MESSAGE
           || getType() == Type.GROUP
           || getContainingOneof() != null
-          || file.getSyntax() == Syntax.PROTO2;
+          || this.features.getFieldPresence() != DescriptorProtos.FeatureSet.FieldPresence.IMPLICIT;
     }
 
     /**
@@ -1361,6 +1480,7 @@ public final class Descriptors {
      */
     public boolean legacyEnumFieldTreatedAsClosed() {
       return getType() == Type.ENUM && getFile().getSyntax() == Syntax.PROTO2;
+      // && this.features.getExtension(JavaFeaturesProto.java).getLegacyClosedEnum();
     }
 
     /**
@@ -1392,6 +1512,7 @@ public final class Descriptors {
     private final String fullName;
     private String jsonName;
     private final FileDescriptor file;
+    private FieldOptions options;
     private final Descriptor extensionScope;
     private final boolean isProto3Optional;
 
@@ -1509,8 +1630,11 @@ public final class Descriptors {
         throws DescriptorValidationException {
       this.index = index;
       this.proto = proto;
+      this.parent = parent;
       fullName = computeFullName(file, parent, proto.getName());
       this.file = file;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      this.options = proto.getOptions();
 
       if (proto.hasType()) {
         type = Type.valueOf(proto.getType());
@@ -1752,6 +1876,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final FieldDescriptorProto proto) {
       this.proto = proto;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      this.options = proto.getOptions();
     }
 
     /** For internal use only. This is to satisfy the FieldDescriptorLite interface. */
@@ -1830,7 +1956,7 @@ public final class Descriptors {
      * handling quirks.
      */
     public boolean isClosed() {
-      return getFile().getSyntax() != Syntax.PROTO3;
+      return this.features.getEnumType() == DescriptorProtos.FeatureSet.EnumType.CLOSED;
     }
 
     /** If this is a nested type, get the outer descriptor, otherwise null. */
@@ -1840,7 +1966,7 @@ public final class Descriptors {
 
     /** Get the {@code EnumOptions}, defined in {@code descriptor.proto}. */
     public EnumOptions getOptions() {
-      return proto.getOptions();
+      return this.options;
     }
 
     /** Get a list of defined values for this enum. */
@@ -1951,6 +2077,7 @@ public final class Descriptors {
 
     private final int index;
     private EnumDescriptorProto proto;
+    private EnumOptions options;
     private final String fullName;
     private final FileDescriptor file;
     private final Descriptor containingType;
@@ -1971,6 +2098,8 @@ public final class Descriptors {
       fullName = computeFullName(file, parent, proto.getName());
       this.file = file;
       containingType = parent;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      this.options = proto.getOptions();
 
       if (proto.getValueCount() == 0) {
         // We cannot allow enums with no values because this would mean there
@@ -2002,6 +2131,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final EnumDescriptorProto proto) {
       this.proto = proto;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      this.options = proto.getOptions();
 
       for (int i = 0; i < values.length; i++) {
         values[i].setProto(proto.getValue(i));
@@ -2089,11 +2220,12 @@ public final class Descriptors {
 
     /** Get the {@code EnumValueOptions}, defined in {@code descriptor.proto}. */
     public EnumValueOptions getOptions() {
-      return proto.getOptions();
+      return this.options;
     }
 
     private final int index;
     private EnumValueDescriptorProto proto;
+    private EnumValueOptions options;
     private final String fullName;
     private final EnumDescriptor type;
 
@@ -2104,10 +2236,12 @@ public final class Descriptors {
         final int index)
         throws DescriptorValidationException {
       this.index = index;
+      this.parent = parent;
       this.proto = proto;
-      type = parent;
-
-      fullName = parent.getFullName() + '.' + proto.getName();
+      this.type = parent;
+      this.fullName = parent.getFullName() + '.' + proto.getName();
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      this.options = proto.getOptions();
 
       file.pool.addSymbol(this);
     }
@@ -2172,7 +2306,7 @@ public final class Descriptors {
 
     /** Get the {@code ServiceOptions}, defined in {@code descriptor.proto}. */
     public ServiceOptions getOptions() {
-      return proto.getOptions();
+      return this.options;
     }
 
     /** Get a list of methods for this service. */
@@ -2197,6 +2331,7 @@ public final class Descriptors {
 
     private final int index;
     private ServiceDescriptorProto proto;
+    private ServiceOptions options;
     private final String fullName;
     private final FileDescriptor file;
     private MethodDescriptor[] methods;
@@ -2208,6 +2343,9 @@ public final class Descriptors {
       this.proto = proto;
       fullName = computeFullName(file, null, proto.getName());
       this.file = file;
+      this.parent = file;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      this.options = proto.getOptions();
 
       methods = new MethodDescriptor[proto.getMethodCount()];
       for (int i = 0; i < proto.getMethodCount(); i++) {
@@ -2299,11 +2437,12 @@ public final class Descriptors {
 
     /** Get the {@code MethodOptions}, defined in {@code descriptor.proto}. */
     public MethodOptions getOptions() {
-      return proto.getOptions();
+      return this.options;
     }
 
     private final int index;
     private MethodDescriptorProto proto;
+    private MethodOptions options;
     private final String fullName;
     private final FileDescriptor file;
     private final ServiceDescriptor service;
@@ -2322,6 +2461,9 @@ public final class Descriptors {
       this.proto = proto;
       this.file = file;
       service = parent;
+      this.parent = parent;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      this.options = proto.getOptions();
 
       fullName = parent.getFullName() + '.' + proto.getName();
 
@@ -2380,6 +2522,9 @@ public final class Descriptors {
    */
   public abstract static class GenericDescriptor {
 
+    GenericDescriptor parent;
+    FeatureSet features;
+
     // Private constructor to prevent subclasses outside of com.google.protobuf.Descriptors
     private GenericDescriptor() {}
 
@@ -2390,6 +2535,27 @@ public final class Descriptors {
     public abstract String getFullName();
 
     public abstract FileDescriptor getFile();
+
+    public FeatureSet inferLegacyProtoFeatures() {
+      return FeatureSet.getDefaultInstance();
+    }
+
+    public FeatureSet resolveFeatures(FeatureSet unresolvedFeatures) {
+      Edition edition = getFile().getEdition();
+      // TODO: handle FileDescriptorProto
+      if (getFile().getFullName().equals("google/protobuf/descriptor.proto")) {
+        return FeatureSet.getDefaultInstance();
+      }
+      FeatureSet.Builder features = FeatureSet.newBuilder();
+      if (this.parent == null) {
+        features.mergeFrom(getEditionDefaults(edition));
+      } else {
+        features.mergeFrom(this.parent.features);
+      }
+      features.mergeFrom(unresolvedFeatures);
+      features.mergeFrom(inferLegacyProtoFeatures());
+      return features.build();
+    }
   }
 
   /** Thrown when building descriptors fails because the source DescriptorProtos are not valid. */
@@ -2817,7 +2983,7 @@ public final class Descriptors {
     }
 
     public OneofOptions getOptions() {
-      return proto.getOptions();
+      return this.options;
     }
 
     /** Get a list of this message type's fields. */
@@ -2850,9 +3016,12 @@ public final class Descriptors {
         final Descriptor parent,
         final int index) {
       this.proto = proto;
+      this.parent = parent;
       fullName = computeFullName(file, parent, proto.getName());
       this.file = file;
       this.index = index;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      this.options = proto.getOptions();
 
       containingType = parent;
       fieldCount = 0;
@@ -2860,6 +3029,7 @@ public final class Descriptors {
 
     private final int index;
     private OneofDescriptorProto proto;
+    private OneofOptions options;
     private final String fullName;
     private final FileDescriptor file;
 
