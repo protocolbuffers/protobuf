@@ -172,7 +172,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package \&\&
+            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package -Dprotobuf_BUILD_SHARED_LIBS=ON \&\&
             /test.sh
             ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
