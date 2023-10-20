@@ -9,6 +9,7 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.DescriptorProtos.Edition;
@@ -135,6 +136,27 @@ public class DescriptorsTest {
     FileDescriptorProto proto3 = FileDescriptorProto.newBuilder().setSyntax("proto3").build();
     FileDescriptor file3 = Descriptors.FileDescriptor.buildFrom(proto3, new FileDescriptor[0]);
     assertThat(file3.getSyntax()).isEqualTo(Descriptors.FileDescriptor.Syntax.PROTO3);
+
+    FileDescriptorProto protoEdition =
+        FileDescriptorProto.newBuilder()
+            .setSyntax("editions")
+            .setEdition(Edition.EDITION_2023)
+            .build();
+    FileDescriptor fileEdition =
+        Descriptors.FileDescriptor.buildFrom(protoEdition, new FileDescriptor[0]);
+    assertThat(fileEdition.getSyntax()).isEqualTo(Descriptors.FileDescriptor.Syntax.EDITIONS);
+    assertThat(fileEdition.getEdition()).isEqualTo(Edition.EDITION_2023);
+    assertThat(fileEdition.getEditionName()).isEqualTo("2023");
+
+    FileDescriptorProto protoMissingEdition =
+        FileDescriptorProto.newBuilder().setSyntax("editions").build();
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> Descriptors.FileDescriptor.buildFrom(protoMissingEdition, new FileDescriptor[0]));
+    assertThat(exception)
+        .hasMessageThat()
+        .contains("Edition EDITION_UNKNOWN is lower than the minimum supported edition");
   }
 
   @Test

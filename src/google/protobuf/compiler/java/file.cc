@@ -420,6 +420,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
         "_clinit_autosplit_dinit_$method_num$();\n",
         "private static void _clinit_autosplit_dinit_$method_num$() {\n");
   }
+  printer->Print("descriptor.resolveFeaturesTransitive();\n");
 
   // Proto compiler builds a DescriptorPool, which holds all the descriptors to
   // generate, when processing the ".proto" files. We call this DescriptorPool
@@ -508,6 +509,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(
   for (int i = 0; i < file_->extension_count(); i++) {
     extension_generators_[i]->GenerateNonNestedInitializationCode(printer);
   }
+  printer->Print("descriptor.resolveFeaturesTransitive();\n");
 
   // Check if custom options exist. If any, try to load immutable classes since
   // custom options are only represented with immutable messages.
