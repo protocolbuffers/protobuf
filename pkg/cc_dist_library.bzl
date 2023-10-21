@@ -170,12 +170,12 @@ def _cc_file_list_aspect_impl(target, ctx):
 
     return [CcFileList(
         hdrs = _get_transitive_sources(
-            _flatten_target_files(rule_attr.hdrs).to_list(),
+            _flatten_target_files(getattr(rule_attr, "hdrs", [])).to_list(),
             "hdrs",
             rule_attr.deps,
         ),
         textual_hdrs = _get_transitive_sources(
-            _flatten_target_files(rule_attr.textual_hdrs).to_list(),
+            _flatten_target_files(getattr(rule_attr, "textual_hdrs", [])).to_list(),
             "textual_hdrs",
             rule_attr.deps,
         ),
