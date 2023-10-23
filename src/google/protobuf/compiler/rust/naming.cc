@@ -95,8 +95,8 @@ std::string Thunk(Context<T> field, absl::string_view op) {
   return thunk;
 }
 
-std::string ThunkRepeated(Context<FieldDescriptor> field,
-                          absl::string_view op) {
+std::string ThunkMapOrRepeated(Context<FieldDescriptor> field,
+                               absl::string_view op) {
   if (!field.is_upb()) {
     return Thunk<FieldDescriptor>(field, op);
   }
@@ -104,9 +104,10 @@ std::string ThunkRepeated(Context<FieldDescriptor> field,
   std::string thunk = absl::StrCat("_", FieldPrefix(field));
   absl::string_view format;
   if (op == "get") {
-    format = "_$1_upb_array";
+    format = field.desc().is_map() ? "_$1_upb_map" : "_$1_upb_array";
   } else if (op == "get_mut") {
-    format = "_$1_mutable_upb_array";
+    format =
+        field.desc().is_map() ? "_$1_mutable_upb_map" : "_$1_mutable_upb_array";
   } else {
     return Thunk<FieldDescriptor>(field, op);
   }
@@ -118,8 +119,8 @@ std::string ThunkRepeated(Context<FieldDescriptor> field,
 }  // namespace
 
 std::string Thunk(Context<FieldDescriptor> field, absl::string_view op) {
-  if (field.desc().is_repeated()) {
-    return ThunkRepeated(field, op);
+  if (field.desc().is_map() || field.desc().is_repeated()) {
+    return ThunkMapOrRepeated(field, op);
   }
   return Thunk<FieldDescriptor>(field, op);
 }

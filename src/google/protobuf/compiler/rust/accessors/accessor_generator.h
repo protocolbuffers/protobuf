@@ -100,6 +100,14 @@ class UnsupportedField final : public AccessorGenerator {
   void InMsgImpl(Context<FieldDescriptor> field) const override;
 };
 
+class Map final : public AccessorGenerator {
+ public:
+  ~Map() override = default;
+  void InMsgImpl(Context<FieldDescriptor> field) const override;
+  void InExternC(Context<FieldDescriptor> field) const override;
+  // void InThunkCc(Context<FieldDescriptor> field) const override;
+};
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf
