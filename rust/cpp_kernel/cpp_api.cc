@@ -2,25 +2,29 @@
 
 extern "C" {
 
-#define expose_repeated_field_methods(ty, rust_ty)                           \
-  google::protobuf::RepeatedField<ty>* __pb_rust_RepeatedField_##rust_ty##_new() {     \
-    return new google::protobuf::RepeatedField<ty>();                                  \
-  }                                                                          \
-  void __pb_rust_RepeatedField_##rust_ty##_add(google::protobuf::RepeatedField<ty>* r, \
-                                               ty val) {                     \
-    r->Add(val);                                                             \
-  }                                                                          \
-  size_t __pb_rust_RepeatedField_##rust_ty##_size(                           \
-      google::protobuf::RepeatedField<ty>* r) {                                        \
-    return r->size();                                                        \
-  }                                                                          \
-  ty __pb_rust_RepeatedField_##rust_ty##_get(google::protobuf::RepeatedField<ty>* r,   \
-                                             size_t index) {                 \
-    return r->Get(index);                                                    \
-  }                                                                          \
-  void __pb_rust_RepeatedField_##rust_ty##_set(google::protobuf::RepeatedField<ty>* r, \
-                                               size_t index, ty val) {       \
-    return r->Set(index, val);                                               \
+#define expose_repeated_field_methods(ty, rust_ty)                            \
+  google::protobuf::RepeatedField<ty>* __pb_rust_RepeatedField_##rust_ty##_new() {      \
+    return new google::protobuf::RepeatedField<ty>();                                   \
+  }                                                                           \
+  void __pb_rust_RepeatedField_##rust_ty##_add(google::protobuf::RepeatedField<ty>* r,  \
+                                               ty val) {                      \
+    r->Add(val);                                                              \
+  }                                                                           \
+  size_t __pb_rust_RepeatedField_##rust_ty##_size(                            \
+      google::protobuf::RepeatedField<ty>* r) {                                         \
+    return r->size();                                                         \
+  }                                                                           \
+  ty __pb_rust_RepeatedField_##rust_ty##_get(google::protobuf::RepeatedField<ty>* r,    \
+                                             size_t index) {                  \
+    return r->Get(index);                                                     \
+  }                                                                           \
+  void __pb_rust_RepeatedField_##rust_ty##_set(google::protobuf::RepeatedField<ty>* r,  \
+                                               size_t index, ty val) {        \
+    return r->Set(index, val);                                                \
+  }                                                                           \
+  void __pb_rust_RepeatedField_##rust_ty##_copy_from(                         \
+      google::protobuf::RepeatedField<ty> const& src, google::protobuf::RepeatedField<ty>& dst) { \
+    dst.CopyFrom(src);                                                        \
   }
 
 expose_repeated_field_methods(int32_t, i32);

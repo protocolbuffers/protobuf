@@ -714,7 +714,47 @@ macro_rules! generate_repeated_numeric_test {
                 assert_that!(mutator.get(0), some(eq(2 as $t)));
                 mutator.push(1 as $t);
 
-                assert_that!(mutator.into_iter().collect::<Vec<_>>(), eq(vec![2 as $t, 1 as $t]));
+                mutator.push(3 as $t);
+                assert_that!(mutator.get_mut(2).is_some(), eq(true));
+                let mut mut_elem = mutator.get_mut(2).unwrap();
+                mut_elem.set(4 as $t);
+                assert_that!(mut_elem.get(), eq(4 as $t));
+                mut_elem.clear();
+                assert_that!(mut_elem.get(), eq(0 as $t));
+
+                assert_that!(
+                    mutator.iter().collect::<Vec<_>>(),
+                    eq(vec![2 as $t, 1 as $t, 0 as $t])
+                );
+                assert_that!(
+                    (*mutator).into_iter().collect::<Vec<_>>(),
+                    eq(vec![2 as $t, 1 as $t, 0 as $t])
+                );
+
+                for mut mutable_elem in msg.[<repeated_ $field _mut >]() {
+                    mutable_elem.set(0 as $t);
+                }
+                assert_that!(
+                    msg.[<repeated_ $field _mut >]().iter().all(|v| v == (0 as $t)),
+                    eq(true)
+                );
+            }
+
+            #[test]
+            fn [< test_repeated_ $field _set >]() {
+                let mut msg = TestAllTypes::new();
+                let mut mutator = msg.[<repeated_ $field _mut>]();
+                let mut msg2 = TestAllTypes::new();
+                let mut mutator2 = msg2.[<repeated_ $field _mut>]();
+                for i in 0..5 {
+                    mutator2.push(i as $t);
+                }
+                protobuf::MutProxy::set(&mut mutator, *mutator2);
+
+                assert_that!(
+                    mutator.iter().collect::<Vec<_>>(),
+                    eq(mutator2.iter().collect::<Vec<_>>())
+                );
             }
         )* }
     };
@@ -742,5 +782,34 @@ fn test_repeated_bool_accessors() {
     mutator.set(0, false);
     assert_that!(mutator.get(0), some(eq(false)));
     mutator.push(true);
-    assert_that!(mutator.into_iter().collect::<Vec<_>>(), eq(vec![false, true]));
+
+    mutator.push(false);
+    assert_that!(mutator.get_mut(2), pat!(Some(_)));
+    let mut mut_elem = mutator.get_mut(2).unwrap();
+    mut_elem.set(true);
+    assert_that!(mut_elem.get(), eq(true));
+    mut_elem.clear();
+    assert_that!(mut_elem.get(), eq(false));
+
+    assert_that!(mutator.iter().collect::<Vec<_>>(), eq(vec![false, true, false]));
+    assert_that!((*mutator).into_iter().collect::<Vec<_>>(), eq(vec![false, true, false]));
+
+    for mut mutable_elem in msg.repeated_bool_mut() {
+        mutable_elem.set(false);
+    }
+    assert_that!(msg.repeated_bool().iter().all(|v| v), eq(false));
+}
+
+#[test]
+fn test_repeated_bool_set() {
+    let mut msg = TestAllTypes::new();
+    let mut mutator = msg.repeated_bool_mut();
+    let mut msg2 = TestAllTypes::new();
+    let mut mutator2 = msg2.repeated_bool_mut();
+    for _ in 0..5 {
+        mutator2.push(true);
+    }
+    protobuf::MutProxy::set(&mut mutator, *mutator2);
+
+    assert_that!(mutator.iter().collect::<Vec<_>>(), eq(mutator2.iter().collect::<Vec<_>>()));
 }

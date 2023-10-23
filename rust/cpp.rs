@@ -197,7 +197,7 @@ pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
 ///   must be different fields, and not be in the same oneof. As such, a `Mut`
 ///   cannot be `Clone` but *can* reborrow itself with `.as_mut()`, which
 ///   converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
-#[derive(Clone, Copy)]
+#[derive(Debug)]
 pub struct RepeatedField<'msg, T: ?Sized> {
     inner: RepeatedFieldInner<'msg>,
     _phantom: PhantomData<&'msg mut T>,
@@ -206,7 +206,7 @@ pub struct RepeatedField<'msg, T: ?Sized> {
 /// CPP runtime-specific arguments for initializing a RepeatedField.
 /// See RepeatedField comment about mutation invariants for when this type can
 /// be copied.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct RepeatedFieldInner<'msg> {
     pub raw: RawRepeatedField,
     pub _phantom: PhantomData<&'msg ()>,
@@ -217,7 +217,16 @@ impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
         RepeatedField { inner, _phantom: PhantomData }
     }
 }
-impl<'msg> RepeatedField<'msg, i32> {}
+
+// These use manual impls instead of derives to avoid unnecessary bounds on `T`.
+// This problem is referred to as "perfect derive".
+// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
+impl<'msg, T: ?Sized> Copy for RepeatedField<'msg, T> {}
+impl<'msg, T: ?Sized> Clone for RepeatedField<'msg, T> {
+    fn clone(&self) -> RepeatedField<'msg, T> {
+        *self
+    }
+}
 
 pub trait RepeatedScalarOps {
     fn new_repeated_field() -> RawRepeatedField;
@@ -225,6 +234,7 @@ pub trait RepeatedScalarOps {
     fn len(f: RawRepeatedField) -> usize;
     fn get(f: RawRepeatedField, i: usize) -> Self;
     fn set(f: RawRepeatedField, i: usize, v: Self);
+    fn copy_from(src: RawRepeatedField, dst: RawRepeatedField);
 }
 
 macro_rules! impl_repeated_scalar_ops {
@@ -236,6 +246,7 @@ macro_rules! impl_repeated_scalar_ops {
                 fn [< __pb_rust_RepeatedField_ $t _size >](f: RawRepeatedField) -> usize;
                 fn [< __pb_rust_RepeatedField_ $t _get >](f: RawRepeatedField, i: usize) -> $t;
                 fn [< __pb_rust_RepeatedField_ $t _set >](f: RawRepeatedField, i: usize, v: $t);
+                fn [< __pb_rust_RepeatedField_ $t _copy_from >](src: RawRepeatedField, dst: RawRepeatedField);
             }
             impl RepeatedScalarOps for $t {
                 fn new_repeated_field() -> RawRepeatedField {
@@ -252,6 +263,9 @@ macro_rules! impl_repeated_scalar_ops {
                 }
                 fn set(f: RawRepeatedField, i: usize, v: Self) {
                     unsafe { [< __pb_rust_RepeatedField_ $t _set >](f, i, v) }
+                }
+                fn copy_from(src: RawRepeatedField, dst: RawRepeatedField) {
+                    unsafe { [< __pb_rust_RepeatedField_ $t _copy_from >](src, dst) }
                 }
             }
         )* }
@@ -291,6 +305,9 @@ impl<'msg, T: RepeatedScalarOps> RepeatedField<'msg, T> {
             return;
         }
         T::set(self.inner.raw, index, val)
+    }
+    pub fn copy_from(&mut self, src: &RepeatedField<'_, T>) {
+        T::copy_from(src.inner.raw, self.inner.raw)
     }
 }
 

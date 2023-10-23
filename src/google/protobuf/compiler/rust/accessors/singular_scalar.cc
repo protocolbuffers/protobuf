@@ -162,7 +162,7 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                 )rs");
              } else {
                field.Emit({}, R"rs(
-                  pub fn r#$field$_mut(&mut self) -> $pb$::PrimitiveMut<'_, $Scalar$> {
+                  pub fn r#$field$_mut(&mut self) -> $pb$::Mut<'_, $Scalar$> {
                     static VTABLE: $pbi$::PrimitiveVTable<$Scalar$> =
                       $pbi$::PrimitiveVTable::new(
                         $pbi$::Private,
@@ -170,7 +170,7 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                         $setter_thunk$,
                       );
 
-                      $pb$::PrimitiveMut::from_inner(
+                      $pb$::PrimitiveMut::from_singular(
                         $pbi$::Private,
                         unsafe {
                           $pbi$::RawVTableMutator::new(

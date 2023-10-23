@@ -18,7 +18,7 @@ use std::fmt;
 #[doc(hidden)]
 pub mod __public {
     pub use crate::optional::{AbsentField, FieldEntry, Optional, PresentField};
-    pub use crate::primitive::PrimitiveMut;
+    pub use crate::primitive::{PrimitiveMut, SingularPrimitiveMut};
     pub use crate::proxied::{
         Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
     };

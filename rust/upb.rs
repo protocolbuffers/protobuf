@@ -293,10 +293,20 @@ pub struct RepeatedFieldInner<'msg> {
     pub arena: &'msg Arena,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Debug)]
 pub struct RepeatedField<'msg, T: ?Sized> {
     inner: RepeatedFieldInner<'msg>,
     _phantom: PhantomData<&'msg mut T>,
+}
+
+// These use manual impls instead of derives to avoid unnecessary bounds on `T`.
+// This problem is referred to as "perfect derive".
+// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
+impl<'msg, T: ?Sized> Copy for RepeatedField<'msg, T> {}
+impl<'msg, T: ?Sized> Clone for RepeatedField<'msg, T> {
+    fn clone(&self) -> RepeatedField<'msg, T> {
+        *self
+    }
 }
 
 impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
@@ -352,6 +362,7 @@ extern "C" {
     fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
     fn upb_Array_Get(arr: RawRepeatedField, i: usize) -> upb_MessageValue;
     fn upb_Array_Append(arr: RawRepeatedField, val: upb_MessageValue, arena: RawArena);
+    fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena);
 }
 
 macro_rules! impl_repeated_primitives {
@@ -391,6 +402,19 @@ macro_rules! impl_repeated_primitives {
                         i,
                         upb_MessageValue { $union_field: val },
                     ) }
+                }
+                pub fn copy_from(&mut self, src: &RepeatedField<'_, $rs_type>) {
+                    // TODO: Optimize this copy_from implementation using memcopy.
+                    // NOTE: `src` cannot be `self` because this would violate borrowing rules.
+                    unsafe { upb_Array_Resize(self.inner.raw, 0, self.inner.arena.raw()) };
+                    // `upb_Array_DeepClone` is not used here because it returns
+                    // a new `upb_Array*`. The contained `RawRepeatedField` must
+                    // then be set to this new pointer, but other copies of this
+                    // pointer may exist because of re-borrowed `RepeatedMut`s.
+                    // Alternatively, a `clone_into` method could be exposed by upb.
+                    for i in 0..src.len() {
+                        self.push(src.get(i).unwrap());
+                    }
                 }
             }
         )*
