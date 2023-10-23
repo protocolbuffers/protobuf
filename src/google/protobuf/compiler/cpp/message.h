@@ -80,6 +80,7 @@ class MessageGenerator {
   const Descriptor* descriptor() const { return descriptor_; }
 
  private:
+  using GeneratorFunction = FieldGeneratorBase::GeneratorFunction;
   enum class InitType { kConstexpr, kArena, kArenaCopy };
 
   // Generate declarations and definitions of accessors for fields.
@@ -147,6 +148,10 @@ class MessageGenerator {
   // Generates the clear_foo() method for a field.
   void GenerateFieldClear(const FieldDescriptor* field, bool is_inline,
                           io::Printer* p);
+
+  // Returns true if any of the fields needs an `arena` variable containing
+  // the current message's arena, reducing `GetArena()` call churn.
+  bool RequiresArena(GeneratorFunction function) const;
 
   // Returns whether impl_ has a copy ctor.
   bool ImplHasCopyCtor() const;
