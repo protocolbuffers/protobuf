@@ -706,6 +706,21 @@ TEST(GeneratedCode, Int32Map) {
 
   check_int32_map_empty(msg);
 
+  EXPECT_EQ(
+      _protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_upb_map(
+          msg),
+      nullptr);
+
+  upb_Map* mut_map =
+      _protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_mutable_upb_map(
+          msg, arena);
+  EXPECT_NE(mut_map, nullptr);
+
+  const upb_Map* const_map =
+      _protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_upb_map(
+          msg);
+  EXPECT_EQ(mut_map, const_map);
+
   /* Set map[test_int32] = test_int32_2 */
   protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_set(
       msg, test_int32, test_int32_2, arena);
