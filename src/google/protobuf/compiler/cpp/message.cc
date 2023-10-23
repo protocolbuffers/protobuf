@@ -3496,6 +3496,15 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
   }
 }
 
+bool MessageGenerator::RequiresArena(GeneratorFunction function) const {
+  for (const FieldDescriptor* field : FieldRange(descriptor_)) {
+    if (field_generators_.get(field).RequiresArena(function)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   // Generate the class-specific MergeFrom, which avoids the ABSL_CHECK and
@@ -3515,6 +3524,11 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         "  auto& from = static_cast<const $classname$&>(from_msg);\n");
   }
   format.Indent();
+  if (RequiresArena(GeneratorFunction::kMergeFrom)) {
+    p->Emit(R"cc(
+      ::$proto_ns$::Arena* arena = _this->GetArena();
+    )cc");
+  }
   format(
       "$annotate_mergefrom$"
       "// @@protoc_insertion_point(class_specific_merge_from_start:"

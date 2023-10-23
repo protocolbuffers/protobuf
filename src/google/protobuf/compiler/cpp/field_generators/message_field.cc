@@ -102,6 +102,8 @@ class SingularMessage : public FieldGeneratorBase {
     )cc");
   }
 
+  bool RequiresArena(GeneratorFunction function) const override;
+
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override {}
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
@@ -415,15 +417,32 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   }
 }
 
+bool SingularMessage::RequiresArena(GeneratorFunction function) const {
+  switch (function) {
+    case GeneratorFunction::kMergeFrom:
+      return !(is_weak() || is_oneof() || should_split());
+  }
+  return false;
+}
+
 void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   if (is_weak()) {
     p->Emit(
         "_Internal::mutable_$name$(_this)->CheckTypeAndMergeFrom(\n"
         "    _Internal::$name$(&from));\n");
-  } else {
+  } else if (is_oneof() || should_split()) {
     p->Emit(
         "_this->_internal_mutable_$name$()->$Submsg$::MergeFrom(\n"
         "    from._internal_$name$());\n");
+  } else {
+    p->Emit(R"cc(
+      $this_set_hasbit$;
+      if (_this->$field_$ == nullptr) {
+        _this->$field_$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field_$);
+      } else {
+        _this->$field_$->MergeFrom(*from.$field_$);
+      }
+    )cc");
   }
 }
 

@@ -904,6 +904,7 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
 void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<CodeGeneratorRequest*>(&to_msg);
   auto& from = static_cast<const CodeGeneratorRequest&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorRequest)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -920,8 +921,12 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const 
       _this->_internal_set_parameter(from._internal_parameter());
     }
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_compiler_version()->::google::protobuf::compiler::Version::MergeFrom(
-          from._internal_compiler_version());
+      _this->_impl_._has_bits_[0] |= 0x00000002u;
+      if (_this->_impl_.compiler_version_ == nullptr) {
+        _this->_impl_.compiler_version_ = CreateMaybeMessage<::google::protobuf::compiler::Version>(arena, *from._impl_.compiler_version_);
+      } else {
+        _this->_impl_.compiler_version_->MergeFrom(*from._impl_.compiler_version_);
+      }
     }
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -1236,6 +1241,7 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
 void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<CodeGeneratorResponse_File*>(&to_msg);
   auto& from = static_cast<const CodeGeneratorResponse_File&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1253,8 +1259,12 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::Message& to_msg, 
       _this->_internal_set_content(from._internal_content());
     }
     if (cached_has_bits & 0x00000008u) {
-      _this->_internal_mutable_generated_code_info()->::google::protobuf::GeneratedCodeInfo::MergeFrom(
-          from._internal_generated_code_info());
+      _this->_impl_._has_bits_[0] |= 0x00000008u;
+      if (_this->_impl_.generated_code_info_ == nullptr) {
+        _this->_impl_.generated_code_info_ = CreateMaybeMessage<::google::protobuf::GeneratedCodeInfo>(arena, *from._impl_.generated_code_info_);
+      } else {
+        _this->_impl_.generated_code_info_->MergeFrom(*from._impl_.generated_code_info_);
+      }
     }
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
