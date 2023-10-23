@@ -12,6 +12,7 @@
 #include "google/protobuf/compiler/cpp/enum.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <string>
