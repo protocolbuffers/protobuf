@@ -39,11 +39,6 @@ namespace cpp {
 // matter of clean composability.
 class FieldGeneratorBase {
  public:
-  // `GeneratorFunction` defines a subset of generator functions that may have
-  // additional optimizations or requirements such as 'uses a local `arena`
-  // variable instead of calling GetArena()'
-  enum class GeneratorFunction { kMergeFrom };
-
   FieldGeneratorBase(const FieldDescriptor* descriptor, const Options& options,
                      MessageSCCAnalyzer* scc_analyzer);
 
@@ -104,10 +99,6 @@ class FieldGeneratorBase {
   bool has_default_constexpr_constructor() const {
     return has_default_constexpr_constructor_;
   }
-
-  // Returns true if this generator requires an 'arena' parameter on the
-  // given generator function.
-  virtual bool RequiresArena(GeneratorFunction) const { return false; }
 
   virtual std::vector<io::Printer::Sub> MakeVars() const { return {}; }
 
@@ -239,8 +230,6 @@ class FieldGenerator {
   }
 
  public:
-  using GeneratorFunction = FieldGeneratorBase::GeneratorFunction;
-
   FieldGenerator(const FieldGenerator&) = delete;
   FieldGenerator& operator=(const FieldGenerator&) = delete;
   FieldGenerator(FieldGenerator&&) = default;
@@ -265,11 +254,6 @@ class FieldGenerator {
   bool is_inlined() const { return impl_->is_inlined(); }
   bool has_default_constexpr_constructor() const {
     return impl_->has_default_constexpr_constructor();
-  }
-
-  // Requirements: see FieldGeneratorBase for documentation
-  bool RequiresArena(GeneratorFunction function) const {
-    return impl_->RequiresArena(function);
   }
 
   // Prints private members needed to represent this field.
