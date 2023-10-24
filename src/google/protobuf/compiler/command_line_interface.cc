@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -34,12 +11,14 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
+#include <cstdint>
 #include <cstdlib>
 
 #include "absl/algorithm/container.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/allowlists/allowlists.h"
 #include "google/protobuf/descriptor_legacy.h"
@@ -98,6 +77,7 @@
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/compiler/zip_writer.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
@@ -137,7 +117,7 @@ static const char* kDefaultDirectDependenciesViolationMsg =
     "File is imported but not declared in --direct_dependencies: %s";
 
 // Returns true if the text looks like a Windows-style absolute path, starting
-// with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with
+// with a drive letter.  Example:  "C:\foo".  TODO:  Share this with
 // copy in importer.cc?
 static bool IsWindowsAbsolutePath(const std::string& text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -259,7 +239,7 @@ bool IsInstalledProtoPath(absl::string_view path) {
 // type protos are installed.
 void AddDefaultProtoPaths(
     std::vector<std::pair<std::string, std::string>>* paths) {
-  // TODO(xiaofeng): The code currently only checks relative paths of where
+  // TODO: The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.
   std::string path_str;
@@ -305,28 +285,16 @@ std::string PluginName(absl::string_view plugin_prefix,
                       directive.substr(2, directive.size() - 6));
 }
 
-
-bool EnforceEditionsSupport(
-    const std::string& codegen_name, uint64_t supported_features,
-    const std::vector<const FileDescriptor*>& parsed_files) {
-  if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
-    for (const auto fd : parsed_files) {
-      if (FileDescriptorLegacy(fd).syntax() ==
-          FileDescriptorLegacy::SYNTAX_EDITIONS) {
-        std::cerr
-            << fd->name() << ": is an editions file, but code generator "
-            << codegen_name
-            << " hasn't been updated to support editions yet.  Please ask "
-               "the owner of this code generator to add support or "
-               "switch back to proto2/proto3.\n\nSee "
-               "https://protobuf.dev/editions/overview/ for more information."
-            << std::endl;
-        return false;
-      }
+bool GetBootstrapParam(const std::string& parameter) {
+  std::vector<std::string> parts = absl::StrSplit(parameter, ',');
+  for (const auto& part : parts) {
+    if (part == "bootstrap") {
+      return true;
     }
   }
-  return true;
+  return false;
 }
+
 
 }  // namespace
 
@@ -1403,6 +1371,12 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
+  if (!experimental_edition_defaults_out_name_.empty()) {
+    if (!WriteExperimentalEditionDefaults(*descriptor_pool)) {
+      return 1;
+    }
+  }
+
   if (mode_ == MODE_ENCODE || mode_ == MODE_DECODE) {
     if (codec_type_.empty()) {
       // HACK:  Define an EmptyMessage type to use for decoding.
@@ -1538,29 +1512,31 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
   // Calculate the feature defaults for each built-in generator.  All generators
   // that support editions must agree on the supported edition range.
   std::vector<const FieldDescriptor*> feature_extensions;
-  absl::string_view minimum_edition = PROTOBUF_MINIMUM_EDITION;
-  absl::string_view maximum_edition = PROTOBUF_MAXIMUM_EDITION;
+  Edition minimum_edition = PROTOBUF_MINIMUM_EDITION;
+  Edition maximum_edition = PROTOBUF_MAXIMUM_EDITION;
   for (const auto& output : output_directives_) {
     if (output.generator == nullptr) continue;
     if ((output.generator->GetSupportedFeatures() &
-         CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
-      continue;
-    }
-    if (output.generator->GetMinimumEdition() != PROTOBUF_MINIMUM_EDITION) {
-      ABSL_LOG(ERROR) << "Built-in generator " << output.name
-                      << " specifies a minimum edition "
-                      << output.generator->GetMinimumEdition()
-                      << " which is not the protoc minimum "
-                      << PROTOBUF_MINIMUM_EDITION << ".";
-      return false;
-    }
-    if (output.generator->GetMaximumEdition() != PROTOBUF_MAXIMUM_EDITION) {
-      ABSL_LOG(ERROR) << "Built-in generator " << output.name
-                      << " specifies a maximum edition "
-                      << output.generator->GetMaximumEdition()
-                      << " which is not the protoc maximum "
-                      << PROTOBUF_MINIMUM_EDITION << ".";
-      return false;
+         CodeGenerator::FEATURE_SUPPORTS_EDITIONS) != 0) {
+      // Only validate min/max edition on generators that advertise editions
+      // support.  Generators still under development will always use the
+      // correct values.
+      if (output.generator->GetMinimumEdition() != minimum_edition) {
+        ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                        << " specifies a minimum edition "
+                        << output.generator->GetMinimumEdition()
+                        << " which is not the protoc minimum "
+                        << minimum_edition << ".";
+        return false;
+      }
+      if (output.generator->GetMaximumEdition() != maximum_edition) {
+        ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                        << " specifies a maximum edition "
+                        << output.generator->GetMaximumEdition()
+                        << " which is not the protoc maximum "
+                        << maximum_edition << ".";
+        return false;
+      }
     }
     for (const FieldDescriptor* ext :
          output.generator->GetFeatureExtensions()) {
@@ -1684,6 +1660,9 @@ void CommandLineInterface::Clear() {
   dependency_out_name_.clear();
 
   experimental_editions_ = false;
+  experimental_edition_defaults_out_name_.clear();
+  experimental_edition_defaults_minimum_ = EDITION_UNKNOWN;
+  experimental_edition_defaults_maximum_ = EDITION_UNKNOWN;
 
   mode_ = MODE_COMPILE;
   print_mode_ = PRINT_NONE;
@@ -1901,7 +1880,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
         break;  // only for --decode_raw
       }
       // --decode (not raw) is handled the same way as the rest of the modes.
-      PROTOBUF_FALLTHROUGH_INTENDED;
+      ABSL_FALLTHROUGH_INTENDED;
     case MODE_ENCODE:
     case MODE_PRINT:
       missing_proto_definitions =
@@ -1915,7 +1894,8 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     return PARSE_ARGUMENT_FAIL;
   }
   if (mode_ == MODE_COMPILE && output_directives_.empty() &&
-      descriptor_set_out_name_.empty()) {
+      descriptor_set_out_name_.empty() &&
+      experimental_edition_defaults_out_name_.empty()) {
     std::cerr << "Missing output directives." << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
@@ -2212,7 +2192,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     if (!version_info_.empty()) {
       std::cout << version_info_ << std::endl;
     }
-    std::cout << "libprotoc " << internal::ProtocVersionString(PROTOBUF_VERSION)
+    std::cout << "libprotoc "
+              << ::google::protobuf::internal::ProtocVersionString(
+                     PROTOBUF_VERSION)
               << PROTOBUF_VERSION_SUFFIX << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
 
@@ -2335,6 +2317,43 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     // experimental, undocumented, unsupported flag. Enable it at your own risk
     // (or, just don't!).
     experimental_editions_ = true;
+  } else if (name == "--experimental_edition_defaults_out") {
+    if (!experimental_edition_defaults_out_name_.empty()) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (value.empty()) {
+      std::cerr << name << " requires a non-empty value." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (mode_ != MODE_COMPILE) {
+      std::cerr
+          << "Cannot use --encode or --decode and generate defaults at the "
+             "same time."
+          << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    experimental_edition_defaults_out_name_ = value;
+  } else if (name == "--experimental_edition_defaults_minimum") {
+    if (experimental_edition_defaults_minimum_ != EDITION_UNKNOWN) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (!Edition_Parse(absl::StrCat("EDITION_", value),
+                       &experimental_edition_defaults_minimum_)) {
+      std::cerr << name << " unknown edition \"" << value << "\"." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+  } else if (name == "--experimental_edition_defaults_maximum") {
+    if (experimental_edition_defaults_maximum_ != EDITION_UNKNOWN) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (!Edition_Parse(absl::StrCat("EDITION_", value),
+                       &experimental_edition_defaults_maximum_)) {
+      std::cerr << name << " unknown edition \"" << value << "\"." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
   } else {
     // Some other flag.  Look it up in the generators list.
     const GeneratorInfo* generator_info = FindGeneratorByFlag(name);
@@ -2528,6 +2547,37 @@ bool CommandLineInterface::EnforceProto3OptionalSupport(
   return true;
 }
 
+bool CommandLineInterface::EnforceEditionsSupport(
+    const std::string& codegen_name, uint64_t supported_features,
+    const std::vector<const FileDescriptor*>& parsed_files) const {
+  if (supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) {
+    // This generator explicitly supports editions.
+    return true;
+  }
+  if (experimental_editions_) {
+    // The user has explicitly specified the experimental flag.
+    return true;
+  }
+  for (const auto* fd : parsed_files) {
+    // Skip enforcement for allowlisted files.
+    if (IsEarlyEditionsFile(fd->name())) continue;
+
+    if (FileDescriptorLegacy(fd).syntax() ==
+        FileDescriptorLegacy::SYNTAX_EDITIONS) {
+      std::cerr
+          << fd->name() << ": is an editions file, but code generator "
+          << codegen_name
+          << " hasn't been updated to support editions yet.  Please ask "
+             "the owner of this code generator to add support or "
+             "switch back to proto2/proto3.\n\nSee "
+             "https://protobuf.dev/editions/overview/ for more information."
+          << std::endl;
+      return false;
+    }
+  }
+  return true;
+}
+
 bool CommandLineInterface::GenerateOutput(
     const std::vector<const FileDescriptor*>& parsed_files,
     const OutputDirective& output_directive,
@@ -2616,6 +2666,10 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     output_filenames.push_back(descriptor_set_out_name_);
   }
 
+  if (!experimental_edition_defaults_out_name_.empty()) {
+    output_filenames.push_back(experimental_edition_defaults_out_name_);
+  }
+
   // Create the depfile, even if it will be empty.
   int fd;
   do {
@@ -2670,6 +2724,7 @@ bool CommandLineInterface::GeneratePluginOutput(
   CodeGeneratorResponse response;
   std::string processed_parameter = parameter;
 
+  bool bootstrap = GetBootstrapParam(processed_parameter);
 
   // Build the request.
   if (!processed_parameter.empty()) {
@@ -2697,8 +2752,11 @@ bool CommandLineInterface::GeneratePluginOutput(
       const FileDescriptor* file = pool->FindFileByName(file_proto.name());
       *request.add_source_file_descriptors() = std::move(file_proto);
       file->CopyTo(&file_proto);
-      file->CopySourceCodeInfoTo(&file_proto);
-      file->CopyJsonNameTo(&file_proto);
+      // Don't populate source code info or json_name for bootstrap protos.
+      if (!bootstrap) {
+        file->CopySourceCodeInfoTo(&file_proto);
+        file->CopyJsonNameTo(&file_proto);
+      }
       StripSourceRetentionOptions(*file->pool(), file_proto);
     }
   }
@@ -2903,6 +2961,73 @@ bool CommandLineInterface::WriteDescriptorSet(
   if (!out.Close()) {
     std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
               << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool CommandLineInterface::WriteExperimentalEditionDefaults(
+    const DescriptorPool& pool) {
+  const Descriptor* feature_set =
+      pool.FindMessageTypeByName("google.protobuf.FeatureSet");
+  if (feature_set == nullptr) {
+    std::cerr << experimental_edition_defaults_out_name_
+              << ": Could not find FeatureSet in descriptor pool.  Please make "
+                 "sure descriptor.proto is in your import path"
+              << std::endl;
+    return false;
+  }
+  std::vector<const FieldDescriptor*> extensions;
+  pool.FindAllExtensions(feature_set, &extensions);
+
+  Edition minimum = PROTOBUF_MINIMUM_EDITION;
+  if (experimental_edition_defaults_minimum_ != EDITION_UNKNOWN) {
+    minimum = experimental_edition_defaults_minimum_;
+  }
+  Edition maximum = PROTOBUF_MAXIMUM_EDITION;
+  if (experimental_edition_defaults_maximum_ != EDITION_UNKNOWN) {
+    maximum = experimental_edition_defaults_maximum_;
+  }
+
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(feature_set, extensions, minimum,
+                                       maximum);
+  if (!defaults.ok()) {
+    std::cerr << experimental_edition_defaults_out_name_ << ": "
+              << defaults.status().message() << std::endl;
+    return false;
+  }
+
+  int fd;
+  do {
+    fd = open(experimental_edition_defaults_out_name_.c_str(),
+              O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+  } while (fd < 0 && errno == EINTR);
+
+  if (fd < 0) {
+    perror(experimental_edition_defaults_out_name_.c_str());
+    return false;
+  }
+
+  io::FileOutputStream out(fd);
+
+  {
+    io::CodedOutputStream coded_out(&out);
+    // Determinism is useful here because build outputs are sometimes checked
+    // into version control.
+    coded_out.SetSerializationDeterministic(true);
+    if (!defaults->SerializeToCodedStream(&coded_out)) {
+      std::cerr << experimental_edition_defaults_out_name_ << ": "
+                << strerror(out.GetErrno()) << std::endl;
+      out.Close();
+      return false;
+    }
+  }
+
+  if (!out.Close()) {
+    std::cerr << experimental_edition_defaults_out_name_ << ": "
+              << strerror(out.GetErrno()) << std::endl;
     return false;
   }
 

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/rust/oneof.h"
 
@@ -48,7 +25,7 @@ namespace rust {
 //    each of the cases. Named as the one_of name in CamelCase.
 // -  An enum acting as a tagged union that has each case holds a Mut<> of
 //    each of the cases. Named as one_of name in CamelCase with "Mut" appended.
-//    [TODO(b/285309334): Mut not implemented yet].
+//    [TODO: Mut not implemented yet].
 // -  A simple enum whose cases have int values matching the cpp or upb's
 //    case enum. Named as the one_of camelcase with "Case" appended.
 // All three contain cases matching the fields in the oneof CamelCased.
@@ -67,20 +44,26 @@ namespace rust {
 // This will emit as the exposed API:
 // pub mod SomeMsg_ {
 //   // The 'view' struct (no suffix on the name)
-//   pub enum SomeOneof {
-//     FieldA(i32) = 7,
-//     FieldB(u32) = 9,
+//   pub enum SomeOneof<'msg> {
+//     FieldA(View<'msg, i32>) = 7,
+//     FieldB(View<'msg, u32>) = 9,
+//     not_set = 0
+//   }
+//   pub enum SomeOneofMut<'msg> {
+//     FieldA(Mut<'msg, i32>) = 7,
+//     FieldB(Mut<'msg, u32>) = 9,
 //     not_set = 0
 //   }
 // }
 // impl SomeMsg {
 //   pub fn some_oneof() -> SomeOneof {...}
+//   pub fn some_oneof_mut() -> SomeOneofMut {...}
+
 // }
 //
 // An additional "Case" enum which just reflects the corresponding slot numbers
 // is emitted for usage with the FFI (exactly matching the Case struct that both
-// cpp and upb generate). This enum is pub(super) which makes it private to the
-// codegen since its inside an inner mod:
+// cpp and upb generate).
 //
 // #[repr(C)] pub(super) enum SomeOneofCase {
 //   FieldA = 7,
@@ -97,13 +80,17 @@ std::string oneofViewEnumRsName(const OneofDescriptor& desc) {
   return ToCamelCase(desc.name());
 }
 
+std::string oneofMutEnumRsName(const OneofDescriptor& desc) {
+  return ToCamelCase(desc.name()) + "Mut";
+}
+
 std::string oneofCaseEnumName(const OneofDescriptor& desc) {
   // Note: This is the name used for the cpp Case enum, we use it for both
   // the Rust Case enum as well as for the cpp case enum in the cpp thunk.
-  return oneofViewEnumRsName(desc) + "Case";
+  return ToCamelCase(desc.name()) + "Case";
 }
 
-// TODO(b/285309334): Promote up to naming.h once all types can be spelled.
+// TODO: Promote up to naming.h once all types can be spelled.
 std::string RsTypeName(const FieldDescriptor& desc) {
   switch (desc.type()) {
     case FieldDescriptor::TYPE_MESSAGE:
@@ -117,6 +104,18 @@ std::string RsTypeName(const FieldDescriptor& desc) {
   }
 }
 
+std::string RsTypeNameView(const FieldDescriptor& desc) {
+  std::string type = RsTypeName(desc);
+  if (type.empty()) return "";
+  return "View<'msg, " + type + ">";
+}
+
+std::string RsTypeNameMut(const FieldDescriptor& desc) {
+  std::string type = RsTypeName(desc);
+  if (type.empty()) return "";
+  return "Mut<'msg, " + type + ">";
+}
+
 }  // namespace
 
 void GenerateOneofDefinition(Context<OneofDescriptor> oneof) {
@@ -124,31 +123,62 @@ void GenerateOneofDefinition(Context<OneofDescriptor> oneof) {
 
   oneof.Emit(
       {{"view_enum_name", oneofViewEnumRsName(desc)},
+       {"mut_enum_name", oneofMutEnumRsName(desc)},
        {"view_fields",
         [&] {
           for (int i = 0; i < desc.field_count(); ++i) {
             const auto& field = desc.field(i);
-            std::string rs_type = RsTypeName(*field);
+            std::string rs_type = RsTypeNameView(*field);
             if (rs_type.empty()) {
               continue;
             }
             oneof.Emit({{"name", ToCamelCase(field->name())},
                         {"type", rs_type},
                         {"number", std::to_string(field->number())}},
-                       R"rs($name$($type$) = $number$,
+                       R"rs($name$($pb$::$type$) = $number$,
+                )rs");
+          }
+        }},
+       {"mut_fields",
+        [&] {
+          for (int i = 0; i < desc.field_count(); ++i) {
+            const auto& field = desc.field(i);
+            std::string rs_type = RsTypeNameMut(*field);
+            if (rs_type.empty()) {
+              continue;
+            }
+            oneof.Emit({{"name", ToCamelCase(field->name())},
+                        {"type", rs_type},
+                        {"number", std::to_string(field->number())}},
+                       R"rs($name$($pb$::$type$) = $number$,
                 )rs");
           }
         }}},
-      // TODO(b/297342638): Revisit if isize is the optimal repr for this enum.
+      // TODO: Revisit if isize is the optimal repr for this enum.
+      // TODO: not_set currently has phantom data just to avoid the
+      // lifetime on the enum breaking compilation if there are zero supported
+      // fields on it (e.g. if the oneof only has Messages inside).
       R"rs(
       #[non_exhaustive]
-      #[derive(Debug, PartialEq)]
+      #[derive(Debug)]
+      #[allow(dead_code)]
       #[repr(isize)]
-      pub enum $view_enum_name$ {
+      pub enum $view_enum_name$<'msg> {
         $view_fields$
 
         #[allow(non_camel_case_types)]
-        not_set = 0
+        not_set(std::marker::PhantomData<&'msg ()>) = 0
+      }
+
+      #[non_exhaustive]
+      #[derive(Debug)]
+      #[allow(dead_code)]
+      #[repr(isize)]
+      pub enum $mut_enum_name$<'msg> {
+        $mut_fields$
+
+        #[allow(non_camel_case_types)]
+        not_set(std::marker::PhantomData<&'msg ()>) = 0
       }
 
       )rs");
@@ -168,7 +198,7 @@ void GenerateOneofDefinition(Context<OneofDescriptor> oneof) {
                }}},
              R"rs(
       #[repr(C)]
-      #[derive(Debug, Copy, Clone, PartialEq)]
+      #[derive(Debug, Copy, Clone, PartialEq, Eq)]
       pub(super) enum $case_enum_name$ {
         $cases$
 
@@ -185,12 +215,13 @@ void GenerateOneofAccessors(Context<OneofDescriptor> oneof) {
   oneof.Emit(
       {{"oneof_name", desc.name()},
        {"view_enum_name", oneofViewEnumRsName(desc)},
+       {"mut_enum_name", oneofMutEnumRsName(desc)},
        {"case_enum_name", oneofCaseEnumName(desc)},
-       {"cases",
+       {"view_cases",
         [&] {
           for (int i = 0; i < desc.field_count(); ++i) {
             const auto& field = desc.field(i);
-            std::string rs_type = RsTypeName(*field);
+            std::string rs_type = RsTypeNameView(*field);
             if (rs_type.empty()) {
               continue;
             }
@@ -204,12 +235,39 @@ void GenerateOneofAccessors(Context<OneofDescriptor> oneof) {
                 )rs");
           }
         }},
+       {"mut_cases",
+        [&] {
+          for (int i = 0; i < desc.field_count(); ++i) {
+            const auto& field = desc.field(i);
+            std::string rs_type = RsTypeNameMut(*field);
+            if (rs_type.empty()) {
+              continue;
+            }
+            // TODO: Uncomment this to allow mut once
+            // _mut() on singular fields with presence is implemented.
+            /*oneof.Emit({
+                    {"case", ToCamelCase(field->name())},
+                    {"rs_getter", field->name() + "_mut"},
+                    {"type", rs_type},
+                },
+                R"rs($Msg$_::$case_enum_name$::$case$ =>
+               $Msg$_::$mut_enum_name$::$case$(self.$rs_getter$()), )rs");
+            */
+          }
+        }},
        {"case_thunk", Thunk(oneof, "case")}},
       R"rs(
         pub fn r#$oneof_name$(&self) -> $Msg$_::$view_enum_name$ {
           match unsafe { $case_thunk$(self.inner.msg) } {
-            $cases$
-            _ => $Msg$_::$view_enum_name$::not_set
+            $view_cases$
+            _ => $Msg$_::$view_enum_name$::not_set(std::marker::PhantomData)
+          }
+        }
+
+        pub fn r#$oneof_name$_mut(&mut self) -> $Msg$_::$mut_enum_name$ {
+          match unsafe { $case_thunk$(self.inner.msg) } {
+            $mut_cases$
+            _ => $Msg$_::$mut_enum_name$::not_set(std::marker::PhantomData)
           }
         }
 

@@ -1,36 +1,13 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::{Private, RawArena, RawMessage};
+use crate::__internal::{Private, PtrAndLen, RawArena, RawMessage, RawRepeatedField};
 use std::alloc;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
@@ -40,6 +17,7 @@ use std::mem::MaybeUninit;
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
 use std::slice;
+use std::sync::Once;
 
 /// See `upb/port/def.inc`.
 const UPB_MALLOC_ALIGN: usize = 8;
@@ -157,6 +135,38 @@ impl Drop for Arena {
     }
 }
 
+static mut INTERNAL_PTR: Option<RawMessage> = None;
+static INIT: Once = Once::new();
+
+// TODO:(b/304577017)
+const ALIGN: usize = 32;
+const UPB_SCRATCH_SPACE_BYTES: usize = 64_000;
+
+/// Holds a zero-initialized block of memory for use by upb.
+/// By default, if a message is not set in cpp, a default message is created.
+/// upb departs from this and returns a null ptr. However, since contiguous
+/// chunks of memory filled with zeroes are legit messages from upb's point of
+/// view, we can allocate a large block and refer to that when dealing
+/// with readonly access.
+pub struct ScratchSpace;
+impl ScratchSpace {
+    pub fn zeroed_block(_private: Private) -> RawMessage {
+        unsafe {
+            INIT.call_once(|| {
+                let layout =
+                    std::alloc::Layout::from_size_align(UPB_SCRATCH_SPACE_BYTES, ALIGN).unwrap();
+                let Some(ptr) =
+                    crate::__internal::RawMessage::new(std::alloc::alloc_zeroed(layout).cast())
+                else {
+                    std::alloc::handle_alloc_error(layout)
+                };
+                INTERNAL_PTR = Some(ptr)
+            });
+            INTERNAL_PTR.unwrap()
+        }
+    }
+}
+
 /// Serialized Protobuf wire format data.
 ///
 /// It's typically produced by `<Message>::serialize()`.
@@ -200,10 +210,11 @@ impl fmt::Debug for SerializedData {
     }
 }
 
-// TODO(b/293919363): Investigate replacing this with direct access to UPB bits.
+// TODO: Investigate replacing this with direct access to UPB bits.
 pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
+pub type InnerPrimitiveMut<'a, T> = crate::vtable::RawVTableMutator<'a, T>;
 
 /// The raw contents of every generated message.
 #[derive(Debug)]
@@ -273,6 +284,173 @@ pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
     }
 }
 
+/// RepeatedFieldInner contains a `upb_Array*` as well as a reference to an
+/// `Arena`, most likely that of the containing `Message`. upb requires an Arena
+/// to perform mutations on a repeated field.
+#[derive(Clone, Copy, Debug)]
+pub struct RepeatedFieldInner<'msg> {
+    pub raw: RawRepeatedField,
+    pub arena: &'msg Arena,
+}
+
+#[derive(Debug)]
+pub struct RepeatedField<'msg, T: ?Sized> {
+    inner: RepeatedFieldInner<'msg>,
+    _phantom: PhantomData<&'msg mut T>,
+}
+
+// These use manual impls instead of derives to avoid unnecessary bounds on `T`.
+// This problem is referred to as "perfect derive".
+// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
+impl<'msg, T: ?Sized> Copy for RepeatedField<'msg, T> {}
+impl<'msg, T: ?Sized> Clone for RepeatedField<'msg, T> {
+    fn clone(&self) -> RepeatedField<'msg, T> {
+        *self
+    }
+}
+
+impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
+    pub fn len(&self) -> usize {
+        unsafe { upb_Array_Size(self.inner.raw) }
+    }
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+    pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
+        Self { inner, _phantom: PhantomData }
+    }
+}
+
+// Transcribed from google3/third_party/upb/upb/message/value.h
+#[repr(C)]
+#[derive(Clone, Copy)]
+union upb_MessageValue {
+    bool_val: bool,
+    float_val: std::ffi::c_float,
+    double_val: std::ffi::c_double,
+    uint32_val: u32,
+    int32_val: i32,
+    uint64_val: u64,
+    int64_val: i64,
+    array_val: *const std::ffi::c_void,
+    map_val: *const std::ffi::c_void,
+    msg_val: *const std::ffi::c_void,
+    str_val: PtrAndLen,
+}
+
+// Transcribed from google3/third_party/upb/upb/base/descriptor_constants.h
+#[repr(C)]
+#[allow(dead_code)]
+enum UpbCType {
+    Bool = 1,
+    Float = 2,
+    Int32 = 3,
+    UInt32 = 4,
+    Enum = 5,
+    Message = 6,
+    Double = 7,
+    Int64 = 8,
+    UInt64 = 9,
+    String = 10,
+    Bytes = 11,
+}
+
+extern "C" {
+    #[allow(dead_code)]
+    fn upb_Array_New(a: RawArena, r#type: std::ffi::c_int) -> RawRepeatedField;
+    fn upb_Array_Size(arr: RawRepeatedField) -> usize;
+    fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
+    fn upb_Array_Get(arr: RawRepeatedField, i: usize) -> upb_MessageValue;
+    fn upb_Array_Append(arr: RawRepeatedField, val: upb_MessageValue, arena: RawArena);
+    fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena);
+}
+
+macro_rules! impl_repeated_primitives {
+    ($(($rs_type:ty, $union_field:ident, $upb_tag:expr)),*) => {
+        $(
+            impl<'msg> RepeatedField<'msg, $rs_type> {
+                #[allow(dead_code)]
+                fn new(arena: &'msg Arena) -> Self {
+                    Self {
+                        inner: RepeatedFieldInner {
+                            raw: unsafe { upb_Array_New(arena.raw, $upb_tag as std::ffi::c_int) },
+                            arena,
+                        },
+                        _phantom: PhantomData,
+                    }
+                }
+                pub fn push(&mut self, val: $rs_type) {
+                    unsafe { upb_Array_Append(
+                        self.inner.raw,
+                        upb_MessageValue { $union_field: val },
+                        self.inner.arena.raw(),
+                    ) }
+                }
+                pub fn get(&self, i: usize) -> Option<$rs_type> {
+                    if i >= self.len() {
+                        None
+                    } else {
+                        unsafe { Some(upb_Array_Get(self.inner.raw, i).$union_field) }
+                    }
+                }
+                pub fn set(&self, i: usize, val: $rs_type) {
+                    if i >= self.len() {
+                        return;
+                    }
+                    unsafe { upb_Array_Set(
+                        self.inner.raw,
+                        i,
+                        upb_MessageValue { $union_field: val },
+                    ) }
+                }
+                pub fn copy_from(&mut self, src: &RepeatedField<'_, $rs_type>) {
+                    // TODO: Optimize this copy_from implementation using memcopy.
+                    // NOTE: `src` cannot be `self` because this would violate borrowing rules.
+                    unsafe { upb_Array_Resize(self.inner.raw, 0, self.inner.arena.raw()) };
+                    // `upb_Array_DeepClone` is not used here because it returns
+                    // a new `upb_Array*`. The contained `RawRepeatedField` must
+                    // then be set to this new pointer, but other copies of this
+                    // pointer may exist because of re-borrowed `RepeatedMut`s.
+                    // Alternatively, a `clone_into` method could be exposed by upb.
+                    for i in 0..src.len() {
+                        self.push(src.get(i).unwrap());
+                    }
+                }
+            }
+        )*
+    }
+}
+
+impl_repeated_primitives!(
+    (bool, bool_val, UpbCType::Bool),
+    (f32, float_val, UpbCType::Float),
+    (f64, double_val, UpbCType::Double),
+    (i32, int32_val, UpbCType::Int32),
+    (u32, uint32_val, UpbCType::UInt32),
+    (i64, int64_val, UpbCType::Int64),
+    (u64, uint64_val, UpbCType::UInt64)
+);
+
+/// Returns a static thread-local empty RepeatedFieldInner for use in a
+/// RepeatedView.
+///
+/// # Safety
+/// TODO: Split RepeatedFieldInner into mut and const variants to
+/// enforce safety. The returned array must never be mutated.
+pub unsafe fn empty_array() -> RepeatedFieldInner<'static> {
+    // TODO: Consider creating empty array in C.
+    fn new_repeated_field_inner() -> RepeatedFieldInner<'static> {
+        let arena = Box::leak::<'static>(Box::new(Arena::new()));
+        // Provide `i32` as a placeholder type.
+        RepeatedField::<'static, i32>::new(arena).inner
+    }
+    thread_local! {
+        static REPEATED_FIELD: RepeatedFieldInner<'static> = new_repeated_field_inner();
+    }
+
+    REPEATED_FIELD.with(|inner| *inner)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -297,5 +475,36 @@ mod tests {
             )
         };
         assert_eq!(&*serialized_data, b"Hello world");
+    }
+
+    #[test]
+    fn i32_array() {
+        let arena = Arena::new();
+        let mut arr = RepeatedField::<i32>::new(&arena);
+        assert_eq!(arr.len(), 0);
+        arr.push(1);
+        assert_eq!(arr.get(0), Some(1));
+        assert_eq!(arr.len(), 1);
+        arr.set(0, 3);
+        assert_eq!(arr.get(0), Some(3));
+        for i in 0..2048 {
+            arr.push(i);
+            assert_eq!(arr.get(arr.len() - 1), Some(i));
+        }
+    }
+    #[test]
+    fn u32_array() {
+        let mut arena = Arena::new();
+        let mut arr = RepeatedField::<u32>::new(&mut arena);
+        assert_eq!(arr.len(), 0);
+        arr.push(1);
+        assert_eq!(arr.get(0), Some(1));
+        assert_eq!(arr.len(), 1);
+        arr.set(0, 3);
+        assert_eq!(arr.get(0), Some(3));
+        for i in 0..2048 {
+            arr.push(i);
+            assert_eq!(arr.get(arr.len() - 1), Some(i));
+        }
     }
 }

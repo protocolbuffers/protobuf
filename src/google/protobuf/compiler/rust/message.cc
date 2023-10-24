@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/rust/message.h"
 
@@ -185,6 +162,38 @@ void MessageDrop(Context<Descriptor> msg) {
     unsafe { $delete_thunk$(self.inner.msg); }
   )rs");
 }
+
+// TODO: deferring on strings and bytes for now, eventually this
+// check will go away as we support more than just simple scalars
+bool IsSimpleScalar(FieldDescriptor::Type type) {
+  return type == FieldDescriptor::TYPE_DOUBLE ||
+         type == FieldDescriptor::TYPE_FLOAT ||
+         type == FieldDescriptor::TYPE_INT32 ||
+         type == FieldDescriptor::TYPE_INT64 ||
+         type == FieldDescriptor::TYPE_UINT32 ||
+         type == FieldDescriptor::TYPE_UINT64 ||
+         type == FieldDescriptor::TYPE_SINT32 ||
+         type == FieldDescriptor::TYPE_SINT64 ||
+         type == FieldDescriptor::TYPE_FIXED32 ||
+         type == FieldDescriptor::TYPE_FIXED64 ||
+         type == FieldDescriptor::TYPE_SFIXED32 ||
+         type == FieldDescriptor::TYPE_SFIXED64 ||
+         type == FieldDescriptor::TYPE_BOOL;
+}
+
+void GenerateSubView(Context<FieldDescriptor> field) {
+  field.Emit(
+      {
+          {"field", field.desc().name()},
+          {"getter_thunk", Thunk(field, "get")},
+          {"Scalar", PrimitiveRsTypeName(field.desc())},
+      },
+      R"rs(
+      pub fn r#$field$(&self) -> $Scalar$ { unsafe {
+        $getter_thunk$(self.msg)
+      } }
+    )rs");
+}
 }  // namespace
 
 void GenerateRs(Context<Descriptor> msg) {
@@ -269,10 +278,20 @@ void GenerateRs(Context<Descriptor> msg) {
                  }  // mod $Msg$_
                 )rs");
            }},
+          {"subviews",
+           [&] {
+             for (int i = 0; i < msg.desc().field_count(); ++i) {
+               auto field = msg.WithDesc(*msg.desc().field(i));
+               if (field.desc().is_repeated()) continue;
+               if (!IsSimpleScalar(field.desc().type())) continue;
+               GenerateSubView(field);
+               msg.printer().PrintRaw("\n");
+             }
+           }},
       },
       R"rs(
         #[allow(non_camel_case_types)]
-        // TODO(b/291938599): Implement support for debug redaction
+        // TODO: Implement support for debug redaction
         #[derive(Debug)]
         pub struct $Msg$ {
           inner: $pbr$::MessageInner
@@ -295,6 +314,14 @@ void GenerateRs(Context<Descriptor> msg) {
         pub struct $Msg$View<'a> {
           msg: $pbi$::RawMessage,
           _phantom: $Phantom$<&'a ()>,
+        }
+
+        impl<'a> $Msg$View<'a> {
+          #[doc(hidden)]
+          pub fn new(_private: $pbi$::Private, msg: $pbi$::RawMessage) -> Self {
+            Self { msg, _phantom: std::marker::PhantomData }
+          }
+          $subviews$
         }
 
         // SAFETY:
@@ -445,7 +472,7 @@ void GenerateThunksCc(Context<Descriptor> msg) {
         //~ `$abi${`). Disabling clang-format for the block.
         // clang-format off
         extern $abi$ {
-        void* $new_thunk$(){return new $QualifiedMsg$(); }
+        void* $new_thunk$() { return new $QualifiedMsg$(); }
         void $delete_thunk$(void* ptr) { delete static_cast<$QualifiedMsg$*>(ptr); }
         google::protobuf::rust_internal::SerializedData $serialize_thunk$($QualifiedMsg$* msg) {
           return google::protobuf::rust_internal::SerializeMsg(msg);

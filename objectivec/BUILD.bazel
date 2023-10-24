@@ -1,6 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@upb//cmake:build_defs.bzl", "staleness_test")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
 load("//conformance:defs.bzl", "conformance_test")
 load(":defs.bzl", "objc_proto_camel_case_name")
 
@@ -42,8 +42,8 @@ genrule(
         for wkt in _OBJC_WKT_NAMES
         for ext in _OBJC_EXTS
     ]),
-    tools = ["//:protoc"],
     tags = ["manual"],
+    tools = ["//:protoc"],
 )
 
 staleness_test(

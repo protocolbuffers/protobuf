@@ -41,6 +41,7 @@ cc_test(
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:port_def",
         "//src/google/protobuf/io",
+        "//src/google/protobuf/io:test_zero_copy_stream",
         "//src/google/protobuf/util:json_format_cc_proto",
         "//src/google/protobuf/util:json_format_proto3_cc_proto",
         "//src/google/protobuf/util:type_resolver_util",
@@ -50,19 +51,6 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "test_input_stream",
-    testonly = True,
-    hdrs = ["internal/test_input_stream.h"],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    visibility = ["//visibility:private"],
-    deps = [
-        "//src/google/protobuf/io",
-        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -88,8 +76,8 @@ cc_test(
     srcs = ["internal/zero_copy_buffered_stream_test.cc"],
     copts = COPTS,
     deps = [
-        ":test_input_stream",
         ":zero_copy_buffered_stream",
+        "//src/google/protobuf/io:test_zero_copy_stream",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -141,13 +129,13 @@ cc_library(
 
 cc_test(
     name = "lexer_test",
+    timeout = "long",
     srcs = ["internal/lexer_test.cc"],
     copts = COPTS,
-    timeout = "long",
     deps = [
         ":lexer",
-        ":test_input_stream",
         "//src/google/protobuf/io",
+        "//src/google/protobuf/io:test_zero_copy_stream",
         "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",

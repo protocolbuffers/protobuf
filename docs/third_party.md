@@ -31,6 +31,8 @@ These are projects we know about implementing Protocol Buffers for other program
 *   Clojure: http://github.com/ninjudd/clojure-protobuf
 *   Clojure: https://github.com/clojusc/protobuf
 *   Clojure: https://protojure.readthedocs.io
+*   Clojure: https://github.com/s-expresso/clojobuf
+*   ClojureScript: https://github.com/s-expresso/clojobuf
 *   Common Lisp: http://github.com/brown/protobuf
 *   Common Lisp: http://github.com/qitab/cl-protobuf
 *   D: https://github.com/dcarp/protobuf-d
@@ -77,7 +79,7 @@ These are projects we know about implementing Protocol Buffers for other program
 *   Javascript: https://github.com/seishun/node-protoc-gen-javascript (Node.js
     port of the Google-official implementation)
 *   Javascript: https://github.com/ButterCam/sisyphus-js
-*   Julia: https://github.com/tanmaykm/ProtoBuf.jl
+*   Julia: https://github.com/JuliaIO/ProtoBuf.jl
 *   Kotlin: https://github.com/marcoferrer/kroto-plus
 *   Kotlin: https://github.com/Kotlin/kotlinx.serialization
 *   Kotlin: https://github.com/ButterCam/sisyphus
@@ -124,6 +126,7 @@ These are projects we know about implementing Protocol Buffers for other program
 *   Typescript: https://github.com/pbkit/pbkit
 *   Vala: https://launchpad.net/protobuf-vala
 *   Visual Basic: https://code.google.com/p/protobuf-net/
+*   Zig: https://github.com/Arwalk/zig-protobuf
 
 ## RPC Implementations
 
@@ -232,3 +235,8 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 *   [protobuf-decoder-explainer - Web page which decodes and explains pasted
     binary Protocol
     Buffers](https://github.com/jamesdbrock/protobuf-decoder-explainer)
+*   [rubberbuf - dynamically transpile protobuf into AST](https://github.com/s-expresso/rubberbuf)
+    `clojure` `clojurescript`
+*   [clojobuf-serdes - low level serialize/deserialize library for protobuf
+    binary format](https://github.com/s-expresso/clojobuf-codec) `clojure`
+    `clojurescript`

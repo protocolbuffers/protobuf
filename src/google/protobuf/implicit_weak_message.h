@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__
 #define GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__
@@ -67,7 +44,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   ImplicitWeakMessage(internal::InternalVisibility, Arena* arena)
       : ImplicitWeakMessage(arena) {}
 
-  // TODO(b/290091828): make this constructor private
+  // TODO: make this constructor private
   explicit ImplicitWeakMessage(Arena* arena)
       : MessageLite(arena), data_(new std::string) {}
 
@@ -79,7 +56,14 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   static const ImplicitWeakMessage* default_instance();
 
-  std::string GetTypeName() const override { return ""; }
+  const ClassData* GetClassData() const final {
+    struct Data {
+      ClassData header;
+      char name[1];
+    };
+    static constexpr Data data = {{}, ""};
+    return &data.header;
+  }
 
   MessageLite* New(Arena* arena) const override {
     return Arena::CreateMessage<ImplicitWeakMessage>(arena);
@@ -170,7 +154,7 @@ struct WeakRepeatedPtrField {
                        const WeakRepeatedPtrField& rhs)
       : WeakRepeatedPtrField(arena, rhs) {}
 
-  // TODO(b/290091828): make this constructor private
+  // TODO: make this constructor private
   explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
 
   ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }
@@ -209,9 +193,10 @@ struct WeakRepeatedPtrField {
   T* Add() { return weak.Add(); }
   void Clear() { base().template Clear<TypeHandler>(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {
-    base().template MergeFrom<TypeHandler>(other.base());
+    if (other.empty()) return;
+    base().template MergeFrom<MessageLite>(other.base());
   }
-  void InternalSwap(WeakRepeatedPtrField* other) {
+  void InternalSwap(WeakRepeatedPtrField* PROTOBUF_RESTRICT other) {
     base().InternalSwap(&other->base());
   }
 

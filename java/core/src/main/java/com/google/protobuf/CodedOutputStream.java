@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -456,7 +433,7 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /** Write a {@code string} field to the stream. */
-  // TODO(dweis): Document behavior on ill-formed UTF-16 input.
+  // TODO: Document behavior on ill-formed UTF-16 input.
   // Abstract to avoid overhead of additional virtual method calls.
   public abstract void writeStringNoTag(String value) throws IOException;
 
@@ -841,7 +818,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     try {
       length = Utf8.encodedLength(value);
     } catch (UnpairedSurrogateException e) {
-      // TODO(dweis): Consider using nio Charset methods instead.
+      // TODO: Consider using nio Charset methods instead.
       final byte[] bytes = value.getBytes(Internal.UTF_8);
       length = bytes.length;
     }
@@ -989,7 +966,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     // Unfortunately there does not appear to be any way to tell Java to encode
     // UTF-8 directly into our buffer, so we have to let it create its own byte
     // array and then copy.
-    // TODO(dweis): Consider using nio Charset methods instead.
+    // TODO: Consider using nio Charset methods instead.
     final byte[] bytes = value.getBytes(Internal.UTF_8);
     try {
       writeUInt32NoTag(bytes.length);
@@ -1479,7 +1456,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         // Roll back the change - we fall back to inefficient path.
         position = oldPosition;
 
-        // TODO(nathanmittler): We should throw an IOException here instead.
+        // TODO: We should throw an IOException here instead.
         inefficientWriteStringNoTag(value, e);
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(e);
@@ -1815,7 +1792,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         // Roll back the change and convert to an IOException.
         Java8Compatibility.position(buffer, startPos);
 
-        // TODO(nathanmittler): We should throw an IOException here instead.
+        // TODO: We should throw an IOException here instead.
         inefficientWriteStringNoTag(value, e);
       } catch (IllegalArgumentException e) {
         // Thrown by buffer.position() if out of range.
@@ -2174,7 +2151,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         position = prevPos;
         repositionBuffer(position);
 
-        // TODO(nathanmittler): We should throw an IOException here instead.
+        // TODO: We should throw an IOException here instead.
         inefficientWriteStringNoTag(value, e);
       } catch (IllegalArgumentException e) {
         // Thrown by buffer.position() if out of range.
@@ -2623,7 +2600,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         totalBytesWritten -= position - oldPosition;
         position = oldPosition;
 
-        // TODO(nathanmittler): We should throw an IOException here instead.
+        // TODO: We should throw an IOException here instead.
         inefficientWriteStringNoTag(value, e);
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(e);

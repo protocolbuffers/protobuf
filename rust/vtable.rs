@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 use crate::__internal::{Private, PtrAndLen, RawMessage};
 use crate::__runtime::{copy_bytes_in_arena_if_needed_by_runtime, MutatorMessageRef};
@@ -273,11 +250,78 @@ impl ProxiedWithRawOptionalVTable for [u8] {
     }
 }
 
+/// A generic thunk vtable for mutating a present primitive field.
+#[doc(hidden)]
+#[derive(Debug)]
+pub struct PrimitiveVTable<T> {
+    pub(crate) setter: unsafe extern "C" fn(msg: RawMessage, val: T),
+    pub(crate) getter: unsafe extern "C" fn(msg: RawMessage) -> T,
+}
+
+#[doc(hidden)]
+#[derive(Debug)]
+/// A generic thunk vtable for mutating an `optional` primitive field.
+pub struct PrimitiveOptionalMutVTable<T> {
+    pub(crate) base: PrimitiveVTable<T>,
+    pub(crate) clearer: unsafe extern "C" fn(msg: RawMessage),
+    pub(crate) default: T,
+}
+
+impl<T> PrimitiveVTable<T> {
+    #[doc(hidden)]
+    pub const fn new(
+        _private: Private,
+        getter: unsafe extern "C" fn(msg: RawMessage) -> T,
+        setter: unsafe extern "C" fn(msg: RawMessage, val: T),
+    ) -> Self {
+        Self { getter, setter }
+    }
+}
+
+impl<T> PrimitiveOptionalMutVTable<T> {
+    #[doc(hidden)]
+    pub const fn new(
+        _private: Private,
+        getter: unsafe extern "C" fn(msg: RawMessage) -> T,
+        setter: unsafe extern "C" fn(msg: RawMessage, val: T),
+        clearer: unsafe extern "C" fn(msg: RawMessage),
+        default: T,
+    ) -> Self {
+        Self { base: PrimitiveVTable { getter, setter }, clearer, default }
+    }
+}
+
+macro_rules! impl_raw_vtable_mutator_get_set {
+  ($($t:ty),*) => {
+      $(
+          impl RawVTableMutator<'_, $t> {
+              pub(crate) fn get(self) -> $t {
+                  // SAFETY:
+                  // - `msg_ref` is valid for the lifetime of `RawVTableMutator` as promised by the
+                  //   caller of `new`.
+                  unsafe { (self.vtable.getter)(self.msg_ref.msg()) }
+              }
+
+              /// # Safety
+              /// - `msg_ref` must be valid for the lifetime of `RawVTableMutator`.
+              pub(crate) unsafe fn set(self, val: $t) {
+                // SAFETY:
+                // - `msg_ref` is valid for the lifetime of `RawVTableMutator` as promised by the
+                //   caller of `new`.
+                  unsafe { (self.vtable.setter)(self.msg_ref.msg(), val) }
+              }
+          }
+      )*
+  }
+}
+
+impl_raw_vtable_mutator_get_set!(bool, f32, f64, i32, i64, u32, u64);
+
 /// A generic thunk vtable for mutating a present `bytes` or `string` field.
 #[doc(hidden)]
 #[derive(Debug)]
 pub struct BytesMutVTable {
-    pub(crate) setter: unsafe extern "C" fn(msg: RawMessage, val: *const u8, len: usize),
+    pub(crate) setter: unsafe extern "C" fn(msg: RawMessage, val: PtrAndLen),
     pub(crate) getter: unsafe extern "C" fn(msg: RawMessage) -> PtrAndLen,
 }
 
@@ -294,7 +338,7 @@ impl BytesMutVTable {
     pub const fn new(
         _private: Private,
         getter: unsafe extern "C" fn(msg: RawMessage) -> PtrAndLen,
-        setter: unsafe extern "C" fn(msg: RawMessage, val: *const u8, len: usize),
+        setter: unsafe extern "C" fn(msg: RawMessage, val: PtrAndLen),
     ) -> Self {
         Self { getter, setter }
     }
@@ -308,7 +352,7 @@ impl BytesOptionalMutVTable {
     pub const unsafe fn new(
         _private: Private,
         getter: unsafe extern "C" fn(msg: RawMessage) -> PtrAndLen,
-        setter: unsafe extern "C" fn(msg: RawMessage, val: *const u8, len: usize),
+        setter: unsafe extern "C" fn(msg: RawMessage, val: PtrAndLen),
         clearer: unsafe extern "C" fn(msg: RawMessage),
         default: &'static [u8],
     ) -> Self {
@@ -333,7 +377,7 @@ impl<'msg> RawVTableMutator<'msg, [u8]> {
         let val = copy_bytes_in_arena_if_needed_by_runtime(self.msg_ref, val);
         // SAFETY:
         // - `msg_ref` is valid for `'msg` as promised by the caller of `new`.
-        unsafe { (self.vtable.setter)(self.msg_ref.msg(), val.as_ptr(), val.len()) }
+        unsafe { (self.vtable.setter)(self.msg_ref.msg(), val.into()) }
     }
 
     pub(crate) fn truncate(&self, len: usize) {
@@ -363,7 +407,7 @@ impl<'msg> RawVTableOptionalMutatorData<'msg, [u8]> {
         let val = copy_bytes_in_arena_if_needed_by_runtime(self.msg_ref, val);
         // SAFETY:
         // - `msg_ref` is valid for `'msg` as promised by the caller.
-        unsafe { (self.vtable.base.setter)(self.msg_ref.msg(), val.as_ptr(), val.len()) }
+        unsafe { (self.vtable.base.setter)(self.msg_ref.msg(), val.into()) }
         self
     }
 
@@ -376,3 +420,36 @@ impl<'msg> RawVTableOptionalMutatorData<'msg, [u8]> {
         self
     }
 }
+
+macro_rules! impl_raw_vtable_optional_mutator_data {
+  ($($t:ty),*) => {
+      $(
+          impl<'msg> RawVTableOptionalMutatorData<'msg, $t> {
+              pub(crate) fn set_absent_to_default(self) -> Self {
+                // SAFETY:
+                // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
+                //   promised by the caller of `new`.
+                self.set(self.vtable.default)
+              }
+
+              pub(crate) fn set(self, val: $t) -> Self {
+                // SAFETY:
+                // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
+                //   promised by the caller of `new`.
+                unsafe { (self.vtable.base.setter)(self.msg_ref.msg(), val.into()) }
+                self
+              }
+
+              pub(crate) fn clear(self) -> Self {
+                // SAFETY:
+                // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
+                //   promised by the caller of `new`.
+                unsafe { (self.vtable.clearer)(self.msg_ref.msg()) }
+                self
+              }
+          }
+      )*
+  }
+}
+
+impl_raw_vtable_optional_mutator_data!(bool, f32, f64, i32, i64, u32, u64);

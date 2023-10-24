@@ -17,7 +17,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-    name: Clear Bazel repository cache ${{ runner.os }}
+    name: Clear Bazel repository cache ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     permissions:
       actions: write # permission is required to delete caches

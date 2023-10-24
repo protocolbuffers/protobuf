@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/json/internal/lexer.h"
 
@@ -50,9 +27,9 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/variant.h"
+#include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "google/protobuf/json/internal/test_input_stream.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
@@ -71,7 +48,7 @@ using ::testing::Pair;
 using ::testing::SizeIs;
 using ::testing::VariantWith;
 
-// TODO(b/234474291): Use the gtest versions once that's available in OSS.
+// TODO: Use the gtest versions once that's available in OSS.
 MATCHER_P(IsOkAndHolds, inner,
           absl::StrCat("is OK and holds ", testing::PrintToString(inner))) {
   if (!arg.ok()) {
@@ -95,7 +72,7 @@ MATCHER_P(StatusIs, status,
 #define EXPECT_OK(x) EXPECT_THAT(x, StatusIs(absl::StatusCode::kOk))
 #define ASSERT_OK(x) ASSERT_THAT(x, StatusIs(absl::StatusCode::kOk))
 
-// TODO(b/234868512): There are several tests that validate non-standard
+// TODO: There are several tests that validate non-standard
 // behavior that is assumed to be present in the wild due to Hyrum's Law. These
 // tests are grouped under the `NonStandard` suite. These tests ensure the
 // non-standard syntax is accepted, and that disabling legacy mode rejects them.
@@ -220,22 +197,19 @@ void Do(absl::string_view json,
       std::string second(json.substr(i, j));
       std::string third(json.substr(i + j));
 
-      TestInputStream in = {first, second, third};
+      io::internal::TestZeroCopyInputStream in{first, second, third};
       test(&in);
       if (testing::Test::HasFailure()) {
         return;
       }
 
       if (verify_all_consumed) {
-        if (!absl::c_all_of(third,
-                            [](char c) { return absl::ascii_isspace(c); })) {
-          ASSERT_GE(in.Consumed(), 3);
-        } else if (!absl::c_all_of(
-                       second, [](char c) { return absl::ascii_isspace(c); })) {
-          ASSERT_GE(in.Consumed(), 2);
-        } else {
-          ASSERT_GE(in.Consumed(), 1);
-        }
+        // Check that any unread bytes are just whitespace.
+        int64_t byte_count = in.ByteCount();
+        ASSERT_LE(byte_count, json.size());
+        EXPECT_TRUE(
+            absl::c_all_of(json.substr(byte_count, json.size() - byte_count),
+                           [](char c) { return absl::ascii_isspace(c); }));
       }
     }
   }
@@ -315,6 +289,15 @@ TEST(LexerTest, SimpleString) {
     EXPECT_THAT(Value::Parse(stream),
                 IsOkAndHolds(ValueIs<std::string>("My String")));
   });
+}
+
+TEST(LexerTest, UTFBoundaries) {
+  Do(R"json("\u0001\u07FF\uFFFF\uDBFF\uDFFF")json",
+     [](io::ZeroCopyInputStream* stream) {
+       EXPECT_THAT(Value::Parse(stream),
+                   IsOkAndHolds(ValueIs<std::string>(
+                       "\x01\xdf\xbf\xef\xbf\xbf\xf4\x8f\xbf\xbf")));
+     });
 }
 
 TEST(NonStandard, SingleQuoteString) {

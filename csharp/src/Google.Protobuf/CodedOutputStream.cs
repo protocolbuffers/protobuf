@@ -1,33 +1,10 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System;
@@ -160,6 +137,33 @@ namespace Google.Protobuf
             }
         }
 
+        /// <summary>
+        /// Configures whether or not serialization is deterministic.
+        /// </summary>
+        /// <remarks>
+        /// Deterministic serialization guarantees that for a given binary, equal messages (defined by the
+        /// equals methods in protos) will always be serialized to the same bytes. This implies:
+        /// <list type="bullet">
+        /// <item><description>Repeated serialization of a message will return the same bytes.</description></item>
+        /// <item><description>Different processes of the same binary (which may be executing on different machines)
+        /// will serialize equal messages to the same bytes.</description></item>
+        /// </list>
+        /// Note the deterministic serialization is NOT canonical across languages; it is also unstable
+        /// across different builds with schema changes due to unknown fields. Users who need canonical
+        /// serialization, e.g. persistent storage in a canonical form, fingerprinting, etc, should define
+        /// their own canonicalization specification and implement the serializer using reflection APIs
+        /// rather than relying on this API.
+        /// Once set, the serializer will: (Note this is an implementation detail and may subject to
+        /// change in the future)
+        /// <list type="bullet">
+        /// <item><description>Sort map entries by keys in lexicographical order or numerical order. Note: For string
+        /// keys, the order is based on comparing the UTF-16 code unit value of each character in the strings.
+        /// The order may be different from the deterministic serialization in other languages where
+        /// maps are sorted on the lexicographical order of the UTF8 encoded keys.</description></item>
+        /// </list>
+        /// </remarks>
+        public bool Deterministic { get; set; }
+
         #region Writing of values (not including tags)
 
         /// <summary>
@@ -260,7 +264,7 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteMessage(IMessage value)
         {
-            // TODO(jtattermusch): if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
+            // TODO: if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
             // what we're doing here works fine, but could be more efficient.
             // For now, this inefficiency is fine, considering this is only a backward-compatibility scenario (and regenerating the code fixes it).
             var span = new Span<byte>(buffer);
@@ -282,7 +286,7 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteRawMessage(IMessage value)
         {
-            // TODO(jtattermusch): if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
+            // TODO: if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
             // what we're doing here works fine, but could be more efficient.
             // For now, this inefficiency is fine, considering this is only a backward-compatibility scenario (and regenerating the code fixes it).
             var span = new Span<byte>(buffer);
@@ -485,7 +489,7 @@ namespace Google.Protobuf
         #endregion
 
         #region Underlying writing primitives
-        
+
         /// <summary>
         /// Writes a 32 bit value as a varint. The fast route is taken when
         /// there's enough buffer space left to whizz through without checking

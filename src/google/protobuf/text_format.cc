@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: jschorr@google.com (Joseph Schorr)
 //  Based on original Protocol Buffers design by
@@ -1307,7 +1284,7 @@ class TextFormat::Parser::ParserImpl {
   // Consumes Any::type_url value, of form "type.googleapis.com/full.type.Name"
   // or "type.googleprod.com/full.type.Name"
   bool ConsumeAnyTypeUrl(std::string* full_type_name, std::string* prefix) {
-    // TODO(saito) Extend Consume() to consume multiple tokens at once, so that
+    // TODO Extend Consume() to consume multiple tokens at once, so that
     // this code can be written as just DO(Consume(kGoogleApisTypePrefix)).
     DO(ConsumeIdentifier(prefix));
     while (TryConsume(".")) {
@@ -2450,7 +2427,7 @@ bool MapFieldPrinterHelper::SortMap(
           const_cast<RepeatedPtrField<Message>*>(&map_field)->Mutable(i));
     }
   } else {
-    // TODO(teboring): For performance, instead of creating map entry message
+    // TODO: For performance, instead of creating map entry message
     // for each element, just store map keys and sort them.
     const Descriptor* map_entry_desc = field->message_type();
     const Message* prototype =
@@ -2792,7 +2769,12 @@ void TextFormat::Printer::PrintUnknownFields(
       case UnknownField::TYPE_VARINT:
         OutOfLinePrintString(generator, field.number());
         generator->PrintMaybeWithMarker(MarkerToken(), ": ");
-        OutOfLinePrintString(generator, field.varint());
+        if (redact_debug_string_) {
+          OutOfLinePrintString(generator, "UNKNOWN_VARINT ");
+          OutOfLinePrintString(generator, kFieldValueReplacement);
+        } else {
+          OutOfLinePrintString(generator, field.varint());
+        }
         if (single_line_mode_) {
           generator->PrintLiteral(" ");
         } else {
@@ -2801,9 +2783,15 @@ void TextFormat::Printer::PrintUnknownFields(
         break;
       case UnknownField::TYPE_FIXED32: {
         OutOfLinePrintString(generator, field.number());
-        generator->PrintMaybeWithMarker(MarkerToken(), ": ", "0x");
-        OutOfLinePrintString(generator,
-                             absl::Hex(field.fixed32(), absl::kZeroPad8));
+        if (redact_debug_string_) {
+          generator->PrintMaybeWithMarker(MarkerToken(), ": ",
+                                          "UNKNOWN_FIXED32 ");
+          OutOfLinePrintString(generator, kFieldValueReplacement);
+        } else {
+          generator->PrintMaybeWithMarker(MarkerToken(), ": ", "0x");
+          OutOfLinePrintString(generator,
+                               absl::Hex(field.fixed32(), absl::kZeroPad8));
+        }
         if (single_line_mode_) {
           generator->PrintLiteral(" ");
         } else {
@@ -2813,9 +2801,15 @@ void TextFormat::Printer::PrintUnknownFields(
       }
       case UnknownField::TYPE_FIXED64: {
         OutOfLinePrintString(generator, field.number());
-        generator->PrintMaybeWithMarker(MarkerToken(), ": ", "0x");
-        OutOfLinePrintString(generator,
-                             absl::Hex(field.fixed64(), absl::kZeroPad16));
+        if (redact_debug_string_) {
+          generator->PrintMaybeWithMarker(MarkerToken(), ": ",
+                                          "UNKNOWN_FIXED64 ");
+          OutOfLinePrintString(generator, kFieldValueReplacement);
+        } else {
+          generator->PrintMaybeWithMarker(MarkerToken(), ": ", "0x");
+          OutOfLinePrintString(generator,
+                               absl::Hex(field.fixed64(), absl::kZeroPad16));
+        }
         if (single_line_mode_) {
           generator->PrintLiteral(" ");
         } else {
@@ -2837,6 +2831,17 @@ void TextFormat::Printer::PrintUnknownFields(
             embedded_unknown_fields.ParseFromCodedStream(&input_stream)) {
           // This field is parseable as a Message.
           // So it is probably an embedded message.
+          if (redact_debug_string_) {
+            generator->PrintMaybeWithMarker(MarkerToken(), ": ",
+                                            "UNKNOWN_MESSAGE ");
+            OutOfLinePrintString(generator, kFieldValueReplacement);
+            if (single_line_mode_) {
+              generator->PrintLiteral(" ");
+            } else {
+              generator->PrintLiteral("\n");
+            }
+            break;
+          }
           if (single_line_mode_) {
             generator->PrintMaybeWithMarker(MarkerToken(), " ", "{ ");
           } else {
@@ -2854,6 +2859,17 @@ void TextFormat::Printer::PrintUnknownFields(
         } else {
           // This field is not parseable as a Message (or we ran out of
           // recursion budget). So it is probably just a plain string.
+          if (redact_debug_string_) {
+            generator->PrintMaybeWithMarker(MarkerToken(), ": ",
+                                            "UNKNOWN_STRING ");
+            OutOfLinePrintString(generator, kFieldValueReplacement);
+            if (single_line_mode_) {
+              generator->PrintLiteral(" ");
+            } else {
+              generator->PrintLiteral("\n");
+            }
+            break;
+          }
           generator->PrintMaybeWithMarker(MarkerToken(), ": ", "\"");
           generator->PrintString(absl::CEscape(value));
           if (single_line_mode_) {
@@ -2866,6 +2882,17 @@ void TextFormat::Printer::PrintUnknownFields(
       }
       case UnknownField::TYPE_GROUP:
         OutOfLinePrintString(generator, field.number());
+        if (redact_debug_string_) {
+          generator->PrintMaybeWithMarker(MarkerToken(), ": ",
+                                          "UNKNOWN_GROUP ");
+          OutOfLinePrintString(generator, kFieldValueReplacement);
+          if (single_line_mode_) {
+            generator->PrintLiteral(" ");
+          } else {
+            generator->PrintLiteral("\n");
+          }
+          break;
+        }
         if (single_line_mode_) {
           generator->PrintMaybeWithMarker(MarkerToken(), " ", "{ ");
         } else {

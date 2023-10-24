@@ -4,11 +4,6 @@ load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 sh_test(
     name = "linkage_monitor",
     size = "large",
-    tags = [
-        # Exclude this target from wildcard expansion (//...) because it may
-        # take unnecessary time.
-        "manual",
-    ],
     srcs = [
         ":linkage_monitor.sh",
     ],
@@ -28,6 +23,11 @@ sh_test(
         "*/pom.xml",
         "test/linkage-monitor-check-bom/pom.xml",
     ]),
+    tags = [
+        # Exclude this target from wildcard expansion (//...) because it may
+        # take unnecessary time.
+        "manual",
+    ],
 )
 
 test_suite(

@@ -1,41 +1,20 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/rust/naming.h"
 
 #include <string>
 
 #include "absl/log/absl_log.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -85,22 +64,28 @@ std::string GetHeaderFile(Context<FileDescriptor> file) {
 namespace {
 
 template <typename T>
-std::string Thunk(Context<T> field, absl::string_view op) {
+std::string FieldPrefix(Context<T> field) {
   // NOTE: When field.is_upb(), this functions outputs must match the symbols
   // that the upbc plugin generates exactly. Failure to do so correctly results
   // in a link-time failure.
   absl::string_view prefix = field.is_cpp() ? "__rust_proto_thunk__" : "";
-  std::string thunk =
+  std::string thunk_prefix =
       absl::StrCat(prefix, GetUnderscoreDelimitedFullName(
                                field.WithDesc(field.desc().containing_type())));
+  return thunk_prefix;
+}
+
+template <typename T>
+std::string Thunk(Context<T> field, absl::string_view op) {
+  std::string thunk = FieldPrefix(field);
 
   absl::string_view format;
   if (field.is_upb() && op == "get") {
     // upb getter is simply the field name (no "get" in the name).
     format = "_$1";
-  } else if (field.is_upb() && op == "case") {
-    // upb oneof case function is x_case compared to has/set/clear which are in
-    // the other order e.g. clear_x.
+  } else if (field.is_upb() && (op == "case")) {
+    // some upb functions are in the order x_op compared to has/set/clear which
+    // are in the other order e.g. op_x.
     format = "_$1_$0";
   } else {
     format = "_$0_$1";
@@ -110,9 +95,32 @@ std::string Thunk(Context<T> field, absl::string_view op) {
   return thunk;
 }
 
+std::string ThunkRepeated(Context<FieldDescriptor> field,
+                          absl::string_view op) {
+  if (!field.is_upb()) {
+    return Thunk<FieldDescriptor>(field, op);
+  }
+
+  std::string thunk = absl::StrCat("_", FieldPrefix(field));
+  absl::string_view format;
+  if (op == "get") {
+    format = "_$1_upb_array";
+  } else if (op == "get_mut") {
+    format = "_$1_mutable_upb_array";
+  } else {
+    return Thunk<FieldDescriptor>(field, op);
+  }
+
+  absl::SubstituteAndAppend(&thunk, format, op, field.desc().name());
+  return thunk;
+}
+
 }  // namespace
 
 std::string Thunk(Context<FieldDescriptor> field, absl::string_view op) {
+  if (field.desc().is_repeated()) {
+    return ThunkRepeated(field, op);
+  }
   return Thunk<FieldDescriptor>(field, op);
 }
 
@@ -165,16 +173,25 @@ std::string RustModule(Context<Descriptor> msg) {
 }
 
 std::string RustInternalModuleName(Context<FileDescriptor> file) {
-  // TODO(b/291853557): Introduce a more robust mangling here to avoid conflicts
+  // TODO: Introduce a more robust mangling here to avoid conflicts
   // between `foo/bar/baz.proto` and `foo_bar/baz.proto`.
   return absl::StrReplaceAll(StripProto(file.desc().name()), {{"/", "_"}});
 }
 
 std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg) {
+  std::string name = msg.desc().full_name();
   if (msg.desc().file()->package().empty()) {
-    return msg.desc().name();
+    return name;
   }
-  return absl::StrCat(RustModule(msg), "::", msg.desc().name());
+  // when computing the relative path, we don't want the package name, so we
+  // strip that out
+  name =
+      std::string(absl::StripPrefix(name, msg.desc().file()->package() + "."));
+  // proto nesting is marked with periods in .proto files -- this gets
+  // translated to delimiting via _:: in terra rust
+  absl::StrReplaceAll({{".", "_::"}}, &name);
+
+  return absl::StrCat(RustModule(msg), "::", name);
 }
 
 std::string FieldInfoComment(Context<FieldDescriptor> field) {

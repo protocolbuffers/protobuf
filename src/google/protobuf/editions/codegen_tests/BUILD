@@ -80,12 +80,6 @@ proto_library(
 )
 
 proto_library(
-    name = "proto3_utf8_disabled_proto",
-    srcs = ["proto3_utf8_disabled.proto"],
-    strip_import_prefix = "/src",
-)
-
-proto_library(
     name = "proto2_import_proto",
     srcs = ["proto2_import.proto"],
     strip_import_prefix = "/src",

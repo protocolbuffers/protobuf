@@ -42,7 +42,7 @@ cc_library(
         "parser.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler",
+    strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
@@ -66,7 +66,7 @@ cc_library(
         "scc.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler",
+    strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
@@ -78,6 +78,20 @@ cc_library(
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
     ],
+)
+
+cc_library(
+    name = "versions",
+    hdrs = [
+        "versions.h",
+        "versions_suffix.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = ["@com_google_absl//absl/strings"],
 )
 
 cc_library(
@@ -93,7 +107,7 @@ cc_library(
         "zip_writer.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler",
+    strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
         ":code_generator",
@@ -119,6 +133,7 @@ cc_library(
         "main.cc",
     ],
     copts = COPTS,
+    strip_include_prefix = "/src",
     visibility = [
         "//:__pkg__",
         "//pkg:__pkg__",
@@ -136,6 +151,23 @@ cc_library(
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
         "//src/google/protobuf/compiler/rust",
+        "@com_google_absl//absl/log:initialize",
+    ],
+)
+
+# This is a build of the protobuf compiler without code generators.
+cc_binary(
+    name = "protoc_minimal",
+    srcs = [
+        "main_no_generators.cc",
+    ],
+    copts = COPTS,
+    visibility = [
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":command_line_interface",
+        "//src/google/protobuf:port_def",
         "@com_google_absl//absl/log:initialize",
     ],
 )
@@ -200,7 +232,11 @@ filegroup(
 filegroup(
     name = "plugin_proto_src",
     srcs = ["plugin.proto"],
-    visibility = ["@upb//:__subpackages__"],
+    visibility = [
+        "//upb_generator:__subpackages__",
+        # For compatibility with workspaces that still use the old upb repo
+        "@upb//:__subpackages__",
+    ],
 )
 
 exports_files(
@@ -379,7 +415,7 @@ cc_library(
     name = "retention",
     srcs = ["retention.cc"],
     hdrs = ["retention.h"],
-    include_prefix = "google/protobuf/compiler",
+    strip_include_prefix = "/src",
     visibility = ["//src/google/protobuf:__subpackages__"],
     deps = [
         "//src/google/protobuf:protobuf_nowkt",

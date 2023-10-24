@@ -1,6 +1,0 @@
-*.sw?
-obj/
-lib/
-bazel-*
-_build
-.vscode

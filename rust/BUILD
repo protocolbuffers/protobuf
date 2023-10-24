@@ -6,7 +6,9 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 
 package(
-    default_visibility = ["//src/google/protobuf:__subpackages__"],
+    default_visibility = [
+        "//src/google/protobuf:__subpackages__",
+    ],
 )
 
 licenses(["notice"])
@@ -22,7 +24,7 @@ licenses(["notice"])
 #
 # WARNING: It's critical that users do not end up using Rust Protobufs with multiple kernels in
 # their binaries. Currently this is achieved by using bzl visibility on kernel-specific rules.
-# TODO(b/149440343): Hide the kernel-specific targets once we can restrict a target visibility to a
+# TODO: Hide the kernel-specific targets once we can restrict a target visibility to a
 # rule.
 rust_library(
     name = "protobuf",
@@ -48,7 +50,9 @@ PROTOBUF_SHARED = [
     "internal.rs",
     "macros.rs",
     "optional.rs",
+    "primitive.rs",
     "proxied.rs",
+    "repeated.rs",
     "shared.rs",
     "string.rs",
     "vtable.rs",
@@ -89,12 +93,14 @@ rust_library(
     name = "protobuf_cpp",
     srcs = PROTOBUF_SHARED + ["cpp.rs"],
     crate_root = "shared.rs",
-    rustc_flags = ["--cfg=cpp_kernel"],
-    visibility = [
-        "//src/google/protobuf:__subpackages__",
-        "//rust:__subpackages__",
+    proc_macro_deps = [
+        "@crate_index//:paste",
     ],
-    deps = [":utf8"],
+    rustc_flags = ["--cfg=cpp_kernel"],
+    deps = [
+        ":utf8",
+        "//rust/cpp_kernel:cpp_api",
+    ],
 )
 
 rust_test(

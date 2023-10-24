@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 
@@ -258,9 +235,12 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
              // Since most (>80%) messages are never present, messages that are
              // present are considered hot enough to be clustered together.
              if (IsPresentMessage(descriptor_, options_)) {
-               p->Emit("PROTOBUF_SECTION_VARIABLE(proto_parse_table_hot)");
+               p->Emit(
+                   "ABSL_ATTRIBUTE_SECTION_VARIABLE(proto_parse_table_hot)");
              } else {
-               p->Emit("PROTOBUF_SECTION_VARIABLE(proto_parse_table_lukewarm)");
+               p->Emit(
+                   "ABSL_ATTRIBUTE_SECTION_VARIABLE(proto_parse_table_"
+                   "lukewarm)");
              }
            }},
           {"table_size_log2", tc_table_info_->table_size_log2},
@@ -585,17 +565,29 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
   format("};\n\n");  // _table_
 }
 
+static std::string TcParseFunctionName(internal::TcParseFunction func) {
+#define PROTOBUF_TC_PARSE_FUNCTION_X(value) #value,
+  static constexpr absl::string_view kNames[] = {
+      {}, PROTOBUF_TC_PARSE_FUNCTION_LIST};
+#undef PROTOBUF_TC_PARSE_FUNCTION_X
+  const int func_index = static_cast<int>(func);
+  ABSL_CHECK_GE(func_index, 0);
+  ABSL_CHECK_LT(func_index, std::end(kNames) - std::begin(kNames));
+  static constexpr absl::string_view ns = "::_pbi::TcParser::";
+  return absl::StrCat(ns, kNames[func_index]);
+}
+
 void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
   for (const auto& info : tc_table_info_->fast_path_fields) {
     if (auto* nonfield = info.AsNonField()) {
       // Fast slot that is not associated with a field. Eg end group tags.
-      format("{$1$, {$2$, $3$}},\n", nonfield->func_name, nonfield->coded_tag,
-             nonfield->nonfield_info);
+      format("{$1$, {$2$, $3$}},\n", TcParseFunctionName(nonfield->func),
+             nonfield->coded_tag, nonfield->nonfield_info);
     } else if (auto* as_field = info.AsField()) {
       PrintFieldComment(format, as_field->field, options_);
       ABSL_CHECK(!ShouldSplit(as_field->field, options_));
 
-      std::string func_name = as_field->func_name;
+      std::string func_name = TcParseFunctionName(as_field->func);
       if (GetOptimizeFor(as_field->field->file(), options_) ==
           FileOptions::SPEED) {
         // For 1-byte tags we have a more optimized version of the varint parser

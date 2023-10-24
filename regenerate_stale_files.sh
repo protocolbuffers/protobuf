@@ -18,7 +18,7 @@ ${BazelBin} test src/google/protobuf:well_known_types_staleness_test "$@" || ./b
 ${BazelBin} test objectivec:well_known_types_staleness_test "$@" || ./bazel-bin/objectivec/well_known_types_staleness_test --fix
 ${BazelBin} test php:test_amalgamation_staleness "$@" || ./bazel-bin/php/test_amalgamation_staleness --fix
 ${BazelBin} test ruby/ext/google/protobuf_c:test_amalgamation_staleness "$@" || ./bazel-bin/ruby/ext/google/protobuf_c/test_amalgamation_staleness --fix
-(cd upb; ${BazelBin} test cmake:test_generated_files "$@" || ./bazel-bin/cmake/test_generated_files --fix)
+${BazelBin} test upb/cmake:test_generated_files "$@" || ./bazel-bin/upb/cmake/test_generated_files --fix
 
 # Generate C# code.
 # This doesn't currently have Bazel staleness tests, but there's an existing

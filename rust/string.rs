@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 //! Items specific to `bytes` and `string` fields.
 #![allow(dead_code)]
@@ -240,13 +217,13 @@ impl<const N: usize> SettableValue<[u8]> for &'_ [u8; N] {
 }
 
 impl SettableValue<[u8]> for Vec<u8> {
-    // TODO(b/293956360): Investigate taking ownership of this when allowed by the
+    // TODO: Investigate taking ownership of this when allowed by the
     // runtime.
     impl_forwarding_settable_value!([u8], self => &self[..]);
 }
 
 impl SettableValue<[u8]> for Cow<'_, [u8]> {
-    // TODO(b/293956360): Investigate taking ownership of this when allowed by the
+    // TODO: Investigate taking ownership of this when allowed by the
     // runtime.
     impl_forwarding_settable_value!([u8], self => &self[..]);
 }
@@ -749,13 +726,13 @@ impl SettableValue<ProtoStr> for &'_ str {
 }
 
 impl SettableValue<ProtoStr> for String {
-    // TODO(b/293956360): Investigate taking ownership of this when allowed by the
+    // TODO: Investigate taking ownership of this when allowed by the
     // runtime.
     impl_forwarding_settable_value!(ProtoStr, self => ProtoStr::from_str(&self));
 }
 
 impl SettableValue<ProtoStr> for Cow<'_, str> {
-    // TODO(b/293956360): Investigate taking ownership of this when allowed by the
+    // TODO: Investigate taking ownership of this when allowed by the
     // runtime.
     impl_forwarding_settable_value!(ProtoStr, self => ProtoStr::from_str(&self));
 }
@@ -775,7 +752,7 @@ impl<'msg> Ord for ProtoStrMut<'msg> {
 
 /// Implements `PartialCmp` and `PartialEq` for the `lhs` against the `rhs`
 /// using `AsRef<[u8]>`.
-// TODO(kupiakos): consider improving to not require a `<()>` if no generics are
+// TODO: consider improving to not require a `<()>` if no generics are
 // needed
 macro_rules! impl_bytes_partial_cmp {
     ($(<($($generics:tt)*)> $lhs:ty => $rhs:ty),+ $(,)?) => {
@@ -828,7 +805,7 @@ impl_bytes_partial_cmp!(
 mod tests {
     use super::*;
 
-    // TODO(b/285309330): Add unit tests
+    // TODO: Add unit tests
 
     // Shorter and safe utility function to construct `ProtoStr` from bytes for
     // testing.
