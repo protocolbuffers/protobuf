@@ -188,7 +188,13 @@ size_t Message::MaybeComputeUnknownFieldsSize(
 }
 
 size_t Message::SpaceUsedLong() const {
-  return GetReflection()->SpaceUsedLong(*this);
+  auto* reflection = GetReflection();
+  if (PROTOBUF_PREDICT_TRUE(reflection != nullptr)) {
+    return reflection->SpaceUsedLong(*this);
+  }
+  // The only case that does not have reflection is RawMessage.
+  return internal::DownCast<const internal::RawMessageBase&>(*this)
+      .SpaceUsedLong();
 }
 
 static std::string GetTypeNameImpl(const MessageLite& msg) {
