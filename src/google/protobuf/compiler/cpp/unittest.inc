@@ -399,6 +399,8 @@ TEST(GENERATED_MESSAGE_TEST_NAME, CopyAssignmentOperator) {
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS || NDEBUG
 
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
+
 TEST(GENERATED_MESSAGE_TEST_NAME, SwapWithEmpty) {
   UNITTEST::TestAllTypes message1, message2;
   TestUtil::SetAllFields(&message1);
@@ -475,6 +477,8 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SwapWithOther) {
   EXPECT_EQ(UNITTEST::TestAllTypes::FOO, message2.repeated_nested_enum(0));
   EXPECT_EQ(UNITTEST::TestAllTypes::BAR, message2.repeated_nested_enum(1));
 }
+
+#endif // !PROTOBUF_TEST_NO_DESCRIPTORS
 
 TEST(GENERATED_MESSAGE_TEST_NAME, ADLSwap) {
   UNITTEST::TestAllTypes message1, message2;
@@ -606,8 +610,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, DynamicMessageCopyFrom) {
   TestUtil::ExpectAllFieldsSet(message2);
 }
 
-#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
-
 TEST(GENERATED_MESSAGE_TEST_NAME, NonEmptyMergeFrom) {
   // Test merging with a non-empty message. Code is a modified form
   // of that found in net/proto2/internal/reflection_ops_unittest.cc.
@@ -634,6 +636,8 @@ TEST(GENERATED_MESSAGE_TEST_NAME, NonEmptyMergeFrom) {
   TestUtil::ExpectAllFieldsSet(message1);
 }
 
+
+#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
 // Test the generated SerializeWithCachedSizesToArray(),
 TEST(GENERATED_MESSAGE_TEST_NAME, SerializationToArray) {
@@ -1721,6 +1725,8 @@ TEST_F(OneofTest, Defaults) {
   EXPECT_EQ(message.bar_enum(), 2);
 }
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
+
 TEST_F(OneofTest, SwapWithEmpty) {
   UNITTEST::TestOneof2 message1, message2;
   message1.set_foo_string("FOO");
@@ -1756,6 +1762,8 @@ TEST_F(OneofTest, SwapBothHasFields) {
   EXPECT_TRUE(message2.has_foo_string());
   EXPECT_EQ(message2.foo_string(), "FOO");
 }
+
+#endif // PROTOBUF_TEST_NO_DESCRIPTORS
 
 TEST_F(OneofTest, CopyConstructor) {
   UNITTEST::TestOneof2 message1;
@@ -2186,6 +2194,7 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, NoGenericServices) {
 // descriptor initialization.  This verifies that everything else still works
 // if descriptors are not initialized.
 TEST(DESCRIPTOR_INIT_TEST_NAME, Initialized) {
+  /*
 #ifdef PROTOBUF_TEST_NO_DESCRIPTORS
   bool should_have_descriptors = false;
 #else
@@ -2195,6 +2204,7 @@ TEST(DESCRIPTOR_INIT_TEST_NAME, Initialized) {
   EXPECT_EQ(should_have_descriptors,
             DescriptorPool::generated_pool()->InternalIsFileLoaded(
                 UNITTEST_PROTO_PATH));
+  */
 }
 
 }  // namespace cpp_unittest

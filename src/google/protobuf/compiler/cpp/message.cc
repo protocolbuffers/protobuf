@@ -3519,7 +3519,21 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       "$annotate_mergefrom$"
       "// @@protoc_insertion_point(class_specific_merge_from_start:"
       "$full_name$)\n");
-  format("$DCHK$_NE(&from, _this);\n");
+
+  // Perform check if not open source, the current message has nested types, and
+  // the current message is not a bootstrap message. Bootstrap messages can not
+  // be checked using reflection as `MergeFrom()` is exercised from within the
+  // global descriptor pool for bootstrap types.
+  if (!options_.opensource_runtime && HasMessageFieldOrExtension(descriptor_) &&
+      !IsBootstrapProto(options_, descriptor_->file())) {
+    if (HasDescriptorMethods(descriptor_->file(), options_)) {
+      p->Emit("::_pbi::ScopedCheckNotConnected check(*_this, from);\n");
+    } else {
+      p->Emit("::_pbi::ScopedCheckSizeUnchanged check(&from);\n");
+    }
+  } else {
+    format("$DCHK$_NE(&from, _this);\n");
+  }
 
   format(
       "$uint32$ cached_has_bits = 0;\n"
@@ -3738,28 +3752,15 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
     // lite runtime. In that case, check if the size of the source has changed
     // after Clear.
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format(
-          "$DCHK$(!::_pbi::IsDescendant(*this, from))\n"
-          "    << \"Source of CopyFrom cannot be a descendant of the "
-          "target.\";\n"
-          "Clear();\n");
+      p->Emit("::_pbi::ScopedCheckNotConnected check(*this, from);\n");
     } else {
-      format(
-          "#ifndef NDEBUG\n"
-          "::size_t from_size = from.ByteSizeLong();\n"
-          "#endif\n"
-          "Clear();\n"
-          "#ifndef NDEBUG\n"
-          "$CHK$_EQ(from_size, from.ByteSizeLong())\n"
-          "  << \"Source of CopyFrom changed when clearing target.  Either \"\n"
-          "     \"source is a nested message in target (not allowed), or \"\n"
-          "     \"another thread is modifying the source.\";\n"
-          "#endif\n");
+      p->Emit("::_pbi::ScopedCheckSizeUnchanged check(&from);\n");
     }
-  } else {
-    format("Clear();\n");
   }
-  format("MergeFrom(from);\n");
+  p->Emit(R"cc(
+    Clear();
+    MergeFrom(from);
+  )cc");
 
   format.Outdent();
   format("}\n");

@@ -95,8 +95,7 @@ void Message::CopyFrom(const Message& from) {
 
   if (class_from != nullptr && class_from == class_to) {
     // Fail if "from" is a descendant of "to" as such copy is not allowed.
-    ABSL_DCHECK(!internal::IsDescendant(*this, from))
-        << "Source of CopyFrom cannot be a descendant of the target.";
+    internal::ScopedCheckNotConnected check(*this, from);
     Clear();
     class_to->merge_to_from(*this, from);
   } else {
