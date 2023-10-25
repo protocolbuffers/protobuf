@@ -214,7 +214,8 @@ const To& GetConstRefAtOffset(const Message& message, uint32_t offset) {
 bool CreateUnknownEnumValues(const FieldDescriptor* field);
 
 // Returns true if "message" is a descendant of "root".
-PROTOBUF_EXPORT bool IsDescendant(Message& root, const Message& message);
+PROTOBUF_EXPORT bool IsDescendant(const Message& root, const Message& message);
+
 }  // namespace internal
 
 // Abstract interface for protocol messages.
@@ -1017,7 +1018,8 @@ class PROTOBUF_EXPORT Reflection final {
 
   friend class FastReflectionBase;
   friend class FastReflectionMessageMutator;
-  friend bool internal::IsDescendant(Message& root, const Message& message);
+  friend bool internal::IsDescendant(const Message& root,
+                                     const Message& message);
 
   const Descriptor* const descriptor_;
   const internal::ReflectionSchema schema_;

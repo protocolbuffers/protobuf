@@ -3735,7 +3735,7 @@ void UnknownFieldSetSerializer(const uint8_t* base, uint32_t offset,
   }
 }
 
-bool IsDescendant(Message& root, const Message& message) {
+bool IsDescendant(const Message& root, const Message& message) {
   const Reflection* reflection = root.GetReflection();
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(root, &fields);
@@ -3746,7 +3746,7 @@ bool IsDescendant(Message& root, const Message& message) {
 
     // Optional messages.
     if (!field->is_repeated()) {
-      Message* sub_message = reflection->MutableMessage(&root, field);
+      const Message* sub_message = &reflection->GetMessage(root, field);
       if (sub_message == &message || IsDescendant(*sub_message, message)) {
         return true;
       }
@@ -3757,9 +3757,9 @@ bool IsDescendant(Message& root, const Message& message) {
     if (!IsMapFieldInApi(field)) {
       int count = reflection->FieldSize(root, field);
       for (int i = 0; i < count; i++) {
-        Message* sub_message =
-            reflection->MutableRepeatedMessage(&root, field, i);
-        if (sub_message == &message || IsDescendant(*sub_message, message)) {
+        const Message& sub_message =
+            reflection->GetRepeatedMessage(root, field, i);
+        if (&sub_message == &message || IsDescendant(sub_message, message)) {
           return true;
         }
       }
@@ -3768,15 +3768,18 @@ bool IsDescendant(Message& root, const Message& message) {
 
     // Map field: if accessed as repeated fields, messages are *copied* and
     // matching pointer won't work. Must directly access map.
-    constexpr int kValIdx = 1;
-    const FieldDescriptor* val_field = field->message_type()->field(kValIdx);
+    const FieldDescriptor* map_field = field->message_type()->map_value();
     // Skip map fields whose value type is not message.
-    if (val_field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
+    if (map_field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
 
-    MapIterator end = reflection->MapEnd(&root, field);
-    for (auto iter = reflection->MapBegin(&root, field); iter != end; ++iter) {
-      Message* sub_message = iter.MutableValueRef()->MutableMessageValue();
-      if (sub_message == &message || IsDescendant(*sub_message, message)) {
+    // The blow const_cast<> should be safe: reflection does not provide const
+    // map iteration, but MapEnd() and MapBegin() should be const operations.
+    Message* mutable_root = const_cast<Message*>(&root);  // NOLINT
+    MapIterator end = reflection->MapEnd(mutable_root, field);
+    for (auto iter = reflection->MapBegin(mutable_root, field); iter != end;
+         ++iter) {
+      const Message& sub_message = iter.GetValueRef().GetMessageValue();
+      if (&sub_message == &message || IsDescendant(sub_message, message)) {
         return true;
       }
     }
