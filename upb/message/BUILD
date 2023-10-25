@@ -32,6 +32,7 @@ cc_library(
         ":internal_types",
         ":message",
         ":tagged_ptr",
+        ":types",
         "//upb:base",
         "//upb:eps_copy_input_stream",
         "//upb:mem",

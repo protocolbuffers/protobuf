@@ -8,17 +8,29 @@
 #ifndef UPB_MESSAGE_ACCESSORS_H_
 #define UPB_MESSAGE_ACCESSORS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/internal/types.h"
 #include "upb/message/map.h"
+#include "upb/message/tagged_ptr.h"
+#include "upb/message/types.h"
 #include "upb/mini_table/enum.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 
 // Must be last.
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/message.h"
 #include "upb/port/def.inc"
 
 #ifdef __cplusplus
@@ -251,6 +263,21 @@ UPB_API_INLINE const upb_Message* upb_Message_GetMessage(
   upb_TaggedMessagePtr tagged =
       upb_Message_GetTaggedMessagePtr(msg, field, default_val);
   return upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
+}
+
+UPB_API_INLINE upb_MessageValue upb_Message_GetMessageValue(
+    const upb_Message* msg, const upb_MiniTableField* field,
+    upb_MessageValue default_val) {
+  upb_MessageValue ret;
+  _upb_Message_GetField(msg, field, &default_val, &ret);
+  return ret;
+}
+
+UPB_API_INLINE void upb_Message_SetMessageValue(upb_Message* msg,
+                                                const upb_MiniTableField* field,
+                                                upb_MessageValue val,
+                                                upb_Arena* arena) {
+  _upb_Message_SetField(msg, field, &val, arena);
 }
 
 // For internal use only; users cannot set tagged messages because only the
