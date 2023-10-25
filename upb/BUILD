@@ -8,14 +8,7 @@
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
-load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
-load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
 load("//bazel:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
-load(
-    "//upb_generator:bootstrap_compiler.bzl",
-    "bootstrap_cc_library",
-    "bootstrap_upb_proto_library",
-)
 
 # begin:google_only
 # load("//tools/build_defs/kotlin/native:rules.bzl", "kt_native_interop_hint")
@@ -111,7 +104,7 @@ cc_library(
     hdrs = ["generated_code_support.h"],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/port:inc",
+        ":port_inc",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -133,155 +126,9 @@ cc_library(
     name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/port:inc",
+        ":port_inc",
     ],
     visibility = ["//visibility:public"],
-)
-
-cc_library(
-    name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-    hdrs = [
-        "reflection/def.h",
-        "reflection/internal/def_pool.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    textual_hdrs = [
-        "//upb/port:inc",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":mem",
-        ":mini_descriptor",
-        ":reflection_internal",
-    ],
-)
-
-bootstrap_upb_proto_library(
-    name = "descriptor_upb_proto",
-    base_dir = "reflection/",
-    # TODO: Export 'net/proto2/proto/descriptor.upb.h' and remove "-layering_check".
-    features = ["-layering_check"],
-    google3_src_files = ["net/proto2/proto/descriptor.proto"],
-    google3_src_rules = ["//net/proto2/proto:descriptor_proto_source"],
-    oss_src_files = ["google/protobuf/descriptor.proto"],
-    oss_src_rules = ["//:descriptor_proto_srcs"],
-    oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
-    proto_lib_deps = ["//:descriptor_proto"],
-    visibility = ["//visibility:public"],
-)
-
-upb_proto_reflection_library(
-    name = "descriptor_upb_proto_reflection",
-    visibility = ["//visibility:public"],
-    deps = ["//:descriptor_proto"],
-)
-
-upb_minitable_proto_library(
-    name = "descriptor_upb_minitable_proto",
-    visibility = [
-        "//upb:__subpackages__",
-        # begin:github_only
-        "//python:__subpackages__",
-        # end:github_only
-    ],
-    deps = ["//:descriptor_proto"],
-)
-
-# TODO: Once we can delete the deprecated forwarding headers
-# (= everything in upb/) we can move this build target down into reflection/
-bootstrap_cc_library(
-    name = "reflection",
-    hdrs = [
-        "reflection/def.h",
-        "reflection/def.hpp",
-        "reflection/message.h",
-        "reflection/message.hpp",
-    ],
-    bootstrap_deps = [":reflection_internal"],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":mem",
-        ":message",
-        ":message_types",
-        ":message_value",
-        ":port",
-    ],
-)
-
-bootstrap_cc_library(
-    name = "reflection_internal",
-    srcs = [
-        "reflection/def_pool.c",
-        "reflection/def_type.c",
-        "reflection/desc_state.c",
-        "reflection/enum_def.c",
-        "reflection/enum_reserved_range.c",
-        "reflection/enum_value_def.c",
-        "reflection/extension_range.c",
-        "reflection/field_def.c",
-        "reflection/file_def.c",
-        "reflection/internal/def_builder.c",
-        "reflection/internal/def_builder.h",
-        "reflection/internal/strdup2.c",
-        "reflection/internal/strdup2.h",
-        "reflection/message.c",
-        "reflection/message_def.c",
-        "reflection/message_reserved_range.c",
-        "reflection/method_def.c",
-        "reflection/oneof_def.c",
-        "reflection/service_def.c",
-    ],
-    hdrs = [
-        "reflection/common.h",
-        "reflection/def.h",
-        "reflection/def.hpp",
-        "reflection/def_pool.h",
-        "reflection/def_type.h",
-        "reflection/enum_def.h",
-        "reflection/enum_reserved_range.h",
-        "reflection/enum_value_def.h",
-        "reflection/extension_range.h",
-        "reflection/field_def.h",
-        "reflection/file_def.h",
-        "reflection/internal/def_pool.h",
-        "reflection/internal/desc_state.h",
-        "reflection/internal/enum_def.h",
-        "reflection/internal/enum_reserved_range.h",
-        "reflection/internal/enum_value_def.h",
-        "reflection/internal/extension_range.h",
-        "reflection/internal/field_def.h",
-        "reflection/internal/file_def.h",
-        "reflection/internal/message_def.h",
-        "reflection/internal/message_reserved_range.h",
-        "reflection/internal/method_def.h",
-        "reflection/internal/oneof_def.h",
-        "reflection/internal/service_def.h",
-        "reflection/message.h",
-        "reflection/message.hpp",
-        "reflection/message_def.h",
-        "reflection/message_reserved_range.h",
-        "reflection/method_def.h",
-        "reflection/oneof_def.h",
-        "reflection/service_def.h",
-    ],
-    bootstrap_deps = [":descriptor_upb_proto"],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":hash",
-        ":mem",
-        ":message",
-        ":message_accessors",
-        ":message_types",
-        ":message_value",
-        ":mini_descriptor",
-        ":mini_descriptor_internal",
-        ":mini_table",
-        ":port",
-    ],
 )
 
 # Aliases ######################################################################
@@ -303,6 +150,30 @@ alias(
     name = "collections",
     actual = "//upb/collections",
     deprecation = "use upb:message instead",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "descriptor_upb_proto",
+    actual = "//upb/reflection:descriptor_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "descriptor_upb_minitable_proto",
+    actual = "//upb/reflection:descriptor_upb_minitable_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "descriptor_upb_proto_reflection",
+    actual = "//upb/reflection:descriptor_upb_proto_reflection",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    actual = "//upb/reflection:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     visibility = ["//visibility:public"],
 )
 
@@ -439,6 +310,24 @@ alias(
 )
 
 alias(
+    name = "port_inc",
+    actual = "//upb/port:inc",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "reflection",
+    actual = "//upb/reflection",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "reflection_internal",
+    actual = "//upb/reflection:internal",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "text",
     actual = "//upb/text",
     visibility = ["//visibility:public"],
@@ -472,28 +361,6 @@ alias(
     name = "eps_copy_input_stream",
     actual = "//upb/wire:eps_copy_input_stream",
     visibility = ["//visibility:public"],
-)
-
-# Tests ########################################################################
-
-cc_test(
-    name = "def_builder_test",
-    srcs = [
-        "reflection/common.h",
-        "reflection/def_type.h",
-        "reflection/internal/def_builder.h",
-        "reflection/internal/def_builder_test.cc",
-    ],
-    deps = [
-        ":descriptor_upb_proto",
-        ":hash",
-        ":mem",
-        ":port",
-        ":reflection",
-        ":reflection_internal",
-        "@com_google_googletest//:gtest_main",
-        "@com_google_absl//absl/strings",
-    ],
 )
 
 # Internal C/C++ libraries #####################################################

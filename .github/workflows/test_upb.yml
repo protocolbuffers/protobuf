@@ -76,7 +76,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
           bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/... //upb_generator/... //python/... //protos/... //protos_generator/...
-          exclude-targets: -//python:conformance_test -//upb:def_builder_test
+          exclude-targets: -//python:conformance_test -//upb/reflection:def_builder_test
 
   macos:
     strategy:
