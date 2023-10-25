@@ -645,6 +645,13 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
   }
 
+  if (!message_generators_.empty()) {
+    IncludeFile("third_party/protobuf/message_lite.h", p);
+    if (HasDescriptorMethods(file_, options_)) {
+      IncludeFile("third_party/protobuf/message.h", p);
+    }
+  }
+
   if (options_.proto_h) {
     // Use the smaller .proto.h files.
     for (int i = 0; i < file_->dependency_count(); ++i) {

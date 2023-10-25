@@ -12,6 +12,8 @@
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/message.h"
 // @@protoc_insertion_point(includes)
 
 // Must be included last.

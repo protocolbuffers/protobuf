@@ -2185,6 +2185,11 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, NoGenericServices) {
 // When this is defined, we skip all tests which are expected to trigger
 // descriptor initialization.  This verifies that everything else still works
 // if descriptors are not initialized.
+//
+// We run this test only under NDEBUG, as various functions like CopyFrom(),
+// MergeFrom() and Swap() have assertions that may call into reflection methods.
+#ifdef NDEBUG
+
 TEST(DESCRIPTOR_INIT_TEST_NAME, Initialized) {
 #ifdef PROTOBUF_TEST_NO_DESCRIPTORS
   bool should_have_descriptors = false;
@@ -2196,6 +2201,8 @@ TEST(DESCRIPTOR_INIT_TEST_NAME, Initialized) {
             DescriptorPool::generated_pool()->InternalIsFileLoaded(
                 UNITTEST_PROTO_PATH));
 }
+
+#endif  // NDEBUG
 
 }  // namespace cpp_unittest
 
