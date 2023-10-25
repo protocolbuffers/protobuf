@@ -126,6 +126,7 @@ bootstrap_cc_library(
         "//upb:mem",
         "//upb:message",
         "//upb:message_accessors",
+        "//upb:message_internal",
         "//upb:message_types",
         "//upb:message_value",
         "//upb:mini_descriptor",

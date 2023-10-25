@@ -28,6 +28,7 @@
 #include "upb/message/internal/map_sorter.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
+#include "upb/message/unknown.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"

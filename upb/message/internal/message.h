@@ -12,8 +12,8 @@
 ** The definitions in this file are internal to upb.
 **/
 
-#ifndef UPB_MESSAGE_INTERNAL_H_
-#define UPB_MESSAGE_INTERNAL_H_
+#ifndef UPB_MESSAGE_INTERNAL_MESSAGE_H_
+#define UPB_MESSAGE_INTERNAL_MESSAGE_H_
 
 #include <stdlib.h>
 #include <string.h>
@@ -89,18 +89,10 @@ UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(
   return (upb_Message_Internal*)((char*)msg - size);
 }
 
-// Discards the unknown fields for this message only.
-void _upb_Message_DiscardUnknown_shallow(upb_Message* msg);
-
-// Adds unknown data (serialized protobuf data) to the given message.
-// The data is copied into the message instance.
-bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
-                             upb_Arena* arena);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MESSAGE_INTERNAL_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_MESSAGE_H_ */

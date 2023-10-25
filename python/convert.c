@@ -33,6 +33,7 @@
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/message/map.h"
+#include "upb/message/unknown.h"
 #include "upb/reflection/message.h"
 #include "upb/util/compare.h"
 

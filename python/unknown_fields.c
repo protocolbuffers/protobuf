@@ -32,6 +32,7 @@
 
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/message/unknown.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"

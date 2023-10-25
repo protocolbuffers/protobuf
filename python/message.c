@@ -36,6 +36,7 @@
 #include "python/map.h"
 #include "python/repeated.h"
 #include "upb/message/copy.h"
+#include "upb/message/unknown.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/text/encode.h"

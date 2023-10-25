@@ -68,6 +68,7 @@ cc_library(
         ":accessors",
         ":internal",
         ":message",
+        ":tagged_ptr",
         ":types",
         "//upb:base",
         "//upb:mem",
@@ -87,6 +88,10 @@ cc_library(
         "map_sorter.c",
         "message.c",
         "message.h",
+        "realloc.c",
+        "realloc.h",
+        "unknown.c",
+        "unknown.h",
     ],
     hdrs = [
         "internal/array.h",
@@ -95,6 +100,7 @@ cc_library(
         "internal/map_entry.h",
         "internal/map_sorter.h",
         "internal/message.h",
+        "internal/unknown.h",
         "map_gencode_util.h",
     ],
     copts = UPB_DEFAULT_COPTS,
@@ -129,6 +135,7 @@ cc_library(
         "array.h",
         "map.h",
         "message.h",
+        "unknown.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -205,7 +212,6 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
-    deps = [],
 )
 
 cc_library(
