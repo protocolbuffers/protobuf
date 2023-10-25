@@ -18,6 +18,7 @@
 
 #include <atomic>
 #include <climits>
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 
@@ -61,6 +62,36 @@ class ZeroCopyOutputStream;
 
 }  // namespace io
 namespace internal {
+
+// `ScopedCheckSizeUnchanged` checks that the size of the bound message
+// remains unchanged between the constructor and destructor of the first
+// instance instantiated for the current thread, and does nothing on nested
+// instances. This class is used in debug builds in the `CopyFrom()` and
+// `MergeFrom()` functions to check that the size of the 'source' argument did
+// not change. This would indicate that the destination and source messages are
+// descendants of each other, which is not allowed. This class is used with lite
+// messages that do not offer reflection. When reflection is available, the
+// `ScopedCheckNotConnected` class is used, which provides an exact answer to
+// the 'are these two messages in some way descendants of each other?' question.
+class PROTOBUF_EXPORT ScopedCheckSizeUnchanged {
+ public:
+  // `src` must not be null and outlive this scoped instance.
+  explicit ScopedCheckSizeUnchanged(const MessageLite* src);
+
+  ~ScopedCheckSizeUnchanged();
+
+ private:
+  // Increases the nested scope count. Returns true if thread locals are not
+  // supported, or if this is the outermost scope for the current thread.
+  static bool Enter();
+
+  // Decreases the nested scope count. Returns true if thread locals are not
+  // supported, or if this is the outermost scope for the current thread.
+  static bool Exit();
+
+  const MessageLite* src_ = nullptr;
+  int64_t src_size_ = 0;
+};
 
 // Allow easy change to regular int on platforms where the atomic might have a
 // perf impact.

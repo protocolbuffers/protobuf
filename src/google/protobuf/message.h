@@ -214,7 +214,12 @@ const To& GetConstRefAtOffset(const Message& message, uint32_t offset) {
 bool CreateUnknownEnumValues(const FieldDescriptor* field);
 
 // Returns true if "message" is a descendant of "root".
-PROTOBUF_EXPORT bool IsDescendant(Message& root, const Message& message);
+PROTOBUF_EXPORT bool IsDescendant(const Message& root, const Message& message);
+
+// Returns true if `lhs` and `rhs` are connected, i.e., `lhs` is
+// a descendant of `rhs`, or `rhs` is a descendant of `lhs`.
+PROTOBUF_EXPORT bool IsConnected(const Message& lhs, const Message& rhs);
+
 }  // namespace internal
 
 // Abstract interface for protocol messages.
@@ -1017,7 +1022,8 @@ class PROTOBUF_EXPORT Reflection final {
 
   friend class FastReflectionBase;
   friend class FastReflectionMessageMutator;
-  friend bool internal::IsDescendant(Message& root, const Message& message);
+  friend bool internal::IsDescendant(const Message& root,
+                                     const Message& message);
 
   const Descriptor* const descriptor_;
   const internal::ReflectionSchema schema_;
@@ -1484,6 +1490,37 @@ template <typename T>
 void LinkMessageReflection() {
   internal::StrongReference(T::default_instance);
 }
+
+namespace internal {
+
+// `ScopedCheckNotConnected` performs `IsConnected()` checks on the first
+// instance instantiated for the current thread, and does nothing on nested
+// instances. The purpose is to minimize the cost of recursive calls to
+// `CopyFrom()` and `MergeFrom()` checking `this` and `from` being connected.
+// Performing this check on all recursive calls results in O(n^2) complexity
+// instead of the O(n) complexity if performed only at the top-most call to
+// `CopyFrom()` or `MergeFrom()`. If thread locals are not supported, then this
+// class will perform the `IsConnected()` check on each scoped instance.
+class PROTOBUF_EXPORT ScopedCheckNotConnected {
+ public:
+  // Checks if `dst` and `src` are connected, i.e.: `dst` is a descendant
+  // (child) or `src` or vice versa. If so, the application will check fail.
+  ScopedCheckNotConnected(const Message& dst, const Message& src);
+
+  // 'Lite version' accepting the `MessageLite` source argument where the
+  ~ScopedCheckNotConnected();
+
+ private:
+  // Increases the nested scope count. Returns true if thread locals are not
+  // supported, or if this is the outermost scope for the current thread.
+  static bool Enter();
+
+  // Decreases the nested scope count. Returns true if thread locals are not
+  // supported, or if this is the outermost scope for the current thread.
+  static bool Exit();
+};
+
+}  // namespace internal
 
 // =============================================================================
 // Implementation details for {Get,Mutable}RawRepeatedPtrField.  We provide

@@ -672,6 +672,42 @@ void InternalMetadata::DoSwap<std::string>(std::string* other) {
   mutable_unknown_fields<std::string>()->swap(*other);
 }
 
+#if defined(PROTOBUF_NO_THREADLOCAL)
+
+bool ScopedCheckSizeUnchanged::Enter() { return true; }
+bool ScopedCheckSizeUnchanged::Exit() { return true; }
+
+#else
+
+static PROTOBUF_THREAD_LOCAL int scoped_check_size_unchanged_count = 0;
+
+bool ScopedCheckSizeUnchanged::Enter() {
+  return ++scoped_check_size_unchanged_count == 1;
+}
+
+bool ScopedCheckSizeUnchanged::Exit() {
+  return --scoped_check_size_unchanged_count == 0;
+}
+
+#endif
+
+ScopedCheckSizeUnchanged::ScopedCheckSizeUnchanged(const MessageLite* src) {
+  ABSL_DCHECK(src != nullptr);
+  if (Enter()) {
+    src_ = src;
+    src_size_ = src->ByteSizeLong();
+  }
+}
+
+ScopedCheckSizeUnchanged::~ScopedCheckSizeUnchanged() {
+  if (Exit() && src_ != nullptr) {
+    ABSL_CHECK_EQ(src_->ByteSizeLong(), src_size_)
+        << "The source of CopyFrom() or MergeFrom() changed during the call. "
+           "Either source and target are descendants of each other (not "
+           "allowed), or another thread modified the source.";
+  }
+}
+
 }  // namespace internal
 
 std::string ShortFormat(const MessageLite& message_lite) {
