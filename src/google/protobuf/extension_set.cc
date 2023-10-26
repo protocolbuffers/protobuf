@@ -11,6 +11,7 @@
 
 #include "google/protobuf/extension_set.h"
 
+#include <atomic>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -1933,6 +1934,8 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
+std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena* arena)>
+    ExtensionSet::maybe_create_lazy_extension_;
 
 }  // namespace internal
 }  // namespace protobuf
