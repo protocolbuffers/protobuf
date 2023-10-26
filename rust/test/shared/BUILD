@@ -273,3 +273,15 @@ rust_test(
     ],
     deps = ["//rust/test:nested_upb_rust_proto"],
 )
+
+rust_test(
+    name = "accessors_map_upb_test",
+    srcs = ["accessors_map_test.rs"],
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
+    deps = [
+        "//third_party/gtest_rust/googletest",
+        "//rust/test:map_unittest_upb_rust_proto",
+    ],
+)

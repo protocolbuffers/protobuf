@@ -82,6 +82,9 @@ rust_test(
     name = "protobuf_upb_test",
     crate = ":protobuf_upb",
     rustc_flags = ["--cfg=upb_kernel"],
+    deps = [
+        "//third_party/gtest_rust/googletest",
+    ],
 )
 
 # The Rust Protobuf runtime using the cpp kernel.

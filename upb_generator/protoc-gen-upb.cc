@@ -487,6 +487,27 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       )cc",
       CTypeConst(field), msg_name, resolved_name,
       FieldInitializer(pools, field, options));
+  // Generate private getter returning a upb_Map or NULL for immutable and
+  // a upb_Map for mutable.
+  //
+  // Example:
+  //   UPB_INLINE const upb_Map* _name_immutable_upb_map(Foo* msg)
+  //   UPB_INLINE upb_Map* _name_mutable_upb_map(Foo* msg, upb_Arena* a)
+  output(
+      R"cc(
+        UPB_INLINE const upb_Map* _$0_$1_$2($0* msg) {
+          const upb_MiniTableField field = $4;
+          return upb_Message_GetMap(msg, &field);
+        }
+        UPB_INLINE upb_Map* _$0_$1_$3($0* msg, upb_Arena* a) {
+          const upb_MiniTableField field = $4;
+          return _upb_Message_GetOrCreateMutableMap(msg, &field, $5, $6, a);
+        }
+      )cc",
+      msg_name, resolved_name, kMapGetterPostfix, kMutableMapGetterPostfix,
+      FieldInitializer(pools, field, options),
+      MapKeySize(field, MapKeyCType(field)),
+      MapValueSize(field, MapValueCType(field)));
 }
 
 void GenerateMapEntryGetters(upb::FieldDefPtr field, absl::string_view msg_name,
@@ -1137,17 +1158,17 @@ int main(int argc, char** argv) {
   upb::generator::Plugin plugin;
   upb::generator::Options options;
   if (!ParseOptions(&plugin, &options)) return 0;
-  plugin.GenerateFilesRaw([&](const UPB_DESC(FileDescriptorProto) * file_proto,
-                              bool generate) {
-    upb::Status status;
-    upb::FileDefPtr file = pools.AddFile(file_proto, &status);
-    if (!file) {
-      absl::string_view name = upb::generator::ToStringView(
-          UPB_DESC(FileDescriptorProto_name)(file_proto));
-      ABSL_LOG(FATAL) << "Couldn't add file " << name
-                      << " to DefPool: " << status.error_message();
-    }
-    if (generate) GenerateFile(pools, file, options, &plugin);
-  });
+  plugin.GenerateFilesRaw(
+      [&](const UPB_DESC(FileDescriptorProto) * file_proto, bool generate) {
+        upb::Status status;
+        upb::FileDefPtr file = pools.AddFile(file_proto, &status);
+        if (!file) {
+          absl::string_view name = upb::generator::ToStringView(
+              UPB_DESC(FileDescriptorProto_name)(file_proto));
+          ABSL_LOG(FATAL) << "Couldn't add file " << name
+                          << " to DefPool: " << status.error_message();
+        }
+        if (generate) GenerateFile(pools, file, options, &plugin);
+      });
   return 0;
 }

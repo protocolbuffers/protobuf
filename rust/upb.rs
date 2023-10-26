@@ -7,7 +7,7 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::{Private, PtrAndLen, RawArena, RawMessage, RawRepeatedField};
+use crate::__internal::{Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
 use std::alloc;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
@@ -451,9 +451,163 @@ pub unsafe fn empty_array() -> RepeatedFieldInner<'static> {
     REPEATED_FIELD.with(|inner| *inner)
 }
 
+/// # Safety
+pub unsafe fn empty_map() -> MapInner<'static> {
+    fn new_map_inner() -> MapInner<'static> {
+        let arena = Box::leak::<'static>(Box::new(Arena::new()));
+        // Provide `i32` as a placeholder type.
+        Map::<'static, i32, i32>::new(arena).inner
+    }
+    thread_local! {
+        static MAP: MapInner<'static> = new_map_inner();
+    }
+
+    MAP.with(|inner| *inner)
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct MapInner<'msg> {
+    pub raw: RawMap,
+    pub arena: &'msg Arena,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Map<'msg, K: ?Sized, V: ?Sized> {
+    inner: MapInner<'msg>,
+    _phantom_key: PhantomData<&'msg mut K>,
+    _phantom_value: PhantomData<&'msg mut V>,
+}
+
+impl<'msg, K: ?Sized, V: ?Sized> Map<'msg, K, V> {
+    pub fn len(&self) -> usize {
+        unsafe { upb_Map_Size(self.inner.raw) }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn from_inner(_private: Private, inner: MapInner<'msg>) -> Self {
+        Map { inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
+    }
+}
+
+/// The below macro generates a Map implementation for every (key_type,
+/// value_type) pair. In total 'num(key_type) * num(value_type)' many
+/// implementations.
+/// Here's how we implemented this combinatoric expansion:
+///  * In the first arm the macro flattens the value_type repetition into a
+///    tuple. Logically it maps every key_type to (value_type1, value_type2, ...
+///    , value_typeN).
+///  * In the second arm '@key_type_to_value_types' invokes the third arm for
+///    every key_type.
+///  * The third arm '@generate_map_type' is passed the key_type and tuple
+///    containing all value_types. It iterates over all value_types and
+///    generates the implementations Map<key_type, value_type1>, Map<key_type,
+///    value_type2>, ..., Map<key_type, value_typeN>.
+macro_rules! impl_map_primitives {
+    (
+        $(key_type ($k_rs_type:ty, $k_union_field:ident, $k_upb_tag:expr);)*
+        $(value_type ($v_rs_type:ty, $v_union_field:ident, $v_upb_tag:expr);)*) => {
+        impl_map_primitives!(@key_type_to_value_types $(($k_rs_type, $k_union_field, $k_upb_tag)),* ; ($($v_rs_type, $v_union_field, $v_upb_tag),*));
+    };
+    (@key_type_to_value_types $($key_type:tt),* ; $all_value_types:tt) => {
+        $(
+            impl_map_primitives!(@generate_map_type $key_type $all_value_types);
+        )*
+    };
+    (@generate_map_type ($k_rs_type:ty, $k_union_field:ident, $k_upb_tag:expr) ($($v_rs_type:ty, $v_union_field:ident, $v_upb_tag:expr),*)) => {
+        $(
+            impl<'msg> Map<'msg, $k_rs_type, $v_rs_type> {
+                pub fn new(arena: &'msg Arena) -> Self {
+                    unsafe {
+                        let raw_map = upb_Map_New(arena.raw(), $k_upb_tag, $v_upb_tag);
+                        Map {
+                            inner: MapInner { raw: raw_map, arena },
+                            _phantom_key: PhantomData,
+                            _phantom_value: PhantomData,
+                        }
+                    }
+                }
+
+                pub fn get(&self, key: $k_rs_type) -> Option<$v_rs_type> {
+                    let mut val = upb_MessageValue { $v_union_field: Default::default() };
+                    let found =
+                        unsafe { upb_Map_Get(self.inner.raw, upb_MessageValue { $k_union_field: key }, &mut val) };
+                    if !found {
+                        return None;
+                    }
+                    Some(unsafe { val.$v_union_field })
+                }
+
+                pub fn insert(&mut self, key: $k_rs_type, value: $v_rs_type) -> bool {
+                    unsafe {
+                        upb_Map_Set(
+                            self.inner.raw,
+                            upb_MessageValue { $k_union_field: key },
+                            upb_MessageValue { $v_union_field: value },
+                            self.inner.arena.raw(),
+                        )
+                    }
+                }
+
+                pub fn remove(&mut self, key: $k_rs_type) -> Option<$v_rs_type> {
+                    let mut val = upb_MessageValue { $v_union_field: Default::default() };
+                    let removed =
+                        unsafe { upb_Map_Delete(self.inner.raw, upb_MessageValue { $k_union_field: key }, &mut val)};
+                    if !removed {
+                        return None;
+                    }
+                    Some(unsafe { val.$v_union_field })
+                }
+
+                pub fn clear(&mut self) {
+                    unsafe { upb_Map_Clear(self.inner.raw) }
+                }
+            }
+        )*
+    };
+}
+
+impl_map_primitives!(
+    // A key in a protobuf map can be any scalar type, except floating point types and bytes
+    // i.e. integers, bool and string.
+    key_type (i32, int32_val, UpbCType::Int32);
+    key_type (u32, uint32_val, UpbCType::UInt32);
+    key_type (i64, int64_val, UpbCType::Int64);
+    key_type (u64, uint64_val, UpbCType::UInt64);
+    key_type (bool, bool_val, UpbCType::Bool);
+    value_type (i32, int32_val, UpbCType::Int32);
+    value_type (u32, uint32_val, UpbCType::UInt32);
+    value_type (i64, int64_val, UpbCType::Int64);
+    value_type (u64, uint64_val, UpbCType::UInt64);
+    value_type (bool, bool_val, UpbCType::Bool);
+    value_type (f32, float_val, UpbCType::Float);
+    value_type (f64, double_val, UpbCType::Double);
+);
+
+extern "C" {
+    fn upb_Map_New(arena: RawArena, key_type: UpbCType, value_type: UpbCType) -> RawMap;
+    fn upb_Map_Size(map: RawMap) -> usize;
+    fn upb_Map_Set(
+        map: RawMap,
+        key: upb_MessageValue,
+        value: upb_MessageValue,
+        arena: RawArena,
+    ) -> bool;
+    fn upb_Map_Get(map: RawMap, key: upb_MessageValue, value: *mut upb_MessageValue) -> bool;
+    fn upb_Map_Delete(
+        map: RawMap,
+        key: upb_MessageValue,
+        removed_value: *mut upb_MessageValue,
+    ) -> bool;
+    fn upb_Map_Clear(map: RawMap);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use googletest::prelude::*;
 
     #[test]
     fn test_arena_new_and_free() {
@@ -474,37 +628,79 @@ mod tests {
                 len,
             )
         };
-        assert_eq!(&*serialized_data, b"Hello world");
+        assert_that!(&*serialized_data, eq(b"Hello world"));
     }
 
     #[test]
     fn i32_array() {
         let arena = Arena::new();
         let mut arr = RepeatedField::<i32>::new(&arena);
-        assert_eq!(arr.len(), 0);
+        assert_that!(arr.len(), eq(0));
         arr.push(1);
-        assert_eq!(arr.get(0), Some(1));
-        assert_eq!(arr.len(), 1);
+        assert_that!(arr.get(0), eq(Some(1)));
+        assert_that!(arr.len(), eq(1));
         arr.set(0, 3);
-        assert_eq!(arr.get(0), Some(3));
+        assert_that!(arr.get(0), eq(Some(3)));
         for i in 0..2048 {
             arr.push(i);
-            assert_eq!(arr.get(arr.len() - 1), Some(i));
+            assert_that!(arr.get(arr.len() - 1), eq(Some(i)));
         }
     }
     #[test]
     fn u32_array() {
         let mut arena = Arena::new();
         let mut arr = RepeatedField::<u32>::new(&mut arena);
-        assert_eq!(arr.len(), 0);
+        assert_that!(arr.len(), eq(0));
         arr.push(1);
-        assert_eq!(arr.get(0), Some(1));
-        assert_eq!(arr.len(), 1);
+        assert_that!(arr.get(0), eq(Some(1)));
+        assert_that!(arr.len(), eq(1));
         arr.set(0, 3);
-        assert_eq!(arr.get(0), Some(3));
+        assert_that!(arr.get(0), eq(Some(3)));
         for i in 0..2048 {
             arr.push(i);
-            assert_eq!(arr.get(arr.len() - 1), Some(i));
+            assert_that!(arr.get(arr.len() - 1), eq(Some(i)));
         }
+    }
+
+    #[test]
+    fn i32_i32_map() {
+        let arena = Arena::new();
+        let mut map = Map::<'_, i32, i32>::new(&arena);
+        assert_that!(map.len(), eq(0));
+
+        assert_that!(map.insert(1, 2), eq(true));
+        assert_that!(map.get(1), eq(Some(2)));
+        assert_that!(map.get(3), eq(None));
+        assert_that!(map.len(), eq(1));
+
+        assert_that!(map.remove(1), eq(Some(2)));
+        assert_that!(map.len(), eq(0));
+        assert_that!(map.remove(1), eq(None));
+
+        assert_that!(map.insert(4, 5), eq(true));
+        assert_that!(map.insert(6, 7), eq(true));
+        map.clear();
+        assert_that!(map.len(), eq(0));
+    }
+
+    #[test]
+    fn i64_f64_map() {
+        let arena = Arena::new();
+        let mut map = Map::<'_, i64, f64>::new(&arena);
+        assert_that!(map.len(), eq(0));
+
+        assert_that!(map.insert(1, 2.5), eq(true));
+        assert_that!(map.get(1), eq(Some(2.5)));
+        assert_that!(map.get(3), eq(None));
+        assert_that!(map.len(), eq(1));
+
+        assert_that!(map.remove(1), eq(Some(2.5)));
+        assert_that!(map.len(), eq(0));
+        assert_that!(map.remove(1), eq(None));
+
+        assert_that!(map.insert(4, 5.1), eq(true));
+        assert_that!(map.insert(6, 7.2), eq(true));
+        map.clear();
+        assert_that!(map.len(), eq(0));
     }
 }
