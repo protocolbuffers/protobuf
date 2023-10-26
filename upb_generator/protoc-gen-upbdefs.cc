@@ -70,16 +70,12 @@ void WriteDefHeader(upb::FileDefPtr file, Output& output) {
       "#define $0_UPBDEFS_H_\n\n"
       "#include \"upb/reflection/def.h\"\n"
       "#include \"upb/reflection/internal/def_pool.h\"\n"
-      "#include \"upb/port/def.inc\"\n"
+      "\n"
+      "#include \"upb/port/def.inc\" // Must be last.\n"
       "#ifdef __cplusplus\n"
       "extern \"C\" {\n"
       "#endif\n\n",
       ToPreproc(file.name()));
-
-  output("#include \"upb/reflection/def.h\"\n");
-  output("\n");
-  output("#include \"upb/port/def.inc\"\n");
-  output("\n");
 
   output("extern _upb_DefPool_Init $0;\n", DefInitSymbol(file));
   output("\n");
