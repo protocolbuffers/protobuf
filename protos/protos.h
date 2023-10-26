@@ -46,7 +46,9 @@
 
 namespace protos {
 
-using Arena = ::upb::Arena;
+using ::upb::Arena;
+using ::upb::ArenaBase;
+using ::upb::InlinedArena;
 class ExtensionRegistry;
 
 template <typename T>
@@ -116,7 +118,7 @@ inline upb_StringView UpbStrFromStringView(absl::string_view str,
 }
 
 template <typename T>
-typename T::Proxy CreateMessage(::protos::Arena& arena) {
+typename T::Proxy CreateMessage(::protos::ArenaBase& arena) {
   return typename T::Proxy(upb_Message_New(T::minitable(), arena.ptr()),
                            arena.ptr());
 }
@@ -315,7 +317,7 @@ class ExtensionRegistry {
   ExtensionRegistry(
       const std::vector<const ::protos::internal::ExtensionMiniTableProvider*>&
           extensions,
-      const upb::Arena& arena)
+      const ::protos::ArenaBase& arena)
       : registry_(upb_ExtensionRegistry_New(arena.ptr())) {
     if (registry_) {
       for (const auto& ext_provider : extensions) {
@@ -531,7 +533,8 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
 }
 
 template <typename T>
-absl::StatusOr<absl::string_view> Serialize(const T* message, upb::Arena& arena,
+absl::StatusOr<absl::string_view> Serialize(const T* message,
+                                            protos::ArenaBase& arena,
                                             int options = 0) {
   return ::protos::internal::Serialize(
       internal::GetInternalMsg(message),
@@ -539,7 +542,8 @@ absl::StatusOr<absl::string_view> Serialize(const T* message, upb::Arena& arena,
 }
 
 template <typename T>
-absl::StatusOr<absl::string_view> Serialize(Ptr<T> message, upb::Arena& arena,
+absl::StatusOr<absl::string_view> Serialize(Ptr<T> message,
+                                            ::protos::ArenaBase& arena,
                                             int options = 0) {
   return ::protos::internal::Serialize(
       internal::GetInternalMsg(message),

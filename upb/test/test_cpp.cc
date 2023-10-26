@@ -9,17 +9,14 @@
 
 #include <string.h>
 
-#include <fstream>
-#include <iostream>
-#include <set>
-#include <sstream>
+#include <cstdint>
 
 #include "google/protobuf/timestamp.upb.h"
 #include "google/protobuf/timestamp.upbdefs.h"
 #include <gtest/gtest.h>
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
-#include "upb/reflection/def.h"
+#include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
 #include "upb/test/test_cpp.upb.h"
 #include "upb/test/test_cpp.upbdefs.h"
@@ -57,6 +54,20 @@ TEST(Cpp, Default) {
   upb::Arena arena;
   upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(defpool.ptr()));
   upb_test_TestMessage* msg = upb_test_TestMessage_new(arena.ptr());
+  size_t size = upb_JsonEncode(msg, md.ptr(), nullptr, 0, nullptr, 0, nullptr);
+  EXPECT_EQ(2, size);  // "{}"
+}
+
+TEST(Cpp, DefaultWithSharedArena) {
+  upb::DefPool defpool;
+  upb::Arena arena;
+  upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(defpool.ptr()));
+  upb_test_TestMessage* msg = upb_test_TestMessage_new(arena.ptr());
+  {
+    // Copy the C++ arena and delete it to verify the underlying upb_Arena is
+    // not freed.
+    upb::Arena shared_arena(arena);
+  }
   size_t size = upb_JsonEncode(msg, md.ptr(), nullptr, 0, nullptr, 0, nullptr);
   EXPECT_EQ(2, size);  // "{}"
 }

@@ -177,6 +177,7 @@ cc_test(
         ":timestamp_upb_proto_reflection",
         "@com_google_googletest//:gtest_main",
         "//upb:json",
+        "//upb:mem",
         "//upb:port",
         "//upb:reflection",
     ],

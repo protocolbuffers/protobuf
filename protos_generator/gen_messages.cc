@@ -207,10 +207,10 @@ void WriteModelPublicDeclaration(
         const void* msg() const { return msg_; }
         void* msg() { return msg_; }
 
-        $0(upb_Message* msg, upb_Arena* arena) : $0Access() {
+        $0(upb_Message* msg, upb_Arena* arena)
+            : $0Access(), owned_arena_(::protos::Arena::Wrap(arena)) {
           msg_ = ($1*)msg;
-          arena_ = owned_arena_.ptr();
-          upb_Arena_Fuse(arena_, arena);
+          arena_ = arena;
         }
         ::protos::Arena owned_arena_;
         friend struct ::protos::internal::PrivateAccess;
@@ -268,7 +268,7 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
         void* msg() const { return msg_; }
 
         $0Proxy(void* msg, upb_Arena* arena) : internal::$0Access(($1*)msg, arena) {}
-        friend $0::Proxy(::protos::CreateMessage<$0>(::protos::Arena& arena));
+        friend $0::Proxy(::protos::CreateMessage<$0>(::protos::ArenaBase& arena));
         friend $0::Proxy(::protos::internal::CreateMessageProxy<$0>(
             upb_Message*, upb_Arena*));
         friend struct ::protos::internal::PrivateAccess;

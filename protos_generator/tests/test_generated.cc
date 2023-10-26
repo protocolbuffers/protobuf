@@ -735,8 +735,7 @@ TEST(CppGeneratedCode, SetExtension) {
 
 TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
   // Use an initial block to disallow fusing.
-  char initial_block[1000];
-  protos::Arena arena(initial_block, sizeof(initial_block));
+  protos::InlinedArena<1000> arena;
 
   protos::Ptr<TestModel> model = protos::CreateMessage<TestModel>(arena);
 
