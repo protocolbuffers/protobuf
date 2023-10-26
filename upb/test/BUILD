@@ -239,6 +239,7 @@ cc_test(
     ],
     deps = [
         ":empty_upb_proto_reflection",
+        ":proto3_test_upb_proto",
         ":test_messages_proto2_upb_minitable",
         ":test_upb_proto",
         "@com_google_googletest//:gtest_main",
