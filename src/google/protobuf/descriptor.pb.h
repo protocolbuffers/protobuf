@@ -548,15 +548,15 @@ inline bool FeatureSet_RepeatedFieldEncoding_Parse(absl::string_view name, Featu
 }
 enum FeatureSet_Utf8Validation : int {
   FeatureSet_Utf8Validation_UTF8_VALIDATION_UNKNOWN = 0,
-  FeatureSet_Utf8Validation_NONE = 1,
   FeatureSet_Utf8Validation_VERIFY = 2,
+  FeatureSet_Utf8Validation_NONE = 3,
 };
 
 PROTOBUF_EXPORT bool FeatureSet_Utf8Validation_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_Utf8Validation_internal_data_[];
 constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MIN = static_cast<FeatureSet_Utf8Validation>(0);
-constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MAX = static_cast<FeatureSet_Utf8Validation>(2);
-constexpr int FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE = 2 + 1;
+constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MAX = static_cast<FeatureSet_Utf8Validation>(3);
+constexpr int FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_Utf8Validation_descriptor();
 template <typename T>
@@ -569,7 +569,7 @@ const std::string& FeatureSet_Utf8Validation_Name(T value) {
 template <>
 inline const std::string& FeatureSet_Utf8Validation_Name(FeatureSet_Utf8Validation value) {
   return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_Utf8Validation_descriptor,
-                                                 0, 2>(
+                                                 0, 3>(
       static_cast<int>(value));
 }
 inline bool FeatureSet_Utf8Validation_Parse(absl::string_view name, FeatureSet_Utf8Validation* value) {
@@ -1817,8 +1817,8 @@ class PROTOBUF_EXPORT FeatureSet final :
 
   using Utf8Validation = FeatureSet_Utf8Validation;
   static constexpr Utf8Validation UTF8_VALIDATION_UNKNOWN = FeatureSet_Utf8Validation_UTF8_VALIDATION_UNKNOWN;
-  static constexpr Utf8Validation NONE = FeatureSet_Utf8Validation_NONE;
   static constexpr Utf8Validation VERIFY = FeatureSet_Utf8Validation_VERIFY;
+  static constexpr Utf8Validation NONE = FeatureSet_Utf8Validation_NONE;
   static inline bool Utf8Validation_IsValid(int value) {
     return FeatureSet_Utf8Validation_IsValid(value);
   }
