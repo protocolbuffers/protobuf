@@ -172,3 +172,21 @@ cc_test(
         "@com_google_absl//absl/strings",
     ],
 )
+
+# begin:github_only
+filegroup(
+    name = "source_files",
+    srcs = glob(
+        [
+            "**/*.c",
+            "**/*.h",
+            "**/*.hpp",
+        ],
+        exclude = ["stage0/**"],
+    ),
+    visibility = [
+        "//upb/cmake:__pkg__",
+        "//python/dist:__pkg__",
+    ]
+)
+# end:github_only
