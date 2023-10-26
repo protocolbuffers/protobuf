@@ -99,7 +99,6 @@ cc_library(
     deps = [
         "//upb:base",
         "//upb:message",
-        "//upb:message_types",
         "//upb:port",
         "//upb:reflection",
     ],
