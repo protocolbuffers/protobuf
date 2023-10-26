@@ -190,7 +190,7 @@ py_extension(
     ],
     target_compatible_with = select(_message_target_compatible_with),
     deps = [
-        "//upb:descriptor_upb_proto_reflection",
+        "//net/proto2/proto:descriptor_upb_reflection_proto",
         "//upb:eps_copy_input_stream",
         "//upb:hash",
         "//upb:message",
