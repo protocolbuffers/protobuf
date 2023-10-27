@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <type_traits>
 
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
@@ -91,6 +92,9 @@ void InitializeFileDescriptorDefaultInstances() {
       (InitializeFileDescriptorDefaultInstancesSlow(), std::true_type{});
   (void)init;
 #endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+}
+
+void InitializeLazyExtensionSet() {
 }
 
 bool ParseNamedEnum(const EnumDescriptor* descriptor, absl::string_view name,
@@ -3660,6 +3664,7 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   // Reflection refers to the default fields so make sure they are initialized.
   internal::InitProtobufDefaults();
   internal::InitializeFileDescriptorDefaultInstances();
+  internal::InitializeLazyExtensionSet();
 
   // Ensure all dependent descriptors are registered to the generated descriptor
   // pool and message factory.
