@@ -97,7 +97,7 @@ cc_library(
 # implementation, but depends on :upb and exposes a few more hdrs.
 #
 # This is public only because we have no way of visibility-limiting it to
-# upb_proto_library() only.  This interface is not stable and by using it you
+# upb_c_proto_library() only. This interface is not stable and by using it you
 # give up any backward compatibility guarantees.
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
