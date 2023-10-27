@@ -704,9 +704,9 @@ TEST(RepeatedField, CopyConstructIntegers) {
   EXPECT_EQ(2, fields1.Get(1));
 
   RepeatedType fields2(token, nullptr, original);
-  ASSERT_EQ(2, fields1.size());
-  EXPECT_EQ(1, fields1.Get(0));
-  EXPECT_EQ(2, fields1.Get(1));
+  ASSERT_EQ(2, fields2.size());
+  EXPECT_EQ(1, fields2.Get(0));
+  EXPECT_EQ(2, fields2.Get(1));
 }
 
 TEST(RepeatedField, CopyConstructCords) {
