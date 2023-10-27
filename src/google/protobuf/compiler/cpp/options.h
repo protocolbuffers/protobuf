@@ -56,6 +56,7 @@ struct Options {
   bool annotate_accessor = false;
   bool force_split = false;
   bool profile_driven_cluster_aux_subtable = false;
+  double ratio_based_pdlazy_threshold = 0;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = true;
   bool force_inline_string = true;
