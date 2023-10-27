@@ -1235,6 +1235,7 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
       foo_(descriptor_->FindMethodByName("Foo")),
       bar_(descriptor_->FindMethodByName("Bar")),
       stub_(&mock_channel_),
+      // OSS code
       done_(::google::protobuf::NewPermanentCallback(&DoNothing)) {}
 
   void SetUp() override {
