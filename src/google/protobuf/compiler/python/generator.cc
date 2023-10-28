@@ -33,6 +33,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -50,6 +51,8 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/descriptor_visitor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -285,6 +288,7 @@ bool Generator::Generate(const FileDescriptor* file,
     PrintAllEnumsInFile();
     PrintMessageDescriptors();
     FixForeignFieldsInDescriptors();
+    PrintResolvedFeatures();
     printer_->Outdent();
     printer_->Print("else:\n");
     printer_->Indent();
@@ -414,6 +418,111 @@ void Generator::PrintImports() const {
     printer_->Print("from $module$ import *\n", "module", module_name);
   }
   printer_->Print("\n");
+}
+
+template <typename DescriptorT>
+std::string Generator::GetResolvedFeatures(
+    const DescriptorT& descriptor) const {
+  if (!GeneratingDescriptorProto()) {
+    // Everything but descriptor.proto can handle proper feature resolution.
+    return "None";
+  }
+
+  // Load the resolved features from our pool.
+  const Descriptor* feature_set = file_->pool()->FindMessageTypeByName(
+      FeatureSet::GetDescriptor()->full_name());
+  auto message_factory = absl::make_unique<DynamicMessageFactory>();
+  auto features =
+      absl::WrapUnique(message_factory->GetPrototype(feature_set)->New());
+  features->ParseFromString(
+      GetResolvedSourceFeatures(descriptor).SerializeAsString());
+
+  // Collect all of the resolved features.
+  std::vector<std::string> feature_args;
+  const Reflection* reflection = features->GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+  reflection->ListFields(*features, &fields);
+  for (const auto* field : fields) {
+    // Assume these are all enums.  If we add non-enum global features or any
+    // python-specific features, we will need to come back and improve this
+    // logic.
+    ABSL_CHECK(field->enum_type() != nullptr)
+        << "Unexpected non-enum field found!";
+    if (field->options().retention() == FieldOptions::RETENTION_SOURCE) {
+      // Skip any source-retention features.
+      continue;
+    }
+    const EnumDescriptor* enm = field->enum_type();
+    const EnumValueDescriptor* value =
+        enm->FindValueByNumber(reflection->GetEnumValue(*features, field));
+
+    feature_args.emplace_back(absl::StrCat(
+        field->name(), "=",
+        absl::StrFormat("%s.values_by_name[\"%s\"].number",
+                        ModuleLevelDescriptorName(*enm), value->name())));
+  }
+  return absl::StrCat("_ResolvedFeatures(", absl::StrJoin(feature_args, ","),
+                      ")");
+}
+
+void Generator::PrintResolvedFeatures() const {
+  // Since features are used during the descriptor build, it's impossible to do
+  // feature resolution at the normal point for descriptor.proto. Instead, we do
+  // feature resolution here in the generator, and embed a custom object on all
+  // of the generated descriptors.  This object should act like any other
+  // FeatureSet message on normal descriptors, but will never have to be
+  // resolved by the python runtime.
+  ABSL_CHECK(GeneratingDescriptorProto());
+  printer_->Emit({{"resolved_features", GetResolvedFeatures(*file_)},
+                  {"descriptor_name", kDescriptorKey}},
+                 R"py(
+                  class _ResolvedFeatures:
+                    def __init__(self, features = None, **kwargs):
+                      if features:
+                        for k, v in features.FIELDS.items():
+                          setattr(self, k, getattr(features, k))
+                      else:
+                        for k, v in kwargs.items():
+                          setattr(self, k, v)
+                  $descriptor_name$._features = $resolved_features$
+                )py");
+
+#define MAKE_NESTED(desc, CPP_FIELD, PY_FIELD)                                \
+  [&] {                                                                       \
+    for (int i = 0; i < desc.CPP_FIELD##_count(); ++i) {                      \
+      printer_->Emit(                                                         \
+          {{"resolved_subfeatures", GetResolvedFeatures(*desc.CPP_FIELD(i))}, \
+           {"index", absl::StrCat(i)},                                        \
+           {"field", PY_FIELD}},                                              \
+          "$descriptor_name$.$field$[$index$]._features = "                   \
+          "$resolved_subfeatures$\n");                                        \
+    }                                                                         \
+  }
+
+  internal::VisitDescriptors(*file_, [&](const Descriptor& msg) {
+    printer_->Emit(
+        {{"resolved_features", GetResolvedFeatures(msg)},
+         {"descriptor_name", ModuleLevelDescriptorName(msg)},
+         {"field_features", MAKE_NESTED(msg, field, "fields")},
+         {"oneof_features", MAKE_NESTED(msg, oneof_decl, "oneofs")},
+         {"ext_features", MAKE_NESTED(msg, extension, "extensions")}},
+        R"py(
+          $descriptor_name$._features = $resolved_features$
+          $field_features$
+          $oneof_features$
+          $ext_features$
+        )py");
+  });
+  internal::VisitDescriptors(*file_, [&](const EnumDescriptor& enm) {
+    printer_->Emit({{"resolved_features", GetResolvedFeatures(enm)},
+                    {"descriptor_name", ModuleLevelDescriptorName(enm)},
+                    {"value_features", MAKE_NESTED(enm, value, "values")}},
+                   R"py(
+                    $descriptor_name$._features = $resolved_features$
+                    $value_features$
+                  )py");
+  });
+#undef MAKE_NESTED
 }
 
 // Prints the single file descriptor for this file.

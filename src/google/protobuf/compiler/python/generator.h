@@ -75,6 +75,9 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   GeneratorOptions ParseParameter(absl::string_view parameter,
                                   std::string* error) const;
   void PrintImports() const;
+  template <typename DescriptorT>
+  std::string GetResolvedFeatures(const DescriptorT& descriptor) const;
+  void PrintResolvedFeatures() const;
   void PrintFileDescriptor() const;
   void PrintAllEnumsInFile() const;
   void PrintNestedEnums(const Descriptor& descriptor) const;

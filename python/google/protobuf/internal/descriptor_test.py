@@ -12,13 +12,15 @@ __author__ = 'robinson@google.com (Will Robinson)'
 import unittest
 import warnings
 
-from google.protobuf import descriptor_pb2
-from google.protobuf.internal import api_implementation
-from google.protobuf.internal import test_util
 from google.protobuf import descriptor
+from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import symbol_database
 from google.protobuf import text_format
+from google.protobuf.internal import api_implementation
+from google.protobuf.internal import test_util
+
+from google.protobuf.internal import _parameterized
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
@@ -1169,7 +1171,6 @@ class MakeDescriptorTest(unittest.TestCase):
     self.assertEqual(result.fields[0].cpp_type,
                      descriptor.FieldDescriptor.CPPTYPE_UINT64)
 
-
   def testMakeDescriptorWithOptions(self):
     descriptor_proto = descriptor_pb2.DescriptorProto()
     aggregate_message = unittest_custom_options_pb2.AggregateMessage
@@ -1212,6 +1213,64 @@ class MakeDescriptorTest(unittest.TestCase):
     for index in range(len(json_names)):
       self.assertEqual(result.fields[index].json_name,
                        json_names[index])
+
+
+class FeaturesTest(_parameterized.TestCase):
+
+  # TODO Add _features for upb and C++.
+  @_parameterized.named_parameters([
+      ('File', lambda: descriptor_pb2.DESCRIPTOR),
+      ('Message', lambda: descriptor_pb2.FeatureSet.DESCRIPTOR),
+      (
+          'Enum',
+          lambda: descriptor_pb2.FeatureSet.FieldPresence.DESCRIPTOR,
+      ),
+      (
+          'Field',
+          lambda: descriptor_pb2.FeatureSet.DESCRIPTOR.fields_by_name[
+              'enum_type'
+          ],
+      ),
+  ])
+  @unittest.skipIf(
+      api_implementation.Type() != 'python',
+      'Features field is only available with the pure python implementation',
+  )
+  def testDescriptorProtoDefaultFeatures(self, desc):
+    self.assertEqual(
+        desc()._features.field_presence,
+        descriptor_pb2.FeatureSet.FieldPresence.EXPLICIT,
+    )
+    self.assertEqual(
+        desc()._features.enum_type,
+        descriptor_pb2.FeatureSet.EnumType.CLOSED,
+    )
+    self.assertEqual(
+        desc()._features.repeated_field_encoding,
+        descriptor_pb2.FeatureSet.RepeatedFieldEncoding.EXPANDED,
+    )
+
+  # TODO Add _features for upb and C++.
+  @unittest.skipIf(
+      api_implementation.Type() != 'python',
+      'Features field is only available with the pure python implementation',
+  )
+  def testDescriptorProtoOverrideFeatures(self):
+    desc = descriptor_pb2.SourceCodeInfo.Location.DESCRIPTOR.fields_by_name[
+        'path'
+    ]
+    self.assertEqual(
+        desc._features.field_presence,
+        descriptor_pb2.FeatureSet.FieldPresence.EXPLICIT,
+    )
+    self.assertEqual(
+        desc._features.enum_type,
+        descriptor_pb2.FeatureSet.EnumType.CLOSED,
+    )
+    self.assertEqual(
+        desc._features.repeated_field_encoding,
+        descriptor_pb2.FeatureSet.RepeatedFieldEncoding.PACKED,
+    )
 
 
 if __name__ == '__main__':
