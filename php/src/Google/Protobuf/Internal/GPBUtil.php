@@ -14,8 +14,6 @@ use Google\Protobuf\FieldMask;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
-use function bccomp;
-use const PHP_INT_MAX;
 
 function camel2underscore($input) {
     preg_match_all(
