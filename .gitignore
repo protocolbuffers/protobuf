@@ -133,7 +133,8 @@ conformance/*.class
 
 # php test output
 composer.lock
-php/.phpunit.result.cache
+.phpunit.result.cache
+php/tmp/
 php/tests/.phpunit.result.cache
 php/tests/generated/
 php/tests/old_protoc
@@ -143,7 +144,6 @@ php/tests/core
 php/tests/vgcore*
 php/tests/multirequest.result
 php/tests/nohup.out
-php/tests/.phpunit.result.cache
 php/tests/phpunit-*
 php/ext/google/protobuf/.libs/
 php/ext/google/protobuf/Makefile.fragments
