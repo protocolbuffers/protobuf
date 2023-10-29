@@ -367,11 +367,27 @@ class WellKnownTest extends TestBase {
 
         $m = new Int64Value();
         $m->setValue(1);
-        $this->assertEquals(1, $m->getValue());
+        $this->assertSame(1, $m->getValue());
+
+        $m = new Int64Value();
+        $m->setValue(PHP_INT_MAX);
+        $this->assertEquals(PHP_INT_MAX, $m->getValue());
+
+        $m = new Int64Value();
+        $m->setValue(PHP_INT_MIN);
+        $this->assertEquals(PHP_INT_MIN, $m->getValue());
 
         $m = new UInt64Value();
         $m->setValue(1);
         $this->assertEquals(1, $m->getValue());
+
+        $m = new UInt64Value();
+        $m->setValue(PHP_INT_MAX);
+        $this->assertSame(PHP_INT_MAX, $m->getValue());
+
+        $m = new UInt64Value();
+        $m->setValue('18446744073709551615');
+        $this->assertSame('18446744073709551615', $m->getValue());
 
         $m = new Int32Value();
         $m->setValue(1);

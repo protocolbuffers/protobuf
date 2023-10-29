@@ -15,6 +15,7 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
 use function bccomp;
+use const PHP_INT_MAX;
 
 function camel2underscore($input) {
     preg_match_all(
@@ -133,10 +134,10 @@ class GPBUtil
     public static function checkUint64(&$var)
     {
         if (is_numeric($var)) {
-            if (PHP_INT_SIZE == 8) {
-                $var = intval($var);
+            if (bccomp((string) $var, (string) PHP_INT_MAX) === 1) {
+                $var = (string) $var;
             } else {
-                $var = number_format($var, 0, ".", "");
+                $var = (int) $var;
             }
         } else {
             throw new \Exception("Expect integer.");
