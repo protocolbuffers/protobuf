@@ -51,7 +51,6 @@ cc_library(
         "//upb:base",
         "//upb:hash",
         "//upb:mem",
-        "//upb:message_types",
         "//upb:port",
     ],
 )
