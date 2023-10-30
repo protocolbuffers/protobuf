@@ -24,7 +24,6 @@ cc_library(
         "editions.cc",
         "empty_package.cc",
         "open_enum.cc",
-        "unused_imports.cc",
     ],
     hdrs = ["allowlists.h"],
     copts = COPTS,
