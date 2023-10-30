@@ -55,6 +55,10 @@ ABSL_CONST_INIT const absl::string_view kRepeatedFieldArrayGetterPostfix =
 ABSL_CONST_INIT const absl::string_view
     kRepeatedFieldMutableArrayGetterPostfix = "mutable_upb_array";
 
+ABSL_CONST_INIT const absl::string_view kMapGetterPostfix = "upb_map";
+ABSL_CONST_INIT const absl::string_view kMutableMapGetterPostfix =
+    "mutable_upb_map";
+
 // List of generated accessor prefixes to check against.
 // Example:
 //     optional repeated string phase = 236;
