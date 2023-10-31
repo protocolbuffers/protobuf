@@ -78,7 +78,7 @@ ruby_library(
     }),
     includes = ["ruby/lib"],
     visibility = ["//ruby:__pkg__"],
-    deps = ["//:well_known_ruby_protos"] + select({
+    deps = ["//ruby:well_known_ruby_protos"] + select({
         "//ruby:ffi_enabled": [
             "@protobuf_bundle//:ffi",
             "@protobuf_bundle//:ffi-compiler",
