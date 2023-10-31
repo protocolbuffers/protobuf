@@ -1,0 +1,2 @@
+# Marker that this folder is the root of a Bazel workspace.
+# This file is used instead of WORKSPACE when bzlmod is enabled.
