@@ -187,9 +187,6 @@ struct WeakRepeatedPtrField {
     return const_pointer_iterator(base().raw_data() + base().size());
   }
 
-  MessageLite* AddWeak(const MessageLite* prototype) {
-    return base().AddWeak(prototype);
-  }
   T* Add() { return weak.Add(); }
   void Clear() { base().template Clear<TypeHandler>(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {

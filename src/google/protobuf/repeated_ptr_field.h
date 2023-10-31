@@ -294,11 +294,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Pre-condition: prototype must not be nullptr.
   MessageLite* AddMessage(const MessageLite* prototype);
 
-  // This method is similar to `AddMessage` except that prototype may be nullptr
-  // in which case an ImplicitWeakMessage will be used as a placeholder. It is
-  // used to implement implicit weak fields.
-  MessageLite* AddWeak(const MessageLite* prototype);
-
   template <typename TypeHandler>
   void Clear() {
     const int n = current_size_;
@@ -838,10 +833,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return InternalExtend(n - Capacity());
   }
 
-  // Internal helper for Add: adds "obj" as the next element in the
-  // array, including potentially resizing the array with Reserve if
-  // needed
-  void* AddOutOfLineHelper(void* obj);
   // Internal helper for Add that keeps definition out-of-line.
   void* AddOutOfLineHelper(ElementFactory factory);
 
