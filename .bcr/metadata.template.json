@@ -1,0 +1,22 @@
+{
+  "homepage": "https://github.com/protocolbuffers/protobuf",
+  "maintainers": [
+    {
+      "github": "comius",
+      "name": "Ivo List"
+    },
+    {
+      "email": "alex@aspect.dev",
+      "github": "alexeagle",
+      "name": "Alex Eagle"
+    },
+    {
+      "email": "sahin@aspect.dev",
+      "github": "thesayyn",
+      "name": "Şahin Yort"
+    }
+  ],
+  "repository": ["github:protocolbuffers/protobuf"],
+  "versions": [],
+  "yanked_versions": {}
+}

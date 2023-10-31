@@ -1,0 +1,4 @@
+# see https://github.com/bazel-contrib/publish-to-bcr/#a-note-on-release-automation
+fixedReleaser:
+  login: thesayyn
+  email: sahin@aspect.dev
