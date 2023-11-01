@@ -165,10 +165,9 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
              if (IsLazilyInitializedFile(descriptor_->file()->name())) {
                p->Emit(R"cc(
                  PROTOBUF_CONSTINIT$ dllexport_decl$
-                     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::$proto_ns$::internal::
-                         ExtensionIdentifier<
-                             $extendee$, ::$proto_ns$::internal::$type_traits$,
-                             $field_type$, $packed$>
+                     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
+                         ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
+                                             $field_type$, $packed$>
                              $scoped_name$($constant_name$);
                )cc");
                return;
@@ -183,23 +182,37 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
                  ShouldVerify(descriptor_->containing_type(), options_,
                               scc_analyzer_);
 
-             if (should_verify) {
+             if (!should_verify) {
                p->Emit(R"cc(
-                 $dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::
-                     $proto_ns$::internal::ExtensionIdentifier<
-                         $extendee$, ::$proto_ns$::internal::$type_traits$,
-                         $field_type$, $packed$>
-                         $scoped_name$($constant_name$, $default_str$,
-                                       &$message_type$::InternalVerify);
-               )cc");
-             } else {
-               p->Emit(R"cc(
-                 $dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::
-                     $proto_ns$::internal::ExtensionIdentifier<
-                         $extendee$, ::$proto_ns$::internal::$type_traits$,
-                         $field_type$, $packed$>
+                 $dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
+                     ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
+                                         $field_type$, $packed$>
                          $scoped_name$($constant_name$, $default_str$);
                )cc");
+               return;
+             }
+
+             const auto& options = descriptor_->options();
+             if (options.has_lazy()) {
+               p->Emit(
+                   {{"is_lazy", options.lazy() ? "kLazy" : "kEager"}},
+                   R"cc(
+                     $dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
+                         ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
+                                             $field_type$, $packed$>
+                             $scoped_name$($constant_name$, $default_str$,
+                                           &$message_type$::InternalVerify,
+                                           ::_pbi::LazyAnnotation::$is_lazy$);
+                   )cc");
+             } else {
+               p->Emit(
+                   R"cc(
+                     $dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
+                         ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
+                                             $field_type$, $packed$>
+                             $scoped_name$($constant_name$, $default_str$,
+                                           &$message_type$::InternalVerify);
+                   )cc");
              }
            }},
       },
