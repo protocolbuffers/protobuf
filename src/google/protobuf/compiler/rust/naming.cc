@@ -8,13 +8,14 @@
 #include "google/protobuf/compiler/rust/naming.h"
 
 #include <string>
+#include <vector>
 
 #include "absl/log/absl_log.h"
-#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -166,10 +167,46 @@ std::string PrimitiveRsTypeName(const FieldDescriptor& desc) {
   return "";
 }
 
+// Constructs a string of the Rust modules which will contain the message.
+//
+// Example: Given a message 'NestedMessage' which is defined in package 'x.y'
+// which is inside 'ParentMessage', the message will be placed in the
+// x::y::ParentMessage_ Rust module, so this function will return the string
+// "x::y::ParentMessage_::".
+//
+// If the message has no package and no containing messages then this returns
+// empty string.
 std::string RustModule(Context<Descriptor> msg) {
-  absl::string_view package = msg.desc().file()->package();
-  if (package.empty()) return "";
-  return absl::StrCat("", absl::StrReplaceAll(package, {{".", "::"}}));
+  const Descriptor& desc = msg.desc();
+
+  std::vector<std::string> modules;
+
+  std::vector<std::string> package_modules =
+      absl::StrSplit(desc.file()->package(), '.', absl::SkipEmpty());
+
+  modules.insert(modules.begin(), package_modules.begin(),
+                 package_modules.end());
+
+  // Innermost to outermost order.
+  std::vector<std::string> modules_from_containing_types;
+  const Descriptor* parent = desc.containing_type();
+  while (parent != nullptr) {
+    modules_from_containing_types.push_back(absl::StrCat(parent->name(), "_"));
+    parent = parent->containing_type();
+  }
+
+  // Add the modules from containing messages (rbegin/rend to get them in outer
+  // to inner order).
+  modules.insert(modules.end(), modules_from_containing_types.rbegin(),
+                 modules_from_containing_types.rend());
+
+  // If there is any modules at all, push an empty string on the end so that
+  // we get the trailing ::
+  if (!modules.empty()) {
+    modules.push_back("");
+  }
+
+  return absl::StrJoin(modules, "::");
 }
 
 std::string RustInternalModuleName(Context<FileDescriptor> file) {
@@ -179,19 +216,7 @@ std::string RustInternalModuleName(Context<FileDescriptor> file) {
 }
 
 std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg) {
-  std::string name = msg.desc().full_name();
-  if (msg.desc().file()->package().empty()) {
-    return name;
-  }
-  // when computing the relative path, we don't want the package name, so we
-  // strip that out
-  name =
-      std::string(absl::StripPrefix(name, msg.desc().file()->package() + "."));
-  // proto nesting is marked with periods in .proto files -- this gets
-  // translated to delimiting via _:: in terra rust
-  absl::StrReplaceAll({{".", "_::"}}, &name);
-
-  return absl::StrCat(RustModule(msg), "::", name);
+  return absl::StrCat(RustModule(msg), msg.desc().name());
 }
 
 std::string FieldInfoComment(Context<FieldDescriptor> field) {
