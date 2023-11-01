@@ -35,6 +35,7 @@
 #include "upb/message/map.h"
 #include "upb/reflection/message.h"
 #include "upb/util/compare.h"
+#include "utf8_range.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -259,20 +260,27 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
     }
     case kUpb_CType_String: {
       Py_ssize_t size;
-      const char* ptr;
-      PyObject* unicode = NULL;
       if (PyBytes_Check(obj)) {
-        unicode = obj = PyUnicode_FromEncodedObject(obj, "utf-8", NULL);
-        if (!obj) return false;
+        // Use the object's bytes if they are valid UTF-8.
+        char* ptr;
+        if (PyBytes_AsStringAndSize(obj, &ptr, &size) < 0) return false;
+        if (utf8_range2((const unsigned char*)ptr, size) != 0) {
+          // Invalid UTF-8.  Try to convert the message to a Python Unicode
+          // object, even though we know this will fail, just to get the
+          // idiomatic Python error message.
+          obj = PyUnicode_FromEncodedObject(obj, "utf-8", NULL);
+          assert(!obj);
+          return false;
+        }
+        *val = PyUpb_MaybeCopyString(ptr, size, arena);
+        return true;
+      } else {
+        const char* ptr;
+        ptr = PyUnicode_AsUTF8AndSize(obj, &size);
+        if (PyErr_Occurred()) return false;
+        *val = PyUpb_MaybeCopyString(ptr, size, arena);
+        return true;
       }
-      ptr = PyUnicode_AsUTF8AndSize(obj, &size);
-      if (PyErr_Occurred()) {
-        Py_XDECREF(unicode);
-        return false;
-      }
-      *val = PyUpb_MaybeCopyString(ptr, size, arena);
-      Py_XDECREF(unicode);
-      return true;
     }
     case kUpb_CType_Message:
       PyErr_Format(PyExc_ValueError, "Message objects may not be assigned");
