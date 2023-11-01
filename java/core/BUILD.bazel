@@ -163,6 +163,13 @@ protobuf_java_library(
     srcs = LITE_SRCS,
 )
 
+proto_library(
+    name = "java_features_proto",
+    srcs = ["src/main/java/com/google/protobuf/java_features.proto"],
+    visibility = ["//pkg:__pkg__"],
+    deps = ["//:descriptor_proto"],
+)
+
 internal_gen_well_known_protos_java(
     name = "gen_well_known_protos_java",
     deps = [

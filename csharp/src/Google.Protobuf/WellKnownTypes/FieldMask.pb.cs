@@ -239,6 +239,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// request should verify the included field paths, and return an
   /// `INVALID_ARGUMENT` error if any path is unmappable.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FieldMask : pb::IMessage<FieldMask>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage

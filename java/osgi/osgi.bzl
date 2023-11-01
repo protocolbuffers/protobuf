@@ -164,7 +164,12 @@ def _osgi_jar_impl(ctx):
         fail("osgi_jar rule can only be used on a single java target.")
     target_java_output = ctx.attr.target[JavaInfo].java_outputs[0]
 
-    if len(target_java_output.source_jars) > 1:
+    # source_jars may be a list or a Depset due to:
+    # https://github.com/bazelbuild/bazel/issues/18966
+    source_jars = target_java_output.source_jars
+    if hasattr(source_jars, "to_list"):
+        source_jars = source_jars.to_list()
+    if len(source_jars) > 1:
         fail("osgi_jar rule doesn't know how to deal with more than one source jar.")
     source_jar = target_java_output.source_jars[0]
 

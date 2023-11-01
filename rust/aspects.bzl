@@ -8,8 +8,7 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
-load("@rules_rust//rust:defs.bzl", "rust_common")
-load("@upb//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
 proto_common = proto_common_do_not_use
@@ -112,7 +111,6 @@ def _compile_cc(
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
         srcs = [src],
-        grep_includes = ctx.file._grep_includes,
         user_compile_flags = attr.copts if hasattr(attr, "copts") else [],
         compilation_contexts = [cc_info.compilation_context],
     )
@@ -146,10 +144,10 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
     Returns:
       A DepVariantInfo provider.
     """
-    toolchain = ctx.toolchains["@rules_rust//rust:toolchain"]
+    toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     output_hash = repr(hash(src.path))
 
-    # TODO(b/270124215): Use the import! macro once available
+    # TODO: Use the import! macro once available
     crate_name = ctx.label.name.replace("-", "_")
 
     lib_name = "{prefix}{name}-{lib_hash}{extension}".format(
@@ -169,12 +167,12 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
     lib = ctx.actions.declare_file(lib_name)
     rmeta = ctx.actions.declare_file(rmeta_name)
 
-    # TODO(b/270125787): Use higher level rules_rust API once available.
+    # TODO: Use higher level rules_rust API once available.
     providers = rustc_compile_action(
         ctx = ctx,
         attr = attr,
         toolchain = toolchain,
-        crate_info = rust_common.create_crate_info(
+        crate_info_dict = dict(
             name = crate_name,
             type = "rlib",
             root = src,
@@ -298,11 +296,6 @@ def _make_proto_library_aspect(is_upb):
             "_cpp_thunks_deps": attr.label(
                 default = Label("//rust/cpp_kernel:cpp_api"),
             ),
-            "_grep_includes": attr.label(
-                allow_single_file = True,
-                default = Label("@bazel_tools//tools/cpp:grep-includes"),
-                cfg = "exec",
-            ),
             "_error_format": attr.label(
                 default = Label("@rules_rust//:error_format"),
             ),
@@ -332,7 +325,7 @@ def _make_proto_library_aspect(is_upb):
         fragments = ["cpp"],
         host_fragments = ["cpp"],
         toolchains = [
-            str(Label("@rules_rust//rust:toolchain")),
+            "@rules_rust//rust:toolchain_type",
             "@bazel_tools//tools/cpp:toolchain_type",
         ],
         incompatible_use_toolchain_transition = True,

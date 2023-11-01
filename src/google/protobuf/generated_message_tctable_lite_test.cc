@@ -1,39 +1,17 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include <cstddef>
 
-#include "google/protobuf/generated_message_tctable_impl.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/types/optional.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
 
 namespace google {
@@ -818,6 +796,107 @@ TEST_F(FindFieldEntryTest, BigMessage) {
         break;
     }
   }
+}
+
+TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRange) {
+  // RepeatedField::Reserve(n) may set the capacity to something greater than n,
+  // and this "upgrade" algorithm can even be different depending on compiler
+  // optimizations!  This value is chosen such that -- with the current
+  // implementation of Reserve() -- Reserve(kNumVals) always results in a
+  // different final capacity than you'd get by adding elements one at a time.
+  constexpr int kNumVals = 1023;
+  protobuf_unittest::TestPackedEnumSmallRange proto;
+  for (int i = 0; i < kNumVals; i++) {
+    proto.add_vals(protobuf_unittest::TestPackedEnumSmallRange::FOO);
+  }
+
+  protobuf_unittest::TestPackedEnumSmallRange new_proto;
+  new_proto.ParseFromString(proto.SerializeAsString());
+
+  // We should have reserved exactly the right size for new_proto's `vals`,
+  // rather than growing it on demand like we did in `proto`.
+  EXPECT_LT(new_proto.vals().Capacity(), proto.vals().Capacity());
+
+  // Check that new_proto's capacity is equal to exactly what we'd get from
+  // calling Reserve(n).
+  protobuf_unittest::TestPackedEnumSmallRange empty_proto;
+  empty_proto.mutable_vals()->Reserve(kNumVals);
+  EXPECT_EQ(new_proto.vals().Capacity(), empty_proto.vals().Capacity());
+}
+
+// Create a serialized proto which falsely claims to have a packed array of
+// enums of length a little less than 2^31.  We merge this with a proto that
+// already has a few elements in this array.
+//
+// This test checks that the parser doesn't overflow an int32 when computing the
+// array's new length.
+TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRangeLargeSize) {
+#ifdef ABSL_HAVE_MEMORY_SANITIZER
+  // This test attempts to allocate 8GB of memory, which OOMs MSAN.
+  return;
+#endif
+
+#ifdef _WIN32
+  // This test OOMs on Windows.  I think this is because Windows is committing
+  // the entirety of the 8GB malloc'ed range, whereas Linux maps it but doesn't
+  // commit it.
+  return;
+#endif
+
+  // This test is only meaningful on 64-bit platforms.  On 32-bit platforms, we
+  // can't allocate 2^31 4-byte elements anyway; that is a straightforward OOM.
+  if (sizeof(size_t) < 8) {
+    return;
+  }
+
+  // Create a serialized proto that contains just `field 1: length ~2^31`.  We
+  // don't put the actual data in there, just the field header.
+  uint8_t serialize_buffer[64];
+  uint8_t* serialize_ptr = serialize_buffer;
+  serialize_ptr = WireFormatLite::WriteTagToArray(
+      1, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, serialize_ptr);
+  // INT32_MAX is not a valid array length because RepeatedField uses a bit of
+  // space for its metadata.  We can be a little short of it, that's fine.
+  serialize_ptr = WireFormatLite::WriteUInt32NoTagToArray(
+      std::numeric_limits<int32_t>::max() - 64, serialize_ptr);
+
+  absl::string_view serialized{
+      reinterpret_cast<char*>(&serialize_buffer[0]),
+      static_cast<size_t>(serialize_ptr - serialize_buffer)};
+
+  // This isn't a legal proto because the given array length (a little less than
+  // 2^31) doesn't match the actual array length (0).  But all we're checking
+  // for here is that we don't have UB when deserializing.
+  protobuf_unittest::TestPackedEnumSmallRange proto;
+  // Add a few elements to the proto so that when we MergeFromString, the final
+  // array length is greater than INT32_MAX.
+  for (int i = 0; i < 128; i++) {
+    proto.add_vals(protobuf_unittest::TestPackedEnumSmallRange::FOO);
+  }
+  EXPECT_FALSE(proto.MergeFromString(serialized));
+}
+
+TEST(GeneratedMessageTctableLiteTest,
+     PackedEnumSmallRangeSizeLargerThanInputSize) {
+  // Create a serialized proto that contains just `field 1: length 2^20`.  We
+  // don't put the actual data in there, just the field header.
+  uint8_t serialize_buffer[64];
+  uint8_t* serialize_ptr = serialize_buffer;
+  serialize_ptr = WireFormatLite::WriteTagToArray(
+      1, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, serialize_ptr);
+  serialize_ptr =
+      WireFormatLite::WriteUInt32NoTagToArray(uint32_t{1} << 20, serialize_ptr);
+
+  absl::string_view serialized{
+      reinterpret_cast<char*>(&serialize_buffer[0]),
+      static_cast<size_t>(serialize_ptr - serialize_buffer)};
+
+  // The deserialized proto should reserve much less than 2^20 elements for
+  // field 1, because it notices that the input serialized proto is much smaller
+  // than 2^20 bytes.
+  protobuf_unittest::TestPackedEnumSmallRange proto;
+  proto.MergeFromString(serialized);
+  EXPECT_LE(proto.vals().Capacity(), 2048);
 }
 
 }  // namespace internal

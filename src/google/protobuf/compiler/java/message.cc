@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -138,7 +115,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
   // The descriptor for this type.
   printer->Print(
       vars,
-      // TODO(teboring): final needs to be added back. The way to fix it is to
+      // TODO: final needs to be added back. The way to fix it is to
       // generate methods that can construct the types, and then still declare
       // the types, and then init them in clinit with the new method calls.
       "$private$static $final$com.google.protobuf.Descriptors.Descriptor\n"
@@ -150,7 +127,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
 
   // Generate static members for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    // TODO(kenton):  Reuse MessageGenerator objects?
+    // TODO:  Reuse MessageGenerator objects?
     ImmutableMessageGenerator(descriptor_->nested_type(i), context_)
         .GenerateStaticVariables(printer, bytecode_estimate);
   }
@@ -186,7 +163,7 @@ int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
 
   // Generate static member initializers for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    // TODO(kenton):  Reuse MessageGenerator objects?
+    // TODO:  Reuse MessageGenerator objects?
     bytecode_estimate +=
         ImmutableMessageGenerator(descriptor_->nested_type(i), context_)
             .GenerateStaticVariableInitializers(printer);
@@ -247,9 +224,9 @@ int ImmutableMessageGenerator::GenerateFieldAccessorTableInitializer(
     bytecode_estimate += 6;
     printer->Print("\"$field_name$\", ", "field_name", info->capitalized_name);
   }
-  // We reproduce synthetic oneofs here since proto reflection needs these.
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
+
+  for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
+    const OneofDescriptor* oneof = descriptor_->real_oneof_decl(i);
     const OneofGeneratorInfo* info = context_->GetOneofGeneratorInfo(oneof);
     bytecode_estimate += 6;
     printer->Print("\"$oneof_name$\", ", "oneof_name", info->capitalized_name);
@@ -437,7 +414,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     printer->Print(
         vars,
         "public enum ${$$oneof_capitalized_name$Case$}$\n"
-        // TODO(dweis): Remove EnumLite when we want to break compatibility with
+        // TODO: Remove EnumLite when we want to break compatibility with
         // 3.x users
         "    implements com.google.protobuf.Internal.EnumLite,\n"
         "        com.google.protobuf.AbstractMessage.InternalOneOfEnum {\n");
@@ -824,7 +801,8 @@ void ImmutableMessageGenerator::GenerateDescriptorMethods(
     printer->Print(
         "@SuppressWarnings({\"rawtypes\"})\n"
         "@java.lang.Override\n"
-        "protected com.google.protobuf.MapField internalGetMapField(\n"
+        "protected com.google.protobuf.MapFieldReflectionAccessor "
+        "internalGetMapFieldReflection(\n"
         "    int number) {\n"
         "  switch (number) {\n");
     printer->Indent();
@@ -883,7 +861,7 @@ void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
       "\n");
 
   // Check that all required fields in this message are set.
-  // TODO(kenton):  We can optimize this when we switch to putting all the
+  // TODO:  We can optimize this when we switch to putting all the
   //   "has" fields into a single bitfield.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
@@ -1337,8 +1315,7 @@ void ImmutableMessageGenerator::GenerateTopLevelKotlinMembers(
       "message",
       EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)),
       "message_kt",
-      EscapeKotlinKeywords(
-          name_resolver_->GetKotlinExtensionsClassName(descriptor_)));
+      name_resolver_->GetKotlinExtensionsClassNameEscaped(descriptor_));
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     if (IsMapEntry(descriptor_->nested_type(i))) continue;

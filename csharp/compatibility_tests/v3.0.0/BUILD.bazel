@@ -4,13 +4,13 @@ load("//build_defs:internal_shell.bzl", "inline_sh_test")
 inline_sh_test(
     name = "tests",
     srcs = ["test.sh"],
+    cmd = "$(location test.sh) 3.0.0 $(rootpath //:protoc)",
     tools = ["//:protoc"],
     deps = glob([
-      "src/**/*.cs*",  # .cs and .csproj
-      "protos/**/*.proto",
+        "src/**/*.cs*",  # .cs and .csproj
+        "protos/**/*.proto",
     ]) + [
-      "//csharp:srcs",
-      "//:well_known_protos",
+        "//:well_known_protos",
+        "//csharp:srcs",
     ],
-    cmd = "$(location test.sh) 3.0.0 $(rootpath //:protoc)"
 )

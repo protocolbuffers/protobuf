@@ -2,6 +2,11 @@
 # to 3.26.
 cmake_minimum_required(VERSION 3.10...3.26)
 
+# Revert to old behavior for MSVC debug symbols.
+if(POLICY CMP0141)
+  cmake_policy(SET CMP0141 OLD)
+endif()
+
 if(protobuf_VERBOSE)
   message(STATUS "Protocol Buffers Configuring...")
 endif()
@@ -16,14 +21,6 @@ if(protobuf_DEPRECATED_CMAKE_SUBDIRECTORY_USAGE)
   get_filename_component(CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
   get_filename_component(PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
   get_filename_component(protobuf_SOURCE_DIR ${protobuf_SOURCE_DIR} DIRECTORY)
-endif()
-
-# The Intel compiler isn't able to deal with noinline member functions of
-# template classes defined in headers.  As such it spams the output with
-#   warning #2196: routine is both "inline" and "noinline"
-# This silences that warning.
-if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-  string(APPEND CMAKE_CXX_FLAGS " -diag-disable=2196")
 endif()
 
 # Options
@@ -82,7 +79,7 @@ if (protobuf_BUILD_SHARED_LIBS)
 endif ()
 
 # Version metadata
-set(protobuf_VERSION_STRING "4.22.3")
+set(protobuf_VERSION_STRING "4.24.0")
 set(protobuf_DESCRIPTION "Protocol Buffers")
 set(protobuf_CONTACT "protobuf@googlegroups.com")
 
@@ -123,12 +120,6 @@ if(protobuf_VERBOSE)
   message(STATUS "  Version     : ${protobuf_VERSION} (${protobuf_VERSION_STRING})")
   message(STATUS "  Contact     : ${protobuf_CONTACT}")
   message(STATUS "]")
-endif()
-
-add_definitions(-DGOOGLE_PROTOBUF_CMAKE_BUILD)
-
-if (protobuf_DISABLE_RTTI)
-  add_definitions(-DGOOGLE_PROTOBUF_NO_RTTI=1)
 endif()
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map
@@ -187,10 +178,6 @@ if (protobuf_WITH_ZLIB)
   endif (ZLIB_FOUND)
 endif (protobuf_WITH_ZLIB)
 
-if (HAVE_ZLIB)
-  add_definitions(-DHAVE_ZLIB)
-endif (HAVE_ZLIB)
-
 # We need to link with libatomic on systems that do not have builtin atomics, or
 # don't have builtin support for 8 byte atomics
 set(protobuf_LINK_LIBATOMIC false)
@@ -246,30 +233,6 @@ endif (protobuf_BUILD_SHARED_LIBS)
 SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 if (MSVC)
-  if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # Build with multiple processes
-    add_compile_options(/MP)
-  endif()
-  # Set source file and execution character sets to UTF-8
-  add_compile_options(/utf-8)
-  # MSVC warning suppressions
-  add_compile_options(
-    /wd4065 # switch statement contains 'default' but no 'case' labels
-    /wd4146 # unary minus operator applied to unsigned type
-    /wd4244 # 'conversion' conversion from 'type1' to 'type2', possible loss of data
-    /wd4251 # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
-    /wd4267 # 'var' : conversion from 'size_t' to 'type', possible loss of data
-    /wd4305 # 'identifier' : truncation from 'type1' to 'type2'
-    /wd4307 # 'operator' : integral constant overflow
-    /wd4309 # 'conversion' : truncation of constant value
-    /wd4334 # 'operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
-    /wd4355 # 'this' : used in base member initializer list
-    /wd4506 # no definition for inline function 'function'
-    /wd4800 # 'type' : forcing value to bool 'true' or 'false' (performance warning)
-    /wd4996 # The compiler encountered a deprecated declaration.
-  )
-  # Allow big object
-  add_compile_options(/bigobj)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
   string(REPLACE "." ","  protobuf_RC_FILEVERSION "${protobuf_VERSION}")
@@ -282,10 +245,14 @@ if (MSVC)
     # pdb file, which isn't currently supported by ccache.  However, this bloats
     # the ccache size by about a factor of 2x, making it very expensive in CI.
     # Instead, we strip debug symbols to reduce this overhead.
-    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "/Zi" "/DEBUG:NONE" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    foreach(v
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_DEBUG
+        CMAKE_C_FLAGS_RELWITHDEBINFO
+        CMAKE_CXX_FLAGS_RELWITHDEBINFO
+        )
+      string(REGEX REPLACE "[-/]Z[iI7]" "/DEBUG:NONE" ${v} "${${v}}")
+    endforeach()
   endif()
 
   # Suppress linker warnings about files with no symbols defined.
@@ -313,10 +280,6 @@ include_directories(
   ${ZLIB_INCLUDE_DIRECTORIES}
   ${protobuf_BINARY_DIR}
   ${protobuf_SOURCE_DIR}/src)
-
-if (protobuf_UNICODE)
-  add_definitions(-DUNICODE -D_UNICODE)
-endif (protobuf_UNICODE)
 
 set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
 set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_PARSE_CONTEXT_H__
 #define GOOGLE_PROTOBUF_PARSE_CONTEXT_H__
@@ -35,6 +12,7 @@
 #include <cstring>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "absl/base/config.h"
 #include "absl/log/absl_check.h"
@@ -133,50 +111,41 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     if (count > 0) StreamBackUp(count);
   }
 
-#if defined(ABSL_HAVE_ADDRESS_SANITIZER) || defined(ABSL_HAVE_MEMORY_SANITIZER)
-  // In sanitizer mode we use an optional<int> to guarantee that:
+  // In sanitizer mode we use memory poisoning to guarantee that:
   //  - We do not read an uninitialized token.
-  //  - Every non-empty token is moved from and consumed.
+  //  - We would like to verify that this token was consumed, but unforuntately
+  //    __asan_address_is_poisoned is allowed to have false negatives.
   class LimitToken {
    public:
-    LimitToken() = default;
-    explicit LimitToken(int token) : token_(token) {}
+    LimitToken() { PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_)); }
+
+    explicit LimitToken(int token) : token_(token) {
+      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
+    }
+
+    LimitToken(const LimitToken&) = delete;
+    LimitToken& operator=(const LimitToken&) = delete;
+
     LimitToken(LimitToken&& other) { *this = std::move(other); }
+
     LimitToken& operator=(LimitToken&& other) {
-      token_ = std::exchange(other.token_, absl::nullopt);
+      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
+      token_ = other.token_;
+      PROTOBUF_POISON_MEMORY_REGION(&other.token_, sizeof(token_));
       return *this;
     }
 
-    ~LimitToken() { ABSL_CHECK(!token_.has_value()); }
-
-    LimitToken(const LimitToken&) = delete;
-    LimitToken& operator=(const LimitToken&) = delete;
+    ~LimitToken() { PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_)); }
 
     int token() && {
-      ABSL_CHECK(token_.has_value());
-      return *std::exchange(token_, absl::nullopt);
+      int t = token_;
+      PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_));
+      return t;
     }
-
-   private:
-    absl::optional<int> token_;
-  };
-#else
-  class LimitToken {
-   public:
-    LimitToken() = default;
-    explicit LimitToken(int token) : token_(token) {}
-    LimitToken(LimitToken&&) = default;
-    LimitToken& operator=(LimitToken&&) = default;
-
-    LimitToken(const LimitToken&) = delete;
-    LimitToken& operator=(const LimitToken&) = delete;
-
-    int token() const { return token_; }
 
    private:
     int token_;
   };
-#endif
 
   // If return value is negative it's an error
   PROTOBUF_NODISCARD LimitToken PushLimit(const char* ptr, int limit) {
@@ -195,7 +164,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     // end up with an invalid limit and it can lead to integer overflows.
     limit_ = limit_ + std::move(delta).token();
     if (PROTOBUF_PREDICT_FALSE(!EndedAtLimit())) return false;
-    // TODO(gerbens) We could remove this line and hoist the code to
+    // TODO We could remove this line and hoist the code to
     // DoneFallback. Study the perf/bin-size effects.
     limit_end_ = buffer_end_ + (std::min)(0, limit_);
     return true;
@@ -254,7 +223,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   PROTOBUF_NODISCARD const char* ReadPackedFixed(const char* ptr, int size,
                                                  RepeatedField<T>* out);
   template <typename Add>
-  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add);
+  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add) {
+    return ReadPackedVarint(ptr, add, [](int) {});
+  }
+  template <typename Add, typename SizeCb>
+  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add,
+                                                  SizeCb size_callback);
 
   uint32_t LastTag() const { return last_tag_minus_1_ + 1; }
   bool ConsumeEndGroup(uint32_t start_tag) {
@@ -369,7 +343,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   uint32_t last_tag_minus_1_ = 0;
   int overall_limit_ = INT_MAX;  // Overall limit independent of pushed limits.
   // Pretty random large number that seems like a safe allocation on most
-  // systems. TODO(gerbens) do we need to set this as build flag?
+  // systems. TODO do we need to set this as build flag?
   enum { kSafeStringSize = 50000000 };
 
   // Advances to next buffer chunk returns a pointer to the same logical place
@@ -416,7 +390,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       append(ptr, chunk_size);
       ptr += chunk_size;
       size -= chunk_size;
-      // TODO(gerbens) Next calls NextBuffer which generates buffers with
+      // TODO Next calls NextBuffer which generates buffers with
       // overlap and thus incurs cost of copying the slop regions. This is not
       // necessary for reading strings. We should just call Next buffers.
       if (limit_ <= kSlopBytes) return nullptr;
@@ -432,8 +406,8 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // AppendUntilEnd appends data until a limit (either a PushLimit or end of
   // stream. Normal payloads are from length delimited fields which have an
   // explicit size. Reading until limit only comes when the string takes
-  // the place of a protobuf, ie RawMessage/StringRawMessage, lazy fields and
-  // implicit weak messages. We keep these methods private and friend them.
+  // the place of a protobuf, ie RawMessage, lazy fields and implicit weak
+  // messages. We keep these methods private and friend them.
   template <typename A>
   const char* AppendUntilEnd(const char* ptr, const A& append) {
     if (ptr - buffer_end_ > limit_) return nullptr;
@@ -483,6 +457,30 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     *start = InitFrom(std::forward<T>(args)...);
   }
 
+  struct Spawn {};
+  static constexpr Spawn kSpawn = {};
+
+  // Creates a new context from a given "ctx" to inherit a few attributes to
+  // emulate continued parsing. For example, recursion depth or descriptor pools
+  // must be passed down to a new "spawned" context to maintain the same parse
+  // context. Note that the spawned context always disables aliasing (different
+  // input).
+  template <typename... T>
+  ParseContext(Spawn, const ParseContext& ctx, const char** start, T&&... args)
+      : EpsCopyInputStream(false),
+        depth_(ctx.depth_),
+        data_(ctx.data_)
+  {
+    *start = InitFrom(std::forward<T>(args)...);
+  }
+
+  // Move constructor and assignment operator are not supported because "ptr"
+  // for parsing may have pointed to an inlined buffer (patch_buffer_) which can
+  // be invalid afterwards.
+  ParseContext(ParseContext&&) = delete;
+  ParseContext& operator=(ParseContext&&) = delete;
+  ParseContext& operator=(const ParseContext&) = delete;
+
   void TrackCorrectEnding() { group_depth_ = 0; }
 
   // Done should only be called when the parsing pointer is pointing to the
@@ -496,21 +494,9 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   const char* ParseMessage(MessageLite* msg, const char* ptr);
 
-  // Spawns a child parsing context that inherits key properties. New context
-  // inherits the following:
-  // --depth_, data_, check_required_fields_, lazy_parse_mode_
-  // The spawned context always disables aliasing (different input).
-  template <typename... T>
-  ParseContext Spawn(const char** start, T&&... args) {
-    ParseContext spawned(depth_, false, start, std::forward<T>(args)...);
-    // Transfer key context states.
-    spawned.data_ = data_;
-    return spawned;
-  }
-
   // This overload supports those few cases where ParseMessage is called
   // on a class that is not actually a proto message.
-  // TODO(jorg): Eliminate this use case.
+  // TODO: Eliminate this use case.
   template <typename T,
             typename std::enable_if<!std::is_base_of<MessageLite, T>::value,
                                     bool>::type = true>
@@ -601,17 +587,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   int group_depth_ = INT_MIN;
   Data data_;
 };
-
-template <uint32_t tag>
-bool ExpectTag(const char* ptr) {
-  if (tag < 128) {
-    return *ptr == static_cast<char>(tag);
-  } else {
-    static_assert(tag < 128 * 128, "We only expect tags for 1 or 2 bytes");
-    char buf[2] = {static_cast<char>(tag | 0x80), static_cast<char>(tag >> 7)};
-    return std::memcmp(ptr, buf, 2) == 0;
-  }
-}
 
 template <int>
 struct EndianHelper;
@@ -908,7 +883,7 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 
 template <typename T>
 PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
-#if defined(__aarch64__) && defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN)
   // This optimization is not supported in big endian mode
   uint64_t first8;
   std::memcpy(&first8, p, sizeof(first8));
@@ -976,7 +951,7 @@ PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE constexpr T RotateLeft(
 
 PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE uint64_t
 RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
-  // TODO(b/239808098): remove the inline assembly
+  // TODO: remove the inline assembly
 #if defined(__x86_64__) && defined(__GNUC__)
   // This will only use one register for `res`.
   // `byte` comes as a reference to allow the compiler to generate code like:
@@ -995,7 +970,7 @@ RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
   res |= 0xFF & byte;
 #endif
   return res;
-};
+}
 
 inline PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
                                                          uint32_t* out) {
@@ -1203,7 +1178,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
     out->Reserve(old_entries + num);
     int block_size = num * sizeof(T);
     auto dst = out->AddNAlreadyReserved(num);
-#ifdef PROTOBUF_LITTLE_ENDIAN
+#ifdef ABSL_IS_LITTLE_ENDIAN
     std::memcpy(dst, ptr, block_size);
 #else
     for (int i = 0; i < num; i++)
@@ -1222,7 +1197,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   int old_entries = out->size();
   out->Reserve(old_entries + num);
   auto dst = out->AddNAlreadyReserved(num);
-#ifdef PROTOBUF_LITTLE_ENDIAN
+#ifdef ABSL_IS_LITTLE_ENDIAN
   ABSL_CHECK(dst != nullptr) << out << "," << num;
   std::memcpy(dst, ptr, block_size);
 #else
@@ -1244,9 +1219,12 @@ const char* ReadPackedVarintArray(const char* ptr, const char* end, Add add) {
   return ptr;
 }
 
-template <typename Add>
-const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
+template <typename Add, typename SizeCb>
+const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add,
+                                                 SizeCb size_callback) {
   int size = ReadSize(&ptr);
+  size_callback(size);
+
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int chunk_size = static_cast<int>(buffer_end_ - ptr);
   while (size > chunk_size) {

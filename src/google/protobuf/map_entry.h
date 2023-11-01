@@ -1,41 +1,23 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_MAP_ENTRY_H__
 #define GOOGLE_PROTOBUF_MAP_ENTRY_H__
 
-#include "google/protobuf/port.h"
+#include <cstddef>
+#include <cstdint>
+#include <string>
+
 #include "google/protobuf/generated_message_reflection.h"
-#include "google/protobuf/map_entry_lite.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/map_type_handler.h"
-#include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/parse_context.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -91,38 +73,135 @@ namespace internal {
 template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
-class MapEntry : public MapEntryImpl<Derived, Message, Key, Value,
-                                     kKeyFieldType, kValueFieldType> {
+class MapEntry : public Message {
+  // Provide utilities to parse/serialize key/value.  Provide utilities to
+  // manipulate internal stored type.
+  using KeyTypeHandler = MapTypeHandler<kKeyFieldType, Key>;
+  using ValueTypeHandler = MapTypeHandler<kValueFieldType, Value>;
+
+  // Define internal memory layout. Strings and messages are stored as
+  // pointers, while other types are stored as values.
+  using KeyOnMemory = typename KeyTypeHandler::TypeOnMemory;
+  using ValueOnMemory = typename ValueTypeHandler::TypeOnMemory;
+
+  // Constants for field number.
+  static const int kKeyFieldNumber = 1;
+  static const int kValueFieldNumber = 2;
+
+  // Constants for field tag.
+  static const uint8_t kKeyTag =
+      GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(kKeyFieldNumber, KeyTypeHandler::kWireType);
+  static const uint8_t kValueTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
+      kValueFieldNumber, ValueTypeHandler::kWireType);
+  static const size_t kTagSize = 1;
+
  public:
-  constexpr MapEntry() {}
+  constexpr MapEntry()
+      : key_(KeyTypeHandler::Constinit()),
+        value_(ValueTypeHandler::Constinit()),
+        _has_bits_{} {}
+
   explicit MapEntry(Arena* arena)
-      : MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
-                     kValueFieldType>(arena) {}
+      : Message(arena),
+        key_(KeyTypeHandler::Constinit()),
+        value_(ValueTypeHandler::Constinit()),
+        _has_bits_{} {}
+
   MapEntry(const MapEntry&) = delete;
   MapEntry& operator=(const MapEntry&) = delete;
-  ~MapEntry() override {
-    Message::_internal_metadata_.template Delete<UnknownFieldSet>();
-  }
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
 
-  typedef typename MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
-                                kValueFieldType>::KeyTypeHandler KeyTypeHandler;
-  typedef
-      typename MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
-                            kValueFieldType>::ValueTypeHandler ValueTypeHandler;
-  size_t SpaceUsedLong() const override {
-    size_t size = sizeof(Derived);
-    size += KeyTypeHandler::SpaceUsedInMapEntryLong(this->key_);
-    size += ValueTypeHandler::SpaceUsedInMapEntryLong(this->value_);
+  ~MapEntry() override {
+    if (GetArena() != nullptr) return;
+    Message::_internal_metadata_.template Delete<UnknownFieldSet>();
+    KeyTypeHandler::DeleteNoArena(key_);
+    ValueTypeHandler::DeleteNoArena(value_);
+  }
+
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+
+  // accessors ======================================================
+
+  inline const auto& key() const {
+    return KeyTypeHandler::GetExternalReference(key_);
+  }
+  inline const auto& value() const {
+    return ValueTypeHandler::DefaultIfNotInitialized(value_);
+  }
+  inline auto* mutable_key() {
+    _has_bits_[0] |= 0x00000001u;
+    return KeyTypeHandler::EnsureMutable(&key_, GetArena());
+  }
+  inline auto* mutable_value() {
+    _has_bits_[0] |= 0x00000002u;
+    return ValueTypeHandler::EnsureMutable(&value_, GetArena());
+  }
+
+  // TODO: These methods currently differ in behavior from the ones
+  // implemented via reflection. This means that a MapEntry does not behave the
+  // same as an equivalent object made via DynamicMessage.
+
+  const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
+    while (!ctx->Done(&ptr)) {
+      uint32_t tag;
+      ptr = ReadTag(ptr, &tag);
+      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+      if (tag == kKeyTag) {
+        auto* key = mutable_key();
+        ptr = KeyTypeHandler::Read(ptr, ctx, key);
+        if (!Derived::ValidateKey(key)) return nullptr;
+      } else if (tag == kValueTag) {
+        auto* value = mutable_value();
+        ptr = ValueTypeHandler::Read(ptr, ctx, value);
+        if (!Derived::ValidateValue(value)) return nullptr;
+      } else {
+        if (tag == 0 || WireFormatLite::GetTagWireType(tag) ==
+                            WireFormatLite::WIRETYPE_END_GROUP) {
+          ctx->SetLastTag(tag);
+          return ptr;
+        }
+        ptr = UnknownFieldParse(tag, static_cast<std::string*>(nullptr), ptr,
+                                ctx);
+      }
+      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+    }
+    return ptr;
+  }
+
+  size_t ByteSizeLong() const final {
+    size_t size = 0;
+    size += kTagSize + static_cast<size_t>(KeyTypeHandler::ByteSize(key()));
+    size += kTagSize + static_cast<size_t>(ValueTypeHandler::ByteSize(value()));
+    _cached_size_.Set(ToCachedSize(size));
     return size;
   }
 
- private:
+  ::uint8_t* _InternalSerialize(::uint8_t* ptr,
+                                io::EpsCopyOutputStream* stream) const final {
+    ptr = KeyTypeHandler::Write(kKeyFieldNumber, key(), ptr, stream);
+    return ValueTypeHandler::Write(kValueFieldNumber, value(), ptr, stream);
+  }
+
+  bool IsInitialized() const final {
+    return ValueTypeHandler::IsInitialized(value_);
+  }
+
+  Message* New(Arena* arena) const final {
+    return Arena::CreateMessage<Derived>(arena);
+  }
+
+  CachedSize* AccessCachedSize() const final { return &_cached_size_; }
+
+ protected:
   friend class google::protobuf::Arena;
   template <typename C, typename K, typename V, WireFormatLite::FieldType,
             WireFormatLite::FieldType>
   friend class MapField;
+
+  KeyOnMemory key_;
+  ValueOnMemory value_;
+  HasBits<1> _has_bits_;
+  mutable CachedSize _cached_size_;
 };
 
 }  // namespace internal

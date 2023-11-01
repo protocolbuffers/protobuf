@@ -11,6 +11,7 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 // @@protoc_insertion_point(includes)
 
 // Must be included last.
@@ -18,10 +19,11 @@
 PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
+namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
-PROTOBUF_CONSTEXPR Empty::Empty(
-    ::_pbi::ConstantInitialized) {}
+      template <typename>
+PROTOBUF_CONSTEXPR Empty::Empty(::_pbi::ConstantInitialized) {}
 struct EmptyDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EmptyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~EmptyDefaultTypeInternal() {}
@@ -30,7 +32,7 @@ struct EmptyDefaultTypeInternal {
   };
 };
 
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EmptyDefaultTypeInternal _Empty_default_instance_;
 }  // namespace protobuf
 }  // namespace google
@@ -39,27 +41,29 @@ static constexpr const ::_pb::EnumDescriptor**
     file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto = nullptr;
 static constexpr const ::_pb::ServiceDescriptor**
     file_level_service_descriptors_google_2fprotobuf_2fempty_2eproto = nullptr;
-const ::uint32_t TableStruct_google_2fprotobuf_2fempty_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
-    protodesc_cold) = {
-    ~0u,  // no _has_bits_
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Empty, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
+const ::uint32_t
+    TableStruct_google_2fprotobuf_2fempty_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+        protodesc_cold) = {
+        ~0u,  // no _has_bits_
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Empty, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
 };
 
 static const ::_pbi::MigrationSchema
-    schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-        { 0, -1, -1, sizeof(::google::protobuf::Empty)},
+    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+        {0, -1, -1, sizeof(::google::protobuf::Empty)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_Empty_default_instance_._instance,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+    protodesc_cold) = {
     "\n\033google/protobuf/empty.proto\022\017google.pr"
     "otobuf\"\007\n\005EmptyB}\n\023com.google.protobufB\n"
     "EmptyProtoP\001Z.google.golang.org/protobuf"
@@ -111,25 +115,22 @@ class Empty::_Internal {
 };
 
 Empty::Empty(::google::protobuf::Arena* arena)
-  : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Empty)
 }
-Empty::Empty(const Empty& from)
-  : ::google::protobuf::internal::ZeroFieldsBase() {
-  Empty* const _this = this; (void)_this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+Empty::Empty(
+    ::google::protobuf::Arena* arena,
+    const Empty& from)
+    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+  Empty* const _this = this;
+  (void)_this;
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Empty)
 }
 
 
-
-
-
-const ::google::protobuf::Message::ClassData Empty::_class_data_ = {
-    ::google::protobuf::internal::ZeroFieldsBase::CopyImpl,
-    ::google::protobuf::internal::ZeroFieldsBase::MergeImpl,
-};
-const ::google::protobuf::Message::ClassData*Empty::GetClassData() const { return &_class_data_; }
 
 
 
@@ -147,10 +148,6 @@ const ::google::protobuf::Message::ClassData*Empty::GetClassData() const { retur
 }  // namespace google
 namespace google {
 namespace protobuf {
-template<> PROTOBUF_NOINLINE ::google::protobuf::Empty*
-Arena::CreateMaybeMessage< ::google::protobuf::Empty >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::google::protobuf::Empty >(arena);
-}
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -116,21 +93,23 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/arena.h"
-#include "google/protobuf/port.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/functional/function_ref.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_util.h"
-#include "google/protobuf/map.h"  // TODO(b/211442718): cleanup
+#include "google/protobuf/map.h"  // TODO: cleanup
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/reflection.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -161,6 +140,7 @@ namespace internal {
 struct FuzzPeer;
 struct DescriptorTable;
 class MapFieldBase;
+class MessageUtil;
 class SwapFieldHelper;
 class CachedSize;
 struct TailCallTableInfo;
@@ -182,10 +162,13 @@ class CelMapReflectionFriend;  // field_backed_map_impl.cc
 
 namespace internal {
 class MapFieldPrinterHelper;  // text_format.cc
-PROTOBUF_EXPORT void PerformAbslStringify(
-    const Message& message,
-    absl::FunctionRef<void(absl::string_view)> append);  // text_format.cc
+PROTOBUF_EXPORT std::string StringifyMessage(
+    const Message& message);  // text_format.cc
 }  // namespace internal
+PROTOBUF_EXPORT std::string ShortFormat(
+    const Message& message);  // text_format.cc
+PROTOBUF_EXPORT std::string Utf8Format(
+    const Message& message);  // text_format.cc
 namespace util {
 class MessageDifferencer;
 }
@@ -274,7 +257,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // messages which will be merged.  Repeated fields will be concatenated.
   // The given message must be of the same type as this message (i.e. the
   // exact same class).
-  virtual void MergeFrom(const Message& from);
+  void MergeFrom(const Message& from);
 
   // Verifies that IsInitialized() returns true.  ABSL_CHECK-fails otherwise,
   // with a nice error message.
@@ -288,7 +271,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Like FindInitializationErrors, but joins all the strings, delimited by
   // commas, and returns them.
-  std::string InitializationErrorString() const override;
+  std::string InitializationErrorString() const;
 
   // Clears all unknown fields from this message and all embedded messages.
   // Normally, if unknown tag numbers are encountered when parsing a message,
@@ -303,8 +286,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   void DiscardUnknownFields();
 
   // Computes (an estimate of) the total number of bytes currently used for
-  // storing the message in memory.  The default implementation calls the
-  // Reflection object's SpaceUsed() method.
+  // storing the message in memory.
   //
   // SpaceUsed() is noticeably slower than ByteSize(), as it is implemented
   // using reflection (rather than the generated code implementation for
@@ -314,7 +296,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Note: The precise value of this method should never be depended on, and can
   // change substantially due to internal details.  In debug builds, this will
   // include a random fuzz factor to prevent these dependencies.
-  virtual size_t SpaceUsedLong() const;
+  size_t SpaceUsedLong() const;
 
   [[deprecated("Please use SpaceUsedLong() instead")]] int SpaceUsed() const {
     return internal::ToIntSize(SpaceUsedLong());
@@ -340,15 +322,13 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Do not rely on exact format.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const google::protobuf::Message& message) {
-    internal::PerformAbslStringify(
-        message, [&](absl::string_view content) { sink.Append(content); });
+    sink.Append(internal::StringifyMessage(message));
   }
 
   // Reflection-based methods ----------------------------------------
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
 
-  std::string GetTypeName() const override;
   void Clear() override;
 
   // Returns whether all required fields have been set. Note that required
@@ -363,17 +343,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   uint8_t* _InternalSerialize(uint8_t* target,
                               io::EpsCopyOutputStream* stream) const override;
 
- private:
-  // This is called only by the default implementation of ByteSize(), to
-  // update the cached size.  If you override ByteSize(), you do not need
-  // to override this.  If you do not override ByteSize(), you MUST override
-  // this; the default implementation will crash.
-  //
-  // The method is private because subclasses should never call it; only
-  // override it.  Yes, C++ lets you do that.  Crazy, huh?
-  virtual void SetCachedSize(int size) const;
-
- public:
   // Introspection ---------------------------------------------------
 
 
@@ -393,35 +362,21 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // to implement GetDescriptor() and GetReflection() above.
   virtual Metadata GetMetadata() const = 0;
 
-  struct ClassData {
-    // Note: The order of arguments (to, then from) is chosen so that the ABI
-    // of this function is the same as the CopyFrom method.  That is, the
-    // hidden "this" parameter comes first.
-    void (*copy_to_from)(Message& to, const Message& from_msg);
-    void (*merge_to_from)(Message& to, const Message& from_msg);
-  };
-  // GetClassData() returns a pointer to a ClassData struct which
-  // exists in global memory and is unique to each subclass.  This uniqueness
-  // property is used in order to quickly determine whether two messages are
-  // of the same type.
-  // TODO(jorg): change to pure virtual
-  virtual const ClassData* GetClassData() const { return nullptr; }
-
-  // CopyWithSourceCheck calls Clear() and then MergeFrom(), and in debug
-  // builds, checks that calling Clear() on the destination message doesn't
-  // alter the source.  It assumes the messages are known to be of the same
-  // type, and thus uses GetClassData().
-  static void CopyWithSourceCheck(Message& to, const Message& from);
-
   inline explicit Message(Arena* arena) : MessageLite(arena) {}
   size_t ComputeUnknownFieldsSize(size_t total_size,
                                   internal::CachedSize* cached_size) const;
   size_t MaybeComputeUnknownFieldsSize(size_t total_size,
                                        internal::CachedSize* cached_size) const;
 
+  // Reflection based version for reflection based types.
+  static void MergeImpl(Message& to, const Message& from);
 
- protected:
-  static uint64_t GetInvariantPerBuild(uint64_t salt);
+  static const DescriptorMethods kDescriptorMethods;
+
+  // Default implementation using reflection. Avoids bloat in MapEntry.
+  // Generated types will make their own.
+  const ClassData* GetClassData() const override;
+
 };
 
 namespace internal {
@@ -434,14 +389,6 @@ void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
 // These are protobuf internals that users shouldn't care about.
 class RepeatedFieldAccessor;
 }  // namespace internal
-
-// Forward-declare RepeatedFieldRef templates. The second type parameter is
-// used for SFINAE tricks. Users should ignore it.
-template <typename T, typename Enable = void>
-class RepeatedFieldRef;
-
-template <typename T, typename Enable = void>
-class MutableRepeatedFieldRef;
 
 // This interface contains methods that can be used to dynamically access
 // and modify the fields of a protocol message.  Their semantics are
@@ -1028,8 +975,11 @@ class PROTOBUF_EXPORT Reflection final {
   // "message_type" should be set to its descriptor. Otherwise "message_type"
   // should be set to nullptr. Implementations of this method should check
   // whether "cpp_type"/"message_type" is consistent with the actual type of the
-  // field. We use 1 routine rather than 2 (const vs mutable) because it is
-  // protected and it doesn't change the message.
+  // field.
+  const void* RepeatedFieldData(const Message& message,
+                                const FieldDescriptor* field,
+                                FieldDescriptor::CppType cpp_type,
+                                const Descriptor* message_type) const;
   void* RepeatedFieldData(Message* message, const FieldDescriptor* field,
                           FieldDescriptor::CppType cpp_type,
                           const Descriptor* message_type) const;
@@ -1117,6 +1067,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class expr::CelMapReflectionFriend;
   friend class internal::MapFieldReflectionTest;
   friend class internal::MapKeySorter;
+  friend class internal::MessageUtil;
   friend class internal::WireFormat;
   friend class internal::ReflectionOps;
   friend class internal::SwapFieldHelper;
@@ -1132,8 +1083,9 @@ class PROTOBUF_EXPORT Reflection final {
   // call MutableRawRepeatedField directly here because we don't have access to
   // FieldOptions::* which are defined in descriptor.pb.h.  Including that
   // file here is not possible because it would cause a circular include cycle.
-  // We use 1 routine rather than 2 (const vs mutable) because it is private
-  // and mutable a repeated string field doesn't change the message.
+  const void* GetRawRepeatedString(const Message& message,
+                                   const FieldDescriptor* field,
+                                   bool is_string) const;
   void* MutableRawRepeatedString(Message* message, const FieldDescriptor* field,
                                  bool is_string) const;
 
@@ -1453,6 +1405,60 @@ T* DynamicCastToGenerated(Message* from) {
   return const_cast<T*>(DynamicCastToGenerated<T>(message_const));
 }
 
+// An overloaded version of DynamicCastToGenerated for downcasting references to
+// base Message class. If the destination type T if the argument is not an
+// instance of T and dynamic_cast returns nullptr, it terminates with an error.
+template <typename T>
+const T& DynamicCastToGenerated(const Message& from) {
+  const T* destination_message = DynamicCastToGenerated<T>(&from);
+  ABSL_CHECK(destination_message != nullptr)
+      << "Cannot downcast " << from.GetTypeName() << " to "
+      << T::default_instance().GetTypeName();
+  return *destination_message;
+}
+
+template <typename T>
+T& DynamicCastToGenerated(Message& from) {
+  const Message& message_const = from;
+  const T& destination_message = DynamicCastToGenerated<T>(message_const);
+  return const_cast<T&>(destination_message);
+}
+
+// A lightweight function for downcasting base Message pointer to derived type.
+// It should only be used when the caller is certain that the argument is of
+// instance T and T is a type derived from base Message class.
+template <typename T>
+const T* DownCastToGenerated(const Message* from) {
+  // Compile-time assert that T is a generated type that has a
+  // default_instance() accessor, but avoid actually calling it.
+  const T& (*get_default_instance)() = &T::default_instance;
+  (void)get_default_instance;
+
+  ABSL_DCHECK(DynamicCastToGenerated<T>(from) == from)
+      << "Cannot downcast " << from->GetTypeName() << " to "
+      << T::default_instance().GetTypeName();
+
+  return static_cast<const T*>(from);
+}
+
+template <typename T>
+T* DownCastToGenerated(Message* from) {
+  const Message* message_const = from;
+  return const_cast<T*>(DownCastToGenerated<T>(message_const));
+}
+
+template <typename T>
+const T& DownCastToGenerated(const Message& from) {
+  return *DownCastToGenerated<T>(&from);
+}
+
+template <typename T>
+T& DownCastToGenerated(Message& from) {
+  const Message& message_const = from;
+  const T& destination_message = DownCastToGenerated<T>(message_const);
+  return const_cast<T&>(destination_message);
+}
+
 // Call this function to ensure that this message's reflection is linked into
 // the binary:
 //
@@ -1489,8 +1495,8 @@ template <>
 inline const RepeatedPtrField<std::string>&
 Reflection::GetRepeatedPtrFieldInternal<std::string>(
     const Message& message, const FieldDescriptor* field) const {
-  return *static_cast<RepeatedPtrField<std::string>*>(
-      MutableRawRepeatedString(const_cast<Message*>(&message), field, true));
+  return *static_cast<const RepeatedPtrField<std::string>*>(
+      GetRawRepeatedString(message, field, true));
 }
 
 template <>
@@ -1556,17 +1562,50 @@ void** Reflection::MutableSplitField(Message* message) const {
   return internal::GetPointerAtOffset<void*>(message, schema_.SplitOffset());
 }
 
+namespace internal {
+
+template <typename T>
+bool SplitFieldHasExtraIndirectionStatic(const FieldDescriptor* field) {
+  const bool ret = std::is_base_of<RepeatedFieldBase, T>() ||
+                   std::is_base_of<RepeatedPtrFieldBase, T>();
+  ABSL_DCHECK_EQ(SplitFieldHasExtraIndirection(field), ret);
+  return ret;
+}
+
+class RawMessageBase : public Message {
+ public:
+  using Message::Message;
+  virtual size_t SpaceUsedLong() const = 0;
+};
+
+}  // namespace internal
+
 template <typename Type>
 const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
   ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
       << "Field = " << field->full_name();
-  if (schema_.IsSplit(field)) {
-    return *internal::GetConstPointerAtOffset<Type>(
-        GetSplitField(&message), schema_.GetFieldOffset(field));
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
+  if (!schema_.IsSplit(field)) {
+    return internal::GetConstRefAtOffset<Type>(message, field_offset);
   }
-  return internal::GetConstRefAtOffset<Type>(message,
-                                             schema_.GetFieldOffset(field));
+  const void* split = GetSplitField(&message);
+  if (internal::SplitFieldHasExtraIndirectionStatic<Type>(field)) {
+    return **internal::GetConstPointerAtOffset<Type*>(split, field_offset);
+  }
+  return *internal::GetConstPointerAtOffset<Type>(split, field_offset);
+}
+
+template <typename T>
+RepeatedFieldRef<T> Reflection::GetRepeatedFieldRef(
+    const Message& message, const FieldDescriptor* field) const {
+  return RepeatedFieldRef<T>(message, field);
+}
+
+template <typename T>
+MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
+    Message* message, const FieldDescriptor* field) const {
+  return MutableRepeatedFieldRef<T>(message, field);
 }
 }  // namespace protobuf
 }  // namespace google

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/retention.h"
 
@@ -160,7 +137,8 @@ TEST(RetentionTest, ExtensionRange) {
   CheckOptionsMessageIsStrippedCorrectly(
       protobuf_unittest::TopLevelMessage::descriptor()
           ->extension_range(0)
-          ->options_->GetExtension(protobuf_unittest::extension_range_option));
+          ->options()
+          .GetExtension(protobuf_unittest::extension_range_option));
 }
 
 TEST(RetentionTest, Service) {
@@ -241,6 +219,47 @@ TEST(RetentionTest, StripSourceRetentionOptionsWithSourceCodeInfo) {
       *pool.FindFileByName("retention.proto"),
       /*include_source_code_info=*/true);
   EXPECT_EQ(stripped_file.source_code_info().location_size(), 63);
+}
+
+TEST(RetentionTest, RemoveEmptyOptions) {
+  // If an options message is completely empty after stripping, that message
+  // should be removed.
+  std::string proto_file =
+      absl::Substitute(R"(
+      syntax = "proto2";
+
+      package google.protobuf.internal;
+
+      import "$0";
+
+      message Extendee {
+        extensions 1 to max [declaration = {
+          number: 1,
+          full_name: ".my.ext",
+          type: ".my.Message",
+        }];
+      })",
+                       FileDescriptorSet::descriptor()->file()->name());
+  io::ArrayInputStream input_stream(proto_file.data(),
+                                    static_cast<int>(proto_file.size()));
+  io::ErrorCollector error_collector;
+  io::Tokenizer tokenizer(&input_stream, &error_collector);
+  compiler::Parser parser;
+  FileDescriptorProto file_descriptor;
+  ASSERT_TRUE(parser.Parse(&tokenizer, &file_descriptor));
+  file_descriptor.set_name("retention.proto");
+
+  DescriptorPool pool;
+  FileDescriptorProto descriptor_proto_descriptor;
+  FileDescriptorSet::descriptor()->file()->CopyTo(&descriptor_proto_descriptor);
+  pool.BuildFile(descriptor_proto_descriptor);
+  pool.BuildFile(file_descriptor);
+
+  FileDescriptorProto stripped_file = compiler::StripSourceRetentionOptions(
+      *pool.FindFileByName("retention.proto"));
+  ASSERT_EQ(stripped_file.message_type_size(), 1);
+  ASSERT_EQ(stripped_file.message_type(0).extension_range_size(), 1);
+  EXPECT_FALSE(stripped_file.message_type(0).extension_range(0).has_options());
 }
 
 TEST(RetentionTest, InvalidDescriptor) {

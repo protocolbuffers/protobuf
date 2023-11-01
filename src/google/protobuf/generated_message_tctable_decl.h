@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // This file contains declarations needed in generated headers for messages
 // that use tail-call table parsing. Everything in this file is for internal
@@ -164,6 +141,7 @@ struct Offset {
 #endif
 
 struct FieldAuxDefaultMessage {};
+struct FieldAuxEnumData {};
 
 // Small type card used by mini parse to handle map entries.
 // Map key/values are very limited, so we can encode the whole thing in a single
@@ -257,6 +235,7 @@ constexpr MapTypeCard MakeMapTypeCard(WireFormatLite::FieldType type) {
       return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kMessage,
               false, false};
 
+    case WireFormatLite::TYPE_GROUP:
     default:
       PROTOBUF_ASSUME(false);
   }
@@ -404,8 +383,8 @@ struct alignas(uint64_t) TcParseTableBase {
   // Auxiliary entries for field types that need extra information.
   union FieldAux {
     constexpr FieldAux() : message_default_p(nullptr) {}
-    constexpr FieldAux(bool (*enum_validator)(int))
-        : enum_validator(enum_validator) {}
+    constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
+        : enum_data(enum_data) {}
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
     constexpr FieldAux(int16_t range_start, uint16_t range_length)
         : enum_range{range_start, range_length} {}
@@ -418,13 +397,13 @@ struct alignas(uint64_t) TcParseTableBase {
         : create_in_arena(create_in_arena) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
-    bool (*enum_validator)(int);
     struct {
       int16_t start;    // minimum enum number (if it fits)
       uint16_t length;  // length of range (i.e., max = start + length - 1)
     } enum_range;
     uint32_t offset;
     const void* message_default_p;
+    const uint32_t* enum_data;
     const TcParseTableBase* table;
     MapAuxInfo map_info;
     void (*create_in_arena)(Arena*, void*);

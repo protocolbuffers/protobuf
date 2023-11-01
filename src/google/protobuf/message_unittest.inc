@@ -1,33 +1,10 @@
 // -*- c++ -*-
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -69,8 +46,12 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/test_util2.h"
 
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -90,8 +71,9 @@ using google::protobuf::io::win32::open;
 #endif
 #endif
 
+
 TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
-  // TODO(kenton):  Test more helpers?  They're all two-liners so it seems
+  // TODO:  Test more helpers?  They're all two-liners so it seems
   //   like a waste of time.
 
   UNITTEST::TestAllTypes message;
@@ -129,7 +111,7 @@ TEST(MESSAGE_TEST_NAME, SerializeToBrokenOstream) {
 
 TEST(MESSAGE_TEST_NAME, ParseFromFileDescriptor) {
   std::string filename =
-      TestUtil::GetTestDataPath("third_party/protobuf/testdata/golden_message");
+      TestUtil::GetTestDataPath("google/protobuf/testdata/golden_message");
   int file = open(filename.c_str(), O_RDONLY | O_BINARY);
   ASSERT_GE(file, 0);
 
@@ -142,7 +124,7 @@ TEST(MESSAGE_TEST_NAME, ParseFromFileDescriptor) {
 
 TEST(MESSAGE_TEST_NAME, ParsePackedFromFileDescriptor) {
   std::string filename = TestUtil::GetTestDataPath(
-      "third_party/protobuf/testdata/golden_packed_fields_message");
+      "google/protobuf/testdata/golden_packed_fields_message");
   int file = open(filename.c_str(), O_RDONLY | O_BINARY);
   ASSERT_GE(file, 0);
 
@@ -154,7 +136,7 @@ TEST(MESSAGE_TEST_NAME, ParsePackedFromFileDescriptor) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParseHelpers) {
-  // TODO(kenton):  Test more helpers?  They're all two-liners so it seems
+  // TODO:  Test more helpers?  They're all two-liners so it seems
   //   like a waste of time.
   std::string data;
 
@@ -325,7 +307,7 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
       ->mutable_payload()
       ->set_optional_int32(-1);
   std::string serialized;
-  EXPECT_TRUE(original.SerializeToString(&serialized));
+  ASSERT_TRUE(original.SerializeToString(&serialized));
 
   // User annotated LazyField ([lazy = true]) is eagerly verified and should
   // catch the recursion limit violation.
@@ -337,6 +319,37 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
   // Lazy read results in parsing error which can be verified by not having
   // expected value.
   EXPECT_NE(parsed.lazy_child().child().payload().optional_int32(), -1);
+}
+
+TEST(MESSAGE_TEST_NAME, NestedLazyRecursionLimit) {
+  UNITTEST::NestedTestAllTypes original, parsed;
+  original.mutable_lazy_child()
+      ->mutable_lazy_child()
+      ->mutable_lazy_child()
+      ->mutable_payload()
+      ->set_optional_int32(-1);
+  std::string serialized;
+  ASSERT_TRUE(original.SerializeToString(&serialized));
+  ASSERT_TRUE(parsed.ParseFromString(serialized));
+
+  io::ArrayInputStream array_stream(serialized.data(), serialized.size());
+  io::CodedInputStream input_stream(&array_stream);
+  input_stream.SetRecursionLimit(2);
+  EXPECT_FALSE(parsed.ParseFromCodedStream(&input_stream));
+  EXPECT_TRUE(parsed.has_lazy_child());
+  EXPECT_TRUE(parsed.lazy_child().has_lazy_child());
+  EXPECT_TRUE(parsed.lazy_child().lazy_child().has_lazy_child());
+  EXPECT_FALSE(parsed.lazy_child().lazy_child().lazy_child().has_payload());
+}
+
+TEST(MESSAGE_TEST_NAME, UnparsedEmpty) {
+  // lazy_child, LEN=100 with no payload.
+  const char encoded[] = {'\042', 100};
+  UNITTEST::NestedTestAllTypes message;
+
+  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+  EXPECT_TRUE(message.has_lazy_child());
+  EXPECT_EQ(message.lazy_child().ByteSizeLong(), 0);
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailNonCanonicalZeroTag) {
@@ -728,6 +741,11 @@ TEST(MESSAGE_TEST_NAME, SupportDeepRecursionLimit) {
   EXPECT_TRUE(p.ParseFromCodedStream(&input));
 }
 
+inline bool IsOptimizeForCodeSize(const Descriptor* descriptor) {
+  return descriptor->file()->options().optimize_for() == FileOptions::CODE_SIZE;
+}
+
+
 TEST(MESSAGE_TEST_NAME, Swap) {
   UNITTEST::NestedTestAllTypes o;
   constexpr int kDepth = 5;
@@ -788,6 +806,69 @@ TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
   Message* test_all_types_pointer_nullptr = nullptr;
   EXPECT_EQ(nullptr, DynamicCastToGenerated<UNITTEST::TestAllTypes>(
                          test_all_types_pointer_nullptr));
+
+  Message& test_all_types_pointer_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_ref));
+
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const_ref));
+}
+
+TEST(MESSAGE_TEST_NAME, DynamicCastToGeneratedInvalidReferenceType) {
+  UNITTEST::TestAllTypes test_all_types;
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  ASSERT_DEATH(DynamicCastToGenerated<UNITTEST::TestRequired>(
+                   test_all_types_pointer_const_ref),
+               "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+                   UNITTEST::TestRequired::default_instance().GetTypeName());
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedValidType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message* test_all_types_pointer = &test_all_types;
+  EXPECT_EQ(&test_all_types, DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer));
+
+  const Message* test_all_types_pointer_const = &test_all_types;
+  EXPECT_EQ(&test_all_types, DownCastToGenerated<const UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const));
+
+  Message* test_all_types_pointer_nullptr = nullptr;
+  EXPECT_EQ(nullptr, DownCastToGenerated<UNITTEST::TestAllTypes>(
+                         test_all_types_pointer_nullptr));
+
+  Message& test_all_types_pointer_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_ref));
+
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const_ref));
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidPointerType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message* test_all_types_pointer = &test_all_types;
+
+  ASSERT_DEBUG_DEATH(
+      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
+      "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+          UNITTEST::TestRequired::default_instance().GetTypeName());
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidReferenceType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message& test_all_types_pointer = test_all_types;
+
+  ASSERT_DEBUG_DEATH(
+      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
+      "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+          UNITTEST::TestRequired::default_instance().GetTypeName());
 }
 
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
@@ -977,6 +1058,29 @@ TEST(MESSAGE_TEST_NAME, MessageIsStillValidAfterParseFails) {
     arena_message->Clear();
     EXPECT_EQ("", arena_message->optional_string());
   }
+}
+
+TEST(MESSAGE_TEST_NAME, NonCanonicalTag) {
+  UNITTEST::TestAllTypes message;
+  // optional_lazy_message (27) LEN(3) with non canonical tag: (1).
+  const char encoded[] = {'\332', 1, 3, '\210', 0, 0};
+  EXPECT_TRUE(message.ParseFromArray(encoded, sizeof(encoded)));
+}
+
+TEST(MESSAGE_TEST_NAME, Zero5BTag) {
+  UNITTEST::TestAllTypes message;
+  // optional_nested_message (18) LEN(6) with 5B but zero tag.
+  const char encoded[] = {'\222', 1,      6,      '\200', '\200',
+                          '\200', '\200', '\020', 0};
+  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+}
+
+TEST(MESSAGE_TEST_NAME, Zero5BTagLazy) {
+  UNITTEST::TestAllTypes message;
+  // optional_lazy_message (27) LEN(6) with 5B but zero tag.
+  const char encoded[] = {'\332', 1,      6,      '\200', '\200',
+                          '\200', '\200', '\020', 0};
+  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
 }
 
 
@@ -1431,7 +1535,7 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
 
   constexpr int kInvalidValue = 0x900913;
   auto* ref = obj.GetReflection();
-  auto* descriptor = obj.descriptor();
+  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
   for (bool use_packed : {false, true}) {
     SCOPED_TRACE(use_packed);
     for (bool use_tail_field : {false, true}) {
@@ -1528,7 +1632,7 @@ TEST(MESSAGE_TEST_NAME, TestEnumParserForUnknownEnumValue) {
   // For unknown enum values, for consistency we must include the
   // int32_t enum value in the unknown field set, which might not be exactly the
   // same as the input.
-  auto* descriptor = non_dynamic.descriptor();
+  PROTOBUF_UNUSED auto* descriptor = non_dynamic.descriptor();
 
   const std::vector<const FieldDescriptor*> fields =
       GetFields<UNITTEST::EnumParseTester>();
@@ -1590,7 +1694,7 @@ TEST(MESSAGE_TEST_NAME, TestBoolParsers) {
       GetFields<UNITTEST::BoolParseTester>();
 
   auto* ref = obj.GetReflection();
-  auto* descriptor = obj.descriptor();
+  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1654,7 +1758,7 @@ TEST(MESSAGE_TEST_NAME, TestInt32Parsers) {
       GetFields<UNITTEST::Int32ParseTester>();
 
   auto* ref = obj.GetReflection();
-  auto* descriptor = obj.descriptor();
+  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1719,7 +1823,7 @@ TEST(MESSAGE_TEST_NAME, TestInt64Parsers) {
       GetFields<UNITTEST::Int64ParseTester>();
 
   auto* ref = obj.GetReflection();
-  auto* descriptor = obj.descriptor();
+  PROTOBUF_UNUSED auto* descriptor = obj.descriptor();
   for (bool use_tail_field : {false, true}) {
     SCOPED_TRACE(use_tail_field);
     for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
@@ -1875,7 +1979,8 @@ TEST(MESSAGE_TEST_NAME, TestRepeatedStringParsers) {
       "abcdefghijklmnopqrstuvwxyz"
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  const auto* const descriptor = UNITTEST::StringParseTester::descriptor();
+  PROTOBUF_UNUSED const auto* const descriptor =
+      UNITTEST::StringParseTester::descriptor();
 
   const std::vector<const FieldDescriptor*> fields =
       GetFields<UNITTEST::StringParseTester>();
@@ -1955,5 +2060,35 @@ TEST(MESSAGE_TEST_NAME, TestRegressionOnParseFailureNotSettingHasBits) {
   }
 }
 
+TEST(MESSAGE_TEST_NAME, TestRegressionOverwrittenLazyOneofDoesNotLeak) {
+  UNITTEST::TestAllTypes message;
+  auto* lazy = message.mutable_oneof_lazy_nested_message();
+  // We need to add enough payload to make the lazy field overflow the SSO of
+  // Cord. However, NestedMessage does not have enough fields for that. Just add
+  // some unknown payload to it. Use something that the validator will allow to
+  // stay as lazy.
+  lazy->GetReflection()->MutableUnknownFields(lazy)->AddFixed64(10, 10);
+  lazy->GetReflection()->MutableUnknownFields(lazy)->AddFixed64(11, 10);
+  // Validate that the size is large enough.
+  ASSERT_GT(lazy->ByteSizeLong(), 15);
+
+  // Append two instances of the oneof: first the lazy field, then any other to
+  // cause a switch during parsing.
+  std::string str;
+  ASSERT_TRUE(message.AppendToString(&str));
+  message.set_oneof_uint32(7);
+  ASSERT_TRUE(message.AppendToString(&str));
+
+  EXPECT_TRUE(UNITTEST::TestAllTypes().ParseFromString(str));
+  Arena arena;
+  // This call had a bug where the LazyField was not destroyed in any way
+  // causing the Cord inside it to leak its contents.
+  EXPECT_TRUE(
+      Arena::CreateMessage<UNITTEST::TestAllTypes>(&arena)->ParseFromString(
+          str));
+}
+
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

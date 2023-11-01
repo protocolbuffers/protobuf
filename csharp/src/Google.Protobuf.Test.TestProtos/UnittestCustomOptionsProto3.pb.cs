@@ -256,6 +256,7 @@ namespace UnitTest.Issues.TestProtos {
   /// A test message with custom options at all possible locations (and also some
   /// regular options, to make sure they interact nicely).
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMessageWithCustomOptions : pb::IMessage<TestMessageWithCustomOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -544,6 +545,7 @@ namespace UnitTest.Issues.TestProtos {
   /// A test RPC service with custom options at all possible locations (and also
   /// some regular options, to make sure they interact nicely).
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionFooRequest : pb::IMessage<CustomOptionFooRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -696,6 +698,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionFooResponse : pb::IMessage<CustomOptionFooResponse>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -848,6 +851,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionFooClientMessage : pb::IMessage<CustomOptionFooClientMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1000,6 +1004,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionFooServerMessage : pb::IMessage<CustomOptionFooServerMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1152,6 +1157,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DummyMessageContainingEnum : pb::IMessage<DummyMessageContainingEnum>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1318,6 +1324,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DummyMessageInvalidAsOptionType : pb::IMessage<DummyMessageInvalidAsOptionType>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1470,6 +1477,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionMinIntegerValues : pb::IMessage<CustomOptionMinIntegerValues>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1622,6 +1630,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionMaxIntegerValues : pb::IMessage<CustomOptionMaxIntegerValues>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1774,6 +1783,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionOtherValues : pb::IMessage<CustomOptionOtherValues>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1926,6 +1936,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class SettingRealsFromPositiveInts : pb::IMessage<SettingRealsFromPositiveInts>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2078,6 +2089,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class SettingRealsFromNegativeInts : pb::IMessage<SettingRealsFromNegativeInts>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2230,6 +2242,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ComplexOptionType1 : pb::IMessage<ComplexOptionType1>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2521,6 +2534,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ComplexOptionType2 : pb::IMessage<ComplexOptionType2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2831,6 +2845,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class ComplexOptionType4 : pb::IMessage<ComplexOptionType4>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -3035,6 +3050,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ComplexOptionType3 : pb::IMessage<ComplexOptionType3>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3227,6 +3243,7 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>
   /// Note that we try various different ways of naming the same extension.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class VariousComplexOptions : pb::IMessage<VariousComplexOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3382,6 +3399,7 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>
   /// A helper type used to test aggregate option parsing
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Aggregate : pb::IMessage<Aggregate>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3657,6 +3675,7 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class AggregateMessage : pb::IMessage<AggregateMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3849,6 +3868,7 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>
   /// Test custom options for nested type.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NestedOptionType : pb::IMessage<NestedOptionType>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4009,6 +4029,7 @@ namespace UnitTest.Issues.TestProtos {
         [pbr::OriginalName("NESTED_ENUM_VALUE")] Value = 1,
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage

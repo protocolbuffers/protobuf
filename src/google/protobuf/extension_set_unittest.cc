@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -35,19 +12,20 @@
 #include "google/protobuf/extension_set.h"
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/arena.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/text_format.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/wire_format.h"
@@ -65,7 +43,7 @@ namespace {
 using ::google::protobuf::internal::DownCast;
 using TestUtil::EqualsToSerialized;
 
-// This test closely mirrors third_party/protobuf/compiler/cpp/unittest.cc
+// This test closely mirrors google/protobuf/compiler/cpp/unittest.cc
 // except that it uses extensions rather than regular fields.
 
 TEST(ExtensionSetTest, Defaults) {
@@ -1368,7 +1346,7 @@ TEST(ExtensionSetTest, Proto3PackedDynamicExtensions) {
   google::protobuf::FileDescriptorProto file_descriptor_proto;
   file_descriptor_proto.set_syntax("proto3");
   file_descriptor_proto.set_name(
-      "third_party/protobuf/unittest_proto3_packed_extension.proto");
+      "google/protobuf/unittest_proto3_packed_extension.proto");
   file_descriptor_proto.set_package("proto3_unittest");
   file_descriptor_proto.add_dependency(
       DescriptorProto::descriptor()->file()->name());
@@ -1428,6 +1406,18 @@ TEST(ExtensionSetTest, ExtensionSetSpaceUsed) {
   unittest::TestAllExtensions msg3(msg);
   size_t l3 = msg3.SpaceUsedLong();
   EXPECT_TRUE((l2 - l) > (l3 - l));
+}
+
+TEST(ExtensionSetTest, Descriptor) {
+  EXPECT_EQ(
+      GetExtensionReflection(unittest::optional_int32_extension),
+      unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
+          "optional_int32_extension"));
+  EXPECT_NE(GetExtensionReflection(unittest::optional_int32_extension),
+            nullptr);
+  EXPECT_EQ(GetExtensionReflection(pb::cpp),
+            pb::CppFeatures::descriptor()->file()->FindExtensionByName("cpp"));
+  EXPECT_NE(GetExtensionReflection(pb::cpp), nullptr);
 }
 
 }  // namespace

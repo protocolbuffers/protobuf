@@ -1,43 +1,21 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_IO_TEST_ZERO_COPY_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_TEST_ZERO_COPY_STREAM_H__
 
 #include <deque>
+#include <initializer_list>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/log/absl_check.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
 // Must be included last.
@@ -53,6 +31,8 @@ namespace internal {
 class TestZeroCopyInputStream final : public ZeroCopyInputStream {
  public:
   // The input stream will provide the buffers exactly as passed here.
+  TestZeroCopyInputStream(std::initializer_list<std::string> buffers)
+      : buffers_(buffers.begin(), buffers.end()) {}
   explicit TestZeroCopyInputStream(const std::vector<std::string>& buffers)
       : buffers_(buffers.begin(), buffers.end()) {}
 
@@ -60,18 +40,22 @@ class TestZeroCopyInputStream final : public ZeroCopyInputStream {
   TestZeroCopyInputStream(const TestZeroCopyInputStream& other)
       : ZeroCopyInputStream(),
         buffers_(other.buffers_),
-        last_returned_buffer_(other.last_returned_buffer_),
+        last_returned_buffer_(
+            other.last_returned_buffer_
+                ? std::make_unique<std::string>(*other.last_returned_buffer_)
+                : nullptr),
         byte_count_(other.byte_count_) {}
 
   bool Next(const void** data, int* size) override {
     ABSL_CHECK(data) << "data must not be null";
     ABSL_CHECK(size) << "size must not be null";
-    last_returned_buffer_ = absl::nullopt;
+    last_returned_buffer_ = nullptr;
 
     // We are done
     if (buffers_.empty()) return false;
 
-    last_returned_buffer_ = std::move(buffers_.front());
+    last_returned_buffer_ =
+        std::make_unique<std::string>(std::move(buffers_.front()));
     buffers_.pop_front();
     *data = last_returned_buffer_->data();
     *size = static_cast<int>(last_returned_buffer_->size());
@@ -81,19 +65,19 @@ class TestZeroCopyInputStream final : public ZeroCopyInputStream {
 
   void BackUp(int count) override {
     ABSL_CHECK_GE(count, 0) << "count must not be negative";
-    ABSL_CHECK(last_returned_buffer_.has_value())
+    ABSL_CHECK(last_returned_buffer_ != nullptr)
         << "The last call was not a successful Next()";
     ABSL_CHECK_LE(count, last_returned_buffer_->size())
         << "count must be within bounds of last buffer";
     buffers_.push_front(
         last_returned_buffer_->substr(last_returned_buffer_->size() - count));
-    last_returned_buffer_ = absl::nullopt;
+    last_returned_buffer_ = nullptr;
     byte_count_ -= count;
   }
 
   bool Skip(int count) override {
     ABSL_CHECK_GE(count, 0) << "count must not be negative";
-    last_returned_buffer_ = absl::nullopt;
+    last_returned_buffer_ = nullptr;
     while (true) {
       if (count == 0) return true;
       if (buffers_.empty()) return false;
@@ -119,7 +103,9 @@ class TestZeroCopyInputStream final : public ZeroCopyInputStream {
   // move them to `last_returned_buffer_`. It makes it simpler to keep track of
   // the state of the object. The extra cost is not relevant for testing.
   std::deque<std::string> buffers_;
-  absl::optional<std::string> last_returned_buffer_;
+  // absl::optional could work here, but std::unique_ptr makes it more likely
+  // for sanitizers to detect if the string is used after it is destroyed.
+  std::unique_ptr<std::string> last_returned_buffer_;
   int64_t byte_count_ = 0;
 };
 

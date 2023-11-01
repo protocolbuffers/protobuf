@@ -1,32 +1,9 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Descriptors essentially contain exactly the information found in a .proto
 file, in types that make this information accessible in Python.
@@ -46,7 +23,7 @@ if api_implementation.Type() != 'python':
   import os
   # pylint: disable=protected-access
   _message = api_implementation._c_module
-  # TODO(jieluo): Remove this import after fix api_implementation
+  # TODO: Remove this import after fix api_implementation
   if _message is None:
     from google.protobuf.pyext import _message
   _USE_C_DESCRIPTORS = True
@@ -123,11 +100,12 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
   related functionality.
 
   Attributes:
-    has_options:  True if the descriptor has non-default options.  Usually it
-        is not necessary to read this -- just call GetOptions() which will
-        happily return the default instance.  However, it's sometimes useful
-        for efficiency, and also useful inside the protobuf implementation to
-        avoid some bootstrapping issues.
+    has_options:  True if the descriptor has non-default options.  Usually it is
+      not necessary to read this -- just call GetOptions() which will happily
+      return the default instance.  However, it's sometimes useful for
+      efficiency, and also useful inside the protobuf implementation to avoid
+      some bootstrapping issues.
+    file (FileDescriptor): Reference to file info.
   """
 
   if _USE_C_DESCRIPTORS:
@@ -135,17 +113,20 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
     # subclasses" of this descriptor class.
     _C_DESCRIPTOR_CLASS = ()
 
-  def __init__(self, options, serialized_options, options_class_name):
+  def __init__(self, file, options, serialized_options, options_class_name):
     """Initialize the descriptor given its options message and the name of the
     class of the options message. The name of the class is required in case
     the options message is None and has to be created.
     """
+    self.file = file
     self._options = options
     self._options_class_name = options_class_name
     self._serialized_options = serialized_options
 
     # Does this descriptor have non-default options?
-    self.has_options = (options is not None) or (serialized_options is not None)
+    self.has_options = (self._options is not None) or (
+        self._serialized_options is not None
+    )
 
   def _SetOptions(self, options, options_class_name):
     """Sets the descriptor's options
@@ -176,14 +157,15 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
       raise RuntimeError('Unknown options class name %s!' %
                          (self._options_class_name))
 
-    with _lock:
-      if self._serialized_options is None:
+    if self._serialized_options is None:
+      with _lock:
         self._options = options_class()
-      else:
-        self._options = _ParseOptions(options_class(),
-                                      self._serialized_options)
+    else:
+      options = _ParseOptions(options_class(), self._serialized_options)
+      with _lock:
+        self._options = options
 
-      return self._options
+    return self._options
 
 
 class _NestedDescriptorBase(DescriptorBase):
@@ -195,14 +177,12 @@ class _NestedDescriptorBase(DescriptorBase):
     """Constructor.
 
     Args:
-      options: Protocol message options or None
-        to use default message options.
+      options: Protocol message options or None to use default message options.
       options_class_name (str): The class name of the above options.
       name (str): Name of this protocol message type.
-      full_name (str): Fully-qualified name of this protocol message type,
-        which will include protocol "package" name and the name of any
-        enclosing types.
-      file (FileDescriptor): Reference to file info.
+      full_name (str): Fully-qualified name of this protocol message type, which
+        will include protocol "package" name and the name of any enclosing
+        types.
       containing_type: if provided, this is a nested descriptor, with this
         descriptor as parent, otherwise None.
       serialized_start: The start index (inclusive) in block in the
@@ -212,13 +192,13 @@ class _NestedDescriptorBase(DescriptorBase):
       serialized_options: Protocol message serialized options or None.
     """
     super(_NestedDescriptorBase, self).__init__(
-        options, serialized_options, options_class_name)
+        file, options, serialized_options, options_class_name
+    )
 
     self.name = name
-    # TODO(falk): Add function to calculate full_name instead of having it in
+    # TODO: Add function to calculate full_name instead of having it in
     #             memory?
     self.full_name = full_name
-    self.file = file
     self.containing_type = containing_type
 
     self._serialized_start = serialized_start
@@ -285,6 +265,7 @@ class Descriptor(_NestedDescriptorBase):
       oneofs_by_name (dict(str, OneofDescriptor)): Same objects as in
           :attr:`oneofs`, but indexed by "name" attribute.
       file (FileDescriptor): Reference to file descriptor.
+      is_map_entry: If the message type is a map entry.
 
   """
 
@@ -310,11 +291,12 @@ class Descriptor(_NestedDescriptorBase):
         serialized_start=None,
         serialized_end=None,
         syntax=None,
+        is_map_entry=False,
         create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindMessageTypeByName(full_name)
 
-  # NOTE(tmarek): The file argument redefining a builtin is nothing we can
+  # NOTE: The file argument redefining a builtin is nothing we can
   # fix right now since we don't know how many clients already rely on the
   # name of the argument.
   def __init__(self, name, full_name, filename, containing_type, fields,
@@ -322,7 +304,7 @@ class Descriptor(_NestedDescriptorBase):
                serialized_options=None,
                is_extendable=True, extension_ranges=None, oneofs=None,
                file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
-               syntax=None, create_key=None):
+               syntax=None, is_map_entry=False, create_key=None):
     """Arguments to __init__() are as described in the description
     of Descriptor fields above.
 
@@ -372,6 +354,7 @@ class Descriptor(_NestedDescriptorBase):
     for oneof in self.oneofs:
       oneof.containing_type = self
     self.syntax = syntax or "proto2"
+    self._is_map_entry = is_map_entry
 
   @property
   def fields_by_camelcase_name(self):
@@ -411,13 +394,13 @@ class Descriptor(_NestedDescriptorBase):
     super(Descriptor, self).CopyToProto(proto)
 
 
-# TODO(robinson): We should have aggressive checking here,
+# TODO: We should have aggressive checking here,
 # for example:
 #   * If you specify a repeated field, you should not be allowed
 #     to specify a default value.
 #   * [Other examples here as needed].
 #
-# TODO(robinson): for this and other *Descriptor classes, we
+# TODO: for this and other *Descriptor classes, we
 # might also want to lock things down aggressively (e.g.,
 # prevent clients from setting the attributes).  Having
 # stronger invariants here in general will reduce the number
@@ -476,7 +459,7 @@ class FieldDescriptor(DescriptorBase):
   # Must be consistent with C++ FieldDescriptor::Type enum in
   # descriptor.h.
   #
-  # TODO(robinson): Find a way to eliminate this repetition.
+  # TODO: Find a way to eliminate this repetition.
   TYPE_DOUBLE         = 1
   TYPE_FLOAT          = 2
   TYPE_INT64          = 3
@@ -500,7 +483,7 @@ class FieldDescriptor(DescriptorBase):
   # Must be consistent with C++ FieldDescriptor::CppType enum in
   # descriptor.h.
   #
-  # TODO(robinson): Find a way to eliminate this repetition.
+  # TODO: Find a way to eliminate this repetition.
   CPPTYPE_INT32       = 1
   CPPTYPE_INT64       = 2
   CPPTYPE_UINT32      = 3
@@ -537,7 +520,7 @@ class FieldDescriptor(DescriptorBase):
   # Must be consistent with C++ FieldDescriptor::Label enum in
   # descriptor.h.
   #
-  # TODO(robinson): Find a way to eliminate this repetition.
+  # TODO: Find a way to eliminate this repetition.
   LABEL_OPTIONAL      = 1
   LABEL_REQUIRED      = 2
   LABEL_REPEATED      = 3
@@ -581,10 +564,10 @@ class FieldDescriptor(DescriptorBase):
       _Deprecated('FieldDescriptor')
 
     super(FieldDescriptor, self).__init__(
-        options, serialized_options, 'FieldOptions')
+        file, options, serialized_options, 'FieldOptions'
+    )
     self.name = name
     self.full_name = full_name
-    self.file = file
     self._camelcase_name = None
     if json_name is None:
       self.json_name = _ToJsonName(name)
@@ -637,7 +620,7 @@ class FieldDescriptor(DescriptorBase):
     # self.containing_type is used here instead of self.file for legacy
     # compatibility. FieldDescriptor.file was added in cl/153110619
     # Some old/generated code didn't link file to FieldDescriptor.
-    # TODO(jieluo): remove syntax usage b/240619313
+    # TODO: remove syntax usage b/240619313
     return self.containing_type.syntax == 'proto2'
 
   @property
@@ -732,6 +715,7 @@ class EnumDescriptor(_NestedDescriptorBase):
 
     self.values = values
     for value in self.values:
+      value.file = file
       value.type = self
     self.values_by_name = dict((v.name, v) for v in values)
     # Values are reversed to ensure that the first alias is retained.
@@ -808,7 +792,11 @@ class EnumValueDescriptor(DescriptorBase):
       _Deprecated('EnumValueDescriptor')
 
     super(EnumValueDescriptor, self).__init__(
-        options, serialized_options, 'EnumValueOptions')
+        type.file if type else None,
+        options,
+        serialized_options,
+        'EnumValueOptions',
+    )
     self.name = name
     self.index = index
     self.number = number
@@ -847,7 +835,11 @@ class OneofDescriptor(DescriptorBase):
       _Deprecated('OneofDescriptor')
 
     super(OneofDescriptor, self).__init__(
-        options, serialized_options, 'OneofOptions')
+        containing_type.file if containing_type else None,
+        options,
+        serialized_options,
+        'OneofOptions',
+    )
     self.name = name
     self.full_name = full_name
     self.index = index
@@ -907,6 +899,7 @@ class ServiceDescriptor(_NestedDescriptorBase):
     self.methods_by_name = dict((m.name, m) for m in methods)
     # Set the containing service for each method in this service.
     for method in self.methods:
+      method.file = self.file
       method.containing_service = self
 
   def FindMethodByName(self, name):
@@ -992,7 +985,11 @@ class MethodDescriptor(DescriptorBase):
       _Deprecated('MethodDescriptor')
 
     super(MethodDescriptor, self).__init__(
-        options, serialized_options, 'MethodOptions')
+        containing_service.file if containing_service else None,
+        options,
+        serialized_options,
+        'MethodOptions',
+    )
     self.name = name
     self.full_name = full_name
     self.index = index
@@ -1076,7 +1073,8 @@ class FileDescriptor(DescriptorBase):
       _Deprecated('FileDescriptor')
 
     super(FileDescriptor, self).__init__(
-        options, serialized_options, 'FileOptions')
+        None, options, serialized_options, 'FileOptions'
+    )
 
     if pool is None:
       from google.protobuf import descriptor_pool

@@ -109,6 +109,7 @@ namespace Conformance {
   /// This will be known by message_type == "conformance.FailureSet", a conformance
   /// test should return a serialized FailureSet in protobuf_payload.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FailureSet : pb::IMessage<FailureSet>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -294,6 +295,7 @@ namespace Conformance {
   ///   2. parse the protobuf or JSON payload in "payload" (which may fail)
   ///   3. if the parse succeeded, serialize the message in the requested format.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -909,6 +911,7 @@ namespace Conformance {
   /// <summary>
   /// Represents a single test case's output.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1620,6 +1623,7 @@ namespace Conformance {
   /// <summary>
   /// Encoding options for jspb format.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class JspbEncodingConfig : pb::IMessage<JspbEncodingConfig>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage

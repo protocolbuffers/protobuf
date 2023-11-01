@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2014 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include <ctype.h>
 #include <errno.h>
@@ -73,6 +50,8 @@ static VALUE rb_str_maybe_null(const char* s) {
 // -----------------------------------------------------------------------------
 
 typedef struct {
+  // IMPORTANT: WB_PROTECTED objects must only use the RB_OBJ_WRITE()
+  // macro to update VALUE references, as to trigger write barriers.
   VALUE def_to_descriptor;  // Hash table of def* -> Ruby descriptor.
   upb_DefPool* symtab;
 } DescriptorPool;
@@ -97,7 +76,7 @@ static void DescriptorPool_free(void* _self) {
 static const rb_data_type_t DescriptorPool_type = {
     "Google::Protobuf::DescriptorPool",
     {DescriptorPool_mark, DescriptorPool_free, NULL},
-    .flags = RUBY_TYPED_FREE_IMMEDIATELY,
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 
 static DescriptorPool* ruby_to_DescriptorPool(VALUE val) {
@@ -125,11 +104,9 @@ static VALUE DescriptorPool_alloc(VALUE klass) {
   self->def_to_descriptor = Qnil;
   ret = TypedData_Wrap_Struct(klass, &DescriptorPool_type, self);
 
-  self->def_to_descriptor = rb_hash_new();
+  RB_OBJ_WRITE(ret, &self->def_to_descriptor, rb_hash_new());
   self->symtab = upb_DefPool_New();
-  ObjectCache_Add(self->symtab, ret);
-
-  return ret;
+  return ObjectCache_TryAdd(self->symtab, ret);
 }
 
 /*
@@ -601,7 +578,7 @@ upb_CType ruby_to_fieldtype(VALUE type) {
 
 #define CONVERT(upb, ruby)                \
   if (SYM2ID(type) == rb_intern(#ruby)) { \
-    return kUpb_CType_##upb;                \
+    return kUpb_CType_##upb;              \
   }
 
   CONVERT(Float, float);
@@ -624,7 +601,7 @@ upb_CType ruby_to_fieldtype(VALUE type) {
 
 static VALUE descriptortype_to_ruby(upb_FieldType type) {
   switch (type) {
-#define CONVERT(upb, ruby)        \
+#define CONVERT(upb, ruby)   \
   case kUpb_FieldType_##upb: \
     return ID2SYM(rb_intern(#ruby));
     CONVERT(Float, float);
@@ -709,7 +686,7 @@ static VALUE FieldDescriptor_label(VALUE _self) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   switch (upb_FieldDef_Label(self->fielddef)) {
 #define CONVERT(upb, ruby) \
-  case kUpb_Label_##upb:    \
+  case kUpb_Label_##upb:   \
     return ID2SYM(rb_intern(#ruby));
 
     CONVERT(Optional, optional);
@@ -1091,7 +1068,7 @@ static VALUE EnumDescriptor_name(VALUE _self) {
 static VALUE EnumDescriptor_lookup_name(VALUE _self, VALUE name) {
   EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
   const char* name_str = rb_id2name(SYM2ID(name));
-  const upb_EnumValueDef *ev =
+  const upb_EnumValueDef* ev =
       upb_EnumDef_FindValueByName(self->enumdef, name_str);
   if (ev) {
     return INT2NUM(upb_EnumValueDef_Number(ev));
@@ -1110,7 +1087,8 @@ static VALUE EnumDescriptor_lookup_name(VALUE _self, VALUE name) {
 static VALUE EnumDescriptor_lookup_value(VALUE _self, VALUE number) {
   EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
   int32_t val = NUM2INT(number);
-  const upb_EnumValueDef* ev = upb_EnumDef_FindValueByNumber(self->enumdef, val);
+  const upb_EnumValueDef* ev =
+      upb_EnumDef_FindValueByNumber(self->enumdef, val);
   if (ev) {
     return ID2SYM(rb_intern(upb_EnumValueDef_Name(ev)));
   } else {

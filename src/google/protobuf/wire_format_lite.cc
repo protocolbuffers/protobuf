@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -200,7 +177,7 @@ bool WireFormatLite::SkipField(io::CodedInputStream* input, uint32_t tag,
       if (!input->ReadVarint32(&length)) return false;
       output->WriteVarint32(tag);
       output->WriteVarint32(length);
-      // TODO(mkilavuz): Provide API to prevent extra string copying.
+      // TODO: Provide API to prevent extra string copying.
       std::string temp;
       if (!input->ReadString(&temp, length)) return false;
       output->WriteString(temp);
@@ -326,7 +303,7 @@ bool WireFormatLite::ReadPackedEnumPreserveUnknowns(
   return true;
 }
 
-#if !defined(PROTOBUF_LITTLE_ENDIAN)
+#if !defined(ABSL_IS_LITTLE_ENDIAN)
 
 namespace {
 void EncodeFixedSizeValue(float v, uint8_t* dest) {
@@ -358,11 +335,11 @@ void EncodeFixedSizeValue(bool v, uint8_t* dest) {
 }
 }  // anonymous namespace
 
-#endif  // !defined(PROTOBUF_LITTLE_ENDIAN)
+#endif  // !defined(ABSL_IS_LITTLE_ENDIAN)
 
 template <typename CType>
 static void WriteArray(const CType* a, int n, io::CodedOutputStream* output) {
-#if defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(ABSL_IS_LITTLE_ENDIAN)
   output->WriteRaw(reinterpret_cast<const char*>(a), n * sizeof(a[0]));
 #else
   const int kAtATime = 128;
@@ -669,7 +646,7 @@ static size_t VarintSize(const T* data, const int n) {
     } else if (SignExtended) {
       msb_sum += x >> 31;
     }
-    // clang is so smart that it produces optimal SSE sequence unrolling
+    // clang is so smart that it produces optimal SIMD sequence unrolling
     // the loop 8 ints at a time. With a sequence of 4
     // cmpres = cmpgt x, sizeclass  ( -1 or 0)
     // sum = sum - cmpres
@@ -712,7 +689,7 @@ static size_t VarintSize64(const T* data, const int n) {
 // and other platforms are untested, in those cases using the optimized
 // varint size routine for each element is faster.
 // Hence we enable it only for clang
-#if defined(__SSE__) && defined(__clang__)
+#if (defined(__SSE__) || defined(__aarch64__)) && defined(__clang__)
 size_t WireFormatLite::Int32Size(const RepeatedField<int32_t>& value) {
   return VarintSize<false, true>(value.data(), value.size());
 }
@@ -730,7 +707,7 @@ size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
   return VarintSize<false, true>(value.data(), value.size());
 }
 
-#else  // !(defined(__SSE4_1__) && defined(__clang__))
+#else  // !((defined(__SSE__) || defined(__aarch64__) && defined(__clang__))
 
 size_t WireFormatLite::Int32Size(const RepeatedField<int32_t>& value) {
   size_t out = 0;

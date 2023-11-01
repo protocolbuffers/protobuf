@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.google.protobuf.test</groupId>
+  <artifactId>linkage-monitor-check-bom</artifactId>
+  <packaging>pom</packaging>
+  <version>0.0.1-SNAPSHOT</version><!-- we don't release this BOM -->
+  <name>Protobuf linkage monitor validation BOM</name>
+  <description>
+    A BOM to use in Linkage Monitor. This lists artifacts that use
+    Protobuf runtime libraries, such as gRPC and Google Cloud
+    client libraries.
+    We do not publish this pom.xml to Maven Central.
+  </description>
+  <properties>
+    <!--
+      This verison is ok to kept old. Linkage Monitor overrides this
+      version when checking linakage errors
+    -->
+    <protobuf.version>3.23.2</protobuf.version>
+  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-bom</artifactId>
+        <version>${protobuf.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-bom</artifactId>
+        <version>1.55.3</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.api.grpc</groupId>
+        <artifactId>grpc-google-common-protos</artifactId>
+        <version>2.22.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.api.grpc</groupId>
+        <artifactId>proto-google-common-protos</artifactId>
+        <version>2.22.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.api.grpc</groupId>
+        <artifactId>proto-google-iam-v1</artifactId>
+        <version>1.17.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.api.grpc</groupId>
+        <artifactId>proto-google-iam-v2</artifactId>
+        <version>1.17.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.api.grpc</groupId>
+        <artifactId>proto-google-iam-v2beta</artifactId>
+        <version>1.17.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.cloud</groupId>
+        <artifactId>google-cloud-bigquery</artifactId>
+        <version>2.29.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.cloud</groupId>
+        <artifactId>google-cloud-bigtable</artifactId>
+        <version>2.24.1</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

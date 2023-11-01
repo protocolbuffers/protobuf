@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -141,7 +118,7 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
 
       case FD::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
             return sizeof(RepeatedPtrField<std::string>);
         }
@@ -171,7 +148,7 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
 
       case FD::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
             return sizeof(ArenaStringPtr);
         }
@@ -202,7 +179,7 @@ inline int AlignOffset(int offset) { return AlignTo(offset, kSafeAlignment); }
 
 // ===================================================================
 
-class DynamicMessage : public Message {
+class DynamicMessage final : public Message {
  public:
   explicit DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info);
 
@@ -227,8 +204,9 @@ class DynamicMessage : public Message {
 
   Message* New(Arena* arena) const override;
 
-  int GetCachedSize() const override;
-  void SetCachedSize(int size) const override;
+  internal::CachedSize* AccessCachedSize() const final {
+    return &cached_byte_size_;
+  }
 
   Metadata GetMetadata() const override;
 
@@ -270,7 +248,7 @@ class DynamicMessage : public Message {
   void* MutableOneofFieldRaw(const FieldDescriptor* f);
 
   const DynamicMessageFactory::TypeInfo* type_info_;
-  mutable std::atomic<int> cached_byte_size_;
+  mutable internal::CachedSize cached_byte_size_;
 };
 
 struct DynamicMessageFactory::TypeInfo {
@@ -376,7 +354,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   }
 
   if (type_info_->extensions_offset != -1) {
-    new (MutableExtensionsRaw()) ExtensionSet(GetArenaForAllocation());
+    new (MutableExtensionsRaw()) ExtensionSet(GetArena());
   }
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
@@ -385,13 +363,13 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
       continue;
     }
     switch (field->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, TYPE)                                  \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE:                          \
-    if (!field->is_repeated()) {                                    \
-      new (field_ptr) TYPE(field->default_value_##TYPE());          \
-    } else {                                                        \
-      new (field_ptr) RepeatedField<TYPE>(GetArenaForAllocation()); \
-    }                                                               \
+#define HANDLE_TYPE(CPPTYPE, TYPE)                         \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE:                 \
+    if (!field->is_repeated()) {                           \
+      new (field_ptr) TYPE(field->default_value_##TYPE()); \
+    } else {                                               \
+      new (field_ptr) RepeatedField<TYPE>(GetArena());     \
+    }                                                      \
     break;
 
       HANDLE_TYPE(INT32, int32_t);
@@ -407,20 +385,19 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
         if (!field->is_repeated()) {
           new (field_ptr) int{field->default_value_enum()->number()};
         } else {
-          new (field_ptr) RepeatedField<int>(GetArenaForAllocation());
+          new (field_ptr) RepeatedField<int>(GetArena());
         }
         break;
 
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
             if (!field->is_repeated()) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
               asp->InitDefault();
             } else {
-              new (field_ptr)
-                  RepeatedPtrField<std::string>(GetArenaForAllocation());
+              new (field_ptr) RepeatedPtrField<std::string>(GetArena());
             }
             break;
         }
@@ -435,20 +412,20 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
             // when the constructor is called inside GetPrototype(), in which
             // case we have already locked the factory.
             if (lock_factory) {
-              if (GetArenaForAllocation() != nullptr) {
+              if (GetArena() != nullptr) {
                 new (field_ptr) DynamicMapField(
                     type_info_->factory->GetPrototype(field->message_type()),
-                    GetArenaForAllocation());
+                    GetArena());
               } else {
                 new (field_ptr) DynamicMapField(
                     type_info_->factory->GetPrototype(field->message_type()));
               }
             } else {
-              if (GetArenaForAllocation() != nullptr) {
+              if (GetArena() != nullptr) {
                 new (field_ptr)
                     DynamicMapField(type_info_->factory->GetPrototypeNoLock(
                                         field->message_type()),
-                                    GetArenaForAllocation());
+                                    GetArena());
               } else {
                 new (field_ptr)
                     DynamicMapField(type_info_->factory->GetPrototypeNoLock(
@@ -456,7 +433,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
               }
             }
           } else {
-            new (field_ptr) RepeatedPtrField<Message>(GetArenaForAllocation());
+            new (field_ptr) RepeatedPtrField<Message>(GetArena());
           }
         }
         break;
@@ -540,7 +517,7 @@ DynamicMessage::~DynamicMessage() {
 
         case FieldDescriptor::CPPTYPE_STRING:
           switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other string reps.
+            default:  // TODO:  Support other string reps.
             case FieldOptions::STRING:
               reinterpret_cast<RepeatedPtrField<std::string>*>(field_ptr)
                   ->~RepeatedPtrField<std::string>();
@@ -560,7 +537,7 @@ DynamicMessage::~DynamicMessage() {
 
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
       switch (field->options().ctype()) {
-        default:  // TODO(kenton):  Support other string reps.
+        default:  // TODO:  Support other string reps.
         case FieldOptions::STRING: {
           reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
           break;
@@ -611,14 +588,6 @@ Message* DynamicMessage::New(Arena* arena) const {
     memset(new_base, 0, type_info_->size);
     return new (new_base) DynamicMessage(type_info_);
   }
-}
-
-int DynamicMessage::GetCachedSize() const {
-  return cached_byte_size_.load(std::memory_order_relaxed);
-}
-
-void DynamicMessage::SetCachedSize(int size) const {
-  cached_byte_size_.store(size, std::memory_order_relaxed);
 }
 
 Metadata DynamicMessage::GetMetadata() const {
@@ -736,7 +705,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
   // All the fields.
   //
-  // TODO(b/31226269):  Optimize the order of fields to minimize padding.
+  // TODO:  Optimize the order of fields to minimize padding.
   for (int i = 0; i < type->field_count(); i++) {
     // Make sure field is aligned to avoid bus errors.
     // Oneof fields do not use any space.

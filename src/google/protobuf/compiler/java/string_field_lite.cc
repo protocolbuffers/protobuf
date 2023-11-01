@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 // Author: jonp@google.com (Jon Perlow)
@@ -54,6 +31,7 @@ namespace java {
 
 using internal::WireFormat;
 using internal::WireFormatLite;
+using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 namespace {
 
@@ -82,7 +60,7 @@ void SetPrimitiveVariables(
   (*variables)["null_check"] =
       "  java.lang.Class<?> valueClass = value.getClass();\n";
 
-  // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
+  // TODO: Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
@@ -171,22 +149,25 @@ int ImmutableStringFieldLiteGenerator::GetNumBitsForMessage() const {
 // properly incentivized to only fetch the data they need to read and wish to
 // reduce the number of allocations incurred when running on a user's device.
 
-// TODO(dweis): Consider dropping all of the *Bytes() methods. They really
+// TODO: Consider dropping all of the *Bytes() methods. They really
 //     shouldn't be necessary or used on devices.
 void ImmutableStringFieldLiteGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                                 context_->options());
     printer->Print(variables_,
                    "$deprecation$boolean ${$has$capitalized_name$$}$();\n");
     printer->Annotate("{", "}", descriptor_);
   }
-  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
+                               context_->options());
   printer->Print(
       variables_,
       "$deprecation$java.lang.String ${$get$capitalized_name$$}$();\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER);
+  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER,
+                                          context_->options());
   printer->Print(variables_,
                  "$deprecation$com.google.protobuf.ByteString\n"
                  "    ${$get$capitalized_name$Bytes$}$();\n");
@@ -211,7 +192,8 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
   PrintExtraFieldInfo(variables_, printer);
 
   if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                                 context_->options());
     printer->Print(
         variables_,
         "@java.lang.Override\n"
@@ -221,7 +203,8 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
+                               context_->options());
   printer->Print(
       variables_,
       "@java.lang.Override\n"
@@ -229,7 +212,8 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
       "  return $name$_;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER);
+  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER,
+                                          context_->options());
   printer->Print(
       variables_,
       "@java.lang.Override\n"
@@ -239,7 +223,8 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
       "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldAccessorDocComment(printer, descriptor_, SETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
+                               context_->options());
   printer->Print(variables_,
                  "private void set$capitalized_name$(\n"
                  "    java.lang.String value) {\n"
@@ -247,7 +232,8 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
                  "  $set_has_field_bit_message$\n"
                  "  $name$_ = value;\n"
                  "}\n");
-  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               context_->options());
   printer->Print(variables_,
                  "private void clear$capitalized_name$() {\n"
                  "  $clear_has_field_bit_message$\n"
@@ -257,7 +243,8 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
                  "  $name$_ = getDefaultInstance().get$capitalized_name$();\n"
                  "}\n");
 
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER);
+  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
+                                          context_->options());
   printer->Print(variables_,
                  "private void set$capitalized_name$Bytes(\n"
                  "    com.google.protobuf.ByteString value) {\n");
@@ -273,7 +260,8 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
 void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                                 context_->options());
     printer->Print(
         variables_,
         "@java.lang.Override\n"
@@ -283,7 +271,8 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
     printer->Annotate("{", "}", descriptor_);
   }
 
-  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
+                               context_->options());
   printer->Print(
       variables_,
       "@java.lang.Override\n"
@@ -292,7 +281,8 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER);
+  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER,
+                                          context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public com.google.protobuf.ByteString\n"
@@ -302,6 +292,7 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
+                               context_->options(),
                                /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
@@ -310,8 +301,9 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.set$capitalized_name$(value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               context_->options(),
                                /* builder */ true);
   printer->Print(
       variables_,
@@ -320,9 +312,10 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.clear$capitalized_name$();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
+                                          context_->options(),
                                           /* builder */ true);
   printer->Print(
       variables_,
@@ -332,12 +325,13 @@ void ImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.set$capitalized_name$Bytes(value);\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void ImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
     io::Printer* printer) const {
-  WriteFieldDocComment(printer, descriptor_, /* kdoc */ true);
+  WriteFieldDocComment(printer, descriptor_, context_->options(),
+                       /* kdoc */ true);
   printer->Print(variables_,
                  "$kt_deprecation$public var $kt_name$: kotlin.String\n"
                  "  @JvmName(\"${$get$kt_capitalized_name$$}$\")\n"
@@ -348,6 +342,7 @@ void ImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
                  "  }\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               context_->options(),
                                /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
                  "public fun ${$clear$kt_capitalized_name$$}$() {\n"
@@ -356,6 +351,7 @@ void ImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
 
   if (descriptor_->has_presence()) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                                 context_->options(),
                                  /* builder */ false, /* kdoc */ true);
     printer->Print(
         variables_,
@@ -402,7 +398,8 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
   ABSL_DCHECK(descriptor_->has_presence());
-  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -410,7 +407,8 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
+                               context_->options());
   printer->Print(
       variables_,
       "@java.lang.Override\n"
@@ -423,7 +421,8 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
       "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER);
+  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER,
+                                          context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public com.google.protobuf.ByteString\n"
@@ -436,7 +435,8 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldAccessorDocComment(printer, descriptor_, SETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
+                               context_->options());
   printer->Print(variables_,
                  "private void ${$set$capitalized_name$$}$(\n"
                  "    java.lang.String value) {\n"
@@ -444,8 +444,9 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
                  "  $set_oneof_case_message$;\n"
                  "  $oneof_name$_ = value;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               context_->options());
   printer->Print(variables_,
                  "private void ${$clear$capitalized_name$$}$() {\n"
                  "  if ($has_oneof_case_message$) {\n"
@@ -453,13 +454,14 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateMembers(
                  "    $oneof_name$_ = null;\n"
                  "  }\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER);
+  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
+                                          context_->options());
   printer->Print(variables_,
                  "private void ${$set$capitalized_name$Bytes$}$(\n"
                  "    com.google.protobuf.ByteString value) {\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }
@@ -480,7 +482,8 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateFieldInfo(
 void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   ABSL_DCHECK(descriptor_->has_presence());
-  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
@@ -488,7 +491,8 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
+                               context_->options());
   printer->Print(
       variables_,
       "@java.lang.Override\n"
@@ -497,7 +501,8 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
       "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER);
+  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER,
+                                          context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public com.google.protobuf.ByteString\n"
@@ -507,6 +512,7 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_);
 
   WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
+                               context_->options(),
                                /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
@@ -515,8 +521,9 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.set$capitalized_name$(value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               context_->options(),
                                /* builder */ true);
   printer->Print(
       variables_,
@@ -525,9 +532,10 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.clear$capitalized_name$();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
+                                          context_->options(),
                                           /* builder */ true);
   printer->Print(
       variables_,
@@ -537,7 +545,7 @@ void ImmutableStringOneofFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.set$capitalized_name$Bytes(value);\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 // ===================================================================
@@ -546,7 +554,9 @@ RepeatedImmutableStringFieldLiteGenerator::
     RepeatedImmutableStringFieldLiteGenerator(const FieldDescriptor* descriptor,
                                               int messageBitIndex,
                                               Context* context)
-    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor),
+      context_(context),
+      name_resolver_(context->GetNameResolver()) {
   SetPrimitiveVariables(descriptor, messageBitIndex, 0,
                         context->GetFieldGeneratorInfo(descriptor),
                         name_resolver_, &variables_, context);
@@ -561,21 +571,25 @@ int RepeatedImmutableStringFieldLiteGenerator::GetNumBitsForMessage() const {
 
 void RepeatedImmutableStringFieldLiteGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
+                               context_->options());
   printer->Print(variables_,
                  "$deprecation$java.util.List<java.lang.String>\n"
                  "    ${$get$capitalized_name$List$}$();\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT,
+                               context_->options());
   printer->Print(variables_,
                  "$deprecation$int ${$get$capitalized_name$Count$}$();\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER,
+                               context_->options());
   printer->Print(variables_,
                  "$deprecation$java.lang.String "
                  "${$get$capitalized_name$$}$(int index);\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER,
+                               context_->options());
   printer->Print(variables_,
                  "$deprecation$com.google.protobuf.ByteString\n"
                  "    ${$get$capitalized_name$Bytes$}$(int index);\n");
@@ -589,7 +603,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
       "private com.google.protobuf.Internal.ProtobufList<java.lang.String> "
       "$name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
+                               context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public java.util.List<java.lang.String> "
@@ -597,7 +612,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
                  "  return $name$_;\n"  // note:  unmodifiable list
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT,
+                               context_->options());
   printer->Print(
       variables_,
       "@java.lang.Override\n"
@@ -605,7 +621,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
       "  return $name$_.size();\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER,
+                               context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public java.lang.String "
@@ -613,8 +630,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
                  "  return $name$_.get(index);\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_,
-                                          LIST_INDEXED_GETTER);
+  WriteFieldStringBytesAccessorDocComment(
+      printer, descriptor_, LIST_INDEXED_GETTER, context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public com.google.protobuf.ByteString\n"
@@ -636,7 +653,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
       "   }\n"
       "}\n");
 
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
+                               context_->options());
   printer->Print(variables_,
                  "private void set$capitalized_name$(\n"
                  "    int index, java.lang.String value) {\n"
@@ -644,7 +662,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.set(index, value);\n"
                  "}\n");
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
+                               context_->options());
   printer->Print(variables_,
                  "private void add$capitalized_name$(\n"
                  "    java.lang.String value) {\n"
@@ -652,7 +671,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.add(value);\n"
                  "}\n");
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
+                               context_->options());
   printer->Print(variables_,
                  "private void addAll$capitalized_name$(\n"
                  "    java.lang.Iterable<java.lang.String> values) {\n"
@@ -660,13 +680,15 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
                  "  com.google.protobuf.AbstractMessageLite.addAll(\n"
                  "      values, $name$_);\n"
                  "}\n");
-  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER);
+  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               context_->options());
   printer->Print(variables_,
                  "private void clear$capitalized_name$() {\n"
                  "  $name$_ = $empty_list$;\n"
                  "}\n");
 
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, LIST_ADDER);
+  WriteFieldStringBytesAccessorDocComment(printer, descriptor_, LIST_ADDER,
+                                          context_->options());
   printer->Print(variables_,
                  "private void add$capitalized_name$Bytes(\n"
                  "    com.google.protobuf.ByteString value) {\n");
@@ -681,7 +703,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
 
 void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
+                               context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public java.util.List<java.lang.String>\n"
@@ -690,7 +713,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "      instance.get$capitalized_name$List());\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT,
+                               context_->options());
   printer->Print(
       variables_,
       "@java.lang.Override\n"
@@ -698,7 +722,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "  return instance.get$capitalized_name$Count();\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER,
+                               context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public java.lang.String "
@@ -706,8 +731,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  return instance.get$capitalized_name$(index);\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
-  WriteFieldStringBytesAccessorDocComment(printer, descriptor_,
-                                          LIST_INDEXED_GETTER);
+  WriteFieldStringBytesAccessorDocComment(
+      printer, descriptor_, LIST_INDEXED_GETTER, context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public com.google.protobuf.ByteString\n"
@@ -716,6 +741,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
+                               context_->options(),
                                /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
@@ -724,8 +750,9 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.set$capitalized_name$(index, value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
+                               context_->options(),
                                /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$add$capitalized_name$$}$(\n"
@@ -734,8 +761,9 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.add$capitalized_name$(value);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
+                               context_->options(),
                                /* builder */ true);
   printer->Print(variables_,
                  "$deprecation$public Builder ${$addAll$capitalized_name$$}$(\n"
@@ -744,8 +772,9 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
                  "  instance.addAll$capitalized_name$(values);\n"
                  "  return this;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               context_->options(),
                                /* builder */ true);
   printer->Print(
       variables_,
@@ -754,9 +783,10 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.clear$capitalized_name$();\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, LIST_ADDER,
+                                          context_->options(),
                                           /* builder */ true);
   printer->Print(
       variables_,
@@ -766,7 +796,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
       "  instance.add$capitalized_name$Bytes(value);\n"
       "  return this;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
@@ -784,6 +814,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
 
   // property for List<String>
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
+                               context_->options(),
                                /* builder */ false, /* kdoc */ true);
   printer->Print(
       variables_,
@@ -798,6 +829,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
 
   // List<String>.add(String)
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
+                               context_->options(),
                                /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
@@ -810,6 +842,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
 
   // List<String> += String
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
+                               context_->options(),
                                /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
@@ -823,6 +856,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
 
   // List<String>.addAll(Iterable<String>)
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
+                               context_->options(),
                                /* builder */ false, /* kdoc */ true);
   printer->Print(
       variables_,
@@ -836,6 +870,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
 
   // List<String> += Iterable<String>
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
+                               context_->options(),
                                /* builder */ false, /* kdoc */ true);
   printer->Print(
       variables_,
@@ -850,6 +885,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
 
   // List<String>[Int] = String
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
+                               context_->options(),
                                /* builder */ false, /* kdoc */ true);
   printer->Print(
       variables_,
@@ -862,6 +898,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
       "}");
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
+                               context_->options(),
                                /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"

@@ -1,32 +1,9 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Contains well known classes.
 
@@ -56,6 +33,11 @@ _MILLIS_PER_SECOND = 1000
 _MICROS_PER_SECOND = 1000000
 _SECONDS_PER_DAY = 24 * 3600
 _DURATION_SECONDS_MAX = 315576000000
+
+_EPOCH_DATETIME_NAIVE = datetime.datetime(1970, 1, 1, tzinfo=None)
+_EPOCH_DATETIME_AWARE = _EPOCH_DATETIME_NAIVE.replace(
+    tzinfo=datetime.timezone.utc
+)
 
 
 class Any(object):
@@ -88,11 +70,6 @@ class Any(object):
   def Is(self, descriptor):
     """Checks if this Any represents the given protobuf type."""
     return '/' in self.type_url and self.TypeName() == descriptor.full_name
-
-
-_EPOCH_DATETIME_NAIVE = datetime.datetime.utcfromtimestamp(0)
-_EPOCH_DATETIME_AWARE = datetime.datetime.fromtimestamp(
-    0, tz=datetime.timezone.utc)
 
 
 class Timestamp(object):
@@ -246,13 +223,21 @@ class Timestamp(object):
 
       Otherwise, returns a timezone-aware datetime in the input timezone.
     """
+    # Using datetime.fromtimestamp for this would avoid constructing an extra
+    # timedelta object and possibly an extra datetime. Unfortuantely, that has
+    # the disadvantage of not handling the full precision (on all platforms, see
+    # https://github.com/python/cpython/issues/109849) or full range (on some
+    # platforms, see https://github.com/python/cpython/issues/110042) of
+    # datetime.
     delta = datetime.timedelta(
         seconds=self.seconds,
-        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND))
+        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND),
+    )
     if tzinfo is None:
       return _EPOCH_DATETIME_NAIVE + delta
     else:
-      return _EPOCH_DATETIME_AWARE.astimezone(tzinfo) + delta
+      # Note the tz conversion has to come after the timedelta arithmetic.
+      return (_EPOCH_DATETIME_AWARE + delta).astimezone(tzinfo)
 
   def FromDatetime(self, dt):
     """Converts datetime to Timestamp.
@@ -446,7 +431,7 @@ def _SetStructValue(struct_value, value):
   elif isinstance(value, (dict, Struct)):
     struct_value.struct_value.Clear()
     struct_value.struct_value.update(value)
-  elif isinstance(value, (list, ListValue)):
+  elif isinstance(value, (list, tuple, ListValue)):
     struct_value.list_value.Clear()
     struct_value.list_value.extend(value)
   else:

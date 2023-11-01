@@ -1,5 +1,35 @@
 load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 
+# Run Linkage Monitor
+sh_test(
+    name = "linkage_monitor",
+    size = "large",
+    srcs = [
+        ":linkage_monitor.sh",
+    ],
+    data = [
+        # Making the Maven modules available in the sandbox
+        ":core",
+        ":kotlin",
+        ":kotlin-lite",
+        ":lite",
+        ":util",
+        "//:protoc",
+        # Making this test depends on the code change in core and util
+        "//java/core:dist_files",
+        "//java/util",
+    ] + glob([
+        "pom.xml",
+        "*/pom.xml",
+        "test/linkage-monitor-check-bom/pom.xml",
+    ]),
+    tags = [
+        # Exclude this target from wildcard expansion (//...) because it may
+        # take unnecessary time.
+        "manual",
+    ],
+)
+
 test_suite(
     name = "tests",
     tests = [

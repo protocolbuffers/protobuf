@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: jschorr@google.com (Joseph Schorr)
 //  Based on original Protocol Buffers design by
@@ -60,6 +37,7 @@
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
@@ -91,12 +69,14 @@ constexpr absl::string_view kEscapeTestStringEscaped =
     "\"\\\"A string with \\' characters \\n and \\r newlines "
     "and \\t tabs and \\001 slashes \\\\ and  multiple   spaces\"";
 
+constexpr absl::string_view value_replacement = "\\[REDACTED\\]";
+
 class TextFormatTest : public testing::Test {
  public:
   static void SetUpTestSuite() {
     ABSL_CHECK_OK(File::GetContents(
         TestUtil::GetTestDataPath(
-            "third_party/protobuf/"
+            "google/protobuf/"
             "testdata/text_format_unittest_data_oneof_implemented.txt"),
         &static_proto_text_format_, true));
   }
@@ -117,7 +97,7 @@ class TextFormatExtensionsTest : public testing::Test {
  public:
   static void SetUpTestSuite() {
     ABSL_CHECK_OK(File::GetContents(
-        TestUtil::GetTestDataPath("third_party/protobuf/testdata/"
+        TestUtil::GetTestDataPath("google/protobuf/testdata/"
                                   "text_format_unittest_extensions_data.txt"),
         &static_proto_text_format_, true));
   }
@@ -162,6 +142,111 @@ TEST_F(TextFormatTest, ShortDebugString) {
                          "optional_foreign_message { }"));
 }
 
+
+TEST_F(TextFormatTest, ShortFormat) {
+  unittest::RedactedFields proto;
+  unittest::TestNestedMessageRedaction redacted_nested_proto;
+  unittest::TestNestedMessageRedaction unredacted_nested_proto;
+  redacted_nested_proto.set_optional_unredacted_nested_string("hello");
+  unredacted_nested_proto.set_optional_unredacted_nested_string("world");
+  proto.set_optional_redacted_string("foo");
+  proto.set_optional_unredacted_string("bar");
+  proto.add_repeated_redacted_string("1");
+  proto.add_repeated_redacted_string("2");
+  proto.add_repeated_unredacted_string("3");
+  proto.add_repeated_unredacted_string("4");
+  *proto.mutable_optional_redacted_message() = redacted_nested_proto;
+  *proto.mutable_optional_unredacted_message() = unredacted_nested_proto;
+  unittest::TestNestedMessageRedaction* redacted_message_1 =
+      proto.add_repeated_redacted_message();
+  unittest::TestNestedMessageRedaction* redacted_message_2 =
+      proto.add_repeated_redacted_message();
+  unittest::TestNestedMessageRedaction* unredacted_message_1 =
+      proto.add_repeated_unredacted_message();
+  unittest::TestNestedMessageRedaction* unredacted_message_2 =
+      proto.add_repeated_unredacted_message();
+  redacted_message_1->set_optional_unredacted_nested_string("5");
+  redacted_message_2->set_optional_unredacted_nested_string("6");
+  unredacted_message_1->set_optional_unredacted_nested_string("7");
+  unredacted_message_2->set_optional_unredacted_nested_string("8");
+  (*proto.mutable_map_redacted_string())["abc"] = "def";
+  (*proto.mutable_map_unredacted_string())["ghi"] = "jkl";
+
+  std::string value_replacement = "\\[REDACTED\\]";
+  EXPECT_THAT(google::protobuf::ShortFormat(proto),
+              testing::MatchesRegex(absl::Substitute(
+                  "optional_redacted_string: $0 "
+                  "optional_unredacted_string: \"bar\" "
+                  "repeated_redacted_string: $0 "
+                  "repeated_redacted_string: $0 "
+                  "repeated_unredacted_string: \"3\" "
+                  "repeated_unredacted_string: \"4\" "
+                  "optional_redacted_message: $0 "
+                  "optional_unredacted_message \\{ "
+                  "optional_unredacted_nested_string: \"world\" \\} "
+                  "repeated_redacted_message: $0 "
+                  "repeated_unredacted_message "
+                  "\\{ optional_unredacted_nested_string: \"7\" \\} "
+                  "repeated_unredacted_message "
+                  "\\{ optional_unredacted_nested_string: \"8\" \\} "
+                  "map_redacted_string: $0 "
+                  "map_unredacted_string \\{ key: \"ghi\" value: \"jkl\" \\}",
+                  value_replacement)));
+}
+
+TEST_F(TextFormatTest, Utf8Format) {
+  unittest::RedactedFields proto;
+  unittest::TestNestedMessageRedaction redacted_nested_proto;
+  unittest::TestNestedMessageRedaction unredacted_nested_proto;
+  redacted_nested_proto.set_optional_unredacted_nested_string(
+      "\350\260\267\346\255\214");
+  unredacted_nested_proto.set_optional_unredacted_nested_string(
+      "\350\260\267\346\255\214");
+  proto.set_optional_redacted_string("foo");
+  proto.set_optional_unredacted_string("bar");
+  proto.add_repeated_redacted_string("1");
+  proto.add_repeated_redacted_string("2");
+  proto.add_repeated_unredacted_string("3");
+  proto.add_repeated_unredacted_string("4");
+  *proto.mutable_optional_redacted_message() = redacted_nested_proto;
+  *proto.mutable_optional_unredacted_message() = unredacted_nested_proto;
+  unittest::TestNestedMessageRedaction* redacted_message_1 =
+      proto.add_repeated_redacted_message();
+  unittest::TestNestedMessageRedaction* redacted_message_2 =
+      proto.add_repeated_redacted_message();
+  unittest::TestNestedMessageRedaction* unredacted_message_1 =
+      proto.add_repeated_unredacted_message();
+  unittest::TestNestedMessageRedaction* unredacted_message_2 =
+      proto.add_repeated_unredacted_message();
+  redacted_message_1->set_optional_unredacted_nested_string("5");
+  redacted_message_2->set_optional_unredacted_nested_string("6");
+  unredacted_message_1->set_optional_unredacted_nested_string("7");
+  unredacted_message_2->set_optional_unredacted_nested_string("8");
+  (*proto.mutable_map_redacted_string())["abc"] = "def";
+  (*proto.mutable_map_unredacted_string())["ghi"] = "jkl";
+
+  EXPECT_THAT(google::protobuf::Utf8Format(proto),
+              testing::MatchesRegex(absl::Substitute(
+                  "optional_redacted_string: $0\n"
+                  "optional_unredacted_string: \"bar\"\n"
+                  "repeated_redacted_string: $0\n"
+                  "repeated_redacted_string: $0\n"
+                  "repeated_unredacted_string: \"3\"\n"
+                  "repeated_unredacted_string: \"4\"\n"
+                  "optional_redacted_message: $0\n"
+                  "optional_unredacted_message \\{\n  "
+                  "optional_unredacted_nested_string: "
+                  "\"\xE8\xB0\xB7\xE6\xAD\x8C\"\n\\}\n"
+                  "repeated_redacted_message: $0\n"
+                  "repeated_unredacted_message \\{\n  "
+                  "optional_unredacted_nested_string: \"7\"\n\\}\n"
+                  "repeated_unredacted_message \\{\n  "
+                  "optional_unredacted_nested_string: \"8\"\n\\}\n"
+                  "map_redacted_string: $0\n"
+                  "map_unredacted_string \\{\n  "
+                  "key: \"ghi\"\n  value: \"jkl\"\n\\}\n",
+                  value_replacement)));
+}
 
 TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
   proto_.set_optional_int32(123);
@@ -296,6 +381,17 @@ TEST_F(TextFormatTest, PrintUnknownFields) {
                          "8: 2\n"
                          "8: 3\n"),
             message.DebugString());
+
+  EXPECT_THAT(absl::StrCat(message), testing::MatchesRegex(absl::Substitute(
+                                         "5: UNKNOWN_VARINT $0\n"
+                                         "5: UNKNOWN_FIXED32 $0\n"
+                                         "5: UNKNOWN_FIXED64 $0\n"
+                                         "5: UNKNOWN_STRING $0\n"
+                                         "5: UNKNOWN_GROUP $0\n"
+                                         "8: UNKNOWN_VARINT $0\n"
+                                         "8: UNKNOWN_VARINT $0\n"
+                                         "8: UNKNOWN_VARINT $0\n",
+                                         value_replacement)));
 }
 
 TEST_F(TextFormatTest, PrintUnknownFieldsDeepestStackWorks) {
@@ -1083,6 +1179,7 @@ TEST_F(TextFormatTest, ParseShortRepeatedWithTrailingComma) {
   parse_string = "repeated_nested_message: [ { bb: 1 }, ]";
   ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
   parse_string = "RepeatedGroup [{ a: 3 },]\n";
+  ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
 }
 
 TEST_F(TextFormatTest, ParseShortRepeatedEmpty) {

@@ -31,7 +31,7 @@ module StressTest
         mnew = TestMessage.decode(data)
         mnew = mnew.dup
         assert_equal m.inspect, mnew.inspect
-        assert TestMessage.encode(mnew) == data
+        assert_equal data, TestMessage.encode(mnew)
       end
     end
   end
