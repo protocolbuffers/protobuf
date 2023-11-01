@@ -39,7 +39,6 @@
 #include "upb/mini_descriptor/link.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
-#include "upb/mini_table/sub.h"
 #include "upb/test/test.upb.h"
 #include "upb/test/test.upb_minitable.h"
 #include "upb/wire/decode.h"
@@ -175,7 +174,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Get unknown extension bytes before promotion.
   size_t start_len;
-  upb_Message_GetUnknown(base_msg, &start_len);
+  upb_Message_GetUnknowns(base_msg, &start_len);
   EXPECT_GT(start_len, 0);
   EXPECT_EQ(0, upb_Message_ExtensionCount(base_msg));
 
@@ -223,7 +222,7 @@ TEST(GeneratedCode, Extensions) {
   EXPECT_EQ(9, upb_test_ModelExtension2_i(ext2));
 
   size_t end_len;
-  upb_Message_GetUnknown(base_msg, &end_len);
+  upb_Message_GetUnknowns(base_msg, &end_len);
   EXPECT_LT(end_len, start_len);
   EXPECT_EQ(6, upb_Message_ExtensionCount(base_msg));
 

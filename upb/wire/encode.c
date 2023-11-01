@@ -546,7 +546,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
 
   if ((e->options & kUpb_EncodeOption_SkipUnknown) == 0) {
     size_t unknown_size;
-    const char* unknown = upb_Message_GetUnknown(msg, &unknown_size);
+    const char* unknown = upb_Message_GetUnknowns(msg, &unknown_size);
 
     if (unknown) {
       encode_bytes(e, unknown, unknown_size);
@@ -558,7 +558,8 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
      * these in field number order relative to normal fields or even to each
      * other. */
     size_t ext_count;
-    const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &ext_count);
+    const upb_Message_Extension* ext =
+        upb_Message_GetExtensions(msg, &ext_count);
     if (ext_count) {
       if (e->options & kUpb_EncodeOption_Deterministic) {
         _upb_sortedmap sorted;

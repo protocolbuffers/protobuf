@@ -314,7 +314,7 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   // Read unknown data from clone and verify.
   size_t cloned_length;
   const char* cloned_unknown_data =
-      upb_Message_GetUnknown(clone, &cloned_length);
+      upb_Message_GetUnknowns(clone, &cloned_length);
   EXPECT_EQ(cloned_length, len);
   EXPECT_EQ(memcmp(cloned_unknown_data, unknown_data.c_str(), cloned_length),
             0);

@@ -25,14 +25,14 @@
 // This is rather wasteful for scalars (in the extreme case of bool,
 // it wastes 15 bytes). We accept this because we expect messages to be
 // the most common extension type.
-typedef struct {
+struct upb_Message_Extension {
   const upb_MiniTableExtension* ext;
   union {
     upb_StringView str;
     void* ptr;
     char scalar_data[8];
   } data;
-} upb_Message_Extension;
+};
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,11 +43,6 @@ extern "C" {
 // This logically replaces any previously-added extension with this number.
 upb_Message_Extension* _upb_Message_GetOrCreateExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext, upb_Arena* arena);
-
-// Returns an array of extensions for this message.
-// Note: the array is ordered in reverse relative to the order of creation.
-const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
-                                                  size_t* count);
 
 // Returns an extension for the given field number, or NULL if no extension
 // exists for this field number.

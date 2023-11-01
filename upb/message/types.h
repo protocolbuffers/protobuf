@@ -12,4 +12,6 @@
 // messages and mini tables.
 typedef void upb_Message;
 
+typedef struct upb_Message_Extension upb_Message_Extension;
+
 #endif /* UPB_MESSAGE_TYPES_H_ */

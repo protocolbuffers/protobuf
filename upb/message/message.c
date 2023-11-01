@@ -74,7 +74,7 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
   }
 }
 
-const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
+const char* upb_Message_GetUnknowns(const upb_Message* msg, size_t* len) {
   const upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (in->internal) {
     *len = in->internal->unknown_end - overhead;
@@ -91,7 +91,7 @@ void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
       UPB_PTR_AT(in->internal, in->internal->unknown_end, char);
 #ifndef NDEBUG
   size_t full_unknown_size;
-  const char* full_unknown = upb_Message_GetUnknown(msg, &full_unknown_size);
+  const char* full_unknown = upb_Message_GetUnknowns(msg, &full_unknown_size);
   UPB_ASSERT((uintptr_t)data >= (uintptr_t)full_unknown);
   UPB_ASSERT((uintptr_t)data < (uintptr_t)(full_unknown + full_unknown_size));
   UPB_ASSERT((uintptr_t)(data + len) > (uintptr_t)data);
@@ -103,8 +103,8 @@ void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
   in->internal->unknown_end -= len;
 }
 
-const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
-                                                  size_t* count) {
+const upb_Message_Extension* upb_Message_GetExtensions(const upb_Message* msg,
+                                                       size_t* count) {
   const upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (in->internal) {
     *count = (in->internal->size - in->internal->ext_begin) /
@@ -119,7 +119,7 @@ const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
 const upb_Message_Extension* _upb_Message_Getext(
     const upb_Message* msg, const upb_MiniTableExtension* e) {
   size_t n;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &n);
+  const upb_Message_Extension* ext = upb_Message_GetExtensions(msg, &n);
 
   /* For now we use linear search exclusively to find extensions. If this
    * becomes an issue due to messages with lots of extensions, we can introduce
@@ -147,8 +147,10 @@ upb_Message_Extension* _upb_Message_GetOrCreateExtension(
   return ext;
 }
 
+// TODO: Now that upb_Message_GetExtensions() is public we don't really
+// need this function. Delete it.
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   size_t count;
-  _upb_Message_Getexts(msg, &count);
+  upb_Message_GetExtensions(msg, &count);
   return count;
 }

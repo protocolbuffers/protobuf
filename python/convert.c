@@ -443,8 +443,8 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
   if (upb_Message_Next(msg2, m, NULL, &f2, &val2, &iter2)) return false;
 
   size_t usize1, usize2;
-  const char* uf1 = upb_Message_GetUnknown(msg1, &usize1);
-  const char* uf2 = upb_Message_GetUnknown(msg2, &usize2);
+  const char* uf1 = upb_Message_GetUnknowns(msg1, &usize1);
+  const char* uf2 = upb_Message_GetUnknowns(msg2, &usize2);
   // 100 is arbitrary, we're trying to prevent stack overflow but it's not
   // obvious how deep we should allow here.
   return upb_Message_UnknownFieldsAreEqual(uf1, usize1, uf2, usize2, 100) ==

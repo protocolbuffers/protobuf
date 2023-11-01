@@ -11,12 +11,19 @@
 #include <float.h>
 #include <inttypes.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
 #include "upb/lex/round_trip.h"
+#include "upb/message/array.h"
+#include "upb/message/internal/map_entry.h"
 #include "upb/message/internal/map_sorter.h"
 #include "upb/message/map.h"
+#include "upb/message/message.h"
 #include "upb/port/vsnprintf_compat.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
@@ -369,7 +376,7 @@ static const char* txtenc_unknown(txtenc* e, const char* ptr,
           e->overflow = start_overflow;
           const char* str = ptr;
           ptr = upb_EpsCopyInputStream_ReadString(stream, &str, size, NULL);
-          assert(ptr);
+          UPB_ASSERT(ptr);
           txtenc_string(e, (upb_StringView){.data = str, .size = size}, true);
         }
         break;
@@ -413,7 +420,7 @@ static void txtenc_msg(txtenc* e, const upb_Message* msg,
 
   if ((e->options & UPB_TXTENC_SKIPUNKNOWN) == 0) {
     size_t size;
-    const char* ptr = upb_Message_GetUnknown(msg, &size);
+    const char* ptr = upb_Message_GetUnknowns(msg, &size);
     if (size != 0) {
       char* start = e->ptr;
       upb_EpsCopyInputStream stream;

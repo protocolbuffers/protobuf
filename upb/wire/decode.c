@@ -258,7 +258,7 @@ static upb_Message* _upb_Decoder_ReuseSubMessage(
   upb_Message* existing = _upb_TaggedMessagePtr_GetEmptyMessage(tagged);
   upb_Message* promoted = _upb_Decoder_NewSubMessage(d, subs, field, target);
   size_t size;
-  const char* unknown = upb_Message_GetUnknown(existing, &size);
+  const char* unknown = upb_Message_GetUnknowns(existing, &size);
   upb_DecodeStatus status = upb_Decode(unknown, size, promoted, subl, d->extreg,
                                        d->options, &d->arena);
   if (status != kUpb_DecodeStatus_Ok) _upb_Decoder_ErrorJmp(d, status);
@@ -652,7 +652,7 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
       _upb_Decoder_DecodeSubMessage(d, ptr, &ent.data, subs, field, val->size);
   // check if ent had any unknown fields
   size_t size;
-  upb_Message_GetUnknown(&ent.data, &size);
+  upb_Message_GetUnknowns(&ent.data, &size);
   if (size != 0) {
     char* buf;
     size_t size;

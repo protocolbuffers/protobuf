@@ -270,7 +270,7 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
   if (!msg) return &self->ob_base;
 
   size_t size;
-  const char* ptr = upb_Message_GetUnknown(msg, &size);
+  const char* ptr = upb_Message_GetUnknowns(msg, &size);
   if (size == 0) return &self->ob_base;
 
   upb_EpsCopyInputStream stream;

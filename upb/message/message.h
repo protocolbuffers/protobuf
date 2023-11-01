@@ -35,10 +35,15 @@ void upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
                             upb_Arena* arena);
 
 // Returns a reference to the message's unknown data.
-const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
+const char* upb_Message_GetUnknowns(const upb_Message* msg, size_t* len);
 
 // Removes partial unknown data from message.
 void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len);
+
+// Returns an array of extensions for this message.
+// Note: the array is ordered in reverse relative to the order of creation.
+const upb_Message_Extension* upb_Message_GetExtensions(const upb_Message* msg,
+                                                       size_t* count);
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);

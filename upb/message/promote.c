@@ -82,7 +82,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     return kUpb_GetExtension_NotPresent;
   }
   size_t len;
-  size_t ofs = result.ptr - upb_Message_GetUnknown(msg, &len);
+  size_t ofs = result.ptr - upb_Message_GetUnknowns(msg, &len);
   // Decode and promote from unknown.
   const upb_MiniTable* extension_table = ext_table->sub.submsg;
   upb_UnknownToMessageRet parse_result = upb_MiniTable_ParseUnknownMessage(
@@ -107,7 +107,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   }
   memcpy(&ext->data, &extension_msg, sizeof(extension_msg));
   *extension = ext;
-  const char* delete_ptr = upb_Message_GetUnknown(msg, &len) + ofs;
+  const char* delete_ptr = upb_Message_GetUnknowns(msg, &len) + ofs;
   upb_Message_DeleteUnknown(msg, delete_ptr, result.len);
   return kUpb_GetExtension_Ok;
 }
@@ -124,7 +124,7 @@ upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
   size_t size;
   upb_FindUnknownRet ret;
 
-  const char* ptr = upb_Message_GetUnknown(msg, &size);
+  const char* ptr = upb_Message_GetUnknowns(msg, &size);
   upb_EpsCopyInputStream stream;
   upb_EpsCopyInputStream_Init(&stream, &ptr, size, true);
 
@@ -158,7 +158,7 @@ static upb_DecodeStatus upb_Message_PromoteOne(upb_TaggedMessagePtr* tagged,
                                                upb_Arena* arena) {
   upb_Message* empty = _upb_TaggedMessagePtr_GetEmptyMessage(*tagged);
   size_t unknown_size;
-  const char* unknown_data = upb_Message_GetUnknown(empty, &unknown_size);
+  const char* unknown_data = upb_Message_GetUnknowns(empty, &unknown_size);
   upb_Message* promoted = upb_Message_New(mini_table, arena);
   if (!promoted) return kUpb_DecodeStatus_OutOfMemory;
   upb_DecodeStatus status = upb_Decode(unknown_data, unknown_size, promoted,

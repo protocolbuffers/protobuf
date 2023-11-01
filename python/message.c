@@ -575,7 +575,7 @@ static bool PyUpb_Message_IsEmpty(const upb_Message* msg,
   if (upb_Message_Next(msg, m, ext_pool, &f, &val, &iter)) return false;
 
   size_t len;
-  (void)upb_Message_GetUnknown(msg, &len);
+  (void)upb_Message_GetUnknowns(msg, &len);
   return len == 0;
 }
 

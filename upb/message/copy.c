@@ -245,7 +245,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   }
   // Clone extensions.
   size_t ext_count;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(src, &ext_count);
+  const upb_Message_Extension* ext = upb_Message_GetExtensions(src, &ext_count);
   for (size_t i = 0; i < ext_count; ++i) {
     const upb_Message_Extension* msg_ext = &ext[i];
     const upb_MiniTableField* field = &msg_ext->ext->field;
@@ -271,7 +271,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
 
   // Clone unknowns.
   size_t unknown_size = 0;
-  const char* ptr = upb_Message_GetUnknown(src, &unknown_size);
+  const char* ptr = upb_Message_GetUnknowns(src, &unknown_size);
   if (unknown_size != 0) {
     UPB_ASSERT(ptr);
     // Make a copy into destination arena.
