@@ -217,7 +217,7 @@ pkg_files(
 
 pkg_files(
     name = "utf8_range_source_files",
-    srcs = ["@utf8_range//:utf8_range_srcs"],
+    srcs = ["//third_party/utf8_range:utf8_range_srcs"],
     prefix = "utf8_range",
 )
 
