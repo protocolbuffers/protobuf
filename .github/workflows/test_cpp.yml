@@ -310,7 +310,7 @@ jobs:
             os: macos-12
             bazel: //src/...
           - name: Windows
-            os: windows-2019
+            os: windows-2022
             bazel: //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
     name: ${{ matrix.name }} Bazel
     runs-on: ${{ matrix.os }}
@@ -335,36 +335,34 @@ jobs:
             os: macos-12
             flags: -DCMAKE_CXX_STANDARD=14
           - name: Windows CMake
+            os: windows-2022
+            flags: >-
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -Dprotobuf_BUILD_SHARED_LIBS=OFF
+              -Dprotobuf_BUILD_EXAMPLES=ON
+            vsversion: '2022'
+          - name: Windows CMake 2019
             os: windows-2019
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2019'
-          # TODO(b/285566773) Re-enable this test.
-          # This is broken due to a github runner update.
-          # See https://github.com/actions/runner-images/issues/7662 for more details
-          #- name: Windows CMake 2022
-          #  os: windows-2022
-          #  flags: >-
-          #    -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
-          #    -Dprotobuf_BUILD_SHARED_LIBS=OFF
-          #    -Dprotobuf_BUILD_EXAMPLES=ON
-          #  vsversion: '2022'
+            python-version: '3.8'
           - name: Windows CMake Shared
-            os: windows-2019
+            os: windows-2022
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=ON
-            vsversion: '2019'
+            vsversion: '2022'
           - name: Windows CMake Install
-            os: windows-2019
+            os: windows-2022
             install-flags: -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_TESTS=OFF
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
-            vsversion: '2019'
+            vsversion: '2022'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -373,6 +371,13 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
+
+      - name: Install Python
+        if: ${{ matrix.python-version }}
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
 
       - name: Setup ccache
         uses: protocolbuffers/protobuf-ci/ccache@v1
