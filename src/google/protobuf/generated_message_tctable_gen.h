@@ -38,6 +38,8 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   struct MessageOptions {
     bool is_lite;
     bool uses_codegen;
+    // TODO: remove this after A/B test is done.
+    bool should_profile_driven_cluster_aux_subtable;
   };
   struct PerFieldOptions {
     // For presence awareness (e.g. PDProto).

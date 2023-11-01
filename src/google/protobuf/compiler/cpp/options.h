@@ -54,6 +54,7 @@ struct Options {
   bool opensource_runtime = false;
   bool annotate_accessor = false;
   bool force_split = false;
+  bool profile_driven_cluster_aux_subtable = false;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = true;
   bool force_inline_string = true;
