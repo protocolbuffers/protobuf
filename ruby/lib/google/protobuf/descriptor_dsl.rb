@@ -451,6 +451,10 @@ module Google
         end
       end
 
+      def self.decode_options(klass, serialized_options)
+        options = klass.decode(serialized_options)
+        options.send(:internal_deep_freeze)
+      end
     end
 
     # Re-open the class (the rest of the class is implemented in C)
@@ -459,6 +463,56 @@ module Google
         builder = Internal::Builder.new(self)
         builder.instance_eval(&block)
         builder.build
+      end
+    end
+
+    # Re-open the class (the rest of the class is implemented in C)
+    class Descriptor
+      def options
+        @options ||= Google::Protobuf::Internal.decode_options(
+          Google::Protobuf::MessageOptions,
+          serialized_options
+        )
+      end
+    end
+
+    # Re-open the class (the rest of the class is implemented in C)
+    class FileDescriptor
+      def options
+        @options ||= Google::Protobuf::Internal.decode_options(
+          Google::Protobuf::FileOptions,
+          serialized_options
+        )
+      end
+    end
+
+    # Re-open the class (the rest of the class is implemented in C)
+    class FieldDescriptor
+      def options
+        @options ||= Google::Protobuf::Internal.decode_options(
+          Google::Protobuf::FieldOptions,
+          serialized_options
+        )
+      end
+    end
+
+    # Re-open the class (the rest of the class is implemented in C)
+    class EnumDescriptor
+      def options
+        @options ||= Google::Protobuf::Internal.decode_options(
+          Google::Protobuf::EnumOptions,
+          serialized_options
+        )
+      end
+    end
+
+    # Re-open the class (the rest of the class is implemented in C)
+    class OneofDescriptor
+      def options
+        @options ||= Google::Protobuf::Internal.decode_options(
+          Google::Protobuf::OneofOptions,
+          serialized_options
+        )
       end
     end
   end

@@ -861,6 +861,36 @@ static VALUE Message_freeze(VALUE _self) {
 
 /*
  * call-seq:
+ *     Message.internal_deep_freeze => self
+ *
+ * Deep freezes the message object recursively.
+ * Internal use only.
+ */
+static VALUE Message_internal_deep_freeze(VALUE _self) {
+  Message* self = ruby_to_Message(_self);
+  if (!RB_OBJ_FROZEN(_self)) {
+    Message_freeze(_self);
+
+    int n = upb_MessageDef_FieldCount(self->msgdef);
+    for (int i = 0; i < n; i++) {
+      const upb_FieldDef* f = upb_MessageDef_Field(self->msgdef, i);
+      VALUE field = Message_getfield(_self, f);
+
+      if (field != Qnil) {
+        if (upb_FieldDef_IsMap(f) || upb_FieldDef_IsRepeated(f)) {
+          rb_funcall(field, rb_intern("internal_deep_freeze"), 0);
+        } else if (upb_FieldDef_IsSubMessage(f)) {
+          Message_internal_deep_freeze(field);
+        }
+      }
+    }
+  }
+
+  return _self;
+}
+
+/*
+ * call-seq:
  *     Message.[](index) => value
  *
  * Accesses a field's value by field name. The provided field name should be a
@@ -1361,6 +1391,8 @@ static void Message_define_class(VALUE klass) {
   rb_define_method(klass, "==", Message_eq, 1);
   rb_define_method(klass, "eql?", Message_eq, 1);
   rb_define_method(klass, "freeze", Message_freeze, 0);
+  rb_define_private_method(klass, "internal_deep_freeze",
+                           Message_internal_deep_freeze, 0);
   rb_define_method(klass, "hash", Message_hash, 0);
   rb_define_method(klass, "to_h", Message_to_h, 0);
   rb_define_method(klass, "inspect", Message_inspect, 0);

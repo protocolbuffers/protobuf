@@ -489,6 +489,34 @@ static VALUE RepeatedField_freeze(VALUE _self) {
 
 /*
  * call-seq:
+ *     RepeatedField.internal_deep_freeze => self
+ *
+ * Deep freezes the repeated field and values recursively.
+ * Internal use only.
+ */
+static VALUE RepeatedField_internal_deep_freeze(VALUE _self) {
+  RepeatedField* self = ruby_to_RepeatedField(_self);
+
+  if (!RB_OBJ_FROZEN(_self)) {
+    RepeatedField_freeze(_self);
+
+    if (self->type_info.type == kUpb_CType_Message) {
+      int size = upb_Array_Size(self->array);
+      int i;
+
+      for (i = 0; i < size; i++) {
+        upb_MessageValue msgval = upb_Array_Get(self->array, i);
+        VALUE val = Convert_UpbToRuby(msgval, self->type_info, self->arena);
+        rb_funcall(val, rb_intern("internal_deep_freeze"), 0);
+      }
+    }
+  }
+
+  return _self;
+}
+
+/*
+ * call-seq:
  *     RepeatedField.hash => hash_value
  *
  * Returns a hash value computed from this repeated field's elements.
@@ -630,6 +658,8 @@ void RepeatedField_register(VALUE module) {
   rb_define_method(klass, "==", RepeatedField_eq, 1);
   rb_define_method(klass, "to_ary", RepeatedField_to_ary, 0);
   rb_define_method(klass, "freeze", RepeatedField_freeze, 0);
+  rb_define_private_method(klass, "internal_deep_freeze",
+                          RepeatedField_internal_deep_freeze, 0);
   rb_define_method(klass, "hash", RepeatedField_hash, 0);
   rb_define_method(klass, "+", RepeatedField_plus, 1);
   rb_define_method(klass, "concat", RepeatedField_concat, 1);
