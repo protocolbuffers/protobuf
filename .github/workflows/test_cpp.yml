@@ -348,6 +348,7 @@ jobs:
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2019'
+            # windows-2019 has python3.7 installed, which is incompatible with the latest gcloud
             python-version: '3.8'
           - name: Windows CMake Shared
             os: windows-2022
@@ -372,12 +373,17 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
 
+      # Workaround for incompatibility between gcloud and windows-2019 runners.
       - name: Install Python
         if: ${{ matrix.python-version }}
         uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+      - name: Use custom python for gcloud
+        if: ${{ matrix.python-version }}
+        run: echo "CLOUDSDK_PYTHON=${Python3_ROOT_DIR}\\python3" >> $GITHUB_ENV
+        shell: bash
 
       - name: Setup ccache
         uses: protocolbuffers/protobuf-ci/ccache@v1
