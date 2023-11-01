@@ -1,4 +1,5 @@
 # These are fetched as external repositories.
 third_party/abseil-cpp
 third_party/googletest
+third_party/utf8_range
 _build/

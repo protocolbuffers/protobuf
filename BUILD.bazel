@@ -3,7 +3,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_toolchain", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
 
@@ -194,6 +194,18 @@ cc_binary(
     deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
 
+proto_toolchain(
+    name = "protoc_source_toolchain",
+    proto_compiler = ":protoc"
+)
+
+toolchain(
+    name = "protoc_toolchain",
+    toolchain = ":protoc_source_toolchain",
+    toolchain_type = "@rules_proto//proto:toolchain_type",
+)
+
+
 ################################################################################
 # C++ runtime
 ################################################################################
@@ -288,6 +300,19 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+toolchain(
+    name = "javalite_source_toolchain",
+    toolchain = ":javalite_toolchain",
+    toolchain_type = "@rules_java//java/proto:lite_toolchain_type",
+)
+
+toolchain(
+    name = "java_source_toolchain",
+    toolchain = ":java_toolchain",
+    toolchain_type = "@rules_java//java/proto:toolchain_type",
+)
+
+
 ################################################################################
 # Python support
 ################################################################################
@@ -328,6 +353,10 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+################################################################################
+# CC support
+################################################################################
+
 proto_lang_toolchain(
     name = "cc_toolchain",
     blacklisted_protos = [
@@ -337,6 +366,12 @@ proto_lang_toolchain(
     command_line = "--cpp_out=$(OUT)",
     runtime = "//src/google/protobuf:protobuf_nowkt",
     visibility = ["//visibility:public"],
+)
+
+toolchain(
+    name = "cc_source_toolchain",
+    toolchain = ":cc_toolchain",
+    toolchain_type = "@rules_cc//cc/proto:toolchain_type",
 )
 
 ################################################################################

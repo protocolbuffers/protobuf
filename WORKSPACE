@@ -8,9 +8,11 @@ local_repository(
 )
 
 # Load common dependencies first to ensure we use the correct version
-load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
+load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps", "protobuf_register_toolchains")
 
 protobuf_deps()
+
+protobuf_register_toolchains()
 
 # Bazel platform rules.
 http_archive(
@@ -201,3 +203,8 @@ crates_repository(
 
 load("@crate_index//:defs.bzl", "crate_repositories")
 crate_repositories()
+
+
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+rules_java_dependencies()
+rules_java_toolchains()

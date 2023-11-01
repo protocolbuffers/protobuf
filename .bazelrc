@@ -30,3 +30,6 @@ build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
 # TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
 # https://github.com/protocolbuffers/protobuf/issues/14313
 common --noenable_bzlmod
+
+# Enable proto toolchain resolution
+common --incompatible_enable_proto_toolchain_resolution

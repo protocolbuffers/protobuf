@@ -80,25 +80,23 @@ def protobuf_deps():
         _github_archive(
             name = "rules_cc",
             repo = "https://github.com/bazelbuild/rules_cc",
-            commit = "818289e5613731ae410efb54218a4077fb9dbb03",
-            sha256 = "0adbd6f567291ad526e82c765e15aed33cea5e256eeba129f1501142c2c56610",
+            commit = "c8c38f8c710cbbf834283e4777916b68261b359c",
         )
 
     if not native.existing_rule("rules_java"):
-        http_archive(
+        _github_archive(
             name = "rules_java",
-            url = "https://github.com/bazelbuild/rules_java/releases/download/6.0.0/rules_java-6.0.0.tar.gz",
-            sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
+            repo = "https://github.com/bazelbuild/rules_java",
+            commit = "b14972c2fd5211d0bed50ac291e4e0785f247f47",
         )
 
+        
     if not native.existing_rule("rules_proto"):
-        http_archive(
+        _github_archive(
             name = "rules_proto",
-            sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
-            strip_prefix = "rules_proto-5.3.0-21.7",
-            urls = [
-                "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
-            ],
+            repo = "https://github.com/bazelbuild/rules_proto",
+            commit = "367e3b5757b9a6f9ee326a6e55da2013a5c65710",
+            sha256 = "8e17336df2b78e40b9287a19b4a890f84c563f405c7221060975198c8cfa3bdc"
         )
 
     if not native.existing_rule("rules_python"):
@@ -121,8 +119,8 @@ def protobuf_deps():
         _github_archive(
             name = "rules_jvm_external",
             repo = "https://github.com/bazelbuild/rules_jvm_external",
-            commit = "906875b0d5eaaf61a8ca2c9c3835bde6f435d011",
-            sha256 = "744bd7436f63af7e9872948773b8b106016dc164acb3960b4963f86754532ee7",
+            commit = "be4bc31ad00a9c450a98ef87aa45b2199b4fdd58",
+            sha256 = "50ca1c0e976bb52f02c464a1e901d494e3b5681bd0d4bfe40799f2353933da9f"
         )
 
     if not native.existing_rule("rules_pkg"):
@@ -178,3 +176,11 @@ def protobuf_deps():
         name = "nuget_python_x86-64_3.10.0",
         sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
     )
+
+
+def protobuf_register_toolchains():
+    "registers source toolchain"
+    native.register_toolchains("//:protoc_toolchain")
+    native.register_toolchains("//:cc_source_toolchain")
+    native.register_toolchains("//:javalite_source_toolchain")
+    native.register_toolchains("//:java_source_toolchain")
