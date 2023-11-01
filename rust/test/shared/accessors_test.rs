@@ -690,11 +690,10 @@ fn test_oneof_accessors() {
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
     msg.oneof_uint32_set(Some(7));
-    msg.oneof_bytes_mut().set(b"");
+    msg.oneof_bytes_mut().set(b"123");
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
 
-    // This should show it set to the OneofBytes but its not supported yet.
-    assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
+    assert_that!(msg.oneof_field(), matches_pattern!(OneofBytes(eq(b"123"))));
 }
 
 macro_rules! generate_repeated_numeric_test {

@@ -23,8 +23,8 @@ namespace {
 
 std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     const FieldDescriptor& desc) {
-  // We do not support [ctype=FOO] (used to set the field type in C++ to
-  // cord or string_piece) in V0 API.
+  // TODO: We do not support [ctype=FOO] (used to set the field
+  // type in C++ to cord or string_piece) in V0.6 API.
   if (desc.options().has_ctype()) {
     return std::make_unique<UnsupportedField>();
   }
