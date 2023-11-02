@@ -50,6 +50,7 @@ jobs:
         # tests along with user changes.  Any stale files will be automatically fixed in a follow-up
         # commit.
         run: |
+          set -ex
           if [[ -z $COMMIT_TRIGGERED_RUN || -z $MAIN_RUN ]]; then
             bazel query 'attr(tags, "staleness_test", //...)' | xargs bazel test $BAZEL_FLAGS || \
               echo "Please run ./regenerate_stale_files.sh to regenerate stale files"
