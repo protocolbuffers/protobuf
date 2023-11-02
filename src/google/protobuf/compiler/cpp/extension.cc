@@ -198,7 +198,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
                      $proto_ns$::internal::ExtensionIdentifier<
                          $extendee$, ::$proto_ns$::internal::$type_traits$,
                          $field_type$, $packed$>
-                         $scoped_name$($constant_name$, $default_str$, nullptr);
+                         $scoped_name$($constant_name$, $default_str$);
                )cc");
              }
            }},

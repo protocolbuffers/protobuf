@@ -11,15 +11,19 @@
 
 #include "google/protobuf/extension_set.h"
 
+#include <algorithm>
 #include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/extension_set_inl.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -107,13 +111,11 @@ bool GeneratedExtensionFinder::Find(int number, ExtensionInfo* output) {
 
 void ExtensionSet::RegisterExtension(const MessageLite* extendee, int number,
                                      FieldType type, bool is_repeated,
-                                     bool is_packed,
-                                     LazyEagerVerifyFnType verify_func) {
+                                     bool is_packed) {
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_ENUM);
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_MESSAGE);
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_GROUP);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
-                     verify_func);
+  ExtensionInfo info(extendee, number, type, is_repeated, is_packed);
   Register(info);
 }
 
@@ -135,7 +137,7 @@ void ExtensionSet::RegisterEnumExtension(const MessageLite* extendee,
                                          bool is_repeated, bool is_packed,
                                          EnumValidityFunc* is_valid) {
   ABSL_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed, nullptr);
+  ExtensionInfo info(extendee, number, type, is_repeated, is_packed);
   info.enum_validity_check.func = CallNoArgValidityFunc;
   // See comment in CallNoArgValidityFunc() about why we use a c-style cast.
   info.enum_validity_check.arg = (void*)is_valid;
