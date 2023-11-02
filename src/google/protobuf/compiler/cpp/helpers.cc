@@ -921,6 +921,23 @@ bool IsStringInliningEnabled(const Options& options) {
   return options.force_inline_string || IsProfileDriven(options);
 }
 
+bool CanStringBeInlined(const FieldDescriptor* field) {
+  // TODO: Handle inlining for any.proto.
+  if (IsAnyMessage(field->containing_type())) return false;
+  if (field->containing_type()->options().map_entry()) return false;
+  if (field->is_repeated()) return false;
+
+  // We rely on has bits to distinguish field presence for release_$name$.  When
+  // there is no hasbit, we cannot use the address of the string instance when
+  // the field has been inlined.
+  if (!internal::cpp::HasHasbit(field)) return false;
+
+  if (!IsString(field)) return false;
+  if (!field->default_value_string().empty()) return false;
+
+  return true;
+}
+
 bool IsStringInlined(const FieldDescriptor* field, const Options& options) {
   (void)field;
   (void)options;
@@ -1148,13 +1165,13 @@ bool IsStringOrMessage(const FieldDescriptor* field) {
   return false;
 }
 
-bool IsAnyMessage(const FileDescriptor* descriptor, const Options& options) {
+bool IsAnyMessage(const FileDescriptor* descriptor) {
   return descriptor->name() == kAnyProtoFile;
 }
 
-bool IsAnyMessage(const Descriptor* descriptor, const Options& options) {
+bool IsAnyMessage(const Descriptor* descriptor) {
   return descriptor->name() == kAnyMessageName &&
-         IsAnyMessage(descriptor->file(), options);
+         IsAnyMessage(descriptor->file());
 }
 
 bool IsWellKnownMessage(const FileDescriptor* file) {

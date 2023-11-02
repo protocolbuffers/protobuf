@@ -10,7 +10,7 @@ cc_library(
     name = "names",
     hdrs = ["names.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/java",
+    strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
         ":names_internal",
@@ -26,19 +26,32 @@ cc_library(
         "names.cc",
     ],
     hdrs = [
+        "generator.h",
         "helpers.h",
         "name_resolver.h",
         "names.h",
         "options.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/java",
+    strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [
+        ":java_features_bootstrap",
         "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/container:flat_hash_set",
+    ],
+)
+
+cc_library(
+    name = "java_features_bootstrap",
+    srcs = ["java_features.pb.cc"],
+    hdrs = ["java_features.pb.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf:protobuf_nowkt",
     ],
 )
 
@@ -57,7 +70,6 @@ cc_library(
         "file.cc",
         "generator.cc",
         "generator_factory.cc",
-        "java_features.pb.cc",
         "kotlin_generator.cc",
         "map_field.cc",
         "map_field_lite.cc",
@@ -107,12 +119,13 @@ cc_library(
         "string_field_lite.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/java",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
+        ":java_features_bootstrap",
         ":names",
         ":names_internal",
         "//src/google/protobuf:arena",

@@ -191,6 +191,9 @@ static std::string FirstLineOf(const std::string& value) {
 static void WriteDebugString(io::Printer* printer, const FieldDescriptor* field,
                              const Options options, const bool kdoc) {
   std::string field_comment = FirstLineOf(field->DebugString());
+  if (options.strip_nonfunctional_codegen) {
+    field_comment = field->name();
+  }
   if (kdoc) {
     printer->Print(" * `$def$`\n", "def", EscapeKdoc(field_comment));
   } else {

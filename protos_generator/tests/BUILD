@@ -11,7 +11,7 @@ load(
 )
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
+    "upb_c_proto_library",
 )
 load(
     "//protos/bazel:upb_cc_proto_library.bzl",
@@ -60,7 +60,7 @@ proto_library(
     deps = [":no_package_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_model_upb_proto",
     visibility = [
         "//protos:__pkg__",

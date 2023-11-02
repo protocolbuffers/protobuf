@@ -1206,7 +1206,7 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
   }
   if (bytes_limit >= new_bytes) {
     // Fast-path that pre-allocates *values to the final size.
-#if defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(ABSL_IS_LITTLE_ENDIAN)
     values->Resize(old_entries + new_entries, 0);
     // values->mutable_data() may change after Resize(), so do this after:
     void* dest = reinterpret_cast<void*>(values->mutable_data() + old_entries);
@@ -1476,7 +1476,7 @@ template <typename T>
 inline uint8_t* WireFormatLite::WriteFixedNoTagToArray(
     const RepeatedField<T>& value, uint8_t* (*Writer)(T, uint8_t*),
     uint8_t* target) {
-#if defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(ABSL_IS_LITTLE_ENDIAN)
   (void)Writer;
 
   const int n = value.size();

@@ -116,11 +116,9 @@ ParseFunctionGenerator::ParseFunctionGenerator(
   if (should_generate_tctable()) {
     tc_table_info_.reset(new TailCallTableInfo(
         descriptor_, ordered_fields_,
-        {
-            /* is_lite */ GetOptimizeFor(descriptor->file(), options_) ==
-                FileOptions::LITE_RUNTIME,
-            /* uses_codegen */ true,
-        },
+        {/* is_lite */ GetOptimizeFor(descriptor->file(), options_) ==
+             FileOptions::LITE_RUNTIME,
+         /* uses_codegen */ true, options_.profile_driven_cluster_aux_subtable},
         GeneratedOptionProvider(this), has_bit_indices,
         inlined_string_indices));
   }
@@ -235,9 +233,12 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
              // Since most (>80%) messages are never present, messages that are
              // present are considered hot enough to be clustered together.
              if (IsPresentMessage(descriptor_, options_)) {
-               p->Emit("PROTOBUF_SECTION_VARIABLE(proto_parse_table_hot)");
+               p->Emit(
+                   "ABSL_ATTRIBUTE_SECTION_VARIABLE(proto_parse_table_hot)");
              } else {
-               p->Emit("PROTOBUF_SECTION_VARIABLE(proto_parse_table_lukewarm)");
+               p->Emit(
+                   "ABSL_ATTRIBUTE_SECTION_VARIABLE(proto_parse_table_"
+                   "lukewarm)");
              }
            }},
           {"table_size_log2", tc_table_info_->table_size_log2},

@@ -113,59 +113,60 @@ static constexpr const ::_pb::EnumDescriptor**
     file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto = nullptr;
 static constexpr const ::_pb::ServiceDescriptor**
     file_level_service_descriptors_google_2fprotobuf_2fapi_2eproto = nullptr;
-const ::uint32_t TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
-    protodesc_cold) = {
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_._has_bits_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.name_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.methods_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.options_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.version_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.source_context_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.mixins_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.syntax_),
-    ~0u,
-    ~0u,
-    ~0u,
-    ~0u,
-    0,
-    ~0u,
-    ~0u,
-    ~0u,  // no _has_bits_
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.name_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.request_type_url_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.request_streaming_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.response_type_url_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.response_streaming_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.options_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.syntax_),
-    ~0u,  // no _has_bits_
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_.name_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_.root_),
+const ::uint32_t
+    TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+        protodesc_cold) = {
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_._has_bits_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.name_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.methods_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.options_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.version_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.source_context_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.mixins_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.syntax_),
+        ~0u,
+        ~0u,
+        ~0u,
+        ~0u,
+        0,
+        ~0u,
+        ~0u,
+        ~0u,  // no _has_bits_
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.name_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.request_type_url_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.request_streaming_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.response_type_url_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.response_streaming_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.options_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.syntax_),
+        ~0u,  // no _has_bits_
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_.name_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Mixin, _impl_.root_),
 };
 
 static const ::_pbi::MigrationSchema
-    schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, 15, -1, sizeof(::google::protobuf::Api)},
         {22, -1, -1, sizeof(::google::protobuf::Method)},
         {37, -1, -1, sizeof(::google::protobuf::Mixin)},
@@ -176,7 +177,8 @@ static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_Method_default_instance_._instance,
     &::google::protobuf::_Mixin_default_instance_._instance,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+const char descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+    protodesc_cold) = {
     "\n\031google/protobuf/api.proto\022\017google.prot"
     "obuf\032$google/protobuf/source_context.pro"
     "to\032\032google/protobuf/type.proto\"\201\002\n\003Api\022\014"
@@ -330,6 +332,16 @@ inline void Api::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+Api::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          Api::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void Api::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -558,13 +570,6 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Api::_class_data_ = {
-    Api::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Api::GetClassData() const {
-  return &_class_data_;
-}
 
 void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Api*>(&to_msg);
@@ -708,6 +713,16 @@ inline void Method::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+Method::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          Method::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void Method::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -924,13 +939,6 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Method::_class_data_ = {
-    Method::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Method::GetClassData() const {
-  return &_class_data_;
-}
 
 void Method::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Method*>(&to_msg);
@@ -1051,6 +1059,16 @@ inline void Mixin::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+Mixin::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          Mixin::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void Mixin::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -1165,13 +1183,6 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Mixin::_class_data_ = {
-    Mixin::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Mixin::GetClassData() const {
-  return &_class_data_;
-}
 
 void Mixin::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Mixin*>(&to_msg);

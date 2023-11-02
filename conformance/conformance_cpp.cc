@@ -21,6 +21,8 @@
 #include "absl/status/statusor.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
+#include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
+#include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/endian.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
@@ -45,6 +47,10 @@ using ::google::protobuf::util::NewTypeResolverForDescriptorPool;
 using ::google::protobuf::util::TypeResolver;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
 using ::protobuf_test_messages::proto3::TestAllTypesProto3;
+using TestAllTypesProto2Editions =
+    ::protobuf_test_messages::editions::proto2::TestAllTypesProto2;
+using TestAllTypesProto3Editions =
+    ::protobuf_test_messages::editions::proto3::TestAllTypesProto3;
 
 absl::Status ReadFd(int fd, char* buf, size_t len) {
   while (len > 0) {
@@ -76,6 +82,8 @@ class Harness {
   Harness() {
     google::protobuf::LinkMessageReflection<TestAllTypesProto2>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3>();
+    google::protobuf::LinkMessageReflection<TestAllTypesProto2Editions>();
+    google::protobuf::LinkMessageReflection<TestAllTypesProto3Editions>();
 
     resolver_.reset(NewTypeResolverForDescriptorPool(
         "type.googleapis.com", DescriptorPool::generated_pool()));

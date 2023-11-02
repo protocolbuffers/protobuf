@@ -166,95 +166,96 @@ static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2ftype_2eproto[5];
 static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[3];
 static constexpr const ::_pb::ServiceDescriptor**
     file_level_service_descriptors_google_2fprotobuf_2ftype_2eproto = nullptr;
-const ::uint32_t TableStruct_google_2fprotobuf_2ftype_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
-    protodesc_cold) = {
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_._has_bits_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.name_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.fields_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.oneofs_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.options_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.source_context_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.syntax_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.edition_),
-    ~0u,
-    ~0u,
-    ~0u,
-    ~0u,
-    0,
-    ~0u,
-    ~0u,
-    ~0u,  // no _has_bits_
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.kind_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.cardinality_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.number_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.name_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.type_url_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.oneof_index_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.packed_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.options_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.json_name_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.default_value_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_._has_bits_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.name_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.enumvalue_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.options_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.source_context_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.syntax_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.edition_),
-    ~0u,
-    ~0u,
-    ~0u,
-    0,
-    ~0u,
-    ~0u,
-    ~0u,  // no _has_bits_
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.name_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.number_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.options_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_._has_bits_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    ~0u,  // no _weak_field_map_
-    ~0u,  // no _inlined_string_donated_
-    ~0u,  // no _split_
-    ~0u,  // no sizeof(Split)
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_.name_),
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_.value_),
-    ~0u,
-    0,
+const ::uint32_t
+    TableStruct_google_2fprotobuf_2ftype_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+        protodesc_cold) = {
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_._has_bits_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.name_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.fields_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.oneofs_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.options_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.source_context_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.syntax_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.edition_),
+        ~0u,
+        ~0u,
+        ~0u,
+        ~0u,
+        0,
+        ~0u,
+        ~0u,
+        ~0u,  // no _has_bits_
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.kind_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.cardinality_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.number_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.name_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.type_url_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.oneof_index_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.packed_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.options_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.json_name_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.default_value_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_._has_bits_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.name_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.enumvalue_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.options_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.source_context_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.syntax_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.edition_),
+        ~0u,
+        ~0u,
+        ~0u,
+        0,
+        ~0u,
+        ~0u,
+        ~0u,  // no _has_bits_
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.name_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.number_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.options_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_._has_bits_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _internal_metadata_),
+        ~0u,  // no _extensions_
+        ~0u,  // no _oneof_case_
+        ~0u,  // no _weak_field_map_
+        ~0u,  // no _inlined_string_donated_
+        ~0u,  // no _split_
+        ~0u,  // no sizeof(Split)
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_.name_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Option, _impl_.value_),
+        ~0u,
+        0,
 };
 
 static const ::_pbi::MigrationSchema
-    schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+    schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, 15, -1, sizeof(::google::protobuf::Type)},
         {22, -1, -1, sizeof(::google::protobuf::Field)},
         {40, 54, -1, sizeof(::google::protobuf::Enum)},
@@ -269,7 +270,8 @@ static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_EnumValue_default_instance_._instance,
     &::google::protobuf::_Option_default_instance_._instance,
 };
-const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+    protodesc_cold) = {
     "\n\032google/protobuf/type.proto\022\017google.pro"
     "tobuf\032\031google/protobuf/any.proto\032$google"
     "/protobuf/source_context.proto\"\350\001\n\004Type\022"
@@ -510,6 +512,16 @@ inline void Type::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+Type::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          Type::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void Type::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -738,13 +750,6 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Type::_class_data_ = {
-    Type::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Type::GetClassData() const {
-  return &_class_data_;
-}
 
 void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Type*>(&to_msg);
@@ -886,6 +891,16 @@ inline void Field::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+Field::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          Field::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void Field::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -1168,13 +1183,6 @@ const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Field::_class_data_ = {
-    Field::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Field::GetClassData() const {
-  return &_class_data_;
-}
 
 void Field::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Field*>(&to_msg);
@@ -1337,6 +1345,16 @@ inline void Enum::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+Enum::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          Enum::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void Enum::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -1544,13 +1562,6 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Enum::_class_data_ = {
-    Enum::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Enum::GetClassData() const {
-  return &_class_data_;
-}
 
 void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Enum*>(&to_msg);
@@ -1670,6 +1681,16 @@ inline void EnumValue::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+EnumValue::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          EnumValue::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void EnumValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -1804,13 +1825,6 @@ const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData EnumValue::_class_data_ = {
-    EnumValue::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* EnumValue::GetClassData() const {
-  return &_class_data_;
-}
 
 void EnumValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<EnumValue*>(&to_msg);
@@ -1931,6 +1945,16 @@ inline void Option::SharedDtor() {
   _impl_.~Impl_();
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+Option::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
+      data = {
+          Option::MergeImpl,
+           nullptr,  // OnDemandRegisterArenaDtor
+           &::google::protobuf::Message::kDescriptorMethods,
+      };
+  return &data;
+}
 PROTOBUF_NOINLINE void Option::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
@@ -2050,13 +2074,6 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-const ::google::protobuf::Message::ClassData Option::_class_data_ = {
-    Option::MergeImpl,
-    nullptr,  // OnDemandRegisterArenaDtor
-};
-const ::google::protobuf::Message::ClassData* Option::GetClassData() const {
-  return &_class_data_;
-}
 
 void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Option*>(&to_msg);

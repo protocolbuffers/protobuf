@@ -11,6 +11,7 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
+#include <cstdint>
 #include <cstdlib>
 
 #include "absl/algorithm/container.h"
@@ -294,28 +295,6 @@ bool GetBootstrapParam(const std::string& parameter) {
   return false;
 }
 
-
-bool EnforceEditionsSupport(
-    const std::string& codegen_name, uint64_t supported_features,
-    const std::vector<const FileDescriptor*>& parsed_files) {
-  if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
-    for (const auto fd : parsed_files) {
-      if (FileDescriptorLegacy(fd).syntax() ==
-          FileDescriptorLegacy::SYNTAX_EDITIONS) {
-        std::cerr
-            << fd->name() << ": is an editions file, but code generator "
-            << codegen_name
-            << " hasn't been updated to support editions yet.  Please ask "
-               "the owner of this code generator to add support or "
-               "switch back to proto2/proto3.\n\nSee "
-               "https://protobuf.dev/editions/overview/ for more information."
-            << std::endl;
-        return false;
-      }
-    }
-  }
-  return true;
-}
 
 }  // namespace
 
@@ -1538,24 +1517,26 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
   for (const auto& output : output_directives_) {
     if (output.generator == nullptr) continue;
     if ((output.generator->GetSupportedFeatures() &
-         CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
-      continue;
-    }
-    if (output.generator->GetMinimumEdition() != PROTOBUF_MINIMUM_EDITION) {
-      ABSL_LOG(ERROR) << "Built-in generator " << output.name
-                      << " specifies a minimum edition "
-                      << output.generator->GetMinimumEdition()
-                      << " which is not the protoc minimum "
-                      << PROTOBUF_MINIMUM_EDITION << ".";
-      return false;
-    }
-    if (output.generator->GetMaximumEdition() != PROTOBUF_MAXIMUM_EDITION) {
-      ABSL_LOG(ERROR) << "Built-in generator " << output.name
-                      << " specifies a maximum edition "
-                      << output.generator->GetMaximumEdition()
-                      << " which is not the protoc maximum "
-                      << PROTOBUF_MAXIMUM_EDITION << ".";
-      return false;
+         CodeGenerator::FEATURE_SUPPORTS_EDITIONS) != 0) {
+      // Only validate min/max edition on generators that advertise editions
+      // support.  Generators still under development will always use the
+      // correct values.
+      if (output.generator->GetMinimumEdition() != minimum_edition) {
+        ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                        << " specifies a minimum edition "
+                        << output.generator->GetMinimumEdition()
+                        << " which is not the protoc minimum "
+                        << minimum_edition << ".";
+        return false;
+      }
+      if (output.generator->GetMaximumEdition() != maximum_edition) {
+        ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                        << " specifies a maximum edition "
+                        << output.generator->GetMaximumEdition()
+                        << " which is not the protoc maximum "
+                        << maximum_edition << ".";
+        return false;
+      }
     }
     for (const FieldDescriptor* ext :
          output.generator->GetFeatureExtensions()) {
@@ -1899,7 +1880,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
         break;  // only for --decode_raw
       }
       // --decode (not raw) is handled the same way as the rest of the modes.
-      PROTOBUF_FALLTHROUGH_INTENDED;
+      ABSL_FALLTHROUGH_INTENDED;
     case MODE_ENCODE:
     case MODE_PRINT:
       missing_proto_definitions =
@@ -2211,7 +2192,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     if (!version_info_.empty()) {
       std::cout << version_info_ << std::endl;
     }
-    std::cout << "libprotoc " << internal::ProtocVersionString(PROTOBUF_VERSION)
+    std::cout << "libprotoc "
+              << ::google::protobuf::internal::ProtocVersionString(
+                     PROTOBUF_VERSION)
               << PROTOBUF_VERSION_SUFFIX << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
 
@@ -2559,6 +2542,37 @@ bool CommandLineInterface::EnforceProto3OptionalSupport(
                   << std::endl;
         return false;
       }
+    }
+  }
+  return true;
+}
+
+bool CommandLineInterface::EnforceEditionsSupport(
+    const std::string& codegen_name, uint64_t supported_features,
+    const std::vector<const FileDescriptor*>& parsed_files) const {
+  if (supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) {
+    // This generator explicitly supports editions.
+    return true;
+  }
+  if (experimental_editions_) {
+    // The user has explicitly specified the experimental flag.
+    return true;
+  }
+  for (const auto* fd : parsed_files) {
+    // Skip enforcement for allowlisted files.
+    if (IsEarlyEditionsFile(fd->name())) continue;
+
+    if (FileDescriptorLegacy(fd).syntax() ==
+        FileDescriptorLegacy::SYNTAX_EDITIONS) {
+      std::cerr
+          << fd->name() << ": is an editions file, but code generator "
+          << codegen_name
+          << " hasn't been updated to support editions yet.  Please ask "
+             "the owner of this code generator to add support or "
+             "switch back to proto2/proto3.\n\nSee "
+             "https://protobuf.dev/editions/overview/ for more information."
+          << std::endl;
+      return false;
     }
   }
   return true;

@@ -79,7 +79,10 @@ def CUnescape(text: str) -> bytes:
   # allow single-digit hex escapes (like '\xf').
   result = _CUNESCAPE_HEX.sub(ReplaceHex, text)
 
-  return (result.encode('utf-8')  # Make it bytes to allow decode.
-          .decode('unicode_escape')
-          # Make it bytes again to return the proper type.
-          .encode('raw_unicode_escape'))
+  # Replaces Unicode escape sequences with their character equivalents.
+  result = result.encode('raw_unicode_escape').decode('raw_unicode_escape')
+  # Encode Unicode characters as UTF-8, then decode to Latin-1 escaping
+  # unprintable characters.
+  result = result.encode('utf-8').decode('unicode_escape')
+  # Convert Latin-1 text back to a byte string (latin-1 codec also works here).
+  return result.encode('latin-1')

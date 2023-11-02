@@ -9,12 +9,15 @@
 
 #include <stdarg.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <fstream>
+#include <memory>
 #include <string>
 
 #include "google/protobuf/util/field_comparator.h"
-#include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/message_differencer.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -28,15 +31,14 @@
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using conformance::WireFormat;
-using google::protobuf::TextFormat;
 using google::protobuf::util::DefaultFieldComparator;
 using google::protobuf::util::MessageDifferencer;
 using std::string;
 
 namespace {
 
-static string ToOctString(const string& binary_string) {
-  string oct_string;
+static std::string ToOctString(const std::string& binary_string) {
+  std::string oct_string;
   for (size_t i = 0; i < binary_string.size(); i++) {
     uint8_t c = binary_string.at(i);
     uint8_t high = c / 64;
@@ -96,7 +98,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
     ConformanceLevel level, conformance::WireFormat input_format,
     conformance::WireFormat output_format,
     conformance::TestCategory test_category, const Message& prototype_message,
-    const string& test_name, const string& input)
+    const std::string& test_name, const std::string& input)
     : level_(level),
       input_format_(input_format),
       output_format_(output_format),
@@ -139,26 +141,37 @@ ConformanceTestSuite::ConformanceRequestSetting::NewTestMessage() const {
   return std::unique_ptr<Message>(prototype_message_for_compare_->New());
 }
 
-string ConformanceTestSuite::ConformanceRequestSetting::GetTestName() const {
-  string rname;
+std::string
+ConformanceTestSuite::ConformanceRequestSetting::GetSyntaxIdentifier() const {
   switch (FileDescriptorLegacy(prototype_message_.GetDescriptor()->file())
               .syntax()) {
     case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
-      rname = ".Proto3.";
-      break;
+      return "Proto3";
     case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
-      rname = ".Proto2.";
-      break;
+      return "Proto2";
+    case FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS: {
+      std::string id = "Editions";
+      if (prototype_message_.GetDescriptor()->name() == "TestAllTypesProto2") {
+        absl::StrAppend(&id, "_Proto2");
+      } else if (prototype_message_.GetDescriptor()->name() ==
+                 "TestAllTypesProto3") {
+        absl::StrAppend(&id, "_Proto3");
+      }
+      return id;
+    }
     default:
-      break;
+      return "Unknown";
   }
+}
 
-  return absl::StrCat(ConformanceLevelToString(level_), rname,
+string ConformanceTestSuite::ConformanceRequestSetting::GetTestName() const {
+  return absl::StrCat(ConformanceLevelToString(level_), ".",
+                      GetSyntaxIdentifier(), ".",
                       InputFormatString(input_format_), ".", test_name_, ".",
                       OutputFormatString(output_format_));
 }
 
-string
+std::string
 ConformanceTestSuite::ConformanceRequestSetting::ConformanceLevelToString(
     ConformanceLevel level) const {
   switch (level) {
@@ -171,7 +184,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceLevelToString(
   return "";
 }
 
-string ConformanceTestSuite::ConformanceRequestSetting::InputFormatString(
+std::string ConformanceTestSuite::ConformanceRequestSetting::InputFormatString(
     conformance::WireFormat format) const {
   switch (format) {
     case conformance::PROTOBUF:
@@ -186,7 +199,7 @@ string ConformanceTestSuite::ConformanceRequestSetting::InputFormatString(
   return "";
 }
 
-string ConformanceTestSuite::ConformanceRequestSetting::OutputFormatString(
+std::string ConformanceTestSuite::ConformanceRequestSetting::OutputFormatString(
     conformance::WireFormat format) const {
   switch (format) {
     case conformance::PROTOBUF:
@@ -208,7 +221,7 @@ void ConformanceTestSuite::TruncateDebugPayload(string* payload) {
   }
 }
 
-const ConformanceRequest ConformanceTestSuite::TruncateRequest(
+ConformanceRequest ConformanceTestSuite::TruncateRequest(
     const ConformanceRequest& request) {
   ConformanceRequest debug_request(request);
   switch (debug_request.payload_case()) {
@@ -231,7 +244,7 @@ const ConformanceRequest ConformanceTestSuite::TruncateRequest(
   return debug_request;
 }
 
-const ConformanceResponse ConformanceTestSuite::TruncateResponse(
+ConformanceResponse ConformanceTestSuite::TruncateResponse(
     const ConformanceResponse& response) {
   ConformanceResponse debug_response(response);
   switch (debug_response.result_case()) {
@@ -254,7 +267,7 @@ const ConformanceResponse ConformanceTestSuite::TruncateResponse(
   return debug_response;
 }
 
-void ConformanceTestSuite::ReportSuccess(const string& test_name) {
+void ConformanceTestSuite::ReportSuccess(const std::string& test_name) {
   if (expected_to_fail_.erase(test_name) != 0) {
     absl::StrAppendFormat(
         &output_,
@@ -266,7 +279,7 @@ void ConformanceTestSuite::ReportSuccess(const string& test_name) {
   successes_++;
 }
 
-void ConformanceTestSuite::ReportFailure(const string& test_name,
+void ConformanceTestSuite::ReportFailure(const std::string& test_name,
                                          ConformanceLevel level,
                                          const ConformanceRequest& request,
                                          const ConformanceResponse& response,
@@ -286,7 +299,7 @@ void ConformanceTestSuite::ReportFailure(const string& test_name,
                         TruncateResponse(response).ShortDebugString());
 }
 
-void ConformanceTestSuite::ReportSkip(const string& test_name,
+void ConformanceTestSuite::ReportSkip(const std::string& test_name,
                                       const ConformanceRequest& request,
                                       const ConformanceResponse& response) {
   if (verbose_) {
@@ -299,19 +312,20 @@ void ConformanceTestSuite::ReportSkip(const string& test_name,
 
 void ConformanceTestSuite::RunValidInputTest(
     const ConformanceRequestSetting& setting,
-    const string& equivalent_text_format) {
+    const std::string& equivalent_text_format) {
   std::unique_ptr<Message> reference_message(setting.NewTestMessage());
   ABSL_CHECK(TextFormat::ParseFromString(equivalent_text_format,
                                          reference_message.get()))
       << "Failed to parse data for test case: " << setting.GetTestName()
       << ", data: " << equivalent_text_format;
-  const string equivalent_wire_format = reference_message->SerializeAsString();
+  const std::string equivalent_wire_format =
+      reference_message->SerializeAsString();
   RunValidBinaryInputTest(setting, equivalent_wire_format);
 }
 
 void ConformanceTestSuite::RunValidBinaryInputTest(
     const ConformanceRequestSetting& setting,
-    const string& equivalent_wire_format, bool require_same_wire_format) {
+    const std::string& equivalent_wire_format, bool require_same_wire_format) {
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
   RunTest(setting.GetTestName(), request, &response);
@@ -321,11 +335,12 @@ void ConformanceTestSuite::RunValidBinaryInputTest(
 
 void ConformanceTestSuite::VerifyResponse(
     const ConformanceRequestSetting& setting,
-    const string& equivalent_wire_format, const ConformanceResponse& response,
-    bool need_report_success, bool require_same_wire_format) {
+    const std::string& equivalent_wire_format,
+    const ConformanceResponse& response, bool need_report_success,
+    bool require_same_wire_format) {
   std::unique_ptr<Message> test_message(setting.NewTestMessage());
   const ConformanceRequest& request = setting.GetRequest();
-  const string& test_name = setting.GetTestName();
+  const std::string& test_name = setting.GetTestName();
   ConformanceLevel level = setting.GetLevel();
   std::unique_ptr<Message> reference_message = setting.NewTestMessage();
 
@@ -358,7 +373,7 @@ void ConformanceTestSuite::VerifyResponse(
   DefaultFieldComparator field_comparator;
   field_comparator.set_treat_nan_as_equal(true);
   differencer.set_field_comparator(&field_comparator);
-  string differences;
+  std::string differences;
   differencer.ReportDifferencesToString(&differences);
 
   bool check = false;
@@ -366,7 +381,7 @@ void ConformanceTestSuite::VerifyResponse(
   if (require_same_wire_format) {
     ABSL_DCHECK_EQ(response.result_case(),
                    ConformanceResponse::kProtobufPayload);
-    const string& protobuf_payload = response.protobuf_payload();
+    const std::string& protobuf_payload = response.protobuf_payload();
     check = equivalent_wire_format == protobuf_payload;
     differences = absl::StrCat("Expect: ", ToOctString(equivalent_wire_format),
                                ", but got: ", ToOctString(protobuf_payload));
@@ -386,15 +401,15 @@ void ConformanceTestSuite::VerifyResponse(
   }
 }
 
-void ConformanceTestSuite::RunTest(const string& test_name,
+void ConformanceTestSuite::RunTest(const std::string& test_name,
                                    const ConformanceRequest& request,
                                    ConformanceResponse* response) {
   if (test_names_.insert(test_name).second == false) {
     ABSL_LOG(FATAL) << "Duplicated test name: " << test_name;
   }
 
-  string serialized_request;
-  string serialized_response;
+  std::string serialized_request;
+  std::string serialized_response;
   request.SerializeToString(&serialized_request);
 
   runner_->RunTest(test_name, serialized_request, &serialized_response);
@@ -412,7 +427,7 @@ void ConformanceTestSuite::RunTest(const string& test_name,
   }
 }
 
-string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
+std::string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
   switch (wire_format) {
     case conformance::PROTOBUF:
       return "PROTOBUF";
@@ -435,7 +450,8 @@ void ConformanceTestSuite::AddExpectedFailedTest(const std::string& test_name) {
 }
 
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
-                                    std::string* output, const string& filename,
+                                    std::string* output,
+                                    const std::string& filename,
                                     conformance::FailureSet* failure_list) {
   runner_ = runner;
   successes_ = 0;
@@ -449,7 +465,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   failure_list_filename_ = filename;
   expected_to_fail_.clear();
-  for (const string& failure : failure_list->failure()) {
+  for (const std::string& failure : failure_list->failure()) {
     AddExpectedFailedTest(failure);
   }
   RunSuiteImpl();

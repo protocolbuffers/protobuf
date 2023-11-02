@@ -23,7 +23,7 @@ cc_library(
         "zero_copy_stream_impl_lite.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/io",
+    strip_include_prefix = "/src",
     deps = [
         ":io_win32",
         "//src/google/protobuf:arena",
@@ -39,7 +39,7 @@ cc_library(
     testonly = 1,
     hdrs = ["test_zero_copy_stream.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/io",
+    strip_include_prefix = "/src",
     deps = [
         ":io",
         "//src/google/protobuf/stubs",
@@ -90,7 +90,7 @@ cc_library(
     srcs = ["printer.cc"],
     hdrs = ["printer.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/io",
+    strip_include_prefix = "/src",
     deps = [
         ":zero_copy_sink",
         "//src/google/protobuf/stubs",
@@ -119,7 +119,7 @@ cc_library(
         "tokenizer.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/io",
+    strip_include_prefix = "/src",
     deps = [
         ":io",
         "//src/google/protobuf/stubs",
@@ -134,7 +134,7 @@ cc_library(
     srcs = ["gzip_stream.cc"],
     hdrs = ["gzip_stream.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/io",
+    strip_include_prefix = "/src",
     deps = [
         ":io",
         "//src/google/protobuf/stubs",
@@ -151,7 +151,7 @@ cc_library(
     srcs = ["io_win32.cc"],
     hdrs = ["io_win32.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/io",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",

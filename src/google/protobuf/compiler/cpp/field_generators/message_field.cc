@@ -14,6 +14,7 @@
 #include <tuple>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -55,9 +56,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
                           ? default_ptr
                           : absl::Substitute("reinterpret_cast<const $0*>($1)",
                                              base, default_ptr)},
-      {"base_cast",
-       absl::Substitute("reinterpret_cast<$0*>",
-                        !is_foreign && !weak ? qualified_type : base)},
+      {"base_cast", !is_foreign && !weak
+                        ? ""
+                        : absl::Substitute("reinterpret_cast<$0*>", base)},
       Sub{"weak_cast",
           !weak ? "" : absl::Substitute("reinterpret_cast<$0*>", base)}
           .ConditionalFunctionCall(),
@@ -444,26 +445,6 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
 
 using internal::cpp::HasHasbit;
 
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-
-void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
-  if (has_hasbit_) {
-    p->Emit(R"cc(
-      if ((from.$has_hasbit$) != 0) {
-        _this->$field_$ = new $Submsg$(*from.$field_$);
-      }
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      if (from._internal_has_$name$()) {
-        _this->$field_$ = new $Submsg$(*from.$field_$);
-      }
-    )cc");
-  }
-}
-
-#else  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
-
 void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   if (has_hasbit_) {
     p->Emit(R"cc(
@@ -479,8 +460,6 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
     )cc");
   }
 }
-
-#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
 
 void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
@@ -941,10 +920,6 @@ void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
     p->Emit(R"cc(
       $field_$.DeleteIfNotDefault();
     )cc");
-  } else {
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-    p->Emit("$field_$.~$Weak$RepeatedPtrField();\n");
-#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
   }
 }
 

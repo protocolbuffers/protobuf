@@ -24,6 +24,7 @@ The following topics are in this repository:
 *   [Protobuf Editions Design: Features](protobuf-editions-design-features.md)
 *   [Editions: Life of a Featureset](editions-life-of-a-featureset.md)
 *   [Edition Zero Features](edition-zero-features.md)
+*   [Minimum Required Edition](minimum-required-edition.md)
 *   [Protobuf Editions for Schema Producers](protobuf-editions-for-schema-producers.md)
 *   [Stricter Schemas with Editions](stricter-schemas-with-editions.md)
 *   [Edition Zero: JSON Handling](edition-zero-json-handling.md)
@@ -34,3 +35,5 @@ The following topics are in this repository:
 *   [Edition Evolution](edition-evolution.md)
 *   [Edition Naming](edition-naming.md)
 *   [Editions Feature Visibility](editions-feature-visibility.md)
+*   [Legacy Syntax Editions](legacy-syntax-editions.md)
+*   [Editions: Feature Extension Layout](editions-feature-extension-layout.md)

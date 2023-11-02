@@ -1,6 +1,6 @@
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
+    "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
 
@@ -33,7 +33,7 @@ proto_library(
     ],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "def_to_proto_test_upb_proto",
     deps = ["def_to_proto_test_proto"],
 )
@@ -99,7 +99,6 @@ cc_library(
     deps = [
         "//upb:base",
         "//upb:message",
-        "//upb:message_types",
         "//upb:port",
         "//upb:reflection",
     ],
@@ -110,7 +109,7 @@ proto_library(
     srcs = ["required_fields_test.proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "required_fields_test_upb_proto",
     deps = ["required_fields_test_proto"],
 )

@@ -100,7 +100,7 @@ void UnmuteWuninitialized(io::Printer* p) {
 // in cases where we may declare proto B as a member of proto A using an object,
 // instead of a pointer.
 //
-// The proto dependencey graph can have cycles.  So instead of directly working
+// The proto dependency graph can have cycles.  So instead of directly working
 // with protos, we compute strong connected components (SCCs) composed of protos
 // with mutual dependence.  The dependency graph on SCCs is a directed acyclic
 // graph (DAG) and therefore a topological order can be computed for it i.e. an
@@ -909,7 +909,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
   GenerateSourceIncludes(p);
   GenerateSourcePrelude(p);
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     MuteWuninitialized(p);
   }
 
@@ -943,7 +943,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
     message_generators_[idx]->GenerateSourceInProto2Namespace(p);
   }
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     UnmuteWuninitialized(p);
   }
 
@@ -989,7 +989,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   GetCrossFileReferencesForFile(file_, &refs);
   GenerateInternalForwardDeclarations(refs, p);
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     MuteWuninitialized(p);
   }
 
@@ -1058,7 +1058,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     // @@protoc_insertion_point(global_scope)
   )cc");
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     UnmuteWuninitialized(p);
   }
 
@@ -1131,13 +1131,14 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
              }},
         },
         R"cc(
-          const ::uint32_t $tablename$::offsets[] PROTOBUF_SECTION_VARIABLE(
-              protodesc_cold) = {
-              $offsets$,
+          const ::uint32_t
+              $tablename$::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+                  protodesc_cold) = {
+                  $offsets$,
           };
 
           static const ::_pbi::MigrationSchema
-              schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+              schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
                   $schemas$,
           };
 
@@ -1212,7 +1213,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
           }
         }}},
       R"cc(
-        const char $desc_name$[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+        const char $desc_name$[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+            protodesc_cold) = {
             $encoded_file_proto$,
         };
       )cc");
@@ -1406,7 +1408,6 @@ class FileGenerator::ForwardDeclarations {
           template <>
           $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(Arena*);
         )cc");
-#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
         if (!IsMapEntryMessage(c.second)) {
           p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
             template <>
@@ -1414,7 +1415,6 @@ class FileGenerator::ForwardDeclarations {
                 Arena*, const $class$&);
           )cc");
         }
-#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
       }
     }
   }

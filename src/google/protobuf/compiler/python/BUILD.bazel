@@ -19,7 +19,7 @@ cc_library(
         "pyi_generator.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/python",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",

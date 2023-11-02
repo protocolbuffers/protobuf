@@ -218,7 +218,7 @@ class PROTOC_EXPORT Version final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -241,10 +241,8 @@ class PROTOC_EXPORT Version final :
   protected:
   explicit Version(::google::protobuf::Arena* arena);
   Version(::google::protobuf::Arena* arena, const Version& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -440,7 +438,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -463,10 +461,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   protected:
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* arena);
   CodeGeneratorResponse_File(::google::protobuf::Arena* arena, const CodeGeneratorResponse_File& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -678,7 +674,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -701,10 +697,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   protected:
   explicit CodeGeneratorResponse(::google::protobuf::Arena* arena);
   CodeGeneratorResponse(::google::protobuf::Arena* arena, const CodeGeneratorResponse& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -917,7 +911,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   private:
   static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
   public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -940,10 +934,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   protected:
   explicit CodeGeneratorRequest(::google::protobuf::Arena* arena);
   CodeGeneratorRequest(::google::protobuf::Arena* arena, const CodeGeneratorRequest& from);
+  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
   public:
-
-  static const ClassData _class_data_;
-  const ::google::protobuf::Message::ClassData*GetClassData() const final;
 
   ::google::protobuf::Metadata GetMetadata() const final;
 
@@ -1606,11 +1598,11 @@ inline void CodeGeneratorRequest::set_allocated_compiler_version(::google::proto
   ::google::protobuf::Arena* message_arena = GetArena();
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::compiler::Version*>(_impl_.compiler_version_);
+    delete (_impl_.compiler_version_);
   }
 
   if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::compiler::Version*>(value)->GetArena();
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }

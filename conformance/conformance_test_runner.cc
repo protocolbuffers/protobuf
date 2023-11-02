@@ -37,12 +37,15 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <future>
 #include <vector>
 
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
@@ -119,6 +122,11 @@ void UsageError() {
   fprintf(stderr,
           "                              strictly conforming to protobuf\n");
   fprintf(stderr, "                              spec.\n");
+  fprintf(stderr,
+          "  --maximum edition           Only run conformance tests up to \n");
+  fprintf(stderr,
+          "                              and including the specified\n");
+  fprintf(stderr, "                              edition.\n");
   fprintf(stderr,
           "  --output_dir                <dirname> Directory to write\n"
           "                              output files.\n");
@@ -200,6 +208,14 @@ int ForkPipeRunner::Run(int argc, char *argv[],
         suite->SetVerbose(true);
       } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
         suite->SetEnforceRecommended(true);
+      } else if (strcmp(argv[arg], "--maximum_edition") == 0) {
+        if (++arg == argc) UsageError();
+        Edition edition = EDITION_UNKNOWN;
+        if (!Edition_Parse(absl::StrCat("EDITION_", argv[arg]), &edition)) {
+          fprintf(stderr, "Unknown edition: %s\n", argv[arg]);
+          UsageError();
+        }
+        suite->SetMaximumEdition(edition);
       } else if (strcmp(argv[arg], "--output_dir") == 0) {
         if (++arg == argc) UsageError();
         suite->SetOutputDir(argv[arg]);

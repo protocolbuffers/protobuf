@@ -89,14 +89,12 @@ class MessageGenerator {
   // Generate constructors and destructor.
   void GenerateStructors(io::Printer* p);
 
-#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
   void GenerateZeroInitFields(io::Printer* p) const;
   void GenerateCopyInitFields(io::Printer* p) const;
 
   void GenerateImplMemberInit(io::Printer* p, InitType init_type);
 
   void GenerateArenaEnabledCopyConstructor(io::Printer* p);
-#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
 
   // The compiler typically generates multiple copies of each constructor and
   // destructor: http://gcc.gnu.org/bugs.html#nonbugs_cxx
@@ -119,6 +117,7 @@ class MessageGenerator {
   void GenerateSerializeWithCachedSizesBody(io::Printer* p);
   void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* p);
   void GenerateByteSize(io::Printer* p);
+  void GenerateClassData(io::Printer* p);
   void GenerateMergeFrom(io::Printer* p);
   void GenerateClassSpecificMergeImpl(io::Printer* p);
   void GenerateCopyFrom(io::Printer* p);
@@ -151,11 +150,6 @@ class MessageGenerator {
 
   // Returns whether impl_ has a copy ctor.
   bool ImplHasCopyCtor() const;
-
-  // Generates the body of the message's copy constructor.
-  void GenerateCopyConstructorBody(io::Printer* p) const;
-  void GenerateCopyConstructorBodyImpl(io::Printer* p) const;
-  void GenerateCopyConstructorBodyOneofs(io::Printer* p) const;
 
   // Returns the level that this message needs ArenaDtor. If the message has
   // a field that is not arena-exclusive, it needs an ArenaDtor

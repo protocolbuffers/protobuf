@@ -16,7 +16,7 @@ load(
 )
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
+    "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
 load(
@@ -39,7 +39,7 @@ proto_library(
     deps = ["//:compiler_plugin_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "code_generator_request_upb_proto",
     visibility = ["//upb:friends"],
     deps = [":code_generator_request"],
@@ -79,7 +79,7 @@ bootstrap_upb_proto_library(
     oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
     proto_lib_deps = ["//:compiler_plugin_proto"],
     visibility = ["//upb:friends"],
-    deps = ["//upb:descriptor_upb_proto"],
+    deps = ["//upb/reflection:descriptor_upb_proto"],
 )
 
 upb_proto_reflection_library(
@@ -97,7 +97,7 @@ bootstrap_cc_library(
         "common.h",
     ],
     bootstrap_deps = [
-        "//upb:reflection",
+        "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//protos_generator:__pkg__"],
@@ -119,8 +119,8 @@ bootstrap_cc_library(
     ],
     bootstrap_deps = [
         ":common",
-        "//upb:reflection",
-        "//upb:descriptor_upb_proto",
+        "//upb/reflection:reflection",
+        "//upb/reflection:descriptor_upb_proto",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
@@ -154,8 +154,8 @@ bootstrap_cc_library(
     ],
     bootstrap_deps = [
         ":plugin_upb_proto",
-        "//upb:descriptor_upb_proto",
-        "//upb:reflection",
+        "//upb/reflection:descriptor_upb_proto",
+        "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//protos_generator:__pkg__"],
@@ -177,7 +177,7 @@ bootstrap_cc_library(
         "names.h",
     ],
     bootstrap_deps = [
-        "//upb:reflection",
+        "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//protos_generator:__pkg__"],
@@ -244,8 +244,8 @@ bootstrap_cc_binary(
         ":names",
         ":plugin",
         ":plugin_upb_proto",
-        "//upb:descriptor_upb_proto",
-        "//upb:reflection",
+        "//upb/reflection:descriptor_upb_proto",
+        "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
@@ -283,8 +283,8 @@ bootstrap_cc_binary(
         ":names",
         ":plugin",
         ":plugin_upb_proto",
-        "//upb:descriptor_upb_proto",
-        "//upb:reflection",
+        "//upb/reflection:descriptor_upb_proto",
+        "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],

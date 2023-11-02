@@ -13,7 +13,7 @@ load("@rules_python//python:defs.bzl", "py_binary")
 
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
+    "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
 load(
@@ -35,7 +35,7 @@ proto_library(
     srcs = ["descriptor.proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "benchmark_descriptor_upb_proto",
     deps = [":descriptor_proto"],
 )
@@ -154,7 +154,7 @@ proto_library(
 )
 
 [(
-    upb_proto_library(
+    upb_c_proto_library(
         name = k + "_upb_proto",
         deps = [":" + k + "_proto"],
     ),

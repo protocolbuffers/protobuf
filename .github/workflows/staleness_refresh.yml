@@ -24,12 +24,16 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
 
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           # Note: this token has an expiration date, so if the workflow starts
           # failing then you may need to generate a fresh token.
           token: ${{ secrets.BOT_ACCESS_TOKEN }}
       - name: Configure name and email address in Git
-        run: cd ${{ github.workspace }} && git config user.name "Protobuf Team Bot" && git config user.email "protobuf-team-bot@google.com"
+        run: git config user.name "Protobuf Team Bot" && git config user.email "protobuf-team-bot@google.com"
       - name: Commit and push update
-        run: cd ${{ github.workspace }} && ./ci/push_auto_update.sh
+        uses: protocolbuffers/protobuf-ci/bazel@v2
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: staleness
+          bash: ci/push_auto_update.sh

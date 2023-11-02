@@ -17,6 +17,8 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/python/helpers.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -168,6 +170,9 @@ void PyiGenerator::PrintImports() const {
   bool has_importlib = false;
   for (int i = 0; i < file_->dependency_count(); ++i) {
     const FileDescriptor* dep = file_->dependency(i);
+    if (strip_nonfunctional_codegen_ && IsKnownFeatureProto(dep->name())) {
+      continue;
+    }
     PrintImportForDescriptor(*dep, &seen_aliases, &has_importlib);
     for (int j = 0; j < dep->public_dependency_count(); ++j) {
       PrintImportForDescriptor(*dep->public_dependency(j), &seen_aliases,
@@ -569,11 +574,14 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
 
   std::string filename;
   bool annotate_code = false;
+  strip_nonfunctional_codegen_ = false;
   for (const std::pair<std::string, std::string>& option : options) {
     if (option.first == "annotate_code") {
       annotate_code = true;
     } else if (absl::EndsWith(option.first, ".pyi")) {
       filename = option.first;
+    } else if (option.first == "experimental_strip_nonfunctional_codegen") {
+      strip_nonfunctional_codegen_ = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;

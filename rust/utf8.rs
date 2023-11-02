@@ -241,7 +241,7 @@ impl<'a> Iterator for Utf8Chunks<'a> {
         /// # Safety
         /// `index` must be in-bounds for `x`
         unsafe fn split_at_unchecked(x: &[u8], index: usize) -> (&[u8], &[u8]) {
-            // SAFTEY: in-bounds as promised by the caller
+            // SAFETY: in-bounds as promised by the caller
             unsafe { (x.get_unchecked(..index), x.get_unchecked(index..)) }
         }
 

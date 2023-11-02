@@ -10,10 +10,12 @@
 
 #include <cstddef>
 #include <cstring>
+#include <string>
 #include <type_traits>
 
 #include "absl/algorithm/container.h"
 #include "google/protobuf/stubs/common.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
@@ -29,7 +31,9 @@ enum AllowlistFlags : unsigned int {
   kNone = 0,
   kMatchPrefix = 1 << 1,
   kAllowAllInOss = 1 << 2,
+  kAllowAllWhenEmpty = 1 << 3,
 };
+
 
 #if !defined(__GNUC__) || defined(__clang__) || PROTOBUF_GNUC_MIN(9, 1)
 using maybe_string_view = absl::string_view;

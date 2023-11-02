@@ -16,6 +16,8 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/java/generator.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
@@ -349,10 +351,12 @@ inline bool ExposePublicParser(const FileDescriptor* descriptor) {
 // but in the message and can be queried using additional getters that return
 // ints.
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
-  // TODO: Check Java legacy_enum_field_treated_as_closed feature.
-  return field->type() != FieldDescriptor::TYPE_ENUM ||
-         FileDescriptorLegacy(field->file()).syntax() ==
-             FileDescriptorLegacy::SYNTAX_PROTO3;
+  if (JavaGenerator::GetResolvedSourceFeatures(*field)
+          .GetExtension(pb::java)
+          .legacy_closed_enum()) {
+    return false;
+  }
+  return field->enum_type() != nullptr && !field->enum_type()->is_closed();
 }
 
 // Check whether a message has repeated fields.
@@ -375,7 +379,14 @@ inline bool IsWrappersProtoFile(const FileDescriptor* descriptor) {
 }
 
 inline bool CheckUtf8(const FieldDescriptor* descriptor) {
-  return descriptor->requires_utf8_validation() ||
+  if (JavaGenerator::GetResolvedSourceFeatures(*descriptor)
+          .GetExtension(pb::java)
+          .utf8_validation() == pb::JavaFeatures::VERIFY) {
+    return true;
+  }
+  return JavaGenerator::GetResolvedSourceFeatures(*descriptor)
+                 .utf8_validation() == FeatureSet::VERIFY ||
+         // For legacy syntax. This is not allowed under Editions.
          descriptor->file()->options().java_string_check_utf8();
 }
 

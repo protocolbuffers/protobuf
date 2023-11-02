@@ -224,7 +224,6 @@ alias(
 cc_library(
     name = "protobuf",
     copts = COPTS,
-    include_prefix = "google/protobuf/io",
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
     deps = [
