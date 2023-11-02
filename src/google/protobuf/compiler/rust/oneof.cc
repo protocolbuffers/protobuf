@@ -92,12 +92,15 @@ std::string oneofCaseEnumName(const OneofDescriptor& desc) {
 
 // TODO: Promote up to naming.h once all types can be spelled.
 std::string RsTypeName(const FieldDescriptor& desc) {
+  // TODO: Fields with a ctype set not supported in v0.6 api.
+  if (desc.options().has_ctype()) {
+    return "";
+  }
+
   switch (desc.type()) {
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_ENUM:
     case FieldDescriptor::TYPE_GROUP:
-    case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES:
       return "";
     default:
       return PrimitiveRsTypeName(desc);

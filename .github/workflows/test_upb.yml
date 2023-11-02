@@ -64,12 +64,16 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
     name: Windows
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
+      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        with:
+          cache: pip
+          cache-dependency-path: 'python/requirements.txt'
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
@@ -92,6 +96,10 @@ jobs:
         uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
+      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        with:
+          cache: pip
+          cache-dependency-path: 'python/requirements.txt'
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
@@ -195,7 +203,7 @@ jobs:
         with:
           name: requirements
           path: requirements
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ matrix.architecture }}
@@ -250,7 +258,7 @@ jobs:
           path: wheels
       - name: Delete Binary Wheels
         run: find wheels -type f | grep -v none-any | xargs rm
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Setup Python venv
