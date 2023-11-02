@@ -253,9 +253,10 @@ class PROTOBUF_EXPORT CppFeatures final :
 
 
 static const int kCppFieldNumber = 1000;
-PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::FeatureSet,
-    ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11, false >
-  cpp;
+PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
+    ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11,
+    false>
+    cpp;
 
 // ===================================================================
 
