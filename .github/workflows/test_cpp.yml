@@ -310,7 +310,7 @@ jobs:
             os: macos-12
             bazel: //src/...
           - name: Windows
-            os: windows-2022
+            os: windows-2019
             bazel: //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
     name: ${{ matrix.name }} Bazel
     runs-on: ${{ matrix.os }}
@@ -321,14 +321,13 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
       # Workaround for incompatibility between gcloud and windows-2019 runners.
       - name: Install Python
-        if: ${{ matrix.python-version }}
         uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        if: runner.os == 'Windows'
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
+          python-version: '3.8'
       - name: Use custom python for gcloud
-        if: ${{ matrix.python-version }}
         run: echo "CLOUDSDK_PYTHON=${Python3_ROOT_DIR}\\python3" >> $GITHUB_ENV
+        if: runner.os == 'Windows'
         shell: bash
       - name: Run tests
         uses: ./.github/actions/bazel
@@ -397,7 +396,6 @@ jobs:
         uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           python-version: ${{ matrix.python-version }}
-          cache: pip
       - name: Use custom python for gcloud
         if: ${{ matrix.python-version }}
         run: echo "CLOUDSDK_PYTHON=${Python3_ROOT_DIR}\\python3" >> $GITHUB_ENV

@@ -17,7 +17,7 @@ jobs:
         version: [ "3.7", "3.8", "3.9", "3.10" ]
         include:
           - type: Pure
-            targets: //python/... @upb//python/... //python:python_version
+            targets: //python/... //python:python_version
             flags: --define=use_fast_cpp_protos=false
           - type: C++
             targets: //python/... //python:python_version
@@ -54,7 +54,7 @@ jobs:
         version: [ "3.10" ]
         include:
           - type: Pure
-            targets: //python/... @upb//python/... //python:python_version
+            targets: //python/... //python:python_version
           - type: C++
             targets: //python/... //python:python_version
             flags: --define=use_fast_cpp_protos=true

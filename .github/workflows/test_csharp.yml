@@ -37,7 +37,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # v3.0.3
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '3.1.x'
 
       - name: Build
         run: dotnet build csharp/src/Google.Protobuf.sln
