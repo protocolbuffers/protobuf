@@ -1,5 +1,10 @@
 workspace(name = "com_google_protobuf")
 
+# An explicit self-reference to work around changes in Bazel 7.0
+# See https://github.com/bazelbuild/bazel/issues/19973#issuecomment-1787814450
+# buildifier: disable=duplicated-name
+local_repository(name = "com_google_protobuf", path = ".")
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
