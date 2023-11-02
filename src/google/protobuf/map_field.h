@@ -678,7 +678,7 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType_,
           WireFormatLite::FieldType kValueFieldType_>
-constexpr MapFieldBase::VTable
+PROTOBUF_CONSTINIT const MapFieldBase::VTable
     MapField<Derived, Key, T, kKeyFieldType_, kValueFieldType_>::kVTable =
         MapField::template MakeVTable<MapField>();
 
