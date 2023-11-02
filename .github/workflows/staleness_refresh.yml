@@ -30,10 +30,6 @@ jobs:
           # failing then you may need to generate a fresh token.
           token: ${{ secrets.BOT_ACCESS_TOKEN }}
       - name: Configure name and email address in Git
-        run: git config user.name "Protobuf Team Bot" && git config user.email "protobuf-team-bot@google.com"
+        run: cd ${{ github.workspace }} && git config user.name "Protobuf Team Bot" && git config user.email "protobuf-team-bot@google.com"
       - name: Commit and push update
-        uses: protocolbuffers/protobuf-ci/bazel@v2
-        with:
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: staleness
-          bash: ci/push_auto_update.sh
+        run: cd ${{ github.workspace }} && ./ci/push_auto_update.sh
