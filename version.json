@@ -2,7 +2,7 @@
     "main": {
         "protoc_version": "26-dev",
         "lts": false,
-        "date": "2023-11-01",
+        "date": "2023-10-16",
         "languages": {
             "cpp": "4.26-dev",
             "csharp": "3.26-dev",
