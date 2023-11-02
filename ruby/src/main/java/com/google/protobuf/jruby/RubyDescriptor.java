@@ -158,6 +158,13 @@ public class RubyDescriptor extends RubyObject {
     return Helpers.nullToNil(oneofDescriptors.get(Utils.symToString(name)), context.nil);
   }
 
+  @JRubyMethod(name = "serialized_options")
+  public IRubyObject serializedOptions(ThreadContext context) {
+    IRubyObject wrapped = RubyString.newString(context.runtime, descriptor.getOptions().toByteString().toByteArray());
+    wrapped.setFrozen(true);
+    return wrapped;
+  }
+
   protected FieldDescriptor getField(String name) {
     return descriptor.findFieldByName(name);
   }

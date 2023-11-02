@@ -106,6 +106,13 @@ public class RubyFileDescriptor extends RubyObject {
     }
   }
 
+  @JRubyMethod(name = "serialized_options")
+  public IRubyObject serializedOptions(ThreadContext context) {
+    IRubyObject wrapped = RubyString.newString(context.runtime, fileDescriptor.getOptions().toByteString().toByteArray());
+    wrapped.setFrozen(true);
+    return wrapped;
+  }
+
   private static RubyClass cFileDescriptor;
 
   private FileDescriptor fileDescriptor;

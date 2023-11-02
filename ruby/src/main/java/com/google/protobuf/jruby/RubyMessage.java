@@ -811,6 +811,25 @@ public class RubyMessage extends RubyObject {
     return ret;
   }
 
+  @JRubyMethod(name = "internal_deep_freeze", visibility = org.jruby.runtime.Visibility.PRIVATE)
+  protected IRubyObject deepFreeze(ThreadContext context) {
+    if (!isFrozen()) {
+      setFrozen(true);
+      for (FieldDescriptor fdef : descriptor.getFields()) {
+        if (fdef.isMapField()) {
+          ((RubyMap) fields.get(fdef)).deepFreeze(context);
+        } else if (fdef.isRepeated()) {
+          this.getRepeatedField(context, fdef).deepFreeze(context);
+        } else if (fields.containsKey(fdef)) {
+          if (fdef.getType() == FieldDescriptor.Type.MESSAGE) {
+            ((RubyMessage) fields.get(fdef)).deepFreeze(context);
+          }
+        }
+      }
+    }
+    return this;
+  }
+
   protected DynamicMessage build(ThreadContext context, int depth, int recursionLimit) {
     if (depth >= recursionLimit) {
       throw context.runtime.newRuntimeError("Recursion limit exceeded during encoding.");

@@ -10,6 +10,7 @@ import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
+import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
@@ -64,6 +65,13 @@ public class RubyOneofDescriptor extends RubyObject {
       block.yieldSpecific(context, field);
     }
     return context.nil;
+  }
+
+  @JRubyMethod(name = "serialized_options")
+  public IRubyObject serializedOptions(ThreadContext context) {
+    IRubyObject wrapped = RubyString.newString(context.runtime, descriptor.getOptions().toByteString().toByteArray());
+    wrapped.setFrozen(true);
+    return wrapped;
   }
 
   protected Collection<RubyFieldDescriptor> getFields() {
