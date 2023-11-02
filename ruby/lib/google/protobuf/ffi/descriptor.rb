@@ -136,6 +136,12 @@ module Google
       def pool
         @descriptor_pool
       end
+
+      def serialized_options
+        size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+        buffer = Google::Protobuf::FFI.message_options(self, size_ptr)
+        buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze
+      end
     end
 
     class FFI
@@ -146,6 +152,7 @@ module Google
       attach_function :get_message_fullname, :upb_MessageDef_FullName,                [Descriptor], :string
       attach_function :get_mini_table,       :upb_MessageDef_MiniTable,               [Descriptor], MiniTable.ptr
       attach_function :oneof_count,          :upb_MessageDef_OneofCount,              [Descriptor], :int
+      attach_function :message_options,      :Descriptor_serialized_options,          [Descriptor, :pointer], :pointer
       attach_function :get_well_known_type,  :upb_MessageDef_WellKnownType,           [Descriptor], WellKnown
       attach_function :message_def_syntax,   :upb_MessageDef_Syntax,                  [Descriptor], Syntax
       attach_function :find_msg_def_by_name, :upb_MessageDef_FindByNameWithSize,      [Descriptor, :string, :size_t, :FieldDefPointer, :OneofDefPointer], :bool

@@ -19,3 +19,35 @@ google_protobuf_FileDescriptorProto* FileDescriptorProto_parse(
   return google_protobuf_FileDescriptorProto_parse(serialized_file_proto,
                                                    length, arena);
 }
+
+char* EnumDescriptor_serialized_options(const upb_EnumDef* enumdef, size_t *size) {
+  const google_protobuf_EnumOptions* opts = upb_EnumDef_Options(enumdef);
+  upb_Arena* arena = upb_Arena_New();
+  char* serialized = google_protobuf_EnumOptions_serialize(opts, arena, size);
+  upb_Arena_Free(arena);
+  return serialized;
+}
+
+char* FileDescriptor_serialized_options(const upb_FileDef* filedef, size_t *size) {
+  const google_protobuf_FileOptions* opts = upb_FileDef_Options(filedef);
+  upb_Arena* arena = upb_Arena_New();
+  char* serialized = google_protobuf_FileOptions_serialize(opts, arena, size);
+  upb_Arena_Free(arena);
+  return serialized;
+}
+
+char* Descriptor_serialized_options(const upb_MessageDef* msgdef, size_t *size) {
+  const google_protobuf_MessageOptions* opts = upb_MessageDef_Options(msgdef);
+  upb_Arena* arena = upb_Arena_New();
+  char* serialized = google_protobuf_MessageOptions_serialize(opts, arena, size);
+  upb_Arena_Free(arena);
+  return serialized;
+}
+
+char* OneOfDescriptor_serialized_options(const upb_OneofDef* oneofdef, size_t *size) {
+  const google_protobuf_OneofOptions* opts = upb_OneofDef_Options(oneofdef);
+  upb_Arena* arena = upb_Arena_New();
+  char* serialized = google_protobuf_OneofOptions_serialize(opts, arena, size);
+  upb_Arena_Free(arena);
+  return serialized;
+}

@@ -19,7 +19,7 @@ module Google
         prepend Google::Protobuf::Internal::TypeSafety
         include Google::Protobuf::Internal::PointerHelper
 
-        # @param value [Arena] Arena to convert to an FFI native type
+        # @param value [EnumDescriptor] EnumDescriptor to convert to an FFI native type
         # @param _ [Object] Unused
         def to_native(value, _)
           value.instance_variable_get(:@enum_def) || ::FFI::Pointer::NULL
@@ -111,6 +111,12 @@ module Google
         end
       end
 
+      def serialized_options
+        size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+        buffer = Google::Protobuf::FFI.enum_options(self, size_ptr)
+        buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze
+      end
+
       def build_enum_module
         descriptor = self
         dynamic_module = Module.new do
@@ -152,6 +158,7 @@ module Google
       attach_function :enum_value_by_name,        :upb_EnumDef_FindValueByNameWithSize,[EnumDescriptor, :string, :size_t], :EnumValueDef
       attach_function :enum_value_by_number,      :upb_EnumDef_FindValueByNumber,      [EnumDescriptor, :int], :EnumValueDef
       attach_function :get_enum_fullname,         :upb_EnumDef_FullName,               [EnumDescriptor], :string
+      attach_function :enum_options,              :EnumDescriptor_serialized_options,  [EnumDescriptor, :pointer], :pointer
       attach_function :enum_value_by_index,       :upb_EnumDef_Value,                  [EnumDescriptor, :int], :EnumValueDef
       attach_function :enum_value_count,          :upb_EnumDef_ValueCount,             [EnumDescriptor], :int
       attach_function :enum_name,                 :upb_EnumValueDef_Name,              [:EnumValueDef], :string

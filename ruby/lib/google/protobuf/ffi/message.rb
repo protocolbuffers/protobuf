@@ -19,7 +19,7 @@ module Google
       attach_function :encode_message,          :upb_Encode,                  [:Message, MiniTable.by_ref, :size_t, Internal::Arena, :pointer, :pointer], EncodeStatus
       attach_function :json_decode_message,     :upb_JsonDecode,              [:binary_string, :size_t, :Message, Descriptor, :DefPool, :int, Internal::Arena, Status.by_ref], :bool
       attach_function :json_encode_message,     :upb_JsonEncode,              [:Message, Descriptor, :DefPool, :int, :binary_string, :size_t, Status.by_ref], :size_t
-      attach_function :decode_message,          :upb_Decode,                              [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Internal::Arena], DecodeStatus
+      attach_function :decode_message,          :upb_Decode,                  [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Internal::Arena], DecodeStatus
       attach_function :get_mutable_message,     :upb_Message_Mutable,         [:Message, FieldDescriptor, Internal::Arena], MutableMessageValue.by_value
       attach_function :get_message_which_oneof, :upb_Message_WhichOneof,      [:Message, OneofDescriptor], FieldDescriptor
       attach_function :message_discard_unknown, :upb_Message_DiscardUnknown,  [:Message, Descriptor, :int], :bool
@@ -292,6 +292,19 @@ module Google
           # warning and are intended for use only within the gem.
 
           include Google::Protobuf::Internal::Convert
+
+          def internal_deep_freeze
+            unless frozen?
+              freeze
+              self.class.descriptor.each do |field_descriptor|
+                next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(@msg, field_descriptor)
+                if field_descriptor.map? or field_descriptor.repeated? or field_descriptor.sub_message?
+                  get_field(field_descriptor).send :internal_deep_freeze
+                end
+              end
+            end
+            self
+          end
 
           def self.setup_accessors!
             @descriptor.each do |field_descriptor|

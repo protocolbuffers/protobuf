@@ -22,10 +22,7 @@ module Google
         # @param value [OneofDescriptor] FieldDescriptor to convert to an FFI native type
         # @param _ [Object] Unused
         def to_native(value, _ = nil)
-          oneof_def_ptr = value.instance_variable_get(:@oneof_def)
-          warn "Underlying oneof_def was nil!" if oneof_def_ptr.nil?
-          raise "Underlying oneof_def was null!" if !oneof_def_ptr.nil? and oneof_def_ptr.null?
-          oneof_def_ptr
+          value.instance_variable_get(:@oneof_def) || ::FFI::Pointer::NULL
         end
 
         ##
@@ -68,6 +65,14 @@ module Google
         instance.send(:initialize, oneof_def, descriptor_pool)
         instance
       end
+
+      def serialized_options
+        size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+        buffer = Google::Protobuf::FFI.oneof_options(self, size_ptr)
+        return_value = buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze
+        $stderr.puts return_value
+        return_value
+      end
     end
 
     class FFI
@@ -80,6 +85,7 @@ module Google
       attach_function :get_oneof_field_count,    :upb_OneofDef_FieldCount,    [OneofDescriptor], :int
       attach_function :get_oneof_field_by_index, :upb_OneofDef_Field,         [OneofDescriptor, :int], FieldDescriptor
       attach_function :get_oneof_containing_type,:upb_OneofDef_ContainingType,[:pointer], Descriptor
+      attach_function :oneof_options,            :OneOfDescriptor_serialized_options,[OneofDescriptor, :pointer], :pointer
 
       # FieldDescriptor
       attach_function :real_containing_oneof,      :upb_FieldDef_RealContainingOneof,[FieldDescriptor], OneofDescriptor
