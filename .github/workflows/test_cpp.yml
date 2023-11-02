@@ -324,8 +324,8 @@ jobs:
             # for Apple Silicon to detect issues there.
             bazel: build --cpu=darwin_arm64 //src/...
           - name: Windows
-            os: windows-2019
-            cache_key: windows-2019
+            os: windows-2022
+            cache_key: windows-2022
             bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
     name: ${{ matrix.name }} Bazel
     runs-on: ${{ matrix.os }}
@@ -351,14 +351,6 @@ jobs:
             flags: -DCMAKE_CXX_STANDARD=14
             cache-prefix: macos-cmake
           - name: Windows CMake
-            os: windows-2019
-            flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
-              -Dprotobuf_BUILD_SHARED_LIBS=OFF
-              -Dprotobuf_BUILD_EXAMPLES=ON
-            vsversion: '2019'
-            cache-prefix: windows-2019-cmake
-          - name: Windows CMake 2022
             os: windows-2022
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
@@ -366,29 +358,39 @@ jobs:
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
-          - name: Windows CMake 32-bit
+          - name: Windows CMake 2019
             os: windows-2019
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -Dprotobuf_BUILD_SHARED_LIBS=OFF
+              -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2019'
+            cache-prefix: windows-2019-cmake
+            # windows-2019 has python3.7 installed, which is incompatible with the latest gcloud
+            python-version: '3.8'
+          - name: Windows CMake 32-bit
+            os: windows-2022
+            flags: >-
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+            vsversion: '2022'
             windows-arch: 'win32'
-            cache-prefix: windows-2019-win32-cmake
+            cache-prefix: windows-2022-win32-cmake
           - name: Windows CMake Shared
-            os: windows-2019
+            os: windows-2022
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=ON
-            vsversion: '2019'
-            cache-prefix: windows-2019-cmake
+            vsversion: '2022'
+            cache-prefix: windows-2022-cmake
           - name: Windows CMake Install
-            os: windows-2019
+            os: windows-2022
             install-flags: -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_TESTS=OFF
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
-            vsversion: '2019'
-            cache-prefix: windows-2019-cmake
+            vsversion: '2022'
+            cache-prefix: windows-2022-cmake
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -404,6 +406,17 @@ jobs:
         with:
           arch: ${{ matrix.windows-arch || 'x64' }}
           vsversion: ${{ matrix.vsversion }}
+
+      # Workaround for incompatibility between gcloud and windows-2019 runners.
+      - name: Install Python
+        if: ${{ matrix.python-version }}
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Use custom python for gcloud
+        if: ${{ matrix.python-version }}
+        run: echo "CLOUDSDK_PYTHON=${Python3_ROOT_DIR}\\python3" >> $GITHUB_ENV
+        shell: bash
 
       - name: Setup sccache
         uses: protocolbuffers/protobuf-ci/sccache@v2
