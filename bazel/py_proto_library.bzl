@@ -98,7 +98,7 @@ def _py_proto_library_aspect_impl(target, ctx):
             transitive = [proto_info.transitive_descriptor_sets],
         ),
         outputs = srcs,
-        executable = ctx.executable._protoc,
+        executable = ctx.toolchains["@rules_python//python/proto:toolchain_type"].proto.proto_compiler,
         arguments = [
                         "--python_out=" + _get_real_root(ctx, srcs[0]),
                         "--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]),
@@ -112,18 +112,12 @@ def _py_proto_library_aspect_impl(target, ctx):
     ]
 
 _py_proto_library_aspect = aspect(
-    attrs = {
-        "_protoc": attr.label(
-            executable = True,
-            cfg = "exec",
-            default = "//:protoc",
-        ),
-    },
     implementation = _py_proto_library_aspect_impl,
     provides = [
         PyInfo,
     ],
     attr_aspects = ["deps"],
+    toolchains = ["@rules_python//python/proto:toolchain_type"]
 )
 
 py_proto_library = rule(

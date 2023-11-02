@@ -353,6 +353,21 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+proto_lang_toolchain(
+    name = "python_toolchain",
+    command_line = "--python_out=%s",
+    progress_message = "Generating Python proto_library %{label}",
+    runtime = ":protobuf_python",
+    visibility = ["//visibility:public"],
+)
+
+toolchain(
+    name = "python_source_toolchain",
+    toolchain = ":python_toolchain",
+    toolchain_type = "@rules_python//python/proto:toolchain_type",
+)
+
+
 ################################################################################
 # CC support
 ################################################################################

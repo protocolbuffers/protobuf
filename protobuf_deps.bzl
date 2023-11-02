@@ -100,11 +100,11 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_python"):
-        _github_archive(
+        http_archive(
             name = "rules_python",
-            repo = "https://github.com/bazelbuild/rules_python",
-            commit = "02b521fce3c7b36b05813aa986d72777cc3ee328",  # 0.24.0
-            sha256 = "f9e4f6acf82449324d56669bda4bdb28b48688ad2990d8b39fa5b93ed39c9ad1",
+            sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
+            strip_prefix = "rules_python-0.26.0",
+            url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
         )
 
     if not native.existing_rule("rules_ruby"):
@@ -184,3 +184,4 @@ def protobuf_register_toolchains():
     native.register_toolchains("//:cc_source_toolchain")
     native.register_toolchains("//:javalite_source_toolchain")
     native.register_toolchains("//:java_source_toolchain")
+    native.register_toolchains("//:python_source_toolchain")

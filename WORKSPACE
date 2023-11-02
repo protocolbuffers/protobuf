@@ -11,8 +11,17 @@ local_repository(
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps", "protobuf_register_toolchains")
 
 protobuf_deps()
-
 protobuf_register_toolchains()
+
+# Setup rules_java
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+rules_java_dependencies()
+rules_java_toolchains()
+
+# Setup rules_python
+load("@rules_python//python:repositories.bzl", "py_repositories")
+py_repositories()
+
 
 # Bazel platform rules.
 http_archive(
@@ -205,6 +214,3 @@ load("@crate_index//:defs.bzl", "crate_repositories")
 crate_repositories()
 
 
-load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
-rules_java_dependencies()
-rules_java_toolchains()
