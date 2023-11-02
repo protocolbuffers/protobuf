@@ -110,17 +110,4 @@ target_include_directories(generated_cpp_support__only_for_generated_code_do_not
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
 )
 
-add_library(generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
-    
-)
-target_include_directories(generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
-  mem
-  mini_descriptor
-  reflection_internal)
-
 
