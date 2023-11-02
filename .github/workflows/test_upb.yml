@@ -100,6 +100,7 @@ jobs:
         with:
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
+          python-version: '3.11' # 3.12 doesn't have setuptools
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
