@@ -1121,7 +1121,7 @@ PROTOBUF_NODISCARD const char* ParseContext::ParseMessage(T* msg,
 }
 
 template <typename Func>
-PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
+PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE const char*
 ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
   LimitToken old;
   ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
