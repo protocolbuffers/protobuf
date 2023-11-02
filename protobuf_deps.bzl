@@ -103,8 +103,8 @@ def protobuf_deps():
         _github_archive(
             name = "rules_python",
             repo = "https://github.com/bazelbuild/rules_python",
-            commit = "912a5051f51581784fd64094f6bdabf93f6d698f",  # 0.14.0
-            sha256 = "a3e4b4ade7c4a52e757b16a16e94d0b2640333062180cba577d81fac087a501d",
+            commit = "02b521fce3c7b36b05813aa986d72777cc3ee328",  # 0.24.0
+            sha256 = "f9e4f6acf82449324d56669bda4bdb28b48688ad2990d8b39fa5b93ed39c9ad1",
         )
 
     if not native.existing_rule("rules_ruby"):
