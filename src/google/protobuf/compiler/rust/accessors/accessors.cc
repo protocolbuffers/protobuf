@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
@@ -26,7 +27,8 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
   // TODO: We do not support [ctype=FOO] (used to set the field
   // type in C++ to cord or string_piece) in V0.6 API.
   if (desc.options().has_ctype()) {
-    return std::make_unique<UnsupportedField>();
+    return std::make_unique<UnsupportedField>(
+        "fields with ctype not supported");
   }
 
   switch (desc.type()) {
@@ -50,18 +52,23 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_STRING:
       if (desc.is_repeated()) {
-        return std::make_unique<UnsupportedField>();
+        return std::make_unique<UnsupportedField>("repeated str not supported");
       }
       return std::make_unique<SingularString>();
     case FieldDescriptor::TYPE_MESSAGE:
       if (desc.is_repeated()) {
-        return std::make_unique<UnsupportedField>();
+        return std::make_unique<UnsupportedField>("repeated msg not supported");
       }
       return std::make_unique<SingularMessage>();
 
-    default:
-      return std::make_unique<UnsupportedField>();
+    case FieldDescriptor::TYPE_ENUM:
+      return std::make_unique<UnsupportedField>("enum not supported");
+
+    case FieldDescriptor::TYPE_GROUP:
+      return std::make_unique<UnsupportedField>("group not supported");
   }
+
+  ABSL_LOG(FATAL) << "Unexpected field type: " << desc.type();
 }
 
 }  // namespace

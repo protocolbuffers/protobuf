@@ -835,15 +835,6 @@ void GenerateMessageInHeader(upb::MessageDefPtr message,
   output("\n");
 }
 
-void ForwardDeclareMiniTableInit(upb::MessageDefPtr message,
-                                 const Options& options, Output& output) {
-  if (options.bootstrap) {
-    output("extern const upb_MiniTable* $0();\n", MessageInitName(message));
-  } else {
-    output("extern const upb_MiniTable $0;\n", MessageInitName(message));
-  }
-}
-
 std::vector<upb::MessageDefPtr> SortedForwardMessages(
     const std::vector<upb::MessageDefPtr>& this_file_messages,
     const std::vector<upb::FieldDefPtr>& this_file_exts) {
