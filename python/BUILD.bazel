@@ -8,7 +8,8 @@
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
-load("@pip_deps//:requirements.bzl", "requirement")
+# It's no longer feasible to test this in our CI, and python is out of it's support window.
+#load("@pip_deps//:requirements.bzl", "requirement")
 load("//:protobuf.bzl", "internal_py_proto_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
@@ -325,13 +326,13 @@ internal_py_test(
     data = ["//src/google/protobuf:testdata"],
 )
 
-internal_py_test(
-    name = "numpy_test",
-    srcs = ["google/protobuf/internal/numpy_test.py"],
-    deps = [
-        requirement("numpy"),
-    ],
-)
+#internal_py_test(
+#    name = "numpy_test",
+#    srcs = ["google/protobuf/internal/numpy_test.py"],
+#    deps = [
+#        requirement("numpy"),
+#    ],
+#)
 
 internal_py_test(
     name = "proto_builder_test",

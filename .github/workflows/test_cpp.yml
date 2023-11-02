@@ -319,6 +319,16 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ inputs.safe-checkout }}
+      # Workaround for incompatibility between gcloud and windows-2019 runners.
+      - name: Install Python
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        if: runner.os == 'Windows'
+        with:
+          python-version: '3.8'
+      - name: Use custom python for gcloud
+        run: echo "CLOUDSDK_PYTHON=${Python3_ROOT_DIR}\\python3" >> $GITHUB_ENV
+        if: runner.os == 'Windows'
+        shell: bash
       - name: Run tests
         uses: ./.github/actions/bazel
         with:
@@ -341,6 +351,8 @@ jobs:
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2019'
+            # windows-2019 has python3.7 installed, which is incompatible with the latest gcloud
+            python-version: '3.8'
           # TODO(b/285566773) Re-enable this test.
           # This is broken due to a github runner update.
           # See https://github.com/actions/runner-images/issues/7662 for more details
@@ -357,6 +369,8 @@ jobs:
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=ON
             vsversion: '2019'
+            # windows-2019 has python3.7 installed, which is incompatible with the latest gcloud
+            python-version: '3.8'
           - name: Windows CMake Install
             os: windows-2019
             install-flags: -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_TESTS=OFF
@@ -365,6 +379,8 @@ jobs:
               -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
             vsversion: '2019'
+            # windows-2019 has python3.7 installed, which is incompatible with the latest gcloud
+            python-version: '3.8'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -373,6 +389,17 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
+
+      # Workaround for incompatibility between gcloud and windows-2019 runners.
+      - name: Install Python
+        if: ${{ matrix.python-version }}
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Use custom python for gcloud
+        if: ${{ matrix.python-version }}
+        run: echo "CLOUDSDK_PYTHON=${Python3_ROOT_DIR}\\python3" >> $GITHUB_ENV
+        shell: bash
 
       - name: Setup ccache
         uses: protocolbuffers/protobuf-ci/ccache@v1
