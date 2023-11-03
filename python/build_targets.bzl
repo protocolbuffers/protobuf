@@ -121,6 +121,7 @@ def build_targets(name):
         deps = [
             ":proto_api",
             "//:protobuf",
+            "//src/google/protobuf/util:differencer",
         ] + select({
             "//conditions:default": [],
             ":use_fast_cpp_protos": ["//external:python_headers"],

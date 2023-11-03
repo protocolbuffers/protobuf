@@ -6,6 +6,10 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 load("//:protobuf.bzl", "internal_objc_proto_library")
 
+package(
+    features = ["layering_check"],
+)
+
 bzl_library(
     name = "defaults",
     srcs = ["defaults.bzl"],
@@ -75,6 +79,7 @@ cc_test(
     deps = [
         ":defaults_test_embedded",
         "//src/google/protobuf",
+        "//src/google/protobuf:port_def",
         "//src/google/protobuf:unittest_features_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",

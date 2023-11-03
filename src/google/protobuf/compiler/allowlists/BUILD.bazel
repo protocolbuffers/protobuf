@@ -1,7 +1,10 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
-package(default_visibility = ["//visibility:private"])
+package(
+    default_visibility = ["//visibility:private"],
+    features = ["layering_check"],
+)
 
 cc_library(
     name = "allowlist",

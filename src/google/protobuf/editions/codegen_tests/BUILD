@@ -1,5 +1,9 @@
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
+package(
+    features = ["layering_check"],
+)
+
 exports_files(
     glob(["*.proto"]),
     visibility = [
