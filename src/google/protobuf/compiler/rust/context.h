@@ -8,10 +8,14 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_RUST_CONTEXT_H__
 #define GOOGLE_PROTOBUF_COMPILER_RUST_CONTEXT_H__
 
+#include <algorithm>
+#include <vector>
+
 #include "absl/log/absl_log.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -43,6 +47,26 @@ struct Options {
   static absl::StatusOr<Options> Parse(absl::string_view param);
 };
 
+class RustGeneratorContext {
+ public:
+  explicit RustGeneratorContext(
+      const std::vector<const FileDescriptor*>* files_in_current_crate)
+      : files_in_current_crate_(*files_in_current_crate) {}
+
+  const FileDescriptor* primary_file() const {
+    return files_in_current_crate_.front();
+  }
+
+  bool is_file_in_current_crate(const FileDescriptor* f) const {
+    return std::find(files_in_current_crate_.begin(),
+                     files_in_current_crate_.end(),
+                     f) != files_in_current_crate_.end();
+  }
+
+ private:
+  const std::vector<const FileDescriptor*>& files_in_current_crate_;
+};
+
 // A context for generating a particular kind of definition.
 // This type acts as an options struct (as in go/totw/173) for most of the
 // generator.
@@ -52,14 +76,22 @@ struct Options {
 template <typename Descriptor>
 class Context {
  public:
-  Context(const Options* opts, const Descriptor* desc, io::Printer* printer)
-      : opts_(opts), desc_(desc), printer_(printer) {}
+  Context(const Options* opts, const Descriptor* desc,
+          const RustGeneratorContext* rust_generator_context,
+          io::Printer* printer)
+      : opts_(opts),
+        desc_(desc),
+        rust_generator_context_(rust_generator_context),
+        printer_(printer) {}
 
   Context(const Context&) = default;
   Context& operator=(const Context&) = default;
 
   const Descriptor& desc() const { return *desc_; }
   const Options& opts() const { return *opts_; }
+  const RustGeneratorContext& generator_context() const {
+    return *rust_generator_context_;
+  }
 
   bool is_cpp() const { return opts_->kernel == Kernel::kCpp; }
   bool is_upb() const { return opts_->kernel == Kernel::kUpb; }
@@ -70,16 +102,16 @@ class Context {
   // Creates a new context over a different descriptor.
   template <typename D>
   Context<D> WithDesc(const D& desc) const {
-    return Context<D>(opts_, &desc, printer_);
+    return Context<D>(opts_, &desc, rust_generator_context_, printer_);
   }
 
   template <typename D>
   Context<D> WithDesc(const D* desc) const {
-    return Context<D>(opts_, desc, printer_);
+    return Context<D>(opts_, desc, rust_generator_context_, printer_);
   }
 
   Context WithPrinter(io::Printer* printer) const {
-    return Context(opts_, desc_, printer);
+    return Context(opts_, desc_, rust_generator_context_, printer);
   }
 
   // Forwards to Emit(), which will likely be called all the time.
@@ -97,6 +129,7 @@ class Context {
  private:
   const Options* opts_;
   const Descriptor* desc_;
+  const RustGeneratorContext* rust_generator_context_;
   io::Printer* printer_;
 };
 }  // namespace rust
