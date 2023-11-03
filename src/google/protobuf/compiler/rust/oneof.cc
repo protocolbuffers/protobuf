@@ -246,8 +246,7 @@ void GenerateOneofAccessors(Context<OneofDescriptor> oneof) {
             if (rs_type.empty()) {
               continue;
             }
-            // TODO: Uncomment this to allow mut once
-            // _mut() on singular fields with presence is implemented.
+            // TODO: Allow mut.
             /*oneof.Emit({
                     {"case", ToCamelCase(field->name())},
                     {"rs_getter", field->name() + "_mut"},
