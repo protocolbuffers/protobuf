@@ -37,6 +37,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -111,7 +112,7 @@ template <class T>
 bool AllAreInitializedWeak(const RepeatedPtrField<T>& t) {
   for (int i = t.size(); --i >= 0;) {
     if (!reinterpret_cast<const RepeatedPtrFieldBase&>(t)
-             .Get<ImplicitWeakTypeHandler<T> >(i)
+             .Get<GenericTypeHandler<MessageLite>>(i)
              .IsInitialized()) {
       return false;
     }

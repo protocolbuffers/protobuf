@@ -52,9 +52,6 @@ namespace protobuf {
 class Message;
 class Reflection;
 
-template <typename T>
-struct WeakRepeatedPtrField;
-
 namespace internal {
 
 class MergePartialFromCodedStreamHelper;
@@ -677,9 +674,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   friend class MergePartialFromCodedStreamHelper;
 
   friend class AccessorHelper;
-
-  template <typename T>
-  friend struct google::protobuf::WeakRepeatedPtrField;
 
   friend class internal::TcParser;  // TODO: Remove this friend.
 
@@ -1337,9 +1331,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   friend class Arena;
 
   friend class internal::TcParser;
-
-  template <typename T>
-  friend struct WeakRepeatedPtrField;
 
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   class TypeHandler;

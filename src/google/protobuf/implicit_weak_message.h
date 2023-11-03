@@ -14,6 +14,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -108,40 +109,13 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 struct ImplicitWeakMessageDefaultType;
 extern ImplicitWeakMessageDefaultType implicit_weak_message_default_instance;
 
-// A type handler for use with implicit weak repeated message fields.
-template <typename ImplicitWeakType>
-class ImplicitWeakTypeHandler {
- public:
-  typedef MessageLite Type;
-  static constexpr bool Moveable = false;
-
-  static inline MessageLite* NewFromPrototype(const MessageLite* prototype,
-                                              Arena* arena = nullptr) {
-    return prototype->New(arena);
-  }
-
-  static inline void Delete(MessageLite* value, Arena* arena) {
-    if (arena == nullptr) {
-      delete value;
-    }
-  }
-  static inline Arena* GetArena(MessageLite* value) {
-    return value->GetArena();
-  }
-  static inline void Clear(MessageLite* value) { value->Clear(); }
-  static void Merge(const MessageLite& from, MessageLite* to) {
-    to->CheckTypeAndMergeFrom(from);
-  }
-};
-
 }  // namespace internal
 
 template <typename T>
 struct WeakRepeatedPtrField {
+  using Base = RepeatedPtrField<MessageLite>;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-
-  using TypeHandler = internal::ImplicitWeakTypeHandler<T>;
 
   constexpr WeakRepeatedPtrField() : weak() {}
   WeakRepeatedPtrField(const WeakRepeatedPtrField& rhs)
@@ -157,57 +131,33 @@ struct WeakRepeatedPtrField {
   // TODO: make this constructor private
   explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
 
-  ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }
+  using iterator = Base::iterator;
+  using const_iterator = Base::const_iterator;
+  using pointer_iterator = Base::pointer_iterator;
+  using const_pointer_iterator = Base::const_pointer_iterator;
 
-  typedef internal::RepeatedPtrIterator<MessageLite> iterator;
-  typedef internal::RepeatedPtrIterator<const MessageLite> const_iterator;
-  typedef internal::RepeatedPtrOverPtrsIterator<MessageLite*, void*>
-      pointer_iterator;
-  typedef internal::RepeatedPtrOverPtrsIterator<const MessageLite* const,
-                                                const void* const>
-      const_pointer_iterator;
-
-  bool empty() const { return base().empty(); }
-  iterator begin() { return iterator(base().raw_data()); }
-  const_iterator begin() const { return iterator(base().raw_data()); }
+  bool empty() const { return weak.empty(); }
+  iterator begin() { return weak.begin(); }
+  const_iterator begin() const { return weak.begin(); }
   const_iterator cbegin() const { return begin(); }
-  iterator end() { return begin() + base().size(); }
-  const_iterator end() const { return begin() + base().size(); }
+  iterator end() { return weak.end(); }
+  const_iterator end() const { return weak.end(); }
   const_iterator cend() const { return end(); }
-  pointer_iterator pointer_begin() {
-    return pointer_iterator(base().raw_mutable_data());
-  }
-  const_pointer_iterator pointer_begin() const {
-    return const_pointer_iterator(base().raw_data());
-  }
-  pointer_iterator pointer_end() {
-    return pointer_iterator(base().raw_mutable_data() + base().size());
-  }
-  const_pointer_iterator pointer_end() const {
-    return const_pointer_iterator(base().raw_data() + base().size());
-  }
+  pointer_iterator pointer_begin() { return weak.pointer_begin(); }
+  const_pointer_iterator pointer_begin() const { return weak.pointer_begin(); }
+  pointer_iterator pointer_end() { return weak.pointer_end(); }
+  const_pointer_iterator pointer_end() const { return weak.pointer_end(); }
 
-  MessageLite* AddWeak(const MessageLite* prototype) {
-    return base().AddWeak(prototype);
-  }
-  T* Add() { return weak.Add(); }
-  void Clear() { base().template Clear<TypeHandler>(); }
+  T* Add() { return static_cast<T*>(weak.Add()); }
+  void Clear() { weak.Clear(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {
-    if (other.empty()) return;
-    base().template MergeFrom<MessageLite>(other.base());
+    weak.MergeFrom(other.weak);
   }
   void InternalSwap(WeakRepeatedPtrField* PROTOBUF_RESTRICT other) {
-    base().InternalSwap(&other->base());
+    weak.InternalSwap(other->weak);
   }
 
-  const internal::RepeatedPtrFieldBase& base() const { return weak; }
-  internal::RepeatedPtrFieldBase& base() { return weak; }
-  // Union disables running the destructor. Which would create a strong link.
-  // Instead we explicitly destroy the underlying base through the virtual
-  // destructor.
-  union {
-    RepeatedPtrField<T> weak;
-  };
+  RepeatedPtrField<MessageLite> weak;
 
  private:
   WeakRepeatedPtrField(Arena* arena, const WeakRepeatedPtrField& rhs)
