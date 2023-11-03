@@ -1369,6 +1369,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   GPBCodedOutputStream *stream = [[GPBCodedOutputStream alloc] initWithData:data];
   @try {
     [self writeDelimitedToCodedOutputStream:stream];
+    [stream flush];
   } @catch (NSException *exception) {
     // This really shouldn't happen. Normally, this could mean there was a bug in the library and it
     // failed to match between computing the size and writing out the bytes. However, the more
@@ -1380,8 +1381,9 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     NSLog(@"%@: Internal exception while building message delimitedData: %@", [self class],
           exception);
 #endif
-    // If it happens, truncate.
-    data.length = 0;
+    // If it happens, return an empty data.
+    [stream release];
+    return [NSData data];
   }
   [stream release];
   return data;
