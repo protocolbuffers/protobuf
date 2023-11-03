@@ -13,6 +13,18 @@ message Outer {
   message Inner {
     optional int32 num = 1;
     optional bool boolean = 2;
+
+    message SuperInner {
+      message DuperInner {
+        message EvenMoreInner {
+          message CantBelieveItsSoInner {
+            optional int32 num = 99;
+          }
+        }
+      }
+    }
   }
   optional Inner inner = 1;
+  optional .nest.Outer.Inner.SuperInner.DuperInner.EvenMoreInner
+      .CantBelieveItsSoInner deep = 2;
 }

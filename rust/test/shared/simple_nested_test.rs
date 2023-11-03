@@ -13,3 +13,13 @@ fn test_simple_nested_proto() {
     assert_eq!(outer_msg.inner().num(), 0);
     assert!(!outer_msg.inner().boolean());
 }
+
+#[test]
+fn test_deeply_nested_definition() {
+    let deep = nested_proto::nest::Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_
+            ::CantBelieveItsSoInner::new();
+    assert_eq!(deep.num(), 0);
+
+    let outer_msg = Outer::new();
+    assert_eq!(outer_msg.deep().num(), 0);
+}
