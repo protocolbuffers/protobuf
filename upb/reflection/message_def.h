@@ -136,6 +136,8 @@ int upb_MessageDef_RealOneofCount(const upb_MessageDef* m);
 
 const UPB_DESC(MessageOptions) *
     upb_MessageDef_Options(const upb_MessageDef* m);
+const UPB_DESC(FeatureSet) *
+    upb_MessageDef_ResolvedFeatures(const upb_MessageDef* m);
 
 upb_StringView upb_MessageDef_ReservedName(const upb_MessageDef* m, int i);
 int upb_MessageDef_ReservedNameCount(const upb_MessageDef* m);

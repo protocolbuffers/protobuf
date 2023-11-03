@@ -17,6 +17,7 @@
 #include "upb/reflection/internal/file_def.h"
 #include "upb/reflection/internal/message_def.h"
 #include "upb/reflection/internal/service_def.h"
+#include "upb/reflection/internal/upb_edition_defaults.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -27,6 +28,7 @@ struct upb_DefPool {
   upb_strtable files;  // file_name -> (upb_FileDef*)
   upb_inttable exts;   // (upb_MiniTableExtension*) -> (upb_FieldDef*)
   upb_ExtensionRegistry* extreg;
+  const UPB_DESC(FeatureSetDefaults) * feature_set_defaults;
   upb_MiniTablePlatform platform;
   void* scratch_data;
   size_t scratch_size;
@@ -38,6 +40,8 @@ void upb_DefPool_Free(upb_DefPool* s) {
   upb_gfree(s->scratch_data);
   upb_gfree(s);
 }
+
+static const char serialized_defaults[] = UPB_INTERNAL_UPB_EDITION_DEFAULTS;
 
 upb_DefPool* upb_DefPool_New(void) {
   upb_DefPool* s = upb_gmalloc(sizeof(*s));
@@ -58,12 +62,21 @@ upb_DefPool* upb_DefPool_New(void) {
   if (!s->extreg) goto err;
 
   s->platform = kUpb_MiniTablePlatform_Native;
+  s->feature_set_defaults = UPB_DESC(FeatureSetDefaults_parse)(
+      serialized_defaults, sizeof(serialized_defaults) - 1, s->arena);
+
+  if (!s->feature_set_defaults) goto err;
 
   return s;
 
 err:
   upb_DefPool_Free(s);
   return NULL;
+}
+
+const UPB_DESC(FeatureSetDefaults) *
+    upb_DefPool_FeatureSetDefaults(const upb_DefPool* s) {
+  return s->feature_set_defaults;
 }
 
 bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTableExtension* ext,
@@ -279,7 +292,11 @@ static const upb_FileDef* upb_DefBuilder_AddFileToPool(
       remove_filedef(s, builder->file);
       builder->file = NULL;
     }
-  } else if (!builder->arena || !builder->tmp_arena) {
+  } else if (!builder->arena || !builder->tmp_arena ||
+             !upb_strtable_init(&builder->feature_cache, 16,
+                                builder->tmp_arena) ||
+             !(builder->legacy_features =
+                   UPB_DESC(FeatureSet_new)(builder->tmp_arena))) {
     _upb_DefBuilder_OomErr(builder);
   } else {
     _upb_FileDef_Create(builder, file_proto);
@@ -312,6 +329,8 @@ static const upb_FileDef* _upb_DefPool_AddFile(
 
   upb_DefBuilder ctx = {
       .symtab = s,
+      .tmp_buf = NULL,
+      .tmp_buf_size = 0,
       .layout = layout,
       .platform = s->platform,
       .msg_count = 0,

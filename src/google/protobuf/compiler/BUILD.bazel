@@ -164,6 +164,7 @@ cc_binary(
     copts = COPTS,
     visibility = [
         "//src/google/protobuf:__subpackages__",
+        "//upb:__subpackages__",
     ],
     deps = [
         ":command_line_interface",

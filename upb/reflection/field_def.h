@@ -61,6 +61,8 @@ const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f);
 UPB_API const char* upb_FieldDef_Name(const upb_FieldDef* f);
 UPB_API uint32_t upb_FieldDef_Number(const upb_FieldDef* f);
 const UPB_DESC(FieldOptions) * upb_FieldDef_Options(const upb_FieldDef* f);
+const UPB_DESC(FeatureSet) *
+    upb_FieldDef_ResolvedFeatures(const upb_FieldDef* f);
 UPB_API const upb_OneofDef* upb_FieldDef_RealContainingOneof(
     const upb_FieldDef* f);
 UPB_API upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f);
