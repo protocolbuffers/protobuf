@@ -43,7 +43,7 @@ jobs:
 
             This issue is labeled `inactive` because the last activity was over
             90 days ago.
-          close-pr-message: >
+          close-issue-message: >
             We triage inactive PRs and issues in order to make it easier to find
             active work. If this issue should remain active or becomes active
             again, please reopen it.
