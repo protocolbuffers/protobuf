@@ -123,11 +123,7 @@ void EmitPubUseForImportedMessages(Context<FileDescriptor>& primary_file,
 }
 
 // Emits all public imports of the current file
-void EmitPublicImports(
-    Context<FileDescriptor>& primary_file,
-    const std::vector<const FileDescriptor*>& files_in_current_crate) {
-  absl::flat_hash_set<const FileDescriptor*> files(
-      files_in_current_crate.begin(), files_in_current_crate.end());
+void EmitPublicImports(Context<FileDescriptor>& primary_file) {
   for (int i = 0; i < primary_file.desc().public_dependency_count(); ++i) {
     auto dep_file = primary_file.desc().public_dependency(i);
     // If the publicly imported file is a src of the current `proto_library`
@@ -137,7 +133,8 @@ void EmitPublicImports(
     // TODO: Handle the case where a non-primary src with the same
     // declared package as the primary src publicly imports a file that the
     // primary doesn't.
-    if (files.contains(dep_file)) continue;
+    if (primary_file.generator_context().is_file_in_current_crate(dep_file))
+      continue;
     auto dep = primary_file.WithDesc(dep_file);
     EmitPubUseForImportedMessages(primary_file, dep);
   }
@@ -206,7 +203,13 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
     return false;
   }
 
-  Context<FileDescriptor> file(&*opts, file_desc, nullptr);
+  std::vector<const FileDescriptor*> files_in_current_crate;
+  generator_context->ListParsedFiles(&files_in_current_crate);
+
+  RustGeneratorContext rust_generator_context(&files_in_current_crate);
+
+  Context<FileDescriptor> file(&*opts, file_desc, &rust_generator_context,
+                               nullptr);
 
   auto outfile = absl::WrapUnique(generator_context->Open(GetRsFile(file)));
   io::Printer printer(outfile.get());
@@ -228,15 +231,13 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
 
   )rs");
 
-  std::vector<const FileDescriptor*> files_in_current_crate;
-  generator_context->ListParsedFiles(&files_in_current_crate);
   std::vector<Context<FileDescriptor>> file_contexts;
   for (const FileDescriptor* f : files_in_current_crate) {
     file_contexts.push_back(file.WithDesc(*f));
   }
 
   // Generating the primary file?
-  if (file_desc == files_in_current_crate.front()) {
+  if (file_desc == rust_generator_context.primary_file()) {
     auto non_primary_srcs = absl::MakeConstSpan(file_contexts).subspan(1);
     DeclareSubmodulesForNonPrimarySrcs(file, non_primary_srcs);
 
@@ -252,7 +253,7 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
     }
   }
 
-  EmitPublicImports(file, files_in_current_crate);
+  EmitPublicImports(file);
 
   std::unique_ptr<io::ZeroCopyOutputStream> thunks_cc;
   std::unique_ptr<io::Printer> thunks_printer;

@@ -298,10 +298,12 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT other) {
       &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fcpp_5ffeatures_2eproto[0]);
 }
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::FeatureSet,
-    ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11, false>
-  cpp(kCppFieldNumber);
+PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::google::protobuf::internal::
+        ExtensionIdentifier<
+            ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >,
+            11, false>
+            cpp(kCppFieldNumber);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

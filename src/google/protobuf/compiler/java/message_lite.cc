@@ -69,25 +69,13 @@ ImmutableMessageLiteGenerator::~ImmutableMessageLiteGenerator() {}
 
 void ImmutableMessageLiteGenerator::GenerateStaticVariables(
     io::Printer* printer, int* bytecode_estimate) {
-  // Generate static members for all nested types.
-  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    // TODO:  Reuse MessageGenerator objects?
-    ImmutableMessageLiteGenerator(descriptor_->nested_type(i), context_)
-        .GenerateStaticVariables(printer, bytecode_estimate);
-  }
+  // No-op for lite.
 }
 
 int ImmutableMessageLiteGenerator::GenerateStaticVariableInitializers(
     io::Printer* printer) {
-  int bytecode_estimate = 0;
-  // Generate static member initializers for all nested types.
-  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    // TODO:  Reuse MessageGenerator objects?
-    bytecode_estimate +=
-        ImmutableMessageLiteGenerator(descriptor_->nested_type(i), context_)
-            .GenerateStaticVariableInitializers(printer);
-  }
-  return bytecode_estimate;
+  // No-op for lite.
+  return 0;
 }
 
 // ===================================================================

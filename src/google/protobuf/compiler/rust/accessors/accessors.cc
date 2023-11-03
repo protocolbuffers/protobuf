@@ -23,7 +23,8 @@ namespace rust {
 namespace {
 
 std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
-    const FieldDescriptor& desc) {
+    Context<FieldDescriptor> field) {
+  const FieldDescriptor& desc = field.desc();
   // TODO: We do not support [ctype=FOO] (used to set the field
   // type in C++ to cord or string_piece) in V0.6 API.
   if (desc.options().has_ctype()) {
@@ -59,6 +60,12 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
       if (desc.is_repeated()) {
         return std::make_unique<UnsupportedField>("repeated msg not supported");
       }
+      if (!field.generator_context().is_file_in_current_crate(
+              desc.message_type()->file())) {
+        return std::make_unique<UnsupportedField>(
+            "message fields that are imported from another proto_library"
+            " (defined in a separate Rust crate) are not supported");
+      }
       return std::make_unique<SingularMessage>();
 
     case FieldDescriptor::TYPE_ENUM:
@@ -74,15 +81,15 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
 }  // namespace
 
 void GenerateAccessorMsgImpl(Context<FieldDescriptor> field) {
-  AccessorGeneratorFor(field.desc())->GenerateMsgImpl(field);
+  AccessorGeneratorFor(field)->GenerateMsgImpl(field);
 }
 
 void GenerateAccessorExternC(Context<FieldDescriptor> field) {
-  AccessorGeneratorFor(field.desc())->GenerateExternC(field);
+  AccessorGeneratorFor(field)->GenerateExternC(field);
 }
 
 void GenerateAccessorThunkCc(Context<FieldDescriptor> field) {
-  AccessorGeneratorFor(field.desc())->GenerateThunkCc(field);
+  AccessorGeneratorFor(field)->GenerateThunkCc(field);
 }
 
 }  // namespace rust
