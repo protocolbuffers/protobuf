@@ -6,6 +6,10 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
+package(
+    features = ["layering_check"],
+)
+
 cc_library(
     name = "names",
     srcs = ["names.cc"],
@@ -14,7 +18,8 @@ cc_library(
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
-        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf:port_def",
+        "//src/google/protobuf",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -69,10 +74,16 @@ cc_library(
     ],
     deps = [
         ":names",
-        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf:port_def",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:retention",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -91,10 +102,13 @@ cc_test(
     deps = [
         ":csharp",
         "//:protobuf",
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -106,8 +120,11 @@ cc_test(
     deps = [
         ":csharp",
         "//:protobuf",
+        "//src/google/protobuf:any_cc_proto",
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler:command_line_interface",
         "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

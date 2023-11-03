@@ -2,6 +2,10 @@ load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 
+package(
+    features = ["layering_check"],
+)
+
 bzl_library(
     name = "defaults",
     srcs = ["defaults.bzl"],
@@ -71,6 +75,7 @@ cc_test(
     deps = [
         ":defaults_test_embedded",
         "//src/google/protobuf",
+        "//src/google/protobuf:port_def",
         "//src/google/protobuf:unittest_features_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
@@ -80,6 +85,7 @@ cc_test(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -140,8 +146,9 @@ cc_test(
         ":test_editions_default_features_cc_proto",
         ":test_messages_proto2_editions_cc_proto",
         ":test_messages_proto3_editions_cc_proto",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//src/google/protobuf:test_textproto",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -151,6 +158,7 @@ cc_test(
     srcs = ["generated_reflection_test.cc"],
     deps = [
         ":test_messages_proto2_editions_cc_proto",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
