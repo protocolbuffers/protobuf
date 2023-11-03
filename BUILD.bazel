@@ -187,11 +187,10 @@ cc_binary(
 # C++ runtime
 ################################################################################
 
-# Expose the runtime for the proto_lang_toolchain so that it can also be used in
-# a user-defined proto_lang_toolchain.
 alias(
     name = "protobuf_nowkt",
     actual = "//src/google/protobuf:protobuf_nowkt",
+    deprecation = "Use //:protobuf instead",
     visibility = ["//visibility:public"],
 )
 
@@ -210,21 +209,10 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-cc_library(
+alias(
     name = "protobuf",
-    copts = COPTS,
-    linkopts = LINK_OPTS,
+    actual = "//src/google/protobuf",
     visibility = ["//visibility:public"],
-    deps = [
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler:importer",
-        "//src/google/protobuf/util:delimited_message_util",
-        "//src/google/protobuf/util:differencer",
-        "//src/google/protobuf/util:field_mask_util",
-        "//src/google/protobuf/util:json_util",
-        "//src/google/protobuf/util:time_util",
-        "//src/google/protobuf/util:type_resolver_util",
-    ],
 )
 
 # This provides just the header files for use in projects that need to build
@@ -324,7 +312,7 @@ proto_lang_toolchain(
         "//:descriptor_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
-    runtime = "//src/google/protobuf:protobuf_nowkt",
+    runtime = "//src/google/protobuf",
     visibility = ["//visibility:public"],
 )
 
