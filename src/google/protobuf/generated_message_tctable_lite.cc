@@ -470,8 +470,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
       aux_is_table ? aux.table->default_instance : aux.message_default();
   do {
     ptr += sizeof(TagType);
-    MessageLite* submsg =
-        field.Add<GenericTypeHandler<MessageLite>>(default_instance);
+    MessageLite* submsg = field.AddMessage(default_instance);
     if (aux_is_table) {
       if (group_coding) {
         ptr = ctx->ParseGroup<TcParser>(submsg, ptr,
@@ -2426,8 +2425,7 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
     const char* ptr2 = ptr;
     uint32_t next_tag;
     do {
-      MessageLite* value =
-          field.template Add<GenericTypeHandler<MessageLite>>(default_instance);
+      MessageLite* value = field.AddMessage(default_instance);
       ptr = is_group ? ctx->ParseGroup<TcParser>(value, ptr2, decoded_tag,
                                                  inner_table)
                      : ctx->ParseMessage<TcParser>(value, ptr2, inner_table);
@@ -2448,8 +2446,7 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
     const char* ptr2 = ptr;
     uint32_t next_tag;
     do {
-      MessageLite* value =
-          field.template Add<GenericTypeHandler<MessageLite>>(default_instance);
+      MessageLite* value = field.AddMessage(default_instance);
       ptr = is_group ? ctx->ParseGroup(value, ptr2, decoded_tag)
                      : ctx->ParseMessage(value, ptr2);
       if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;

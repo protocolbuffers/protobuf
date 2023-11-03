@@ -126,14 +126,18 @@ void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
   return r->elements[ExchangeCurrentSize(current_size_ + 1)] = obj;
 }
 
-void* RepeatedPtrFieldBase::AddOutOfLineHelper(ElementFactory factory) {
+template <typename F>
+auto* RepeatedPtrFieldBase::AddInternal(F factory) {
+  using Result = decltype(factory(GetArena()));
   if (tagged_rep_or_elem_ == nullptr) {
     ExchangeCurrentSize(1);
     tagged_rep_or_elem_ = factory(GetArena());
-    return tagged_rep_or_elem_;
+    return static_cast<Result>(tagged_rep_or_elem_);
   }
   if (using_sso()) {
-    if (ExchangeCurrentSize(1) == 0) return tagged_rep_or_elem_;
+    if (ExchangeCurrentSize(1) == 0) {
+      return static_cast<Result>(tagged_rep_or_elem_);
+    }
   } else {
     absl::PrefetchToLocalCache(rep());
   }
@@ -142,14 +146,19 @@ void* RepeatedPtrFieldBase::AddOutOfLineHelper(ElementFactory factory) {
   } else {
     Rep* r = rep();
     if (current_size_ != r->allocated_size) {
-      return r->elements[ExchangeCurrentSize(current_size_ + 1)];
+      return static_cast<Result>(
+          r->elements[ExchangeCurrentSize(current_size_ + 1)]);
     }
   }
   Rep* r = rep();
   ++r->allocated_size;
   void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
   result = factory(GetArena());
-  return result;
+  return static_cast<Result>(result);
+}
+
+void* RepeatedPtrFieldBase::AddOutOfLineHelper(ElementFactory factory) {
+  return AddInternal(factory);
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
@@ -165,6 +174,10 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
     r->allocated_size -= num;
   }
   ExchangeCurrentSize(current_size_ - num);
+}
+
+MessageLite* RepeatedPtrFieldBase::AddMessage(const MessageLite* prototype) {
+  return AddInternal([prototype](Arena* a) { return prototype->New(a); });
 }
 
 MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {

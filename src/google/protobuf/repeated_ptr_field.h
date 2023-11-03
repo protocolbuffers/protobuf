@@ -232,16 +232,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return cast<Handler>(AddOutOfLineHelper(NewT<Value<Handler>>));
   }
 
-  template <typename TypeHandler>
-  Value<TypeHandler>* Add(const Value<TypeHandler>* prototype) {
-    if (current_size_ < allocated_size()) {
-      return cast<TypeHandler>(
-          element_at(ExchangeCurrentSize(current_size_ + 1)));
-    }
-    auto* result = TypeHandler::NewFromPrototype(prototype, arena_);
-    return cast<TypeHandler>(AddOutOfLineHelper(result));
-  }
-
   template <
       typename TypeHandler,
       typename std::enable_if<TypeHandler::Movable::value>::type* = nullptr>
@@ -299,9 +289,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   // Creates and adds an element using the given prototype, without introducing
-  // a link-time dependency on the concrete message type. This method is used to
-  // implement implicit weak fields. The prototype may be nullptr, in which case
-  // an ImplicitWeakMessage will be used as a placeholder.
+  // a link-time dependency on the concrete message type.
+  //
+  // Pre-condition: prototype must not be nullptr.
+  MessageLite* AddMessage(const MessageLite* prototype);
+
+  // This method is similar to `AddMessage` except that prototype may be nullptr
+  // in which case an ImplicitWeakMessage will be used as a placeholder. It is
+  // used to implement implicit weak fields.
   MessageLite* AddWeak(const MessageLite* prototype);
 
   template <typename TypeHandler>
@@ -847,7 +842,19 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // array, including potentially resizing the array with Reserve if
   // needed
   void* AddOutOfLineHelper(void* obj);
+  // Internal helper for Add that keeps definition out-of-line.
   void* AddOutOfLineHelper(ElementFactory factory);
+
+  // Common implementation used by various Add* methods. `factory` is an object
+  // used to construct a new element unless there are spare cleared elements
+  // ready for reuse. Returns pointer to the new element.
+  //
+  // Note: avoid inlining this function in methods such as `Add()` as this would
+  // drastically increase binary size due to template instantiation and implicit
+  // inlining. Instead, use wrapper functions with out-of-line definition
+  // similar to `AddOutOfLineHelper`.
+  template <typename F>
+  auto* AddInternal(F factory);
 
   // A few notes on internal representation:
   //
