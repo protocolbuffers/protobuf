@@ -375,9 +375,11 @@ void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT other) {
       &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[0]);
 }
-PROTOC_EXPORT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::FeatureSet,
-    ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>
-  java(kJavaFieldNumber, ::pb::JavaFeatures::default_instance(), nullptr);
+PROTOC_EXPORT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::
+    google::protobuf::internal::ExtensionIdentifier<
+        ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >,
+        11, false>
+        java(kJavaFieldNumber, ::pb::JavaFeatures::default_instance());
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

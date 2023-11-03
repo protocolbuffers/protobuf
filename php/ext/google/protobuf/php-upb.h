@@ -10735,11 +10735,10 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
 
 
 #endif /* UPB_REFLECTION_DEF_POOL_INTERNAL_H_ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
 
 extern _upb_DefPool_Init google_protobuf_descriptor_proto_upbdefinit;
 
