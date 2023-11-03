@@ -32,6 +32,9 @@ jobs:
   stale-others:
     name: Close stale non-copybara PRs and issues
     runs-on: ubuntu-latest
+    permissions:
+      issues: write # allow the action to comment on, add labels to, and close issues
+      pull-requests: write # allow the action to comment on, add labels to, and close PRs
     steps:
       - uses: actions/stale@b69b346013879cedbf50c69f572cd85439a41936
         with:
@@ -69,6 +72,7 @@ jobs:
             activity in the 14 days since the `inactive` label was added.
           stale-issue-label: 'inactive'
           stale-pr-label: 'inactive'
+          exempt-issue-labels: 'help wanted'
           days-before-stale: 90
           days-before-close: 14
           operations-per-run: 100
