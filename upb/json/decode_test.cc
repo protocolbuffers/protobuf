@@ -30,10 +30,15 @@
 
 #include "upb/json/decode.h"
 
+#include <string>
+#include <vector>
+
 #include "google/protobuf/struct.upb.h"
 #include <gtest/gtest.h>
+#include "upb/base/status.hpp"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
+#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
 
@@ -99,4 +104,18 @@ TEST(JsonTest, DecodeConflictJsonName) {
   upb_test_Box* box = JsonDecode(json_string.c_str(), a.ptr());
   EXPECT_EQ(2, upb_test_Box_new_value(box));
   EXPECT_EQ(0, upb_test_Box_value(box));
+}
+
+TEST(JsonTest, RejectsBadTrailingCharacters) {
+  upb::Arena a;
+  std::string json_string = R"({}abc)";
+  upb_test_Box* box = JsonDecode(json_string.c_str(), a.ptr());
+  EXPECT_EQ(box, nullptr);
+}
+
+TEST(JsonTest, AcceptsTrailingWhitespace) {
+  upb::Arena a;
+  std::string json_string = "{} \n \r\n \t\t";
+  upb_test_Box* box = JsonDecode(json_string.c_str(), a.ptr());
+  EXPECT_NE(box, nullptr);
 }

@@ -41,6 +41,7 @@ cc_test(
         ":test_upb_proto",
         ":test_upb_proto_reflection",
         "@com_google_googletest//:gtest_main",
+        "//upb:base",
         "//upb:mem",
         "//upb:reflection",
     ],

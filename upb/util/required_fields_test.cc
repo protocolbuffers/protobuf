@@ -111,7 +111,7 @@ TYPED_TEST_SUITE(RequiredFieldsTest, MyTypes);
 // }
 TYPED_TEST(RequiredFieldsTest, TestRequired) {
   TestFixture::CheckRequired(R"json({})json", {"required_message"});
-  TestFixture::CheckRequired(R"json({"required_message": {}}")json", {});
+  TestFixture::CheckRequired(R"json({"required_message": {}})json", {});
   TestFixture::CheckRequired(
       R"json(
       {
