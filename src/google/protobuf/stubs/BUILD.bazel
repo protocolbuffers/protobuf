@@ -7,6 +7,7 @@ load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
 package(
     default_visibility = ["//:__subpackages__"],
+    features = ["layering_check"],
 )
 
 cc_library(
@@ -74,6 +75,7 @@ cc_test(
         ":stubs",
         "//src/google/protobuf/testing",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
