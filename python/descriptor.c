@@ -620,6 +620,11 @@ static PyObject* PyUpb_Descriptor_GetOneofsByName(PyObject* _self,
 }
 
 static PyObject* PyUpb_Descriptor_GetSyntax(PyObject* self, void* closure) {
+  PyErr_WarnEx(NULL,
+               "descriptor.syntax is deprecated. It will be removed soon. "
+               "Most usages are checking field descriptors. Consider to use "
+               "has_presence, is_packed on field descriptors.",
+               1);
   const upb_MessageDef* msgdef = PyUpb_Descriptor_GetDef(self);
   const char* syntax =
       upb_MessageDef_Syntax(msgdef) == kUpb_Syntax_Proto2 ? "proto2" : "proto3";
@@ -1309,6 +1314,11 @@ static PyObject* PyUpb_FileDescriptor_GetPublicDependencies(PyObject* _self,
 
 static PyObject* PyUpb_FileDescriptor_GetSyntax(PyObject* _self,
                                                 void* closure) {
+  PyErr_WarnEx(NULL,
+               "descriptor.syntax is deprecated. It will be removed soon. "
+               "Most usages are checking field descriptors. Consider to use "
+               "has_presence, is_packed on field descriptors.",
+               1);
   PyUpb_DescriptorBase* self = (void*)_self;
   const char* syntax =
       upb_FileDef_Syntax(self->def) == kUpb_Syntax_Proto2 ? "proto2" : "proto3";
