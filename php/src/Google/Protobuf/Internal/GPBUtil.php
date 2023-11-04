@@ -132,10 +132,14 @@ class GPBUtil
     public static function checkUint64(&$var)
     {
         if (is_numeric($var)) {
-            if (bccomp((string) $var, (string) PHP_INT_MAX) === 1) {
-                $var = (string) $var;
+            if (PHP_INT_SIZE === 8) {
+                if (bccomp((string) $var, (string) PHP_INT_MAX) === 1) {
+                    $var = (string) $var;
+                } else {
+                    $var = (int) $var;
+                }
             } else {
-                $var = (int) $var;
+                $var = number_format($var, 0, ".", "");
             }
         } else {
             throw new \Exception("Expect integer.");
