@@ -446,6 +446,7 @@ void Convert_UpbToPhp(upb_MessageValue upb_val, zval* php_val, TypeInfo type,
 #endif
       break;
     case kUpb_CType_UInt64:
+#if SIZEOF_ZEND_LONG == 8
       if (upb_val.uint64_val > ZEND_LONG_MAX) {
         char buf[20];
         int size = sprintf(buf, "%llu", upb_val.uint64_val);
@@ -453,6 +454,13 @@ void Convert_UpbToPhp(upb_MessageValue upb_val, zval* php_val, TypeInfo type,
       } else {
         ZVAL_LONG(php_val, upb_val.uint64_val);
       }
+#else
+    {
+      char buf[20];
+      int size = sprintf(buf, "%lld", upb_val.int64_val);
+      ZVAL_NEW_STR(php_val, zend_string_init(buf, size, 0));
+    }
+#endif
       break;
     case kUpb_CType_Int32:
     case kUpb_CType_Enum:
