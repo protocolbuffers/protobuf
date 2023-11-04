@@ -353,8 +353,17 @@ class Descriptor(_NestedDescriptorBase):
     self.oneofs_by_name = dict((o.name, o) for o in self.oneofs)
     for oneof in self.oneofs:
       oneof.containing_type = self
-    self.syntax = syntax or "proto2"
+    self._deprecated_syntax = syntax or "proto2"
     self._is_map_entry = is_map_entry
+
+  @property
+  def syntax(self):
+    warnings.warn(
+      'descriptor.syntax is deprecated. It will be removed'
+      ' soon. Most usages are checking field descriptors. Consider to use'
+      ' has_presence, is_packed on field descriptors.'
+    )
+    return self._deprecated_syntax
 
   @property
   def fields_by_camelcase_name(self):
@@ -621,7 +630,7 @@ class FieldDescriptor(DescriptorBase):
     # compatibility. FieldDescriptor.file was added in cl/153110619
     # Some old/generated code didn't link file to FieldDescriptor.
     # TODO: remove syntax usage b/240619313
-    return self.containing_type.syntax == 'proto2'
+    return self.containing_type._deprecated_syntax == 'proto2'
 
   @property
   def is_packed(self):
@@ -634,7 +643,7 @@ class FieldDescriptor(DescriptorBase):
         field_type == FieldDescriptor.TYPE_MESSAGE or
         field_type == FieldDescriptor.TYPE_BYTES):
       return False
-    if self.containing_type.syntax == 'proto2':
+    if self.containing_type._deprecated_syntax == 'proto2':
       return self.has_options and self.GetOptions().packed
     else:
       return (not self.has_options or
@@ -743,7 +752,7 @@ class EnumDescriptor(_NestedDescriptorBase):
     Care should be taken when using this function to respect the target
     runtime's enum handling quirks.
     """
-    return self.file.syntax == 'proto2'
+    return self.file._deprecated_syntax == 'proto2'
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.EnumDescriptorProto.
@@ -1083,7 +1092,7 @@ class FileDescriptor(DescriptorBase):
     self.message_types_by_name = {}
     self.name = name
     self.package = package
-    self.syntax = syntax or "proto2"
+    self._deprecated_syntax = syntax or "proto2"
     self.serialized_pb = serialized_pb
 
     self.enum_types_by_name = {}
@@ -1091,6 +1100,15 @@ class FileDescriptor(DescriptorBase):
     self.services_by_name = {}
     self.dependencies = (dependencies or [])
     self.public_dependencies = (public_dependencies or [])
+
+  @property
+  def syntax(self):
+    warnings.warn(
+      'descriptor.syntax is deprecated. It will be removed'
+      ' soon. Most usages are checking field descriptors. Consider to use'
+      ' has_presence, is_packed on field descriptors.'
+    )
+    return self._deprecated_syntax
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.FileDescriptorProto.
