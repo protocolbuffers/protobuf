@@ -13,6 +13,13 @@ foreach(_library
     PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${protobuf_source_dir}/src>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  if (UNIX AND NOT APPLE)
+    set_property(TARGET ${_library}
+      PROPERTY INSTALL_RPATH "$ORIGIN")
+  elseif (APPLE)
+    set_property(TARGET ${_library}
+      PROPERTY INSTALL_RPATH "@loader_path")
+  endif()
   install(TARGETS ${_library} EXPORT protobuf-targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_library}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_library}
@@ -21,6 +28,13 @@ endforeach()
 
 install(TARGETS protoc EXPORT protobuf-targets
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
+if (UNIX AND NOT APPLE)
+    set_property(TARGET protoc
+      PROPERTY INSTALL_RPATH "$ORIGIN/../lib")
+  elseif (APPLE)
+    set_property(TARGET protoc
+      PROPERTY INSTALL_RPATH "@loader_path/../lib")
+endif()
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
