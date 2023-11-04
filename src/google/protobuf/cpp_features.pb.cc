@@ -299,10 +299,9 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT other) {
       file_level_metadata_google_2fprotobuf_2fcpp_5ffeatures_2eproto[0]);
 }
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::google::protobuf::internal::
-        ExtensionIdentifier<
-            ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >,
-            11, false>
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
+        ExtensionIdentifier<::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::CppFeatures >,
+                            11, false>
             cpp(kCppFieldNumber);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb

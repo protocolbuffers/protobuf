@@ -148,11 +148,12 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
                                             int number, FieldType type,
                                             bool is_repeated, bool is_packed,
                                             const MessageLite* prototype,
-                                            LazyEagerVerifyFnType verify_func) {
+                                            LazyEagerVerifyFnType verify_func,
+                                            LazyAnnotation is_lazy) {
   ABSL_CHECK(type == WireFormatLite::TYPE_MESSAGE ||
              type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
-                     verify_func);
+                     verify_func, is_lazy);
   info.message_info = {prototype};
   Register(info);
 }
