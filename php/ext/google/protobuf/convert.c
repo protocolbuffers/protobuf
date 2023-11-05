@@ -363,6 +363,7 @@ static bool to_string(zval* from) {
 bool Convert_PhpToUpb(zval* php_val, upb_MessageValue* upb_val, TypeInfo type,
                       upb_Arena* arena) {
   int64_t i64;
+  uint64_t u64;
 
   if (Z_ISREF_P(php_val)) {
     ZVAL_DEREF(php_val);
@@ -379,8 +380,6 @@ bool Convert_PhpToUpb(zval* php_val, upb_MessageValue* upb_val, TypeInfo type,
       upb_val->int32_val = i64;
       return true;
     case kUpb_CType_UInt64:
-      uint64_t u64;
-
       if (!Convert_PhpToUint64(php_val, &u64)) {
         return false;
       }
