@@ -136,6 +136,7 @@ protobuf_versioned_java_library(
     srcs = LITE_SRCS + [
         ":gen_well_known_protos_javalite",
     ],
+    automatic_module_name = "com.google.protobuf",
     bundle_description = "Lite version of Protocol Buffers library. This " +
                          "version is optimized for code size, but does not " +
                          "guarantee API/ABI stability.",
@@ -217,6 +218,7 @@ protobuf_versioned_java_library(
     ) + [
         ":gen_well_known_protos_java",
     ],
+    automatic_module_name = "com.google.protobuf",
     bundle_description = "Core Protocol Buffers library. Protocol Buffers " +
                          "are a way of encoding structured data in an " +
                          "efficient yet extensible format.",

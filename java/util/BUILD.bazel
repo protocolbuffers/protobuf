@@ -26,6 +26,7 @@ protobuf_versioned_java_library(
     srcs = glob([
         "src/main/java/com/google/protobuf/util/*.java",
     ]),
+    automatic_module_name = "com.google.protobuf.util",
     bundle_description = "Utilities for Protocol Buffers",
     bundle_name = "Protocol Buffers [Util]",
     bundle_symbolic_name = "com.google.protobuf.util",
