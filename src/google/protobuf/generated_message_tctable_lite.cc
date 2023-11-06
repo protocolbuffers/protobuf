@@ -18,6 +18,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/numeric/bits.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -2798,6 +2799,138 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   }
 
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+
+std::string TypeCardToString(uint16_t type_card) {
+  // In here we convert the runtime value of entry.type_card back into a
+  // sequence of literal enum labels. We use the mnenonic labels for nicer
+  // codegen.
+  namespace fl = internal::field_layout;
+  const int rep_index = (type_card & fl::kRepMask) >> fl::kRepShift;
+  const int tv_index = (type_card & fl::kTvMask) >> fl::kTvShift;
+
+  static constexpr const char* kFieldCardNames[] = {"Singular", "Optional",
+                                                    "Repeated", "Oneof"};
+  static_assert((fl::kFcSingular >> fl::kFcShift) == 0, "");
+  static_assert((fl::kFcOptional >> fl::kFcShift) == 1, "");
+  static_assert((fl::kFcRepeated >> fl::kFcShift) == 2, "");
+  static_assert((fl::kFcOneof >> fl::kFcShift) == 3, "");
+
+  std::string out;
+
+  absl::StrAppend(&out, "::_fl::kFc",
+                  kFieldCardNames[(type_card & fl::kFcMask) >> fl::kFcShift]);
+
+#define PROTOBUF_INTERNAL_TYPE_CARD_CASE(x)  \
+  case fl::k##x:                             \
+    absl::StrAppend(&out, " | ::_fl::k" #x); \
+    break
+
+  switch (type_card & fl::kFkMask) {
+    case fl::kFkString: {
+      switch (type_card & ~fl::kFcMask & ~fl::kRepMask & ~fl::kSplitMask) {
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Bytes);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(RawString);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Utf8String);
+        default:
+          ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
+      }
+
+      static constexpr const char* kRepNames[] = {"AString", "IString", "Cord",
+                                                  "SPiece", "SString"};
+      static_assert((fl::kRepAString >> fl::kRepShift) == 0, "");
+      static_assert((fl::kRepIString >> fl::kRepShift) == 1, "");
+      static_assert((fl::kRepCord >> fl::kRepShift) == 2, "");
+      static_assert((fl::kRepSPiece >> fl::kRepShift) == 3, "");
+      static_assert((fl::kRepSString >> fl::kRepShift) == 4, "");
+
+      absl::StrAppend(&out, " | ::_fl::kRep", kRepNames[rep_index]);
+      break;
+    }
+
+    case fl::kFkMessage: {
+      absl::StrAppend(&out, " | ::_fl::kMessage");
+
+      static constexpr const char* kRepNames[] = {nullptr, "Group", "Lazy"};
+      static_assert((fl::kRepGroup >> fl::kRepShift) == 1, "");
+      static_assert((fl::kRepLazy >> fl::kRepShift) == 2, "");
+
+      if (auto* rep = kRepNames[rep_index]) {
+        absl::StrAppend(&out, " | ::_fl::kRep", rep);
+      }
+
+      static constexpr const char* kXFormNames[2][4] = {
+          {nullptr, "Default", "Table", "WeakPtr"}, {nullptr, "Eager", "Lazy"}};
+
+      static_assert((fl::kTvDefault >> fl::kTvShift) == 1, "");
+      static_assert((fl::kTvTable >> fl::kTvShift) == 2, "");
+      static_assert((fl::kTvWeakPtr >> fl::kTvShift) == 3, "");
+      static_assert((fl::kTvEager >> fl::kTvShift) == 1, "");
+      static_assert((fl::kTvLazy >> fl::kTvShift) == 2, "");
+
+      if (auto* xform = kXFormNames[rep_index == 2][tv_index]) {
+        absl::StrAppend(&out, " | ::_fl::kTv", xform);
+      }
+      break;
+    }
+
+    case fl::kFkMap:
+      absl::StrAppend(&out, " | ::_fl::kMap");
+      break;
+
+    case fl::kFkNone:
+      break;
+
+    case fl::kFkVarint:
+    case fl::kFkPackedVarint:
+    case fl::kFkFixed:
+    case fl::kFkPackedFixed: {
+      switch (type_card & ~fl::kFcMask & ~fl::kSplitMask) {
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Bool);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Fixed32);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(UInt32);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(SFixed32);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Int32);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(SInt32);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Float);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Enum);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(EnumRange);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(OpenEnum);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Fixed64);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(UInt64);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(SFixed64);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Int64);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(SInt64);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Double);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedBool);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedFixed32);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedUInt32);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedSFixed32);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedInt32);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedSInt32);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedFloat);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedEnum);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedEnumRange);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedOpenEnum);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedFixed64);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedUInt64);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedSFixed64);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedInt64);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedSInt64);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedDouble);
+        default:
+          ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
+      }
+    }
+  }
+
+  if (type_card & fl::kSplitMask) {
+    absl::StrAppend(&out, " | ::_fl::kSplitTrue");
+  }
+
+#undef PROTOBUF_INTERNAL_TYPE_CARD_CASE
+
+  return out;
 }
 
 }  // namespace internal

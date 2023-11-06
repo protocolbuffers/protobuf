@@ -20,6 +20,7 @@ namespace internal {
 
 namespace {
 
+using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::Not;
 using ::testing::Optional;
@@ -898,6 +899,7 @@ TEST(GeneratedMessageTctableLiteTest,
   proto.MergeFromString(serialized);
   EXPECT_LE(proto.vals().Capacity(), 2048);
 }
+
 
 }  // namespace internal
 }  // namespace protobuf
