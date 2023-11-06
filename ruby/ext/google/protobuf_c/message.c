@@ -310,6 +310,9 @@ VALUE Message_getfield(VALUE _self, const upb_FieldDef* f) {
     const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
     return Message_GetRubyWrapper(submsg, m, self->arena);
   } else {
+    if(strcmp(upb_FieldDef_Name(f),"test_option")==0) {
+      fprintf(stderr, "JATL!!! in Message_getfield of %s\n", upb_FieldDef_Name(f));
+    }
     upb_MessageValue msgval = upb_Message_GetFieldByDef(self->msg, f);
     return Convert_UpbToRuby(msgval, TypeInfo_get(f), self->arena);
   }

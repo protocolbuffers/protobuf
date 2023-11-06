@@ -2378,8 +2378,10 @@ UPB_INLINE void _upb_Message_GetExtensionField(
   UPB_ASSUME(upb_MiniTableField_IsExtension(&mt_ext->field));
   const upb_Message_Extension* ext = _upb_Message_Getext(msg, mt_ext);
   if (ext) {
+    fprintf(stderr, "JATL!!! ext is true\n");
     _upb_MiniTable_CopyFieldData(val, &ext->data, &mt_ext->field);
   } else {
+    fprintf(stderr, "JATL!!! ext is false\n");
     _upb_MiniTable_CopyFieldData(val, default_val, &mt_ext->field);
   }
 }
@@ -2388,6 +2390,7 @@ UPB_INLINE void _upb_Message_GetField(const upb_Message* msg,
                                       const upb_MiniTableField* field,
                                       const void* default_val, void* val) {
   if (upb_MiniTableField_IsExtension(field)) {
+fprintf(stderr, "JATL!!! in _upb_Message_GetField on extension code path\n");
     _upb_Message_GetExtensionField(msg, (upb_MiniTableExtension*)field,
                                    default_val, val);
   } else {

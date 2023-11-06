@@ -720,8 +720,12 @@ module BasicTest
     def test_oneof_descriptor_options
       descriptor = TestDeprecatedMessage.descriptor
       oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
-
+      # $stderr.puts "oneofdescripton.serialized_options: #{oneof_descriptor.send :serialized_options}"
+      # $stderr.puts "oneofdescripton.options: #{oneof_descriptor.options}"
       assert_equal oneof_descriptor.options.class, Google::Protobuf::OneofOptions
+      extension = Google::Protobuf::DescriptorPool.generated_pool.lookup("basic_test.test_option")
+      refute_nil extension
+      assert_equal 42, extension.get(oneof_descriptor.options)
     end
 
     def test_options_deep_freeze

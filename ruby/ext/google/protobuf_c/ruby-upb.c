@@ -5865,6 +5865,7 @@ const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
                                                   size_t* count) {
   const upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (in->internal) {
+    fprintf(stderr, "JATL!!! in _upb_Message_Getexts on internal true path; size is %d, begin is %d\n", in->internal->size, in->internal->ext_begin);
     *count = (in->internal->size - in->internal->ext_begin) /
              sizeof(upb_Message_Extension);
     return UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
@@ -5878,7 +5879,7 @@ const upb_Message_Extension* _upb_Message_Getext(
     const upb_Message* msg, const upb_MiniTableExtension* e) {
   size_t n;
   const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &n);
-
+fprintf(stderr, "JATL!!! in _upb_Message_Getext; n = %d\n", n);
   /* For now we use linear search exclusively to find extensions. If this
    * becomes an issue due to messages with lots of extensions, we can introduce
    * a table of some sort. */
@@ -8652,11 +8653,20 @@ const upb_EnumDef* upb_FieldDef_EnumSubDef(const upb_FieldDef* f) {
 }
 
 const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f) {
+  if(strcmp(upb_FieldDef_Name(f),"test_option")==0) {
+    fprintf(stderr, "JATL!!! in upb_FieldDef_MiniTable of %s\n", upb_FieldDef_Name(f));
+  }
   if (upb_FieldDef_IsExtension(f)) {
     const upb_FileDef* file = upb_FieldDef_File(f);
+    if(strcmp(upb_FieldDef_Name(f),"test_option")==0) {
+      fprintf(stderr, "JATL!!! %s isExtension true from file %s\n", upb_FieldDef_Name(f), upb_FileDef_Name(file));
+    }
     return (upb_MiniTableField*)_upb_FileDef_ExtensionMiniTable(
         file, f->layout_index);
   } else {
+    if(strcmp(upb_FieldDef_Name(f),"test_option")==0) {
+      fprintf(stderr, "JATL!!! %s isExtension false\n", upb_FieldDef_Name(f));
+    }
     const upb_MiniTable* layout = upb_MessageDef_MiniTable(f->msgdef);
     return &layout->fields[f->layout_index];
   }
@@ -10083,6 +10093,9 @@ const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
 
 upb_MessageValue upb_Message_GetFieldByDef(const upb_Message* msg,
                                            const upb_FieldDef* f) {
+  if(strcmp(upb_FieldDef_Name(f),"test_option")==0) {
+    fprintf(stderr, "JATL!!! in upb_Message_GetFieldByDef of %s\n", upb_FieldDef_Name(f));
+  }
   upb_MessageValue default_val = upb_FieldDef_Default(f);
   upb_MessageValue ret;
   _upb_Message_GetField(msg, upb_FieldDef_MiniTable(f), &default_val, &ret);

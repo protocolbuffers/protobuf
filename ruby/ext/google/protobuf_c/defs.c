@@ -145,14 +145,20 @@ VALUE DescriptorPool_add_serialized_file(VALUE _self,
  * call-seq:
  *     DescriptorPool.lookup(name) => descriptor
  *
- * Finds a Descriptor or EnumDescriptor by name and returns it, or nil if none
- * exists with the given name.
+ * Finds a Descriptor, EnumDescriptor or FieldDescriptor by name and returns it,
+ * or nil if none exists with the given name.
  */
 static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   DescriptorPool* self = ruby_to_DescriptorPool(_self);
   const char* name_str = get_str(name);
   const upb_MessageDef* msgdef;
   const upb_EnumDef* enumdef;
+  const upb_FieldDef* fielddef;
+
+  fielddef = upb_DefPool_FindExtensionByName(self->symtab, name_str);
+  if (fielddef) {
+    return get_fielddef_obj(_self, fielddef);
+  }
 
   msgdef = upb_DefPool_FindMessageByName(self->symtab, name_str);
   if (msgdef) {
@@ -807,7 +813,9 @@ static VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   if (m != upb_FieldDef_ContainingType(self->fielddef)) {
     rb_raise(cTypeError, "get method called on wrong message type");
   }
-
+  if(strcmp(upb_FieldDef_Name(self->fielddef),"test_option")==0){
+    fprintf(stderr, "JATL!!! - in FieldDescriptor_get of %s\n", upb_FieldDef_Name(self->fielddef));
+  }
   return Message_getfield(msg_rb, self->fielddef);
 }
 

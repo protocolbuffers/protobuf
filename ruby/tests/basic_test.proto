@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package basic_test;
 
+import "google/protobuf/descriptor.proto";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
@@ -70,12 +71,17 @@ message TestMessage2 {
   optional int32 foo = 1;
 }
 
+extend google.protobuf.OneofOptions {
+  optional string test_option = 1000;
+}
+
 message TestDeprecatedMessage {
   option deprecated = true;
 
   optional int32 foo = 1;
 
   oneof test_deprecated_message_oneof {
+    option (test_option) = "37? In a row?";
     string a = 2;
     int32 b = 3;
   }

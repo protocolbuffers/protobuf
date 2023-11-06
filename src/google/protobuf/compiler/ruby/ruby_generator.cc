@@ -309,11 +309,6 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
     printer->Print("\n");
   }
 
-  // TODO: Remove this when ruby supports extensions.
-  if (file->extension_count() > 0) {
-    ABSL_LOG(WARNING) << "Extensions are not yet supported in Ruby.";
-  }
-
   GenerateBinaryDescriptor(file, printer, error);
 
   int levels = GeneratePackageModules(file, printer);
