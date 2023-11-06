@@ -81,7 +81,7 @@ message TestDeprecatedMessage {
   optional int32 foo = 1;
 
   oneof test_deprecated_message_oneof {
-    option (test_option) = "37? In a row?";
+    option (test_option) = "Custom option value";
     string a = 2;
     int32 b = 3;
   }

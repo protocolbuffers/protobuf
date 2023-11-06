@@ -813,9 +813,6 @@ static VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   if (m != upb_FieldDef_ContainingType(self->fielddef)) {
     rb_raise(cTypeError, "get method called on wrong message type");
   }
-  if(strcmp(upb_FieldDef_Name(self->fielddef),"test_option")==0){
-    fprintf(stderr, "JATL!!! - in FieldDescriptor_get of %s\n", upb_FieldDef_Name(self->fielddef));
-  }
   return Message_getfield(msg_rb, self->fielddef);
 }
 

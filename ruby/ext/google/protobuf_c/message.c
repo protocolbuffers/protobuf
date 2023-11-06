@@ -310,9 +310,6 @@ VALUE Message_getfield(VALUE _self, const upb_FieldDef* f) {
     const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
     return Message_GetRubyWrapper(submsg, m, self->arena);
   } else {
-    if(strcmp(upb_FieldDef_Name(f),"test_option")==0) {
-      fprintf(stderr, "JATL!!! in Message_getfield of %s\n", upb_FieldDef_Name(f));
-    }
     upb_MessageValue msgval = upb_Message_GetFieldByDef(self->msg, f);
     return Convert_UpbToRuby(msgval, TypeInfo_get(f), self->arena);
   }
@@ -978,9 +975,12 @@ static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
   VALUE msg_rb = initialize_rb_class_with_no_args(klass);
   Message* msg = ruby_to_Message(msg_rb);
 
+  const upb_FileDef* file = upb_MessageDef_File(msg->msgdef);
+  const upb_ExtensionRegistry* extreg =
+      upb_DefPool_ExtensionRegistry(upb_FileDef_Pool(file));
   upb_DecodeStatus status =
       upb_Decode(RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
-                 upb_MessageDef_MiniTable(msg->msgdef), NULL, options,
+                 upb_MessageDef_MiniTable(msg->msgdef), extreg, options,
                  Arena_get(msg->arena));
 
   if (status != kUpb_DecodeStatus_Ok) {
@@ -1304,9 +1304,12 @@ upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
   upb_Message* new_msg = upb_Message_New(layout, arena);
   char* data;
 
+  const upb_FileDef* file = upb_MessageDef_File(m);
+  const upb_ExtensionRegistry* extreg =
+      upb_DefPool_ExtensionRegistry(upb_FileDef_Pool(file));
   if (upb_Encode(msg, layout, 0, tmp_arena, &data, &size) !=
           kUpb_EncodeStatus_Ok ||
-      upb_Decode(data, size, new_msg, layout, NULL, 0, arena) !=
+      upb_Decode(data, size, new_msg, layout, extreg, 0, arena) !=
           kUpb_DecodeStatus_Ok) {
     upb_Arena_Free(tmp_arena);
     rb_raise(cParseError, "Error occurred copying proto");
