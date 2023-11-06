@@ -456,7 +456,7 @@ def build_targets(name):
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
         ]) + [
-            "BUILD",
+            "BUILD.bazel",
             "MANIFEST.in",
             "README.md",
             "build_targets.bzl",
