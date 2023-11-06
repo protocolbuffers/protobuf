@@ -25,6 +25,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
+#include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
@@ -92,43 +93,8 @@ class PROTOBUF_EXPORT WireFormatLite {
     WIRETYPE_FIXED32 = 5,
   };
 
-  // Lite alternative to FieldDescriptor::Type.  Must be kept in sync.
-  enum FieldType {
-    TYPE_DOUBLE = 1,
-    TYPE_FLOAT = 2,
-    TYPE_INT64 = 3,
-    TYPE_UINT64 = 4,
-    TYPE_INT32 = 5,
-    TYPE_FIXED64 = 6,
-    TYPE_FIXED32 = 7,
-    TYPE_BOOL = 8,
-    TYPE_STRING = 9,
-    TYPE_GROUP = 10,
-    TYPE_MESSAGE = 11,
-    TYPE_BYTES = 12,
-    TYPE_UINT32 = 13,
-    TYPE_ENUM = 14,
-    TYPE_SFIXED32 = 15,
-    TYPE_SFIXED64 = 16,
-    TYPE_SINT32 = 17,
-    TYPE_SINT64 = 18,
-    MAX_FIELD_TYPE = 18,
-  };
-
-  // Lite alternative to FieldDescriptor::CppType.  Must be kept in sync.
-  enum CppType {
-    CPPTYPE_INT32 = 1,
-    CPPTYPE_INT64 = 2,
-    CPPTYPE_UINT32 = 3,
-    CPPTYPE_UINT64 = 4,
-    CPPTYPE_DOUBLE = 5,
-    CPPTYPE_FLOAT = 6,
-    CPPTYPE_BOOL = 7,
-    CPPTYPE_ENUM = 8,
-    CPPTYPE_STRING = 9,
-    CPPTYPE_MESSAGE = 10,
-    MAX_CPPTYPE = 10,
-  };
+  using FieldType = FieldDescriptorLite::Type;
+  using CppType = FieldDescriptorLite::CppType;
 
   // Helper method to get the CppType for a particular Type.
   static CppType FieldTypeToCppType(FieldType type);
@@ -237,21 +203,21 @@ class PROTOBUF_EXPORT WireFormatLite {
   // For primitive fields, we just use a templatized routine parameterized by
   // the represented type and the FieldType. These are specialized with the
   // appropriate definition for each declared type.
-  template <typename CType, enum FieldType DeclaredType>
+  template <typename CType, FieldType DeclaredType>
   PROTOBUF_NDEBUG_INLINE static bool ReadPrimitive(io::CodedInputStream* input,
                                                    CType* value);
 
   // Reads repeated primitive values, with optimizations for repeats.
   // tag_size and tag should both be compile-time constants provided by the
   // protocol compiler.
-  template <typename CType, enum FieldType DeclaredType>
+  template <typename CType, FieldType DeclaredType>
   PROTOBUF_NDEBUG_INLINE static bool ReadRepeatedPrimitive(
       int tag_size, uint32_t tag, io::CodedInputStream* input,
       RepeatedField<CType>* value);
 
   // Identical to ReadRepeatedPrimitive, except will not inline the
   // implementation.
-  template <typename CType, enum FieldType DeclaredType>
+  template <typename CType, FieldType DeclaredType>
   static bool ReadRepeatedPrimitiveNoInline(int tag_size, uint32_t tag,
                                             io::CodedInputStream* input,
                                             RepeatedField<CType>* value);
@@ -261,20 +227,20 @@ class PROTOBUF_EXPORT WireFormatLite {
   //
   // This is only implemented for the types with fixed wire size, e.g.
   // float, double, and the (s)fixed* types.
-  template <typename CType, enum FieldType DeclaredType>
+  template <typename CType, FieldType DeclaredType>
   PROTOBUF_NDEBUG_INLINE static const uint8_t* ReadPrimitiveFromArray(
       const uint8_t* buffer, CType* value);
 
   // Reads a primitive packed field.
   //
   // This is only implemented for packable types.
-  template <typename CType, enum FieldType DeclaredType>
+  template <typename CType, FieldType DeclaredType>
   PROTOBUF_NDEBUG_INLINE static bool ReadPackedPrimitive(
       io::CodedInputStream* input, RepeatedField<CType>* value);
 
   // Identical to ReadPackedPrimitive, except will not inline the
   // implementation.
-  template <typename CType, enum FieldType DeclaredType>
+  template <typename CType, FieldType DeclaredType>
   static bool ReadPackedPrimitiveNoInline(io::CodedInputStream* input,
                                           RepeatedField<CType>* value);
 
@@ -737,13 +703,13 @@ class PROTOBUF_EXPORT WireFormatLite {
   // A helper method for the repeated primitive reader. This method has
   // optimizations for primitive types that have fixed size on the wire, and
   // can be read using potentially faster paths.
-  template <typename CType, enum FieldType DeclaredType>
+  template <typename CType, FieldType DeclaredType>
   PROTOBUF_NDEBUG_INLINE static bool ReadRepeatedFixedSizePrimitive(
       int tag_size, uint32_t tag, io::CodedInputStream* input,
       RepeatedField<CType>* value);
 
   // Like ReadRepeatedFixedSizePrimitive but for packed primitive fields.
-  template <typename CType, enum FieldType DeclaredType>
+  template <typename CType, FieldType DeclaredType>
   PROTOBUF_NDEBUG_INLINE static bool ReadPackedFixedSizePrimitive(
       io::CodedInputStream* input, RepeatedField<CType>* value);
 
