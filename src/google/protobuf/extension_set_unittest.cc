@@ -11,6 +11,7 @@
 
 #include "google/protobuf/extension_set.h"
 
+#include <cstdint>
 #include <string>
 
 #include "google/protobuf/descriptor.pb.h"

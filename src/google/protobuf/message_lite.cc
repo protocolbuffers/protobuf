@@ -251,7 +251,7 @@ bool MessageLite::MergeFromImpl(io::CodedInputStream* input,
   if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
   if (!ctx.EndedAtEndOfStream()) {
-    ABSL_DCHECK_NE(ctx.LastTag(), 1);  // We can't end on a pushed limit.
+    ABSL_DCHECK_NE(ctx.LastTag(), 1u);  // We can't end on a pushed limit.
     if (ctx.IsExceedingLimit(ptr)) return false;
     input->SetLastTag(ctx.LastTag());
   } else {
