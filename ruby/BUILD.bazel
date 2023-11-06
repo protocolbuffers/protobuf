@@ -113,7 +113,7 @@ genrule(
         set -eux
         mkdir tmp
         for src in $(SRCS); do
-            gcp --parents -L "$$src" tmp
+            cp --parents -L "$$src" tmp
         done
         mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
         for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do

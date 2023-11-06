@@ -5878,6 +5878,7 @@ const upb_Message_Extension* _upb_Message_Getext(
     const upb_Message* msg, const upb_MiniTableExtension* e) {
   size_t n;
   const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &n);
+
   /* For now we use linear search exclusively to find extensions. If this
    * becomes an issue due to messages with lots of extensions, we can introduce
    * a table of some sort. */

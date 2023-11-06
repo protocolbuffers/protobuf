@@ -22,8 +22,6 @@ PROTOBUF_C_SOURCES = [
     "shared_message.c",
     "shared_message.h",
     "wrap_memcpy.c",
-    "ruby-upb.c",
-    "ruby-upb.h",
 ]
 
 # We copy everything into a copy/ subdirectory so that we can use the
@@ -33,12 +31,12 @@ genrule(
     name = "copy_sources",
     srcs = PROTOBUF_C_SOURCES + [
         "glue.c",
-        #        "//upb:gen_ruby_amalgamation",
+        "//upb:gen_ruby_amalgamation",
     ],
     outs = ["copy/%s" % src for src in PROTOBUF_C_SOURCES] + [
         "copy/glue.c",
-        #        "copy/ruby-upb.h",
-        #        "copy/ruby-upb.c",
+        "copy/ruby-upb.h",
+        "copy/ruby-upb.c",
     ],
     cmd = "cp $(SRCS) $(RULEDIR)/copy",
 )
@@ -46,8 +44,8 @@ genrule(
 cc_library(
     name = "protobuf_c",
     srcs = ["copy/%s" % src for src in PROTOBUF_C_SOURCES] + [
-        #        "copy/ruby-upb.c",
-        #        "copy/ruby-upb.h",
+        "copy/ruby-upb.c",
+        "copy/ruby-upb.h",
     ],
     linkstatic = True,
     target_compatible_with = select({

@@ -813,6 +813,7 @@ static VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   if (m != upb_FieldDef_ContainingType(self->fielddef)) {
     rb_raise(cTypeError, "get method called on wrong message type");
   }
+
   return Message_getfield(msg_rb, self->fielddef);
 }
 
