@@ -154,6 +154,18 @@ void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
     "full_name", en->full_name());
 }
 
+void GenerateExtensionAssignment(absl::string_view prefix, const FieldDescriptor* f,
+                            io::Printer* printer) {
+  printer->Print(
+    "$prefix$$name$ = ",
+    "prefix", prefix,
+    "name", RubifyConstant(f->name()));
+  printer->Print(
+    "::Google::Protobuf::DescriptorPool.generated_pool."
+    "lookup(\"$full_name$\")\n",
+    "full_name", f->full_name());
+}
+
 int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
   int levels = 0;
   bool need_change_to_module = true;
@@ -317,6 +329,9 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
   }
   for (int i = 0; i < file->enum_type_count(); i++) {
     GenerateEnumAssignment("", file->enum_type(i), printer);
+  }
+  for (int i = 0; i < file->extension_count(); i++) {
+    GenerateExtensionAssignment("", file->extension(i), printer);
   }
   EndPackageModules(levels, printer);
 
