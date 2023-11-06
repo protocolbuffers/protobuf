@@ -546,7 +546,7 @@ typedef struct {
   VALUE descriptor_pool;  // Owns the upb_FieldDef.
 } FieldDescriptor;
 
-static VALUE cFieldDescriptor = Qnil;
+VALUE cFieldDescriptor = Qnil;
 
 static void FieldDescriptor_mark(void* _self) {
   FieldDescriptor* self = _self;
@@ -804,7 +804,7 @@ static VALUE FieldDescriptor_subtype(VALUE _self) {
  * Returns the value set for this field on the given message. Raises an
  * exception if message is of the wrong type.
  */
-static VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
+VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_MessageDef* m;
 
