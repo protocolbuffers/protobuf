@@ -228,7 +228,6 @@ class PROTOC_EXPORT Version final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(Version* other);
@@ -448,7 +447,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(CodeGeneratorResponse_File* other);
@@ -684,7 +682,6 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(CodeGeneratorResponse* other);
@@ -921,7 +918,6 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(CodeGeneratorRequest* other);

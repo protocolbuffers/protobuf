@@ -1554,7 +1554,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           int GetCachedSize() const { return $cached_size$.Get(); }
 
           private:
-          $pbi$::CachedSize* AccessCachedSize() const final;
           void SharedCtor(::$proto_ns$::Arena* arena);
           void SharedDtor();
           void InternalSwap($classname$* other);
@@ -2086,14 +2085,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         "}\n",
         DefaultInstanceName(descriptor_, options_, /*split=*/true),
         DefaultInstanceName(descriptor_, options_, /*split=*/false));
-  }
-
-  if (!HasSimpleBaseClass(descriptor_, options_)) {
-    p->Emit(R"cc(
-      ::_pbi::CachedSize* $classname$::AccessCachedSize() const {
-        return &$cached_size$;
-      }
-    )cc");
   }
 
   GenerateVerify(p);
@@ -3440,6 +3431,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         },
         R"cc(
           $merge_impl$, $on_demand_register_arena_dtor$, $descriptor_methods$,
+              PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
         )cc");
   };
 
@@ -3450,10 +3442,10 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
           const ::$proto_ns$::MessageLite::ClassData*
           $classname$::GetClassData() const {
             PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::ClassData
-                data = {
+                _data_ = {
                     $class_data_members$,
                 };
-            return &data;
+            return &_data_;
           }
         )cc");
   } else {
@@ -3469,14 +3461,14 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               ::$proto_ns$::MessageLite::ClassData header;
               char type_name[$type_size$];
             };
-            PROTOBUF_CONSTINIT static const ClassData_ data = {
+            PROTOBUF_CONSTINIT static const ClassData_ _data_ = {
                 {
                     $class_data_members$,
                 },
                 "$full_name$",
             };
 
-            return &data.header;
+            return &_data_.header;
           }
         )cc");
   }

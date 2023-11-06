@@ -199,12 +199,13 @@ inline void JavaFeatures::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 JavaFeatures::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           JavaFeatures::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 // @@protoc_insertion_point(message_clear_start:pb.JavaFeatures)
@@ -355,9 +356,6 @@ PROTOBUF_NOINLINE bool JavaFeatures::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* JavaFeatures::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
