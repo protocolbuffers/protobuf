@@ -12,6 +12,7 @@ import static com.google.common.truth.Truth.assertThat;
 import protobuf_unittest.UnittestMset.RawMessageSet;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
+import protobuf_unittest.UnittestMset.TestMessageSetExtension3;
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
@@ -25,6 +26,7 @@ import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -38,6 +40,13 @@ public class WireFormatTest {
   private static final int TYPE_ID_2 =
       TestMessageSetExtension2.getDescriptor().getExtensions().get(0).getNumber();
   private static final int UNKNOWN_TYPE_ID = 1550055;
+
+  @After
+  public void tearDown() {
+    // Whether to parse message sets eagerly is stored in a global static. Since some tests modify
+    // the value, make sure to reset it between test runs.
+    ExtensionRegistryLite.setEagerlyParseMessageSets(false);
+  }
 
   @Test
   public void testSerialization() throws Exception {
@@ -495,6 +504,73 @@ public class WireFormatTest {
         TestMessageSet.newBuilder().mergeFrom(data, extensionRegistry).build();
     assertThat(messageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI())
         .isEqualTo(123);
+  }
+
+  @Test
+  public void testParseAndUpdateMessageSetExtensionEagerly() throws Exception {
+    testParseAndUpdateMessageSetExtensionEagerlyWithFlag(true);
+  }
+
+  @Test
+  public void testParseAndUpdateMessageSetExtensionNotEagerly() throws Exception {
+    testParseAndUpdateMessageSetExtensionEagerlyWithFlag(false);
+  }
+
+  private void testParseAndUpdateMessageSetExtensionEagerlyWithFlag(boolean eagerParsing)
+      throws Exception {
+    ExtensionRegistryLite.setEagerlyParseMessageSets(eagerParsing);
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
+    extensionRegistry.add(TestMessageSetExtension1.messageSetExtension);
+    extensionRegistry.add(TestMessageSetExtension2.messageSetExtension);
+    extensionRegistry.add(TestMessageSetExtension3.messageSetExtension);
+
+    // Set up a RawMessageSet with 2 extensions
+    RawMessageSet raw =
+        RawMessageSet.newBuilder()
+            .addItem(
+                RawMessageSet.Item.newBuilder()
+                    .setTypeId(TYPE_ID_1)
+                    .setMessage(
+                        TestMessageSetExtension1.newBuilder().setI(123).build().toByteString())
+                    .build())
+            .addItem(
+                RawMessageSet.Item.newBuilder()
+                    .setTypeId(TYPE_ID_2)
+                    .setMessage(
+                        TestMessageSetExtension2.newBuilder().setStr("foo").build().toByteString())
+                    .build())
+            .build();
+
+    ByteString data = raw.toByteString();
+
+    // Parse as a TestMessageSet.
+    TestMessageSet messageSet = TestMessageSet.parseFrom(data, extensionRegistry);
+
+    // Update one extension and add a new one.
+    TestMessageSet.Builder builder = messageSet.toBuilder();
+    builder.setExtension(
+        TestMessageSetExtension2.messageSetExtension,
+        TestMessageSetExtension2.newBuilder().setStr("bar").build());
+    builder.setExtension(
+        TestMessageSetExtension3.messageSetExtension,
+        TestMessageSetExtension3.newBuilder().setRequiredInt(666).build());
+
+    TestMessageSet updatedMessageSet = builder.build();
+    // Check all 3 extensions
+    assertThat(updatedMessageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI())
+        .isEqualTo(123);
+    assertThat(
+            updatedMessageSet.getExtension(TestMessageSetExtension2.messageSetExtension).getStr())
+        .isEqualTo("bar");
+    assertThat(
+            updatedMessageSet
+                .getExtension(TestMessageSetExtension3.messageSetExtension)
+                .getRequiredInt())
+        .isEqualTo(666);
+
+    // Serialize and re-parse, and make sure we get the same message back
+    assertThat(TestMessageSet.parseFrom(updatedMessageSet.toByteString(), extensionRegistry))
+        .isEqualTo(updatedMessageSet);
   }
 
   // ================================================================
