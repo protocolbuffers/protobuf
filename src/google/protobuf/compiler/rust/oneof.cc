@@ -246,15 +246,26 @@ void GenerateOneofAccessors(Context<OneofDescriptor> oneof) {
             if (rs_type.empty()) {
               continue;
             }
-            // TODO: Allow mut.
-            /*oneof.Emit({
+            oneof.Emit(
+                {
                     {"case", ToCamelCase(field->name())},
-                    {"rs_getter", field->name() + "_mut"},
+                    {"rs_mut_getter", field->name() + "_mut"},
                     {"type", rs_type},
                 },
+
+                // The flow here is:
+                // 1) First find out which oneof field is already set (if any)
+                // 2) If a field is set, call the corresponding field's _mut()
+                // and wrap that Mut<> in the SomeOneofMut eum.
+                // During step 2 this code uses try_into_mut().unwrap() instead
+                // of .or_default() so that it will panic if step 1 says that
+                // the field is set, but then the _mut() accessor for the
+                // corresponding field shows as unset; if that happened it would
+                // imply a severe error in protobuf code; .or_default() would
+                // silently continue and cause the field to become set on the
+                // message, which is not the intended behavior.
                 R"rs($Msg$_::$case_enum_name$::$case$ =>
-               $Msg$_::$mut_enum_name$::$case$(self.$rs_getter$()), )rs");
-            */
+               $Msg$_::$mut_enum_name$::$case$(self.$rs_mut_getter$().try_into_mut().unwrap()), )rs");
           }
         }},
        {"case_thunk", Thunk(oneof, "case")}},
