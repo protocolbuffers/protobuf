@@ -108,24 +108,6 @@ void RepeatedPtrFieldBase::DestroyProtos() {
   tagged_rep_or_elem_ = nullptr;
 }
 
-void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
-  if (tagged_rep_or_elem_ == nullptr) {
-    ABSL_DCHECK_EQ(current_size_, 0);
-    ABSL_DCHECK(using_sso());
-    ABSL_DCHECK_EQ(allocated_size(), 0);
-    ExchangeCurrentSize(1);
-    return tagged_rep_or_elem_ = obj;
-  }
-  // Not using `AllocatedSizeAtCapacity` because it's already known that
-  // `tagged_rep_or_elem_ != nullptr`.
-  if (using_sso() || rep()->allocated_size >= Capacity()) {
-    InternalExtend(1);  // Equivalent to "Reserve(total_size_ + 1)"
-  }
-  Rep* r = rep();
-  ++r->allocated_size;
-  return r->elements[ExchangeCurrentSize(current_size_ + 1)] = obj;
-}
-
 template <typename F>
 auto* RepeatedPtrFieldBase::AddInternal(F factory) {
   using Result = decltype(factory(GetArena()));
@@ -178,17 +160,6 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
 
 MessageLite* RepeatedPtrFieldBase::AddMessage(const MessageLite* prototype) {
   return AddInternal([prototype](Arena* a) { return prototype->New(a); });
-}
-
-MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
-  if (current_size_ < allocated_size()) {
-    return reinterpret_cast<MessageLite*>(
-        element_at(ExchangeCurrentSize(current_size_ + 1)));
-  }
-  MessageLite* result = prototype
-                            ? prototype->New(arena_)
-                            : Arena::CreateMessage<ImplicitWeakMessage>(arena_);
-  return static_cast<MessageLite*>(AddOutOfLineHelper(result));
 }
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
