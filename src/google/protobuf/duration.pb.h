@@ -178,7 +178,6 @@ class PROTOBUF_EXPORT Duration final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(Duration* other);

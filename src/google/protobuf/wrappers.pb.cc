@@ -405,12 +405,13 @@ inline void DoubleValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 DoubleValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           DoubleValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void DoubleValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DoubleValue)
@@ -540,9 +541,6 @@ PROTOBUF_NOINLINE bool DoubleValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* DoubleValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -592,12 +590,13 @@ inline void FloatValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 FloatValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           FloatValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void FloatValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FloatValue)
@@ -727,9 +726,6 @@ PROTOBUF_NOINLINE bool FloatValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* FloatValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -779,12 +775,13 @@ inline void Int64Value::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Int64Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Int64Value::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Int64Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Int64Value)
@@ -900,9 +897,6 @@ PROTOBUF_NOINLINE bool Int64Value::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Int64Value::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -952,12 +946,13 @@ inline void UInt64Value::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 UInt64Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           UInt64Value::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void UInt64Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UInt64Value)
@@ -1073,9 +1068,6 @@ PROTOBUF_NOINLINE bool UInt64Value::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* UInt64Value::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1125,12 +1117,13 @@ inline void Int32Value::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Int32Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Int32Value::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Int32Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Int32Value)
@@ -1246,9 +1239,6 @@ PROTOBUF_NOINLINE bool Int32Value::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Int32Value::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1298,12 +1288,13 @@ inline void UInt32Value::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 UInt32Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           UInt32Value::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void UInt32Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UInt32Value)
@@ -1419,9 +1410,6 @@ PROTOBUF_NOINLINE bool UInt32Value::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* UInt32Value::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1471,12 +1459,13 @@ inline void BoolValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 BoolValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           BoolValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void BoolValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.BoolValue)
@@ -1591,9 +1580,6 @@ PROTOBUF_NOINLINE bool BoolValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* BoolValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1657,12 +1643,13 @@ inline void StringValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 StringValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           StringValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(StringValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void StringValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.StringValue)
@@ -1782,9 +1769,6 @@ PROTOBUF_NOINLINE bool StringValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* StringValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1850,12 +1834,13 @@ inline void BytesValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 BytesValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           BytesValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void BytesValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.BytesValue)
@@ -1970,9 +1955,6 @@ PROTOBUF_NOINLINE bool BytesValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* BytesValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();

@@ -162,12 +162,13 @@ inline void Duration::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Duration::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Duration::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Duration::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Duration)
@@ -307,9 +308,6 @@ PROTOBUF_NOINLINE bool Duration::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Duration::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Duration::InternalSwap(Duration* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

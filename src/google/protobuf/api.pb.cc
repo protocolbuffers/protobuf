@@ -335,12 +335,13 @@ inline void Api::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Api::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Api::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Api::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
@@ -612,9 +613,6 @@ PROTOBUF_NOINLINE bool Api::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Api::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Api::InternalSwap(Api* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -716,12 +714,13 @@ inline void Method::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Method::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Method::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Method::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
@@ -982,9 +981,6 @@ PROTOBUF_NOINLINE bool Method::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Method::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Method::InternalSwap(Method* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1062,12 +1058,13 @@ inline void Mixin::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Mixin::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Mixin::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Mixin::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
@@ -1212,9 +1209,6 @@ PROTOBUF_NOINLINE bool Mixin::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Mixin::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();

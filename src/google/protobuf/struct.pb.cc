@@ -289,12 +289,13 @@ inline void Struct::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Struct::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Struct::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Struct, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Struct::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Struct)
@@ -434,9 +435,6 @@ PROTOBUF_NOINLINE bool Struct::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Struct::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -602,12 +600,13 @@ void Value::clear_kind() {
 const ::google::protobuf::MessageLite::ClassData*
 Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Value::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Value, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Value)
@@ -835,9 +834,6 @@ PROTOBUF_NOINLINE bool Value::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Value::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Value::InternalSwap(Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -901,12 +897,13 @@ inline void ListValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 ListValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           ListValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(ListValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void ListValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ListValue)
@@ -1022,9 +1019,6 @@ PROTOBUF_NOINLINE bool ListValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* ListValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

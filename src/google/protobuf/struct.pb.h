@@ -223,7 +223,6 @@ class PROTOBUF_EXPORT ListValue final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(ListValue* other);
@@ -404,7 +403,6 @@ class PROTOBUF_EXPORT Struct final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(Struct* other);
@@ -624,7 +622,6 @@ class PROTOBUF_EXPORT Value final :
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
-  ::google::protobuf::internal::CachedSize* AccessCachedSize() const final;
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(Value* other);

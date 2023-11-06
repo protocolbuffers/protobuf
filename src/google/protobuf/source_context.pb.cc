@@ -171,12 +171,13 @@ inline void SourceContext::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 SourceContext::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           SourceContext::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void SourceContext::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
@@ -296,9 +297,6 @@ PROTOBUF_NOINLINE bool SourceContext::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* SourceContext::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void SourceContext::InternalSwap(SourceContext* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();

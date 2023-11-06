@@ -162,12 +162,13 @@ inline void Timestamp::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Timestamp::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Timestamp::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Timestamp::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
@@ -307,9 +308,6 @@ PROTOBUF_NOINLINE bool Timestamp::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Timestamp::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Timestamp::InternalSwap(Timestamp* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

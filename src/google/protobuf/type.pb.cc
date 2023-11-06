@@ -515,12 +515,13 @@ inline void Type::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Type::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Type::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Type, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Type::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
@@ -791,9 +792,6 @@ PROTOBUF_NOINLINE bool Type::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Type::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Type::InternalSwap(Type* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -894,12 +892,13 @@ inline void Field::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Field::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Field::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Field, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Field::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
@@ -1235,9 +1234,6 @@ PROTOBUF_NOINLINE bool Field::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Field::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Field::InternalSwap(Field* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1348,12 +1344,13 @@ inline void Enum::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Enum::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Enum::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Enum, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Enum::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
@@ -1602,9 +1599,6 @@ PROTOBUF_NOINLINE bool Enum::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Enum::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1684,12 +1678,13 @@ inline void EnumValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 EnumValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           EnumValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void EnumValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
@@ -1856,9 +1851,6 @@ PROTOBUF_NOINLINE bool EnumValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* EnumValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1948,12 +1940,13 @@ inline void Option::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Option::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Option::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Option, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Option::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
@@ -2104,9 +2097,6 @@ PROTOBUF_NOINLINE bool Option::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Option::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Option::InternalSwap(Option* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
