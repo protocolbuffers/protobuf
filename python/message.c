@@ -1850,7 +1850,15 @@ static PyObject* PyUpb_MessageMeta_New(PyTypeObject* type, PyObject* args,
 static void PyUpb_MessageMeta_Dealloc(PyObject* self) {
   PyUpb_MessageMeta* meta = PyUpb_GetMessageMeta(self);
   PyUpb_ObjCache_Delete(meta->layout);
-  Py_DECREF(meta->py_message_descriptor);
+  // The MessageMeta type is a GC type, which means we should untrack the
+  // object before invalidating internal state (so that code executed by the
+  // GC doesn't see the invalid state). Unfortunately since we're calling
+  // cpython_bits.type_dealloc, which also untracks the object, we can't.
+  // Instead just make sure the internal state remains reasonable by using
+  // Py_CLEAR(), which sets the struct member to NULL. The tp_traverse and
+  // tp_clear methods, which are called by Python's GC, already allow for it
+  // to be NULL.
+  Py_CLEAR(meta->py_message_descriptor);
   PyTypeObject* tp = Py_TYPE(self);
   cpython_bits.type_dealloc(self);
   Py_DECREF(tp);
@@ -1948,6 +1956,8 @@ static int PyUpb_MessageMeta_Traverse(PyObject* self, visitproc visit,
 }
 
 static int PyUpb_MessageMeta_Clear(PyObject* self, visitproc visit, void* arg) {
+  PyUpb_MessageMeta* meta = PyUpb_GetMessageMeta(self);
+  Py_CLEAR(meta->py_message_descriptor);
   return cpython_bits.type_clear(self);
 }
 
