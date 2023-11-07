@@ -372,7 +372,6 @@ public class RubyMap extends RubyObject {
     return RubyHash.newHash(context.runtime, mapForHash, context.nil);
   }
 
-  @JRubyMethod(name = "internal_deep_freeze", visibility = org.jruby.runtime.Visibility.PRIVATE)
   protected IRubyObject deepFreeze(ThreadContext context) {
     if (!isFrozen()) {
       setFrozen(true);

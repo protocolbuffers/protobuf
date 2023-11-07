@@ -32,6 +32,7 @@
 
 package com.google.protobuf.jruby;
 
+import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
@@ -125,11 +126,13 @@ public class RubyEnumDescriptor extends RubyObject {
     return RubyFileDescriptor.getRubyFileDescriptor(context, descriptor);
   }
 
-  @JRubyMethod(name = "serialized_options")
-  public IRubyObject serializedOptions(ThreadContext context) {
-    IRubyObject wrapped = RubyString.newString(context.runtime, descriptor.getOptions().toByteString().toByteArray());
-    wrapped.setFrozen(true);
-    return wrapped;
+  @JRubyMethod
+  public IRubyObject options(ThreadContext context) {
+    RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
+    RubyDescriptor enumOptionsDescriptor = (RubyDescriptor) pool.lookup(context, context.runtime.newString("google.protobuf.EnumOptions"));
+    RubyClass enumOptionsClass = (RubyClass) enumOptionsDescriptor.msgclass(context);
+    RubyMessage msg = (RubyMessage) enumOptionsClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(context, msg, CodedInputStream.newInstance(descriptor.getOptions().toByteString().toByteArray()), /*freeze*/ true);
   }
   public boolean isValidValue(ThreadContext context, IRubyObject value) {
     EnumValueDescriptor enumValue;

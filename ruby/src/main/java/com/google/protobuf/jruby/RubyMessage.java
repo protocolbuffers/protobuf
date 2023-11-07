@@ -628,7 +628,10 @@ public class RubyMessage extends RubyObject {
         input.setRecursionLimit(((RubyNumeric) recursionLimit).getIntValue());
       }
     }
+    return decodeBytes(context, ret, input, /*freeze*/ false);
+  }
 
+  public static IRubyObject decodeBytes(ThreadContext context, RubyMessage ret, CodedInputStream input, boolean freeze) {
     try {
       ret.builder.mergeFrom(input);
     } catch (Exception e) {
@@ -658,7 +661,9 @@ public class RubyMessage extends RubyObject {
                 }
               });
     }
-
+    if (freeze) {
+      ret.deepFreeze(context);
+    }
     return ret;
   }
 
@@ -811,7 +816,6 @@ public class RubyMessage extends RubyObject {
     return ret;
   }
 
-  @JRubyMethod(name = "internal_deep_freeze", visibility = org.jruby.runtime.Visibility.PRIVATE)
   protected IRubyObject deepFreeze(ThreadContext context) {
     if (!isFrozen()) {
       setFrozen(true);
