@@ -573,9 +573,6 @@ static VALUE Map_freeze(VALUE _self) {
 }
 
 /*
- * call-seq:
- *     Map.internal_deep_freeze => self
- *
  * Deep freezes the map and values recursively.
  * Internal use only.
  */
@@ -591,7 +588,7 @@ static VALUE Map_internal_deep_freeze(VALUE _self) {
 
       while (upb_Map_Next(self->map, &key, &val, &iter)) {
         VALUE val_val = Convert_UpbToRuby(val, self->value_type_info, self->arena);
-        rb_funcall(val_val, rb_intern("internal_deep_freeze"), 0);
+        Message_internal_deep_freeze(val_val);
       }
     }
   }
@@ -685,8 +682,6 @@ void Map_register(VALUE module) {
   rb_define_method(klass, "clone", Map_dup, 0);
   rb_define_method(klass, "==", Map_eq, 1);
   rb_define_method(klass, "freeze", Map_freeze, 0);
-  rb_define_private_method(klass, "internal_deep_freeze",
-                          Map_internal_deep_freeze, 0);
   rb_define_method(klass, "hash", Map_hash, 0);
   rb_define_method(klass, "to_h", Map_to_h, 0);
   rb_define_method(klass, "inspect", Map_inspect, 0);

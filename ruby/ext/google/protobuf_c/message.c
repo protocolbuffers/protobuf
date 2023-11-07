@@ -874,8 +874,10 @@ static VALUE Message_internal_deep_freeze(VALUE _self) {
       VALUE field = Message_getfield(_self, f);
 
       if (field != Qnil) {
-        if (upb_FieldDef_IsMap(f) || upb_FieldDef_IsRepeated(f)) {
-          rb_funcall(field, rb_intern("internal_deep_freeze"), 0);
+        if (upb_FieldDef_IsMap(f) {
+          Map_internal_deep_freeze(field);
+        } else if (upb_FieldDef_IsRepeated(f)) {
+          RepeatedField_internal_deep_freeze(field);
         } else if (upb_FieldDef_IsSubMessage(f)) {
           Message_internal_deep_freeze(field);
         }
