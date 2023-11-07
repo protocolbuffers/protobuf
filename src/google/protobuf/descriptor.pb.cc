@@ -3041,6 +3041,7 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
 void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FileDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FileDescriptorProto&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -3069,12 +3070,22 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
       _this->_internal_set_syntax(from._internal_syntax());
     }
     if (cached_has_bits & 0x00000008u) {
-      _this->_internal_mutable_options()->::google::protobuf::FileOptions::MergeFrom(
-          from._internal_options());
+      ABSL_DCHECK(from._impl_.options_ != nullptr);
+      if (_this->_impl_.options_ == nullptr) {
+        _this->_impl_.options_ = CreateMaybeMessage<::google::protobuf::FileOptions>(arena, *from._impl_.options_);
+      } else {
+        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000008u;
     }
     if (cached_has_bits & 0x00000010u) {
-      _this->_internal_mutable_source_code_info()->::google::protobuf::SourceCodeInfo::MergeFrom(
-          from._internal_source_code_info());
+      ABSL_DCHECK(from._impl_.source_code_info_ != nullptr);
+      if (_this->_impl_.source_code_info_ == nullptr) {
+        _this->_impl_.source_code_info_ = CreateMaybeMessage<::google::protobuf::SourceCodeInfo>(arena, *from._impl_.source_code_info_);
+      } else {
+        _this->_impl_.source_code_info_->MergeFrom(*from._impl_.source_code_info_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000010u;
     }
     if (cached_has_bits & 0x00000020u) {
       _this->_impl_.edition_ = from._impl_.edition_;
@@ -3371,6 +3382,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
 void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<DescriptorProto_ExtensionRange*>(&to_msg);
   auto& from = static_cast<const DescriptorProto_ExtensionRange&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ExtensionRange)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -3379,8 +3391,13 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::Message& to_m
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_mutable_options()->::google::protobuf::ExtensionRangeOptions::MergeFrom(
-          from._internal_options());
+      ABSL_DCHECK(from._impl_.options_ != nullptr);
+      if (_this->_impl_.options_ == nullptr) {
+        _this->_impl_.options_ = CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions>(arena, *from._impl_.options_);
+      } else {
+        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.start_ = from._impl_.start_;
@@ -4056,6 +4073,7 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
 void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<DescriptorProto*>(&to_msg);
   auto& from = static_cast<const DescriptorProto&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -4082,8 +4100,13 @@ void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::goo
       _this->_internal_set_name(from._internal_name());
     }
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_options()->::google::protobuf::MessageOptions::MergeFrom(
-          from._internal_options());
+      ABSL_DCHECK(from._impl_.options_ != nullptr);
+      if (_this->_impl_.options_ == nullptr) {
+        _this->_impl_.options_ = CreateMaybeMessage<::google::protobuf::MessageOptions>(arena, *from._impl_.options_);
+      } else {
+        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -4748,6 +4771,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
 void ExtensionRangeOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<ExtensionRangeOptions*>(&to_msg);
   auto& from = static_cast<const ExtensionRangeOptions&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ExtensionRangeOptions)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -4760,8 +4784,13 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::Message& to_msg, const
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
-          from._internal_features());
+      ABSL_DCHECK(from._impl_.features_ != nullptr);
+      if (_this->_impl_.features_ == nullptr) {
+        _this->_impl_.features_ = CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+      } else {
+        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.verification_ = from._impl_.verification_;
@@ -5279,6 +5308,7 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
 void FieldDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FieldDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FieldDescriptorProto&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -5302,8 +5332,13 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
       _this->_internal_set_json_name(from._internal_json_name());
     }
     if (cached_has_bits & 0x00000020u) {
-      _this->_internal_mutable_options()->::google::protobuf::FieldOptions::MergeFrom(
-          from._internal_options());
+      ABSL_DCHECK(from._impl_.options_ != nullptr);
+      if (_this->_impl_.options_ == nullptr) {
+        _this->_impl_.options_ = CreateMaybeMessage<::google::protobuf::FieldOptions>(arena, *from._impl_.options_);
+      } else {
+        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000020u;
     }
     if (cached_has_bits & 0x00000040u) {
       _this->_impl_.number_ = from._impl_.number_;
@@ -5574,6 +5609,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
 void OneofDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<OneofDescriptorProto*>(&to_msg);
   auto& from = static_cast<const OneofDescriptorProto&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -5585,8 +5621,13 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
       _this->_internal_set_name(from._internal_name());
     }
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_options()->::google::protobuf::OneofOptions::MergeFrom(
-          from._internal_options());
+      ABSL_DCHECK(from._impl_.options_ != nullptr);
+      if (_this->_impl_.options_ == nullptr) {
+        _this->_impl_.options_ = CreateMaybeMessage<::google::protobuf::OneofOptions>(arena, *from._impl_.options_);
+      } else {
+        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -6130,6 +6171,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
 void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<EnumDescriptorProto*>(&to_msg);
   auto& from = static_cast<const EnumDescriptorProto&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -6146,8 +6188,13 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
       _this->_internal_set_name(from._internal_name());
     }
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_options()->::google::protobuf::EnumOptions::MergeFrom(
-          from._internal_options());
+      ABSL_DCHECK(from._impl_.options_ != nullptr);
+      if (_this->_impl_.options_ == nullptr) {
+        _this->_impl_.options_ = CreateMaybeMessage<::google::protobuf::EnumOptions>(arena, *from._impl_.options_);
+      } else {
+        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -6425,6 +6472,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
 void EnumValueDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<EnumValueDescriptorProto*>(&to_msg);
   auto& from = static_cast<const EnumValueDescriptorProto&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -6436,8 +6484,13 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, co
       _this->_internal_set_name(from._internal_name());
     }
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_options()->::google::protobuf::EnumValueOptions::MergeFrom(
-          from._internal_options());
+      ABSL_DCHECK(from._impl_.options_ != nullptr);
+      if (_this->_impl_.options_ == nullptr) {
+        _this->_impl_.options_ = CreateMaybeMessage<::google::protobuf::EnumValueOptions>(arena, *from._impl_.options_);
+      } else {
+        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
     if (cached_has_bits & 0x00000004u) {
       _this->_impl_.number_ = from._impl_.number_;
@@ -6714,6 +6767,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
 void ServiceDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<ServiceDescriptorProto*>(&to_msg);
   auto& from = static_cast<const ServiceDescriptorProto&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -6727,8 +6781,13 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, cons
       _this->_internal_set_name(from._internal_name());
     }
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_options()->::google::protobuf::ServiceOptions::MergeFrom(
-          from._internal_options());
+      ABSL_DCHECK(from._impl_.options_ != nullptr);
+      if (_this->_impl_.options_ == nullptr) {
+        _this->_impl_.options_ = CreateMaybeMessage<::google::protobuf::ServiceOptions>(arena, *from._impl_.options_);
+      } else {
+        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -7093,6 +7152,7 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
 void MethodDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<MethodDescriptorProto*>(&to_msg);
   auto& from = static_cast<const MethodDescriptorProto&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -7110,8 +7170,13 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const
       _this->_internal_set_output_type(from._internal_output_type());
     }
     if (cached_has_bits & 0x00000008u) {
-      _this->_internal_mutable_options()->::google::protobuf::MethodOptions::MergeFrom(
-          from._internal_options());
+      ABSL_DCHECK(from._impl_.options_ != nullptr);
+      if (_this->_impl_.options_ == nullptr) {
+        _this->_impl_.options_ = CreateMaybeMessage<::google::protobuf::MethodOptions>(arena, *from._impl_.options_);
+      } else {
+        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000008u;
     }
     if (cached_has_bits & 0x00000010u) {
       _this->_impl_.client_streaming_ = from._impl_.client_streaming_;
@@ -7920,6 +7985,7 @@ constexpr ::_pbi::TcParseTable<5, 22, 3, 202, 12> FileOptions::_table_ = {
 void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FileOptions*>(&to_msg);
   auto& from = static_cast<const FileOptions&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileOptions)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -7962,8 +8028,13 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
       _this->_internal_set_ruby_package(from._internal_ruby_package());
     }
     if (cached_has_bits & 0x00000400u) {
-      _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
-          from._internal_features());
+      ABSL_DCHECK(from._impl_.features_ != nullptr);
+      if (_this->_impl_.features_ == nullptr) {
+        _this->_impl_.features_ = CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+      } else {
+        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000400u;
     }
     if (cached_has_bits & 0x00000800u) {
       _this->_impl_.java_multiple_files_ = from._impl_.java_multiple_files_;
@@ -8382,6 +8453,7 @@ constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
 void MessageOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<MessageOptions*>(&to_msg);
   auto& from = static_cast<const MessageOptions&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MessageOptions)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -8392,8 +8464,13 @@ void MessageOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
-          from._internal_features());
+      ABSL_DCHECK(from._impl_.features_ != nullptr);
+      if (_this->_impl_.features_ == nullptr) {
+        _this->_impl_.features_ = CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+      } else {
+        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.message_set_wire_format_ = from._impl_.message_set_wire_format_;
@@ -9172,6 +9249,7 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
 void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FieldOptions*>(&to_msg);
   auto& from = static_cast<const FieldOptions&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -9185,8 +9263,13 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
-          from._internal_features());
+      ABSL_DCHECK(from._impl_.features_ != nullptr);
+      if (_this->_impl_.features_ == nullptr) {
+        _this->_impl_.features_ = CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+      } else {
+        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.ctype_ = from._impl_.ctype_;
@@ -9473,6 +9556,7 @@ constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
 void OneofOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<OneofOptions*>(&to_msg);
   auto& from = static_cast<const OneofOptions&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofOptions)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -9481,8 +9565,13 @@ void OneofOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(
       from._internal_uninterpreted_option());
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
-        from._internal_features());
+    ABSL_DCHECK(from._impl_.features_ != nullptr);
+    if (_this->_impl_.features_ == nullptr) {
+      _this->_impl_.features_ = CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+    } else {
+      _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+    }
+    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -9809,6 +9898,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
 void EnumOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<EnumOptions*>(&to_msg);
   auto& from = static_cast<const EnumOptions&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumOptions)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -9819,8 +9909,13 @@ void EnumOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
-          from._internal_features());
+      ABSL_DCHECK(from._impl_.features_ != nullptr);
+      if (_this->_impl_.features_ == nullptr) {
+        _this->_impl_.features_ = CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+      } else {
+        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.allow_alias_ = from._impl_.allow_alias_;
@@ -10145,6 +10240,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 2, 0, 7> EnumValueOptions::_table_ = {
 void EnumValueOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<EnumValueOptions*>(&to_msg);
   auto& from = static_cast<const EnumValueOptions&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueOptions)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -10155,8 +10251,13 @@ void EnumValueOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::go
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
-          from._internal_features());
+      ABSL_DCHECK(from._impl_.features_ != nullptr);
+      if (_this->_impl_.features_ == nullptr) {
+        _this->_impl_.features_ = CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+      } else {
+        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.deprecated_ = from._impl_.deprecated_;
@@ -10447,6 +10548,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
 void ServiceOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<ServiceOptions*>(&to_msg);
   auto& from = static_cast<const ServiceOptions&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceOptions)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -10457,8 +10559,13 @@ void ServiceOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
-          from._internal_features());
+      ABSL_DCHECK(from._impl_.features_ != nullptr);
+      if (_this->_impl_.features_ == nullptr) {
+        _this->_impl_.features_ = CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+      } else {
+        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.deprecated_ = from._impl_.deprecated_;
@@ -10782,6 +10889,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
 void MethodOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<MethodOptions*>(&to_msg);
   auto& from = static_cast<const MethodOptions&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodOptions)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -10792,8 +10900,13 @@ void MethodOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::googl
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
-          from._internal_features());
+      ABSL_DCHECK(from._impl_.features_ != nullptr);
+      if (_this->_impl_.features_ == nullptr) {
+        _this->_impl_.features_ = CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+      } else {
+        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.deprecated_ = from._impl_.deprecated_;
@@ -12064,6 +12177,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 2, 0, 2> FeatureSetDefaults_FeatureSetEditi
 void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<FeatureSetDefaults_FeatureSetEditionDefault*>(&to_msg);
   auto& from = static_cast<const FeatureSetDefaults_FeatureSetEditionDefault&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -12072,8 +12186,13 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_mutable_features()->::google::protobuf::FeatureSet::MergeFrom(
-          from._internal_features());
+      ABSL_DCHECK(from._impl_.features_ != nullptr);
+      if (_this->_impl_.features_ == nullptr) {
+        _this->_impl_.features_ = CreateMaybeMessage<::google::protobuf::FeatureSet>(arena, *from._impl_.features_);
+      } else {
+        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.edition_ = from._impl_.edition_;

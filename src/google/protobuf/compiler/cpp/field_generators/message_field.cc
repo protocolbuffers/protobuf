@@ -102,6 +102,8 @@ class SingularMessage : public FieldGeneratorBase {
     )cc");
   }
 
+  bool RequiresArena(GeneratorFunction function) const override;
+
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override {}
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
@@ -415,15 +417,38 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   }
 }
 
+bool SingularMessage::RequiresArena(GeneratorFunction function) const {
+  switch (function) {
+    case GeneratorFunction::kMergeFrom:
+      return !(is_weak() || is_oneof() || should_split());
+  }
+  return false;
+}
+
 void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   if (is_weak()) {
     p->Emit(
         "_Internal::mutable_$name$(_this)->CheckTypeAndMergeFrom(\n"
         "    _Internal::$name$(&from));\n");
-  } else {
+  } else if (is_oneof() || should_split()) {
     p->Emit(
         "_this->_internal_mutable_$name$()->$Submsg$::MergeFrom(\n"
         "    from._internal_$name$());\n");
+  } else {
+    // Important: we set `hasbits` after we copied the field. There are cases
+    // where people assign root values to child values or vice versa which
+    // are not always checked, so we delay this change becoming 'visibile'
+    // until after we copied the message.
+    // TODO enforces this as undefined behavior in debug builds.
+    p->Emit(R"cc(
+      $DCHK$(from.$field_$ != nullptr);
+      if (_this->$field_$ == nullptr) {
+        _this->$field_$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field_$);
+      } else {
+        _this->$field_$->MergeFrom(*from.$field_$);
+      }
+      $this_set_hasbit$;
+    )cc");
   }
 }
 
