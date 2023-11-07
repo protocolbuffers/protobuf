@@ -358,7 +358,6 @@ public class RubyRepeatedField extends RubyObject {
     return storage.inspect();
   }
 
-  @JRubyMethod(name = "internal_deep_freeze", visibility = org.jruby.runtime.Visibility.PRIVATE)
   protected IRubyObject deepFreeze(ThreadContext context) {
     if (!isFrozen()) {
       setFrozen(true);

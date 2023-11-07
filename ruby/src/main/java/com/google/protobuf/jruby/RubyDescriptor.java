@@ -32,6 +32,7 @@
 
 package com.google.protobuf.jruby;
 
+import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
@@ -158,11 +159,13 @@ public class RubyDescriptor extends RubyObject {
     return Helpers.nullToNil(oneofDescriptors.get(Utils.symToString(name)), context.nil);
   }
 
-  @JRubyMethod(name = "serialized_options")
-  public IRubyObject serializedOptions(ThreadContext context) {
-    IRubyObject wrapped = RubyString.newString(context.runtime, descriptor.getOptions().toByteString().toByteArray());
-    wrapped.setFrozen(true);
-    return wrapped;
+  @JRubyMethod
+  public IRubyObject options(ThreadContext context) {
+    RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
+    RubyDescriptor messageOptionsDescriptor = (RubyDescriptor) pool.lookup(context, context.runtime.newString("google.protobuf.MessageOptions"));
+    RubyClass messageOptionsClass = (RubyClass) messageOptionsDescriptor.msgclass(context);
+    RubyMessage msg = (RubyMessage) messageOptionsClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(context, msg, CodedInputStream.newInstance(descriptor.getOptions().toByteString().toByteArray()), /*freeze*/ true);
   }
 
   protected FieldDescriptor getField(String name) {

@@ -53,6 +53,12 @@ module Google
         nil
       end
 
+      def options
+        size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+        buffer = Google::Protobuf::FFI.oneof_options(self, size_ptr)
+        Google::Protobuf::OneofOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze).send(:internal_deep_freeze)
+      end
+
       private
 
       def initialize(oneof_def, descriptor_pool)
@@ -64,14 +70,6 @@ module Google
         instance = allocate
         instance.send(:initialize, oneof_def, descriptor_pool)
         instance
-      end
-
-      def serialized_options
-        size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
-        buffer = Google::Protobuf::FFI.oneof_options(self, size_ptr)
-        return_value = buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze
-        $stderr.puts return_value
-        return_value
       end
     end
 

@@ -46,12 +46,10 @@ module Google
         Google::Protobuf::FFI.file_def_name(@file_def)
       end
 
-      private
-
-      def serialized_options
+      def options
         size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
         buffer = Google::Protobuf::FFI.file_options(@file_def, size_ptr)
-        buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze
+        Google::Protobuf::FileOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze).send(:internal_deep_freeze)
       end
     end
   end

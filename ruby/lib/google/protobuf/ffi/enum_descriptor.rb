@@ -79,6 +79,12 @@ module Google
         @module
       end
 
+      def options
+        size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+        buffer = Google::Protobuf::FFI.enum_options(self, size_ptr)
+        Google::Protobuf::EnumOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze).send(:internal_deep_freeze)
+      end
+
       private
 
       def initialize(enum_def, descriptor_pool)
@@ -109,12 +115,6 @@ module Google
         else
           Google::Protobuf::FFI.enum_number(enum_value)
         end
-      end
-
-      def serialized_options
-        size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
-        buffer = Google::Protobuf::FFI.enum_options(self, size_ptr)
-        buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze
       end
 
       def build_enum_module
