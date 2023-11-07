@@ -1343,6 +1343,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   GPBCodedOutputStream *stream = [[GPBCodedOutputStream alloc] initWithData:data];
   @try {
     [self writeToCodedOutputStream:stream];
+    [stream flush];
   } @catch (NSException *exception) {
     // This really shouldn't happen. Normally, this could mean there was a bug in the library and it
     // failed to match between computing the size and writing out the bytes. However, the more
@@ -1393,6 +1394,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   GPBCodedOutputStream *stream = [[GPBCodedOutputStream alloc] initWithOutputStream:output];
   @try {
     [self writeToCodedOutputStream:stream];
+    [stream flush];
     size_t bytesWritten = [stream bytesWritten];
     if (bytesWritten > kMaximumMessageSize) {
       [NSException raise:GPBMessageExceptionMessageTooLarge
@@ -1436,6 +1438,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   GPBCodedOutputStream *codedOutput = [[GPBCodedOutputStream alloc] initWithOutputStream:output];
   @try {
     [self writeDelimitedToCodedOutputStream:codedOutput];
+    [codedOutput flush];
   } @finally {
     [codedOutput release];
   }
