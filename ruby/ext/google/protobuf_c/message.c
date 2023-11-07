@@ -860,9 +860,6 @@ static VALUE Message_freeze(VALUE _self) {
 }
 
 /*
- * call-seq:
- *     Message.internal_deep_freeze => self
- *
  * Deep freezes the message object recursively.
  * Internal use only.
  */
@@ -941,7 +938,7 @@ static VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
  *     MessageClass.decode(data, options) => message
  *
  * Decodes the given data (as a string containing bytes in protocol buffers wire
- * format) under the interpretration given by this message class's definition
+ * format) under the interpretation given by this message class's definition
  * and returns a message object with the corresponding field values.
  * @param options [Hash] options for the decoder
  *  recursion_limit: set to maximum decoding depth for message (default is 64)
@@ -972,18 +969,23 @@ static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
     rb_raise(rb_eArgError, "Expected string for binary protobuf data.");
   }
 
+  return Message_decode_bytes(RSTRING_LEN(data), RSTRING_PTR(data), options, klass, /*freeze*/ false);
+}
+
+VALUE Message_decode_bytes(int size, const char* bytes, int options, VALUE klass, bool freeze) {
   VALUE msg_rb = initialize_rb_class_with_no_args(klass);
   Message* msg = ruby_to_Message(msg_rb);
 
   upb_DecodeStatus status =
-      upb_Decode(RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
+      upb_Decode(bytes, size, (upb_Message*)msg->msg,
                  upb_MessageDef_MiniTable(msg->msgdef), NULL, options,
                  Arena_get(msg->arena));
-
   if (status != kUpb_DecodeStatus_Ok) {
     rb_raise(cParseError, "Error occurred during parsing");
   }
-
+  if (freeze) {
+    Message_internal_deep_freeze(msg_rb);
+  }
   return msg_rb;
 }
 
@@ -1391,8 +1393,6 @@ static void Message_define_class(VALUE klass) {
   rb_define_method(klass, "==", Message_eq, 1);
   rb_define_method(klass, "eql?", Message_eq, 1);
   rb_define_method(klass, "freeze", Message_freeze, 0);
-  rb_define_private_method(klass, "internal_deep_freeze",
-                           Message_internal_deep_freeze, 0);
   rb_define_method(klass, "hash", Message_hash, 0);
   rb_define_method(klass, "to_h", Message_to_h, 0);
   rb_define_method(klass, "inspect", Message_inspect, 0);
