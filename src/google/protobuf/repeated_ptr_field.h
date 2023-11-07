@@ -256,10 +256,18 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   // Must be called from destructor.
+  //
+  // It's recommended that the caller inlines ("if (NeedsDestroy())") and leaves
+  // call to `Destroy()` defined out-of-line.
+  //
+  // Pre-condition: NeedsDestroy() returns true.
   template <typename TypeHandler>
   void Destroy() {
+    ABSL_DCHECK(NeedsDestroy());
+    // In case of arena, destructor is skipped, and thus we should not be
+    // reaching this function with non-null arena.
+    ABSL_DCHECK(arena_ == nullptr);
     using H = CommonHandler<TypeHandler>;
-    if (arena_ != nullptr) return;
     int n = allocated_size();
     void** elems = elements();
     for (int i = 0; i < n; i++) {
@@ -272,7 +280,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   bool NeedsDestroy() const {
-    return tagged_rep_or_elem_ != nullptr && arena_ == nullptr;
+    // TODO: arena check is redundant once all `RepeatedPtrField`s
+    // with non-null arena are owned by the arena.
+    return tagged_rep_or_elem_ != nullptr &&
+           PROTOBUF_PREDICT_FALSE(arena_ == nullptr);
   }
   void DestroyProtos();  // implemented in the cc file
 
@@ -641,7 +652,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
     this->CopyFrom<TypeHandler>(*other);
     other->InternalSwap(&temp);
-    temp.Destroy<TypeHandler>();  // Frees rep_ if `other` had no arena.
+    if (temp.NeedsDestroy()) {
+      temp.Destroy<TypeHandler>();
+    }
   }
 
   // Gets the Arena on which this RepeatedPtrField stores its elements.
@@ -1394,12 +1407,13 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(Iter begin, Iter end) {
 template <typename Element>
 RepeatedPtrField<Element>::~RepeatedPtrField() {
   StaticValidityCheck();
+  if (!NeedsDestroy()) return;
 #ifdef __cpp_if_constexpr
   if constexpr (std::is_base_of<MessageLite, Element>::value) {
 #else
   if (std::is_base_of<MessageLite, Element>::value) {
 #endif
-    if (NeedsDestroy()) DestroyProtos();
+    DestroyProtos();
   } else {
     Destroy<TypeHandler>();
   }

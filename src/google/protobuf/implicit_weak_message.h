@@ -167,7 +167,11 @@ struct WeakRepeatedPtrField {
   // TODO: make this constructor private
   explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
 
-  ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }
+  ~WeakRepeatedPtrField() {
+    if (weak.NeedsDestroy()) {
+      weak.DestroyProtos();
+    }
+  }
 
   typedef internal::RepeatedPtrIterator<MessageLite> iterator;
   typedef internal::RepeatedPtrIterator<const MessageLite> const_iterator;
