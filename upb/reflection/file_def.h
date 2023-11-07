@@ -19,6 +19,8 @@
 extern "C" {
 #endif
 
+UPB_API const char* upb_FileDef_EditionName(int edition);
+
 const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
 int upb_FileDef_DependencyCount(const upb_FileDef* f);
 bool upb_FileDef_HasOptions(const upb_FileDef* f);

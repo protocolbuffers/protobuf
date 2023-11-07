@@ -304,6 +304,48 @@ static PyObject* PyUpb_DescriptorPool_Add(PyObject* _self,
   return PyUpb_DescriptorPool_DoAdd(_self, file_desc);
 }
 
+static PyObject* PyUpb_DescriptorPool_SetFeatureSetDefaults(
+    PyObject* _self, PyObject* defaults) {
+  if (!PyUpb_Message_Verify(defaults)) {
+    return PyErr_Format(PyExc_TypeError,
+                        "SetFeatureSetDefaults called with invalid type");
+  }
+  const upb_MessageDef* m = PyUpb_Message_GetMsgdef(defaults);
+  const char* file_proto_name =
+      PYUPB_DESCRIPTOR_PROTO_PACKAGE ".FeatureSetDefaults";
+  if (strcmp(upb_MessageDef_FullName(m), file_proto_name) != 0) {
+    return PyErr_Format(
+        PyExc_TypeError,
+        "SetFeatureSetDefaults called with invalid type: got %s, expected %s",
+        upb_MessageDef_FullName(m), file_proto_name);
+  }
+  PyObject* subargs = PyTuple_New(0);
+  if (!subargs) return NULL;
+  PyObject* py_serialized =
+      PyUpb_Message_SerializeToString(defaults, subargs, NULL);
+  Py_DECREF(subargs);
+  if (!py_serialized) return NULL;
+  char* serialized;
+  Py_ssize_t size;
+  if (PyBytes_AsStringAndSize(py_serialized, &serialized, &size) < 0) {
+    goto err;
+  }
+
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+  upb_Status status;
+  if (!upb_DefPool_SetFeatureSetDefaults(self->symtab, serialized, size,
+                                         &status)) {
+    PyErr_SetString(PyExc_ValueError, upb_Status_ErrorMessage(&status));
+    goto err;
+  }
+
+  Py_DECREF(py_serialized);
+  Py_RETURN_NONE;
+err:
+  Py_DECREF(py_serialized);
+  return NULL;
+}
+
 /*
  * PyUpb_DescriptorPool_FindFileByName()
  *
@@ -595,6 +637,8 @@ static PyMethodDef PyUpb_DescriptorPool_Methods[] = {
      "Adds the FileDescriptorProto and its types to this pool."},
     {"AddSerializedFile", PyUpb_DescriptorPool_AddSerializedFile, METH_O,
      "Adds a serialized FileDescriptorProto to this pool."},
+    {"SetFeatureSetDefaults", PyUpb_DescriptorPool_SetFeatureSetDefaults,
+     METH_O, "Sets the default feature mappings used during the build."},
     {"FindFileByName", PyUpb_DescriptorPool_FindFileByName, METH_O,
      "Searches for a file descriptor by its .proto name."},
     {"FindMessageTypeByName", PyUpb_DescriptorPool_FindMessageTypeByName,
