@@ -450,6 +450,7 @@ module Google
           @enum_proto.value << enum_value_proto
         end
       end
+
     end
 
     # Re-open the class (the rest of the class is implemented in C)

@@ -95,6 +95,12 @@ module Google
         @msg_class ||= build_message_class
       end
 
+      def options
+        size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+        buffer = Google::Protobuf::FFI.message_options(self, size_ptr)
+        Google::Protobuf::MessageOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze).send(:internal_deep_freeze)
+      end
+
       private
 
       extend Google::Protobuf::Internal::Convert
@@ -135,12 +141,6 @@ module Google
 
       def pool
         @descriptor_pool
-      end
-
-      def serialized_options
-        size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
-        buffer = Google::Protobuf::FFI.message_options(self, size_ptr)
-        buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze
       end
     end
 
