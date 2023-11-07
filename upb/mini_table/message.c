@@ -55,7 +55,7 @@ const upb_MiniTableField* upb_MiniTable_GetOneof(const upb_MiniTable* m,
   }
   const upb_MiniTableField* ptr = &m->fields[0];
   const upb_MiniTableField* end = &m->fields[m->field_count];
-  while (++ptr < end) {
+  for (; ptr < end; ptr++) {
     if (ptr->presence == (*f).presence) {
       return ptr;
     }
