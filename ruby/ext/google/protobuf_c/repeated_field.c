@@ -491,7 +491,7 @@ static VALUE RepeatedField_freeze(VALUE _self) {
  * Deep freezes the repeated field and values recursively.
  * Internal use only.
  */
-static VALUE RepeatedField_internal_deep_freeze(VALUE _self) {
+VALUE RepeatedField_internal_deep_freeze(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
 
   if (!RB_OBJ_FROZEN(_self)) {

@@ -576,7 +576,7 @@ static VALUE Map_freeze(VALUE _self) {
  * Deep freezes the map and values recursively.
  * Internal use only.
  */
-static VALUE Map_internal_deep_freeze(VALUE _self) {
+VALUE Map_internal_deep_freeze(VALUE _self) {
   Map* self = ruby_to_Map(_self);
 
   if (!RB_OBJ_FROZEN(_self)) {

@@ -863,7 +863,7 @@ static VALUE Message_freeze(VALUE _self) {
  * Deep freezes the message object recursively.
  * Internal use only.
  */
-static VALUE Message_internal_deep_freeze(VALUE _self) {
+VALUE Message_internal_deep_freeze(VALUE _self) {
   Message* self = ruby_to_Message(_self);
   if (!RB_OBJ_FROZEN(_self)) {
     Message_freeze(_self);
@@ -874,7 +874,7 @@ static VALUE Message_internal_deep_freeze(VALUE _self) {
       VALUE field = Message_getfield(_self, f);
 
       if (field != Qnil) {
-        if (upb_FieldDef_IsMap(f) {
+        if (upb_FieldDef_IsMap(f)) {
           Map_internal_deep_freeze(field);
         } else if (upb_FieldDef_IsRepeated(f)) {
           RepeatedField_internal_deep_freeze(field);
