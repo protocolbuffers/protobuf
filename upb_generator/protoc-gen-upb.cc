@@ -868,7 +868,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   const std::vector<upb::MessageDefPtr> this_file_messages =
       SortedMessages(file);
   const std::vector<upb::FieldDefPtr> this_file_exts = SortedExtensions(file);
-  std::vector<upb::EnumDefPtr> this_file_enums = SortedEnums(file);
+  std::vector<upb::EnumDefPtr> this_file_enums = SortedEnums(file, kAllEnums);
   std::vector<upb::MessageDefPtr> forward_messages =
       SortedForwardMessages(this_file_messages, this_file_exts);
 
@@ -1097,7 +1097,7 @@ void WriteMiniDescriptorSource(const DefPoolPair& pools, upb::FileDefPtr file,
     WriteMessageMiniDescriptorInitializer(msg, options, output);
   }
 
-  for (const auto msg : SortedEnums(file)) {
+  for (const auto msg : SortedEnums(file, kClosedEnums)) {
     WriteEnumMiniDescriptorInitializer(msg, options, output);
   }
 }

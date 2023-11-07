@@ -145,12 +145,11 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   output("\n");
 
-  std::vector<upb::EnumDefPtr> this_file_enums = SortedEnums(file);
+  std::vector<upb::EnumDefPtr> this_file_enums =
+      SortedEnums(file, kClosedEnums);
 
-  if (file.syntax() == kUpb_Syntax_Proto2) {
-    for (const auto enumdesc : this_file_enums) {
-      output("extern const upb_MiniTableEnum $0;\n", EnumInit(enumdesc));
-    }
+  for (const auto enumdesc : this_file_enums) {
+    output("extern const upb_MiniTableEnum $0;\n", EnumInit(enumdesc));
   }
 
   output("extern const upb_MiniTableFile $0;\n\n", FileLayoutName(file));
@@ -536,9 +535,8 @@ void WriteEnum(upb::EnumDefPtr e, Output& output) {
 }
 
 int WriteEnums(const DefPoolPair& pools, upb::FileDefPtr file, Output& output) {
-  if (file.syntax() != kUpb_Syntax_Proto2) return 0;
-
-  std::vector<upb::EnumDefPtr> this_file_enums = SortedEnums(file);
+  std::vector<upb::EnumDefPtr> this_file_enums =
+      SortedEnums(file, kClosedEnums);
 
   for (const auto e : this_file_enums) {
     WriteEnum(e, output);

@@ -123,11 +123,26 @@ upb_CType upb_FieldDef_CType(const upb_FieldDef* f) {
   UPB_UNREACHABLE();
 }
 
-upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f) { return f->type_; }
+upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f) {
+  // TODO: remove once we can deprecate kUpb_FieldType_Group.
+  if (f->type_ == kUpb_FieldType_Message &&
+      UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
+          UPB_DESC(FeatureSet_DELIMITED)) {
+    return kUpb_FieldType_Group;
+  }
+  return f->type_;
+}
 
 uint32_t upb_FieldDef_Index(const upb_FieldDef* f) { return f->index_; }
 
-upb_Label upb_FieldDef_Label(const upb_FieldDef* f) { return f->label_; }
+upb_Label upb_FieldDef_Label(const upb_FieldDef* f) {
+  // TODO: remove once we can deprecate kUpb_Label_Required.
+  if (UPB_DESC(FeatureSet_field_presence)(f->resolved_features) ==
+      UPB_DESC(FeatureSet_LEGACY_REQUIRED)) {
+    return kUpb_Label_Required;
+  }
+  return f->label_;
+}
 
 uint32_t upb_FieldDef_Number(const upb_FieldDef* f) { return f->number_; }
 

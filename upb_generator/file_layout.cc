@@ -32,8 +32,10 @@
 
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 #include "upb/mini_table/internal/extension.h"
+#include "upb/reflection/def.hpp"
 #include "upb_generator/common.h"
 
 namespace upb {
@@ -43,24 +45,32 @@ const char* kEnumsInit = "enums_layout";
 const char* kExtensionsInit = "extensions_layout";
 const char* kMessagesInit = "messages_layout";
 
-void AddEnums(upb::MessageDefPtr message, std::vector<upb::EnumDefPtr>* enums) {
+void AddEnums(upb::MessageDefPtr message, std::vector<upb::EnumDefPtr>* enums,
+              WhichEnums which) {
   enums->reserve(enums->size() + message.enum_type_count());
   for (int i = 0; i < message.enum_type_count(); i++) {
-    enums->push_back(message.enum_type(i));
+    upb::EnumDefPtr enum_type = message.enum_type(i);
+    if (which == kAllEnums || enum_type.is_closed()) {
+      enums->push_back(message.enum_type(i));
+    }
   }
   for (int i = 0; i < message.nested_message_count(); i++) {
-    AddEnums(message.nested_message(i), enums);
+    AddEnums(message.nested_message(i), enums, which);
   }
 }
 
-std::vector<upb::EnumDefPtr> SortedEnums(upb::FileDefPtr file) {
+std::vector<upb::EnumDefPtr> SortedEnums(upb::FileDefPtr file,
+                                         WhichEnums which) {
   std::vector<upb::EnumDefPtr> enums;
   enums.reserve(file.toplevel_enum_count());
   for (int i = 0; i < file.toplevel_enum_count(); i++) {
-    enums.push_back(file.toplevel_enum(i));
+    upb::EnumDefPtr top_level_enum = file.toplevel_enum(i);
+    if (which == kAllEnums || top_level_enum.is_closed()) {
+      enums.push_back(file.toplevel_enum(i));
+    }
   }
   for (int i = 0; i < file.toplevel_message_count(); i++) {
-    AddEnums(file.toplevel_message(i), &enums);
+    AddEnums(file.toplevel_message(i), &enums, which);
   }
   std::sort(enums.begin(), enums.end(),
             [](upb::EnumDefPtr a, upb::EnumDefPtr b) {

@@ -511,6 +511,8 @@ static google_protobuf_FileDescriptorProto* filedef_toproto(upb_ToProto_Context*
 
   if (upb_FileDef_Syntax(f) == kUpb_Syntax_Proto3) {
     google_protobuf_FileDescriptorProto_set_syntax(proto, strviewdup(ctx, "proto3"));
+  } else if (upb_FileDef_Syntax(f) == kUpb_Syntax_Editions) {
+    google_protobuf_FileDescriptorProto_set_syntax(proto, strviewdup(ctx, "editions"));
   }
 
   size_t n;

@@ -57,7 +57,13 @@
 namespace upb {
 namespace generator {
 
-std::vector<upb::EnumDefPtr> SortedEnums(upb::FileDefPtr file);
+enum WhichEnums {
+  kAllEnums = 0,
+  kClosedEnums = 1,
+};
+
+std::vector<upb::EnumDefPtr> SortedEnums(upb::FileDefPtr file,
+                                         WhichEnums which);
 
 // Ordering must match upb/def.c!
 //

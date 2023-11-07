@@ -187,9 +187,12 @@ class Plugin {
       ABSL_LOG(FATAL) << "Failed to parse CodeGeneratorRequest";
     }
     response_ = UPB_DESC(compiler_CodeGeneratorResponse_new)(arena_.ptr());
+
+    int features =
+        UPB_DESC(compiler_CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL) |
+        UPB_DESC(compiler_CodeGeneratorResponse_FEATURE_SUPPORTS_EDITIONS);
     UPB_DESC(compiler_CodeGeneratorResponse_set_supported_features)
-    (response_,
-     UPB_DESC(compiler_CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL));
+    (response_, features);
   }
 
   void WriteResponse() {
