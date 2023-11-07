@@ -12,6 +12,8 @@
 // Contains methods defined in extension_set.h which cannot be part of the
 // lite library because they use descriptors or reflection.
 
+#include <cstddef>
+#include <cstdint>
 #include <vector>
 
 #include "absl/log/absl_check.h"
