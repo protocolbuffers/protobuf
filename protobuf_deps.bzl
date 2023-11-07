@@ -72,8 +72,8 @@ def protobuf_deps():
         _github_archive(
             name = "utf8_range",
             repo = "https://github.com/protocolbuffers/utf8_range",
-            commit = "d863bc33e15cba6d873c878dcca9e6fe52b2f8cb",
-            sha256 = "568988b5f7261ca181468dba38849fabf59dd9200fb2ed4b2823da187ef84d8c",
+            commit = "0e378bdb224cc8d4653b0db963b474839c2bb43c",
+            sha256 = "9b8db33325e5b6105c04369cd04dbbd9186e0577141543714243e66b8f045664",
         )
 
     if not native.existing_rule("rules_cc"):
@@ -102,11 +102,11 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_python"):
-        _github_archive(
+        http_archive(
             name = "rules_python",
-            repo = "https://github.com/bazelbuild/rules_python",
-            commit = "02b521fce3c7b36b05813aa986d72777cc3ee328",  # 0.24.0
-            sha256 = "f9e4f6acf82449324d56669bda4bdb28b48688ad2990d8b39fa5b93ed39c9ad1",
+            sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
+            strip_prefix = "rules_python-0.26.0",
+            url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
         )
 
     if not native.existing_rule("rules_ruby"):
