@@ -699,21 +699,21 @@ module BasicTest
     def test_file_descriptor_options
       file_descriptor = TestMessage.descriptor.file_descriptor
 
-      assert_equal file_descriptor.options.class, Google::Protobuf::FileOptions
+      assert_instance_of Google::Protobuf::FileOptions, file_descriptor.options
       assert file_descriptor.options.deprecated
     end
 
     def test_descriptor_options
       descriptor = TestDeprecatedMessage.descriptor
 
-      assert_equal descriptor.options.class, Google::Protobuf::MessageOptions
+      assert_instance_of Google::Protobuf::MessageOptions, descriptor.options
       assert descriptor.options.deprecated
     end
 
     def test_enum_descriptor_options
       enum_descriptor = TestDeprecatedEnum.descriptor
 
-      assert_equal enum_descriptor.options.class, Google::Protobuf::EnumOptions
+      assert_instance_of Google::Protobuf::EnumOptions, enum_descriptor.options
       assert enum_descriptor.options.deprecated
     end
 
@@ -721,7 +721,7 @@ module BasicTest
       descriptor = TestDeprecatedMessage.descriptor
       oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
 
-      assert_equal oneof_descriptor.options.class, Google::Protobuf::OneofOptions
+      assert_instance_of Google::Protobuf::OneofOptions, oneof_descriptor.options
     end
 
     def test_options_deep_freeze
