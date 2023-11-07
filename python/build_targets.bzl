@@ -12,6 +12,7 @@ load("//:protobuf.bzl", "internal_py_proto_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
+load("//src/google/protobuf/editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 load(":internal.bzl", "internal_copy_files", "internal_py_test")
 
 def build_targets(name):
@@ -143,8 +144,23 @@ def build_targets(name):
         ],
     )
 
-    py_library(
-        name = "python_srcs",
+    compile_edition_defaults(
+        name = "python_edition_defaults",
+        srcs = ["//:descriptor_proto"],
+        maximum_edition = "2023",
+        minimum_edition = "PROTO2",
+    )
+
+    embed_edition_defaults(
+        name = "embedded_python_edition_defaults_generate",
+        defaults = "python_edition_defaults",
+        output = "google/protobuf/internal/python_edition_defaults.py",
+        placeholder = "DEFAULTS_VALUE",
+        template = "google/protobuf/internal/python_edition_defaults.py.template",
+    )
+
+    native.filegroup(
+        name = "python_src_files",
         srcs = native.glob(
             [
                 "google/protobuf/**/*.py",
@@ -154,7 +170,12 @@ def build_targets(name):
                 "google/protobuf/internal/test_util.py",
                 "google/protobuf/internal/import_test_package/__init__.py",
             ],
-        ),
+        ) + ["google/protobuf/internal/python_edition_defaults.py"],
+    )
+
+    py_library(
+        name = "python_srcs",
+        srcs = [":python_src_files"],
         imports = ["python"],
         srcs_version = "PY2AND3",
         visibility = [
@@ -196,19 +217,13 @@ def build_targets(name):
     )
 
     internal_copy_files(
-        name = "copied_test_messages_proto2_files",
+        name = "copied_conformance_test_files",
         testonly = 1,
         srcs = [
             "//src/google/protobuf:test_messages_proto2.proto",
-        ],
-        strip_prefix = "src",
-    )
-
-    internal_copy_files(
-        name = "copied_test_messages_proto3_files",
-        testonly = 1,
-        srcs = [
             "//src/google/protobuf:test_messages_proto3.proto",
+            "//src/google/protobuf/editions:golden/test_messages_proto2_editions.proto",
+            "//src/google/protobuf/editions:golden/test_messages_proto3_editions.proto",
         ],
         strip_prefix = "src",
     )
@@ -241,22 +256,9 @@ def build_targets(name):
     )
 
     internal_py_proto_library(
-        name = "test_messages_proto2_py_proto",
+        name = "conformance_test_py_proto",
         testonly = 1,
-        srcs = [":copied_test_messages_proto2_files"],
-        include = ".",
-        default_runtime = "//:protobuf_python",
-        protoc = "//:protoc",
-        visibility = [
-            "//conformance:__pkg__",
-            "//python:__subpackages__",
-        ],
-    )
-
-    internal_py_proto_library(
-        name = "test_messages_proto3_py_proto",
-        testonly = 1,
-        srcs = [":copied_test_messages_proto3_files"],
+        srcs = [":copied_conformance_test_files"],
         include = ".",
         default_runtime = "//:protobuf_python",
         protoc = "//:protoc",
@@ -404,6 +406,7 @@ def build_targets(name):
             ":use_fast_cpp_protos": ["@platforms//:incompatible"],
             "//conditions:default": [],
         }),
+        maximum_edition = "2023",
         testee = "//conformance:conformance_python",
         text_format_failure_list = "//conformance:text_format_failure_list_python.txt",
     )
@@ -418,6 +421,7 @@ def build_targets(name):
             ":use_fast_cpp_protos": [],
             "//conditions:default": ["@platforms//:incompatible"],
         }),
+        maximum_edition = "2023",
         testee = "//conformance:conformance_python",
         text_format_failure_list = "//conformance:text_format_failure_list_python_cpp.txt",
     )
@@ -428,16 +432,8 @@ def build_targets(name):
 
     pkg_files(
         name = "python_source_files",
-        srcs = native.glob(
-            [
-                "google/protobuf/**/*.py",
-            ],
-            exclude = [
-                "google/protobuf/internal/*_test.py",
-                "google/protobuf/internal/test_util.py",
-                "google/protobuf/internal/import_test_package/__init__.py",
-            ],
-        ) + [
+        srcs = [
+            ":python_src_files",
             "README.md",
             "google/__init__.py",
             "setup.cfg",

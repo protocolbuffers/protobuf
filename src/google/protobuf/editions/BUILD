@@ -1,3 +1,4 @@
+load("@rules_python//python:proto.bzl", "py_proto_library")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
@@ -98,6 +99,13 @@ cc_proto_library(
     deps = [":test_messages_proto2_editions_proto"],
 )
 
+py_proto_library(
+    name = "test_messages_proto2_editions_py_pb2",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_proto"],
+)
+
 proto_library(
     name = "test_messages_proto3_editions_proto",
     testonly = True,
@@ -118,6 +126,24 @@ cc_proto_library(
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto3_editions_proto"],
+)
+
+py_proto_library(
+    name = "test_messages_proto3_editions_py_pb2",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3_editions_proto"],
+)
+
+# Export these for conformance tests until we support py_proto_library.
+exports_files(
+    [
+        "golden/test_messages_proto2_editions.proto",
+        "golden/test_messages_proto3_editions.proto",
+    ],
+    visibility = [
+        "//python:__pkg__",
+    ],
 )
 
 proto_library(
