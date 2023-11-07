@@ -755,6 +755,7 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
 void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Type*>(&to_msg);
   auto& from = static_cast<const Type&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Type)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -772,8 +773,13 @@ void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
     _this->_internal_set_edition(from._internal_edition());
   }
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_internal_mutable_source_context()->::google::protobuf::SourceContext::MergeFrom(
-        from._internal_source_context());
+    ABSL_DCHECK(from._impl_.source_context_ != nullptr);
+    if (_this->_impl_.source_context_ == nullptr) {
+      _this->_impl_.source_context_ = CreateMaybeMessage<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
+    } else {
+      _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
+    }
+    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   if (from._internal_syntax() != 0) {
     _this->_internal_set_syntax(from._internal_syntax());
@@ -1563,6 +1569,7 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
 void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Enum*>(&to_msg);
   auto& from = static_cast<const Enum&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Enum)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1579,8 +1586,13 @@ void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
     _this->_internal_set_edition(from._internal_edition());
   }
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_internal_mutable_source_context()->::google::protobuf::SourceContext::MergeFrom(
-        from._internal_source_context());
+    ABSL_DCHECK(from._impl_.source_context_ != nullptr);
+    if (_this->_impl_.source_context_ == nullptr) {
+      _this->_impl_.source_context_ = CreateMaybeMessage<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
+    } else {
+      _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
+    }
+    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   if (from._internal_syntax() != 0) {
     _this->_internal_set_syntax(from._internal_syntax());
@@ -2071,6 +2083,7 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
 void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Option*>(&to_msg);
   auto& from = static_cast<const Option&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Option)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -2080,8 +2093,13 @@ void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::prot
     _this->_internal_set_name(from._internal_name());
   }
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_internal_mutable_value()->::google::protobuf::Any::MergeFrom(
-        from._internal_value());
+    ABSL_DCHECK(from._impl_.value_ != nullptr);
+    if (_this->_impl_.value_ == nullptr) {
+      _this->_impl_.value_ = CreateMaybeMessage<::google::protobuf::Any>(arena, *from._impl_.value_);
+    } else {
+      _this->_impl_.value_->MergeFrom(*from._impl_.value_);
+    }
+    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
