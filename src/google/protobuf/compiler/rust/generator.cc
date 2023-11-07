@@ -7,16 +7,22 @@
 
 #include "google/protobuf/compiler/rust/generator.h"
 
-#include <iterator>
+#include <fcntl.h>
+
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "absl/algorithm/container.h"
 #include "absl/container/btree_map.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
@@ -28,8 +34,10 @@
 #include "google/protobuf/compiler/rust/relative_path.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 
 namespace google {
 namespace protobuf {
@@ -101,8 +109,8 @@ void EmitPubUseOfOwnMessages(Context& ctx, const FileDescriptor& primary_file,
 }
 
 // Emits `pub use <crate_name>::<public package>::Msg` for all messages of a
-// `dep` into the `primary_file`. This should only be called for 'import public'
-// deps.
+// `dep` into the `primary_file`. This should only be called for 'import
+// public' deps.
 //
 // `dep` is a primary src of a dependency of the current `proto_library`.
 // TODO: Add support for public import of non-primary srcs of deps.
@@ -139,8 +147,8 @@ void EmitPublicImports(Context& ctx, const FileDescriptor& primary_file) {
   }
 }
 
-// Emits submodule declarations so `rustc` can find non primary sources from the
-// primary file.
+// Emits submodule declarations so `rustc` can find non primary sources from
+// the primary file.
 void DeclareSubmodulesForNonPrimarySrcs(
     Context& ctx, const FileDescriptor& primary_file,
     absl::Span<const FileDescriptor* const> non_primary_srcs) {
@@ -161,8 +169,9 @@ void DeclareSubmodulesForNonPrimarySrcs(
   }
 }
 
-// Emits `pub use <...>::Msg` for all messages in non primary sources into their
-// corresponding packages (each source file can declare a different package).
+// Emits `pub use <...>::Msg` for all messages in non primary sources into
+// their corresponding packages (each source file can declare a different
+// package).
 //
 // Returns the non-primary sources that should be reexported from the package of
 // the primary file.
@@ -191,6 +200,51 @@ std::vector<const FileDescriptor*> ReexportMessagesFromSubmodules(
 }
 }  // namespace
 
+namespace {
+#if defined(_WIN32)
+// DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
+// them like we do below.
+using google::protobuf::io::win32::close;
+using google::protobuf::io::win32::open;
+#endif
+
+absl::StatusOr<absl::flat_hash_map<std::string, std::string>>
+GetImportPathToCrateNameMap(const Options* opts) {
+  int mapping_file = open(opts->mapping_file_path.c_str(), O_RDONLY);
+  if (mapping_file < 0) {
+    return absl::InvalidArgumentError(
+        absl::StrCat("Couldn't open mapping file ", opts->mapping_file_path));
+  }
+
+  io::FileInputStream mapping_file_input(mapping_file);
+  std::string mapping_contents;
+  const void* data;
+  int size;
+  while (mapping_file_input.Next(&data, &size)) {
+    mapping_contents.append(reinterpret_cast<const char*>(data), size);
+  }
+  close(mapping_file);
+
+  absl::flat_hash_map<std::string, std::string> mapping;
+  std::vector<absl::string_view> lines =
+      absl::StrSplit(mapping_contents, '\n', absl::SkipEmpty());
+  size_t len = lines.size();
+  size_t idx = 0;
+  while (idx < len) {
+    absl::string_view crate_name = lines[idx++];
+    size_t files_cnt;
+    if (!absl::SimpleAtoi(lines[idx++], &files_cnt)) {
+      return absl::InvalidArgumentError(
+          "Couldn't parse number of import paths in mapping file");
+    }
+    for (size_t i = 0; i < files_cnt; ++i) {
+      mapping.insert({std::string(lines[idx++]), std::string(crate_name)});
+    }
+  }
+  return mapping;
+}
+}  // namespace
+
 bool RustGenerator::Generate(const FileDescriptor* file,
                              const std::string& parameter,
                              GeneratorContext* generator_context,
@@ -204,7 +258,15 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   std::vector<const FileDescriptor*> files_in_current_crate;
   generator_context->ListParsedFiles(&files_in_current_crate);
 
-  RustGeneratorContext rust_generator_context(&files_in_current_crate);
+  absl::StatusOr<absl::flat_hash_map<std::string, std::string>>
+      import_path_to_crate_name = GetImportPathToCrateNameMap(&*opts);
+  if (!import_path_to_crate_name.ok()) {
+    *error = std::string(import_path_to_crate_name.status().message());
+    return false;
+  }
+
+  RustGeneratorContext rust_generator_context(&files_in_current_crate,
+                                              &*import_path_to_crate_name);
 
   Context ctx_without_printer(&*opts, &rust_generator_context, nullptr);
 
