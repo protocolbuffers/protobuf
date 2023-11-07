@@ -14,7 +14,10 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
+exports_files([
+    "LICENSE",
+    "rules_fuzzing.patch",
+])
 
 # TODO(b/252876197) Remove this once callers have been Bazelified.
 filegroup(

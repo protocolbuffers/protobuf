@@ -32,7 +32,7 @@ jobs:
       - name: Setup Bazel
         run: |
           echo "BAZEL=bazel" >> $GITHUB_ENV
-          echo "USE_BAZEL_VERSION=5.1.1" >> $GITHUB_ENV
+          echo "USE_BAZEL_VERSION=6.4.0" >> $GITHUB_ENV
       - name: Setup Bazel (macOS)
         if: runner.os == 'macOS'
         run: echo "BAZEL=bazelisk" >> $GITHUB_ENV
