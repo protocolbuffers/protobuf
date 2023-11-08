@@ -672,37 +672,37 @@ mod tests {
                 len,
             )
         };
-        assert_eq!(&*serialized_data, b"Hello world");
+        assert_that!(&*serialized_data, eq(b"Hello world"));
     }
 
     #[test]
     fn i32_array() {
         let arena = Arena::new();
         let mut arr = RepeatedField::<i32>::new(&arena);
-        assert_eq!(arr.len(), 0);
+        assert_that!(arr.len(), eq(0));
         arr.push(1);
-        assert_eq!(arr.get(0), Some(1));
-        assert_eq!(arr.len(), 1);
+        assert_that!(arr.get(0), eq(Some(1)));
+        assert_that!(arr.len(), eq(1));
         arr.set(0, 3);
-        assert_eq!(arr.get(0), Some(3));
+        assert_that!(arr.get(0), eq(Some(3)));
         for i in 0..2048 {
             arr.push(i);
-            assert_eq!(arr.get(arr.len() - 1), Some(i));
+            assert_that!(arr.get(arr.len() - 1), eq(Some(i)));
         }
     }
     #[test]
     fn u32_array() {
         let mut arena = Arena::new();
         let mut arr = RepeatedField::<u32>::new(&mut arena);
-        assert_eq!(arr.len(), 0);
+        assert_that!(arr.len(), eq(0));
         arr.push(1);
-        assert_eq!(arr.get(0), Some(1));
-        assert_eq!(arr.len(), 1);
+        assert_that!(arr.get(0), eq(Some(1)));
+        assert_that!(arr.len(), eq(1));
         arr.set(0, 3);
-        assert_eq!(arr.get(0), Some(3));
+        assert_that!(arr.get(0), eq(Some(3)));
         for i in 0..2048 {
             arr.push(i);
-            assert_eq!(arr.get(arr.len() - 1), Some(i));
+            assert_that!(arr.get(arr.len() - 1), eq(Some(i)));
         }
     }
 
