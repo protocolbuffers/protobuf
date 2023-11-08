@@ -137,6 +137,8 @@ bool GenerateCode(const CodeGeneratorRequest& request,
                                          &context, &error);
 
   response->set_supported_features(generator.GetSupportedFeatures());
+  response->set_minimum_edition(generator.GetMinimumEdition());
+  response->set_maximum_edition(generator.GetMaximumEdition());
 
   if (!succeeded && error.empty()) {
     error =

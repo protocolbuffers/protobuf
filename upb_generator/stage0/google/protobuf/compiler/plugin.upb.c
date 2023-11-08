@@ -34,11 +34,13 @@ const upb_MiniTable* google__protobuf__compiler__CodeGeneratorRequest_msg_init()
 
 const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$1,lG";
+  static const char* mini_descriptor = "$1,44jG";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
                           upb_BootstrapArena(), NULL);
+  upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 3), google_protobuf_Edition_enum_init());
+  upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 4), google_protobuf_Edition_enum_init());
   upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 15), google__protobuf__compiler__CodeGeneratorResponse__File_msg_init());
   return mini_table;
 }

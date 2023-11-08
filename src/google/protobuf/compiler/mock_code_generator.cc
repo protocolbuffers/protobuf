@@ -203,6 +203,15 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
                                  const std::string& parameter,
                                  GeneratorContext* context,
                                  std::string* error) const {
+  // Override minimum/maximum after generating the pool to simulate a plugin
+  // that "works" but doesn't advertise support of the current edition.
+  absl::string_view test_case = getenv("TEST_CASE");
+  if (test_case == "high_minimum") {
+    minimum_edition_ = Edition::EDITION_99997_TEST_ONLY;
+  } else if (test_case == "low_maximum") {
+    maximum_edition_ = Edition::EDITION_PROTO2;
+  }
+
   if (FileDescriptorLegacy(file).syntax() ==
           FileDescriptorLegacy::SYNTAX_EDITIONS &&
       (suppressed_features_ & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {

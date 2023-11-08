@@ -102,6 +102,14 @@ message CodeGeneratorResponse {
     FEATURE_SUPPORTS_EDITIONS = 2;
   }
 
+  // The minimum edition this plugin supports.  Only takes effect for plugins
+  // that have FEATURE_SUPPORTS_EDITIONS set.
+  optional Edition minimum_edition = 3;
+
+  // The maximum edition this plugin supports.  Only takes effect for plugins
+  // that have FEATURE_SUPPORTS_EDITIONS set.
+  optional Edition maximum_edition = 4;
+
   // Represents a single generated file.
   message File {
     // The file name, relative to the output directory.  The name must not

@@ -1530,6 +1530,40 @@ TEST_F(CommandLineInterfaceTest, Plugin_InvalidFeatureExtensionError) {
       "google.protobuf.FeatureSet");
 }
 
+TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedEdition) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("high_minimum");
+  Run("protocol_compiler "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "foo.proto: This file uses editions, but --experimental_editions has not "
+      "been enabled. This syntax is experimental and should be avoided.");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_FutureEdition) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("low_maximum");
+  Run("protocol_compiler "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "foo.proto: This file uses editions, but --experimental_editions has not "
+      "been enabled. This syntax is experimental and should be avoided.");
+}
+
 TEST_F(CommandLineInterfaceTest, Plugin_MissingFeatureExtensionError) {
   CreateTempFile("foo.proto", R"schema(
     edition = "2023";
