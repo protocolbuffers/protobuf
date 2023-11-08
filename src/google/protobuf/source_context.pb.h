@@ -157,7 +157,7 @@ class PROTOBUF_EXPORT SourceContext final :
   // implements Message ----------------------------------------------
 
   SourceContext* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<SourceContext>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<SourceContext>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceContext& from);

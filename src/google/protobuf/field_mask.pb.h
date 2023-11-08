@@ -157,7 +157,7 @@ class PROTOBUF_EXPORT FieldMask final :
   // implements Message ----------------------------------------------
 
   FieldMask* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<FieldMask>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<FieldMask>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldMask& from);

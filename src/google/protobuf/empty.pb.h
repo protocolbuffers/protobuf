@@ -157,7 +157,7 @@ class PROTOBUF_EXPORT Empty final :
   // implements Message ----------------------------------------------
 
   Empty* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Empty>(arena);
+    return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<Empty>(arena);
   }
   using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
   inline void CopyFrom(const Empty& from) {

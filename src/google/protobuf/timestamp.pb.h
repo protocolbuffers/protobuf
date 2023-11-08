@@ -157,7 +157,7 @@ class PROTOBUF_EXPORT Timestamp final :
   // implements Message ----------------------------------------------
 
   Timestamp* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Timestamp>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Timestamp>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Timestamp& from);

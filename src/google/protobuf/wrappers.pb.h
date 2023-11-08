@@ -181,7 +181,7 @@ class PROTOBUF_EXPORT UInt64Value final :
   // implements Message ----------------------------------------------
 
   UInt64Value* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<UInt64Value>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<UInt64Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UInt64Value& from);
@@ -353,7 +353,7 @@ class PROTOBUF_EXPORT UInt32Value final :
   // implements Message ----------------------------------------------
 
   UInt32Value* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<UInt32Value>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<UInt32Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UInt32Value& from);
@@ -525,7 +525,7 @@ class PROTOBUF_EXPORT StringValue final :
   // implements Message ----------------------------------------------
 
   StringValue* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<StringValue>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<StringValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const StringValue& from);
@@ -703,7 +703,7 @@ class PROTOBUF_EXPORT Int64Value final :
   // implements Message ----------------------------------------------
 
   Int64Value* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Int64Value>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Int64Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Int64Value& from);
@@ -875,7 +875,7 @@ class PROTOBUF_EXPORT Int32Value final :
   // implements Message ----------------------------------------------
 
   Int32Value* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Int32Value>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Int32Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Int32Value& from);
@@ -1047,7 +1047,7 @@ class PROTOBUF_EXPORT FloatValue final :
   // implements Message ----------------------------------------------
 
   FloatValue* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<FloatValue>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<FloatValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FloatValue& from);
@@ -1219,7 +1219,7 @@ class PROTOBUF_EXPORT DoubleValue final :
   // implements Message ----------------------------------------------
 
   DoubleValue* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<DoubleValue>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<DoubleValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DoubleValue& from);
@@ -1391,7 +1391,7 @@ class PROTOBUF_EXPORT BytesValue final :
   // implements Message ----------------------------------------------
 
   BytesValue* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<BytesValue>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<BytesValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const BytesValue& from);
@@ -1569,7 +1569,7 @@ class PROTOBUF_EXPORT BoolValue final :
   // implements Message ----------------------------------------------
 
   BoolValue* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<BoolValue>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<BoolValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const BoolValue& from);

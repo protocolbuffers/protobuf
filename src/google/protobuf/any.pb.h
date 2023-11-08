@@ -192,7 +192,7 @@ class PROTOBUF_EXPORT Any final :
   // implements Message ----------------------------------------------
 
   Any* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Any>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Any>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Any& from);

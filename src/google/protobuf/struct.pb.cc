@@ -525,10 +525,10 @@ Value::Value(
         _impl_.kind_.bool_value_ = from._impl_.kind_.bool_value_;
         break;
       case kStructValue:
-        _impl_.kind_.struct_value_ = CreateMaybeMessage<::google::protobuf::Struct>(arena, *from._impl_.kind_.struct_value_);
+        _impl_.kind_.struct_value_ = ::google::protobuf::Message::CopyConstruct<::google::protobuf::Struct>(arena, *from._impl_.kind_.struct_value_);
         break;
       case kListValue:
-        _impl_.kind_.list_value_ = CreateMaybeMessage<::google::protobuf::ListValue>(arena, *from._impl_.kind_.list_value_);
+        _impl_.kind_.list_value_ = ::google::protobuf::Message::CopyConstruct<::google::protobuf::ListValue>(arena, *from._impl_.kind_.list_value_);
         break;
   }
 

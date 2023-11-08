@@ -293,9 +293,9 @@ Api::Api(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.source_context_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_)
-                : nullptr;
+  _impl_.source_context_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(
+                              arena, *from._impl_.source_context_)
+                        : nullptr;
   _impl_.syntax_ = from._impl_.syntax_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Api)
@@ -596,7 +596,8 @@ void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobu
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     ABSL_DCHECK(from._impl_.source_context_ != nullptr);
     if (_this->_impl_.source_context_ == nullptr) {
-      _this->_impl_.source_context_ = CreateMaybeMessage<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
+      _this->_impl_.source_context_ =
+          ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
     } else {
       _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
     }

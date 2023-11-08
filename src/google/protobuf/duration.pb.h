@@ -157,7 +157,7 @@ class PROTOBUF_EXPORT Duration final :
   // implements Message ----------------------------------------------
 
   Duration* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Duration>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Duration>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Duration& from);

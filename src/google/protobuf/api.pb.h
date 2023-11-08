@@ -165,7 +165,7 @@ class PROTOBUF_EXPORT Mixin final :
   // implements Message ----------------------------------------------
 
   Mixin* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Mixin>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Mixin>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Mixin& from);
@@ -361,7 +361,7 @@ class PROTOBUF_EXPORT Method final :
   // implements Message ----------------------------------------------
 
   Method* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Method>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Method>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Method& from);
@@ -631,7 +631,7 @@ class PROTOBUF_EXPORT Api final :
   // implements Message ----------------------------------------------
 
   Api* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Api>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Api>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Api& from);
@@ -1107,7 +1107,7 @@ inline ::google::protobuf::SourceContext* Api::_internal_mutable_source_context(
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.source_context_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::SourceContext>(GetArena());
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
     _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(p);
   }
   return _impl_.source_context_;

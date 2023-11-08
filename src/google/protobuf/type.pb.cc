@@ -473,9 +473,9 @@ Type::Type(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.source_context_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_)
-                : nullptr;
+  _impl_.source_context_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(
+                              arena, *from._impl_.source_context_)
+                        : nullptr;
   _impl_.syntax_ = from._impl_.syntax_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Type)
@@ -775,7 +775,8 @@ void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     ABSL_DCHECK(from._impl_.source_context_ != nullptr);
     if (_this->_impl_.source_context_ == nullptr) {
-      _this->_impl_.source_context_ = CreateMaybeMessage<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
+      _this->_impl_.source_context_ =
+          ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
     } else {
       _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
     }
@@ -1309,9 +1310,9 @@ Enum::Enum(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.source_context_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_)
-                : nullptr;
+  _impl_.source_context_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(
+                              arena, *from._impl_.source_context_)
+                        : nullptr;
   _impl_.syntax_ = from._impl_.syntax_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Enum)
@@ -1588,7 +1589,8 @@ void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     ABSL_DCHECK(from._impl_.source_context_ != nullptr);
     if (_this->_impl_.source_context_ == nullptr) {
-      _this->_impl_.source_context_ = CreateMaybeMessage<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
+      _this->_impl_.source_context_ =
+          ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
     } else {
       _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
     }
@@ -1921,9 +1923,9 @@ Option::Option(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.value_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::Any>(arena, *from._impl_.value_)
-                : nullptr;
+  _impl_.value_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::Any>(
+                              arena, *from._impl_.value_)
+                        : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Option)
 }
@@ -2095,7 +2097,8 @@ void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::prot
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
     ABSL_DCHECK(from._impl_.value_ != nullptr);
     if (_this->_impl_.value_ == nullptr) {
-      _this->_impl_.value_ = CreateMaybeMessage<::google::protobuf::Any>(arena, *from._impl_.value_);
+      _this->_impl_.value_ =
+          ::google::protobuf::Message::CopyConstruct<::google::protobuf::Any>(arena, *from._impl_.value_);
     } else {
       _this->_impl_.value_->MergeFrom(*from._impl_.value_);
     }

@@ -291,7 +291,7 @@ class PROTOBUF_EXPORT Option final :
   // implements Message ----------------------------------------------
 
   Option* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Option>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Option>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Option& from);
@@ -487,7 +487,7 @@ class PROTOBUF_EXPORT Field final :
   // implements Message ----------------------------------------------
 
   Field* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Field>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Field>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Field& from);
@@ -858,7 +858,7 @@ class PROTOBUF_EXPORT EnumValue final :
   // implements Message ----------------------------------------------
 
   EnumValue* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<EnumValue>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<EnumValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumValue& from);
@@ -1068,7 +1068,7 @@ class PROTOBUF_EXPORT Type final :
   // implements Message ----------------------------------------------
 
   Type* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Type>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Type>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Type& from);
@@ -1364,7 +1364,7 @@ class PROTOBUF_EXPORT Enum final :
   // implements Message ----------------------------------------------
 
   Enum* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Enum>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Enum>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Enum& from);
@@ -1872,7 +1872,7 @@ inline ::google::protobuf::SourceContext* Type::_internal_mutable_source_context
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.source_context_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::SourceContext>(GetArena());
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
     _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(p);
   }
   return _impl_.source_context_;
@@ -2574,7 +2574,7 @@ inline ::google::protobuf::SourceContext* Enum::_internal_mutable_source_context
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.source_context_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::SourceContext>(GetArena());
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
     _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(p);
   }
   return _impl_.source_context_;
@@ -2927,7 +2927,7 @@ inline ::google::protobuf::Any* Option::_internal_mutable_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.value_ == nullptr) {
-    auto* p = CreateMaybeMessage<::google::protobuf::Any>(GetArena());
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::Any>(GetArena());
     _impl_.value_ = reinterpret_cast<::google::protobuf::Any*>(p);
   }
   return _impl_.value_;

@@ -202,7 +202,7 @@ class PROTOBUF_EXPORT ListValue final :
   // implements Message ----------------------------------------------
 
   ListValue* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<ListValue>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<ListValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ListValue& from);
@@ -382,7 +382,7 @@ class PROTOBUF_EXPORT Struct final :
   // implements Message ----------------------------------------------
 
   Struct* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Struct>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Struct>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Struct& from);
@@ -601,7 +601,7 @@ class PROTOBUF_EXPORT Value final :
   // implements Message ----------------------------------------------
 
   Value* New(::google::protobuf::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<Value>(arena);
+    return ::google::protobuf::Message::DefaultConstruct<Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Value& from);
@@ -1101,7 +1101,8 @@ inline ::google::protobuf::Struct* Value::_internal_mutable_struct_value() {
   if (kind_case() != kStructValue) {
     clear_kind();
     set_has_struct_value();
-    _impl_.kind_.struct_value_ = CreateMaybeMessage<::google::protobuf::Struct>(GetArena());
+    _impl_.kind_.struct_value_ =
+        ::google::protobuf::Message::DefaultConstruct<::google::protobuf::Struct>(GetArena());
   }
   return _impl_.kind_.struct_value_;
 }
@@ -1177,7 +1178,8 @@ inline ::google::protobuf::ListValue* Value::_internal_mutable_list_value() {
   if (kind_case() != kListValue) {
     clear_kind();
     set_has_list_value();
-    _impl_.kind_.list_value_ = CreateMaybeMessage<::google::protobuf::ListValue>(GetArena());
+    _impl_.kind_.list_value_ =
+        ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ListValue>(GetArena());
   }
   return _impl_.kind_.list_value_;
 }
