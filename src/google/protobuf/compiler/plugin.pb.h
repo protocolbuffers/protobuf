@@ -708,6 +708,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
     kFileFieldNumber = 15,
     kErrorFieldNumber = 1,
     kSupportedFeaturesFieldNumber = 2,
+    kMinimumEditionFieldNumber = 3,
+    kMaximumEditionFieldNumber = 4,
   };
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   int file_size() const;
@@ -754,12 +756,34 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   void _internal_set_supported_features(::uint64_t value);
 
   public:
+  // optional int32 minimum_edition = 3;
+  bool has_minimum_edition() const;
+  void clear_minimum_edition() ;
+  ::int32_t minimum_edition() const;
+  void set_minimum_edition(::int32_t value);
+
+  private:
+  ::int32_t _internal_minimum_edition() const;
+  void _internal_set_minimum_edition(::int32_t value);
+
+  public:
+  // optional int32 maximum_edition = 4;
+  bool has_maximum_edition() const;
+  void clear_maximum_edition() ;
+  ::int32_t maximum_edition() const;
+  void set_maximum_edition(::int32_t value);
+
+  private:
+  ::int32_t _internal_maximum_edition() const;
+  void _internal_set_maximum_edition(::int32_t value);
+
+  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 1,
+      3, 5, 1,
       60, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -780,6 +804,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File > file_;
     ::google::protobuf::internal::ArenaStringPtr error_;
     ::uint64_t supported_features_;
+    ::int32_t minimum_edition_;
+    ::int32_t maximum_edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -1988,6 +2014,62 @@ inline ::uint64_t CodeGeneratorResponse::_internal_supported_features() const {
 inline void CodeGeneratorResponse::_internal_set_supported_features(::uint64_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.supported_features_ = value;
+}
+
+// optional int32 minimum_edition = 3;
+inline bool CodeGeneratorResponse::has_minimum_edition() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline void CodeGeneratorResponse::clear_minimum_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.minimum_edition_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000004u;
+}
+inline ::int32_t CodeGeneratorResponse::minimum_edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.minimum_edition)
+  return _internal_minimum_edition();
+}
+inline void CodeGeneratorResponse::set_minimum_edition(::int32_t value) {
+  _internal_set_minimum_edition(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.minimum_edition)
+}
+inline ::int32_t CodeGeneratorResponse::_internal_minimum_edition() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  return _impl_.minimum_edition_;
+}
+inline void CodeGeneratorResponse::_internal_set_minimum_edition(::int32_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.minimum_edition_ = value;
+}
+
+// optional int32 maximum_edition = 4;
+inline bool CodeGeneratorResponse::has_maximum_edition() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline void CodeGeneratorResponse::clear_maximum_edition() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.maximum_edition_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000008u;
+}
+inline ::int32_t CodeGeneratorResponse::maximum_edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.maximum_edition)
+  return _internal_maximum_edition();
+}
+inline void CodeGeneratorResponse::set_maximum_edition(::int32_t value) {
+  _internal_set_maximum_edition(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.maximum_edition)
+}
+inline ::int32_t CodeGeneratorResponse::_internal_maximum_edition() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  return _impl_.maximum_edition_;
+}
+inline void CodeGeneratorResponse::_internal_set_maximum_edition(::int32_t value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.maximum_edition_ = value;
 }
 
 // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;

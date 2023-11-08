@@ -224,6 +224,7 @@ class PROTOC_EXPORT CommandLineInterface {
 
   bool EnforceEditionsSupport(
       const std::string& codegen_name, uint64_t supported_features,
+      Edition minimum_edition, Edition maximum_edition,
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
 

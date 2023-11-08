@@ -2551,29 +2551,43 @@ bool CommandLineInterface::EnforceProto3OptionalSupport(
 
 bool CommandLineInterface::EnforceEditionsSupport(
     const std::string& codegen_name, uint64_t supported_features,
+    Edition minimum_edition, Edition maximum_edition,
     const std::vector<const FileDescriptor*>& parsed_files) const {
-  if (supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) {
-    // This generator explicitly supports editions.
-    return true;
-  }
   if (experimental_editions_) {
     // The user has explicitly specified the experimental flag.
     return true;
   }
   for (const auto* fd : parsed_files) {
+    if (fd->edition() < Edition::EDITION_2023) {
+      // Legacy proto2/proto3 files don't need any checks.
+      continue;
+    }
+
     // Skip enforcement for allowlisted files.
     if (IsEarlyEditionsFile(fd->name())) continue;
 
-    if (FileDescriptorLegacy(fd).syntax() ==
-        FileDescriptorLegacy::SYNTAX_EDITIONS) {
-      std::cerr
-          << fd->name() << ": is an editions file, but code generator "
-          << codegen_name
-          << " hasn't been updated to support editions yet.  Please ask "
-             "the owner of this code generator to add support or "
-             "switch back to proto2/proto3.\n\nSee "
-             "https://protobuf.dev/editions/overview/ for more information."
-          << std::endl;
+    if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
+      std::cerr << absl::Substitute(
+          "$0: is an editions file, but code generator $1 hasn't been "
+          "updated to support editions yet.  Please ask the owner of this code "
+          "generator to add support or switch back to proto2/proto3.\n\nSee "
+          "https://protobuf.dev/editions/overview/ for more information.",
+          fd->name(), codegen_name);
+      return false;
+    }
+    if (fd->edition() < minimum_edition) {
+      std::cerr << absl::Substitute(
+          "$0: is a file using edition $2, which isn't supported by code "
+          "generator $1.  Please upgrade your file to at least edition $3.",
+          fd->name(), codegen_name, fd->edition(), minimum_edition);
+      return false;
+    }
+    if (fd->edition() > maximum_edition) {
+      std::cerr << absl::Substitute(
+          "$0: is a file using edition $2, which isn't supported by code "
+          "generator $1.  Please ask the owner of this code generator to add "
+          "support or switch back to a maximum of edition $3.",
+          fd->name(), codegen_name, fd->edition(), maximum_edition);
       return false;
     }
   }
@@ -2622,7 +2636,9 @@ bool CommandLineInterface::GenerateOutput(
 
     if (!EnforceEditionsSupport(
             output_directive.name,
-            output_directive.generator->GetSupportedFeatures(), parsed_files)) {
+            output_directive.generator->GetSupportedFeatures(),
+            output_directive.generator->GetMinimumEdition(),
+            output_directive.generator->GetMaximumEdition(), parsed_files)) {
       return false;
     }
 
@@ -2826,11 +2842,15 @@ bool CommandLineInterface::GeneratePluginOutput(
     // Generator returned an error.
     *error = response.error();
     return false;
-  } else if (!EnforceProto3OptionalSupport(
-                 plugin_name, response.supported_features(), parsed_files)) {
+  }
+  if (!EnforceProto3OptionalSupport(plugin_name, response.supported_features(),
+                                    parsed_files)) {
     return false;
-  } else if (!EnforceEditionsSupport(plugin_name, response.supported_features(),
-                                     parsed_files)) {
+  }
+  if (!EnforceEditionsSupport(plugin_name, response.supported_features(),
+                              static_cast<Edition>(response.minimum_edition()),
+                              static_cast<Edition>(response.maximum_edition()),
+                              parsed_files)) {
     return false;
   }
 

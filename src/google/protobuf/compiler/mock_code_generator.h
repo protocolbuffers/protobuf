@@ -119,8 +119,8 @@ class MockCodeGenerator : public CodeGenerator {
  private:
   std::string name_;
   uint64_t suppressed_features_ = 0;
-  Edition minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
-  Edition maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
+  mutable Edition minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
+  mutable Edition maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
   std::vector<const FieldDescriptor*> feature_extensions_ = {
       GetExtensionReflection(pb::test)};
 
