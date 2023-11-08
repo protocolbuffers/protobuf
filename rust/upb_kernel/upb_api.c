@@ -8,5 +8,6 @@
 
 #define UPB_BUILD_API
 
+#include "upb/collections/map.h"  // IWYU pragma: keep
 #include "upb/collections/array.h"  // IWYU pragma: keep
 #include "upb/mem/arena.h"          // IWYU pragma: keep

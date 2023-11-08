@@ -65,7 +65,10 @@ PROTOBUF_SHARED = [
 # setting.
 rust_library(
     name = "protobuf_upb",
-    srcs = PROTOBUF_SHARED + ["upb.rs"],
+    srcs = PROTOBUF_SHARED + [
+        "map.rs",
+        "upb.rs",
+    ],
     crate_root = "shared.rs",
     rustc_flags = ["--cfg=upb_kernel"],
     visibility = [
@@ -82,6 +85,9 @@ rust_test(
     name = "protobuf_upb_test",
     crate = ":protobuf_upb",
     rustc_flags = ["--cfg=upb_kernel"],
+    deps = [
+        "@crate_index//:googletest",
+    ],
 )
 
 # The Rust Protobuf runtime using the cpp kernel.

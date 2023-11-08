@@ -1,10 +1,10 @@
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load(
     "//rust:defs.bzl",
     "rust_cc_proto_library",
     "rust_proto_library",
     "rust_upb_proto_library",
 )
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
 UNITTEST_PROTO_TARGET = "//src/google/protobuf:test_protos"
 UNITTEST_CC_PROTO_TARGET = "//src/google/protobuf:cc_test_protos"
@@ -329,4 +329,13 @@ rust_upb_proto_library(
         "//rust/test/upb:__subpackages__",
     ],
     deps = [":nested_proto"],
+)
+
+rust_upb_proto_library(
+    name = "map_unittest_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = ["//src/google/protobuf:map_unittest_proto"],
 )

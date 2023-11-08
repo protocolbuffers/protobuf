@@ -57,6 +57,19 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
       }
       return std::make_unique<SingularString>();
     case FieldDescriptor::TYPE_MESSAGE:
+      if (desc.is_map()) {
+        // This switch statement will be removed as we support all map
+        // value types.
+        switch (desc.message_type()->map_value()->type()) {
+          case FieldDescriptor::TYPE_STRING:
+          case FieldDescriptor::TYPE_ENUM:
+          case FieldDescriptor::TYPE_MESSAGE:
+            return std::make_unique<UnsupportedField>(
+                "message types in maps are not supported");
+          default:
+            return std::make_unique<Map>();
+        }
+      }
       if (desc.is_repeated()) {
         return std::make_unique<UnsupportedField>("repeated msg not supported");
       }
