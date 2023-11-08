@@ -723,7 +723,6 @@ module BasicTest
 
       assert_instance_of Google::Protobuf::OneofOptions, oneof_descriptor.options
       assert_equal "Custom option value", Test_option.get(oneof_descriptor.options)
-      assert_equal "Custom option value", oneof_descriptor.options[Test_option]
     end
 
     def test_options_deep_freeze

@@ -896,11 +896,6 @@ VALUE Message_internal_deep_freeze(VALUE _self) {
  * string.
  */
 static VALUE Message_index(VALUE _self, VALUE field_name) {
-  // Special case - allow a FieldDescriptor in the place of a field name.
-  if (rb_obj_is_kind_of(field_name, cFieldDescriptor)) {
-    return FieldDescriptor_get(field_name, _self);
-  }
-
   Message* self = ruby_to_Message(_self);
   const upb_FieldDef* field;
 
