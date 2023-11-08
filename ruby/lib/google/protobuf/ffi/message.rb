@@ -302,13 +302,11 @@ module Google
           include Google::Protobuf::Internal::Convert
 
           def internal_deep_freeze
-            unless frozen?
-              freeze
-              self.class.descriptor.each do |field_descriptor|
-                next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(@msg, field_descriptor)
-                if field_descriptor.map? or field_descriptor.repeated? or field_descriptor.sub_message?
-                  get_field(field_descriptor).send :internal_deep_freeze
-                end
+            freeze
+            self.class.descriptor.each do |field_descriptor|
+              next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(@msg, field_descriptor)
+              if field_descriptor.map? or field_descriptor.repeated? or field_descriptor.sub_message?
+                get_field(field_descriptor).send :internal_deep_freeze
               end
             end
             self

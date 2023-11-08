@@ -253,12 +253,10 @@ module Google
       attr :name, :arena, :array, :type, :descriptor
 
       def internal_deep_freeze
-        unless frozen?
-          freeze
-          if type == :message
-            each do |element|
-              element.send :internal_deep_freeze
-            end
+        freeze
+        if type == :message
+          each do |element|
+            element.send :internal_deep_freeze
           end
         end
         self

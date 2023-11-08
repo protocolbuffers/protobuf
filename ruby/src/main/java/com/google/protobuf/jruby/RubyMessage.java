@@ -817,17 +817,15 @@ public class RubyMessage extends RubyObject {
   }
 
   protected IRubyObject deepFreeze(ThreadContext context) {
-    if (!isFrozen()) {
-      setFrozen(true);
-      for (FieldDescriptor fdef : descriptor.getFields()) {
-        if (fdef.isMapField()) {
-          ((RubyMap) fields.get(fdef)).deepFreeze(context);
-        } else if (fdef.isRepeated()) {
-          this.getRepeatedField(context, fdef).deepFreeze(context);
-        } else if (fields.containsKey(fdef)) {
-          if (fdef.getType() == FieldDescriptor.Type.MESSAGE) {
-            ((RubyMessage) fields.get(fdef)).deepFreeze(context);
-          }
+    setFrozen(true);
+    for (FieldDescriptor fdef : descriptor.getFields()) {
+      if (fdef.isMapField()) {
+        ((RubyMap) fields.get(fdef)).deepFreeze(context);
+      } else if (fdef.isRepeated()) {
+        this.getRepeatedField(context, fdef).deepFreeze(context);
+      } else if (fields.containsKey(fdef)) {
+        if (fdef.getType() == FieldDescriptor.Type.MESSAGE) {
+          ((RubyMessage) fields.get(fdef)).deepFreeze(context);
         }
       }
     }

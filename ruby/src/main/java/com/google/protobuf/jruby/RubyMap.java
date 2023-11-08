@@ -373,12 +373,10 @@ public class RubyMap extends RubyObject {
   }
 
   protected IRubyObject deepFreeze(ThreadContext context) {
-    if (!isFrozen()) {
-      setFrozen(true);
-      if (valueType == FieldDescriptor.Type.MESSAGE) {
-        for (IRubyObject key : table.keySet()) {
-          ((RubyMessage)table.get(key)).deepFreeze(context);
-        }
+    setFrozen(true);
+    if (valueType == FieldDescriptor.Type.MESSAGE) {
+      for (IRubyObject key : table.keySet()) {
+        ((RubyMessage)table.get(key)).deepFreeze(context);
       }
     }
     return this;
