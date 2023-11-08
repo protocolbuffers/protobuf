@@ -170,7 +170,15 @@ module Google
 
             message = new
             mini_table_ptr = Google::Protobuf::FFI.get_mini_table(message.class.descriptor)
-            status = Google::Protobuf::FFI.decode_message(data, data.bytesize, message.instance_variable_get(:@msg), mini_table_ptr, nil, decoding_options, message.instance_variable_get(:@arena))
+            status = Google::Protobuf::FFI.decode_message(
+              data,
+              data.bytesize,
+              message.instance_variable_get(:@msg),
+              mini_table_ptr,
+              Google::Protobuf::FFI.get_extension_registry(message.class.descriptor.send(:pool).descriptor_pool),
+              decoding_options,
+              message.instance_variable_get(:@arena)
+            )
             raise ParseError.new "Error occurred during parsing" unless status == :Ok
             message
           end
