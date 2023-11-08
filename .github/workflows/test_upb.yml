@@ -100,7 +100,6 @@ jobs:
         with:
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
-          python-version: '3.11' # 3.12 doesn't have setuptools
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
@@ -171,23 +170,24 @@ jobs:
           # coverage.
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: macos-11, python-version: "3.8", architecture: x64, type: 'binary' }
-          - { os: ubuntu-latest, python-version: "3.11", architecture: x64, type: 'binary' }
-          - { os: macos-12, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'binary' }
+          - { os: macos-12, python-version: "3.12", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source' }
           - { os: macos-11, python-version: "3.8", architecture: x64, type: 'source' }
-          - { os: ubuntu-latest, python-version: "3.11", architecture: x64, type: 'source' }
-          - { os: macos-12, python-version: "3.11", architecture: x64, type: 'source' }
+          - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source' }
+          - { os: macos-12, python-version: "3.12", architecture: x64, type: 'source' }
 
-          # Windows uses the full API up until Python 3.10, so each of these
-          # jobs tests a distinct binary wheel.
+          # Windows uses the full API up until Python 3.10.
           - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary' }
           - { os: windows-2019, python-version: "3.9", architecture: x86, type: 'binary' }
           - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary' }
           - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.12", architecture: x86, type: 'binary' }
           - { os: windows-2019, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary' }
           - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary' }
           - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.12", architecture: x64, type: 'binary' }
     runs-on: ${{ matrix.os }}
     if: ${{ github.event_name != 'pull_request_target' }}
     defaults:
@@ -248,7 +248,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        python-version: ["3.8", "3.11"]
+        python-version: ["3.8", "3.12"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:

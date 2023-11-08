@@ -17,7 +17,8 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: ["3.8", "3.9", "3.10", "3.11" ]
+        # TODO: b/309627662 - Add coverage for Python 3.12.
+        version: ["3.8", "3.9", "3.10", "3.11"]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -55,7 +56,7 @@ jobs:
       matrix:
         type: [ Pure, C++]
         # TODO Consider expanding this set of versions.
-        version: [ "3.11" ]
+        version: [ "3.12" ]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
