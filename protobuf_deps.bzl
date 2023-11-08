@@ -92,11 +92,11 @@ def protobuf_deps():
 
         
     if not native.existing_rule("rules_proto"):
-        _github_archive(
+        http_archive(
             name = "rules_proto",
-            repo = "https://github.com/bazelbuild/rules_proto",
-            commit = "367e3b5757b9a6f9ee326a6e55da2013a5c65710",
-            sha256 = "8e17336df2b78e40b9287a19b4a890f84c563f405c7221060975198c8cfa3bdc"
+            sha256 = "903af49528dc37ad2adbb744b317da520f133bc1cbbecbdd2a6c546c9ead080b",
+            strip_prefix = "rules_proto-6.0.0-rc0",
+            url = "https://github.com/bazelbuild/rules_proto/releases/download/6.0.0-rc0/rules_proto-6.0.0-rc0.tar.gz",
         )
 
     if not native.existing_rule("rules_python"):
