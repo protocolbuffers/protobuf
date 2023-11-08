@@ -80,9 +80,12 @@ module Google
       end
 
       def options
-        size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
-        buffer = Google::Protobuf::FFI.enum_options(self, size_ptr)
-        Google::Protobuf::EnumOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze).send(:internal_deep_freeze)
+        @options ||= begin
+          size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+          temporary_arena = Google::Protobuf::FFI.create_arena
+          buffer = Google::Protobuf::FFI.enum_options(self, size_ptr, temporary_arena)
+          Google::Protobuf::EnumOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze).send(:internal_deep_freeze)
+        end
       end
 
       private
@@ -158,7 +161,7 @@ module Google
       attach_function :enum_value_by_name,        :upb_EnumDef_FindValueByNameWithSize,[EnumDescriptor, :string, :size_t], :EnumValueDef
       attach_function :enum_value_by_number,      :upb_EnumDef_FindValueByNumber,      [EnumDescriptor, :int], :EnumValueDef
       attach_function :get_enum_fullname,         :upb_EnumDef_FullName,               [EnumDescriptor], :string
-      attach_function :enum_options,              :EnumDescriptor_serialized_options,  [EnumDescriptor, :pointer], :pointer
+      attach_function :enum_options,              :EnumDescriptor_serialized_options,  [EnumDescriptor, :pointer, Internal::Arena], :pointer
       attach_function :enum_value_by_index,       :upb_EnumDef_Value,                  [EnumDescriptor, :int], :EnumValueDef
       attach_function :enum_value_count,          :upb_EnumDef_ValueCount,             [EnumDescriptor], :int
       attach_function :enum_name,                 :upb_EnumValueDef_Name,              [:EnumValueDef], :string

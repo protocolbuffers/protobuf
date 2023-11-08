@@ -78,7 +78,7 @@ extend google.protobuf.OneofOptions {
 message TestDeprecatedMessage {
   option deprecated = true;
 
-  optional int32 foo = 1;
+  optional int32 foo = 1 [deprecated = true];
 
   oneof test_deprecated_message_oneof {
     option (test_option) = "Custom option value";

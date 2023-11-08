@@ -18,7 +18,7 @@ module Google
       attach_function :lookup_msg,            :upb_DefPool_FindMessageByName,  [:DefPool, :string], Descriptor
 
         # FileDescriptorProto
-      attach_function :parse,                 :FileDescriptorProto_parse, [:binary_string, :size_t], :FileDescriptorProto
+      attach_function :parse,                 :FileDescriptorProto_parse,     [:binary_string, :size_t, Internal::Arena], :FileDescriptorProto
     end
     class DescriptorPool
       attr :descriptor_pool
@@ -38,7 +38,8 @@ module Google
         memBuf = ::FFI::MemoryPointer.new(:char, file_contents.bytesize)
         # Insert the data
         memBuf.put_bytes(0, file_contents)
-        file_descriptor_proto = Google::Protobuf::FFI.parse memBuf, file_contents.bytesize
+        temporary_arena = Google::Protobuf::FFI.create_arena
+        file_descriptor_proto = Google::Protobuf::FFI.parse memBuf, file_contents.bytesize, temporary_arena
         raise ArgumentError.new("Unable to parse FileDescriptorProto") if file_descriptor_proto.null?
 
         status = Google::Protobuf::FFI::Status.new

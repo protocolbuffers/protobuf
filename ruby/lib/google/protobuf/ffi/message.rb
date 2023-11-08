@@ -640,6 +640,7 @@ module Google
             repeated_field = OBJECT_CACHE.get(array.address)
             if repeated_field.nil?
               repeated_field = RepeatedField.send(:construct_for_field, field, @arena, array: array)
+              repeated_field.send :internal_deep_freeze if frozen?
             end
             repeated_field
           end
@@ -652,6 +653,7 @@ module Google
             map_field = OBJECT_CACHE.get(map.address)
             if map_field.nil?
               map_field = Google::Protobuf::Map.send(:construct_for_field, field, @arena, map: map)
+              map_field.send :internal_deep_freeze if frozen?
             end
             map_field
           end
