@@ -72,11 +72,6 @@ class RepeatedPtrOverPtrsIterator;
 
 namespace internal {
 
-template <typename Element>
-inline void* NewT(Arena* a) {
-  return GenericTypeHandler<Element>::New(a);
-}
-
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
 inline void memswap(char* PROTOBUF_RESTRICT a, char* PROTOBUF_RESTRICT b) {
@@ -229,7 +224,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename Handler>
   Value<Handler>* Add() {
-    return cast<Handler>(AddOutOfLineHelper(NewT<Value<Handler>>));
+    return cast<Handler>(AddOutOfLineHelper(Handler::GetNewFunc()));
   }
 
   template <
@@ -304,17 +299,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
   }
 
-  // Message creating functor: used in MergeFrom<T>()
-  template <typename T>
-  static MessageLite* CopyMessage(Arena* arena, const MessageLite& src) {
-    return Arena::CreateMaybeMessage<T>(arena, static_cast<const T&>(src));
-  }
-
   // Appends all message values from `from` to this instance.
   template <typename T>
   void MergeFrom(const RepeatedPtrFieldBase& from) {
     static_assert(std::is_base_of<MessageLite, T>::value, "");
-    MergeFromConcreteMessage(from, CopyMessage<T>);
+    MergeFromConcreteMessage(from, Arena::CopyConstruct<T>);
   }
 
   inline void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
@@ -693,7 +682,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // This follows the `Arena::CreateMaybeMessage` signature so that the compiler
   // can have the inlined call into the out of line copy function(s) simply pass
   // the address of `Arena::CreateMaybeMessage` 'as is'.
-  using CopyFn = MessageLite* (*)(Arena*, const MessageLite&);
+  using CopyFn = void* (*)(Arena*, const void*);
 
   struct Rep {
     int allocated_size;
@@ -891,8 +880,10 @@ class GenericTypeHandler {
   typedef GenericType Type;
   using Movable = IsMovable<GenericType>;
 
+  static constexpr auto GetNewFunc() { return Arena::DefaultConstruct<Type>; }
+
   static inline GenericType* New(Arena* arena) {
-    return Arena::CreateMaybeMessage<Type>(arena);
+    return static_cast<GenericType*>(Arena::DefaultConstruct<Type>(arena));
   }
   static inline GenericType* New(Arena* arena, GenericType&& value) {
     return Arena::Create<GenericType>(arena, std::move(value));
@@ -951,14 +942,6 @@ template <>
 PROTOBUF_EXPORT void GenericTypeHandler<MessageLite>::Merge(
     const MessageLite& from, MessageLite* to);
 
-template <>
-inline void GenericTypeHandler<std::string>::Clear(std::string* value) {
-  value->clear();
-}
-template <>
-void GenericTypeHandler<std::string>::Merge(const std::string& from,
-                                            std::string* to);
-
 // Message specialization bodies defined in message.cc. This split is necessary
 // to allow proto2-lite (which includes this header) to be independent of
 // Message.
@@ -968,10 +951,15 @@ PROTOBUF_EXPORT Message* GenericTypeHandler<Message>::NewFromPrototype(
 template <>
 PROTOBUF_EXPORT Arena* GenericTypeHandler<Message>::GetArena(Message* value);
 
-class StringTypeHandler {
+PROTOBUF_EXPORT void* NewStringElement(Arena* arena);
+
+template <>
+class GenericTypeHandler<std::string> {
  public:
   typedef std::string Type;
   using Movable = IsMovable<Type>;
+
+  static constexpr auto GetNewFunc() { return NewStringElement; }
 
   static PROTOBUF_NOINLINE std::string* New(Arena* arena) {
     return Arena::Create<std::string>(arena);
@@ -1333,7 +1321,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   friend struct WeakRepeatedPtrField;
 
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
-  class TypeHandler;
+  using TypeHandler = internal::GenericTypeHandler<Element>;
 
   RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
 
@@ -1355,14 +1343,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 // -------------------------------------------------------------------
 
 template <typename Element>
-class RepeatedPtrField<Element>::TypeHandler
-    : public internal::GenericTypeHandler<Element> {};
-
-template <>
-class RepeatedPtrField<std::string>::TypeHandler
-    : public internal::StringTypeHandler {};
-
-template <typename Element>
 constexpr RepeatedPtrField<Element>::RepeatedPtrField()
     : RepeatedPtrFieldBase() {
   StaticValidityCheck();
@@ -1373,7 +1353,7 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena)
     : RepeatedPtrFieldBase(arena) {
   // We can't have StaticValidityCheck here because that requires Element to be
   // a complete type, and in split repeated fields cases, we call
-  // CreateMaybeMessage<RepeatedPtrField<T>> for incomplete Ts.
+  // CreateMessage<RepeatedPtrField<T>> for incomplete Ts.
 }
 
 template <typename Element>

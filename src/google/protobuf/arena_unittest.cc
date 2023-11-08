@@ -17,11 +17,13 @@
 #include <thread>
 #include <type_traits>
 #include <typeinfo>
+#include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
 #include "google/protobuf/arena_test_util.h"
@@ -323,6 +325,81 @@ TEST(ArenaTest, ArenaOnlyTypesCanBeConstructed) {
   Arena arena;
   Arena::CreateMessage<OnlyArenaConstructible>(&arena);
 }
+
+TEST(ArenaTest, GetConstructTypeWorks) {
+  using T = TestAllTypes;
+  using Peer = internal::ArenaTestPeer;
+  using CT = typename Peer::ConstructType;
+  EXPECT_EQ(CT::kDefault, (Peer::GetConstructType<T>()));
+  EXPECT_EQ(CT::kCopy, (Peer::GetConstructType<T, const T&>()));
+  EXPECT_EQ(CT::kCopy, (Peer::GetConstructType<T, T&>()));
+  EXPECT_EQ(CT::kCopy, (Peer::GetConstructType<T, const T&&>()));
+  EXPECT_EQ(CT::kMove, (Peer::GetConstructType<T, T&&>()));
+  EXPECT_EQ(CT::kUnknown, (Peer::GetConstructType<T, double&>()));
+  EXPECT_EQ(CT::kUnknown, (Peer::GetConstructType<T, T&, T&>()));
+
+  // For non-protos, it's always unknown
+  EXPECT_EQ(CT::kUnknown, (Peer::GetConstructType<int, const int&>()));
+}
+
+#ifdef __cpp_if_constexpr
+class DispatcherTestProto : public Message {
+ public:
+  using InternalArenaConstructable_ = void;
+  // For the test below to construct.
+  explicit DispatcherTestProto(absl::in_place_t) {}
+  explicit DispatcherTestProto(Arena*) { ABSL_LOG(FATAL); }
+  DispatcherTestProto(Arena*, const DispatcherTestProto&) { ABSL_LOG(FATAL); }
+  DispatcherTestProto* New(Arena*) const final { ABSL_LOG(FATAL); }
+  Metadata GetMetadata() const final { ABSL_LOG(FATAL); }
+  const ClassData* GetClassData() const final { ABSL_LOG(FATAL); }
+};
+// We use a specialization to inject behavior for the test.
+// This test is very intrusive and will have to be fixed if we change the
+// implementation of CreateMessage.
+absl::string_view hook_called;
+template <>
+void* Arena::DefaultConstruct<DispatcherTestProto>(Arena*) {
+  hook_called = "default";
+  return nullptr;
+}
+template <>
+void* Arena::CopyConstruct<DispatcherTestProto>(Arena*, const void*) {
+  hook_called = "copy";
+  return nullptr;
+}
+template <>
+DispatcherTestProto* Arena::CreateMessageInternal<DispatcherTestProto, int>(
+    Arena*, int&&) {
+  hook_called = "fallback";
+  return nullptr;
+}
+
+TEST(ArenaTest, CreateMessageDispatchesToSpecialFunctions) {
+  hook_called = "";
+  Arena::CreateMessage<DispatcherTestProto>(nullptr);
+  EXPECT_EQ(hook_called, "default");
+
+  DispatcherTestProto ref(absl::in_place);
+  const DispatcherTestProto& cref = ref;
+
+  hook_called = "";
+  Arena::CreateMessage<DispatcherTestProto>(nullptr);
+  EXPECT_EQ(hook_called, "default");
+
+  hook_called = "";
+  Arena::CreateMessage<DispatcherTestProto>(nullptr, ref);
+  EXPECT_EQ(hook_called, "copy");
+
+  hook_called = "";
+  Arena::CreateMessage<DispatcherTestProto>(nullptr, cref);
+  EXPECT_EQ(hook_called, "copy");
+
+  hook_called = "";
+  Arena::CreateMessage<DispatcherTestProto>(nullptr, 1);
+  EXPECT_EQ(hook_called, "fallback");
+}
+#endif  // __cpp_if_constexpr
 
 TEST(ArenaTest, Parsing) {
   TestAllTypes original;

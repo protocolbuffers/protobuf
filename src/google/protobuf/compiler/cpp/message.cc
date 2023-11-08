@@ -1477,7 +1477,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "// implements Message ----------------------------------------------\n"
       "\n"
       "$classname$* New(::$proto_ns$::Arena* arena = nullptr) const final {\n"
-      "  return CreateMaybeMessage<$classname$>(arena);\n"
+      "  return $superclass$::DefaultConstruct<$classname$>(arena);\n"
       "}\n");
 
   // For instances that derive from Message (rather than MessageLite), some
@@ -2739,9 +2739,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     p->Emit({{"has_msg", [&] { has_message(field); }},
              {"submsg", FieldMessageTypeName(field, options_)}},
             R"cc(
-              $field$ = ($has_msg$)
-                            ? CreateMaybeMessage<$submsg$>(arena, *from.$field$)
-                            : nullptr;
+              $field$ = ($has_msg$) ? $superclass$::CopyConstruct<$submsg$>(
+                                          arena, *from.$field$)
+                                    : nullptr;
             )cc");
   };
 
@@ -3000,26 +3000,12 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
   Formatter format(p);
   if (ShouldGenerateExternSpecializations(options_) &&
       ShouldGenerateClass(descriptor_, options_)) {
-    format(R"cc(
-      template <>
-      PROTOBUF_NOINLINE $classtype$* Arena::CreateMaybeMessage<$classtype$>(
-          Arena* arena) {
-        using T = $classtype$;
-        void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                                     : ::operator new(sizeof(T));
-        return new (mem) T(arena);
-      }
+    p->Emit(R"cc(
+      template void* Arena::DefaultConstruct<$classtype$>(Arena*);
     )cc");
     if (!IsMapEntryMessage(descriptor_)) {
-      format(R"cc(
-        template <>
-        PROTOBUF_NOINLINE $classtype$* Arena::CreateMaybeMessage<$classtype$>(
-            Arena* arena, const $classtype$& from) {
-          using T = $classtype$;
-          void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                                       : ::operator new(sizeof(T));
-          return new (mem) T(arena, from);
-        }
+      p->Emit(R"cc(
+        template void* Arena::CopyConstruct<$classtype$>(Arena*, const void*);
       )cc");
     }
   }
