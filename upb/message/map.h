@@ -103,7 +103,9 @@ UPB_INLINE bool upb_Map_Delete2(upb_Map* map, upb_MessageValue key,
 //   ...
 // }
 
+// LINT.IfChange(map_begin)
 #define kUpb_Map_Begin ((size_t)-1)
+// LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/accessor.go:map_begin)
 
 // Advances to the next entry. Returns false if no more entries are present.
 // Otherwise returns true and populates both *key and *value.
