@@ -736,7 +736,7 @@ module BasicTest
 
     def test_message_deep_freeze
       message = TestDeprecatedMessage.new
-      omit(":internal_deep_freeze only exists under FFI") unless message.methods(true).include? :internal_deep_freeze
+      omit(":internal_deep_freeze only exists under FFI") unless message.respond_to? :internal_deep_freeze, true
       nested_message_2 = TestMessage2.new
 
       message.map_string_msg["message"] = TestMessage2.new
