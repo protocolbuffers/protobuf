@@ -161,10 +161,6 @@ load("@pip_deps//:requirements.bzl", "install_deps")
 
 install_deps()
 
-load("@utf8_range//:workspace_deps.bzl", "utf8_range_deps")
-
-utf8_range_deps()
-
 http_archive(
     name = "rules_fuzzing",
     sha256 = "ff52ef4845ab00e95d29c02a9e32e9eff4e0a4c9c8a6bcf8407a2f19eb3f9190",

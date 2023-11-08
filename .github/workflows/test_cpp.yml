@@ -27,14 +27,14 @@ jobs:
         include:
           # Set defaults
           - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
-          - targets: //pkg/... //src/... @com_google_protobuf_examples//... @utf8_range//...
+          - targets: //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/...
 
           # Override cases with custom images
           - config: { name: "TCMalloc" }
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:bd39119d74b8a3fad4ae335d4cf5294e70384676331b7e19949459fc7a8d8328"
-            targets: "//src/... @utf8_range//..."
+            targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64" }
-            targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test @utf8_range//..."
+            targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17"
     name: Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
@@ -69,7 +69,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.version }}-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
-          bazel: test //pkg/... //src/... @com_google_protobuf_examples//... @utf8_range//...
+          bazel: test //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/...
 
   linux-release:
     strategy:
@@ -316,13 +316,13 @@ jobs:
           - name: MacOS
             os: macos-12
             cache_key: macos-12
-            bazel: test //src/... @utf8_range//...
+            bazel: test //src/... //third_party/utf8_range/...
           - name: MacOS Apple Silicon (build only)
             os: macos-12
             cache_key: macos-12-arm
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
-            bazel: build --cpu=darwin_arm64 //src/... @utf8_range//...
+            bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/...
           - name: Windows
             os: windows-2022
             cache_key: windows-2022

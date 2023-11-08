@@ -68,14 +68,6 @@ def protobuf_deps():
             build_file = Label("//:third_party/jsoncpp.BUILD"),
         )
 
-    if not native.existing_rule("utf8_range"):
-        _github_archive(
-            name = "utf8_range",
-            repo = "https://github.com/protocolbuffers/utf8_range",
-            commit = "0e378bdb224cc8d4653b0db963b474839c2bb43c",
-            sha256 = "9b8db33325e5b6105c04369cd04dbbd9186e0577141543714243e66b8f045664",
-        )
-
     if not native.existing_rule("rules_cc"):
         _github_archive(
             name = "rules_cc",

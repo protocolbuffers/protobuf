@@ -86,6 +86,7 @@ sh_test(
     data = [
         ":copy_protos",
         ":gen_cmakelists",
+        "//third_party/utf8_range:utf8_range_srcs",
         "//upb:source_files",
         "//upb/base:source_files",
         "//upb/collections:source_files",
@@ -99,7 +100,6 @@ sh_test(
         "//upb/reflection:source_files",
         "//upb/text:source_files",
         "//upb/wire:source_files",
-        "@utf8_range//:utf8_range_srcs",
     ],
     target_compatible_with = select({
         "@platforms//os:windows": ["@platforms//:incompatible"],
