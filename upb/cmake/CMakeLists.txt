@@ -40,11 +40,9 @@ if(UPB_ENABLE_UBSAN)
 endif()
 
 if(NOT TARGET utf8_range)
-  if(EXISTS ../../external/utf8_range)
+  if(EXISTS ../../third_party/utf8_range)
     # utf8_range is already installed
-    include_directories(../external/utf8_range)
-  elseif(EXISTS ../../utf8_range)
-    include_directories(../../utf8_range)
+    include_directories(../../third_party/utf8_range)
   else()
     include(FetchContent)
     FetchContent_Declare(
