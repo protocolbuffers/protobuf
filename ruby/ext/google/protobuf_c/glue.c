@@ -42,3 +42,9 @@ char* OneOfDescriptor_serialized_options(const upb_OneofDef* oneofdef, size_t *s
   char* serialized = google_protobuf_OneofOptions_serialize(opts, arena, size);
   return serialized;
 }
+
+char* FieldDescriptor_serialized_options(const upb_FieldDef* fielddef, size_t *size, upb_Arena *arena) {
+  const google_protobuf_FieldOptions* opts = upb_FieldDef_Options(fielddef);
+  char* serialized = google_protobuf_FieldOptions_serialize(opts, arena, size);
+  return serialized;
+}

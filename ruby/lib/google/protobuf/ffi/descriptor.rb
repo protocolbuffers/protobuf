@@ -138,6 +138,7 @@ module Google
         message = OBJECT_CACHE.get(msg.address)
         if message.nil?
           message = descriptor.msgclass.send(:private_constructor, arena, msg: msg)
+          message.send :internal_deep_freeze if frozen?
         end
         message
       end

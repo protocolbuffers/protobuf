@@ -703,6 +703,13 @@ module BasicTest
       assert file_descriptor.options.deprecated
     end
 
+    def test_field_descriptor_options
+      field_descriptor = TestDeprecatedMessage.descriptor.lookup("foo")
+
+      assert_instance_of Google::Protobuf::FieldOptions, field_descriptor.options
+      assert field_descriptor.options.deprecated
+    end
+
     def test_descriptor_options
       descriptor = TestDeprecatedMessage.descriptor
 
