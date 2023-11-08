@@ -270,13 +270,11 @@ module Google
       include Google::Protobuf::Internal::Convert
 
       def internal_deep_freeze
-        unless frozen?
-          freeze
-          if value_type == :message
-            internal_iterator do |iterator|
-              value_message_value = Google::Protobuf::FFI.map_value(@map_ptr, iterator)
-              convert_upb_to_ruby(value_message_value, value_type, descriptor, arena).send :internal_deep_freeze
-            end
+        freeze
+        if value_type == :message
+          internal_iterator do |iterator|
+            value_message_value = Google::Protobuf::FFI.map_value(@map_ptr, iterator)
+            convert_upb_to_ruby(value_message_value, value_type, descriptor, arena).send :internal_deep_freeze
           end
         end
         self

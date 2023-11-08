@@ -865,26 +865,23 @@ static VALUE Message_freeze(VALUE _self) {
  */
 VALUE Message_internal_deep_freeze(VALUE _self) {
   Message* self = ruby_to_Message(_self);
-  if (!RB_OBJ_FROZEN(_self)) {
-    Message_freeze(_self);
+  Message_freeze(_self);
 
-    int n = upb_MessageDef_FieldCount(self->msgdef);
-    for (int i = 0; i < n; i++) {
-      const upb_FieldDef* f = upb_MessageDef_Field(self->msgdef, i);
-      VALUE field = Message_getfield(_self, f);
+  int n = upb_MessageDef_FieldCount(self->msgdef);
+  for (int i = 0; i < n; i++) {
+    const upb_FieldDef* f = upb_MessageDef_Field(self->msgdef, i);
+    VALUE field = Message_getfield(_self, f);
 
-      if (field != Qnil) {
-        if (upb_FieldDef_IsMap(f)) {
-          Map_internal_deep_freeze(field);
-        } else if (upb_FieldDef_IsRepeated(f)) {
-          RepeatedField_internal_deep_freeze(field);
-        } else if (upb_FieldDef_IsSubMessage(f)) {
-          Message_internal_deep_freeze(field);
-        }
+    if (field != Qnil) {
+      if (upb_FieldDef_IsMap(f)) {
+        Map_internal_deep_freeze(field);
+      } else if (upb_FieldDef_IsRepeated(f)) {
+        RepeatedField_internal_deep_freeze(field);
+      } else if (upb_FieldDef_IsSubMessage(f)) {
+        Message_internal_deep_freeze(field);
       }
     }
   }
-
   return _self;
 }
 

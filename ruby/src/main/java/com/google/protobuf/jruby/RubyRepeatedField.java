@@ -359,12 +359,10 @@ public class RubyRepeatedField extends RubyObject {
   }
 
   protected IRubyObject deepFreeze(ThreadContext context) {
-    if (!isFrozen()) {
-      setFrozen(true);
-      if (fieldType == FieldDescriptor.Type.MESSAGE) {
-        for (int i = 0; i < size(); i++) {
-          ((RubyMessage)storage.eltInternal(i)).deepFreeze(context);
-        }
+    setFrozen(true);
+    if (fieldType == FieldDescriptor.Type.MESSAGE) {
+      for (int i = 0; i < size(); i++) {
+        ((RubyMessage)storage.eltInternal(i)).deepFreeze(context);
       }
     }
     return this;
