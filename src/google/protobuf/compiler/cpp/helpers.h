@@ -629,6 +629,9 @@ inline std::vector<const Descriptor*> FlattenMessagesInFile(
   return result;
 }
 
+std::vector<const Descriptor*> TopologicalSortMessagesInFile(
+    const FileDescriptor* file, MessageSCCAnalyzer& scc_analyzer);
+
 template <typename F>
 void ForEachMessage(const Descriptor* descriptor, F&& func) {
   for (int i = 0; i < descriptor->nested_type_count(); i++)
