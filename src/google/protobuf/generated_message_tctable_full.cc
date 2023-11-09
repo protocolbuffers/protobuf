@@ -91,43 +91,6 @@ const char* TcParser::ReflectionParseLoop(PROTOBUF_TC_PARAM_DECL) {
   return WireFormat::_InternalParse(DownCast<Message*>(msg), ptr, ctx);
 }
 
-const char* TcParser::MessageSetWireFormatParseLoop(
-    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
-  PROTOBUF_MUSTTAIL return MessageSetWireFormatParseLoopImpl<Message>(
-      PROTOBUF_TC_PARAM_NO_DATA_PASS);
-}
-
-template <typename TagType>
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::MessageSetMessage(
-    PROTOBUF_TC_PARAM_DECL) {
-  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
-    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-  }
-  ptr += sizeof(TagType);
-  hasbits |= (uint64_t{1} << data.hasbit_idx());
-  SyncHasbits(msg, hasbits, table);
-  auto& field = RefAt<MessageLite*>(msg, data.offset());
-
-  const auto* inner_table = table->field_aux(data.aux_idx())->table;
-  if (field == nullptr) {
-    field = inner_table->default_instance->New(msg->GetArena());
-  }
-
-  return ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
-    return RefAt<ExtensionSet>(field, inner_table->extension_offset)
-        .ParseMessageSet(
-            ptr, static_cast<const Message*>(inner_table->default_instance),
-            &field->_internal_metadata_, ctx);
-  });
-}
-
-const char* TcParser::FastMSS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return MessageSetMessage<uint8_t>(PROTOBUF_TC_PARAM_PASS);
-}
-const char* TcParser::FastMSS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return MessageSetMessage<uint16_t>(PROTOBUF_TC_PARAM_PASS);
-}
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
