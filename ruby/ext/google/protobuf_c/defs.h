@@ -81,6 +81,5 @@ void Defs_register(VALUE module);
 
 // FieldDescriptor
 VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb);
-VALUE cFieldDescriptor;
 
 #endif  // RUBY_PROTOBUF_DEFS_H_
