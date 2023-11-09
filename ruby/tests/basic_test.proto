@@ -7,8 +7,6 @@ import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
 import "test_import_proto2.proto";
 
 option deprecated = true;
