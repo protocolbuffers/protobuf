@@ -33,6 +33,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
+#include "absl/meta/type_traits.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
@@ -1852,6 +1853,17 @@ class RepeatedPtrIterator {
   void* const* it_;
 };
 
+template <typename Traits, typename = void>
+struct IteratorConceptSupport {
+  using tag = typename Traits::iterator_category;
+};
+
+template <typename Traits>
+struct IteratorConceptSupport<Traits,
+                              absl::void_t<typename Traits::iterator_concept>> {
+  using tag = typename Traits::iterator_concept;
+};
+
 // Provides an iterator that operates on pointers to the underlying objects
 // rather than the objects themselves as RepeatedPtrIterator does.
 // Consider using this when working with stl algorithms that change
@@ -1861,13 +1873,19 @@ class RepeatedPtrIterator {
 // iterator, or "const void* const" for a constant iterator.
 template <typename Element, typename VoidPtr>
 class RepeatedPtrOverPtrsIterator {
+ private:
+  using traits =
+      std::iterator_traits<typename std::remove_const<Element>::type*>;
+
  public:
-  using iterator = RepeatedPtrOverPtrsIterator<Element, VoidPtr>;
-  using iterator_category = std::random_access_iterator_tag;
-  using value_type = typename std::remove_const<Element>::type;
-  using difference_type = std::ptrdiff_t;
+  using value_type = typename traits::value_type;
+  using difference_type = typename traits::difference_type;
   using pointer = Element*;
   using reference = Element&;
+  using iterator_category = typename traits::iterator_category;
+  using iterator_concept = typename IteratorConceptSupport<traits>::tag;
+
+  using iterator = RepeatedPtrOverPtrsIterator<Element, VoidPtr>;
 
   RepeatedPtrOverPtrsIterator() : it_(nullptr) {}
   explicit RepeatedPtrOverPtrsIterator(VoidPtr* it) : it_(it) {}
