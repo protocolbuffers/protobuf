@@ -702,19 +702,12 @@ public abstract class CodedOutputStream extends ByteOutput {
 
   /** Compute the number of bytes that would be needed to encode a {@code uint32} field. */
   public static int computeUInt32SizeNoTag(final int value) {
-    if ((value & (~0 << 7)) == 0) {
-      return 1;
-    }
-    if ((value & (~0 << 14)) == 0) {
-      return 2;
-    }
-    if ((value & (~0 << 21)) == 0) {
-      return 3;
-    }
-    if ((value & (~0 << 28)) == 0) {
-      return 4;
-    }
-    return 5;
+    int clz = Integer.numberOfLeadingZeros(value | 0x7F);
+    // This multiply-then-shift approximates a divide by 7. The initial
+    // addition of 6 makes it always round up; this works because 37 / 2^8
+    // is roughly 1/7. The initial mask ensures that a zero value still results
+    // in a size of one byte.
+    return ((Integer.SIZE + 6 - clz) * 37) >>> 8;
   }
 
   /** Compute the number of bytes that would be needed to encode an {@code sint32} field. */
@@ -745,27 +738,12 @@ public abstract class CodedOutputStream extends ByteOutput {
    * tag.
    */
   public static int computeUInt64SizeNoTag(long value) {
-    // handle two popular special cases up front ...
-    if ((value & (~0L << 7)) == 0L) {
-      return 1;
-    }
-    if (value < 0L) {
-      return 10;
-    }
-    // ... leaving us with 8 remaining, which we can divide and conquer
-    int n = 2;
-    if ((value & (~0L << 35)) != 0L) {
-      n += 4;
-      value >>>= 28;
-    }
-    if ((value & (~0L << 21)) != 0L) {
-      n += 2;
-      value >>>= 14;
-    }
-    if ((value & (~0L << 14)) != 0L) {
-      n += 1;
-    }
-    return n;
+    int clz = Long.numberOfLeadingZeros(value | 0x7F);
+    // This multiply-then-shift approximates a divide by 7. The initial
+    // addition of 6 makes it always round up; this works because 37 / 2^8
+    // is roughly 1/7. The initial mask ensures that a zero value still results
+    // in a size of one byte.
+    return ((Long.SIZE + 6 - clz) * 37) >>> 8;
   }
 
   /** Compute the number of bytes that would be needed to encode an {@code sint64} field. */
