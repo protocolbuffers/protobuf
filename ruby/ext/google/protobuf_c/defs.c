@@ -154,14 +154,14 @@ static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   const upb_EnumDef* enumdef;
   const upb_FieldDef* fielddef;
 
-  fielddef = upb_DefPool_FindExtensionByName(self->symtab, name_str);
-  if (fielddef) {
-    return get_fielddef_obj(_self, fielddef);
-  }
-
   msgdef = upb_DefPool_FindMessageByName(self->symtab, name_str);
   if (msgdef) {
     return get_msgdef_obj(_self, msgdef);
+  }
+
+  fielddef = upb_DefPool_FindExtensionByName(self->symtab, name_str);
+  if (fielddef) {
+    return get_fielddef_obj(_self, fielddef);
   }
 
   enumdef = upb_DefPool_FindEnumByName(self->symtab, name_str);
