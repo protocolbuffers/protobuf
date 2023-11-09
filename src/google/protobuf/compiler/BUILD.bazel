@@ -84,7 +84,6 @@ cc_library(
     name = "versions",
     hdrs = [
         "versions.h",
-        "versions_suffix.h",
     ],
     copts = COPTS,
     strip_include_prefix = "/src",
