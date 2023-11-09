@@ -14,7 +14,7 @@
 upb_Arena* Arena_create() { return upb_Arena_Init(NULL, 0, &upb_alloc_global); }
 
 google_protobuf_FileDescriptorProto* FileDescriptorProto_parse(
-    const char* serialized_file_proto, size_t length, upb_Arena *arena) {
+    const char* serialized_file_proto, size_t length, upb_Arena* arena) {
   return google_protobuf_FileDescriptorProto_parse(serialized_file_proto,
                                                    length, arena);
 }

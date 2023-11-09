@@ -376,7 +376,7 @@ public class RubyMap extends RubyObject {
     setFrozen(true);
     if (valueType == FieldDescriptor.Type.MESSAGE) {
       for (IRubyObject key : table.keySet()) {
-        ((RubyMessage)table.get(key)).deepFreeze(context);
+        ((RubyMessage) table.get(key)).deepFreeze(context);
       }
     }
     return this;
