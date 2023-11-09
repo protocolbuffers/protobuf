@@ -52,6 +52,7 @@ cc_library(
     srcs = [
         "accessors/accessors.cc",
         "accessors/map.cc",
+        "accessors/repeated_message.cc",
         "accessors/repeated_scalar.cc",
         "accessors/singular_message.cc",
         "accessors/singular_scalar.cc",

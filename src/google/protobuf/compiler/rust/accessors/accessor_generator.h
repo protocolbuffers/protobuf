@@ -96,6 +96,14 @@ class RepeatedScalar final : public AccessorGenerator {
   void InThunkCc(Context<FieldDescriptor> field) const override;
 };
 
+class RepeatedMessage final : public AccessorGenerator {
+ public:
+  ~RepeatedMessage() override = default;
+  void InMsgImpl(Context<FieldDescriptor> field) const override;
+  void InExternC(Context<FieldDescriptor> field) const override;
+  void InThunkCc(Context<FieldDescriptor> field) const override;
+};
+
 class UnsupportedField final : public AccessorGenerator {
  public:
   explicit UnsupportedField(std::string reason) : reason_(std::move(reason)) {}

@@ -71,7 +71,7 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
         }
       }
       if (desc.is_repeated()) {
-        return std::make_unique<UnsupportedField>("repeated msg not supported");
+        return std::make_unique<RepeatedMessage>();
       }
       if (!field.generator_context().is_file_in_current_crate(
               desc.message_type()->file())) {

@@ -851,3 +851,16 @@ fn test_repeated_bool_set() {
 
     assert_that!(mutator.iter().collect::<Vec<_>>(), eq(mutator2.iter().collect::<Vec<_>>()));
 }
+
+#[test]
+fn test_repeated_message() {
+    use protobuf::ViewProxy;
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.repeated_nested_message_mut().push_default().optional_int32(), eq(0));
+    msg.repeated_nested_message_mut()
+        .set(0, TestAllTypes::new().repeated_nested_message_mut().push_default().as_view());
+    msg.repeated_nested_message_mut()
+        .push(TestAllTypes::new().repeated_nested_message_mut().push_default().as_view());
+
+    assert_that!(msg.repeated_nested_message().len(), eq(2));
+}

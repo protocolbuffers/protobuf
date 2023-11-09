@@ -271,8 +271,19 @@ impl<'msg> MutatorMessageRef<'msg> {
         MutatorMessageRef { msg: message_field_ptr, arena: &parent_msg.arena }
     }
 
+    /// Constructs a `MutatorMessageRef` using the lifetime of the passed
+    /// `Arena`.
+    #[doc(hidden)]
+    pub fn new_ref(_private: Private, msg: RawMessage, arena: &'msg Arena) -> Self {
+        MutatorMessageRef { msg, arena }
+    }
+
     pub fn msg(&self) -> RawMessage {
         self.msg
+    }
+
+    pub fn arena(&self) -> RawArena {
+        self.arena.raw()
     }
 }
 
@@ -329,23 +340,29 @@ impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
     pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
         Self { inner, _phantom: PhantomData }
     }
+    pub fn raw(&self) -> RawRepeatedField {
+        self.inner.raw
+    }
+    pub fn inner(&self) -> RepeatedFieldInner<'msg> {
+        self.inner
+    }
 }
 
 // Transcribed from google3/third_party/upb/upb/message/value.h
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub union upb_MessageValue {
-    bool_val: bool,
-    float_val: std::ffi::c_float,
-    double_val: std::ffi::c_double,
-    uint32_val: u32,
-    int32_val: i32,
-    uint64_val: u64,
-    int64_val: i64,
-    array_val: *const std::ffi::c_void,
-    map_val: *const std::ffi::c_void,
-    msg_val: *const std::ffi::c_void,
-    str_val: PtrAndLen,
+    pub bool_val: bool,
+    pub float_val: std::ffi::c_float,
+    pub double_val: std::ffi::c_double,
+    pub uint32_val: u32,
+    pub int32_val: i32,
+    pub uint64_val: u64,
+    pub int64_val: i64,
+    pub array_val: *const std::ffi::c_void,
+    pub map_val: *const std::ffi::c_void,
+    pub msg_val: RawMessage,
+    pub str_val: PtrAndLen,
 }
 
 // Transcribed from google3/third_party/upb/upb/base/descriptor_constants.h
@@ -367,14 +384,21 @@ pub enum UpbCType {
 
 extern "C" {
     #[allow(dead_code)]
-    fn upb_Array_New(a: RawArena, r#type: std::ffi::c_int) -> RawRepeatedField;
-    fn upb_Array_Size(arr: RawRepeatedField) -> usize;
-    fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
-    fn upb_Array_Get(arr: RawRepeatedField, i: usize) -> upb_MessageValue;
-    fn upb_Array_Append(arr: RawRepeatedField, val: upb_MessageValue, arena: RawArena);
-    fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena) -> bool;
+    pub fn upb_Array_New(a: RawArena, r#type: std::ffi::c_int) -> RawRepeatedField;
+    pub fn upb_Array_Size(arr: RawRepeatedField) -> usize;
+    pub fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
+    pub fn upb_Array_Get(arr: RawRepeatedField, i: usize) -> upb_MessageValue;
+    pub fn upb_Array_Append(arr: RawRepeatedField, val: upb_MessageValue, arena: RawArena);
+    pub fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena) -> bool;
     fn upb_Array_MutableDataPtr(arr: RawRepeatedField) -> *mut std::ffi::c_void;
     fn upb_Array_DataPtr(arr: RawRepeatedField) -> *const std::ffi::c_void;
+
+    pub fn upb_Message_DeepCopy(
+        dst: RawMessage,
+        src: RawMessage,
+        mini_table: *const std::ffi::c_void,
+        arena: RawArena,
+    );
 }
 
 macro_rules! impl_repeated_primitives {
@@ -405,7 +429,7 @@ macro_rules! impl_repeated_primitives {
                         unsafe { Some(upb_Array_Get(self.inner.raw, i).$ufield) }
                     }
                 }
-                pub fn set(&self, i: usize, val: $rs_type) {
+                pub fn set(&mut self, i: usize, val: $rs_type) {
                     if i >= self.len() {
                         return;
                     }

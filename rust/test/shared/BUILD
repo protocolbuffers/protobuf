@@ -159,10 +159,10 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
+        ":matchers_cpp",
         "@crate_index//:googletest",
         "//rust:protobuf_cpp",
         "//rust/test:unittest_cc_rust_proto",
-        "//rust/test/shared:matchers_cpp",
     ],
 )
 
@@ -181,10 +181,10 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
+        ":matchers_upb",
         "@crate_index//:googletest",
         "//rust:protobuf_upb",
         "//rust/test:unittest_upb_rust_proto",
-        "//rust/test/shared:matchers_upb",
     ],
 )
 

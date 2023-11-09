@@ -180,6 +180,16 @@ impl<'msg> MutatorMessageRef<'msg> {
         MutatorMessageRef { msg: message_field_ptr, _phantom: PhantomData }
     }
 
+    // The `RepeatedField<'msg, _>` parameter ensures the returned `Self` has
+    // the same lifetime as the containing `RepeatedField`.
+    pub fn from_repeated<T>(
+        _private: Private,
+        _repeated: &mut RepeatedField<'msg, T>,
+        message_field_ptr: RawMessage,
+    ) -> Self {
+        MutatorMessageRef { msg: message_field_ptr, _phantom: PhantomData }
+    }
+
     pub fn msg(&self) -> RawMessage {
         self.msg
     }
@@ -224,6 +234,12 @@ pub struct RepeatedFieldInner<'msg> {
 impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
     pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
         RepeatedField { inner, _phantom: PhantomData }
+    }
+    pub fn raw(&self) -> RawRepeatedField {
+        self.inner.raw
+    }
+    pub fn inner(&self) -> RepeatedFieldInner<'msg> {
+        self.inner
     }
 }
 
