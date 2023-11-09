@@ -80,7 +80,7 @@ constexpr int kRepeatedFieldUpperClampLimit =
     (std::numeric_limits<int>::max() / 2) + 1;
 
 template <typename Element>
-class RepeatedIterator;
+using RepeatedIterator = Element*;
 
 // Sentinel base class.
 struct RepeatedFieldBase {};
@@ -1023,129 +1023,6 @@ RepeatedField<absl::Cord>::SpaceUsedExcludingSelfLong() const;
 // Ported by johannes from util/gtl/proto-array-iterators.h
 
 namespace internal {
-
-// STL-like iterator implementation for RepeatedField.  You should not
-// refer to this class directly; use RepeatedField<T>::iterator instead.
-//
-// Note: All of the iterator operators *must* be inlined to avoid performance
-// regressions.  This is caused by the extern template declarations below (which
-// are required because of the RepeatedField extern template declarations).  If
-// any of these functions aren't explicitly inlined (e.g. defined in the class),
-// the compiler isn't allowed to inline them.
-template <typename Element>
-class RepeatedIterator {
- public:
-  using iterator_category = std::random_access_iterator_tag;
-  // Note: remove_const is necessary for std::partial_sum, which uses value_type
-  // to determine the summation variable type.
-  using value_type = typename std::remove_const<Element>::type;
-  using difference_type = std::ptrdiff_t;
-  using pointer = Element*;
-  using reference = Element&;
-
-  constexpr RepeatedIterator() noexcept : it_(nullptr) {}
-
-  // Allows "upcasting" from RepeatedIterator<T**> to
-  // RepeatedIterator<const T*const*>.
-  template <typename OtherElement,
-            typename std::enable_if<std::is_convertible<
-                OtherElement*, pointer>::value>::type* = nullptr>
-  constexpr RepeatedIterator(
-      const RepeatedIterator<OtherElement>& other) noexcept
-      : it_(other.it_) {}
-
-  // dereferenceable
-  constexpr reference operator*() const noexcept { return *it_; }
-  constexpr pointer operator->() const noexcept { return it_; }
-
- private:
-  // Helper alias to hide the internal type.
-  using iterator = RepeatedIterator<Element>;
-
- public:
-  // {inc,dec}rementable
-  iterator& operator++() noexcept {
-    ++it_;
-    return *this;
-  }
-  iterator operator++(int) noexcept { return iterator(it_++); }
-  iterator& operator--() noexcept {
-    --it_;
-    return *this;
-  }
-  iterator operator--(int) noexcept { return iterator(it_--); }
-
-  // equality_comparable
-  friend constexpr bool operator==(const iterator& x,
-                                   const iterator& y) noexcept {
-    return x.it_ == y.it_;
-  }
-  friend constexpr bool operator!=(const iterator& x,
-                                   const iterator& y) noexcept {
-    return x.it_ != y.it_;
-  }
-
-  // less_than_comparable
-  friend constexpr bool operator<(const iterator& x,
-                                  const iterator& y) noexcept {
-    return x.it_ < y.it_;
-  }
-  friend constexpr bool operator<=(const iterator& x,
-                                   const iterator& y) noexcept {
-    return x.it_ <= y.it_;
-  }
-  friend constexpr bool operator>(const iterator& x,
-                                  const iterator& y) noexcept {
-    return x.it_ > y.it_;
-  }
-  friend constexpr bool operator>=(const iterator& x,
-                                   const iterator& y) noexcept {
-    return x.it_ >= y.it_;
-  }
-
-  // addable, subtractable
-  iterator& operator+=(difference_type d) noexcept {
-    it_ += d;
-    return *this;
-  }
-  constexpr iterator operator+(difference_type d) const noexcept {
-    return iterator(it_ + d);
-  }
-  friend constexpr iterator operator+(const difference_type d,
-                                      iterator it) noexcept {
-    return it + d;
-  }
-
-  iterator& operator-=(difference_type d) noexcept {
-    it_ -= d;
-    return *this;
-  }
-  iterator constexpr operator-(difference_type d) const noexcept {
-    return iterator(it_ - d);
-  }
-
-  // indexable
-  constexpr reference operator[](difference_type d) const noexcept {
-    return it_[d];
-  }
-
-  // random access iterator
-  friend constexpr difference_type operator-(iterator it1,
-                                             iterator it2) noexcept {
-    return it1.it_ - it2.it_;
-  }
-
- private:
-  template <typename OtherElement>
-  friend class RepeatedIterator;
-
-  // Allow construction from RepeatedField.
-  friend class RepeatedField<value_type>;
-  explicit RepeatedIterator(Element* it) noexcept : it_(it) {}
-
-  // The internal iterator.
-  Element* it_;
-};
 
 // A back inserter for RepeatedField objects.
 template <typename T>
