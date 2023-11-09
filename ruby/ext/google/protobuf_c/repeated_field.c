@@ -488,6 +488,25 @@ static VALUE RepeatedField_freeze(VALUE _self) {
 }
 
 /*
+ * Deep freezes the repeated field and values recursively.
+ * Internal use only.
+ */
+VALUE RepeatedField_internal_deep_freeze(VALUE _self) {
+  RepeatedField* self = ruby_to_RepeatedField(_self);
+  RepeatedField_freeze(_self);
+  if (self->type_info.type == kUpb_CType_Message) {
+    int size = upb_Array_Size(self->array);
+    int i;
+    for (i = 0; i < size; i++) {
+      upb_MessageValue msgval = upb_Array_Get(self->array, i);
+      VALUE val = Convert_UpbToRuby(msgval, self->type_info, self->arena);
+      Message_internal_deep_freeze(val);
+    }
+  }
+  return _self;
+}
+
+/*
  * call-seq:
  *     RepeatedField.hash => hash_value
  *
