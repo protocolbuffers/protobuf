@@ -1024,6 +1024,13 @@ bool IsPresentMessage(const Descriptor* descriptor, const Options& options) {
   return true;
 }
 
+const FieldDescriptor* FindHottestField(
+    const std::vector<const FieldDescriptor*>& fields, const Options& options) {
+  (void)fields;
+  (void)options;
+  return nullptr;
+}
+
 static bool HasRepeatedFields(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
     if (descriptor->field(i)->label() == FieldDescriptor::LABEL_REPEATED) {

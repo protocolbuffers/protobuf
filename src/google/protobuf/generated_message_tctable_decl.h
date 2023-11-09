@@ -285,18 +285,30 @@ struct alignas(uint64_t) TcParseTableBase {
   // Handler for fields which are not handled by table dispatch.
   TailCallParseFunc fallback;
 
+  // A sub message's table to be prefetched.
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+  const TcParseTableBase* to_prefetch;
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+
   // This constructor exactly follows the field layout, so it's technically
   // not necessary.  However, it makes it much much easier to add or re-arrange
   // fields, because it can be overloaded with an additional constructor,
   // temporarily allowing both old and new protocol buffer headers to be
   // compiled.
-  constexpr TcParseTableBase(
-      uint16_t has_bits_offset, uint16_t extension_offset,
-      uint32_t max_field_number, uint8_t fast_idx_mask,
-      uint16_t lookup_table_offset, uint32_t skipmap32,
-      uint32_t field_entries_offset, uint16_t num_field_entries,
-      uint16_t num_aux_entries, uint32_t aux_offset,
-      const MessageLite* default_instance, TailCallParseFunc fallback)
+  constexpr TcParseTableBase(uint16_t has_bits_offset,
+                             uint16_t extension_offset,
+                             uint32_t max_field_number, uint8_t fast_idx_mask,
+                             uint16_t lookup_table_offset, uint32_t skipmap32,
+                             uint32_t field_entries_offset,
+                             uint16_t num_field_entries,
+                             uint16_t num_aux_entries, uint32_t aux_offset,
+                             const MessageLite* default_instance,
+                             TailCallParseFunc fallback
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+                             ,
+                             const TcParseTableBase* to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+                             )
       : has_bits_offset(has_bits_offset),
         extension_offset(extension_offset),
         max_field_number(max_field_number),
@@ -308,7 +320,13 @@ struct alignas(uint64_t) TcParseTableBase {
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
         default_instance(default_instance),
-        fallback(fallback) {}
+        fallback(fallback)
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+        ,
+        to_prefetch(to_prefetch)
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  {
+  }
 
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {

@@ -433,6 +433,9 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Version_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::compiler::Version>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // optional string suffix = 4;
     {::_pbi::TcParser::FastSS1,
@@ -752,6 +755,9 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_CodeGeneratorRequest_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorRequest>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // repeated string file_to_generate = 1;
@@ -1111,6 +1117,9 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
     offsetof(decltype(_table_), aux_entries),
     &_CodeGeneratorResponse_File_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse_File>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
     {::_pbi::TcParser::FastMtS2,
@@ -1411,6 +1420,9 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_CodeGeneratorResponse_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional string error = 1;

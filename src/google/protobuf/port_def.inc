@@ -789,6 +789,12 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_BUILTIN_CONSTANT_P(x) false
 #endif
 
+
+// TODO: Enable the feature by default and remove this flag.
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+#error PROTOBUF_PREFETCH_PARSE_TABLE was previously defined
+#endif
+
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
 // autoheader defines this in some circumstances
