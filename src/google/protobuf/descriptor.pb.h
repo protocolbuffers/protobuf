@@ -11138,7 +11138,6 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::unsafe_arena_releas
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::_internal_mutable_options() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FileOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(p);
@@ -11146,6 +11145,7 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::_internal_mutable_o
   return _impl_.options_;
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000008u;
   ::google::protobuf::FileOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.options)
   return _msg;
@@ -11234,7 +11234,6 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::unsafe_arena_rel
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::_internal_mutable_source_code_info() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000010u;
   if (_impl_.source_code_info_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceCodeInfo>(GetArena());
     _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(p);
@@ -11242,6 +11241,7 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::_internal_mutabl
   return _impl_.source_code_info_;
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::mutable_source_code_info() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000010u;
   ::google::protobuf::SourceCodeInfo* _msg = _internal_mutable_source_code_info();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.source_code_info)
   return _msg;
@@ -11354,6 +11354,7 @@ inline ::google::protobuf::Edition FileDescriptorProto::edition() const {
 }
 inline void FileDescriptorProto::set_edition(::google::protobuf::Edition value) {
   _internal_set_edition(value);
+  _impl_._has_bits_[0] |= 0x00000020u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.edition)
 }
 inline ::google::protobuf::Edition FileDescriptorProto::_internal_edition() const {
@@ -11363,7 +11364,6 @@ inline ::google::protobuf::Edition FileDescriptorProto::_internal_edition() cons
 inline void FileDescriptorProto::_internal_set_edition(::google::protobuf::Edition value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::Edition_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.edition_ = value;
 }
 
@@ -11387,6 +11387,7 @@ inline ::int32_t DescriptorProto_ExtensionRange::start() const {
 }
 inline void DescriptorProto_ExtensionRange::set_start(::int32_t value) {
   _internal_set_start(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.ExtensionRange.start)
 }
 inline ::int32_t DescriptorProto_ExtensionRange::_internal_start() const {
@@ -11395,7 +11396,6 @@ inline ::int32_t DescriptorProto_ExtensionRange::_internal_start() const {
 }
 inline void DescriptorProto_ExtensionRange::_internal_set_start(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.start_ = value;
 }
 
@@ -11415,6 +11415,7 @@ inline ::int32_t DescriptorProto_ExtensionRange::end() const {
 }
 inline void DescriptorProto_ExtensionRange::set_end(::int32_t value) {
   _internal_set_end(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.ExtensionRange.end)
 }
 inline ::int32_t DescriptorProto_ExtensionRange::_internal_end() const {
@@ -11423,7 +11424,6 @@ inline ::int32_t DescriptorProto_ExtensionRange::_internal_end() const {
 }
 inline void DescriptorProto_ExtensionRange::_internal_set_end(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.end_ = value;
 }
 
@@ -11490,7 +11490,6 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::_internal_mutable_options() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ExtensionRangeOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(p);
@@ -11498,6 +11497,7 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
   return _impl_.options_;
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::ExtensionRangeOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.ExtensionRange.options)
   return _msg;
@@ -11543,6 +11543,7 @@ inline ::int32_t DescriptorProto_ReservedRange::start() const {
 }
 inline void DescriptorProto_ReservedRange::set_start(::int32_t value) {
   _internal_set_start(value);
+  _impl_._has_bits_[0] |= 0x00000001u;
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.ReservedRange.start)
 }
 inline ::int32_t DescriptorProto_ReservedRange::_internal_start() const {
@@ -11551,7 +11552,6 @@ inline ::int32_t DescriptorProto_ReservedRange::_internal_start() const {
 }
 inline void DescriptorProto_ReservedRange::_internal_set_start(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.start_ = value;
 }
 
@@ -11571,6 +11571,7 @@ inline ::int32_t DescriptorProto_ReservedRange::end() const {
 }
 inline void DescriptorProto_ReservedRange::set_end(::int32_t value) {
   _internal_set_end(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.ReservedRange.end)
 }
 inline ::int32_t DescriptorProto_ReservedRange::_internal_end() const {
@@ -11579,7 +11580,6 @@ inline ::int32_t DescriptorProto_ReservedRange::_internal_end() const {
 }
 inline void DescriptorProto_ReservedRange::_internal_set_end(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.end_ = value;
 }
 
@@ -12015,7 +12015,6 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::unsafe_arena_release
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::_internal_mutable_options() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::MessageOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(p);
@@ -12023,6 +12022,7 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::_internal_mutable_op
   return _impl_.options_;
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000002u;
   ::google::protobuf::MessageOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.options)
   return _msg;
@@ -12218,6 +12218,7 @@ inline ::int32_t ExtensionRangeOptions_Declaration::number() const {
 }
 inline void ExtensionRangeOptions_Declaration::set_number(::int32_t value) {
   _internal_set_number(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.number)
 }
 inline ::int32_t ExtensionRangeOptions_Declaration::_internal_number() const {
@@ -12226,7 +12227,6 @@ inline ::int32_t ExtensionRangeOptions_Declaration::_internal_number() const {
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_number(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.number_ = value;
 }
 
@@ -12388,6 +12388,7 @@ inline bool ExtensionRangeOptions_Declaration::reserved() const {
 }
 inline void ExtensionRangeOptions_Declaration::set_reserved(bool value) {
   _internal_set_reserved(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.reserved)
 }
 inline bool ExtensionRangeOptions_Declaration::_internal_reserved() const {
@@ -12396,7 +12397,6 @@ inline bool ExtensionRangeOptions_Declaration::_internal_reserved() const {
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_reserved(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.reserved_ = value;
 }
 
@@ -12416,6 +12416,7 @@ inline bool ExtensionRangeOptions_Declaration::repeated() const {
 }
 inline void ExtensionRangeOptions_Declaration::set_repeated(bool value) {
   _internal_set_repeated(value);
+  _impl_._has_bits_[0] |= 0x00000010u;
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.repeated)
 }
 inline bool ExtensionRangeOptions_Declaration::_internal_repeated() const {
@@ -12424,7 +12425,6 @@ inline bool ExtensionRangeOptions_Declaration::_internal_repeated() const {
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_repeated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.repeated_ = value;
 }
 
@@ -12593,7 +12593,6 @@ inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::unsafe_arena_relea
 }
 inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::_internal_mutable_features() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -12601,6 +12600,7 @@ inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::_internal_mutable_
   return _impl_.features_;
 }
 inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::mutable_features() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::FeatureSet* _msg = _internal_mutable_features();
   // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.features)
   return _msg;
@@ -12642,6 +12642,7 @@ inline ::google::protobuf::ExtensionRangeOptions_VerificationState ExtensionRang
 }
 inline void ExtensionRangeOptions::set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value) {
   _internal_set_verification(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.verification)
 }
 inline ::google::protobuf::ExtensionRangeOptions_VerificationState ExtensionRangeOptions::_internal_verification() const {
@@ -12651,7 +12652,6 @@ inline ::google::protobuf::ExtensionRangeOptions_VerificationState ExtensionRang
 inline void ExtensionRangeOptions::_internal_set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::ExtensionRangeOptions_VerificationState_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.verification_ = value;
 }
 
@@ -12746,6 +12746,7 @@ inline ::int32_t FieldDescriptorProto::number() const {
 }
 inline void FieldDescriptorProto::set_number(::int32_t value) {
   _internal_set_number(value);
+  _impl_._has_bits_[0] |= 0x00000040u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.number)
 }
 inline ::int32_t FieldDescriptorProto::_internal_number() const {
@@ -12754,7 +12755,6 @@ inline ::int32_t FieldDescriptorProto::_internal_number() const {
 }
 inline void FieldDescriptorProto::_internal_set_number(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000040u;
   _impl_.number_ = value;
 }
 
@@ -12774,6 +12774,7 @@ inline ::google::protobuf::FieldDescriptorProto_Label FieldDescriptorProto::labe
 }
 inline void FieldDescriptorProto::set_label(::google::protobuf::FieldDescriptorProto_Label value) {
   _internal_set_label(value);
+  _impl_._has_bits_[0] |= 0x00000200u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.label)
 }
 inline ::google::protobuf::FieldDescriptorProto_Label FieldDescriptorProto::_internal_label() const {
@@ -12783,7 +12784,6 @@ inline ::google::protobuf::FieldDescriptorProto_Label FieldDescriptorProto::_int
 inline void FieldDescriptorProto::_internal_set_label(::google::protobuf::FieldDescriptorProto_Label value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FieldDescriptorProto_Label_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000200u;
   _impl_.label_ = value;
 }
 
@@ -12803,6 +12803,7 @@ inline ::google::protobuf::FieldDescriptorProto_Type FieldDescriptorProto::type(
 }
 inline void FieldDescriptorProto::set_type(::google::protobuf::FieldDescriptorProto_Type value) {
   _internal_set_type(value);
+  _impl_._has_bits_[0] |= 0x00000400u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.type)
 }
 inline ::google::protobuf::FieldDescriptorProto_Type FieldDescriptorProto::_internal_type() const {
@@ -12812,7 +12813,6 @@ inline ::google::protobuf::FieldDescriptorProto_Type FieldDescriptorProto::_inte
 inline void FieldDescriptorProto::_internal_set_type(::google::protobuf::FieldDescriptorProto_Type value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FieldDescriptorProto_Type_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000400u;
   _impl_.type_ = value;
 }
 
@@ -13045,6 +13045,7 @@ inline ::int32_t FieldDescriptorProto::oneof_index() const {
 }
 inline void FieldDescriptorProto::set_oneof_index(::int32_t value) {
   _internal_set_oneof_index(value);
+  _impl_._has_bits_[0] |= 0x00000080u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.oneof_index)
 }
 inline ::int32_t FieldDescriptorProto::_internal_oneof_index() const {
@@ -13053,7 +13054,6 @@ inline ::int32_t FieldDescriptorProto::_internal_oneof_index() const {
 }
 inline void FieldDescriptorProto::_internal_set_oneof_index(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000080u;
   _impl_.oneof_index_ = value;
 }
 
@@ -13191,7 +13191,6 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::unsafe_arena_rele
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::_internal_mutable_options() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FieldOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(p);
@@ -13199,6 +13198,7 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::_internal_mutable
   return _impl_.options_;
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000020u;
   ::google::protobuf::FieldOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.options)
   return _msg;
@@ -13240,6 +13240,7 @@ inline bool FieldDescriptorProto::proto3_optional() const {
 }
 inline void FieldDescriptorProto::set_proto3_optional(bool value) {
   _internal_set_proto3_optional(value);
+  _impl_._has_bits_[0] |= 0x00000100u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.proto3_optional)
 }
 inline bool FieldDescriptorProto::_internal_proto3_optional() const {
@@ -13248,7 +13249,6 @@ inline bool FieldDescriptorProto::_internal_proto3_optional() const {
 }
 inline void FieldDescriptorProto::_internal_set_proto3_optional(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000100u;
   _impl_.proto3_optional_ = value;
 }
 
@@ -13390,7 +13390,6 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::unsafe_arena_rele
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::_internal_mutable_options() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::OneofOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(p);
@@ -13398,6 +13397,7 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::_internal_mutable
   return _impl_.options_;
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000002u;
   ::google::protobuf::OneofOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.OneofDescriptorProto.options)
   return _msg;
@@ -13443,6 +13443,7 @@ inline ::int32_t EnumDescriptorProto_EnumReservedRange::start() const {
 }
 inline void EnumDescriptorProto_EnumReservedRange::set_start(::int32_t value) {
   _internal_set_start(value);
+  _impl_._has_bits_[0] |= 0x00000001u;
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.EnumReservedRange.start)
 }
 inline ::int32_t EnumDescriptorProto_EnumReservedRange::_internal_start() const {
@@ -13451,7 +13452,6 @@ inline ::int32_t EnumDescriptorProto_EnumReservedRange::_internal_start() const 
 }
 inline void EnumDescriptorProto_EnumReservedRange::_internal_set_start(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.start_ = value;
 }
 
@@ -13471,6 +13471,7 @@ inline ::int32_t EnumDescriptorProto_EnumReservedRange::end() const {
 }
 inline void EnumDescriptorProto_EnumReservedRange::set_end(::int32_t value) {
   _internal_set_end(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.EnumReservedRange.end)
 }
 inline ::int32_t EnumDescriptorProto_EnumReservedRange::_internal_end() const {
@@ -13479,7 +13480,6 @@ inline ::int32_t EnumDescriptorProto_EnumReservedRange::_internal_end() const {
 }
 inline void EnumDescriptorProto_EnumReservedRange::_internal_set_end(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.end_ = value;
 }
 
@@ -13670,7 +13670,6 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::unsafe_arena_releas
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::_internal_mutable_options() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::EnumOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(p);
@@ -13678,6 +13677,7 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::_internal_mutable_o
   return _impl_.options_;
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000002u;
   ::google::protobuf::EnumOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumDescriptorProto.options)
   return _msg;
@@ -13944,6 +13944,7 @@ inline ::int32_t EnumValueDescriptorProto::number() const {
 }
 inline void EnumValueDescriptorProto::set_number(::int32_t value) {
   _internal_set_number(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValueDescriptorProto.number)
 }
 inline ::int32_t EnumValueDescriptorProto::_internal_number() const {
@@ -13952,7 +13953,6 @@ inline ::int32_t EnumValueDescriptorProto::_internal_number() const {
 }
 inline void EnumValueDescriptorProto::_internal_set_number(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.number_ = value;
 }
 
@@ -14019,7 +14019,6 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::unsafe_ar
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::_internal_mutable_options() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::EnumValueOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(p);
@@ -14027,6 +14026,7 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::_internal
   return _impl_.options_;
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000002u;
   ::google::protobuf::EnumValueOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValueDescriptorProto.options)
   return _msg;
@@ -14239,7 +14239,6 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::unsafe_arena_
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::_internal_mutable_options() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ServiceOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(p);
@@ -14247,6 +14246,7 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::_internal_mut
   return _impl_.options_;
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000002u;
   ::google::protobuf::ServiceOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.ServiceDescriptorProto.options)
   return _msg;
@@ -14552,7 +14552,6 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::unsafe_arena_re
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::_internal_mutable_options() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::MethodOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(p);
@@ -14560,6 +14559,7 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::_internal_mutab
   return _impl_.options_;
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000008u;
   ::google::protobuf::MethodOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.options)
   return _msg;
@@ -14601,6 +14601,7 @@ inline bool MethodDescriptorProto::client_streaming() const {
 }
 inline void MethodDescriptorProto::set_client_streaming(bool value) {
   _internal_set_client_streaming(value);
+  _impl_._has_bits_[0] |= 0x00000010u;
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.client_streaming)
 }
 inline bool MethodDescriptorProto::_internal_client_streaming() const {
@@ -14609,7 +14610,6 @@ inline bool MethodDescriptorProto::_internal_client_streaming() const {
 }
 inline void MethodDescriptorProto::_internal_set_client_streaming(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.client_streaming_ = value;
 }
 
@@ -14629,6 +14629,7 @@ inline bool MethodDescriptorProto::server_streaming() const {
 }
 inline void MethodDescriptorProto::set_server_streaming(bool value) {
   _internal_set_server_streaming(value);
+  _impl_._has_bits_[0] |= 0x00000020u;
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.server_streaming)
 }
 inline bool MethodDescriptorProto::_internal_server_streaming() const {
@@ -14637,7 +14638,6 @@ inline bool MethodDescriptorProto::_internal_server_streaming() const {
 }
 inline void MethodDescriptorProto::_internal_set_server_streaming(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.server_streaming_ = value;
 }
 
@@ -14803,6 +14803,7 @@ inline bool FileOptions::java_multiple_files() const {
 }
 inline void FileOptions::set_java_multiple_files(bool value) {
   _internal_set_java_multiple_files(value);
+  _impl_._has_bits_[0] |= 0x00000800u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_multiple_files)
 }
 inline bool FileOptions::_internal_java_multiple_files() const {
@@ -14811,7 +14812,6 @@ inline bool FileOptions::_internal_java_multiple_files() const {
 }
 inline void FileOptions::_internal_set_java_multiple_files(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000800u;
   _impl_.java_multiple_files_ = value;
 }
 
@@ -14831,6 +14831,7 @@ inline bool FileOptions::java_generate_equals_and_hash() const {
 }
 inline void FileOptions::set_java_generate_equals_and_hash(bool value) {
   _internal_set_java_generate_equals_and_hash(value);
+  _impl_._has_bits_[0] |= 0x00001000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_generate_equals_and_hash)
 }
 inline bool FileOptions::_internal_java_generate_equals_and_hash() const {
@@ -14839,7 +14840,6 @@ inline bool FileOptions::_internal_java_generate_equals_and_hash() const {
 }
 inline void FileOptions::_internal_set_java_generate_equals_and_hash(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00001000u;
   _impl_.java_generate_equals_and_hash_ = value;
 }
 
@@ -14859,6 +14859,7 @@ inline bool FileOptions::java_string_check_utf8() const {
 }
 inline void FileOptions::set_java_string_check_utf8(bool value) {
   _internal_set_java_string_check_utf8(value);
+  _impl_._has_bits_[0] |= 0x00002000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_string_check_utf8)
 }
 inline bool FileOptions::_internal_java_string_check_utf8() const {
@@ -14867,7 +14868,6 @@ inline bool FileOptions::_internal_java_string_check_utf8() const {
 }
 inline void FileOptions::_internal_set_java_string_check_utf8(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00002000u;
   _impl_.java_string_check_utf8_ = value;
 }
 
@@ -14887,6 +14887,7 @@ inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::optimize_for() 
 }
 inline void FileOptions::set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value) {
   _internal_set_optimize_for(value);
+  _impl_._has_bits_[0] |= 0x00080000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.optimize_for)
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::_internal_optimize_for() const {
@@ -14896,7 +14897,6 @@ inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::_internal_optim
 inline void FileOptions::_internal_set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FileOptions_OptimizeMode_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00080000u;
   _impl_.optimize_for_ = value;
 }
 
@@ -14987,6 +14987,7 @@ inline bool FileOptions::cc_generic_services() const {
 }
 inline void FileOptions::set_cc_generic_services(bool value) {
   _internal_set_cc_generic_services(value);
+  _impl_._has_bits_[0] |= 0x00004000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.cc_generic_services)
 }
 inline bool FileOptions::_internal_cc_generic_services() const {
@@ -14995,7 +14996,6 @@ inline bool FileOptions::_internal_cc_generic_services() const {
 }
 inline void FileOptions::_internal_set_cc_generic_services(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00004000u;
   _impl_.cc_generic_services_ = value;
 }
 
@@ -15015,6 +15015,7 @@ inline bool FileOptions::java_generic_services() const {
 }
 inline void FileOptions::set_java_generic_services(bool value) {
   _internal_set_java_generic_services(value);
+  _impl_._has_bits_[0] |= 0x00008000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_generic_services)
 }
 inline bool FileOptions::_internal_java_generic_services() const {
@@ -15023,7 +15024,6 @@ inline bool FileOptions::_internal_java_generic_services() const {
 }
 inline void FileOptions::_internal_set_java_generic_services(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00008000u;
   _impl_.java_generic_services_ = value;
 }
 
@@ -15043,6 +15043,7 @@ inline bool FileOptions::py_generic_services() const {
 }
 inline void FileOptions::set_py_generic_services(bool value) {
   _internal_set_py_generic_services(value);
+  _impl_._has_bits_[0] |= 0x00010000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.py_generic_services)
 }
 inline bool FileOptions::_internal_py_generic_services() const {
@@ -15051,7 +15052,6 @@ inline bool FileOptions::_internal_py_generic_services() const {
 }
 inline void FileOptions::_internal_set_py_generic_services(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00010000u;
   _impl_.py_generic_services_ = value;
 }
 
@@ -15071,6 +15071,7 @@ inline bool FileOptions::php_generic_services() const {
 }
 inline void FileOptions::set_php_generic_services(bool value) {
   _internal_set_php_generic_services(value);
+  _impl_._has_bits_[0] |= 0x00020000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_generic_services)
 }
 inline bool FileOptions::_internal_php_generic_services() const {
@@ -15079,7 +15080,6 @@ inline bool FileOptions::_internal_php_generic_services() const {
 }
 inline void FileOptions::_internal_set_php_generic_services(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00020000u;
   _impl_.php_generic_services_ = value;
 }
 
@@ -15099,6 +15099,7 @@ inline bool FileOptions::deprecated() const {
 }
 inline void FileOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
+  _impl_._has_bits_[0] |= 0x00040000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.deprecated)
 }
 inline bool FileOptions::_internal_deprecated() const {
@@ -15107,7 +15108,6 @@ inline bool FileOptions::_internal_deprecated() const {
 }
 inline void FileOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00040000u;
   _impl_.deprecated_ = value;
 }
 
@@ -15127,6 +15127,7 @@ inline bool FileOptions::cc_enable_arenas() const {
 }
 inline void FileOptions::set_cc_enable_arenas(bool value) {
   _internal_set_cc_enable_arenas(value);
+  _impl_._has_bits_[0] |= 0x00100000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.cc_enable_arenas)
 }
 inline bool FileOptions::_internal_cc_enable_arenas() const {
@@ -15135,7 +15136,6 @@ inline bool FileOptions::_internal_cc_enable_arenas() const {
 }
 inline void FileOptions::_internal_set_cc_enable_arenas(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00100000u;
   _impl_.cc_enable_arenas_ = value;
 }
 
@@ -15699,7 +15699,6 @@ inline ::google::protobuf::FeatureSet* FileOptions::unsafe_arena_release_feature
 }
 inline ::google::protobuf::FeatureSet* FileOptions::_internal_mutable_features() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000400u;
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -15707,6 +15706,7 @@ inline ::google::protobuf::FeatureSet* FileOptions::_internal_mutable_features()
   return _impl_.features_;
 }
 inline ::google::protobuf::FeatureSet* FileOptions::mutable_features() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000400u;
   ::google::protobuf::FeatureSet* _msg = _internal_mutable_features();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.features)
   return _msg;
@@ -15801,6 +15801,7 @@ inline bool MessageOptions::message_set_wire_format() const {
 }
 inline void MessageOptions::set_message_set_wire_format(bool value) {
   _internal_set_message_set_wire_format(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.message_set_wire_format)
 }
 inline bool MessageOptions::_internal_message_set_wire_format() const {
@@ -15809,7 +15810,6 @@ inline bool MessageOptions::_internal_message_set_wire_format() const {
 }
 inline void MessageOptions::_internal_set_message_set_wire_format(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.message_set_wire_format_ = value;
 }
 
@@ -15829,6 +15829,7 @@ inline bool MessageOptions::no_standard_descriptor_accessor() const {
 }
 inline void MessageOptions::set_no_standard_descriptor_accessor(bool value) {
   _internal_set_no_standard_descriptor_accessor(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.no_standard_descriptor_accessor)
 }
 inline bool MessageOptions::_internal_no_standard_descriptor_accessor() const {
@@ -15837,7 +15838,6 @@ inline bool MessageOptions::_internal_no_standard_descriptor_accessor() const {
 }
 inline void MessageOptions::_internal_set_no_standard_descriptor_accessor(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.no_standard_descriptor_accessor_ = value;
 }
 
@@ -15857,6 +15857,7 @@ inline bool MessageOptions::deprecated() const {
 }
 inline void MessageOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.deprecated)
 }
 inline bool MessageOptions::_internal_deprecated() const {
@@ -15865,7 +15866,6 @@ inline bool MessageOptions::_internal_deprecated() const {
 }
 inline void MessageOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.deprecated_ = value;
 }
 
@@ -15885,6 +15885,7 @@ inline bool MessageOptions::map_entry() const {
 }
 inline void MessageOptions::set_map_entry(bool value) {
   _internal_set_map_entry(value);
+  _impl_._has_bits_[0] |= 0x00000010u;
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.map_entry)
 }
 inline bool MessageOptions::_internal_map_entry() const {
@@ -15893,7 +15894,6 @@ inline bool MessageOptions::_internal_map_entry() const {
 }
 inline void MessageOptions::_internal_set_map_entry(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.map_entry_ = value;
 }
 
@@ -15913,6 +15913,7 @@ inline bool MessageOptions::deprecated_legacy_json_field_conflicts() const {
 }
 inline void MessageOptions::set_deprecated_legacy_json_field_conflicts(bool value) {
   _internal_set_deprecated_legacy_json_field_conflicts(value);
+  _impl_._has_bits_[0] |= 0x00000020u;
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.deprecated_legacy_json_field_conflicts)
 }
 inline bool MessageOptions::_internal_deprecated_legacy_json_field_conflicts() const {
@@ -15921,7 +15922,6 @@ inline bool MessageOptions::_internal_deprecated_legacy_json_field_conflicts() c
 }
 inline void MessageOptions::_internal_set_deprecated_legacy_json_field_conflicts(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.deprecated_legacy_json_field_conflicts_ = value;
 }
 
@@ -15988,7 +15988,6 @@ inline ::google::protobuf::FeatureSet* MessageOptions::unsafe_arena_release_feat
 }
 inline ::google::protobuf::FeatureSet* MessageOptions::_internal_mutable_features() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -15996,6 +15995,7 @@ inline ::google::protobuf::FeatureSet* MessageOptions::_internal_mutable_feature
   return _impl_.features_;
 }
 inline ::google::protobuf::FeatureSet* MessageOptions::mutable_features() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::FeatureSet* _msg = _internal_mutable_features();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MessageOptions.features)
   return _msg;
@@ -16090,6 +16090,7 @@ inline ::google::protobuf::Edition FieldOptions_EditionDefault::edition() const 
 }
 inline void FieldOptions_EditionDefault::set_edition(::google::protobuf::Edition value) {
   _internal_set_edition(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.EditionDefault.edition)
 }
 inline ::google::protobuf::Edition FieldOptions_EditionDefault::_internal_edition() const {
@@ -16099,7 +16100,6 @@ inline ::google::protobuf::Edition FieldOptions_EditionDefault::_internal_editio
 inline void FieldOptions_EditionDefault::_internal_set_edition(::google::protobuf::Edition value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::Edition_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.edition_ = value;
 }
 
@@ -16194,6 +16194,7 @@ inline ::google::protobuf::FieldOptions_CType FieldOptions::ctype() const {
 }
 inline void FieldOptions::set_ctype(::google::protobuf::FieldOptions_CType value) {
   _internal_set_ctype(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.ctype)
 }
 inline ::google::protobuf::FieldOptions_CType FieldOptions::_internal_ctype() const {
@@ -16203,7 +16204,6 @@ inline ::google::protobuf::FieldOptions_CType FieldOptions::_internal_ctype() co
 inline void FieldOptions::_internal_set_ctype(::google::protobuf::FieldOptions_CType value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FieldOptions_CType_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.ctype_ = value;
 }
 
@@ -16223,6 +16223,7 @@ inline bool FieldOptions::packed() const {
 }
 inline void FieldOptions::set_packed(bool value) {
   _internal_set_packed(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.packed)
 }
 inline bool FieldOptions::_internal_packed() const {
@@ -16231,7 +16232,6 @@ inline bool FieldOptions::_internal_packed() const {
 }
 inline void FieldOptions::_internal_set_packed(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.packed_ = value;
 }
 
@@ -16251,6 +16251,7 @@ inline ::google::protobuf::FieldOptions_JSType FieldOptions::jstype() const {
 }
 inline void FieldOptions::set_jstype(::google::protobuf::FieldOptions_JSType value) {
   _internal_set_jstype(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.jstype)
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::_internal_jstype() const {
@@ -16260,7 +16261,6 @@ inline ::google::protobuf::FieldOptions_JSType FieldOptions::_internal_jstype() 
 inline void FieldOptions::_internal_set_jstype(::google::protobuf::FieldOptions_JSType value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FieldOptions_JSType_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.jstype_ = value;
 }
 
@@ -16280,6 +16280,7 @@ inline bool FieldOptions::lazy() const {
 }
 inline void FieldOptions::set_lazy(bool value) {
   _internal_set_lazy(value);
+  _impl_._has_bits_[0] |= 0x00000010u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.lazy)
 }
 inline bool FieldOptions::_internal_lazy() const {
@@ -16288,7 +16289,6 @@ inline bool FieldOptions::_internal_lazy() const {
 }
 inline void FieldOptions::_internal_set_lazy(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.lazy_ = value;
 }
 
@@ -16308,6 +16308,7 @@ inline bool FieldOptions::unverified_lazy() const {
 }
 inline void FieldOptions::set_unverified_lazy(bool value) {
   _internal_set_unverified_lazy(value);
+  _impl_._has_bits_[0] |= 0x00000020u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.unverified_lazy)
 }
 inline bool FieldOptions::_internal_unverified_lazy() const {
@@ -16316,7 +16317,6 @@ inline bool FieldOptions::_internal_unverified_lazy() const {
 }
 inline void FieldOptions::_internal_set_unverified_lazy(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.unverified_lazy_ = value;
 }
 
@@ -16336,6 +16336,7 @@ inline bool FieldOptions::deprecated() const {
 }
 inline void FieldOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
+  _impl_._has_bits_[0] |= 0x00000040u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.deprecated)
 }
 inline bool FieldOptions::_internal_deprecated() const {
@@ -16344,7 +16345,6 @@ inline bool FieldOptions::_internal_deprecated() const {
 }
 inline void FieldOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000040u;
   _impl_.deprecated_ = value;
 }
 
@@ -16364,6 +16364,7 @@ inline bool FieldOptions::weak() const {
 }
 inline void FieldOptions::set_weak(bool value) {
   _internal_set_weak(value);
+  _impl_._has_bits_[0] |= 0x00000080u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.weak)
 }
 inline bool FieldOptions::_internal_weak() const {
@@ -16372,7 +16373,6 @@ inline bool FieldOptions::_internal_weak() const {
 }
 inline void FieldOptions::_internal_set_weak(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000080u;
   _impl_.weak_ = value;
 }
 
@@ -16392,6 +16392,7 @@ inline bool FieldOptions::debug_redact() const {
 }
 inline void FieldOptions::set_debug_redact(bool value) {
   _internal_set_debug_redact(value);
+  _impl_._has_bits_[0] |= 0x00000100u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.debug_redact)
 }
 inline bool FieldOptions::_internal_debug_redact() const {
@@ -16400,7 +16401,6 @@ inline bool FieldOptions::_internal_debug_redact() const {
 }
 inline void FieldOptions::_internal_set_debug_redact(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000100u;
   _impl_.debug_redact_ = value;
 }
 
@@ -16420,6 +16420,7 @@ inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::retention(
 }
 inline void FieldOptions::set_retention(::google::protobuf::FieldOptions_OptionRetention value) {
   _internal_set_retention(value);
+  _impl_._has_bits_[0] |= 0x00000200u;
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.retention)
 }
 inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::_internal_retention() const {
@@ -16429,7 +16430,6 @@ inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::_internal_
 inline void FieldOptions::_internal_set_retention(::google::protobuf::FieldOptions_OptionRetention value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FieldOptions_OptionRetention_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000200u;
   _impl_.retention_ = value;
 }
 
@@ -16591,7 +16591,6 @@ inline ::google::protobuf::FeatureSet* FieldOptions::unsafe_arena_release_featur
 }
 inline ::google::protobuf::FeatureSet* FieldOptions::_internal_mutable_features() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -16599,6 +16598,7 @@ inline ::google::protobuf::FeatureSet* FieldOptions::_internal_mutable_features(
   return _impl_.features_;
 }
 inline ::google::protobuf::FeatureSet* FieldOptions::mutable_features() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::FeatureSet* _msg = _internal_mutable_features();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldOptions.features)
   return _msg;
@@ -16740,7 +16740,6 @@ inline ::google::protobuf::FeatureSet* OneofOptions::unsafe_arena_release_featur
 }
 inline ::google::protobuf::FeatureSet* OneofOptions::_internal_mutable_features() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -16748,6 +16747,7 @@ inline ::google::protobuf::FeatureSet* OneofOptions::_internal_mutable_features(
   return _impl_.features_;
 }
 inline ::google::protobuf::FeatureSet* OneofOptions::mutable_features() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::FeatureSet* _msg = _internal_mutable_features();
   // @@protoc_insertion_point(field_mutable:google.protobuf.OneofOptions.features)
   return _msg;
@@ -16842,6 +16842,7 @@ inline bool EnumOptions::allow_alias() const {
 }
 inline void EnumOptions::set_allow_alias(bool value) {
   _internal_set_allow_alias(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.EnumOptions.allow_alias)
 }
 inline bool EnumOptions::_internal_allow_alias() const {
@@ -16850,7 +16851,6 @@ inline bool EnumOptions::_internal_allow_alias() const {
 }
 inline void EnumOptions::_internal_set_allow_alias(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.allow_alias_ = value;
 }
 
@@ -16870,6 +16870,7 @@ inline bool EnumOptions::deprecated() const {
 }
 inline void EnumOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
   // @@protoc_insertion_point(field_set:google.protobuf.EnumOptions.deprecated)
 }
 inline bool EnumOptions::_internal_deprecated() const {
@@ -16878,7 +16879,6 @@ inline bool EnumOptions::_internal_deprecated() const {
 }
 inline void EnumOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.deprecated_ = value;
 }
 
@@ -16898,6 +16898,7 @@ inline bool EnumOptions::deprecated_legacy_json_field_conflicts() const {
 }
 inline void EnumOptions::set_deprecated_legacy_json_field_conflicts(bool value) {
   _internal_set_deprecated_legacy_json_field_conflicts(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:google.protobuf.EnumOptions.deprecated_legacy_json_field_conflicts)
 }
 inline bool EnumOptions::_internal_deprecated_legacy_json_field_conflicts() const {
@@ -16906,7 +16907,6 @@ inline bool EnumOptions::_internal_deprecated_legacy_json_field_conflicts() cons
 }
 inline void EnumOptions::_internal_set_deprecated_legacy_json_field_conflicts(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.deprecated_legacy_json_field_conflicts_ = value;
 }
 
@@ -16973,7 +16973,6 @@ inline ::google::protobuf::FeatureSet* EnumOptions::unsafe_arena_release_feature
 }
 inline ::google::protobuf::FeatureSet* EnumOptions::_internal_mutable_features() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -16981,6 +16980,7 @@ inline ::google::protobuf::FeatureSet* EnumOptions::_internal_mutable_features()
   return _impl_.features_;
 }
 inline ::google::protobuf::FeatureSet* EnumOptions::mutable_features() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::FeatureSet* _msg = _internal_mutable_features();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumOptions.features)
   return _msg;
@@ -17075,6 +17075,7 @@ inline bool EnumValueOptions::deprecated() const {
 }
 inline void EnumValueOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValueOptions.deprecated)
 }
 inline bool EnumValueOptions::_internal_deprecated() const {
@@ -17083,7 +17084,6 @@ inline bool EnumValueOptions::_internal_deprecated() const {
 }
 inline void EnumValueOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.deprecated_ = value;
 }
 
@@ -17150,7 +17150,6 @@ inline ::google::protobuf::FeatureSet* EnumValueOptions::unsafe_arena_release_fe
 }
 inline ::google::protobuf::FeatureSet* EnumValueOptions::_internal_mutable_features() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -17158,6 +17157,7 @@ inline ::google::protobuf::FeatureSet* EnumValueOptions::_internal_mutable_featu
   return _impl_.features_;
 }
 inline ::google::protobuf::FeatureSet* EnumValueOptions::mutable_features() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::FeatureSet* _msg = _internal_mutable_features();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValueOptions.features)
   return _msg;
@@ -17199,6 +17199,7 @@ inline bool EnumValueOptions::debug_redact() const {
 }
 inline void EnumValueOptions::set_debug_redact(bool value) {
   _internal_set_debug_redact(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValueOptions.debug_redact)
 }
 inline bool EnumValueOptions::_internal_debug_redact() const {
@@ -17207,7 +17208,6 @@ inline bool EnumValueOptions::_internal_debug_redact() const {
 }
 inline void EnumValueOptions::_internal_set_debug_redact(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.debug_redact_ = value;
 }
 
@@ -17327,7 +17327,6 @@ inline ::google::protobuf::FeatureSet* ServiceOptions::unsafe_arena_release_feat
 }
 inline ::google::protobuf::FeatureSet* ServiceOptions::_internal_mutable_features() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -17335,6 +17334,7 @@ inline ::google::protobuf::FeatureSet* ServiceOptions::_internal_mutable_feature
   return _impl_.features_;
 }
 inline ::google::protobuf::FeatureSet* ServiceOptions::mutable_features() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::FeatureSet* _msg = _internal_mutable_features();
   // @@protoc_insertion_point(field_mutable:google.protobuf.ServiceOptions.features)
   return _msg;
@@ -17376,6 +17376,7 @@ inline bool ServiceOptions::deprecated() const {
 }
 inline void ServiceOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.ServiceOptions.deprecated)
 }
 inline bool ServiceOptions::_internal_deprecated() const {
@@ -17384,7 +17385,6 @@ inline bool ServiceOptions::_internal_deprecated() const {
 }
 inline void ServiceOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.deprecated_ = value;
 }
 
@@ -17457,6 +17457,7 @@ inline bool MethodOptions::deprecated() const {
 }
 inline void MethodOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.MethodOptions.deprecated)
 }
 inline bool MethodOptions::_internal_deprecated() const {
@@ -17465,7 +17466,6 @@ inline bool MethodOptions::_internal_deprecated() const {
 }
 inline void MethodOptions::_internal_set_deprecated(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.deprecated_ = value;
 }
 
@@ -17485,6 +17485,7 @@ inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::idempot
 }
 inline void MethodOptions::set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value) {
   _internal_set_idempotency_level(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
   // @@protoc_insertion_point(field_set:google.protobuf.MethodOptions.idempotency_level)
 }
 inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::_internal_idempotency_level() const {
@@ -17494,7 +17495,6 @@ inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::_intern
 inline void MethodOptions::_internal_set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::MethodOptions_IdempotencyLevel_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.idempotency_level_ = value;
 }
 
@@ -17561,7 +17561,6 @@ inline ::google::protobuf::FeatureSet* MethodOptions::unsafe_arena_release_featu
 }
 inline ::google::protobuf::FeatureSet* MethodOptions::_internal_mutable_features() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -17569,6 +17568,7 @@ inline ::google::protobuf::FeatureSet* MethodOptions::_internal_mutable_features
   return _impl_.features_;
 }
 inline ::google::protobuf::FeatureSet* MethodOptions::mutable_features() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::FeatureSet* _msg = _internal_mutable_features();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodOptions.features)
   return _msg;
@@ -17734,6 +17734,7 @@ inline bool UninterpretedOption_NamePart::is_extension() const {
 }
 inline void UninterpretedOption_NamePart::set_is_extension(bool value) {
   _internal_set_is_extension(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.NamePart.is_extension)
 }
 inline bool UninterpretedOption_NamePart::_internal_is_extension() const {
@@ -17742,7 +17743,6 @@ inline bool UninterpretedOption_NamePart::_internal_is_extension() const {
 }
 inline void UninterpretedOption_NamePart::_internal_set_is_extension(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.is_extension_ = value;
 }
 
@@ -17886,6 +17886,7 @@ inline ::uint64_t UninterpretedOption::positive_int_value() const {
 }
 inline void UninterpretedOption::set_positive_int_value(::uint64_t value) {
   _internal_set_positive_int_value(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.positive_int_value)
 }
 inline ::uint64_t UninterpretedOption::_internal_positive_int_value() const {
@@ -17894,7 +17895,6 @@ inline ::uint64_t UninterpretedOption::_internal_positive_int_value() const {
 }
 inline void UninterpretedOption::_internal_set_positive_int_value(::uint64_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.positive_int_value_ = value;
 }
 
@@ -17914,6 +17914,7 @@ inline ::int64_t UninterpretedOption::negative_int_value() const {
 }
 inline void UninterpretedOption::set_negative_int_value(::int64_t value) {
   _internal_set_negative_int_value(value);
+  _impl_._has_bits_[0] |= 0x00000010u;
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.negative_int_value)
 }
 inline ::int64_t UninterpretedOption::_internal_negative_int_value() const {
@@ -17922,7 +17923,6 @@ inline ::int64_t UninterpretedOption::_internal_negative_int_value() const {
 }
 inline void UninterpretedOption::_internal_set_negative_int_value(::int64_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.negative_int_value_ = value;
 }
 
@@ -17942,6 +17942,7 @@ inline double UninterpretedOption::double_value() const {
 }
 inline void UninterpretedOption::set_double_value(double value) {
   _internal_set_double_value(value);
+  _impl_._has_bits_[0] |= 0x00000020u;
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.double_value)
 }
 inline double UninterpretedOption::_internal_double_value() const {
@@ -17950,7 +17951,6 @@ inline double UninterpretedOption::_internal_double_value() const {
 }
 inline void UninterpretedOption::_internal_set_double_value(double value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.double_value_ = value;
 }
 
@@ -18116,6 +18116,7 @@ inline ::google::protobuf::FeatureSet_FieldPresence FeatureSet::field_presence()
 }
 inline void FeatureSet::set_field_presence(::google::protobuf::FeatureSet_FieldPresence value) {
   _internal_set_field_presence(value);
+  _impl_._has_bits_[0] |= 0x00000001u;
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.field_presence)
 }
 inline ::google::protobuf::FeatureSet_FieldPresence FeatureSet::_internal_field_presence() const {
@@ -18125,7 +18126,6 @@ inline ::google::protobuf::FeatureSet_FieldPresence FeatureSet::_internal_field_
 inline void FeatureSet::_internal_set_field_presence(::google::protobuf::FeatureSet_FieldPresence value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_FieldPresence_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.field_presence_ = value;
 }
 
@@ -18145,6 +18145,7 @@ inline ::google::protobuf::FeatureSet_EnumType FeatureSet::enum_type() const {
 }
 inline void FeatureSet::set_enum_type(::google::protobuf::FeatureSet_EnumType value) {
   _internal_set_enum_type(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.enum_type)
 }
 inline ::google::protobuf::FeatureSet_EnumType FeatureSet::_internal_enum_type() const {
@@ -18154,7 +18155,6 @@ inline ::google::protobuf::FeatureSet_EnumType FeatureSet::_internal_enum_type()
 inline void FeatureSet::_internal_set_enum_type(::google::protobuf::FeatureSet_EnumType value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_EnumType_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.enum_type_ = value;
 }
 
@@ -18174,6 +18174,7 @@ inline ::google::protobuf::FeatureSet_RepeatedFieldEncoding FeatureSet::repeated
 }
 inline void FeatureSet::set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value) {
   _internal_set_repeated_field_encoding(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.repeated_field_encoding)
 }
 inline ::google::protobuf::FeatureSet_RepeatedFieldEncoding FeatureSet::_internal_repeated_field_encoding() const {
@@ -18183,7 +18184,6 @@ inline ::google::protobuf::FeatureSet_RepeatedFieldEncoding FeatureSet::_interna
 inline void FeatureSet::_internal_set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_RepeatedFieldEncoding_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.repeated_field_encoding_ = value;
 }
 
@@ -18203,6 +18203,7 @@ inline ::google::protobuf::FeatureSet_Utf8Validation FeatureSet::utf8_validation
 }
 inline void FeatureSet::set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value) {
   _internal_set_utf8_validation(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.utf8_validation)
 }
 inline ::google::protobuf::FeatureSet_Utf8Validation FeatureSet::_internal_utf8_validation() const {
@@ -18212,7 +18213,6 @@ inline ::google::protobuf::FeatureSet_Utf8Validation FeatureSet::_internal_utf8_
 inline void FeatureSet::_internal_set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_Utf8Validation_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.utf8_validation_ = value;
 }
 
@@ -18232,6 +18232,7 @@ inline ::google::protobuf::FeatureSet_MessageEncoding FeatureSet::message_encodi
 }
 inline void FeatureSet::set_message_encoding(::google::protobuf::FeatureSet_MessageEncoding value) {
   _internal_set_message_encoding(value);
+  _impl_._has_bits_[0] |= 0x00000010u;
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.message_encoding)
 }
 inline ::google::protobuf::FeatureSet_MessageEncoding FeatureSet::_internal_message_encoding() const {
@@ -18241,7 +18242,6 @@ inline ::google::protobuf::FeatureSet_MessageEncoding FeatureSet::_internal_mess
 inline void FeatureSet::_internal_set_message_encoding(::google::protobuf::FeatureSet_MessageEncoding value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_MessageEncoding_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.message_encoding_ = value;
 }
 
@@ -18261,6 +18261,7 @@ inline ::google::protobuf::FeatureSet_JsonFormat FeatureSet::json_format() const
 }
 inline void FeatureSet::set_json_format(::google::protobuf::FeatureSet_JsonFormat value) {
   _internal_set_json_format(value);
+  _impl_._has_bits_[0] |= 0x00000020u;
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.json_format)
 }
 inline ::google::protobuf::FeatureSet_JsonFormat FeatureSet::_internal_json_format() const {
@@ -18270,7 +18271,6 @@ inline ::google::protobuf::FeatureSet_JsonFormat FeatureSet::_internal_json_form
 inline void FeatureSet::_internal_set_json_format(::google::protobuf::FeatureSet_JsonFormat value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::FeatureSet_JsonFormat_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.json_format_ = value;
 }
 
@@ -18294,6 +18294,7 @@ inline ::google::protobuf::Edition FeatureSetDefaults_FeatureSetEditionDefault::
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::set_edition(::google::protobuf::Edition value) {
   _internal_set_edition(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
 }
 inline ::google::protobuf::Edition FeatureSetDefaults_FeatureSetEditionDefault::_internal_edition() const {
@@ -18303,7 +18304,6 @@ inline ::google::protobuf::Edition FeatureSetDefaults_FeatureSetEditionDefault::
 inline void FeatureSetDefaults_FeatureSetEditionDefault::_internal_set_edition(::google::protobuf::Edition value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::Edition_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.edition_ = value;
 }
 
@@ -18370,7 +18370,6 @@ inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefau
 }
 inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefault::_internal_mutable_features() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -18378,6 +18377,7 @@ inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefau
   return _impl_.features_;
 }
 inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefault::mutable_features() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::FeatureSet* _msg = _internal_mutable_features();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.features)
   return _msg;
@@ -18472,6 +18472,7 @@ inline ::google::protobuf::Edition FeatureSetDefaults::minimum_edition() const {
 }
 inline void FeatureSetDefaults::set_minimum_edition(::google::protobuf::Edition value) {
   _internal_set_minimum_edition(value);
+  _impl_._has_bits_[0] |= 0x00000001u;
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.minimum_edition)
 }
 inline ::google::protobuf::Edition FeatureSetDefaults::_internal_minimum_edition() const {
@@ -18481,7 +18482,6 @@ inline ::google::protobuf::Edition FeatureSetDefaults::_internal_minimum_edition
 inline void FeatureSetDefaults::_internal_set_minimum_edition(::google::protobuf::Edition value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::Edition_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.minimum_edition_ = value;
 }
 
@@ -18501,6 +18501,7 @@ inline ::google::protobuf::Edition FeatureSetDefaults::maximum_edition() const {
 }
 inline void FeatureSetDefaults::set_maximum_edition(::google::protobuf::Edition value) {
   _internal_set_maximum_edition(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.maximum_edition)
 }
 inline ::google::protobuf::Edition FeatureSetDefaults::_internal_maximum_edition() const {
@@ -18510,7 +18511,6 @@ inline ::google::protobuf::Edition FeatureSetDefaults::_internal_maximum_edition
 inline void FeatureSetDefaults::_internal_set_maximum_edition(::google::protobuf::Edition value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::Edition_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.maximum_edition_ = value;
 }
 
@@ -19040,6 +19040,7 @@ inline ::int32_t GeneratedCodeInfo_Annotation::begin() const {
 }
 inline void GeneratedCodeInfo_Annotation::set_begin(::int32_t value) {
   _internal_set_begin(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.begin)
 }
 inline ::int32_t GeneratedCodeInfo_Annotation::_internal_begin() const {
@@ -19048,7 +19049,6 @@ inline ::int32_t GeneratedCodeInfo_Annotation::_internal_begin() const {
 }
 inline void GeneratedCodeInfo_Annotation::_internal_set_begin(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.begin_ = value;
 }
 
@@ -19068,6 +19068,7 @@ inline ::int32_t GeneratedCodeInfo_Annotation::end() const {
 }
 inline void GeneratedCodeInfo_Annotation::set_end(::int32_t value) {
   _internal_set_end(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.end)
 }
 inline ::int32_t GeneratedCodeInfo_Annotation::_internal_end() const {
@@ -19076,7 +19077,6 @@ inline ::int32_t GeneratedCodeInfo_Annotation::_internal_end() const {
 }
 inline void GeneratedCodeInfo_Annotation::_internal_set_end(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.end_ = value;
 }
 
@@ -19096,6 +19096,7 @@ inline ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic GeneratedCodeIn
 }
 inline void GeneratedCodeInfo_Annotation::set_semantic(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic value) {
   _internal_set_semantic(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.semantic)
 }
 inline ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::_internal_semantic() const {
@@ -19105,7 +19106,6 @@ inline ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic GeneratedCodeIn
 inline void GeneratedCodeInfo_Annotation::_internal_set_semantic(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.semantic_ = value;
 }
 

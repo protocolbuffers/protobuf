@@ -124,9 +124,6 @@ class CppFeatures::_Internal {
   using HasBits = decltype(std::declval<CppFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
-  static void set_has_legacy_closed_enum(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
 CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
@@ -271,9 +268,11 @@ void CppFeatures::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     _this->_internal_set_legacy_closed_enum(from._internal_legacy_closed_enum());
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 

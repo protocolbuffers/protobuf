@@ -261,7 +261,6 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         inline $Submsg$* $Msg$::_internal_mutable_$name$() {
           $TsanDetectConcurrentMutation$;
           $StrongRef$;
-          $set_hasbit$;
           if ($field_$ == nullptr) {
             auto* p = $superclass$::DefaultConstruct<$Submsg$>(GetArena());
             $field_$ = reinterpret_cast<$MemberType$*>(p);
@@ -272,6 +271,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           //~ TODO: add tests to make sure all write accessors are
           //~ able to prepare split message allocation.
           $PrepareSplitMessageForWrite$;
+          $set_hasbit$;
           $Submsg$* _msg = _internal_mutable_$name$();
           $annotate_mutable$;
           // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
@@ -309,15 +309,9 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 void SingularMessage::GenerateInternalAccessorDeclarations(
     io::Printer* p) const {
-  if (!is_weak()) {
-    p->Emit(R"cc(
-      static const $Submsg$& $name$(const $Msg$* msg);
-    )cc");
-    return;
-  }
+  if (!is_weak()) return;
 
   p->Emit(R"cc(
-    static const $pb$::MessageLite& $name$(const $Msg$* msg);
     static $pb$::MessageLite* mutable_$name$($Msg$* msg);
   )cc");
 }
@@ -328,17 +322,7 @@ void SingularMessage::GenerateInternalAccessorDefinitions(
   // practice, the linker is then not able to throw them out making implicit
   // weak dependencies not work at all.
 
-  if (!is_weak()) {
-    // This inline accessor directly returns member field and is used in
-    // Serialize such that AFDO profile correctly captures access information to
-    // message fields under serialize.
-    p->Emit(R"cc(
-      const $Submsg$& $Msg$::_Internal::$name$(const $Msg$* msg) {
-        return *msg->$field_$;
-      }
-    )cc");
-    return;
-  }
+  if (!is_weak()) return;
 
   // These private accessors are used by MergeFrom and
   // MergePartialFromCodedStream, and their purpose is to provide access to
@@ -370,13 +354,6 @@ void SingularMessage::GenerateInternalAccessorDefinitions(
            }},
       },
       R"cc(
-        const $pb$::MessageLite& $Msg$::_Internal::$name$(const $Msg$* msg) {
-          if (msg->$field_$ != nullptr) {
-            return *msg->$field_$;
-          } else {
-            return *$kDefaultPtr$;
-          }
-        }
         $pb$::MessageLite* $Msg$::_Internal::mutable_$name$($Msg$* msg) {
           $update_hasbit$;
           if ($is_already_set$) {
@@ -430,7 +407,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   if (is_weak()) {
     p->Emit(
         "_Internal::mutable_$name$(_this)->CheckTypeAndMergeFrom(\n"
-        "    _Internal::$name$(&from));\n");
+        "    *from.$field_$);\n");
   } else if (is_oneof() || should_split()) {
     p->Emit(
         "_this->_internal_mutable_$name$()->$Submsg$::MergeFrom(\n"
@@ -449,7 +426,6 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
       } else {
         _this->$field_$->MergeFrom(*from.$field_$);
       }
-      $this_set_hasbit$;
     )cc");
   }
 }
@@ -495,14 +471,13 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
   if (!is_group()) {
     p->Emit(R"cc(
       target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
-          $number$, _Internal::$name$(this),
-          _Internal::$name$(this).GetCachedSize(), target, stream);
+          $number$, *$field_$, $field_$->GetCachedSize(), target, stream);
     )cc");
   } else {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
       target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
-          $number$, _Internal::$name$(this), target, stream);
+          $number$, *$field_$, target, stream);
     )cc");
   }
 }

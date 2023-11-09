@@ -1075,6 +1075,7 @@ inline ::int32_t Version::major() const {
 }
 inline void Version::set_major(::int32_t value) {
   _internal_set_major(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.major)
 }
 inline ::int32_t Version::_internal_major() const {
@@ -1083,7 +1084,6 @@ inline ::int32_t Version::_internal_major() const {
 }
 inline void Version::_internal_set_major(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.major_ = value;
 }
 
@@ -1103,6 +1103,7 @@ inline ::int32_t Version::minor() const {
 }
 inline void Version::set_minor(::int32_t value) {
   _internal_set_minor(value);
+  _impl_._has_bits_[0] |= 0x00000004u;
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.minor)
 }
 inline ::int32_t Version::_internal_minor() const {
@@ -1111,7 +1112,6 @@ inline ::int32_t Version::_internal_minor() const {
 }
 inline void Version::_internal_set_minor(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.minor_ = value;
 }
 
@@ -1131,6 +1131,7 @@ inline ::int32_t Version::patch() const {
 }
 inline void Version::set_patch(::int32_t value) {
   _internal_set_patch(value);
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.patch)
 }
 inline ::int32_t Version::_internal_patch() const {
@@ -1139,7 +1140,6 @@ inline ::int32_t Version::_internal_patch() const {
 }
 inline void Version::_internal_set_patch(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.patch_ = value;
 }
 
@@ -1543,7 +1543,6 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::unsafe_arena
 }
 inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::_internal_mutable_compiler_version() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   if (_impl_.compiler_version_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::compiler::Version>(GetArena());
     _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(p);
@@ -1551,6 +1550,7 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::_internal_mu
   return _impl_.compiler_version_;
 }
 inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000002u;
   ::google::protobuf::compiler::Version* _msg = _internal_mutable_compiler_version();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
   return _msg;
@@ -1851,7 +1851,6 @@ inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::unsafe
 }
 inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000008u;
   if (_impl_.generated_code_info_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::GeneratedCodeInfo>(GetArena());
     _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(p);
@@ -1859,6 +1858,7 @@ inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::_inter
   return _impl_.generated_code_info_;
 }
 inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::mutable_generated_code_info() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000008u;
   ::google::protobuf::GeneratedCodeInfo* _msg = _internal_mutable_generated_code_info();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
   return _msg;
@@ -1975,6 +1975,7 @@ inline ::uint64_t CodeGeneratorResponse::supported_features() const {
 }
 inline void CodeGeneratorResponse::set_supported_features(::uint64_t value) {
   _internal_set_supported_features(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
 }
 inline ::uint64_t CodeGeneratorResponse::_internal_supported_features() const {
@@ -1983,7 +1984,6 @@ inline ::uint64_t CodeGeneratorResponse::_internal_supported_features() const {
 }
 inline void CodeGeneratorResponse::_internal_set_supported_features(::uint64_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.supported_features_ = value;
 }
 

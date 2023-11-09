@@ -311,18 +311,6 @@ class Version::_Internal {
   using HasBits = decltype(std::declval<Version>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(Version, _impl_._has_bits_);
-  static void set_has_major(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_minor(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static void set_has_patch(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static void set_has_suffix(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
 Version::Version(::google::protobuf::Arena* arena)
@@ -581,8 +569,8 @@ void Version::MergeImpl(::google::protobuf::Message& to_msg, const ::google::pro
     if (cached_has_bits & 0x00000008u) {
       _this->_impl_.patch_ = from._impl_.patch_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -624,18 +612,8 @@ class CodeGeneratorRequest::_Internal {
   using HasBits = decltype(std::declval<CodeGeneratorRequest>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_);
-  static void set_has_parameter(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static const ::google::protobuf::compiler::Version& compiler_version(const CodeGeneratorRequest* msg);
-  static void set_has_compiler_version(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
-const ::google::protobuf::compiler::Version& CodeGeneratorRequest::_Internal::compiler_version(const CodeGeneratorRequest* msg) {
-  return *msg->_impl_.compiler_version_;
-}
 void CodeGeneratorRequest::clear_proto_file() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.proto_file_.Clear();
@@ -833,8 +811,7 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        3, _Internal::compiler_version(this),
-        _Internal::compiler_version(this).GetCachedSize(), target, stream);
+        3, *_impl_.compiler_version_, _impl_.compiler_version_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
@@ -934,9 +911,9 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const 
       } else {
         _this->_impl_.compiler_version_->MergeFrom(*from._impl_.compiler_version_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -980,24 +957,8 @@ class CodeGeneratorResponse_File::_Internal {
   using HasBits = decltype(std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_);
-  static void set_has_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_insertion_point(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_content(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static const ::google::protobuf::GeneratedCodeInfo& generated_code_info(const CodeGeneratorResponse_File* msg);
-  static void set_has_generated_code_info(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
 };
 
-const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::_Internal::generated_code_info(const CodeGeneratorResponse_File* msg) {
-  return *msg->_impl_.generated_code_info_;
-}
 void CodeGeneratorResponse_File::clear_generated_code_info() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.generated_code_info_ != nullptr) _impl_.generated_code_info_->Clear();
@@ -1195,8 +1156,7 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
   // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
   if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        16, _Internal::generated_code_info(this),
-        _Internal::generated_code_info(this).GetCachedSize(), target, stream);
+        16, *_impl_.generated_code_info_, _impl_.generated_code_info_->GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1275,9 +1235,9 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::Message& to_msg, 
       } else {
         _this->_impl_.generated_code_info_->MergeFrom(*from._impl_.generated_code_info_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000008u;
     }
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -1316,12 +1276,6 @@ class CodeGeneratorResponse::_Internal {
   using HasBits = decltype(std::declval<CodeGeneratorResponse>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._has_bits_);
-  static void set_has_error(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_supported_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
 CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* arena)
@@ -1547,8 +1501,8 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::Message& to_msg, const
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.supported_features_ = from._impl_.supported_features_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 

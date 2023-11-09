@@ -2544,34 +2544,8 @@ class FileDescriptorProto::_Internal {
   using HasBits = decltype(std::declval<FileDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._has_bits_);
-  static void set_has_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_package(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static const ::google::protobuf::FileOptions& options(const FileDescriptorProto* msg);
-  static void set_has_options(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static const ::google::protobuf::SourceCodeInfo& source_code_info(const FileDescriptorProto* msg);
-  static void set_has_source_code_info(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
-  }
-  static void set_has_syntax(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static void set_has_edition(HasBits* has_bits) {
-    (*has_bits)[0] |= 32u;
-  }
 };
 
-const ::google::protobuf::FileOptions& FileDescriptorProto::_Internal::options(const FileDescriptorProto* msg) {
-  return *msg->_impl_.options_;
-}
-const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::_Internal::source_code_info(const FileDescriptorProto* msg) {
-  return *msg->_impl_.source_code_info_;
-}
 FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -2895,15 +2869,13 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
   // optional .google.protobuf.FileOptions options = 8;
   if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        8, _Internal::options(this),
-        _Internal::options(this).GetCachedSize(), target, stream);
+        8, *_impl_.options_, _impl_.options_->GetCachedSize(), target, stream);
   }
 
   // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
   if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        9, _Internal::source_code_info(this),
-        _Internal::source_code_info(this).GetCachedSize(), target, stream);
+        9, *_impl_.source_code_info_, _impl_.source_code_info_->GetCachedSize(), target, stream);
   }
 
   // repeated int32 public_dependency = 10;
@@ -3084,7 +3056,6 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000008u;
     }
     if (cached_has_bits & 0x00000010u) {
       ABSL_DCHECK(from._impl_.source_code_info_ != nullptr);
@@ -3094,13 +3065,12 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
       } else {
         _this->_impl_.source_code_info_->MergeFrom(*from._impl_.source_code_info_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000010u;
     }
     if (cached_has_bits & 0x00000020u) {
       _this->_impl_.edition_ = from._impl_.edition_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -3162,21 +3132,8 @@ class DescriptorProto_ExtensionRange::_Internal {
   using HasBits = decltype(std::declval<DescriptorProto_ExtensionRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._has_bits_);
-  static void set_has_start(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_end(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static const ::google::protobuf::ExtensionRangeOptions& options(const DescriptorProto_ExtensionRange* msg);
-  static void set_has_options(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::_Internal::options(const DescriptorProto_ExtensionRange* msg) {
-  return *msg->_impl_.options_;
-}
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -3345,8 +3302,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
   // optional .google.protobuf.ExtensionRangeOptions options = 3;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        3, _Internal::options(this),
-        _Internal::options(this).GetCachedSize(), target, stream);
+        3, *_impl_.options_, _impl_.options_->GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -3410,7 +3366,6 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::Message& to_m
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.start_ = from._impl_.start_;
@@ -3418,8 +3373,8 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::Message& to_m
     if (cached_has_bits & 0x00000004u) {
       _this->_impl_.end_ = from._impl_.end_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -3461,12 +3416,6 @@ class DescriptorProto_ReservedRange::_Internal {
   using HasBits = decltype(std::declval<DescriptorProto_ReservedRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._has_bits_);
-  static void set_has_start(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_end(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* arena)
@@ -3650,8 +3599,8 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::Message& to_ms
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.end_ = from._impl_.end_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -3690,18 +3639,8 @@ class DescriptorProto::_Internal {
   using HasBits = decltype(std::declval<DescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._has_bits_);
-  static void set_has_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static const ::google::protobuf::MessageOptions& options(const DescriptorProto* msg);
-  static void set_has_options(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
-const ::google::protobuf::MessageOptions& DescriptorProto::_Internal::options(const DescriptorProto* msg) {
-  return *msg->_impl_.options_;
-}
 DescriptorProto::DescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -3977,8 +3916,7 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
   // optional .google.protobuf.MessageOptions options = 7;
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        7, _Internal::options(this),
-        _Internal::options(this).GetCachedSize(), target, stream);
+        7, *_impl_.options_, _impl_.options_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
@@ -4126,9 +4064,9 @@ void DescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const ::goo
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -4188,21 +4126,6 @@ class ExtensionRangeOptions_Declaration::_Internal {
   using HasBits = decltype(std::declval<ExtensionRangeOptions_Declaration>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._has_bits_);
-  static void set_has_number(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static void set_has_full_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_type(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_reserved(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static void set_has_repeated(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
-  }
 };
 
 ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena)
@@ -4493,8 +4416,8 @@ void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::Message& t
     if (cached_has_bits & 0x00000010u) {
       _this->_impl_.repeated_ = from._impl_.repeated_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -4537,18 +4460,8 @@ class ExtensionRangeOptions::_Internal {
   using HasBits = decltype(std::declval<ExtensionRangeOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._has_bits_);
-  static const ::google::protobuf::FeatureSet& features(const ExtensionRangeOptions* msg);
-  static void set_has_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_verification(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
-const ::google::protobuf::FeatureSet& ExtensionRangeOptions::_Internal::features(const ExtensionRangeOptions* msg) {
-  return *msg->_impl_.features_;
-}
 ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -4729,8 +4642,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
   // optional .google.protobuf.FeatureSet features = 50;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        50, _Internal::features(this),
-        _Internal::features(this).GetCachedSize(), target, stream);
+        50, *_impl_.features_, _impl_.features_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -4817,13 +4729,12 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::Message& to_msg, const
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.verification_ = from._impl_.verification_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -4874,45 +4785,8 @@ class FieldDescriptorProto::_Internal {
   using HasBits = decltype(std::declval<FieldDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._has_bits_);
-  static void set_has_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_number(HasBits* has_bits) {
-    (*has_bits)[0] |= 64u;
-  }
-  static void set_has_label(HasBits* has_bits) {
-    (*has_bits)[0] |= 512u;
-  }
-  static void set_has_type(HasBits* has_bits) {
-    (*has_bits)[0] |= 1024u;
-  }
-  static void set_has_type_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static void set_has_extendee(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_default_value(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static void set_has_oneof_index(HasBits* has_bits) {
-    (*has_bits)[0] |= 128u;
-  }
-  static void set_has_json_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
-  }
-  static const ::google::protobuf::FieldOptions& options(const FieldDescriptorProto* msg);
-  static void set_has_options(HasBits* has_bits) {
-    (*has_bits)[0] |= 32u;
-  }
-  static void set_has_proto3_optional(HasBits* has_bits) {
-    (*has_bits)[0] |= 256u;
-  }
 };
 
-const ::google::protobuf::FieldOptions& FieldDescriptorProto::_Internal::options(const FieldDescriptorProto* msg) {
-  return *msg->_impl_.options_;
-}
 FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -5218,8 +5092,7 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
   // optional .google.protobuf.FieldOptions options = 8;
   if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        8, _Internal::options(this),
-        _Internal::options(this).GetCachedSize(), target, stream);
+        8, *_impl_.options_, _impl_.options_->GetCachedSize(), target, stream);
   }
 
   // optional int32 oneof_index = 9;
@@ -5369,7 +5242,6 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000020u;
     }
     if (cached_has_bits & 0x00000040u) {
       _this->_impl_.number_ = from._impl_.number_;
@@ -5377,7 +5249,6 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
     if (cached_has_bits & 0x00000080u) {
       _this->_impl_.oneof_index_ = from._impl_.oneof_index_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
   if (cached_has_bits & 0x00000700u) {
     if (cached_has_bits & 0x00000100u) {
@@ -5389,8 +5260,8 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
     if (cached_has_bits & 0x00000400u) {
       _this->_impl_.type_ = from._impl_.type_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -5439,18 +5310,8 @@ class OneofDescriptorProto::_Internal {
   using HasBits = decltype(std::declval<OneofDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._has_bits_);
-  static void set_has_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static const ::google::protobuf::OneofOptions& options(const OneofDescriptorProto* msg);
-  static void set_has_options(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
-const ::google::protobuf::OneofOptions& OneofDescriptorProto::_Internal::options(const OneofDescriptorProto* msg) {
-  return *msg->_impl_.options_;
-}
 OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -5600,8 +5461,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
   // optional .google.protobuf.OneofOptions options = 2;
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        2, _Internal::options(this),
-        _Internal::options(this).GetCachedSize(), target, stream);
+        2, *_impl_.options_, _impl_.options_->GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -5662,9 +5522,9 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const 
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -5704,12 +5564,6 @@ class EnumDescriptorProto_EnumReservedRange::_Internal {
   using HasBits = decltype(std::declval<EnumDescriptorProto_EnumReservedRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._has_bits_);
-  static void set_has_start(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_end(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena)
@@ -5893,8 +5747,8 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.end_ = from._impl_.end_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -5933,18 +5787,8 @@ class EnumDescriptorProto::_Internal {
   using HasBits = decltype(std::declval<EnumDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._has_bits_);
-  static void set_has_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static const ::google::protobuf::EnumOptions& options(const EnumDescriptorProto* msg);
-  static void set_has_options(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
-const ::google::protobuf::EnumOptions& EnumDescriptorProto::_Internal::options(const EnumDescriptorProto* msg) {
-  return *msg->_impl_.options_;
-}
 EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -6135,8 +5979,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
   // optional .google.protobuf.EnumOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        3, _Internal::options(this),
-        _Internal::options(this).GetCachedSize(), target, stream);
+        3, *_impl_.options_, _impl_.options_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
@@ -6236,9 +6079,9 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const :
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -6283,21 +6126,8 @@ class EnumValueDescriptorProto::_Internal {
   using HasBits = decltype(std::declval<EnumValueDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._has_bits_);
-  static void set_has_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_number(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static const ::google::protobuf::EnumValueOptions& options(const EnumValueDescriptorProto* msg);
-  static void set_has_options(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
-const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::_Internal::options(const EnumValueDescriptorProto* msg) {
-  return *msg->_impl_.options_;
-}
 EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -6468,8 +6298,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
   // optional .google.protobuf.EnumValueOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        3, _Internal::options(this),
-        _Internal::options(this).GetCachedSize(), target, stream);
+        3, *_impl_.options_, _impl_.options_->GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -6536,13 +6365,12 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, co
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
     if (cached_has_bits & 0x00000004u) {
       _this->_impl_.number_ = from._impl_.number_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -6587,18 +6415,8 @@ class ServiceDescriptorProto::_Internal {
   using HasBits = decltype(std::declval<ServiceDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._has_bits_);
-  static void set_has_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static const ::google::protobuf::ServiceOptions& options(const ServiceDescriptorProto* msg);
-  static void set_has_options(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
-const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::_Internal::options(const ServiceDescriptorProto* msg) {
-  return *msg->_impl_.options_;
-}
 ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -6767,8 +6585,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
   // optional .google.protobuf.ServiceOptions options = 3;
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        3, _Internal::options(this),
-        _Internal::options(this).GetCachedSize(), target, stream);
+        3, *_impl_.options_, _impl_.options_->GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -6837,9 +6654,9 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, cons
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -6882,30 +6699,8 @@ class MethodDescriptorProto::_Internal {
   using HasBits = decltype(std::declval<MethodDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._has_bits_);
-  static void set_has_name(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_input_type(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_output_type(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static const ::google::protobuf::MethodOptions& options(const MethodDescriptorProto* msg);
-  static void set_has_options(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static void set_has_client_streaming(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
-  }
-  static void set_has_server_streaming(HasBits* has_bits) {
-    (*has_bits)[0] |= 32u;
-  }
 };
 
-const ::google::protobuf::MethodOptions& MethodDescriptorProto::_Internal::options(const MethodDescriptorProto* msg) {
-  return *msg->_impl_.options_;
-}
 MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -7126,8 +6921,7 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
   // optional .google.protobuf.MethodOptions options = 4;
   if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        4, _Internal::options(this),
-        _Internal::options(this).GetCachedSize(), target, stream);
+        4, *_impl_.options_, _impl_.options_->GetCachedSize(), target, stream);
   }
 
   // optional bool client_streaming = 5 [default = false];
@@ -7230,7 +7024,6 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000008u;
     }
     if (cached_has_bits & 0x00000010u) {
       _this->_impl_.client_streaming_ = from._impl_.client_streaming_;
@@ -7238,8 +7031,8 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::Message& to_msg, const
     if (cached_has_bits & 0x00000020u) {
       _this->_impl_.server_streaming_ = from._impl_.server_streaming_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -7286,75 +7079,8 @@ class FileOptions::_Internal {
   using HasBits = decltype(std::declval<FileOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._has_bits_);
-  static void set_has_java_package(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_java_outer_classname(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_java_multiple_files(HasBits* has_bits) {
-    (*has_bits)[0] |= 2048u;
-  }
-  static void set_has_java_generate_equals_and_hash(HasBits* has_bits) {
-    (*has_bits)[0] |= 4096u;
-  }
-  static void set_has_java_string_check_utf8(HasBits* has_bits) {
-    (*has_bits)[0] |= 8192u;
-  }
-  static void set_has_optimize_for(HasBits* has_bits) {
-    (*has_bits)[0] |= 524288u;
-  }
-  static void set_has_go_package(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static void set_has_cc_generic_services(HasBits* has_bits) {
-    (*has_bits)[0] |= 16384u;
-  }
-  static void set_has_java_generic_services(HasBits* has_bits) {
-    (*has_bits)[0] |= 32768u;
-  }
-  static void set_has_py_generic_services(HasBits* has_bits) {
-    (*has_bits)[0] |= 65536u;
-  }
-  static void set_has_php_generic_services(HasBits* has_bits) {
-    (*has_bits)[0] |= 131072u;
-  }
-  static void set_has_deprecated(HasBits* has_bits) {
-    (*has_bits)[0] |= 262144u;
-  }
-  static void set_has_cc_enable_arenas(HasBits* has_bits) {
-    (*has_bits)[0] |= 1048576u;
-  }
-  static void set_has_objc_class_prefix(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static void set_has_csharp_namespace(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
-  }
-  static void set_has_swift_prefix(HasBits* has_bits) {
-    (*has_bits)[0] |= 32u;
-  }
-  static void set_has_php_class_prefix(HasBits* has_bits) {
-    (*has_bits)[0] |= 64u;
-  }
-  static void set_has_php_namespace(HasBits* has_bits) {
-    (*has_bits)[0] |= 128u;
-  }
-  static void set_has_php_metadata_namespace(HasBits* has_bits) {
-    (*has_bits)[0] |= 256u;
-  }
-  static void set_has_ruby_package(HasBits* has_bits) {
-    (*has_bits)[0] |= 512u;
-  }
-  static const ::google::protobuf::FeatureSet& features(const FileOptions* msg);
-  static void set_has_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 1024u;
-  }
 };
 
-const ::google::protobuf::FeatureSet& FileOptions::_Internal::features(const FileOptions* msg) {
-  return *msg->_impl_.features_;
-}
 FileOptions::FileOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -7871,8 +7597,7 @@ constexpr ::_pbi::TcParseTable<5, 22, 3, 202, 12> FileOptions::_table_ = {
   // optional .google.protobuf.FeatureSet features = 50;
   if (cached_has_bits & 0x00000400u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        50, _Internal::features(this),
-        _Internal::features(this).GetCachedSize(), target, stream);
+        50, *_impl_.features_, _impl_.features_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -8092,7 +7817,6 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000400u;
     }
     if (cached_has_bits & 0x00000800u) {
       _this->_impl_.java_multiple_files_ = from._impl_.java_multiple_files_;
@@ -8109,7 +7833,6 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
     if (cached_has_bits & 0x00008000u) {
       _this->_impl_.java_generic_services_ = from._impl_.java_generic_services_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
   if (cached_has_bits & 0x001f0000u) {
     if (cached_has_bits & 0x00010000u) {
@@ -8127,8 +7850,8 @@ void FileOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
     if (cached_has_bits & 0x00100000u) {
       _this->_impl_.cc_enable_arenas_ = from._impl_.cc_enable_arenas_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -8190,30 +7913,8 @@ class MessageOptions::_Internal {
   using HasBits = decltype(std::declval<MessageOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._has_bits_);
-  static void set_has_message_set_wire_format(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_no_standard_descriptor_accessor(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static void set_has_deprecated(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static void set_has_map_entry(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
-  }
-  static void set_has_deprecated_legacy_json_field_conflicts(HasBits* has_bits) {
-    (*has_bits)[0] |= 32u;
-  }
-  static const ::google::protobuf::FeatureSet& features(const MessageOptions* msg);
-  static void set_has_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::FeatureSet& MessageOptions::_Internal::features(const MessageOptions* msg) {
-  return *msg->_impl_.features_;
-}
 MessageOptions::MessageOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -8433,8 +8134,7 @@ constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
   // optional .google.protobuf.FeatureSet features = 12;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        12, _Internal::features(this),
-        _Internal::features(this).GetCachedSize(), target, stream);
+        12, *_impl_.features_, _impl_.features_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -8532,7 +8232,6 @@ void MessageOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.message_set_wire_format_ = from._impl_.message_set_wire_format_;
@@ -8549,8 +8248,8 @@ void MessageOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
     if (cached_has_bits & 0x00000020u) {
       _this->_impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -8600,12 +8299,6 @@ class FieldOptions_EditionDefault::_Internal {
   using HasBits = decltype(std::declval<FieldOptions_EditionDefault>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._has_bits_);
-  static void set_has_edition(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_value(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
 FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Arena* arena)
@@ -8804,8 +8497,8 @@ void FieldOptions_EditionDefault::MergeImpl(::google::protobuf::Message& to_msg,
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.edition_ = from._impl_.edition_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -8842,42 +8535,8 @@ class FieldOptions::_Internal {
   using HasBits = decltype(std::declval<FieldOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._has_bits_);
-  static void set_has_ctype(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_packed(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static void set_has_jstype(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static void set_has_lazy(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
-  }
-  static void set_has_unverified_lazy(HasBits* has_bits) {
-    (*has_bits)[0] |= 32u;
-  }
-  static void set_has_deprecated(HasBits* has_bits) {
-    (*has_bits)[0] |= 64u;
-  }
-  static void set_has_weak(HasBits* has_bits) {
-    (*has_bits)[0] |= 128u;
-  }
-  static void set_has_debug_redact(HasBits* has_bits) {
-    (*has_bits)[0] |= 256u;
-  }
-  static void set_has_retention(HasBits* has_bits) {
-    (*has_bits)[0] |= 512u;
-  }
-  static const ::google::protobuf::FeatureSet& features(const FieldOptions* msg);
-  static void set_has_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::FeatureSet& FieldOptions::_Internal::features(const FieldOptions* msg) {
-  return *msg->_impl_.features_;
-}
 FieldOptions::FieldOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -9193,8 +8852,7 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
   // optional .google.protobuf.FeatureSet features = 21;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        21, _Internal::features(this),
-        _Internal::features(this).GetCachedSize(), target, stream);
+        21, *_impl_.features_, _impl_.features_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -9338,7 +8996,6 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.ctype_ = from._impl_.ctype_;
@@ -9361,7 +9018,6 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
     if (cached_has_bits & 0x00000080u) {
       _this->_impl_.weak_ = from._impl_.weak_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
   if (cached_has_bits & 0x00000300u) {
     if (cached_has_bits & 0x00000100u) {
@@ -9370,8 +9026,8 @@ void FieldOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
     if (cached_has_bits & 0x00000200u) {
       _this->_impl_.retention_ = from._impl_.retention_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -9423,15 +9079,8 @@ class OneofOptions::_Internal {
   using HasBits = decltype(std::declval<OneofOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._has_bits_);
-  static const ::google::protobuf::FeatureSet& features(const OneofOptions* msg);
-  static void set_has_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::FeatureSet& OneofOptions::_Internal::features(const OneofOptions* msg) {
-  return *msg->_impl_.features_;
-}
 OneofOptions::OneofOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -9574,8 +9223,7 @@ constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
   // optional .google.protobuf.FeatureSet features = 1;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        1, _Internal::features(this),
-        _Internal::features(this).GetCachedSize(), target, stream);
+        1, *_impl_.features_, _impl_.features_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -9636,7 +9284,8 @@ void OneofOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
 
   _this->_internal_mutable_uninterpreted_option()->MergeFrom(
       from._internal_uninterpreted_option());
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(from._impl_.features_ != nullptr);
     if (_this->_impl_.features_ == nullptr) {
       _this->_impl_.features_ =
@@ -9644,8 +9293,8 @@ void OneofOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google
     } else {
       _this->_impl_.features_->MergeFrom(*from._impl_.features_);
     }
-    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -9690,24 +9339,8 @@ class EnumOptions::_Internal {
   using HasBits = decltype(std::declval<EnumOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._has_bits_);
-  static void set_has_allow_alias(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_deprecated(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static void set_has_deprecated_legacy_json_field_conflicts(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static const ::google::protobuf::FeatureSet& features(const EnumOptions* msg);
-  static void set_has_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::FeatureSet& EnumOptions::_Internal::features(const EnumOptions* msg) {
-  return *msg->_impl_.features_;
-}
 EnumOptions::EnumOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -9903,8 +9536,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
   // optional .google.protobuf.FeatureSet features = 7;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        7, _Internal::features(this),
-        _Internal::features(this).GetCachedSize(), target, stream);
+        7, *_impl_.features_, _impl_.features_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -9992,7 +9624,6 @@ void EnumOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.allow_alias_ = from._impl_.allow_alias_;
@@ -10003,8 +9634,8 @@ void EnumOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
     if (cached_has_bits & 0x00000008u) {
       _this->_impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -10054,21 +9685,8 @@ class EnumValueOptions::_Internal {
   using HasBits = decltype(std::declval<EnumValueOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._has_bits_);
-  static void set_has_deprecated(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static const ::google::protobuf::FeatureSet& features(const EnumValueOptions* msg);
-  static void set_has_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_debug_redact(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
 };
 
-const ::google::protobuf::FeatureSet& EnumValueOptions::_Internal::features(const EnumValueOptions* msg) {
-  return *msg->_impl_.features_;
-}
 EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -10247,8 +9865,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 2, 0, 7> EnumValueOptions::_table_ = {
   // optional .google.protobuf.FeatureSet features = 2;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        2, _Internal::features(this),
-        _Internal::features(this).GetCachedSize(), target, stream);
+        2, *_impl_.features_, _impl_.features_->GetCachedSize(), target, stream);
   }
 
   // optional bool debug_redact = 3 [default = false];
@@ -10338,7 +9955,6 @@ void EnumValueOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::go
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.deprecated_ = from._impl_.deprecated_;
@@ -10346,8 +9962,8 @@ void EnumValueOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::go
     if (cached_has_bits & 0x00000004u) {
       _this->_impl_.debug_redact_ = from._impl_.debug_redact_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -10397,18 +10013,8 @@ class ServiceOptions::_Internal {
   using HasBits = decltype(std::declval<ServiceOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._has_bits_);
-  static const ::google::protobuf::FeatureSet& features(const ServiceOptions* msg);
-  static void set_has_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_deprecated(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
-const ::google::protobuf::FeatureSet& ServiceOptions::_Internal::features(const ServiceOptions* msg) {
-  return *msg->_impl_.features_;
-}
 ServiceOptions::ServiceOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -10571,8 +10177,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
   // optional .google.protobuf.FeatureSet features = 34;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        34, _Internal::features(this),
-        _Internal::features(this).GetCachedSize(), target, stream);
+        34, *_impl_.features_, _impl_.features_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -10650,13 +10255,12 @@ void ServiceOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::goog
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.deprecated_ = from._impl_.deprecated_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -10706,21 +10310,8 @@ class MethodOptions::_Internal {
   using HasBits = decltype(std::declval<MethodOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._has_bits_);
-  static void set_has_deprecated(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_idempotency_level(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static const ::google::protobuf::FeatureSet& features(const MethodOptions* msg);
-  static void set_has_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::FeatureSet& MethodOptions::_Internal::features(const MethodOptions* msg) {
-  return *msg->_impl_.features_;
-}
 MethodOptions::MethodOptions(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -10910,8 +10501,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
   // optional .google.protobuf.FeatureSet features = 35;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        35, _Internal::features(this),
-        _Internal::features(this).GetCachedSize(), target, stream);
+        35, *_impl_.features_, _impl_.features_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -10995,7 +10585,6 @@ void MethodOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::googl
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.deprecated_ = from._impl_.deprecated_;
@@ -11003,8 +10592,8 @@ void MethodOptions::MergeImpl(::google::protobuf::Message& to_msg, const ::googl
     if (cached_has_bits & 0x00000004u) {
       _this->_impl_.idempotency_level_ = from._impl_.idempotency_level_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -11054,12 +10643,6 @@ class UninterpretedOption_NamePart::_Internal {
   using HasBits = decltype(std::declval<UninterpretedOption_NamePart>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._has_bits_);
-  static void set_has_name_part(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_is_extension(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
   static bool MissingRequiredFields(const HasBits& has_bits) {
     return ((has_bits[0] & 0x00000003) ^ 0x00000003) != 0;
   }
@@ -11260,8 +10843,8 @@ void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::Message& to_msg
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.is_extension_ = from._impl_.is_extension_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -11301,24 +10884,6 @@ class UninterpretedOption::_Internal {
   using HasBits = decltype(std::declval<UninterpretedOption>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._has_bits_);
-  static void set_has_identifier_value(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_positive_int_value(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static void set_has_negative_int_value(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
-  }
-  static void set_has_double_value(HasBits* has_bits) {
-    (*has_bits)[0] |= 32u;
-  }
-  static void set_has_string_value(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_aggregate_value(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
 };
 
 UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* arena)
@@ -11660,8 +11225,8 @@ void UninterpretedOption::MergeImpl(::google::protobuf::Message& to_msg, const :
     if (cached_has_bits & 0x00000020u) {
       _this->_impl_.double_value_ = from._impl_.double_value_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -11708,24 +11273,6 @@ class FeatureSet::_Internal {
   using HasBits = decltype(std::declval<FeatureSet>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._has_bits_);
-  static void set_has_field_presence(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_enum_type(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_repeated_field_encoding(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static void set_has_utf8_validation(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static void set_has_message_encoding(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
-  }
-  static void set_has_json_format(HasBits* has_bits) {
-    (*has_bits)[0] |= 32u;
-  }
 };
 
 FeatureSet::FeatureSet(::google::protobuf::Arena* arena)
@@ -12033,8 +11580,8 @@ void FeatureSet::MergeImpl(::google::protobuf::Message& to_msg, const ::google::
     if (cached_has_bits & 0x00000020u) {
       _this->_impl_.json_format_ = from._impl_.json_format_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_impl_._extensions_.MergeFrom(internal_default_instance(), from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -12078,18 +11625,8 @@ class FeatureSetDefaults_FeatureSetEditionDefault::_Internal {
   using HasBits = decltype(std::declval<FeatureSetDefaults_FeatureSetEditionDefault>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._has_bits_);
-  static void set_has_edition(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static const ::google::protobuf::FeatureSet& features(const FeatureSetDefaults_FeatureSetEditionDefault* msg);
-  static void set_has_features(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::_Internal::features(const FeatureSetDefaults_FeatureSetEditionDefault* msg) {
-  return *msg->_impl_.features_;
-}
 FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena)
     : ::google::protobuf::Message(arena) {
   SharedCtor(arena);
@@ -12228,8 +11765,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 2, 0, 2> FeatureSetDefaults_FeatureSetEditi
   // optional .google.protobuf.FeatureSet features = 2;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        2, _Internal::features(this),
-        _Internal::features(this).GetCachedSize(), target, stream);
+        2, *_impl_.features_, _impl_.features_->GetCachedSize(), target, stream);
   }
 
   // optional .google.protobuf.Edition edition = 3;
@@ -12294,13 +11830,12 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
-      _this->_impl_._has_bits_[0] |= 0x00000001u;
     }
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.edition_ = from._impl_.edition_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -12342,12 +11877,6 @@ class FeatureSetDefaults::_Internal {
   using HasBits = decltype(std::declval<FeatureSetDefaults>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._has_bits_);
-  static void set_has_minimum_edition(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_maximum_edition(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
 FeatureSetDefaults::FeatureSetDefaults(::google::protobuf::Arena* arena)
@@ -12575,8 +12104,8 @@ void FeatureSetDefaults::MergeImpl(::google::protobuf::Message& to_msg, const ::
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.maximum_edition_ = from._impl_.maximum_edition_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -12618,12 +12147,6 @@ class SourceCodeInfo_Location::_Internal {
   using HasBits = decltype(std::declval<SourceCodeInfo_Location>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._has_bits_);
-  static void set_has_leading_comments(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_trailing_comments(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
 SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* arena)
@@ -12926,6 +12449,7 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::Message& to_msg, con
       _this->_internal_set_trailing_comments(from._internal_trailing_comments());
     }
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -13151,18 +12675,6 @@ class GeneratedCodeInfo_Annotation::_Internal {
   using HasBits = decltype(std::declval<GeneratedCodeInfo_Annotation>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._has_bits_);
-  static void set_has_source_file(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_begin(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_end(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static void set_has_semantic(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
 };
 
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena)
@@ -13457,8 +12969,8 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::Message& to_msg
     if (cached_has_bits & 0x00000008u) {
       _this->_impl_.semantic_ = from._impl_.semantic_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
