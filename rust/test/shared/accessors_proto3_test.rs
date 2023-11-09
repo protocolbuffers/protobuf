@@ -122,66 +122,66 @@ fn test_string_accessors() {
     let mut msg = TestAllTypes::new();
     // Note: even though it's named 'optional_string', the field is actually not
     // proto3 optional, so it does not support presence.
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_mut().get(), "");
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 
     msg.optional_string_mut().set("accessors_test");
-    assert_eq!(msg.optional_string(), "accessors_test");
-    assert_eq!(msg.optional_string_mut().get(), "accessors_test");
+    assert_that!(msg.optional_string(), eq("accessors_test"));
+    assert_that!(msg.optional_string_mut().get(), eq("accessors_test"));
 
     {
         let s = String::from("hello world");
         msg.optional_string_mut().set(&s[..]);
     }
-    assert_eq!(msg.optional_string(), "hello world");
-    assert_eq!(msg.optional_string_mut().get(), "hello world");
+    assert_that!(msg.optional_string(), eq("hello world"));
+    assert_that!(msg.optional_string_mut().get(), eq("hello world"));
 
     msg.optional_string_mut().clear();
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_mut().get(), "");
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 
     msg.optional_string_mut().set("");
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_mut().get(), "");
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 }
 
 #[test]
 fn test_optional_string_accessors() {
     let mut msg = TestProto3Optional::new();
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_opt(), Optional::Unset("".into()));
-    assert_eq!(msg.optional_string_mut().get(), "");
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(msg.optional_string_opt(), eq(Optional::Unset("".into())));
+    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
     assert_that!(msg.optional_string_mut(), is_unset());
 
     {
         let s = String::from("hello world");
         msg.optional_string_mut().set(&s[..]);
     }
-    assert_eq!(msg.optional_string(), "hello world");
-    assert_eq!(msg.optional_string_opt(), Optional::Set("hello world".into()));
+    assert_that!(msg.optional_string(), eq("hello world"));
+    assert_that!(msg.optional_string_opt(), eq(Optional::Set("hello world".into())));
     assert_that!(msg.optional_string_mut(), is_set());
-    assert_eq!(msg.optional_string_mut().get(), "hello world");
+    assert_that!(msg.optional_string_mut().get(), eq("hello world"));
 
     msg.optional_string_mut().or_default().set("accessors_test");
-    assert_eq!(msg.optional_string(), "accessors_test");
-    assert_eq!(msg.optional_string_opt(), Optional::Set("accessors_test".into()));
+    assert_that!(msg.optional_string(), eq("accessors_test"));
+    assert_that!(msg.optional_string_opt(), eq(Optional::Set("accessors_test".into())));
     assert_that!(msg.optional_string_mut(), is_set());
-    assert_eq!(msg.optional_string_mut().get(), "accessors_test");
-    assert_eq!(msg.optional_string_mut().or_default().get(), "accessors_test");
+    assert_that!(msg.optional_string_mut().get(), eq("accessors_test"));
+    assert_that!(msg.optional_string_mut().or_default().get(), eq("accessors_test"));
 
     msg.optional_string_mut().clear();
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_opt(), Optional::Unset("".into()));
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(msg.optional_string_opt(), eq(Optional::Unset("".into())));
     assert_that!(msg.optional_string_mut(), is_unset());
 
     msg.optional_string_mut().set("");
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_opt(), Optional::Set("".into()));
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
 
     msg.optional_string_mut().clear();
     msg.optional_string_mut().or_default();
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_opt(), Optional::Set("".into()));
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
 }
 
 #[test]
