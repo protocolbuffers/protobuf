@@ -450,6 +450,29 @@ DispatcherTestProto* Arena::CreateMessageInternal<DispatcherTestProto, int>(
   return nullptr;
 }
 
+TEST(ArenaTest, CreateArenaConstructable) {
+  TestAllTypes original;
+  TestUtil::SetAllFields(&original);
+
+  Arena arena;
+  auto copied = Arena::Create<TestAllTypes>(&arena, original);
+
+  TestUtil::ExpectAllFieldsSet(*copied);
+  EXPECT_EQ(copied->GetArena(), &arena);
+  EXPECT_EQ(copied->optional_nested_message().GetArena(), &arena);
+}
+
+TEST(ArenaTest, CreateRepeatedPtrField) {
+  Arena arena;
+  auto repeated = Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
+  TestUtil::SetAllFields(repeated->Add());
+
+  TestUtil::ExpectAllFieldsSet(repeated->Get(0));
+  EXPECT_EQ(repeated->GetArena(), &arena);
+  EXPECT_EQ(repeated->Get(0).GetArena(), &arena);
+  EXPECT_EQ(repeated->Get(0).optional_nested_message().GetArena(), &arena);
+}
+
 TEST(ArenaTest, CreateMessageDispatchesToSpecialFunctions) {
   hook_called = "";
   Arena::CreateMessage<DispatcherTestProto>(nullptr);

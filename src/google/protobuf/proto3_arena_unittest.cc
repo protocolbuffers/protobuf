@@ -152,7 +152,7 @@ TEST(Proto3ArenaTest, GetArena) {
 
   // Tests message created by Arena::Create.
   auto* arena_message3 = Arena::Create<TestAllTypes>(&arena);
-  EXPECT_EQ(nullptr, arena_message3->GetArena());
+  EXPECT_EQ(&arena, arena_message3->GetArena());
 }
 
 TEST(Proto3ArenaTest, GetArenaWithUnknown) {

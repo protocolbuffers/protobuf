@@ -338,6 +338,7 @@ cc_library(
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/utility:if_constexpr",
     ],
 )
 
