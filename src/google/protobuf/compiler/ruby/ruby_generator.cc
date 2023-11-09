@@ -38,6 +38,9 @@ void GenerateMessageAssignment(absl::string_view prefix,
                                const Descriptor* message, io::Printer* printer);
 void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
                             io::Printer* printer);
+void GenerateExtensionAssignment(absl::string_view prefix,
+                            const FieldDescriptor* f,
+                            io::Printer* printer);
 std::string DefaultValueForField(const FieldDescriptor* field);
 
 template<class numeric_type>
@@ -139,6 +142,9 @@ void GenerateMessageAssignment(absl::string_view prefix,
   }
   for (int i = 0; i < message->enum_type_count(); i++) {
     GenerateEnumAssignment(nested_prefix, message->enum_type(i), printer);
+  }
+  for (int i = 0; i < message->extension_count(); i++) {
+    GenerateExtensionAssignment(nested_prefix, message->extension(i), printer);
   }
 }
 
