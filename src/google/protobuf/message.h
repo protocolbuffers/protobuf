@@ -135,7 +135,6 @@ class MapValueConstRef;
 class MapValueRef;
 class MapIterator;
 class MapReflectionTester;
-class TextFormat;
 
 namespace internal {
 struct FuzzPeer;
@@ -1011,7 +1010,6 @@ class PROTOBUF_EXPORT Reflection final {
     return schema_.IsSplit(field);
   }
 
-  friend class google::protobuf::TextFormat;
   friend class FastReflectionBase;
   friend class FastReflectionMessageMutator;
   friend bool internal::IsDescendant(Message& root, const Message& message);
