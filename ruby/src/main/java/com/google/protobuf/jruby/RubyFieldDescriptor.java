@@ -102,7 +102,9 @@ public class RubyFieldDescriptor extends RubyObject {
   public IRubyObject getName(ThreadContext context) {
     return this.name;
   }
-
+  protected void setName(IRubyObject name) {
+    this.name = name;
+  }
   /*
    * call-seq:
    *     FieldDescriptor.subtype => message_or_enum_descriptor
