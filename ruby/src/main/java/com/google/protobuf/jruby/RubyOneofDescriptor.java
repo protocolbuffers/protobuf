@@ -70,10 +70,17 @@ public class RubyOneofDescriptor extends RubyObject {
   @JRubyMethod
   public IRubyObject options(ThreadContext context) {
     RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
-    RubyDescriptor oneofOptionsDescriptor = (RubyDescriptor) pool.lookup(context, context.runtime.newString("google.protobuf.OneofOptions"));
+    RubyDescriptor oneofOptionsDescriptor =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.OneofOptions"));
     RubyClass oneofOptionsClass = (RubyClass) oneofOptionsDescriptor.msgclass(context);
     RubyMessage msg = (RubyMessage) oneofOptionsClass.newInstance(context, Block.NULL_BLOCK);
-    return msg.decodeBytes(context, msg, CodedInputStream.newInstance(descriptor.getOptions().toByteString().toByteArray()), /*freeze*/ true);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(
+            descriptor.getOptions().toByteString().toByteArray()), /*freeze*/
+        true);
   }
 
   protected Collection<RubyFieldDescriptor> getFields() {

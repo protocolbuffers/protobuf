@@ -405,12 +405,13 @@ inline void DoubleValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 DoubleValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           DoubleValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void DoubleValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DoubleValue)
@@ -444,6 +445,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> DoubleValue::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_DoubleValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::DoubleValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // double value = 1;
     {::_pbi::TcParser::FastF64S1,
@@ -540,9 +544,6 @@ PROTOBUF_NOINLINE bool DoubleValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* DoubleValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -592,12 +593,13 @@ inline void FloatValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 FloatValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           FloatValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void FloatValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FloatValue)
@@ -631,6 +633,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> FloatValue::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_FloatValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::FloatValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // float value = 1;
     {::_pbi::TcParser::FastF32S1,
@@ -727,9 +732,6 @@ PROTOBUF_NOINLINE bool FloatValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* FloatValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -779,12 +781,13 @@ inline void Int64Value::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Int64Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Int64Value::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Int64Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Int64Value)
@@ -818,6 +821,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int64Value::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Int64Value_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Int64Value>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // int64 value = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(Int64Value, _impl_.value_), 63>(),
@@ -900,9 +906,6 @@ PROTOBUF_NOINLINE bool Int64Value::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Int64Value::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -952,12 +955,13 @@ inline void UInt64Value::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 UInt64Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           UInt64Value::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void UInt64Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UInt64Value)
@@ -991,6 +995,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt64Value::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_UInt64Value_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::UInt64Value>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // uint64 value = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(UInt64Value, _impl_.value_), 63>(),
@@ -1073,9 +1080,6 @@ PROTOBUF_NOINLINE bool UInt64Value::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* UInt64Value::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1125,12 +1129,13 @@ inline void Int32Value::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Int32Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Int32Value::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Int32Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Int32Value)
@@ -1164,6 +1169,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int32Value::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Int32Value_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Int32Value>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // int32 value = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Int32Value, _impl_.value_), 63>(),
@@ -1246,9 +1254,6 @@ PROTOBUF_NOINLINE bool Int32Value::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Int32Value::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1298,12 +1303,13 @@ inline void UInt32Value::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 UInt32Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           UInt32Value::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void UInt32Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UInt32Value)
@@ -1337,6 +1343,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt32Value::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_UInt32Value_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::UInt32Value>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // uint32 value = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(UInt32Value, _impl_.value_), 63>(),
@@ -1419,9 +1428,6 @@ PROTOBUF_NOINLINE bool UInt32Value::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* UInt32Value::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1471,12 +1477,13 @@ inline void BoolValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 BoolValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           BoolValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void BoolValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.BoolValue)
@@ -1510,6 +1517,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BoolValue::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_BoolValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::BoolValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // bool value = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(BoolValue, _impl_.value_), 63>(),
@@ -1591,9 +1601,6 @@ PROTOBUF_NOINLINE bool BoolValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* BoolValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -1657,12 +1664,13 @@ inline void StringValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 StringValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           StringValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(StringValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void StringValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.StringValue)
@@ -1696,6 +1704,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 41, 2> StringValue::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_StringValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::StringValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // string value = 1;
     {::_pbi::TcParser::FastUS1,
@@ -1782,9 +1793,6 @@ PROTOBUF_NOINLINE bool StringValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* StringValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1850,12 +1858,13 @@ inline void BytesValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 BytesValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           BytesValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void BytesValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.BytesValue)
@@ -1889,6 +1898,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BytesValue::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_BytesValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::BytesValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // bytes value = 1;
     {::_pbi::TcParser::FastBS1,
@@ -1970,9 +1982,6 @@ PROTOBUF_NOINLINE bool BytesValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* BytesValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();

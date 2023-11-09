@@ -20,6 +20,7 @@ static constexpr auto kEarlyEditionsFile = internal::MakeAllowlist(
     {
 // Intentionally left blank.
         "google/protobuf/",
+        "upb/",
     },
     internal::AllowlistFlags::kMatchPrefix);
 

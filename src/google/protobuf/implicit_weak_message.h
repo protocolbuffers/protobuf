@@ -61,7 +61,14 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
       ClassData header;
       char name[1];
     };
-    static constexpr Data data = {{}, ""};
+    static constexpr Data data = {
+        {
+            nullptr,  // merge_impl
+            nullptr,  // on_demand_register_arena_dtor
+            nullptr,  // descriptor_methods
+            PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
+        },
+        ""};
     return &data.header;
   }
 
@@ -84,7 +91,9 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   const char* _InternalParse(const char* ptr, ParseContext* ctx) final;
 
   size_t ByteSizeLong() const override {
-    return data_ == nullptr ? 0 : data_->size();
+    size_t size = data_ == nullptr ? 0 : data_->size();
+    cached_size_.Set(internal::ToCachedSize(size));
+    return size;
   }
 
   uint8_t* _InternalSerialize(uint8_t* target,
@@ -103,6 +112,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   // the default instance can be constant-initialized. In the const methods, we
   // have to handle the possibility of data_ being null.
   std::string* data_;
+  mutable google::protobuf::internal::CachedSize cached_size_{};
 };
 
 struct ImplicitWeakMessageDefaultType;
@@ -187,9 +197,6 @@ struct WeakRepeatedPtrField {
     return const_pointer_iterator(base().raw_data() + base().size());
   }
 
-  MessageLite* AddWeak(const MessageLite* prototype) {
-    return base().AddWeak(prototype);
-  }
   T* Add() { return weak.Add(); }
   void Clear() { base().template Clear<TypeHandler>(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {

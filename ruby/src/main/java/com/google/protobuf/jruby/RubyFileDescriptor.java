@@ -110,10 +110,17 @@ public class RubyFileDescriptor extends RubyObject {
   @JRubyMethod
   public IRubyObject options(ThreadContext context) {
     RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
-    RubyDescriptor fileOptionsDescriptor = (RubyDescriptor) pool.lookup(context, context.runtime.newString("google.protobuf.FileOptions"));
+    RubyDescriptor fileOptionsDescriptor =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.FileOptions"));
     RubyClass fileOptionsClass = (RubyClass) fileOptionsDescriptor.msgclass(context);
     RubyMessage msg = (RubyMessage) fileOptionsClass.newInstance(context, Block.NULL_BLOCK);
-    return msg.decodeBytes(context, msg, CodedInputStream.newInstance(fileDescriptor.getOptions().toByteString().toByteArray()), /*freeze*/ true);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(
+            fileDescriptor.getOptions().toByteString().toByteArray()), /*freeze*/
+        true);
   }
 
   private static RubyClass cFileDescriptor;

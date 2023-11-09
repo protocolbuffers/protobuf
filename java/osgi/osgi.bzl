@@ -23,6 +23,7 @@ load("@rules_java//java:defs.bzl", "java_library")
 #    which is probably sub-optimal.
 def osgi_java_library(
         name,
+        automatic_module_name,
         bundle_description,
         bundle_doc_url,
         bundle_license,
@@ -119,6 +120,7 @@ def osgi_java_library(
     # Repackage the jar with an OSGI manifest
     _osgi_jar(
         name = name,
+        automatic_module_name = automatic_module_name,
         bundle_description = bundle_description,
         bundle_doc_url = bundle_doc_url,
         bundle_license = bundle_license,
@@ -141,6 +143,7 @@ def _run_osgi_wrapper(ctx, input_jar, classpath_jars, output_jar):
     args.add_joined("--classpath", classpath_jars, join_with = ":")
     args.add("--input_jar", input_jar.path)
     args.add("--output_jar", output_jar.path)
+    args.add("--automatic_module_name", ctx.attr.automatic_module_name)
     args.add("--bundle_copyright", ctx.attr.bundle_copyright)
     args.add("--bundle_description", ctx.attr.bundle_description)
     args.add("--bundle_doc_url", ctx.attr.bundle_doc_url)
@@ -215,6 +218,7 @@ _osgi_jar = rule(
         "output_jar": "lib%{name}.jar",
     },
     attrs = {
+        "automatic_module_name": attr.string(),
         "bundle_copyright": attr.string(),
         "bundle_description": attr.string(),
         "bundle_doc_url": attr.string(),

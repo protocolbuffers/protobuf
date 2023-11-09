@@ -31,9 +31,10 @@
 #ifndef GOOGLE_PROTOBUF_VERSIONS_H__
 #define GOOGLE_PROTOBUF_VERSIONS_H__
 
-#include "google/protobuf/compiler/versions_suffix.h"
-
 // Defines compiler version strings for Protobuf code generators.
+//
+// When they are suffixed with "-dev", they reflect the version of the next
+// release, otherwise the current released version.
 //
 // Currently, they are embedded into comments at each gencode for public
 // Protobuf C++, Java and Python. Further, we will add version strings for rest
@@ -46,8 +47,8 @@
 //
 // Please avoid changing them manually, as they should be updated automatically
 // by Protobuf release process.
-#define PROTOBUF_CPP_VERSION_STRING "4.24.0" PROTOBUF_GENCODE_VERSION_SUFFIX
-#define PROTOBUF_JAVA_VERSION_STRING "3.24.0" PROTOBUF_GENCODE_VERSION_SUFFIX
-#define PROTOBUF_PYTHON_VERSION_STRING "4.24.0" PROTOBUF_GENCODE_VERSION_SUFFIX
+#define PROTOBUF_CPP_VERSION_STRING "4.26.0-dev"
+#define PROTOBUF_JAVA_VERSION_STRING "3.26.0-dev"
+#define PROTOBUF_PYTHON_VERSION_STRING "4.26.0-dev"
 
 #endif  // GOOGLE_PROTOBUF_VERSIONS_H__

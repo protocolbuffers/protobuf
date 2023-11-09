@@ -102,6 +102,8 @@ class SingularMessage : public FieldGeneratorBase {
     )cc");
   }
 
+  bool RequiresArena(GeneratorFunction function) const override;
+
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override {}
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
@@ -131,12 +133,13 @@ class SingularMessage : public FieldGeneratorBase {
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{CreateMaybeMessage<$Submsg$>(arena, *from.$name$_)}");
+    p->Emit(
+        "$name$_{$superclass$::CopyConstruct<$Submsg$>(arena, *from.$name$_)}");
   }
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field$);
+      $field$ = $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field$);
     )cc");
   }
 
@@ -260,7 +263,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $StrongRef$;
           $set_hasbit$;
           if ($field_$ == nullptr) {
-            auto* p = CreateMaybeMessage<$Submsg$>(GetArena());
+            auto* p = $superclass$::DefaultConstruct<$Submsg$>(GetArena());
             $field_$ = reinterpret_cast<$MemberType$*>(p);
           }
           return $cast_field_$;
@@ -415,15 +418,39 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   }
 }
 
+bool SingularMessage::RequiresArena(GeneratorFunction function) const {
+  switch (function) {
+    case GeneratorFunction::kMergeFrom:
+      return !(is_weak() || is_oneof() || should_split());
+  }
+  return false;
+}
+
 void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   if (is_weak()) {
     p->Emit(
         "_Internal::mutable_$name$(_this)->CheckTypeAndMergeFrom(\n"
         "    _Internal::$name$(&from));\n");
-  } else {
+  } else if (is_oneof() || should_split()) {
     p->Emit(
         "_this->_internal_mutable_$name$()->$Submsg$::MergeFrom(\n"
         "    from._internal_$name$());\n");
+  } else {
+    // Important: we set `hasbits` after we copied the field. There are cases
+    // where people assign root values to child values or vice versa which
+    // are not always checked, so we delay this change becoming 'visibile'
+    // until after we copied the message.
+    // TODO enforces this as undefined behavior in debug builds.
+    p->Emit(R"cc(
+      $DCHK$(from.$field_$ != nullptr);
+      if (_this->$field_$ == nullptr) {
+        _this->$field_$ =
+            $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field_$);
+      } else {
+        _this->$field_$->MergeFrom(*from.$field_$);
+      }
+      $this_set_hasbit$;
+    )cc");
   }
 }
 
@@ -449,13 +476,15 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   if (has_hasbit_) {
     p->Emit(R"cc(
       if ((from.$has_hasbit$) != 0) {
-        _this->$field_$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field_$);
+        _this->$field_$ =
+            $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field_$);
       }
     )cc");
   } else {
     p->Emit(R"cc(
       if (from._internal_has_$name$()) {
-        _this->$field_$ = CreateMaybeMessage<$Submsg$>(arena, *from.$field_$);
+        _this->$field_$ =
+            $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field_$);
       }
     )cc");
   }
@@ -636,7 +665,8 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name$();
-        $field_$ = $weak_cast$(CreateMaybeMessage<$Submsg$>(GetArena()));
+        $field_$ =
+            $weak_cast$($superclass$::DefaultConstruct<$Submsg$>(GetArena()));
       }
       return $cast_field_$;
     }
@@ -830,9 +860,8 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
-          $field_$.Set(
-              CreateMaybeMessage<$pb$::$Weak$RepeatedPtrField<$Submsg$>>(
-                  GetArena()));
+          $field_$.Set($superclass$::DefaultConstruct<
+                       $pb$::$Weak$RepeatedPtrField<$Submsg$>>(GetArena()));
         }
         return $field_$.Get();
       }

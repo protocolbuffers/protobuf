@@ -406,6 +406,7 @@ upb_amalgamation(
         ":mem_internal",
         ":message",
         ":message_accessors",
+        ":message_copy",
         ":message_internal",
         ":message_internal_types",
         ":message_tagged_ptr",
@@ -432,7 +433,7 @@ cc_library(
     srcs = ["upb.c"],
     hdrs = ["upb.h"],
     copts = UPB_DEFAULT_COPTS,
-    deps = ["@utf8_range"],
+    deps = ["//third_party/utf8_range"],
 )
 
 upb_amalgamation(
@@ -456,6 +457,7 @@ upb_amalgamation(
         ":mem_internal",
         ":message",
         ":message_accessors",
+        ":message_copy",
         ":message_internal",
         ":message_internal_types",
         ":message_tagged_ptr",
@@ -483,7 +485,7 @@ cc_library(
     srcs = ["php-upb.c"],
     hdrs = ["php-upb.h"],
     copts = UPB_DEFAULT_COPTS,
-    deps = ["@utf8_range"],
+    deps = ["//third_party/utf8_range"],
 )
 
 upb_amalgamation(
@@ -506,6 +508,7 @@ upb_amalgamation(
         ":mem_internal",
         ":message",
         ":message_accessors",
+        ":message_copy",
         ":message_internal",
         ":message_internal_types",
         ":message_tagged_ptr",
@@ -533,7 +536,7 @@ cc_library(
     srcs = ["ruby-upb.c"],
     hdrs = ["ruby-upb.h"],
     copts = UPB_DEFAULT_COPTS,
-    deps = ["@utf8_range"],
+    deps = ["//third_party/utf8_range"],
 )
 
 exports_files(

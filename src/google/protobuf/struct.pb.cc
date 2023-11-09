@@ -289,12 +289,13 @@ inline void Struct::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Struct::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Struct::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Struct, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Struct::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Struct)
@@ -328,6 +329,9 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Struct_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Struct>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
   }}, {{
@@ -434,9 +438,6 @@ PROTOBUF_NOINLINE bool Struct::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Struct::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -527,10 +528,10 @@ Value::Value(
         _impl_.kind_.bool_value_ = from._impl_.kind_.bool_value_;
         break;
       case kStructValue:
-        _impl_.kind_.struct_value_ = CreateMaybeMessage<::google::protobuf::Struct>(arena, *from._impl_.kind_.struct_value_);
+        _impl_.kind_.struct_value_ = ::google::protobuf::Message::CopyConstruct<::google::protobuf::Struct>(arena, *from._impl_.kind_.struct_value_);
         break;
       case kListValue:
-        _impl_.kind_.list_value_ = CreateMaybeMessage<::google::protobuf::ListValue>(arena, *from._impl_.kind_.list_value_);
+        _impl_.kind_.list_value_ = ::google::protobuf::Message::CopyConstruct<::google::protobuf::ListValue>(arena, *from._impl_.kind_.list_value_);
         break;
   }
 
@@ -602,12 +603,13 @@ void Value::clear_kind() {
 const ::google::protobuf::MessageLite::ClassData*
 Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Value::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Value, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Value)
@@ -641,6 +643,9 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Value_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Value>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
   }}, {{
@@ -835,9 +840,6 @@ PROTOBUF_NOINLINE bool Value::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Value::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Value::InternalSwap(Value* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -901,12 +903,13 @@ inline void ListValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 ListValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           ListValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(ListValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void ListValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.ListValue)
@@ -940,6 +943,9 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_ListValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::ListValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // repeated .google.protobuf.Value values = 1;
     {::_pbi::TcParser::FastMtR1,
@@ -1022,9 +1028,6 @@ PROTOBUF_NOINLINE bool ListValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* ListValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

@@ -53,8 +53,8 @@ cc_library(
         "//conditions:default": [],
     }),
     deps = [
+        "//third_party/utf8_range",
         "@rules_ruby//ruby/runtime:headers",
-        "@utf8_range",
     ],
     alwayslink = True,
 )
@@ -79,7 +79,7 @@ cc_library(
         "//conditions:default": [],
     }),
     deps = [
-        "@utf8_range",
+        "//third_party/utf8_range",
     ],
 )
 

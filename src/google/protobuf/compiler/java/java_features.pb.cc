@@ -199,12 +199,13 @@ inline void JavaFeatures::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 JavaFeatures::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           JavaFeatures::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 // @@protoc_insertion_point(message_clear_start:pb.JavaFeatures)
@@ -244,6 +245,9 @@ const ::_pbi::TcParseTable<1, 2, 1, 0, 2> JavaFeatures::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_JavaFeatures_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::pb::JavaFeatures>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::FastEr0S1,
@@ -355,9 +359,6 @@ PROTOBUF_NOINLINE bool JavaFeatures::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* JavaFeatures::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -375,9 +376,10 @@ void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT other) {
       &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[0]);
 }
-PROTOC_EXPORT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::FeatureSet,
-    ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>
-  java(kJavaFieldNumber, ::pb::JavaFeatures::default_instance(), nullptr);
+PROTOC_EXPORT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
+    ExtensionIdentifier<::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::JavaFeatures >,
+                        11, false>
+        java(kJavaFieldNumber, ::pb::JavaFeatures::default_instance());
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

@@ -384,12 +384,13 @@ inline void Version::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Version::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Version::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Version::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
@@ -432,6 +433,9 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Version_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::compiler::Version>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // optional string suffix = 4;
     {::_pbi::TcParser::FastSS1,
@@ -592,9 +596,6 @@ PROTOBUF_NOINLINE bool Version::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Version::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Version::InternalSwap(Version* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -667,9 +668,9 @@ CodeGeneratorRequest::CodeGeneratorRequest(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.compiler_version_ = (cached_has_bits & 0x00000002u)
-                ? CreateMaybeMessage<::google::protobuf::compiler::Version>(arena, *from._impl_.compiler_version_)
-                : nullptr;
+  _impl_.compiler_version_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::compiler::Version>(
+                              arena, *from._impl_.compiler_version_)
+                        : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
@@ -701,12 +702,13 @@ inline void CodeGeneratorRequest::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 CodeGeneratorRequest::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           CodeGeneratorRequest::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
@@ -753,6 +755,9 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_CodeGeneratorRequest_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorRequest>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // repeated string file_to_generate = 1;
@@ -904,6 +909,7 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
 void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<CodeGeneratorRequest*>(&to_msg);
   auto& from = static_cast<const CodeGeneratorRequest&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorRequest)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -920,8 +926,14 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::Message& to_msg, const 
       _this->_internal_set_parameter(from._internal_parameter());
     }
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_mutable_compiler_version()->::google::protobuf::compiler::Version::MergeFrom(
-          from._internal_compiler_version());
+      ABSL_DCHECK(from._impl_.compiler_version_ != nullptr);
+      if (_this->_impl_.compiler_version_ == nullptr) {
+        _this->_impl_.compiler_version_ =
+            ::google::protobuf::Message::CopyConstruct<::google::protobuf::compiler::Version>(arena, *from._impl_.compiler_version_);
+      } else {
+        _this->_impl_.compiler_version_->MergeFrom(*from._impl_.compiler_version_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000002u;
     }
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -942,9 +954,6 @@ PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* CodeGeneratorRequest::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1017,9 +1026,9 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.generated_code_info_ = (cached_has_bits & 0x00000008u)
-                ? CreateMaybeMessage<::google::protobuf::GeneratedCodeInfo>(arena, *from._impl_.generated_code_info_)
-                : nullptr;
+  _impl_.generated_code_info_ = (cached_has_bits & 0x00000008u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::GeneratedCodeInfo>(
+                              arena, *from._impl_.generated_code_info_)
+                        : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
@@ -1052,12 +1061,13 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 CodeGeneratorResponse_File::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           CodeGeneratorResponse_File::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
@@ -1107,6 +1117,9 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
     offsetof(decltype(_table_), aux_entries),
     &_CodeGeneratorResponse_File_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse_File>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
     {::_pbi::TcParser::FastMtS2,
@@ -1236,6 +1249,7 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
 void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<CodeGeneratorResponse_File*>(&to_msg);
   auto& from = static_cast<const CodeGeneratorResponse_File&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1253,8 +1267,14 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::Message& to_msg, 
       _this->_internal_set_content(from._internal_content());
     }
     if (cached_has_bits & 0x00000008u) {
-      _this->_internal_mutable_generated_code_info()->::google::protobuf::GeneratedCodeInfo::MergeFrom(
-          from._internal_generated_code_info());
+      ABSL_DCHECK(from._impl_.generated_code_info_ != nullptr);
+      if (_this->_impl_.generated_code_info_ == nullptr) {
+        _this->_impl_.generated_code_info_ =
+            ::google::protobuf::Message::CopyConstruct<::google::protobuf::GeneratedCodeInfo>(arena, *from._impl_.generated_code_info_);
+      } else {
+        _this->_impl_.generated_code_info_->MergeFrom(*from._impl_.generated_code_info_);
+      }
+      _this->_impl_._has_bits_[0] |= 0x00000008u;
     }
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -1271,9 +1291,6 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse_File::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* CodeGeneratorResponse_File::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1357,12 +1374,13 @@ inline void CodeGeneratorResponse::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 CodeGeneratorResponse::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           CodeGeneratorResponse::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
@@ -1402,6 +1420,9 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_CodeGeneratorResponse_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // optional string error = 1;
@@ -1541,9 +1562,6 @@ PROTOBUF_NOINLINE bool CodeGeneratorResponse::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* CodeGeneratorResponse::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();

@@ -1,7 +1,7 @@
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.cc
 @@ @@
-     &_SimpleProto3_default_instance_._instance,
-     ::_pbi::TcParser::GenericFallbackLite,  // fallback
+     ::_pbi::TcParser::GetTable<::protobuf_editions_test::golden::SimpleProto3>(),  // to_prefetch
+     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
    }, {{
 -    // optional int32 int32_field = 1;
 +    // int32 int32_field = 1;

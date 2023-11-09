@@ -160,12 +160,13 @@ inline void CppFeatures::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 CppFeatures::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           CppFeatures::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void CppFeatures::Clear() {
 // @@protoc_insertion_point(message_clear_start:pb.CppFeatures)
@@ -200,6 +201,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> CppFeatures::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_CppFeatures_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::pb::CppFeatures>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(CppFeatures, _impl_.legacy_closed_enum_), 0>(),
@@ -283,9 +287,6 @@ PROTOBUF_NOINLINE bool CppFeatures::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* CppFeatures::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
@@ -298,10 +299,11 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT other) {
       &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fcpp_5ffeatures_2eproto[0]);
 }
-PROTOBUF_CONSTINIT PROTOBUF_EXPORT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::FeatureSet,
-    ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11, false>
-  cpp(kCppFieldNumber);
+PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
+        ExtensionIdentifier<::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::CppFeatures >,
+                            11, false>
+            cpp(kCppFieldNumber);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

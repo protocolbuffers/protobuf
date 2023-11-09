@@ -234,20 +234,22 @@ static Descriptor* ruby_to_Descriptor(VALUE val) {
 }
 
 // Decode and return a frozen instance of a Descriptor Option for the given pool
-static VALUE decode_options(VALUE self, const char *option_type, int size, const char *bytes, VALUE descriptor_pool) {
+static VALUE decode_options(VALUE self, const char* option_type, int size,
+                            const char* bytes, VALUE descriptor_pool) {
   VALUE options_rb = rb_ivar_get(self, options_instancevar_interned);
-  if (options_rb!= Qnil) {
+  if (options_rb != Qnil) {
     return options_rb;
   }
 
-  static const char * prefix = "google.protobuf.";
-  char fullname[/*strlen(prefix)*/ 16 + /*strln(longest option type supported e.g. "MessageOptions")*/ 14 + /*null terminator*/1];
+  static const char* prefix = "google.protobuf.";
+  char fullname
+      [/*strlen(prefix)*/ 16 +
+       /*strln(longest option type supported e.g. "MessageOptions")*/ 14 +
+       /*null terminator*/ 1];
 
   snprintf(fullname, sizeof(fullname), "%s%s", prefix, option_type);
   const upb_MessageDef* msgdef = upb_DefPool_FindMessageByName(
-    ruby_to_DescriptorPool(descriptor_pool)->symtab,
-    fullname
-  );
+      ruby_to_DescriptorPool(descriptor_pool)->symtab, fullname);
   if (!msgdef) {
     rb_raise(rb_eRuntimeError, "Cannot find %s in DescriptorPool", option_type);
   }
@@ -416,11 +418,14 @@ static VALUE Descriptor_msgclass(VALUE _self) {
  */
 static VALUE Descriptor_options(VALUE _self) {
   Descriptor* self = ruby_to_Descriptor(_self);
-  const google_protobuf_MessageOptions* opts = upb_MessageDef_Options(self->msgdef);
+  const google_protobuf_MessageOptions* opts =
+      upb_MessageDef_Options(self->msgdef);
   upb_Arena* arena = upb_Arena_New();
   size_t size;
-  char* serialized = google_protobuf_MessageOptions_serialize(opts, arena, &size);
-  VALUE message_options = decode_options(_self, "MessageOptions", size, serialized, self->descriptor_pool);
+  char* serialized =
+      google_protobuf_MessageOptions_serialize(opts, arena, &size);
+  VALUE message_options = decode_options(_self, "MessageOptions", size,
+                                         serialized, self->descriptor_pool);
   upb_Arena_Free(arena);
   return message_options;
 }
@@ -548,7 +553,8 @@ static VALUE FileDescriptor_options(VALUE _self) {
   upb_Arena* arena = upb_Arena_New();
   size_t size;
   char* serialized = google_protobuf_FileOptions_serialize(opts, arena, &size);
-  VALUE file_options = decode_options(_self, "FileOptions", size, serialized, self->descriptor_pool);
+  VALUE file_options = decode_options(_self, "FileOptions", size, serialized,
+                                      self->descriptor_pool);
   upb_Arena_Free(arena);
   return file_options;
 }
@@ -919,11 +925,13 @@ static VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
  */
 static VALUE FieldDescriptor_options(VALUE _self) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
-  const google_protobuf_FieldOptions* opts = upb_FieldDef_Options(self->fielddef);
+  const google_protobuf_FieldOptions* opts =
+      upb_FieldDef_Options(self->fielddef);
   upb_Arena* arena = upb_Arena_New();
   size_t size;
   char* serialized = google_protobuf_FieldOptions_serialize(opts, arena, &size);
-  VALUE field_options = decode_options(_self, "FieldOptions", size, serialized, self->descriptor_pool);
+  VALUE field_options = decode_options(_self, "FieldOptions", size, serialized,
+                                       self->descriptor_pool);
   upb_Arena_Free(arena);
   return field_options;
 }
@@ -1052,11 +1060,13 @@ static VALUE OneofDescriptor_each(VALUE _self) {
  */
 static VALUE OneOfDescriptor_options(VALUE _self) {
   OneofDescriptor* self = ruby_to_OneofDescriptor(_self);
-  const google_protobuf_OneofOptions* opts = upb_OneofDef_Options(self->oneofdef);
+  const google_protobuf_OneofOptions* opts =
+      upb_OneofDef_Options(self->oneofdef);
   upb_Arena* arena = upb_Arena_New();
   size_t size;
   char* serialized = google_protobuf_OneofOptions_serialize(opts, arena, &size);
-  VALUE oneof_options = decode_options(_self, "OneofOptions", size, serialized, self->descriptor_pool);
+  VALUE oneof_options = decode_options(_self, "OneofOptions", size, serialized,
+                                       self->descriptor_pool);
   upb_Arena_Free(arena);
   return oneof_options;
 }
@@ -1249,7 +1259,8 @@ static VALUE EnumDescriptor_options(VALUE _self) {
   upb_Arena* arena = upb_Arena_New();
   size_t size;
   char* serialized = google_protobuf_EnumOptions_serialize(opts, arena, &size);
-  VALUE enum_options = decode_options(_self, "EnumOptions", size, serialized, self->descriptor_pool);
+  VALUE enum_options = decode_options(_self, "EnumOptions", size, serialized,
+                                      self->descriptor_pool);
   upb_Arena_Free(arena);
   return enum_options;
 }

@@ -11,6 +11,9 @@ file, in types that make this information accessible in Python.
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import abc
+import binascii
+import os
 import threading
 import warnings
 
@@ -18,9 +21,6 @@ from google.protobuf.internal import api_implementation
 
 _USE_C_DESCRIPTORS = False
 if api_implementation.Type() != 'python':
-  # Used by MakeDescriptor in cpp mode
-  import binascii
-  import os
   # pylint: disable=protected-access
   _message = api_implementation._c_module
   # TODO: Remove this import after fix api_implementation
@@ -52,7 +52,7 @@ if _USE_C_DESCRIPTORS:
       return False
 else:
   # The standard metaclass; nothing changes.
-  DescriptorMetaclass = type
+  DescriptorMetaclass = abc.ABCMeta
 
 
 class _Lock(object):
@@ -83,6 +83,14 @@ def _Deprecated(name):
         % name,
         category=DeprecationWarning, stacklevel=3)
 
+# These must match the values in descriptor.proto, but we can't use them
+# directly because we sometimes need to reference them in feature helpers
+# below *during* the build of descriptor.proto.
+_FEATURESET_MESSAGE_ENCODING_DELIMITED = 2
+_FEATURESET_FIELD_PRESENCE_IMPLICIT = 2
+_FEATURESET_FIELD_PRESENCE_LEGACY_REQUIRED = 3
+_FEATURESET_REPEATED_FIELD_ENCODING_PACKED = 1
+_FEATURESET_ENUM_TYPE_CLOSED = 2
 
 # Deprecated warnings will print 100 times at most which should be enough for
 # users to notice and do not cause timeout.
@@ -118,8 +126,10 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
     class of the options message. The name of the class is required in case
     the options message is None and has to be created.
     """
+    self._features = None
     self.file = file
     self._options = options
+    self._loaded_options = None
     self._options_class_name = options_class_name
     self._serialized_options = serialized_options
 
@@ -128,44 +138,106 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
         self._serialized_options is not None
     )
 
-  def _SetOptions(self, options, options_class_name):
-    """Sets the descriptor's options
+  @property
+  @abc.abstractmethod
+  def _parent(self):
+    pass
 
-    This function is used in generated proto2 files to update descriptor
-    options. It must not be used outside proto2.
+  def _InferLegacyFeatures(self, edition, options, features):
+    """Infers features from proto2/proto3 syntax so that editions logic can be used everywhere.
+
+    Args:
+      edition: The edition to infer features for.
+      options: The options for this descriptor that are being processed.
+      features: The feature set object to modify with inferred features.
     """
-    self._options = options
-    self._options_class_name = options_class_name
+    pass
 
-    # Does this descriptor have non-default options?
-    self.has_options = options is not None
+  def _GetFeatures(self):
+    if not self._features:
+      self._LazyLoadOptions()
+    return self._features
+
+  def _ResolveFeatures(self, edition, raw_options):
+    """Resolves features from the raw options of this descriptor.
+
+    Args:
+      edition: The edition to use for feature defaults.
+      raw_options: The options for this descriptor that are being processed.
+
+    Returns:
+      A fully resolved feature set for making runtime decisions.
+    """
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf import descriptor_pb2
+
+    if self._parent:
+      features = descriptor_pb2.FeatureSet()
+      features.CopyFrom(self._parent._GetFeatures())
+    else:
+      features = self.file.pool._CreateDefaultFeatures(edition)
+    unresolved = descriptor_pb2.FeatureSet()
+    unresolved.CopyFrom(raw_options.features)
+    self._InferLegacyFeatures(edition, raw_options, unresolved)
+    features.MergeFrom(unresolved)
+
+    # Use the feature cache to reduce memory bloat.
+    return self.file.pool._InternFeatures(features)
+
+  def _LazyLoadOptions(self):
+    """Lazily initializes descriptor options towards the end of the build."""
+    if self._loaded_options:
+      return
+
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf import descriptor_pb2
+
+    if not hasattr(descriptor_pb2, self._options_class_name):
+      raise RuntimeError(
+          'Unknown options class name %s!' % self._options_class_name
+      )
+    options_class = getattr(descriptor_pb2, self._options_class_name)
+    features = None
+    edition = self.file._edition
+
+    if not self.has_options:
+      if not self._features:
+        features = self._ResolveFeatures(
+            descriptor_pb2.Edition.Value(edition), options_class()
+        )
+      with _lock:
+        self._loaded_options = options_class()
+        if not self._features:
+          self._features = features
+    else:
+      if not self._serialized_options:
+        options = self._options
+      else:
+        options = _ParseOptions(options_class(), self._serialized_options)
+
+      if not self._features:
+        features = self._ResolveFeatures(
+            descriptor_pb2.Edition.Value(edition), options
+        )
+      with _lock:
+        self._loaded_options = options
+        if not self._features:
+          self._features = features
+        if options.HasField('features'):
+          options.ClearField('features')
+          if not options.SerializeToString():
+            self._loaded_options = options_class()
+            self.has_options = False
 
   def GetOptions(self):
     """Retrieves descriptor options.
 
-    This method returns the options set or creates the default options for the
-    descriptor.
+    Returns:
+      The options set on this descriptor.
     """
-    if self._options:
-      return self._options
-
-    from google.protobuf import descriptor_pb2
-    try:
-      options_class = getattr(descriptor_pb2,
-                              self._options_class_name)
-    except AttributeError:
-      raise RuntimeError('Unknown options class name %s!' %
-                         (self._options_class_name))
-
-    if self._serialized_options is None:
-      with _lock:
-        self._options = options_class()
-    else:
-      options = _ParseOptions(options_class(), self._serialized_options)
-      with _lock:
-        self._options = options
-
-    return self._options
+    if not self._loaded_options:
+      self._LazyLoadOptions()
+    return self._loaded_options
 
 
 class _NestedDescriptorBase(DescriptorBase):
@@ -327,6 +399,7 @@ class Descriptor(_NestedDescriptorBase):
     self.fields = fields
     for field in self.fields:
       field.containing_type = self
+      field.file = file
     self.fields_by_number = dict((f.number, f) for f in fields)
     self.fields_by_name = dict((f.name, f) for f in fields)
     self._fields_by_camelcase_name = None
@@ -353,8 +426,12 @@ class Descriptor(_NestedDescriptorBase):
     self.oneofs_by_name = dict((o.name, o) for o in self.oneofs)
     for oneof in self.oneofs:
       oneof.containing_type = self
-    self.syntax = syntax or "proto2"
+      oneof.file = file
     self._is_map_entry = is_map_entry
+
+  @property
+  def _parent(self):
+    return self.containing_type or self.file
 
   @property
   def fields_by_camelcase_name(self):
@@ -575,9 +652,9 @@ class FieldDescriptor(DescriptorBase):
       self.json_name = json_name
     self.index = index
     self.number = number
-    self.type = type
+    self._type = type
     self.cpp_type = cpp_type
-    self.label = label
+    self._label = label
     self.has_default_value = has_default_value
     self.default_value = default_value
     self.containing_type = containing_type
@@ -593,6 +670,60 @@ class FieldDescriptor(DescriptorBase):
         self._cdescriptor = _message.default_pool.FindExtensionByName(full_name)
       else:
         self._cdescriptor = _message.default_pool.FindFieldByName(full_name)
+
+  @property
+  def _parent(self):
+    if self.containing_oneof:
+      return self.containing_oneof
+    if self.is_extension:
+      return self.extension_scope or self.file
+    return self.containing_type
+
+  def _InferLegacyFeatures(self, edition, options, features):
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf import descriptor_pb2
+
+    if edition >= descriptor_pb2.Edition.EDITION_2023:
+      return
+
+    if self._label == FieldDescriptor.LABEL_REQUIRED:
+      features.field_presence = (
+          descriptor_pb2.FeatureSet.FieldPresence.LEGACY_REQUIRED
+      )
+
+    if self._type == FieldDescriptor.TYPE_GROUP:
+      features.message_encoding = (
+          descriptor_pb2.FeatureSet.MessageEncoding.DELIMITED
+      )
+
+    if options.HasField('packed'):
+      features.repeated_field_encoding = (
+          descriptor_pb2.FeatureSet.RepeatedFieldEncoding.PACKED
+          if options.packed
+          else descriptor_pb2.FeatureSet.RepeatedFieldEncoding.EXPANDED
+      )
+
+  @property
+  def type(self):
+    if (
+        self._GetFeatures().message_encoding
+        == _FEATURESET_MESSAGE_ENCODING_DELIMITED
+    ):
+      return FieldDescriptor.TYPE_GROUP
+    return self._type
+
+  @type.setter
+  def type(self, val):
+    self._type = val
+
+  @property
+  def label(self):
+    if (
+        self._GetFeatures().field_presence
+        == _FEATURESET_FIELD_PRESENCE_LEGACY_REQUIRED
+    ):
+      return FieldDescriptor.LABEL_REQUIRED
+    return self._label
 
   @property
   def camelcase_name(self):
@@ -617,11 +748,11 @@ class FieldDescriptor(DescriptorBase):
     if (self.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE or
         self.containing_oneof):
       return True
-    # self.containing_type is used here instead of self.file for legacy
-    # compatibility. FieldDescriptor.file was added in cl/153110619
-    # Some old/generated code didn't link file to FieldDescriptor.
-    # TODO: remove syntax usage b/240619313
-    return self.containing_type.syntax == 'proto2'
+
+    return (
+        self._GetFeatures().field_presence
+        != _FEATURESET_FIELD_PRESENCE_IMPLICIT
+    )
 
   @property
   def is_packed(self):
@@ -634,12 +765,11 @@ class FieldDescriptor(DescriptorBase):
         field_type == FieldDescriptor.TYPE_MESSAGE or
         field_type == FieldDescriptor.TYPE_BYTES):
       return False
-    if self.containing_type.syntax == 'proto2':
-      return self.has_options and self.GetOptions().packed
-    else:
-      return (not self.has_options or
-              not self.GetOptions().HasField('packed') or
-              self.GetOptions().packed)
+
+    return (
+        self._GetFeatures().repeated_field_encoding
+        == _FEATURESET_REPEATED_FIELD_ENCODING_PACKED
+    )
 
   @staticmethod
   def ProtoTypeToCppProtoType(proto_type):
@@ -722,6 +852,10 @@ class EnumDescriptor(_NestedDescriptorBase):
     self.values_by_number = dict((v.number, v) for v in reversed(values))
 
   @property
+  def _parent(self):
+    return self.containing_type or self.file
+
+  @property
   def is_closed(self):
     """Returns true whether this is a "closed" enum.
 
@@ -743,7 +877,7 @@ class EnumDescriptor(_NestedDescriptorBase):
     Care should be taken when using this function to respect the target
     runtime's enum handling quirks.
     """
-    return self.file.syntax == 'proto2'
+    return self._GetFeatures().enum_type == _FEATURESET_ENUM_TYPE_CLOSED
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.EnumDescriptorProto.
@@ -802,6 +936,10 @@ class EnumValueDescriptor(DescriptorBase):
     self.number = number
     self.type = type
 
+  @property
+  def _parent(self):
+    return self.type
+
 
 class OneofDescriptor(DescriptorBase):
   """Descriptor for a oneof field.
@@ -845,6 +983,10 @@ class OneofDescriptor(DescriptorBase):
     self.index = index
     self.containing_type = containing_type
     self.fields = fields
+
+  @property
+  def _parent(self):
+    return self.containing_type
 
 
 class ServiceDescriptor(_NestedDescriptorBase):
@@ -901,6 +1043,10 @@ class ServiceDescriptor(_NestedDescriptorBase):
     for method in self.methods:
       method.file = self.file
       method.containing_service = self
+
+  @property
+  def _parent(self):
+    return self.file
 
   def FindMethodByName(self, name):
     """Searches for the specified method, and returns its descriptor.
@@ -999,6 +1145,10 @@ class MethodDescriptor(DescriptorBase):
     self.client_streaming = client_streaming
     self.server_streaming = server_streaming
 
+  @property
+  def _parent(self):
+    return self.containing_service
+
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.MethodDescriptorProto.
 
@@ -1052,10 +1202,20 @@ class FileDescriptor(DescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.FileDescriptor
 
-    def __new__(cls, name, package, options=None,
-                serialized_options=None, serialized_pb=None,
-                dependencies=None, public_dependencies=None,
-                syntax=None, pool=None, create_key=None):
+    def __new__(
+        cls,
+        name,
+        package,
+        options=None,
+        serialized_options=None,
+        serialized_pb=None,
+        dependencies=None,
+        public_dependencies=None,
+        syntax=None,
+        edition=None,
+        pool=None,
+        create_key=None,
+    ):
       # FileDescriptor() is called from various places, not only from generated
       # files, to register dynamic proto files and messages.
       # pylint: disable=g-explicit-bool-comparison
@@ -1064,17 +1224,34 @@ class FileDescriptor(DescriptorBase):
       else:
         return super(FileDescriptor, cls).__new__(cls)
 
-  def __init__(self, name, package, options=None,
-               serialized_options=None, serialized_pb=None,
-               dependencies=None, public_dependencies=None,
-               syntax=None, pool=None, create_key=None):
+  def __init__(
+      self,
+      name,
+      package,
+      options=None,
+      serialized_options=None,
+      serialized_pb=None,
+      dependencies=None,
+      public_dependencies=None,
+      syntax=None,
+      edition=None,
+      pool=None,
+      create_key=None,
+  ):
     """Constructor."""
     if create_key is not _internal_create_key:
       _Deprecated('FileDescriptor')
 
     super(FileDescriptor, self).__init__(
-        None, options, serialized_options, 'FileOptions'
+        self, options, serialized_options, 'FileOptions'
     )
+
+    if edition and edition != 'EDITION_UNKNOWN':
+      self._edition = edition
+    elif syntax == 'proto3':
+      self._edition = 'EDITION_PROTO3'
+    else:
+      self._edition = 'EDITION_PROTO2'
 
     if pool is None:
       from google.protobuf import descriptor_pool
@@ -1083,7 +1260,7 @@ class FileDescriptor(DescriptorBase):
     self.message_types_by_name = {}
     self.name = name
     self.package = package
-    self.syntax = syntax or "proto2"
+    self._deprecated_syntax = syntax or "proto2"
     self.serialized_pb = serialized_pb
 
     self.enum_types_by_name = {}
@@ -1092,6 +1269,15 @@ class FileDescriptor(DescriptorBase):
     self.dependencies = (dependencies or [])
     self.public_dependencies = (public_dependencies or [])
 
+  @property
+  def syntax(self):
+    warnings.warn(
+      'descriptor.syntax is deprecated. It will be removed'
+      ' soon. Most usages are checking field descriptors. Consider to use'
+      ' has_presence, is_packed on field descriptors.'
+    )
+    return self._deprecated_syntax
+
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.FileDescriptorProto.
 
@@ -1099,6 +1285,10 @@ class FileDescriptor(DescriptorBase):
       proto: An empty descriptor_pb2.FileDescriptorProto.
     """
     proto.ParseFromString(self.serialized_pb)
+
+  @property
+  def _parent(self):
+    return None
 
 
 def _ParseOptions(message, string):
@@ -1157,8 +1347,14 @@ def _ToJsonName(name):
   return ''.join(result)
 
 
-def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
-                   syntax=None):
+def MakeDescriptor(
+    desc_proto,
+    package='',
+    build_file_if_cpp=True,
+    syntax=None,
+    edition=None,
+    file_desc=None,
+):
   """Make a protobuf Descriptor given a DescriptorProto protobuf.
 
   Handles nested descriptors. Note that this is limited to the scope of defining
@@ -1168,34 +1364,41 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
   Args:
     desc_proto: The descriptor_pb2.DescriptorProto protobuf message.
     package: Optional package name for the new message Descriptor (string).
-    build_file_if_cpp: Update the C++ descriptor pool if api matches.
-                       Set to False on recursion, so no duplicates are created.
+    build_file_if_cpp: Update the C++ descriptor pool if api matches. Set to
+      False on recursion, so no duplicates are created.
     syntax: The syntax/semantics that should be used.  Set to "proto3" to get
-            proto3 field presence semantics.
+      proto3 field presence semantics.
+    edition: The edition that should be used if syntax is "edition".
+    file_desc: A FileDescriptor to place this descriptor into.
+
   Returns:
     A Descriptor for protobuf messages.
   """
+  # pylint: disable=g-import-not-at-top
+  from google.protobuf import descriptor_pb2
+
+  # Generate a random name for this proto file to prevent conflicts with any
+  # imported ones. We need to specify a file name so the descriptor pool
+  # accepts our FileDescriptorProto, but it is not important what that file
+  # name is actually set to.
+  proto_name = binascii.hexlify(os.urandom(16)).decode('ascii')
+
+  if package:
+    file_name = os.path.join(package.replace('.', '/'), proto_name + '.proto')
+  else:
+    file_name = proto_name + '.proto'
+
   if api_implementation.Type() != 'python' and build_file_if_cpp:
     # The C++ implementation requires all descriptors to be backed by the same
     # definition in the C++ descriptor pool. To do this, we build a
     # FileDescriptorProto with the same definition as this descriptor and build
     # it into the pool.
-    from google.protobuf import descriptor_pb2
     file_descriptor_proto = descriptor_pb2.FileDescriptorProto()
     file_descriptor_proto.message_type.add().MergeFrom(desc_proto)
 
-    # Generate a random name for this proto file to prevent conflicts with any
-    # imported ones. We need to specify a file name so the descriptor pool
-    # accepts our FileDescriptorProto, but it is not important what that file
-    # name is actually set to.
-    proto_name = binascii.hexlify(os.urandom(16)).decode('ascii')
-
     if package:
-      file_descriptor_proto.name = os.path.join(package.replace('.', '/'),
-                                                proto_name + '.proto')
       file_descriptor_proto.package = package
-    else:
-      file_descriptor_proto.name = proto_name + '.proto'
+    file_descriptor_proto.name = file_name
 
     _message.default_pool.Add(file_descriptor_proto)
     result = _message.default_pool.FindFileByName(file_descriptor_proto.name)
@@ -1203,6 +1406,19 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
     if _USE_C_DESCRIPTORS:
       return result.message_types_by_name[desc_proto.name]
 
+  if file_desc is None:
+    file_desc = FileDescriptor(
+        pool=None,
+        name=file_name,
+        package=package,
+        syntax=syntax,
+        edition=edition,
+        options=None,
+        serialized_pb='',
+        dependencies=[],
+        public_dependencies=[],
+        create_key=_internal_create_key,
+    )
   full_message_name = [desc_proto.name]
   if package: full_message_name.insert(0, package)
 
@@ -1211,11 +1427,21 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
   for enum_proto in desc_proto.enum_type:
     full_name = '.'.join(full_message_name + [enum_proto.name])
     enum_desc = EnumDescriptor(
-        enum_proto.name, full_name, None, [
-            EnumValueDescriptor(enum_val.name, ii, enum_val.number,
-                                create_key=_internal_create_key)
-            for ii, enum_val in enumerate(enum_proto.value)],
-        create_key=_internal_create_key)
+        enum_proto.name,
+        full_name,
+        None,
+        [
+            EnumValueDescriptor(
+                enum_val.name,
+                ii,
+                enum_val.number,
+                create_key=_internal_create_key,
+            )
+            for ii, enum_val in enumerate(enum_proto.value)
+        ],
+        file=file_desc,
+        create_key=_internal_create_key,
+    )
     enum_types[full_name] = enum_desc
 
   # Create Descriptors for nested types
@@ -1224,10 +1450,14 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
     full_name = '.'.join(full_message_name + [nested_proto.name])
     # Nested types are just those defined inside of the message, not all types
     # used by fields in the message, so no loops are possible here.
-    nested_desc = MakeDescriptor(nested_proto,
-                                 package='.'.join(full_message_name),
-                                 build_file_if_cpp=False,
-                                 syntax=syntax)
+    nested_desc = MakeDescriptor(
+        nested_proto,
+        package='.'.join(full_message_name),
+        build_file_if_cpp=False,
+        syntax=syntax,
+        edition=edition,
+        file_desc=file_desc,
+    )
     nested_types[full_name] = nested_desc
 
   fields = []
@@ -1249,16 +1479,38 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
         enum_desc = enum_types[full_type_name]
       # Else type_name references a non-local type, which isn't implemented
     field = FieldDescriptor(
-        field_proto.name, full_name, field_proto.number - 1,
-        field_proto.number, field_proto.type,
+        field_proto.name,
+        full_name,
+        field_proto.number - 1,
+        field_proto.number,
+        field_proto.type,
         FieldDescriptor.ProtoTypeToCppProtoType(field_proto.type),
-        field_proto.label, None, nested_desc, enum_desc, None, False, None,
-        options=_OptionsOrNone(field_proto), has_default_value=False,
-        json_name=json_name, create_key=_internal_create_key)
+        field_proto.label,
+        None,
+        nested_desc,
+        enum_desc,
+        None,
+        False,
+        None,
+        options=_OptionsOrNone(field_proto),
+        has_default_value=False,
+        json_name=json_name,
+        file=file_desc,
+        create_key=_internal_create_key,
+    )
     fields.append(field)
 
   desc_name = '.'.join(full_message_name)
-  return Descriptor(desc_proto.name, desc_name, None, None, fields,
-                    list(nested_types.values()), list(enum_types.values()), [],
-                    options=_OptionsOrNone(desc_proto),
-                    create_key=_internal_create_key)
+  return Descriptor(
+      desc_proto.name,
+      desc_name,
+      None,
+      None,
+      fields,
+      list(nested_types.values()),
+      list(enum_types.values()),
+      [],
+      options=_OptionsOrNone(desc_proto),
+      file=file_desc,
+      create_key=_internal_create_key,
+  )

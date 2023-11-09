@@ -1477,7 +1477,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "// implements Message ----------------------------------------------\n"
       "\n"
       "$classname$* New(::$proto_ns$::Arena* arena = nullptr) const final {\n"
-      "  return CreateMaybeMessage<$classname$>(arena);\n"
+      "  return $superclass$::DefaultConstruct<$classname$>(arena);\n"
       "}\n");
 
   // For instances that derive from Message (rather than MessageLite), some
@@ -1554,7 +1554,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           int GetCachedSize() const { return $cached_size$.Get(); }
 
           private:
-          $pbi$::CachedSize* AccessCachedSize() const final;
           void SharedCtor(::$proto_ns$::Arena* arena);
           void SharedDtor();
           void InternalSwap($classname$* other);
@@ -2086,14 +2085,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         "}\n",
         DefaultInstanceName(descriptor_, options_, /*split=*/true),
         DefaultInstanceName(descriptor_, options_, /*split=*/false));
-  }
-
-  if (!HasSimpleBaseClass(descriptor_, options_)) {
-    p->Emit(R"cc(
-      ::_pbi::CachedSize* $classname$::AccessCachedSize() const {
-        return &$cached_size$;
-      }
-    )cc");
   }
 
   GenerateVerify(p);
@@ -2748,9 +2739,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     p->Emit({{"has_msg", [&] { has_message(field); }},
              {"submsg", FieldMessageTypeName(field, options_)}},
             R"cc(
-              $field$ = ($has_msg$)
-                            ? CreateMaybeMessage<$submsg$>(arena, *from.$field$)
-                            : nullptr;
+              $field$ = ($has_msg$) ? $superclass$::CopyConstruct<$submsg$>(
+                                          arena, *from.$field$)
+                                    : nullptr;
             )cc");
   };
 
@@ -3009,26 +3000,12 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
   Formatter format(p);
   if (ShouldGenerateExternSpecializations(options_) &&
       ShouldGenerateClass(descriptor_, options_)) {
-    format(R"cc(
-      template <>
-      PROTOBUF_NOINLINE $classtype$* Arena::CreateMaybeMessage<$classtype$>(
-          Arena* arena) {
-        using T = $classtype$;
-        void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                                     : ::operator new(sizeof(T));
-        return new (mem) T(arena);
-      }
+    p->Emit(R"cc(
+      template void* Arena::DefaultConstruct<$classtype$>(Arena*);
     )cc");
     if (!IsMapEntryMessage(descriptor_)) {
-      format(R"cc(
-        template <>
-        PROTOBUF_NOINLINE $classtype$* Arena::CreateMaybeMessage<$classtype$>(
-            Arena* arena, const $classtype$& from) {
-          using T = $classtype$;
-          void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                                       : ::operator new(sizeof(T));
-          return new (mem) T(arena, from);
-        }
+      p->Emit(R"cc(
+        template void* Arena::CopyConstruct<$classtype$>(Arena*, const void*);
       )cc");
     }
   }
@@ -3440,6 +3417,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         },
         R"cc(
           $merge_impl$, $on_demand_register_arena_dtor$, $descriptor_methods$,
+              PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
         )cc");
   };
 
@@ -3450,10 +3428,10 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
           const ::$proto_ns$::MessageLite::ClassData*
           $classname$::GetClassData() const {
             PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::ClassData
-                data = {
+                _data_ = {
                     $class_data_members$,
                 };
-            return &data;
+            return &_data_;
           }
         )cc");
   } else {
@@ -3469,14 +3447,14 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               ::$proto_ns$::MessageLite::ClassData header;
               char type_name[$type_size$];
             };
-            PROTOBUF_CONSTINIT static const ClassData_ data = {
+            PROTOBUF_CONSTINIT static const ClassData_ _data_ = {
                 {
                     $class_data_members$,
                 },
                 "$full_name$",
             };
 
-            return &data.header;
+            return &_data_.header;
           }
         )cc");
   }
@@ -3494,6 +3472,15 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
         "      &from));\n"
         "}\n");
   }
+}
+
+bool MessageGenerator::RequiresArena(GeneratorFunction function) const {
+  for (const FieldDescriptor* field : FieldRange(descriptor_)) {
+    if (field_generators_.get(field).RequiresArena(function)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
@@ -3515,6 +3502,11 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         "  auto& from = static_cast<const $classname$&>(from_msg);\n");
   }
   format.Indent();
+  if (RequiresArena(GeneratorFunction::kMergeFrom)) {
+    p->Emit(R"cc(
+      ::$proto_ns$::Arena* arena = _this->GetArena();
+    )cc");
+  }
   format(
       "$annotate_mergefrom$"
       "// @@protoc_insertion_point(class_specific_merge_from_start:"

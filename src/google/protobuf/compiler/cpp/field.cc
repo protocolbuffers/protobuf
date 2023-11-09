@@ -263,6 +263,7 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
                 absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
   if (!idx.has_value()) {
     vars.emplace_back("set_hasbit", "");
+    vars.emplace_back("this_set_hasbit", "");
     vars.emplace_back("clear_hasbit", "");
     return;
   }
@@ -283,6 +284,9 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
   vars.emplace_back("has_hasbit", has);
   vars.emplace_back(Sub("set_hasbit", set).WithSuffix(";"));
   vars.emplace_back(Sub("clear_hasbit", clr).WithSuffix(";"));
+
+  set = absl::StrFormat("_this->%s[%d] |= %s;", has_bits, index, mask);
+  vars.emplace_back(Sub("this_set_hasbit", set).WithSuffix(";"));
 }
 
 void InlinedStringVars(const FieldDescriptor* field, const Options& opts,

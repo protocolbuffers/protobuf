@@ -261,8 +261,7 @@ py_binary(
     deps = [
         ":conformance_py_proto",
         "//:protobuf_python",
-        "//python:test_messages_proto2_py_proto",
-        "//python:test_messages_proto3_py_proto",
+        "//python:conformance_test_py_proto",
     ],
 )
 

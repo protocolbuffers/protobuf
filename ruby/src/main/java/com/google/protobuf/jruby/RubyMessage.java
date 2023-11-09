@@ -631,7 +631,8 @@ public class RubyMessage extends RubyObject {
     return decodeBytes(context, ret, input, /*freeze*/ false);
   }
 
-  public static IRubyObject decodeBytes(ThreadContext context, RubyMessage ret, CodedInputStream input, boolean freeze) {
+  public static IRubyObject decodeBytes(
+      ThreadContext context, RubyMessage ret, CodedInputStream input, boolean freeze) {
     try {
       ret.builder.mergeFrom(input);
     } catch (Exception e) {

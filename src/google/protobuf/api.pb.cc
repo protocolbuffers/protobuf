@@ -293,9 +293,9 @@ Api::Api(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.source_context_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_)
-                : nullptr;
+  _impl_.source_context_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(
+                              arena, *from._impl_.source_context_)
+                        : nullptr;
   _impl_.syntax_ = from._impl_.syntax_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Api)
@@ -335,12 +335,13 @@ inline void Api::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Api::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Api::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Api::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
@@ -385,6 +386,9 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Api_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Api>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // string name = 1;
@@ -574,6 +578,7 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
 void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Api*>(&to_msg);
   auto& from = static_cast<const Api&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Api)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -592,8 +597,14 @@ void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobu
     _this->_internal_set_version(from._internal_version());
   }
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_internal_mutable_source_context()->::google::protobuf::SourceContext::MergeFrom(
-        from._internal_source_context());
+    ABSL_DCHECK(from._impl_.source_context_ != nullptr);
+    if (_this->_impl_.source_context_ == nullptr) {
+      _this->_impl_.source_context_ =
+          ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
+    } else {
+      _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
+    }
+    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   if (from._internal_syntax() != 0) {
     _this->_internal_set_syntax(from._internal_syntax());
@@ -612,9 +623,6 @@ PROTOBUF_NOINLINE bool Api::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Api::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Api::InternalSwap(Api* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -716,12 +724,13 @@ inline void Method::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Method::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Method::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Method::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
@@ -761,6 +770,9 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Method_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Method>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // string name = 1;
@@ -982,9 +994,6 @@ PROTOBUF_NOINLINE bool Method::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Method::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Method::InternalSwap(Method* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1062,12 +1071,13 @@ inline void Mixin::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Mixin::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Mixin::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Mixin::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
@@ -1102,6 +1112,9 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Mixin_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Mixin>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // string root = 2;
     {::_pbi::TcParser::FastUS1,
@@ -1212,9 +1225,6 @@ PROTOBUF_NOINLINE bool Mixin::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Mixin::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();

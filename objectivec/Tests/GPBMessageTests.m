@@ -2225,4 +2225,17 @@
   XCTAssertNil(shouldGetAPrefixMessage);
 }
 
+- (void)testWriteToFullOutputStreamShouldThrow {
+  uint8_t buffer[1] = {0};
+
+  // Output stream which can write precisely 1 byte of data before it's full.
+  NSOutputStream *output = [[[NSOutputStream alloc] initToBuffer:buffer
+                                                        capacity:sizeof(buffer)] autorelease];
+
+  TestAllTypes *message = [TestAllTypes message];
+  [message setOptionalInt32:1];
+  XCTAssertThrowsSpecificNamed([message writeToOutputStream:output], NSException,
+                               GPBCodedOutputStreamException_WriteFailed);
+}
+
 @end

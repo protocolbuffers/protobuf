@@ -171,12 +171,13 @@ inline void SourceContext::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 SourceContext::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           SourceContext::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void SourceContext::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
@@ -210,6 +211,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_SourceContext_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // string file_name = 1;
     {::_pbi::TcParser::FastUS1,
@@ -296,9 +300,6 @@ PROTOBUF_NOINLINE bool SourceContext::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* SourceContext::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void SourceContext::InternalSwap(SourceContext* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();

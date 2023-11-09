@@ -162,12 +162,13 @@ inline void Timestamp::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Timestamp::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Timestamp::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Timestamp::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
@@ -203,6 +204,9 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Timestamp::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Timestamp_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Timestamp>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // int32 nanos = 2;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Timestamp, _impl_.nanos_), 63>(),
@@ -307,9 +311,6 @@ PROTOBUF_NOINLINE bool Timestamp::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Timestamp::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Timestamp::InternalSwap(Timestamp* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

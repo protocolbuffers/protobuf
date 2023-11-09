@@ -473,9 +473,9 @@ Type::Type(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.source_context_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_)
-                : nullptr;
+  _impl_.source_context_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(
+                              arena, *from._impl_.source_context_)
+                        : nullptr;
   _impl_.syntax_ = from._impl_.syntax_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Type)
@@ -515,12 +515,13 @@ inline void Type::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Type::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Type::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Type, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Type::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
@@ -565,6 +566,9 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Type_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Type>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // string name = 1;
@@ -754,6 +758,7 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
 void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Type*>(&to_msg);
   auto& from = static_cast<const Type&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Type)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -771,8 +776,14 @@ void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
     _this->_internal_set_edition(from._internal_edition());
   }
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_internal_mutable_source_context()->::google::protobuf::SourceContext::MergeFrom(
-        from._internal_source_context());
+    ABSL_DCHECK(from._impl_.source_context_ != nullptr);
+    if (_this->_impl_.source_context_ == nullptr) {
+      _this->_impl_.source_context_ =
+          ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
+    } else {
+      _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
+    }
+    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   if (from._internal_syntax() != 0) {
     _this->_internal_set_syntax(from._internal_syntax());
@@ -791,9 +802,6 @@ PROTOBUF_NOINLINE bool Type::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Type::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Type::InternalSwap(Type* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -894,12 +902,13 @@ inline void Field::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Field::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Field::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Field, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Field::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
@@ -940,6 +949,9 @@ const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Field_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Field>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // .google.protobuf.Field.Kind kind = 1;
@@ -1235,9 +1247,6 @@ PROTOBUF_NOINLINE bool Field::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Field::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Field::InternalSwap(Field* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1307,9 +1316,9 @@ Enum::Enum(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.source_context_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_)
-                : nullptr;
+  _impl_.source_context_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(
+                              arena, *from._impl_.source_context_)
+                        : nullptr;
   _impl_.syntax_ = from._impl_.syntax_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Enum)
@@ -1348,12 +1357,13 @@ inline void Enum::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Enum::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Enum::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Enum, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Enum::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
@@ -1397,6 +1407,9 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Enum_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Enum>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // string name = 1;
@@ -1566,6 +1579,7 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
 void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Enum*>(&to_msg);
   auto& from = static_cast<const Enum&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Enum)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1582,8 +1596,14 @@ void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
     _this->_internal_set_edition(from._internal_edition());
   }
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_internal_mutable_source_context()->::google::protobuf::SourceContext::MergeFrom(
-        from._internal_source_context());
+    ABSL_DCHECK(from._impl_.source_context_ != nullptr);
+    if (_this->_impl_.source_context_ == nullptr) {
+      _this->_impl_.source_context_ =
+          ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(arena, *from._impl_.source_context_);
+    } else {
+      _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
+    }
+    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   if (from._internal_syntax() != 0) {
     _this->_internal_set_syntax(from._internal_syntax());
@@ -1602,9 +1622,6 @@ PROTOBUF_NOINLINE bool Enum::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Enum::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1684,12 +1701,13 @@ inline void EnumValue::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 EnumValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           EnumValue::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void EnumValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
@@ -1725,6 +1743,9 @@ const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_EnumValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::EnumValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // string name = 1;
@@ -1856,9 +1877,6 @@ PROTOBUF_NOINLINE bool EnumValue::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* EnumValue::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();
@@ -1917,9 +1935,9 @@ Option::Option(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.value_ = (cached_has_bits & 0x00000001u)
-                ? CreateMaybeMessage<::google::protobuf::Any>(arena, *from._impl_.value_)
-                : nullptr;
+  _impl_.value_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::Any>(
+                              arena, *from._impl_.value_)
+                        : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Option)
 }
@@ -1948,12 +1966,13 @@ inline void Option::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 Option::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           Option::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(Option, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void Option::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
@@ -1993,6 +2012,9 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Option_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Option>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // .google.protobuf.Any value = 2;
     {::_pbi::TcParser::FastMtS1,
@@ -2078,6 +2100,7 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
 void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
   auto* const _this = static_cast<Option*>(&to_msg);
   auto& from = static_cast<const Option&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Option)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -2087,8 +2110,14 @@ void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::prot
     _this->_internal_set_name(from._internal_name());
   }
   if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_internal_mutable_value()->::google::protobuf::Any::MergeFrom(
-        from._internal_value());
+    ABSL_DCHECK(from._impl_.value_ != nullptr);
+    if (_this->_impl_.value_ == nullptr) {
+      _this->_impl_.value_ =
+          ::google::protobuf::Message::CopyConstruct<::google::protobuf::Any>(arena, *from._impl_.value_);
+    } else {
+      _this->_impl_.value_->MergeFrom(*from._impl_.value_);
+    }
+    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -2104,9 +2133,6 @@ PROTOBUF_NOINLINE bool Option::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* Option::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void Option::InternalSwap(Option* PROTOBUF_RESTRICT other) {
   using std::swap;
   auto* arena = GetArena();

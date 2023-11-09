@@ -91,6 +91,7 @@
 #include <atomic>
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <limits>
 #include <string>
@@ -521,6 +522,9 @@ class PROTOBUF_EXPORT CodedInputStream {
 
   // See EnableAliasing().
   bool aliasing_enabled_;
+
+  // If true, set eager parsing mode to override lazy fields.
+  bool force_eager_parsing_;
 
   // Limits
   Limit current_limit_;  // if position = -1, no limit is applied
@@ -1553,6 +1557,7 @@ inline CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
       last_tag_(0),
       legitimate_message_end_(false),
       aliasing_enabled_(false),
+      force_eager_parsing_(false),
       current_limit_(std::numeric_limits<int32_t>::max()),
       buffer_size_after_limit_(0),
       total_bytes_limit_(kDefaultTotalBytesLimit),
@@ -1573,6 +1578,7 @@ inline CodedInputStream::CodedInputStream(const uint8_t* buffer, int size)
       last_tag_(0),
       legitimate_message_end_(false),
       aliasing_enabled_(false),
+      force_eager_parsing_(false),
       current_limit_(size),
       buffer_size_after_limit_(0),
       total_bytes_limit_(kDefaultTotalBytesLimit),

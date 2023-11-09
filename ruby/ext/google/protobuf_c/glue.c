@@ -19,31 +19,37 @@ google_protobuf_FileDescriptorProto* FileDescriptorProto_parse(
                                                    length, arena);
 }
 
-char* EnumDescriptor_serialized_options(const upb_EnumDef* enumdef, size_t *size, upb_Arena *arena) {
+char* EnumDescriptor_serialized_options(const upb_EnumDef* enumdef,
+                                        size_t* size, upb_Arena* arena) {
   const google_protobuf_EnumOptions* opts = upb_EnumDef_Options(enumdef);
   char* serialized = google_protobuf_EnumOptions_serialize(opts, arena, size);
   return serialized;
 }
 
-char* FileDescriptor_serialized_options(const upb_FileDef* filedef, size_t *size, upb_Arena *arena) {
+char* FileDescriptor_serialized_options(const upb_FileDef* filedef,
+                                        size_t* size, upb_Arena* arena) {
   const google_protobuf_FileOptions* opts = upb_FileDef_Options(filedef);
   char* serialized = google_protobuf_FileOptions_serialize(opts, arena, size);
   return serialized;
 }
 
-char* Descriptor_serialized_options(const upb_MessageDef* msgdef, size_t *size, upb_Arena *arena) {
+char* Descriptor_serialized_options(const upb_MessageDef* msgdef, size_t* size,
+                                    upb_Arena* arena) {
   const google_protobuf_MessageOptions* opts = upb_MessageDef_Options(msgdef);
-  char* serialized = google_protobuf_MessageOptions_serialize(opts, arena, size);
+  char* serialized =
+      google_protobuf_MessageOptions_serialize(opts, arena, size);
   return serialized;
 }
 
-char* OneOfDescriptor_serialized_options(const upb_OneofDef* oneofdef, size_t *size, upb_Arena *arena) {
+char* OneOfDescriptor_serialized_options(const upb_OneofDef* oneofdef,
+                                         size_t* size, upb_Arena* arena) {
   const google_protobuf_OneofOptions* opts = upb_OneofDef_Options(oneofdef);
   char* serialized = google_protobuf_OneofOptions_serialize(opts, arena, size);
   return serialized;
 }
 
-char* FieldDescriptor_serialized_options(const upb_FieldDef* fielddef, size_t *size, upb_Arena *arena) {
+char* FieldDescriptor_serialized_options(const upb_FieldDef* fielddef,
+                                         size_t* size, upb_Arena* arena) {
   const google_protobuf_FieldOptions* opts = upb_FieldDef_Options(fielddef);
   char* serialized = google_protobuf_FieldOptions_serialize(opts, arena, size);
   return serialized;

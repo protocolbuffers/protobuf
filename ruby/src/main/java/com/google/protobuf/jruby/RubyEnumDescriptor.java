@@ -128,11 +128,19 @@ public class RubyEnumDescriptor extends RubyObject {
   @JRubyMethod
   public IRubyObject options(ThreadContext context) {
     RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
-    RubyDescriptor enumOptionsDescriptor = (RubyDescriptor) pool.lookup(context, context.runtime.newString("google.protobuf.EnumOptions"));
+    RubyDescriptor enumOptionsDescriptor =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.EnumOptions"));
     RubyClass enumOptionsClass = (RubyClass) enumOptionsDescriptor.msgclass(context);
     RubyMessage msg = (RubyMessage) enumOptionsClass.newInstance(context, Block.NULL_BLOCK);
-    return msg.decodeBytes(context, msg, CodedInputStream.newInstance(descriptor.getOptions().toByteString().toByteArray()), /*freeze*/ true);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(
+            descriptor.getOptions().toByteString().toByteArray()), /*freeze*/
+        true);
   }
+
   public boolean isValidValue(ThreadContext context, IRubyObject value) {
     EnumValueDescriptor enumValue;
 
@@ -207,9 +215,9 @@ public class RubyEnumDescriptor extends RubyObject {
         // always start with uppercase letters. We tolerate this case by capitalizing
         // the first character if possible.
         return new StringBuilder()
-                .appendCodePoint(Character.toUpperCase(ch))
-                .append(name.substring(1))
-                .toString();
+            .appendCodePoint(Character.toUpperCase(ch))
+            .append(name.substring(1))
+            .toString();
       }
     }
     return name;

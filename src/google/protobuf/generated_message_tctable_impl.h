@@ -943,6 +943,10 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
   return ptr;
 }
 
+// Prints the type card as or of labels, using known higher level labels.
+// Used for code generation, but also useful for debugging.
+PROTOBUF_EXPORT std::string TypeCardToString(uint16_t type_card);
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

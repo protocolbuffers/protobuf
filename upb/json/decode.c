@@ -35,12 +35,25 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
 #include "upb/lex/atoi.h"
 #include "upb/lex/unicode.h"
+#include "upb/mem/arena.h"
+#include "upb/message/array.h"
 #include "upb/message/map.h"
+#include "upb/message/message.h"
+#include "upb/message/types.h"
+#include "upb/mini_table/message.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/encode.h"
 
@@ -89,9 +102,13 @@ static bool jsondec_isvalue(const upb_FieldDef* f) {
          jsondec_isnullvalue(f);
 }
 
-UPB_NORETURN static void jsondec_err(jsondec* d, const char* msg) {
+static void jsondec_seterrmsg(jsondec* d, const char* msg) {
   upb_Status_SetErrorFormat(d->status, "Error parsing JSON @%d:%d: %s", d->line,
                             (int)(d->ptr - d->line_begin), msg);
+}
+
+UPB_NORETURN static void jsondec_err(jsondec* d, const char* msg) {
+  jsondec_seterrmsg(d, msg);
   UPB_LONGJMP(d->err, 1);
 }
 
@@ -106,7 +123,9 @@ UPB_NORETURN static void jsondec_errf(jsondec* d, const char* fmt, ...) {
   UPB_LONGJMP(d->err, 1);
 }
 
-static void jsondec_skipws(jsondec* d) {
+// Advances d->ptr until the next non-whitespace character or to the end of
+// the buffer.
+static void jsondec_consumews(jsondec* d) {
   while (d->ptr != d->end) {
     switch (*d->ptr) {
       case '\n':
@@ -122,7 +141,16 @@ static void jsondec_skipws(jsondec* d) {
         return;
     }
   }
-  jsondec_err(d, "Unexpected EOF");
+}
+
+// Advances d->ptr until the next non-whitespace character. Postcondition that
+// d->ptr is pointing at a valid non-whitespace character (will err if end of
+// buffer is reached).
+static void jsondec_skipws(jsondec* d) {
+  jsondec_consumews(d);
+  if (d->ptr == d->end) {
+    jsondec_err(d, "Unexpected EOF");
+  }
 }
 
 static bool jsondec_tryparsech(jsondec* d, char ch) {
@@ -157,6 +185,10 @@ static void jsondec_entrysep(jsondec* d) {
 }
 
 static int jsondec_rawpeek(jsondec* d) {
+  if (d->ptr == d->end) {
+    jsondec_err(d, "Unexpected EOF");
+  }
+
   switch (*d->ptr) {
     case '{':
       return JD_OBJECT;
@@ -272,7 +304,7 @@ static void jsondec_skipdigits(jsondec* d) {
 static double jsondec_number(jsondec* d) {
   const char* start = d->ptr;
 
-  assert(jsondec_rawpeek(d) == JD_NUMBER);
+  UPB_ASSERT(jsondec_rawpeek(d) == JD_NUMBER);
 
   /* Skip over the syntax of a number, as specified by JSON. */
   if (*d->ptr == '-') d->ptr++;
@@ -307,9 +339,19 @@ parse:
    * (strtod() accepts a superset of JSON syntax). */
   errno = 0;
   {
+    // Copy the number into a null-terminated scratch buffer since strtod
+    // expects a null-terminated string.
+    char nullz[64];
+    ptrdiff_t len = d->ptr - start;
+    if (len > (ptrdiff_t)(sizeof(nullz) - 1)) {
+      jsondec_err(d, "excessively long number");
+    }
+    memcpy(nullz, start, len);
+    nullz[len] = '\0';
+
     char* end;
-    double val = strtod(start, &end);
-    assert(end == d->ptr);
+    double val = strtod(nullz, &end);
+    UPB_ASSERT(end - nullz == len);
 
     /* Currently the min/max-val conformance tests fail if we check this.  Does
      * this mean the conformance tests are wrong or strtod() is wrong, or
@@ -450,7 +492,7 @@ static upb_StringView jsondec_string(jsondec* d) {
         }
         break;
       default:
-        if ((unsigned char)*d->ptr < 0x20) {
+        if ((unsigned char)ch < 0x20) {
           jsondec_err(d, "Invalid char in JSON string");
         }
         *end++ = ch;
@@ -1454,7 +1496,17 @@ static bool upb_JsonDecoder_Decode(jsondec* const d, upb_Message* const msg,
   if (UPB_SETJMP(d->err)) return false;
 
   jsondec_tomsg(d, msg, m);
-  return true;
+
+  // Consume any trailing whitespace before checking if we read the entire
+  // input.
+  jsondec_consumews(d);
+
+  if (d->ptr == d->end) {
+    return true;
+  } else {
+    jsondec_seterrmsg(d, "unexpected trailing characters");
+    return false;
+  }
 }
 
 bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,

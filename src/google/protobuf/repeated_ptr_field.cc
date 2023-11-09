@@ -108,32 +108,18 @@ void RepeatedPtrFieldBase::DestroyProtos() {
   tagged_rep_or_elem_ = nullptr;
 }
 
-void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
-  if (tagged_rep_or_elem_ == nullptr) {
-    ABSL_DCHECK_EQ(current_size_, 0);
-    ABSL_DCHECK(using_sso());
-    ABSL_DCHECK_EQ(allocated_size(), 0);
-    ExchangeCurrentSize(1);
-    return tagged_rep_or_elem_ = obj;
-  }
-  // Not using `AllocatedSizeAtCapacity` because it's already known that
-  // `tagged_rep_or_elem_ != nullptr`.
-  if (using_sso() || rep()->allocated_size >= Capacity()) {
-    InternalExtend(1);  // Equivalent to "Reserve(total_size_ + 1)"
-  }
-  Rep* r = rep();
-  ++r->allocated_size;
-  return r->elements[ExchangeCurrentSize(current_size_ + 1)] = obj;
-}
-
-void* RepeatedPtrFieldBase::AddOutOfLineHelper(ElementFactory factory) {
+template <typename F>
+auto* RepeatedPtrFieldBase::AddInternal(F factory) {
+  using Result = decltype(factory(GetArena()));
   if (tagged_rep_or_elem_ == nullptr) {
     ExchangeCurrentSize(1);
     tagged_rep_or_elem_ = factory(GetArena());
-    return tagged_rep_or_elem_;
+    return static_cast<Result>(tagged_rep_or_elem_);
   }
   if (using_sso()) {
-    if (ExchangeCurrentSize(1) == 0) return tagged_rep_or_elem_;
+    if (ExchangeCurrentSize(1) == 0) {
+      return static_cast<Result>(tagged_rep_or_elem_);
+    }
   } else {
     absl::PrefetchToLocalCache(rep());
   }
@@ -142,14 +128,19 @@ void* RepeatedPtrFieldBase::AddOutOfLineHelper(ElementFactory factory) {
   } else {
     Rep* r = rep();
     if (current_size_ != r->allocated_size) {
-      return r->elements[ExchangeCurrentSize(current_size_ + 1)];
+      return static_cast<Result>(
+          r->elements[ExchangeCurrentSize(current_size_ + 1)]);
     }
   }
   Rep* r = rep();
   ++r->allocated_size;
   void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
   result = factory(GetArena());
-  return result;
+  return static_cast<Result>(result);
+}
+
+void* RepeatedPtrFieldBase::AddOutOfLineHelper(ElementFactory factory) {
+  return AddInternal(factory);
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
@@ -167,15 +158,8 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
   ExchangeCurrentSize(current_size_ - num);
 }
 
-MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
-  if (current_size_ < allocated_size()) {
-    return reinterpret_cast<MessageLite*>(
-        element_at(ExchangeCurrentSize(current_size_ + 1)));
-  }
-  MessageLite* result = prototype
-                            ? prototype->New(arena_)
-                            : Arena::CreateMessage<ImplicitWeakMessage>(arena_);
-  return static_cast<MessageLite*>(AddOutOfLineHelper(result));
+MessageLite* RepeatedPtrFieldBase::AddMessage(const MessageLite* prototype) {
+  return AddInternal([prototype](Arena* a) { return prototype->New(a); });
 }
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
@@ -235,8 +219,8 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     const RepeatedPtrFieldBase& from, CopyFn copy_fn) {
   ABSL_DCHECK_NE(&from, this);
   int new_size = current_size_ + from.current_size_;
-  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size));
-  auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
+  void** dst = InternalReserve(new_size);
+  const void* const* src = from.elements();
   auto end = src + from.current_size_;
   if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
     int recycled = MergeIntoClearedMessages(from);
@@ -245,7 +229,7 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
   }
   Arena* arena = GetArena();
   for (; src < end; ++src, ++dst) {
-    *dst = copy_fn(arena, **src);
+    *dst = copy_fn(arena, *src);
   }
   ExchangeCurrentSize(new_size);
   if (new_size > allocated_size()) {
@@ -284,6 +268,10 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
   if (new_size > allocated_size()) {
     rep()->allocated_size = new_size;
   }
+}
+
+void* NewStringElement(Arena* arena) {
+  return Arena::Create<std::string>(arena);
 }
 
 }  // namespace internal

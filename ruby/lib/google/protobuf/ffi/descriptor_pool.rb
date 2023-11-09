@@ -18,7 +18,7 @@ module Google
       attach_function :lookup_msg,            :upb_DefPool_FindMessageByName,  [:DefPool, :string], Descriptor
 
         # FileDescriptorProto
-      attach_function :parse,                 :FileDescriptorProto_parse,     [:binary_string, :size_t, Internal::Arena], :FileDescriptorProto
+      attach_function :parse,                 :FileDescriptorProto_parse,      [:binary_string, :size_t, Internal::Arena], :FileDescriptorProto
     end
     class DescriptorPool
       attr :descriptor_pool

@@ -18,6 +18,8 @@
 #include <algorithm>
 #include <atomic>
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -30,8 +32,10 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
 // clang-format off
@@ -87,17 +91,33 @@ typedef bool EnumValidityFunc(int number);
 // extensions that are not compiled in.
 typedef bool EnumValidityFuncWithArg(const void* arg, int number);
 
+enum class LazyAnnotation : int8_t {
+  kUndefined = 0,
+  kLazy = 1,
+  kEager = 2,
+};
+
 // Information about a registered extension.
 struct ExtensionInfo {
   constexpr ExtensionInfo() : enum_validity_check() {}
   constexpr ExtensionInfo(const MessageLite* extendee, int param_number,
-                          FieldType type_param, bool isrepeated, bool ispacked,
-                          LazyEagerVerifyFnType verify_func)
+                          FieldType type_param, bool isrepeated, bool ispacked)
       : message(extendee),
         number(param_number),
         type(type_param),
         is_repeated(isrepeated),
         is_packed(ispacked),
+        enum_validity_check() {}
+  constexpr ExtensionInfo(const MessageLite* extendee, int param_number,
+                          FieldType type_param, bool isrepeated, bool ispacked,
+                          LazyEagerVerifyFnType verify_func,
+                          LazyAnnotation islazy = LazyAnnotation::kUndefined)
+      : message(extendee),
+        number(param_number),
+        type(type_param),
+        is_repeated(isrepeated),
+        is_packed(ispacked),
+        is_lazy(islazy),
         enum_validity_check(),
         lazy_eager_verify_func(verify_func) {}
 
@@ -107,6 +127,7 @@ struct ExtensionInfo {
   FieldType type = 0;
   bool is_repeated = false;
   bool is_packed = false;
+  LazyAnnotation is_lazy = LazyAnnotation::kUndefined;
 
   struct EnumValidityCheck {
     EnumValidityFuncWithArg* func;
@@ -132,6 +153,7 @@ struct ExtensionInfo {
   // If nullptr then no verification is performed.
   LazyEagerVerifyFnType lazy_eager_verify_func = nullptr;
 };
+
 
 // An ExtensionFinder is an object which looks up extension definitions.  It
 // must implement this method:
@@ -190,8 +212,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // methods do.
   static void RegisterExtension(const MessageLite* extendee, int number,
                                 FieldType type, bool is_repeated,
-                                bool is_packed,
-                                LazyEagerVerifyFnType verify_func);
+                                bool is_packed);
   static void RegisterEnumExtension(const MessageLite* extendee, int number,
                                     FieldType type, bool is_repeated,
                                     bool is_packed, EnumValidityFunc* is_valid);
@@ -199,7 +220,8 @@ class PROTOBUF_EXPORT ExtensionSet {
                                        FieldType type, bool is_repeated,
                                        bool is_packed,
                                        const MessageLite* prototype,
-                                       LazyEagerVerifyFnType verify_func);
+                                       LazyEagerVerifyFnType verify_func,
+                                       LazyAnnotation is_lazy);
 
   // =================================================================
 
@@ -1019,10 +1041,9 @@ class PrimitiveTypeTraits {
   static inline void Set(int number, FieldType field_type, ConstType value,
                          ExtensionSet* set);
   template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed,
-                       LazyEagerVerifyFnType verify_func) {
+  static void Register(int number, FieldType type, bool is_packed) {
     ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
-                                    type, false, is_packed, verify_func);
+                                    type, false, is_packed);
   }
 };
 
@@ -1054,10 +1075,9 @@ class RepeatedPrimitiveTypeTraits {
 
   static const RepeatedFieldType* GetDefaultRepeatedField();
   template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed,
-                       LazyEagerVerifyFnType verify_func) {
+  static void Register(int number, FieldType type, bool is_packed) {
     ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
-                                    type, true, is_packed, verify_func);
+                                    type, true, is_packed);
   }
 };
 
@@ -1178,10 +1198,9 @@ class PROTOBUF_EXPORT StringTypeTraits {
     return set->MutableString(number, field_type, nullptr);
   }
   template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed,
-                       LazyEagerVerifyFnType verify_func) {
+  static void Register(int number, FieldType type, bool is_packed) {
     ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
-                                    type, false, is_packed, verify_func);
+                                    type, false, is_packed);
   }
 };
 
@@ -1236,10 +1255,9 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
   static const RepeatedFieldType* GetDefaultRepeatedField();
 
   template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed,
-                       LazyEagerVerifyFnType fn) {
+  static void Register(int number, FieldType type, bool is_packed) {
     ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
-                                    type, true, is_packed, fn);
+                                    type, true, is_packed);
   }
 
  private:
@@ -1275,10 +1293,7 @@ class EnumTypeTraits {
     set->SetEnum(number, field_type, value, nullptr);
   }
   template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed,
-                       LazyEagerVerifyFnType fn) {
-    // Avoid -Wunused-parameter
-    (void)fn;
+  static void Register(int number, FieldType type, bool is_packed) {
     ExtensionSet::RegisterEnumExtension(&ExtendeeT::default_instance(), number,
                                         type, false, is_packed, IsValid);
   }
@@ -1344,10 +1359,7 @@ class RepeatedEnumTypeTraits {
         RepeatedPrimitiveTypeTraits<int32_t>::GetDefaultRepeatedField());
   }
   template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed,
-                       LazyEagerVerifyFnType fn) {
-    // Avoid -Wunused-parameter
-    (void)fn;
+  static void Register(int number, FieldType type, bool is_packed) {
     ExtensionSet::RegisterEnumExtension(&ExtendeeT::default_instance(), number,
                                         type, true, is_packed, IsValid);
   }
@@ -1402,12 +1414,20 @@ class MessageTypeTraits {
     return static_cast<Type*>(
         set->UnsafeArenaReleaseMessage(number, Type::default_instance()));
   }
+  // Some messages won't (can't) be verified; e.g. lite.
+  template <typename ExtendeeT>
+  static void Register(int number, FieldType type, bool is_packed) {
+    ExtensionSet::RegisterMessageExtension(
+        &ExtendeeT::default_instance(), number, type, false, is_packed,
+        &Type::default_instance(), nullptr, LazyAnnotation::kUndefined);
+  }
+
   template <typename ExtendeeT>
   static void Register(int number, FieldType type, bool is_packed,
-                       LazyEagerVerifyFnType fn) {
-    ExtensionSet::RegisterMessageExtension(&ExtendeeT::default_instance(),
-                                           number, type, false, is_packed,
-                                           &Type::default_instance(), fn);
+                       LazyEagerVerifyFnType fn, LazyAnnotation is_lazy) {
+    ExtensionSet::RegisterMessageExtension(
+        &ExtendeeT::default_instance(), number, type, false, is_packed,
+        &Type::default_instance(), fn, is_lazy);
   }
 };
 
@@ -1469,12 +1489,21 @@ class RepeatedMessageTypeTraits {
   }
 
   static const RepeatedFieldType* GetDefaultRepeatedField();
+
+  // Some messages won't (can't) be verified; e.g. lite.
+  template <typename ExtendeeT>
+  static void Register(int number, FieldType type, bool is_packed) {
+    ExtensionSet::RegisterMessageExtension(
+        &ExtendeeT::default_instance(), number, type, true, is_packed,
+        &Type::default_instance(), nullptr, LazyAnnotation::kUndefined);
+  }
+
   template <typename ExtendeeT>
   static void Register(int number, FieldType type, bool is_packed,
-                       LazyEagerVerifyFnType fn) {
-    ExtensionSet::RegisterMessageExtension(&ExtendeeT::default_instance(),
-                                           number, type, true, is_packed,
-                                           &Type::default_instance(), fn);
+                       LazyEagerVerifyFnType fn, LazyAnnotation is_lazy) {
+    ExtensionSet::RegisterMessageExtension(
+        &ExtendeeT::default_instance(), number, type, true, is_packed,
+        &Type::default_instance(), fn, is_lazy);
   }
 };
 
@@ -1511,19 +1540,29 @@ class ExtensionIdentifier {
   typedef TypeTraitsType TypeTraits;
   typedef ExtendeeType Extendee;
 
-  ExtensionIdentifier(int number, typename TypeTraits::ConstType default_value,
-                      LazyEagerVerifyFnType verify_func = nullptr)
+  ExtensionIdentifier(int number, typename TypeTraits::ConstType default_value)
       : number_(number), default_value_(default_value) {
-    Register(number, verify_func);
+    Register(number);
+  }
+  ExtensionIdentifier(int number, typename TypeTraits::ConstType default_value,
+                      LazyEagerVerifyFnType verify_func,
+                      LazyAnnotation is_lazy = LazyAnnotation::kUndefined)
+      : number_(number), default_value_(default_value) {
+    Register(number, verify_func, is_lazy);
   }
   inline int number() const { return number_; }
   typename TypeTraits::ConstType default_value() const {
     return default_value_;
   }
 
-  static void Register(int number, LazyEagerVerifyFnType verify_func) {
+  static void Register(int number) {
+    TypeTraits::template Register<ExtendeeType>(number, field_type, is_packed);
+  }
+
+  static void Register(int number, LazyEagerVerifyFnType verify_func,
+                       LazyAnnotation is_lazy) {
     TypeTraits::template Register<ExtendeeType>(number, field_type, is_packed,
-                                                verify_func);
+                                                verify_func, is_lazy);
   }
 
   typename TypeTraits::ConstType const& default_value_ref() const {
@@ -1561,7 +1600,7 @@ class ExtensionIdentifier<FeatureSet, MessageTypeTraits<::pb::CppFeatures>, 11,
     absl::call_once(once_, [&] {
       default_value_ = &default_instance;
       MessageTypeTraits<MessageType>::template Register<ExtendeeType>(
-          number_, 11, false, verify_func);
+          number_, 11, false, verify_func, LazyAnnotation::kUndefined);
     });
   }
 

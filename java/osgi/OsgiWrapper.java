@@ -56,6 +56,11 @@ public final class OsgiWrapper implements Callable<Integer> {
   private String classpath;
 
   @Option(
+      names = {"--automatic_module_name"},
+      description = "The automatic module name of the bundle")
+  private String automaticModuleName;
+
+  @Option(
       names = {"--bundle_copyright"},
       description = "Copyright string for the bundle")
   private String bundleCopyright;
@@ -106,6 +111,7 @@ public final class OsgiWrapper implements Callable<Integer> {
 
     Analyzer analyzer = new Analyzer();
     analyzer.setJar(bin);
+    analyzer.setProperty(Analyzer.AUTOMATIC_MODULE_NAME, automaticModuleName);
     analyzer.setProperty(Analyzer.BUNDLE_NAME, bundleName);
     analyzer.setProperty(Analyzer.BUNDLE_SYMBOLICNAME, bundleSymbolicName);
     analyzer.setProperty(Analyzer.BUNDLE_VERSION, bundleVersion);

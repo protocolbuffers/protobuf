@@ -672,6 +672,11 @@ static PyObject* EnumValueName(PyBaseDescriptor *self, PyObject *args) {
 }
 
 static PyObject* GetSyntax(PyBaseDescriptor *self, void *closure) {
+  PyErr_WarnEx(nullptr,
+               "descriptor.syntax is deprecated. It will be removed soon. "
+               "Most usages are checking field descriptors. Consider to use "
+               "has_presence, is_packed on field descriptors.",
+               1);
   std::string syntax(FileDescriptorLegacy::SyntaxName(
       FileDescriptorLegacy(_GetDescriptor(self)->file()).syntax()));
   return PyUnicode_InternFromString(syntax.c_str());
@@ -1493,6 +1498,11 @@ static int SetSerializedOptions(PyFileDescriptor *self, PyObject *value,
 }
 
 static PyObject* GetSyntax(PyFileDescriptor *self, void *closure) {
+  PyErr_WarnEx(nullptr,
+               "descriptor.syntax is deprecated. It will be removed soon. "
+               "Most usages are checking field descriptors. Consider to use "
+               "has_presence, is_packed on field descriptors.",
+               1);
   std::string syntax(FileDescriptorLegacy::SyntaxName(
       FileDescriptorLegacy(_GetDescriptor(self)).syntax()));
   return PyUnicode_InternFromString(syntax.c_str());

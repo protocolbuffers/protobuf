@@ -968,10 +968,12 @@ static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
     rb_raise(rb_eArgError, "Expected string for binary protobuf data.");
   }
 
-  return Message_decode_bytes(RSTRING_LEN(data), RSTRING_PTR(data), options, klass, /*freeze*/ false);
+  return Message_decode_bytes(RSTRING_LEN(data), RSTRING_PTR(data), options,
+                              klass, /*freeze*/ false);
 }
 
-VALUE Message_decode_bytes(int size, const char* bytes, int options, VALUE klass, bool freeze) {
+VALUE Message_decode_bytes(int size, const char* bytes, int options,
+                           VALUE klass, bool freeze) {
   VALUE msg_rb = initialize_rb_class_with_no_args(klass);
   Message* msg = ruby_to_Message(msg_rb);
 
@@ -980,7 +982,8 @@ VALUE Message_decode_bytes(int size, const char* bytes, int options, VALUE klass
       upb_DefPool_ExtensionRegistry(upb_FileDef_Pool(file));
   upb_DecodeStatus status =
       upb_Decode(bytes, size, (upb_Message*)msg->msg,
-                 upb_MessageDef_MiniTable(msg->msgdef), extreg, options,
+                                       upb_MessageDef_MiniTable(msg->msgdef),
+                                       extreg, options,
                  Arena_get(msg->arena));
   if (status != kUpb_DecodeStatus_Ok) {
     rb_raise(cParseError, "Error occurred during parsing");

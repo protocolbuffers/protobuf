@@ -584,7 +584,8 @@ VALUE Map_internal_deep_freeze(VALUE _self) {
     upb_MessageValue key, val;
 
     while (upb_Map_Next(self->map, &key, &val, &iter)) {
-      VALUE val_val = Convert_UpbToRuby(val, self->value_type_info, self->arena);
+      VALUE val_val =
+          Convert_UpbToRuby(val, self->value_type_info, self->arena);
       Message_internal_deep_freeze(val_val);
     }
   }

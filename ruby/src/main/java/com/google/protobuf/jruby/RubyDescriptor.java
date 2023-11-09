@@ -162,10 +162,17 @@ public class RubyDescriptor extends RubyObject {
   @JRubyMethod
   public IRubyObject options(ThreadContext context) {
     RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
-    RubyDescriptor messageOptionsDescriptor = (RubyDescriptor) pool.lookup(context, context.runtime.newString("google.protobuf.MessageOptions"));
+    RubyDescriptor messageOptionsDescriptor =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.MessageOptions"));
     RubyClass messageOptionsClass = (RubyClass) messageOptionsDescriptor.msgclass(context);
     RubyMessage msg = (RubyMessage) messageOptionsClass.newInstance(context, Block.NULL_BLOCK);
-    return msg.decodeBytes(context, msg, CodedInputStream.newInstance(descriptor.getOptions().toByteString().toByteArray()), /*freeze*/ true);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(
+            descriptor.getOptions().toByteString().toByteArray()), /*freeze*/
+        true);
   }
 
   protected FieldDescriptor getField(String name) {

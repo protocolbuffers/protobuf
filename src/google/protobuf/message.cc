@@ -74,15 +74,6 @@ void Message::MergeFrom(const Message& from) {
   merge_to_from(*this, from);
 }
 
-const MessageLite::ClassData* Message::GetClassData() const {
-  static constexpr ClassData data = {
-      &MergeImpl,
-      nullptr,
-      &kDescriptorMethods,
-  };
-  return &data;
-}
-
 void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
   MergeFrom(*DownCast<const Message*>(&other));
 }
@@ -158,14 +149,7 @@ uint8_t* Message::_InternalSerialize(uint8_t* target,
 
 size_t Message::ByteSizeLong() const {
   size_t size = WireFormat::ByteSize(*this);
-
-  auto* cached_size = AccessCachedSize();
-  ABSL_CHECK(cached_size != nullptr)
-      << "Message class \"" << GetDescriptor()->full_name()
-      << "\" implements neither AccessCachedSize() nor ByteSizeLong().  "
-         "Must implement one or the other.";
-  cached_size->Set(internal::ToCachedSize(size));
-
+  AccessCachedSize().Set(internal::ToCachedSize(size));
   return size;
 }
 

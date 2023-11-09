@@ -205,3 +205,37 @@ fn test_oneof_accessors() {
 
     assert_that!(msg.oneof_field(), matches_pattern!(OneofBytes(eq(b"123"))));
 }
+
+#[test]
+fn test_oneof_mut_accessors() {
+    use TestAllTypes_::OneofFieldMut::*;
+
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
+
+    msg.oneof_uint32_set(Some(7));
+
+    match msg.oneof_field_mut() {
+        OneofUint32(mut v) => {
+            assert_eq!(v.get(), 7);
+            v.set(8);
+            assert_eq!(v.get(), 8);
+        }
+        f => panic!("unexpected field_mut type! {:?}", f),
+    }
+
+    // Confirm that the mut write above applies to both the field accessor and the
+    // oneof view accessor.
+    assert_that!(msg.oneof_uint32_opt(), eq(Optional::Set(8)));
+    assert_that!(
+        msg.oneof_field(),
+        matches_pattern!(TestAllTypes_::OneofField::OneofUint32(eq(8)))
+    );
+
+    msg.oneof_uint32_set(None);
+    assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
+
+    msg.oneof_uint32_set(Some(7));
+    msg.oneof_bytes_mut().set(b"123");
+    assert_that!(msg.oneof_field_mut(), matches_pattern!(OneofBytes(_)));
+}

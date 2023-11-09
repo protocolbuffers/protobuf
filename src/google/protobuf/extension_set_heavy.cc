@@ -12,6 +12,8 @@
 // Contains methods defined in extension_set.h which cannot be part of the
 // lite library because they use descriptors or reflection.
 
+#include <cstddef>
+#include <cstdint>
 #include <vector>
 
 #include "absl/log/absl_check.h"
@@ -271,6 +273,11 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
       ABSL_CHECK(output->message_info.prototype != nullptr)
           << "Extension factory's GetPrototype() returned nullptr; extension: "
           << extension->full_name();
+
+      if (extension->options().has_lazy()) {
+        output->is_lazy = extension->options().lazy() ? LazyAnnotation::kLazy
+                                                      : LazyAnnotation::kEager;
+      }
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       output->enum_validity_check.func = ValidateEnumUsingDescriptor;
       output->enum_validity_check.arg = extension->enum_type();

@@ -168,12 +168,13 @@ inline void FieldMask::SharedDtor() {
 const ::google::protobuf::MessageLite::ClassData*
 FieldMask::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      data = {
+      _data_ = {
           FieldMask::MergeImpl,
            nullptr,  // OnDemandRegisterArenaDtor
            &::google::protobuf::Message::kDescriptorMethods,
+              PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
       };
-  return &data;
+  return &_data_;
 }
 PROTOBUF_NOINLINE void FieldMask::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldMask)
@@ -207,6 +208,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_FieldMask_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::FieldMask>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // repeated string paths = 1;
     {::_pbi::TcParser::FastUR1,
@@ -291,9 +295,6 @@ PROTOBUF_NOINLINE bool FieldMask::IsInitialized() const {
   return true;
 }
 
-::_pbi::CachedSize* FieldMask::AccessCachedSize() const {
-  return &_impl_._cached_size_;
-}
 void FieldMask::InternalSwap(FieldMask* PROTOBUF_RESTRICT other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);

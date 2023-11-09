@@ -106,7 +106,10 @@ cc_library(
 
 proto_library(
     name = "required_fields_test_proto",
-    srcs = ["required_fields_test.proto"],
+    srcs = [
+        "required_fields_editions_test.proto",
+        "required_fields_test.proto",
+    ],
 )
 
 upb_c_proto_library(
@@ -131,6 +134,7 @@ cc_test(
         "//upb:json",
         "//upb:mem",
         "//upb:reflection",
+        "//upb:reflection_internal",
         "@com_google_absl//absl/strings",
     ],
 )

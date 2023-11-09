@@ -342,7 +342,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return get$capitalized_name$FieldBuilder().getBuilder();\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // FieldOrBuilder getFieldOrBuilder()
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -692,7 +692,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
                  "${$get$capitalized_name$Builder$}$() {\n"
                  "  return get$capitalized_name$FieldBuilder().getBuilder();\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
       variables_,
@@ -730,7 +730,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "  $on_changed$\n"
       "  return $name$Builder_;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearCode(
@@ -1148,7 +1148,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "    int index) {\n"
       "  return get$capitalized_name$FieldBuilder().getBuilder(index);\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // FieldOrBuilder getRepeatedFieldOrBuilder(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -1222,7 +1222,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "  }\n"
       "  return $name$Builder_;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void RepeatedImmutableMessageFieldGenerator::

@@ -235,10 +235,17 @@ public class RubyFieldDescriptor extends RubyObject {
 
   @JRubyMethod
   public IRubyObject options(ThreadContext context) {
-    RubyDescriptor fieldOptionsDescriptor = (RubyDescriptor) pool.lookup(context, context.runtime.newString("google.protobuf.FieldOptions"));
+    RubyDescriptor fieldOptionsDescriptor =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.FieldOptions"));
     RubyClass fieldOptionsClass = (RubyClass) fieldOptionsDescriptor.msgclass(context);
     RubyMessage msg = (RubyMessage) fieldOptionsClass.newInstance(context, Block.NULL_BLOCK);
-    return msg.decodeBytes(context, msg, CodedInputStream.newInstance(descriptor.getOptions().toByteString().toByteArray()), /*freeze*/ true);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(
+            descriptor.getOptions().toByteString().toByteArray()), /*freeze*/
+        true);
   }
 
   protected void setDescriptor(

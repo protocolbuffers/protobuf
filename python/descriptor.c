@@ -197,10 +197,25 @@ static PyObject* PyUpb_DescriptorBase_CopyToProto(PyObject* _self,
 }
 
 static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
+  // This deallocator can be called on different types (which, despite
+  // 'Base' in the name of one of them, do not inherit from each other).
+  // Some of these types are GC types (they have Py_TPFLAGS_HAVE_GC set),
+  // which means Python's GC can visit them (via tp_visit and/or tp_clear
+  // methods) at any time. This also means we *must* stop GC from tracking
+  // instances of them before we start destructing the object. In Python
+  // 3.11, failing to do so would raise a runtime warning.
+  if (PyType_HasFeature(Py_TYPE(base), Py_TPFLAGS_HAVE_GC)) {
+    PyObject_GC_UnTrack(base);
+  }
   PyUpb_ObjCache_Delete(base->def);
-  Py_XDECREF(base->message_meta);
-  Py_DECREF(base->pool);
-  Py_XDECREF(base->options);
+  // In addition to being visited by GC, instances can also (potentially) be
+  // accessed whenever arbitrary code is executed. Destructors can execute
+  // arbitrary code, so any struct members we DECREF should be set to NULL
+  // or a new value *before* calling Py_DECREF on them. The Py_CLEAR macro
+  // (and Py_SETREF in Python 3.8+) takes care to do this safely.
+  Py_CLEAR(base->message_meta);
+  Py_CLEAR(base->pool);
+  Py_CLEAR(base->options);
   PyUpb_Dealloc(base);
 }
 
@@ -256,9 +271,13 @@ err:
 
 void PyUpb_Descriptor_SetClass(PyObject* py_descriptor, PyObject* meta) {
   PyUpb_DescriptorBase* base = (PyUpb_DescriptorBase*)py_descriptor;
-  Py_XDECREF(base->message_meta);
-  base->message_meta = meta;
   Py_INCREF(meta);
+  // Py_SETREF replaces strong references without an intermediate invalid
+  // object state, which code executed by base->message_meta's destructor
+  // might see, but it's Python 3.8+.
+  PyObject* tmp = base->message_meta;
+  base->message_meta = meta;
+  Py_XDECREF(tmp);
 }
 
 // The LookupNested*() functions provide name lookup for entities nested inside
@@ -620,6 +639,11 @@ static PyObject* PyUpb_Descriptor_GetOneofsByName(PyObject* _self,
 }
 
 static PyObject* PyUpb_Descriptor_GetSyntax(PyObject* self, void* closure) {
+  PyErr_WarnEx(NULL,
+               "descriptor.syntax is deprecated. It will be removed soon. "
+               "Most usages are checking field descriptors. Consider to use "
+               "has_presence, is_packed on field descriptors.",
+               1);
   const upb_MessageDef* msgdef = PyUpb_Descriptor_GetDef(self);
   const char* syntax =
       upb_MessageDef_Syntax(msgdef) == kUpb_Syntax_Proto2 ? "proto2" : "proto3";
@@ -1309,6 +1333,11 @@ static PyObject* PyUpb_FileDescriptor_GetPublicDependencies(PyObject* _self,
 
 static PyObject* PyUpb_FileDescriptor_GetSyntax(PyObject* _self,
                                                 void* closure) {
+  PyErr_WarnEx(NULL,
+               "descriptor.syntax is deprecated. It will be removed soon. "
+               "Most usages are checking field descriptors. Consider to use "
+               "has_presence, is_packed on field descriptors.",
+               1);
   PyUpb_DescriptorBase* self = (void*)_self;
   const char* syntax =
       upb_FileDef_Syntax(self->def) == kUpb_Syntax_Proto2 ? "proto2" : "proto3";

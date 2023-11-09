@@ -137,9 +137,11 @@ def _flatten_target_files(targets):
     return depset(transitive = [
         target.files
         for target in targets
-        # Filter out targets from external workspaces
-        if target.label.workspace_name == "" or
-           target.label.workspace_name == "com_google_protobuf"
+        # Filter out targets from external workspaces. We also filter out
+        # utf8_range since that has a separate CMake build for now.
+        if (target.label.workspace_name == "" or
+            target.label.workspace_name == "com_google_protobuf") and
+           not target.label.package.startswith("third_party/utf8_range")
     ])
 
 def _get_transitive_sources(targets, attr, deps):

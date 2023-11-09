@@ -605,6 +605,15 @@ public final class Descriptors {
       pool.addSymbol(message);
     }
 
+    /**
+     * This method is to be called by generated code only. It resolves features for the descriptor
+     * and all of its children.
+     *
+     * <p>TODO Implement and use this method in gencode once users using prebuilt jars
+     * with stale runtimes updated.
+     */
+    public void resolveAllFeatures() {}
+
     /** Look up and cross-link all field types, etc. */
     private void crossLink() throws DescriptorValidationException {
       for (final Descriptor messageType : messageTypes) {
