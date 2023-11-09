@@ -42,6 +42,11 @@ bool upb_MethodDef_HasOptions(const upb_MethodDef* m) {
   return m->opts != (void*)kUpbDefOptDefault;
 }
 
+const UPB_DESC(FeatureSet) *
+    upb_MethodDef_ResolvedFeatures(const upb_MethodDef* m) {
+  return m->resolved_features;
+}
+
 const char* upb_MethodDef_FullName(const upb_MethodDef* m) {
   return m->full_name;
 }

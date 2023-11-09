@@ -654,10 +654,9 @@ static PyObject* SetFeatureSetDefaults(PyObject* pself, PyObject* pdefaults) {
   }
 
   if (!PyObject_TypeCheck(pdefaults, CMessage_Type)) {
-    PyErr_Format(
-        PyExc_TypeError,
-        "Parameter to SetFeatureSetDefaults() must be a message type: got %s.",
-        Py_TYPE(pdefaults)->tp_name);
+    PyErr_Format(PyExc_TypeError,
+                 "SetFeatureSetDefaults called with invalid type: got %s.",
+                 Py_TYPE(pdefaults)->tp_name);
     return nullptr;
   }
 
@@ -665,8 +664,7 @@ static PyObject* SetFeatureSetDefaults(PyObject* pself, PyObject* pdefaults) {
   if (defaults->message->GetDescriptor() !=
       FeatureSetDefaults::GetDescriptor()) {
     PyErr_Format(PyExc_TypeError,
-                 "Parameter to SetFeatureSetDefaults() must be instance of "
-                 "FeatureSetDefaults: "
+                 "SetFeatureSetDefaults called with invalid type: "
                  " got %s.",
                  defaults->message->GetDescriptor()->full_name().c_str());
     return nullptr;

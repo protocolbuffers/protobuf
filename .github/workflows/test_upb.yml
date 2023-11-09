@@ -20,6 +20,7 @@ jobs:
           - { name: "Fastbuild" }
           - { name: "Optimized", flags: "-c opt" }
           - { name: "FastTable", flags: "--//upb:fasttable_enabled=true" }
+          - { name: "FastTable ASAN", flags: "--//upb:fasttable_enabled=true --config=asan", exclude-targets: "-//benchmarks:benchmark -//python/..." }
           - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/..." }
           - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/..." }
           - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/..." }

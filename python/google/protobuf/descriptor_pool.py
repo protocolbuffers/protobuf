@@ -703,6 +703,10 @@ class DescriptorPool(object):
     # pylint: disable=g-import-not-at-top
     from google.protobuf import descriptor_pb2
 
+    if not isinstance(defaults, descriptor_pb2.FeatureSetDefaults):
+      raise TypeError('SetFeatureSetDefaults called with invalid type')
+
+
     if defaults.minimum_edition > defaults.maximum_edition:
       raise ValueError(
           'Invalid edition range %s to %s'
@@ -717,7 +721,14 @@ class DescriptorPool(object):
       if d.edition == descriptor_pb2.Edition.EDITION_UNKNOWN:
         raise ValueError('Invalid edition EDITION_UNKNOWN specified')
       if prev_edition >= d.edition:
-        raise ValueError('Feature set defaults are not strictly increasing')
+        raise ValueError(
+            'Feature set defaults are not strictly increasing.  %s is greater'
+            ' than or equal to %s'
+            % (
+                descriptor_pb2.Edition.Name(prev_edition),
+                descriptor_pb2.Edition.Name(d.edition),
+            )
+        )
       prev_edition = d.edition
     self._edition_defaults = defaults
 

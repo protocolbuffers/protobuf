@@ -138,6 +138,11 @@ bool upb_MessageDef_HasOptions(const upb_MessageDef* m) {
   return m->opts != (void*)kUpbDefOptDefault;
 }
 
+const UPB_DESC(FeatureSet) *
+    upb_MessageDef_ResolvedFeatures(const upb_MessageDef* m) {
+  return m->resolved_features;
+}
+
 const char* upb_MessageDef_FullName(const upb_MessageDef* m) {
   return m->full_name;
 }
