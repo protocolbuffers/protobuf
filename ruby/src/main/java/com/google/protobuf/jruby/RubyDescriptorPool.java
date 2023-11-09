@@ -181,13 +181,18 @@ public class RubyDescriptorPool extends RubyObject {
 
   private void registerExtension(
       ThreadContext context, FieldDescriptor descriptor, String parentPath) {
-    registry.add(descriptor);
+    if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+      registry.add(descriptor, descriptor.toProto());
+    } else {
+      registry.add(descriptor);
+    }
     RubyString name = context.runtime.newString(parentPath + descriptor.getName());
     RubyFieldDescriptor des =
         (RubyFieldDescriptor) cFieldDescriptor.newInstance(context, Block.NULL_BLOCK);
     des.setName(name);
     des.setDescriptor(context, descriptor, this);
-    symtab.put(name, des);
+    // For MessageSet extensions, there is the possibility of a name conflict. Prefer the Message.
+    symtab.putIfAbsent(name, des);
   }
 
   private void registerEnumDescriptor(
