@@ -386,6 +386,9 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Api_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Api>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // string name = 1;
@@ -767,6 +770,9 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Method_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Method>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // string name = 1;
@@ -1106,6 +1112,9 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Mixin_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Mixin>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // string root = 2;
     {::_pbi::TcParser::FastUS1,

@@ -204,6 +204,9 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Duration::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Duration_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Duration>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // int32 nanos = 2;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Duration, _impl_.nanos_), 63>(),

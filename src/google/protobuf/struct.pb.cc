@@ -329,6 +329,9 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Struct_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Struct>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
   }}, {{
@@ -640,6 +643,9 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Value_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Value>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
   }}, {{
@@ -937,6 +943,9 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_ListValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::ListValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // repeated .google.protobuf.Value values = 1;
     {::_pbi::TcParser::FastMtR1,

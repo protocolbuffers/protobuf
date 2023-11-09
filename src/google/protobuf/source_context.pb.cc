@@ -211,6 +211,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_SourceContext_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // string file_name = 1;
     {::_pbi::TcParser::FastUS1,

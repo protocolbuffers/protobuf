@@ -445,6 +445,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> DoubleValue::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_DoubleValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::DoubleValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // double value = 1;
     {::_pbi::TcParser::FastF64S1,
@@ -630,6 +633,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> FloatValue::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_FloatValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::FloatValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // float value = 1;
     {::_pbi::TcParser::FastF32S1,
@@ -815,6 +821,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int64Value::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Int64Value_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Int64Value>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // int64 value = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(Int64Value, _impl_.value_), 63>(),
@@ -986,6 +995,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt64Value::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_UInt64Value_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::UInt64Value>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // uint64 value = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(UInt64Value, _impl_.value_), 63>(),
@@ -1157,6 +1169,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int32Value::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Int32Value_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Int32Value>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // int32 value = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Int32Value, _impl_.value_), 63>(),
@@ -1328,6 +1343,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt32Value::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_UInt32Value_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::UInt32Value>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // uint32 value = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(UInt32Value, _impl_.value_), 63>(),
@@ -1499,6 +1517,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BoolValue::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_BoolValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::BoolValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // bool value = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(BoolValue, _impl_.value_), 63>(),
@@ -1683,6 +1704,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 41, 2> StringValue::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_StringValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::StringValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // string value = 1;
     {::_pbi::TcParser::FastUS1,
@@ -1874,6 +1898,9 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BytesValue::_table_ = {
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_BytesValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::BytesValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // bytes value = 1;
     {::_pbi::TcParser::FastBS1,

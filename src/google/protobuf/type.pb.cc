@@ -566,6 +566,9 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Type_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Type>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // string name = 1;
@@ -946,6 +949,9 @@ const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Field_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Field>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // .google.protobuf.Field.Kind kind = 1;
@@ -1401,6 +1407,9 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Enum_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Enum>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // string name = 1;
@@ -1734,6 +1743,9 @@ const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_EnumValue_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::EnumValue>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // string name = 1;
@@ -2000,6 +2012,9 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
     offsetof(decltype(_table_), aux_entries),
     &_Option_default_instance_._instance,
     ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Option>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // .google.protobuf.Any value = 2;
     {::_pbi::TcParser::FastMtS1,
