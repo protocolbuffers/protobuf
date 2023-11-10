@@ -128,21 +128,15 @@ class PROTOBUF_EXPORT CppFeatures final :
     return *internal_default_instance();
   }
   static inline const CppFeatures* internal_default_instance() {
-    return reinterpret_cast<const CppFeatures*>(
-               &_CppFeatures_default_instance_);
+    return reinterpret_cast<const CppFeatures*>(&_CppFeatures_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    0;
-
-  friend void swap(CppFeatures& a, CppFeatures& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 0;
+  friend void swap(CppFeatures& a, CppFeatures& b) { a.Swap(&b); }
   inline void Swap(CppFeatures* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -231,13 +225,12 @@ class PROTOBUF_EXPORT CppFeatures final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     bool legacy_closed_enum_;

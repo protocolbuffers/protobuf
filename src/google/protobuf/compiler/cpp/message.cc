@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <iterator>
@@ -1307,178 +1308,204 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "}\n"
       "\n");
 
-  p->Emit(R"cc(
-    inline const $unknown_fields_type$& unknown_fields() const
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $annotate_unknown_fields$;
-      return $unknown_fields$;
-    }
-    inline $unknown_fields_type$* mutable_unknown_fields()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $annotate_mutable_unknown_fields$;
-      return $mutable_unknown_fields$;
-    }
-  )cc");
-  // Adding a blank line to be consistent with the previous version.
-  p->Emit("\n");
+  p->Emit(
+      {
+          {"descriptor_accessor",
+           [&] {
+             // Only generate this member if it's not disabled.
+             if (!HasDescriptorMethods(descriptor_->file(), options_) ||
+                 descriptor_->options().no_standard_descriptor_accessor()) {
+               return;
+             }
 
-  // Only generate this member if it's not disabled.
-  if (HasDescriptorMethods(descriptor_->file(), options_) &&
-      !descriptor_->options().no_standard_descriptor_accessor()) {
-    format(
-        "static const ::$proto_ns$::Descriptor* descriptor() {\n"
-        "  return GetDescriptor();\n"
-        "}\n");
-  }
+             p->Emit(R"cc(
+               static const ::$proto_ns$::Descriptor* descriptor() {
+                 return GetDescriptor();
+               }
+             )cc");
+           }},
+          {"get_descriptor",
+           [&] {
+             // These shadow non-static methods of the same names in Message. We
+             // redefine them here because calls directly on the generated class
+             // can be statically analyzed -- we know what descriptor types are
+             // being requested. It also avoids a vtable dispatch.
+             //
+             // We would eventually like to eliminate the methods in Message,
+             // and having this separate also lets us track calls to the base
+             // class methods separately.
+             if (!HasDescriptorMethods(descriptor_->file(), options_)) return;
 
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    // These shadow non-static methods of the same names in Message.  We
-    // redefine them here because calls directly on the generated class can be
-    // statically analyzed -- we know what descriptor types are being requested.
-    // It also avoids a vtable dispatch.
-    //
-    // We would eventually like to eliminate the methods in Message, and having
-    // this separate also lets us track calls to the base class methods
-    // separately.
-    format(
-        "static const ::$proto_ns$::Descriptor* GetDescriptor() {\n"
-        "  return default_instance().GetMetadata().descriptor;\n"
-        "}\n"
-        "static const ::$proto_ns$::Reflection* GetReflection() {\n"
-        "  return default_instance().GetMetadata().reflection;\n"
-        "}\n");
-  }
+             p->Emit(R"cc(
+               static const ::$proto_ns$::Descriptor* GetDescriptor() {
+                 return default_instance().GetMetadata().descriptor;
+               }
+               static const ::$proto_ns$::Reflection* GetReflection() {
+                 return default_instance().GetMetadata().reflection;
+               }
+             )cc");
+           }},
+      },
+      R"cc(
+        inline const $unknown_fields_type$& unknown_fields() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $annotate_unknown_fields$;
+          return $unknown_fields$;
+        }
+        inline $unknown_fields_type$* mutable_unknown_fields()
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $annotate_mutable_unknown_fields$;
+          return $mutable_unknown_fields$;
+        }
 
-  format(
-      "static const $classname$& default_instance() {\n"
-      "  return *internal_default_instance();\n"
-      "}\n");
+        $descriptor_accessor$;
+        $get_descriptor$;
+        static const $classname$& default_instance() {
+          return *internal_default_instance();
+        }
+      )cc");
 
   // Generate enum values for every field in oneofs. One list is generated for
   // each oneof with an additional *_NOT_SET value.
   for (auto oneof : OneOfRange(descriptor_)) {
-    format("enum $1$Case {\n", UnderscoresToCamelCase(oneof->name(), true));
-    format.Indent();
-    for (auto field : FieldRange(oneof)) {
-      format("$1$ = $2$,\n", OneofCaseConstantName(field),  // 1
-             field->number());                              // 2
-    }
-    format("$1$_NOT_SET = 0,\n", absl::AsciiStrToUpper(oneof->name()));
-    format.Outdent();
-    format(
-        "};\n"
-        "\n");
+    p->Emit({{"oneof_camel_name", UnderscoresToCamelCase(oneof->name(), true)},
+             {"oneof_field",
+              [&] {
+                for (auto field : FieldRange(oneof)) {
+                  p->Emit(
+                      {
+                          {"oneof_constant", OneofCaseConstantName(field)},
+                          {"field_number", field->number()},
+                      },
+                      R"cc(
+                        $oneof_constant$ = $field_number$,
+                      )cc");
+                }
+              }},
+             {"upper_oneof_name", absl::AsciiStrToUpper(oneof->name())}},
+            R"cc(
+              enum $oneof_camel_name$Case {
+                $oneof_field$,
+                $upper_oneof_name$_NOT_SET = 0,
+              };
+            )cc");
   }
 
   // TODO make this private, while still granting other protos access.
-  format(
-      "static inline const $classname$* internal_default_instance() {\n"
-      "  return reinterpret_cast<const $classname$*>(\n"
-      "             &_$classname$_default_instance_);\n"
-      "}\n"
-      "static constexpr int kIndexInFileMessages =\n"
-      "  $1$;\n"
-      "\n",
-      index_in_file_messages_);
+  p->Emit({{"index_in_file_messages", index_in_file_messages_}},
+          R"cc(
+            static inline const $classname$* internal_default_instance() {
+              return reinterpret_cast<const $classname$*>(&_$classname$_default_instance_);
+            }
+            static constexpr int kIndexInFileMessages = $index_in_file_messages$;
+          )cc");
 
   if (IsAnyMessage(descriptor_)) {
-    format(
-        "// implements Any -----------------------------------------------\n"
-        "\n");
-    if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format(
-          "bool PackFrom(const ::$proto_ns$::Message& message) {\n"
-          "  $DCHK$_NE(&message, this);\n"
-          "  return $any_metadata$.PackFrom(GetArena(), message);\n"
-          "}\n"
-          "bool PackFrom(const ::$proto_ns$::Message& message,\n"
-          "              ::absl::string_view type_url_prefix) {\n"
-          "  $DCHK$_NE(&message, this);\n"
-          "  return $any_metadata$.PackFrom(GetArena(), message, "
-          "type_url_prefix);\n"
-          "}\n"
-          "bool UnpackTo(::$proto_ns$::Message* message) const {\n"
-          "  return $any_metadata$.UnpackTo(message);\n"
-          "}\n"
-          "static bool GetAnyFieldDescriptors(\n"
-          "    const ::$proto_ns$::Message& message,\n"
-          "    const ::$proto_ns$::FieldDescriptor** type_url_field,\n"
-          "    const ::$proto_ns$::FieldDescriptor** value_field);\n"
-          "template <typename T, class = typename std::enable_if<"
-          "!std::is_convertible<T, const ::$proto_ns$::Message&>"
-          "::value>::type>\n"
-          "bool PackFrom(const T& message) {\n"
-          "  return $any_metadata$.PackFrom<T>(GetArena(), message);\n"
-          "}\n"
-          "template <typename T, class = typename std::enable_if<"
-          "!std::is_convertible<T, const ::$proto_ns$::Message&>"
-          "::value>::type>\n"
-          "bool PackFrom(const T& message,\n"
-          "              ::absl::string_view type_url_prefix) {\n"
-          "  return $any_metadata$.PackFrom<T>(GetArena(), message, "
-          "type_url_prefix);"
-          "}\n"
-          "template <typename T, class = typename std::enable_if<"
-          "!std::is_convertible<T, const ::$proto_ns$::Message&>"
-          "::value>::type>\n"
-          "bool UnpackTo(T* message) const {\n"
-          "  return $any_metadata$.UnpackTo<T>(message);\n"
-          "}\n");
-    } else {
-      format(
-          "template <typename T>\n"
-          "bool PackFrom(const T& message) {\n"
-          "  return $any_metadata$.PackFrom(GetArena(), message);\n"
-          "}\n"
-          "template <typename T>\n"
-          "bool PackFrom(const T& message,\n"
-          "              ::absl::string_view type_url_prefix) {\n"
-          "  return $any_metadata$.PackFrom(GetArena(), message, "
-          "type_url_prefix);\n"
-          "}\n"
-          "template <typename T>\n"
-          "bool UnpackTo(T* message) const {\n"
-          "  return $any_metadata$.UnpackTo(message);\n"
-          "}\n");
-    }
-    format(
-        "template<typename T> bool Is() const {\n"
-        "  return $any_metadata$.Is<T>();\n"
-        "}\n"
-        "static bool ParseAnyTypeUrl(::absl::string_view type_url,\n"
-        "                            std::string* full_type_name);\n");
+    p->Emit(
+        {{"any_methods",
+          [&] {
+            if (HasDescriptorMethods(descriptor_->file(), options_)) {
+              p->Emit(
+                  R"cc(
+                    bool PackFrom(const ::$proto_ns$::Message& message) {
+                      $DCHK$_NE(&message, this);
+                      return $any_metadata$.PackFrom(GetArena(), message);
+                    }
+                    bool PackFrom(const ::$proto_ns$::Message& message,
+                                  ::absl::string_view type_url_prefix) {
+                      $DCHK$_NE(&message, this);
+                      return $any_metadata$.PackFrom(GetArena(), message, type_url_prefix);
+                    }
+                    bool UnpackTo(::$proto_ns$::Message* message) const {
+                      return $any_metadata$.UnpackTo(message);
+                    }
+                    static bool GetAnyFieldDescriptors(
+                        const ::$proto_ns$::Message& message,
+                        const ::$proto_ns$::FieldDescriptor** type_url_field,
+                        const ::$proto_ns$::FieldDescriptor** value_field);
+                    template <
+                        typename T,
+                        class = typename std::enable_if<!std::is_convertible<
+                            T, const ::$proto_ns$::Message&>::value>::type>
+                    bool PackFrom(const T& message) {
+                      return $any_metadata$.PackFrom<T>(GetArena(), message);
+                    }
+                    template <
+                        typename T,
+                        class = typename std::enable_if<!std::is_convertible<
+                            T, const ::$proto_ns$::Message&>::value>::type>
+                    bool PackFrom(const T& message,
+                                  ::absl::string_view type_url_prefix) {
+                      return $any_metadata$.PackFrom<T>(GetArena(), message, type_url_prefix);
+                    }
+                    template <
+                        typename T,
+                        class = typename std::enable_if<!std::is_convertible<
+                            T, const ::$proto_ns$::Message&>::value>::type>
+                    bool UnpackTo(T* message) const {
+                      return $any_metadata$.UnpackTo<T>(message);
+                    }
+                  )cc");
+            } else {
+              p->Emit(
+                  R"cc(
+                    template <typename T>
+                    bool PackFrom(const T& message) {
+                      return $any_metadata$.PackFrom(GetArena(), message);
+                    }
+                    template <typename T>
+                    bool PackFrom(const T& message,
+                                  ::absl::string_view type_url_prefix) {
+                      return $any_metadata$.PackFrom(GetArena(), message, type_url_prefix);
+                    }
+                    template <typename T>
+                    bool UnpackTo(T* message) const {
+                      return $any_metadata$.UnpackTo(message);
+                    }
+                  )cc");
+            }
+          }}},
+        R"cc(
+          // implements Any -----------------------------------------------
+
+          $any_methods$;
+
+          template <typename T>
+          bool Is() const {
+            return $any_metadata$.Is<T>();
+          }
+          static bool ParseAnyTypeUrl(::absl::string_view type_url,
+                                      std::string* full_type_name);
+        )cc");
   }
 
-  format(
-      "friend void swap($classname$& a, $classname$& b) {\n"
-      "  a.Swap(&b);\n"
-      "}\n"
-      "inline void Swap($classname$* other) {\n"
-      "  if (other == this) return;\n"
-      "#ifdef PROTOBUF_FORCE_COPY_IN_SWAP\n"
-      "  if (GetArena() != nullptr &&\n"
-      "      GetArena() == other->GetArena()) {\n "
-      "#else  // PROTOBUF_FORCE_COPY_IN_SWAP\n"
-      "  if (GetArena() == other->GetArena()) {\n"
-      "#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP\n"
-      "    InternalSwap(other);\n"
-      "  } else {\n"
-      "    $pbi$::GenericSwap(this, other);\n"
-      "  }\n"
-      "}\n"
-      "void UnsafeArenaSwap($classname$* other) {\n"
-      "  if (other == this) return;\n"
-      "  $DCHK$(GetArena() == other->GetArena());\n"
-      "  InternalSwap(other);\n"
-      "}\n");
+  p->Emit(
+      R"cc(
+        friend void swap($classname$& a, $classname$& b) { a.Swap(&b); }
+        inline void Swap($classname$* other) {
+          if (other == this) return;
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+          if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
+          if (GetArena() == other->GetArena()) {
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+            InternalSwap(other);
+          } else {
+            $pbi$::GenericSwap(this, other);
+          }
+        }
+        void UnsafeArenaSwap($classname$* other) {
+          if (other == this) return;
+          $DCHK$(GetArena() == other->GetArena());
+          InternalSwap(other);
+        }
 
-  format(
-      "\n"
-      "// implements Message ----------------------------------------------\n"
-      "\n"
-      "$classname$* New(::$proto_ns$::Arena* arena = nullptr) const final {\n"
-      "  return $superclass$::DefaultConstruct<$classname$>(arena);\n"
-      "}\n");
+        // implements Message ----------------------------------------------
+
+        $classname$* New(::$proto_ns$::Arena* arena = nullptr) const final {
+          return $superclass$::DefaultConstruct<$classname$>(arena);
+        }
+      )cc");
 
   // For instances that derive from Message (rather than MessageLite), some
   // methods are virtual and should be marked as final.
@@ -1736,7 +1763,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   format.Indent();
 
   // TODO: check if/when there is a need for an outline dtor.
-  format(R"cc(
+  p->Emit(R"cc(
     inline explicit constexpr Impl_(
         ::$proto_ns$::internal::ConstantInitialized) noexcept;
     inline explicit Impl_($pbi$::InternalVisibility visibility,
@@ -1788,22 +1815,23 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
     }
   }
   if (ShouldSplit(descriptor_, options_)) {
-    format("struct Split {\n");
-    format.Indent();
-    for (auto field : optimized_order_) {
-      if (!ShouldSplit(field, options_)) continue;
-      field_generators_.get(field).GeneratePrivateMembers(p);
-    }
-    format.Outdent();
-    p->Emit(R"cc(
-      using InternalArenaConstructable_ = void;
-      using DestructorSkippable_ = void;
-    )cc");
-    format(
-        "};\n"
-        "static_assert(std::is_trivially_copy_constructible<Split>::value);\n"
-        "static_assert(std::is_trivially_destructible<Split>::value);\n"
-        "Split* _split_;\n");
+    p->Emit({{"split_field",
+              [&] {
+                for (auto field : optimized_order_) {
+                  if (!ShouldSplit(field, options_)) continue;
+                  field_generators_.get(field).GeneratePrivateMembers(p);
+                }
+              }}},
+            R"cc(
+              struct Split {
+                $split_field$;
+                using InternalArenaConstructable_ = void;
+                using DestructorSkippable_ = void;
+              };
+              static_assert(std::is_trivially_copy_constructible<Split>::value);
+              static_assert(std::is_trivially_destructible<Split>::value);
+              Split* _split_;
+            )cc");
   }
 
   // For each oneof generate a union
