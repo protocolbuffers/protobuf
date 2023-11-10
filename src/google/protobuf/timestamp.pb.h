@@ -126,21 +126,15 @@ class PROTOBUF_EXPORT Timestamp final :
     return *internal_default_instance();
   }
   static inline const Timestamp* internal_default_instance() {
-    return reinterpret_cast<const Timestamp*>(
-               &_Timestamp_default_instance_);
+    return reinterpret_cast<const Timestamp*>(&_Timestamp_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    0;
-
-  friend void swap(Timestamp& a, Timestamp& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 0;
+  friend void swap(Timestamp& a, Timestamp& b) { a.Swap(&b); }
   inline void Swap(Timestamp* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -239,13 +233,12 @@ class PROTOBUF_EXPORT Timestamp final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::int64_t seconds_;
     ::int32_t nanos_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;

@@ -126,12 +126,9 @@ class PROTOBUF_EXPORT Any final :
     return *internal_default_instance();
   }
   static inline const Any* internal_default_instance() {
-    return reinterpret_cast<const Any*>(
-               &_Any_default_instance_);
+    return reinterpret_cast<const Any*>(&_Any_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    0;
-
+  static constexpr int kIndexInFileMessages = 0;
   // implements Any -----------------------------------------------
 
   bool PackFrom(const ::google::protobuf::Message& message) {
@@ -150,32 +147,41 @@ class PROTOBUF_EXPORT Any final :
       const ::google::protobuf::Message& message,
       const ::google::protobuf::FieldDescriptor** type_url_field,
       const ::google::protobuf::FieldDescriptor** value_field);
-  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::google::protobuf::Message&>::value>::type>
+  template <
+      typename T,
+      class = typename std::enable_if<!std::is_convertible<
+          T, const ::google::protobuf::Message&>::value>::type>
   bool PackFrom(const T& message) {
     return _impl_._any_metadata_.PackFrom<T>(GetArena(), message);
   }
-  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::google::protobuf::Message&>::value>::type>
+  template <
+      typename T,
+      class = typename std::enable_if<!std::is_convertible<
+          T, const ::google::protobuf::Message&>::value>::type>
   bool PackFrom(const T& message,
                 ::absl::string_view type_url_prefix) {
-    return _impl_._any_metadata_.PackFrom<T>(GetArena(), message, type_url_prefix);}
-  template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::google::protobuf::Message&>::value>::type>
+    return _impl_._any_metadata_.PackFrom<T>(GetArena(), message, type_url_prefix);
+  }
+  template <
+      typename T,
+      class = typename std::enable_if<!std::is_convertible<
+          T, const ::google::protobuf::Message&>::value>::type>
   bool UnpackTo(T* message) const {
     return _impl_._any_metadata_.UnpackTo<T>(message);
   }
-  template<typename T> bool Is() const {
+
+  template <typename T>
+  bool Is() const {
     return _impl_._any_metadata_.Is<T>();
   }
   static bool ParseAnyTypeUrl(::absl::string_view type_url,
                               std::string* full_type_name);
-  friend void swap(Any& a, Any& b) {
-    a.Swap(&b);
-  }
+  friend void swap(Any& a, Any& b) { a.Swap(&b); }
   inline void Swap(Any* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -286,13 +292,12 @@ class PROTOBUF_EXPORT Any final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ArenaStringPtr type_url_;
     ::google::protobuf::internal::ArenaStringPtr value_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;

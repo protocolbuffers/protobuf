@@ -126,21 +126,15 @@ class PROTOBUF_EXPORT Empty final :
     return *internal_default_instance();
   }
   static inline const Empty* internal_default_instance() {
-    return reinterpret_cast<const Empty*>(
-               &_Empty_default_instance_);
+    return reinterpret_cast<const Empty*>(&_Empty_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    0;
-
-  friend void swap(Empty& a, Empty& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 0;
+  friend void swap(Empty& a, Empty& b) { a.Swap(&b); }
   inline void Swap(Empty* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -196,13 +190,12 @@ class PROTOBUF_EXPORT Empty final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   friend struct ::TableStruct_google_2fprotobuf_2fempty_2eproto;
