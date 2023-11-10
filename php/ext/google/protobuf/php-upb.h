@@ -10164,6 +10164,11 @@ UPB_API upb_DefPool* upb_DefPool_New(void);
 UPB_API const UPB_DESC(FeatureSetDefaults) *
     upb_DefPool_FeatureSetDefaults(const upb_DefPool* s);
 
+UPB_API bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
+                                               const char* serialized_defaults,
+                                               size_t serialized_len,
+                                               upb_Status* status);
+
 UPB_API const upb_MessageDef* upb_DefPool_FindMessageByName(
     const upb_DefPool* s, const char* sym);
 
@@ -10409,6 +10414,8 @@ UPB_API upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f);
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+UPB_API const char* upb_FileDef_EditionName(int edition);
 
 const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
 int upb_FileDef_DependencyCount(const upb_FileDef* f);
