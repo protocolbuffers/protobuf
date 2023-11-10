@@ -189,7 +189,7 @@ static std::string InitializationErrorStringImpl(const MessageLite& msg) {
   return DownCast<const Message&>(msg).InitializationErrorString();
 }
 
-constexpr MessageLite::DescriptorMethods Message::kDescriptorMethods = {
+const MessageLite::DescriptorMethods Message::kDescriptorMethods = {
     GetTypeNameImpl,
     InitializationErrorStringImpl,
 };
