@@ -48,6 +48,20 @@ struct upb_FileDef {
   upb_Syntax syntax;
 };
 
+UPB_API const char* upb_FileDef_EditionName(int edition) {
+  // TODO Synchronize this with descriptor.proto better.
+  switch (edition) {
+    case UPB_DESC(EDITION_PROTO2):
+      return "PROTO2";
+    case UPB_DESC(EDITION_PROTO3):
+      return "PROTO3";
+    case UPB_DESC(EDITION_2023):
+      return "2023";
+    default:
+      return "UNKNOWN";
+  }
+}
+
 const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f) {
   return f->opts;
 }
@@ -180,11 +194,21 @@ const UPB_DESC(FeatureSet*)
 
   int min = UPB_DESC(FeatureSetDefaults_minimum_edition)(defaults);
   int max = UPB_DESC(FeatureSetDefaults_maximum_edition)(defaults);
-  if (edition < min || edition > max) {
+  if (edition < min) {
     _upb_DefBuilder_Errf(ctx,
-                         "Edition %d is outside the supported range [%d, %d] "
+                         "Edition %s is earlier than the minimum edition %s "
                          "given in the defaults",
-                         edition, min, max);
+                         upb_FileDef_EditionName(edition),
+                         upb_FileDef_EditionName(min));
+    return NULL;
+  }
+  if (edition > max) {
+    _upb_DefBuilder_Errf(ctx,
+                         "Edition %s is later than the maximum edition %s "
+                         "given in the defaults",
+                         upb_FileDef_EditionName(edition),
+                         upb_FileDef_EditionName(max));
+    return NULL;
   }
 
   size_t n;
@@ -197,6 +221,11 @@ const UPB_DESC(FeatureSet*)
       break;
     }
     ret = UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault_features)(d[i]);
+  }
+  if (ret == NULL) {
+    _upb_DefBuilder_Errf(ctx, "No valid default found for edition %s",
+                         upb_FileDef_EditionName(edition));
+    return NULL;
   }
   return ret;
 }

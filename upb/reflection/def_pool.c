@@ -7,9 +7,11 @@
 
 #include "upb/reflection/internal/def_pool.h"
 
+#include "upb/base/status.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 #include "upb/reflection/def_type.h"
+#include "upb/reflection/file_def.h"
 #include "upb/reflection/internal/def_builder.h"
 #include "upb/reflection/internal/enum_def.h"
 #include "upb/reflection/internal/enum_value_def.h"
@@ -62,8 +64,12 @@ upb_DefPool* upb_DefPool_New(void) {
   if (!s->extreg) goto err;
 
   s->platform = kUpb_MiniTablePlatform_Native;
-  s->feature_set_defaults = UPB_DESC(FeatureSetDefaults_parse)(
-      serialized_defaults, sizeof(serialized_defaults) - 1, s->arena);
+
+  upb_Status status;
+  if (!upb_DefPool_SetFeatureSetDefaults(
+          s, serialized_defaults, sizeof(serialized_defaults) - 1, &status)) {
+    goto err;
+  }
 
   if (!s->feature_set_defaults) goto err;
 
@@ -77,6 +83,58 @@ err:
 const UPB_DESC(FeatureSetDefaults) *
     upb_DefPool_FeatureSetDefaults(const upb_DefPool* s) {
   return s->feature_set_defaults;
+}
+
+bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
+                                       const char* serialized_defaults,
+                                       size_t serialized_len,
+                                       upb_Status* status) {
+  const UPB_DESC(FeatureSetDefaults)* defaults = UPB_DESC(
+      FeatureSetDefaults_parse)(serialized_defaults, serialized_len, s->arena);
+  if (!defaults) {
+    upb_Status_SetErrorFormat(status, "Failed to parse defaults");
+    return false;
+  }
+  if (upb_strtable_count(&s->files) > 0) {
+    upb_Status_SetErrorFormat(status,
+                              "Feature set defaults can't be changed once the "
+                              "pool has started building");
+    return false;
+  }
+  int min_edition = UPB_DESC(FeatureSetDefaults_minimum_edition(defaults));
+  int max_edition = UPB_DESC(FeatureSetDefaults_maximum_edition(defaults));
+  if (min_edition > max_edition) {
+    upb_Status_SetErrorFormat(status, "Invalid edition range %s to %s",
+                              upb_FileDef_EditionName(min_edition),
+                              upb_FileDef_EditionName(max_edition));
+    return false;
+  }
+  size_t size;
+  const UPB_DESC(
+      FeatureSetDefaults_FeatureSetEditionDefault)* const* default_list =
+      UPB_DESC(FeatureSetDefaults_defaults(defaults, &size));
+  int prev_edition = UPB_DESC(EDITION_UNKNOWN);
+  for (size_t i = 0; i < size; ++i) {
+    int edition = UPB_DESC(
+        FeatureSetDefaults_FeatureSetEditionDefault_edition(default_list[i]));
+    if (edition == UPB_DESC(EDITION_UNKNOWN)) {
+      upb_Status_SetErrorFormat(status, "Invalid edition UNKNOWN specified");
+      return false;
+    }
+    if (edition <= prev_edition) {
+      upb_Status_SetErrorFormat(status,
+                                "Feature set defaults are not strictly "
+                                "increasing, %s is greater than or equal to %s",
+                                upb_FileDef_EditionName(prev_edition),
+                                upb_FileDef_EditionName(edition));
+      return false;
+    }
+    prev_edition = edition;
+  }
+
+  // Copy the defaults into the pool.
+  s->feature_set_defaults = defaults;
+  return true;
 }
 
 bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTableExtension* ext,
