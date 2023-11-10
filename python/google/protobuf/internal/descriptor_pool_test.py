@@ -1078,7 +1078,7 @@ class AddDescriptorTest(unittest.TestCase):
 # TODO Expand these tests to upb and C++ once the DescriptorPool
 # API is unified.
 @unittest.skipIf(
-    api_implementation.Type() != 'python',
+    api_implementation.Type() == 'upb',
     'Only pure python allows SetFeatureSetDefaults()',
 )
 @testing_refleaks.TestCase

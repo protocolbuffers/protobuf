@@ -10,6 +10,7 @@
 #include "google/protobuf/compiler/plugin.h"
 
 #include <iostream>
+#include <utility>
 #include <vector>
 
 #ifdef _WIN32
@@ -18,6 +19,8 @@
 #include <unistd.h>
 #endif
 
+#include "absl/log/absl_check.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -102,7 +105,8 @@ bool GenerateCode(const CodeGeneratorRequest& request,
                               defaults.status().message());
     return false;
   }
-  pool.SetFeatureSetDefaults(*defaults);
+  absl::Status status = pool.SetFeatureSetDefaults(std::move(defaults).value());
+  ABSL_CHECK(status.ok()) << status.message();
 
   for (int i = 0; i < request.proto_file_size(); i++) {
     const FileDescriptor* file = pool.BuildFile(request.proto_file(i));

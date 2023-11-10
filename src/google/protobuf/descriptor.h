@@ -2290,7 +2290,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // called, these defaults will be used instead.
   // FeatureSetDefaults includes a minimum/maximum supported edition, which will
   // be enforced while building proto files.
-  void SetFeatureSetDefaults(FeatureSetDefaults spec);
+  absl::Status SetFeatureSetDefaults(FeatureSetDefaults spec);
 
   // Toggles enforcement of extension declarations.
   // This enforcement is disabled by default because it requires full
