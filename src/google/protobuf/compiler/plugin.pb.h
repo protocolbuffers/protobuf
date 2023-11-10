@@ -176,21 +176,15 @@ class PROTOC_EXPORT Version final :
     return *internal_default_instance();
   }
   static inline const Version* internal_default_instance() {
-    return reinterpret_cast<const Version*>(
-               &_Version_default_instance_);
+    return reinterpret_cast<const Version*>(&_Version_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    0;
-
-  friend void swap(Version& a, Version& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 0;
+  friend void swap(Version& a, Version& b) { a.Swap(&b); }
   inline void Swap(Version* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -321,13 +315,12 @@ class PROTOC_EXPORT Version final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOC_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr suffix_;
@@ -395,21 +388,15 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
     return *internal_default_instance();
   }
   static inline const CodeGeneratorResponse_File* internal_default_instance() {
-    return reinterpret_cast<const CodeGeneratorResponse_File*>(
-               &_CodeGeneratorResponse_File_default_instance_);
+    return reinterpret_cast<const CodeGeneratorResponse_File*>(&_CodeGeneratorResponse_File_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    2;
-
-  friend void swap(CodeGeneratorResponse_File& a, CodeGeneratorResponse_File& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 2;
+  friend void swap(CodeGeneratorResponse_File& a, CodeGeneratorResponse_File& b) { a.Swap(&b); }
   inline void Swap(CodeGeneratorResponse_File* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -556,13 +543,12 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOC_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -630,21 +616,15 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
     return *internal_default_instance();
   }
   static inline const CodeGeneratorResponse* internal_default_instance() {
-    return reinterpret_cast<const CodeGeneratorResponse*>(
-               &_CodeGeneratorResponse_default_instance_);
+    return reinterpret_cast<const CodeGeneratorResponse*>(&_CodeGeneratorResponse_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    3;
-
-  friend void swap(CodeGeneratorResponse& a, CodeGeneratorResponse& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 3;
+  friend void swap(CodeGeneratorResponse& a, CodeGeneratorResponse& b) { a.Swap(&b); }
   inline void Swap(CodeGeneratorResponse* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -793,13 +773,12 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOC_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File > file_;
@@ -866,21 +845,15 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
     return *internal_default_instance();
   }
   static inline const CodeGeneratorRequest* internal_default_instance() {
-    return reinterpret_cast<const CodeGeneratorRequest*>(
-               &_CodeGeneratorRequest_default_instance_);
+    return reinterpret_cast<const CodeGeneratorRequest*>(&_CodeGeneratorRequest_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    1;
-
-  friend void swap(CodeGeneratorRequest& a, CodeGeneratorRequest& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 1;
+  friend void swap(CodeGeneratorRequest& a, CodeGeneratorRequest& b) { a.Swap(&b); }
   inline void Swap(CodeGeneratorRequest* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -1058,13 +1031,12 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOC_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField<std::string> file_to_generate_;

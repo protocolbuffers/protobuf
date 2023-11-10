@@ -757,21 +757,15 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
     return *internal_default_instance();
   }
   static inline const UninterpretedOption_NamePart* internal_default_instance() {
-    return reinterpret_cast<const UninterpretedOption_NamePart*>(
-               &_UninterpretedOption_NamePart_default_instance_);
+    return reinterpret_cast<const UninterpretedOption_NamePart*>(&_UninterpretedOption_NamePart_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    23;
-
-  friend void swap(UninterpretedOption_NamePart& a, UninterpretedOption_NamePart& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 23;
+  friend void swap(UninterpretedOption_NamePart& a, UninterpretedOption_NamePart& b) { a.Swap(&b); }
   inline void Swap(UninterpretedOption_NamePart* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -878,13 +872,12 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_part_;
@@ -950,21 +943,15 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
     return *internal_default_instance();
   }
   static inline const SourceCodeInfo_Location* internal_default_instance() {
-    return reinterpret_cast<const SourceCodeInfo_Location*>(
-               &_SourceCodeInfo_Location_default_instance_);
+    return reinterpret_cast<const SourceCodeInfo_Location*>(&_SourceCodeInfo_Location_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    28;
-
-  friend void swap(SourceCodeInfo_Location& a, SourceCodeInfo_Location& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 28;
+  friend void swap(SourceCodeInfo_Location& a, SourceCodeInfo_Location& b) { a.Swap(&b); }
   inline void Swap(SourceCodeInfo_Location* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -1144,13 +1131,12 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
@@ -1221,21 +1207,15 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
     return *internal_default_instance();
   }
   static inline const GeneratedCodeInfo_Annotation* internal_default_instance() {
-    return reinterpret_cast<const GeneratedCodeInfo_Annotation*>(
-               &_GeneratedCodeInfo_Annotation_default_instance_);
+    return reinterpret_cast<const GeneratedCodeInfo_Annotation*>(&_GeneratedCodeInfo_Annotation_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    30;
-
-  friend void swap(GeneratedCodeInfo_Annotation& a, GeneratedCodeInfo_Annotation& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 30;
+  friend void swap(GeneratedCodeInfo_Annotation& a, GeneratedCodeInfo_Annotation& b) { a.Swap(&b); }
   inline void Swap(GeneratedCodeInfo_Annotation* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -1406,13 +1386,12 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
@@ -1482,21 +1461,15 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
     return *internal_default_instance();
   }
   static inline const FieldOptions_EditionDefault* internal_default_instance() {
-    return reinterpret_cast<const FieldOptions_EditionDefault*>(
-               &_FieldOptions_EditionDefault_default_instance_);
+    return reinterpret_cast<const FieldOptions_EditionDefault*>(&_FieldOptions_EditionDefault_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    16;
-
-  friend void swap(FieldOptions_EditionDefault& a, FieldOptions_EditionDefault& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 16;
+  friend void swap(FieldOptions_EditionDefault& a, FieldOptions_EditionDefault& b) { a.Swap(&b); }
   inline void Swap(FieldOptions_EditionDefault* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -1603,13 +1576,12 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr value_;
@@ -1675,21 +1647,15 @@ class PROTOBUF_EXPORT FeatureSet final :
     return *internal_default_instance();
   }
   static inline const FeatureSet* internal_default_instance() {
-    return reinterpret_cast<const FeatureSet*>(
-               &_FeatureSet_default_instance_);
+    return reinterpret_cast<const FeatureSet*>(&_FeatureSet_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    25;
-
-  friend void swap(FeatureSet& a, FeatureSet& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 25;
+  friend void swap(FeatureSet& a, FeatureSet& b) { a.Swap(&b); }
   inline void Swap(FeatureSet* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -2142,13 +2108,12 @@ class PROTOBUF_EXPORT FeatureSet final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2220,21 +2185,15 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     return *internal_default_instance();
   }
   static inline const ExtensionRangeOptions_Declaration* internal_default_instance() {
-    return reinterpret_cast<const ExtensionRangeOptions_Declaration*>(
-               &_ExtensionRangeOptions_Declaration_default_instance_);
+    return reinterpret_cast<const ExtensionRangeOptions_Declaration*>(&_ExtensionRangeOptions_Declaration_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    5;
-
-  friend void swap(ExtensionRangeOptions_Declaration& a, ExtensionRangeOptions_Declaration& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 5;
+  friend void swap(ExtensionRangeOptions_Declaration& a, ExtensionRangeOptions_Declaration& b) { a.Swap(&b); }
   inline void Swap(ExtensionRangeOptions_Declaration* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -2383,13 +2342,12 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr full_name_;
@@ -2458,21 +2416,15 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
     return *internal_default_instance();
   }
   static inline const EnumDescriptorProto_EnumReservedRange* internal_default_instance() {
-    return reinterpret_cast<const EnumDescriptorProto_EnumReservedRange*>(
-               &_EnumDescriptorProto_EnumReservedRange_default_instance_);
+    return reinterpret_cast<const EnumDescriptorProto_EnumReservedRange*>(&_EnumDescriptorProto_EnumReservedRange_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    9;
-
-  friend void swap(EnumDescriptorProto_EnumReservedRange& a, EnumDescriptorProto_EnumReservedRange& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 9;
+  friend void swap(EnumDescriptorProto_EnumReservedRange& a, EnumDescriptorProto_EnumReservedRange& b) { a.Swap(&b); }
   inline void Swap(EnumDescriptorProto_EnumReservedRange* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -2573,13 +2525,12 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
@@ -2645,21 +2596,15 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
     return *internal_default_instance();
   }
   static inline const DescriptorProto_ReservedRange* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto_ReservedRange*>(
-               &_DescriptorProto_ReservedRange_default_instance_);
+    return reinterpret_cast<const DescriptorProto_ReservedRange*>(&_DescriptorProto_ReservedRange_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    3;
-
-  friend void swap(DescriptorProto_ReservedRange& a, DescriptorProto_ReservedRange& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 3;
+  friend void swap(DescriptorProto_ReservedRange& a, DescriptorProto_ReservedRange& b) { a.Swap(&b); }
   inline void Swap(DescriptorProto_ReservedRange* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -2760,13 +2705,12 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
@@ -2832,21 +2776,15 @@ class PROTOBUF_EXPORT UninterpretedOption final :
     return *internal_default_instance();
   }
   static inline const UninterpretedOption* internal_default_instance() {
-    return reinterpret_cast<const UninterpretedOption*>(
-               &_UninterpretedOption_default_instance_);
+    return reinterpret_cast<const UninterpretedOption*>(&_UninterpretedOption_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    24;
-
-  friend void swap(UninterpretedOption& a, UninterpretedOption& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 24;
+  friend void swap(UninterpretedOption& a, UninterpretedOption& b) { a.Swap(&b); }
   inline void Swap(UninterpretedOption* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -3034,13 +2972,12 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart > name_;
@@ -3111,21 +3048,15 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
     return *internal_default_instance();
   }
   static inline const SourceCodeInfo* internal_default_instance() {
-    return reinterpret_cast<const SourceCodeInfo*>(
-               &_SourceCodeInfo_default_instance_);
+    return reinterpret_cast<const SourceCodeInfo*>(&_SourceCodeInfo_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    29;
-
-  friend void swap(SourceCodeInfo& a, SourceCodeInfo& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 29;
+  friend void swap(SourceCodeInfo& a, SourceCodeInfo& b) { a.Swap(&b); }
   inline void Swap(SourceCodeInfo* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -3223,13 +3154,12 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -3293,21 +3223,15 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
     return *internal_default_instance();
   }
   static inline const GeneratedCodeInfo* internal_default_instance() {
-    return reinterpret_cast<const GeneratedCodeInfo*>(
-               &_GeneratedCodeInfo_default_instance_);
+    return reinterpret_cast<const GeneratedCodeInfo*>(&_GeneratedCodeInfo_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    31;
-
-  friend void swap(GeneratedCodeInfo& a, GeneratedCodeInfo& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 31;
+  friend void swap(GeneratedCodeInfo& a, GeneratedCodeInfo& b) { a.Swap(&b); }
   inline void Swap(GeneratedCodeInfo* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -3405,13 +3329,12 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -3475,21 +3398,15 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
     return *internal_default_instance();
   }
   static inline const FeatureSetDefaults_FeatureSetEditionDefault* internal_default_instance() {
-    return reinterpret_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(
-               &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_);
+    return reinterpret_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(&_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    26;
-
-  friend void swap(FeatureSetDefaults_FeatureSetEditionDefault& a, FeatureSetDefaults_FeatureSetEditionDefault& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 26;
+  friend void swap(FeatureSetDefaults_FeatureSetEditionDefault& a, FeatureSetDefaults_FeatureSetEditionDefault& b) { a.Swap(&b); }
   inline void Swap(FeatureSetDefaults_FeatureSetEditionDefault* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -3594,13 +3511,12 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::FeatureSet* features_;
@@ -3666,21 +3582,15 @@ class PROTOBUF_EXPORT ServiceOptions final :
     return *internal_default_instance();
   }
   static inline const ServiceOptions* internal_default_instance() {
-    return reinterpret_cast<const ServiceOptions*>(
-               &_ServiceOptions_default_instance_);
+    return reinterpret_cast<const ServiceOptions*>(&_ServiceOptions_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    21;
-
-  friend void swap(ServiceOptions& a, ServiceOptions& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 21;
+  friend void swap(ServiceOptions& a, ServiceOptions& b) { a.Swap(&b); }
   inline void Swap(ServiceOptions* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -3981,13 +3891,12 @@ class PROTOBUF_EXPORT ServiceOptions final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -4056,21 +3965,15 @@ class PROTOBUF_EXPORT OneofOptions final :
     return *internal_default_instance();
   }
   static inline const OneofOptions* internal_default_instance() {
-    return reinterpret_cast<const OneofOptions*>(
-               &_OneofOptions_default_instance_);
+    return reinterpret_cast<const OneofOptions*>(&_OneofOptions_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    18;
-
-  friend void swap(OneofOptions& a, OneofOptions& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 18;
+  friend void swap(OneofOptions& a, OneofOptions& b) { a.Swap(&b); }
   inline void Swap(OneofOptions* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -4359,13 +4262,12 @@ class PROTOBUF_EXPORT OneofOptions final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -4433,21 +4335,15 @@ class PROTOBUF_EXPORT MethodOptions final :
     return *internal_default_instance();
   }
   static inline const MethodOptions* internal_default_instance() {
-    return reinterpret_cast<const MethodOptions*>(
-               &_MethodOptions_default_instance_);
+    return reinterpret_cast<const MethodOptions*>(&_MethodOptions_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    22;
-
-  friend void swap(MethodOptions& a, MethodOptions& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 22;
+  friend void swap(MethodOptions& a, MethodOptions& b) { a.Swap(&b); }
   inline void Swap(MethodOptions* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -4781,13 +4677,12 @@ class PROTOBUF_EXPORT MethodOptions final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -4857,21 +4752,15 @@ class PROTOBUF_EXPORT MessageOptions final :
     return *internal_default_instance();
   }
   static inline const MessageOptions* internal_default_instance() {
-    return reinterpret_cast<const MessageOptions*>(
-               &_MessageOptions_default_instance_);
+    return reinterpret_cast<const MessageOptions*>(&_MessageOptions_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    15;
-
-  friend void swap(MessageOptions& a, MessageOptions& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 15;
+  friend void swap(MessageOptions& a, MessageOptions& b) { a.Swap(&b); }
   inline void Swap(MessageOptions* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -5220,13 +5109,12 @@ class PROTOBUF_EXPORT MessageOptions final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -5299,21 +5187,15 @@ class PROTOBUF_EXPORT FileOptions final :
     return *internal_default_instance();
   }
   static inline const FileOptions* internal_default_instance() {
-    return reinterpret_cast<const FileOptions*>(
-               &_FileOptions_default_instance_);
+    return reinterpret_cast<const FileOptions*>(&_FileOptions_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    14;
-
-  friend void swap(FileOptions& a, FileOptions& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 14;
+  friend void swap(FileOptions& a, FileOptions& b) { a.Swap(&b); }
   inline void Swap(FileOptions* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -5923,13 +5805,12 @@ class PROTOBUF_EXPORT FileOptions final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -6017,21 +5898,15 @@ class PROTOBUF_EXPORT FieldOptions final :
     return *internal_default_instance();
   }
   static inline const FieldOptions* internal_default_instance() {
-    return reinterpret_cast<const FieldOptions*>(
-               &_FieldOptions_default_instance_);
+    return reinterpret_cast<const FieldOptions*>(&_FieldOptions_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    17;
-
-  friend void swap(FieldOptions& a, FieldOptions& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 17;
+  friend void swap(FieldOptions& a, FieldOptions& b) { a.Swap(&b); }
   inline void Swap(FieldOptions* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -6560,13 +6435,12 @@ class PROTOBUF_EXPORT FieldOptions final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -6645,21 +6519,15 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
     return *internal_default_instance();
   }
   static inline const FeatureSetDefaults* internal_default_instance() {
-    return reinterpret_cast<const FeatureSetDefaults*>(
-               &_FeatureSetDefaults_default_instance_);
+    return reinterpret_cast<const FeatureSetDefaults*>(&_FeatureSetDefaults_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    27;
-
-  friend void swap(FeatureSetDefaults& a, FeatureSetDefaults& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 27;
+  friend void swap(FeatureSetDefaults& a, FeatureSetDefaults& b) { a.Swap(&b); }
   inline void Swap(FeatureSetDefaults* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -6781,13 +6649,12 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault > defaults_;
@@ -6854,21 +6721,15 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
     return *internal_default_instance();
   }
   static inline const ExtensionRangeOptions* internal_default_instance() {
-    return reinterpret_cast<const ExtensionRangeOptions*>(
-               &_ExtensionRangeOptions_default_instance_);
+    return reinterpret_cast<const ExtensionRangeOptions*>(&_ExtensionRangeOptions_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    6;
-
-  friend void swap(ExtensionRangeOptions& a, ExtensionRangeOptions& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 6;
+  friend void swap(ExtensionRangeOptions& a, ExtensionRangeOptions& b) { a.Swap(&b); }
   inline void Swap(ExtensionRangeOptions* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -7210,13 +7071,12 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -7286,21 +7146,15 @@ class PROTOBUF_EXPORT EnumValueOptions final :
     return *internal_default_instance();
   }
   static inline const EnumValueOptions* internal_default_instance() {
-    return reinterpret_cast<const EnumValueOptions*>(
-               &_EnumValueOptions_default_instance_);
+    return reinterpret_cast<const EnumValueOptions*>(&_EnumValueOptions_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    20;
-
-  friend void swap(EnumValueOptions& a, EnumValueOptions& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 20;
+  friend void swap(EnumValueOptions& a, EnumValueOptions& b) { a.Swap(&b); }
   inline void Swap(EnumValueOptions* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -7613,13 +7467,12 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -7689,21 +7542,15 @@ class PROTOBUF_EXPORT EnumOptions final :
     return *internal_default_instance();
   }
   static inline const EnumOptions* internal_default_instance() {
-    return reinterpret_cast<const EnumOptions*>(
-               &_EnumOptions_default_instance_);
+    return reinterpret_cast<const EnumOptions*>(&_EnumOptions_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    19;
-
-  friend void swap(EnumOptions& a, EnumOptions& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 19;
+  friend void swap(EnumOptions& a, EnumOptions& b) { a.Swap(&b); }
   inline void Swap(EnumOptions* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -8028,13 +7875,12 @@ class PROTOBUF_EXPORT EnumOptions final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -8105,21 +7951,15 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const OneofDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const OneofDescriptorProto*>(
-               &_OneofDescriptorProto_default_instance_);
+    return reinterpret_cast<const OneofDescriptorProto*>(&_OneofDescriptorProto_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    8;
-
-  friend void swap(OneofDescriptorProto& a, OneofDescriptorProto& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 8;
+  friend void swap(OneofDescriptorProto& a, OneofDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(OneofDescriptorProto* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -8230,13 +8070,12 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -8302,21 +8141,15 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const MethodDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const MethodDescriptorProto*>(
-               &_MethodDescriptorProto_default_instance_);
+    return reinterpret_cast<const MethodDescriptorProto*>(&_MethodDescriptorProto_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    13;
-
-  friend void swap(MethodDescriptorProto& a, MethodDescriptorProto& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 13;
+  friend void swap(MethodDescriptorProto& a, MethodDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(MethodDescriptorProto* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -8487,13 +8320,12 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -8563,21 +8395,15 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const FieldDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const FieldDescriptorProto*>(
-               &_FieldDescriptorProto_default_instance_);
+    return reinterpret_cast<const FieldDescriptorProto*>(&_FieldDescriptorProto_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    7;
-
-  friend void swap(FieldDescriptorProto& a, FieldDescriptorProto& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 7;
+  friend void swap(FieldDescriptorProto& a, FieldDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(FieldDescriptorProto* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -8877,13 +8703,12 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -8958,21 +8783,15 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const EnumValueDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const EnumValueDescriptorProto*>(
-               &_EnumValueDescriptorProto_default_instance_);
+    return reinterpret_cast<const EnumValueDescriptorProto*>(&_EnumValueDescriptorProto_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    11;
-
-  friend void swap(EnumValueDescriptorProto& a, EnumValueDescriptorProto& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 11;
+  friend void swap(EnumValueDescriptorProto& a, EnumValueDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(EnumValueDescriptorProto* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -9095,13 +8914,12 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -9168,21 +8986,15 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
     return *internal_default_instance();
   }
   static inline const DescriptorProto_ExtensionRange* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto_ExtensionRange*>(
-               &_DescriptorProto_ExtensionRange_default_instance_);
+    return reinterpret_cast<const DescriptorProto_ExtensionRange*>(&_DescriptorProto_ExtensionRange_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    2;
-
-  friend void swap(DescriptorProto_ExtensionRange& a, DescriptorProto_ExtensionRange& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 2;
+  friend void swap(DescriptorProto_ExtensionRange& a, DescriptorProto_ExtensionRange& b) { a.Swap(&b); }
   inline void Swap(DescriptorProto_ExtensionRange* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -9299,13 +9111,12 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::ExtensionRangeOptions* options_;
@@ -9372,21 +9183,15 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const ServiceDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const ServiceDescriptorProto*>(
-               &_ServiceDescriptorProto_default_instance_);
+    return reinterpret_cast<const ServiceDescriptorProto*>(&_ServiceDescriptorProto_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    12;
-
-  friend void swap(ServiceDescriptorProto& a, ServiceDescriptorProto& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 12;
+  friend void swap(ServiceDescriptorProto& a, ServiceDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(ServiceDescriptorProto* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -9516,13 +9321,12 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
@@ -9589,21 +9393,15 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const EnumDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const EnumDescriptorProto*>(
-               &_EnumDescriptorProto_default_instance_);
+    return reinterpret_cast<const EnumDescriptorProto*>(&_EnumDescriptorProto_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    10;
-
-  friend void swap(EnumDescriptorProto& a, EnumDescriptorProto& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 10;
+  friend void swap(EnumDescriptorProto& a, EnumDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(EnumDescriptorProto* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -9783,13 +9581,12 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
@@ -9858,21 +9655,15 @@ class PROTOBUF_EXPORT DescriptorProto final :
     return *internal_default_instance();
   }
   static inline const DescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto*>(
-               &_DescriptorProto_default_instance_);
+    return reinterpret_cast<const DescriptorProto*>(&_DescriptorProto_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    4;
-
-  friend void swap(DescriptorProto& a, DescriptorProto& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 4;
+  friend void swap(DescriptorProto& a, DescriptorProto& b) { a.Swap(&b); }
   inline void Swap(DescriptorProto* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -10148,13 +9939,12 @@ class PROTOBUF_EXPORT DescriptorProto final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > field_;
@@ -10228,21 +10018,15 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const FileDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const FileDescriptorProto*>(
-               &_FileDescriptorProto_default_instance_);
+    return reinterpret_cast<const FileDescriptorProto*>(&_FileDescriptorProto_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    1;
-
-  friend void swap(FileDescriptorProto& a, FileDescriptorProto& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 1;
+  friend void swap(FileDescriptorProto& a, FileDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(FileDescriptorProto* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -10560,13 +10344,12 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField<std::string> dependency_;
@@ -10643,21 +10426,15 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
     return *internal_default_instance();
   }
   static inline const FileDescriptorSet* internal_default_instance() {
-    return reinterpret_cast<const FileDescriptorSet*>(
-               &_FileDescriptorSet_default_instance_);
+    return reinterpret_cast<const FileDescriptorSet*>(&_FileDescriptorSet_default_instance_);
   }
-  static constexpr int kIndexInFileMessages =
-    0;
-
-  friend void swap(FileDescriptorSet& a, FileDescriptorSet& b) {
-    a.Swap(&b);
-  }
+  static constexpr int kIndexInFileMessages = 0;
+  friend void swap(FileDescriptorSet& a, FileDescriptorSet& b) { a.Swap(&b); }
   inline void Swap(FileDescriptorSet* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr &&
-        GetArena() == other->GetArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
   #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
@@ -10753,13 +10530,12 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct PROTOBUF_EXPORT Impl_ {
-
-        inline explicit constexpr Impl_(
-            ::google::protobuf::internal::ConstantInitialized) noexcept;
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena);
-        inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                              ::google::protobuf::Arena* arena, const Impl_& from);
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
