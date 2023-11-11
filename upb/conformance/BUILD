@@ -73,6 +73,8 @@ cc_binary(
         ":conformance_upb_proto_reflection",
         ":test_messages_proto2_upbdefs",
         ":test_messages_proto3_upbdefs",
+        "//src/google/protobuf/editions:test_messages_proto2_editions_upbdefs",
+        "//src/google/protobuf/editions:test_messages_proto3_editions_upbdefs",
         "//upb:json",
         "//upb:port",
         "//upb:reflection",
@@ -84,7 +86,7 @@ cc_binary(
 make_shell_script(
     name = "gen_test_conformance_upb",
     out = "test_conformance_upb.sh",
-    contents = "$1 --enforce_recommended --failure_list $2 $3",
+    contents = "$1 --maximum_edition 2023 --enforce_recommended --failure_list $2 $3",
 )
 
 sh_test(
@@ -124,6 +126,8 @@ cc_binary(
         ":conformance_upb_proto_reflection",
         ":test_messages_proto2_upbdefs",
         ":test_messages_proto3_upbdefs",
+        "//src/google/protobuf/editions:test_messages_proto2_editions_upbdefs",
+        "//src/google/protobuf/editions:test_messages_proto3_editions_upbdefs",
         "//upb:json",
         "//upb:port",
         "//upb:reflection",
@@ -135,7 +139,7 @@ cc_binary(
 make_shell_script(
     name = "gen_test_conformance_upb_dynamic_minitable",
     out = "test_conformance_upb_dynamic_minitable.sh",
-    contents = "$1 --enforce_recommended --failure_list $2 $3",
+    contents = "$1 --maximum_edition 2023 --enforce_recommended --failure_list $2 $3",
 )
 
 sh_test(

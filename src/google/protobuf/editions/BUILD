@@ -1,4 +1,5 @@
 load("@rules_python//python:proto.bzl", "py_proto_library")
+load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
@@ -106,6 +107,19 @@ py_proto_library(
     deps = [":test_messages_proto2_editions_proto"],
 )
 
+upb_c_proto_library(
+    name = "test_messages_proto2_editions_upb_proto",
+    testonly = 1,
+    deps = [":test_messages_proto2_editions_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "test_messages_proto2_editions_upbdefs",
+    testonly = 1,
+    visibility = ["//upb/conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_proto"],
+)
+
 proto_library(
     name = "test_messages_proto3_editions_proto",
     testonly = True,
@@ -133,6 +147,19 @@ py_proto_library(
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto3_editions_proto"],
+)
+
+upb_c_proto_library(
+    name = "test_messages_proto3_editions_upb_proto",
+    testonly = 1,
+    deps = [":test_messages_proto3_editions_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "test_messages_proto3_editions_upbdefs",
+    testonly = 1,
+    visibility = ["//upb/conformance:__pkg__"],
+    deps = ["test_messages_proto3_editions_proto"],
 )
 
 # Export these for conformance tests until we support py_proto_library.
