@@ -74,7 +74,6 @@ std::string EnumMiniTableRef(upb::EnumDefPtr descriptor,
 
 std::string ExtensionIdentBase(upb::FieldDefPtr ext) {
   assert(ext.is_extension());
-  std::string ext_scope;
   if (ext.extension_scope()) {
     return MessageName(ext.extension_scope());
   } else {
