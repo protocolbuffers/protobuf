@@ -21,6 +21,10 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12"
 ]
+dependencies = [
+    "numpy<=1.26.1",
+    "setuptools<=68.2.2"
+]
 dynamic = ["version"]
 
 [project.urls]
