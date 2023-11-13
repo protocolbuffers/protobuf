@@ -59,7 +59,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['8.0']
+        version: ['8.2']
         suffix: [ '', '-zts']
         test: ['test', 'test_c']
         exclude:
