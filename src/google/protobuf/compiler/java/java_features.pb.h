@@ -104,18 +104,17 @@ inline bool JavaFeatures_Utf8Validation_Parse(absl::string_view name, JavaFeatur
 
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT JavaFeatures final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:pb.JavaFeatures) */ {
+class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:pb.JavaFeatures) */ {
  public:
   inline JavaFeatures() : JavaFeatures(nullptr) {}
   ~JavaFeatures() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR JavaFeatures(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR JavaFeatures(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline JavaFeatures(const JavaFeatures& from)
-      : JavaFeatures(nullptr, from) {}
-  JavaFeatures(JavaFeatures&& from) noexcept
-    : JavaFeatures() {
+  inline JavaFeatures(const JavaFeatures& from) : JavaFeatures(nullptr, from) {}
+  JavaFeatures(JavaFeatures&& from) noexcept : JavaFeatures() {
     *this = ::std::move(from);
   }
 
@@ -126,9 +125,9 @@ class PROTOC_EXPORT JavaFeatures final :
   inline JavaFeatures& operator=(JavaFeatures&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -159,17 +158,18 @@ class PROTOC_EXPORT JavaFeatures final :
     return *internal_default_instance();
   }
   static inline const JavaFeatures* internal_default_instance() {
-    return reinterpret_cast<const JavaFeatures*>(&_JavaFeatures_default_instance_);
+    return reinterpret_cast<const JavaFeatures*>(
+        &_JavaFeatures_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(JavaFeatures& a, JavaFeatures& b) { a.Swap(&b); }
   inline void Swap(JavaFeatures* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -189,11 +189,12 @@ class PROTOC_EXPORT JavaFeatures final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const JavaFeatures& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const JavaFeatures& from) {
-    JavaFeatures::MergeImpl(*this, from);
-  }
+  void MergeFrom(const JavaFeatures& from) { JavaFeatures::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -201,29 +202,27 @@ class PROTOC_EXPORT JavaFeatures final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(JavaFeatures* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "pb.JavaFeatures";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "pb.JavaFeatures"; }
+
+ protected:
   explicit JavaFeatures(::google::protobuf::Arena* arena);
   JavaFeatures(::google::protobuf::Arena* arena, const JavaFeatures& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using Utf8Validation = JavaFeatures_Utf8Validation;
   static constexpr Utf8Validation UTF8_VALIDATION_UNKNOWN = JavaFeatures_Utf8Validation_UTF8_VALIDATION_UNKNOWN;
   static constexpr Utf8Validation DEFAULT = JavaFeatures_Utf8Validation_DEFAULT;
@@ -246,7 +245,6 @@ class PROTOC_EXPORT JavaFeatures final :
   }
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kLegacyClosedEnumFieldNumber = 1,
     kUtf8ValidationFieldNumber = 2,
@@ -276,7 +274,6 @@ class PROTOC_EXPORT JavaFeatures final :
   // @@protoc_insertion_point(class_scope:pb.JavaFeatures)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 2, 1,
@@ -288,7 +285,7 @@ class PROTOC_EXPORT JavaFeatures final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOC_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,

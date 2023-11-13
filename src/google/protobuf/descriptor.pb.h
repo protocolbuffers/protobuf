@@ -702,18 +702,17 @@ inline bool Edition_Parse(absl::string_view name, Edition* value) {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption.NamePart) */ {
+class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption.NamePart) */ {
  public:
   inline UninterpretedOption_NamePart() : UninterpretedOption_NamePart(nullptr) {}
   ~UninterpretedOption_NamePart() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR UninterpretedOption_NamePart(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR UninterpretedOption_NamePart(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from)
-      : UninterpretedOption_NamePart(nullptr, from) {}
-  UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
-    : UninterpretedOption_NamePart() {
+  inline UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from) : UninterpretedOption_NamePart(nullptr, from) {}
+  UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept : UninterpretedOption_NamePart() {
     *this = ::std::move(from);
   }
 
@@ -724,9 +723,9 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   inline UninterpretedOption_NamePart& operator=(UninterpretedOption_NamePart&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -757,17 +756,18 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
     return *internal_default_instance();
   }
   static inline const UninterpretedOption_NamePart* internal_default_instance() {
-    return reinterpret_cast<const UninterpretedOption_NamePart*>(&_UninterpretedOption_NamePart_default_instance_);
+    return reinterpret_cast<const UninterpretedOption_NamePart*>(
+        &_UninterpretedOption_NamePart_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 23;
   friend void swap(UninterpretedOption_NamePart& a, UninterpretedOption_NamePart& b) { a.Swap(&b); }
   inline void Swap(UninterpretedOption_NamePart* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -787,11 +787,12 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption_NamePart& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const UninterpretedOption_NamePart& from) {
-    UninterpretedOption_NamePart::MergeImpl(*this, from);
-  }
+  void MergeFrom(const UninterpretedOption_NamePart& from) { UninterpretedOption_NamePart::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -799,31 +800,29 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(UninterpretedOption_NamePart* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.UninterpretedOption.NamePart";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption.NamePart"; }
+
+ protected:
   explicit UninterpretedOption_NamePart(::google::protobuf::Arena* arena);
   UninterpretedOption_NamePart(::google::protobuf::Arena* arena, const UninterpretedOption_NamePart& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kNamePartFieldNumber = 1,
     kIsExtensionFieldNumber = 2,
@@ -859,7 +858,6 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   // @@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption.NamePart)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 2, 0,
@@ -871,7 +869,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -886,20 +884,20 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT SourceCodeInfo_Location final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo.Location) */ {
+class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo.Location) */ {
  public:
   inline SourceCodeInfo_Location() : SourceCodeInfo_Location(nullptr) {}
   ~SourceCodeInfo_Location() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR SourceCodeInfo_Location(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR SourceCodeInfo_Location(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline SourceCodeInfo_Location(const SourceCodeInfo_Location& from)
-      : SourceCodeInfo_Location(nullptr, from) {}
-  SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
-    : SourceCodeInfo_Location() {
+  inline SourceCodeInfo_Location(const SourceCodeInfo_Location& from) : SourceCodeInfo_Location(nullptr, from) {}
+  SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept : SourceCodeInfo_Location() {
     *this = ::std::move(from);
   }
 
@@ -910,9 +908,9 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   inline SourceCodeInfo_Location& operator=(SourceCodeInfo_Location&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -943,17 +941,18 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
     return *internal_default_instance();
   }
   static inline const SourceCodeInfo_Location* internal_default_instance() {
-    return reinterpret_cast<const SourceCodeInfo_Location*>(&_SourceCodeInfo_Location_default_instance_);
+    return reinterpret_cast<const SourceCodeInfo_Location*>(
+        &_SourceCodeInfo_Location_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 28;
   friend void swap(SourceCodeInfo_Location& a, SourceCodeInfo_Location& b) { a.Swap(&b); }
   inline void Swap(SourceCodeInfo_Location* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -973,11 +972,12 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo_Location& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const SourceCodeInfo_Location& from) {
-    SourceCodeInfo_Location::MergeImpl(*this, from);
-  }
+  void MergeFrom(const SourceCodeInfo_Location& from) { SourceCodeInfo_Location::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -985,31 +985,29 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(SourceCodeInfo_Location* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.SourceCodeInfo.Location";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo.Location"; }
+
+ protected:
   explicit SourceCodeInfo_Location(::google::protobuf::Arena* arena);
   SourceCodeInfo_Location(::google::protobuf::Arena* arena, const SourceCodeInfo_Location& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kPathFieldNumber = 1,
     kSpanFieldNumber = 2,
@@ -1118,7 +1116,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo.Location)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 5, 0,
@@ -1130,7 +1127,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -1150,20 +1147,20 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo.Annotation) */ {
+class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo.Annotation) */ {
  public:
   inline GeneratedCodeInfo_Annotation() : GeneratedCodeInfo_Annotation(nullptr) {}
   ~GeneratedCodeInfo_Annotation() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from)
-      : GeneratedCodeInfo_Annotation(nullptr, from) {}
-  GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
-    : GeneratedCodeInfo_Annotation() {
+  inline GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from) : GeneratedCodeInfo_Annotation(nullptr, from) {}
+  GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept : GeneratedCodeInfo_Annotation() {
     *this = ::std::move(from);
   }
 
@@ -1174,9 +1171,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   inline GeneratedCodeInfo_Annotation& operator=(GeneratedCodeInfo_Annotation&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -1207,17 +1204,18 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
     return *internal_default_instance();
   }
   static inline const GeneratedCodeInfo_Annotation* internal_default_instance() {
-    return reinterpret_cast<const GeneratedCodeInfo_Annotation*>(&_GeneratedCodeInfo_Annotation_default_instance_);
+    return reinterpret_cast<const GeneratedCodeInfo_Annotation*>(
+        &_GeneratedCodeInfo_Annotation_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 30;
   friend void swap(GeneratedCodeInfo_Annotation& a, GeneratedCodeInfo_Annotation& b) { a.Swap(&b); }
   inline void Swap(GeneratedCodeInfo_Annotation* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -1237,11 +1235,12 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo_Annotation& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const GeneratedCodeInfo_Annotation& from) {
-    GeneratedCodeInfo_Annotation::MergeImpl(*this, from);
-  }
+  void MergeFrom(const GeneratedCodeInfo_Annotation& from) { GeneratedCodeInfo_Annotation::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -1249,29 +1248,27 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(GeneratedCodeInfo_Annotation* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.GeneratedCodeInfo.Annotation";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo.Annotation"; }
+
+ protected:
   explicit GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena);
   GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena, const GeneratedCodeInfo_Annotation& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using Semantic = GeneratedCodeInfo_Annotation_Semantic;
   static constexpr Semantic NONE = GeneratedCodeInfo_Annotation_Semantic_NONE;
   static constexpr Semantic SET = GeneratedCodeInfo_Annotation_Semantic_SET;
@@ -1294,7 +1291,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   }
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kPathFieldNumber = 1,
     kSourceFileFieldNumber = 2,
@@ -1373,7 +1369,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   // @@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo.Annotation)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 5, 1,
@@ -1385,7 +1380,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -1404,20 +1399,20 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.EditionDefault) */ {
+class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.EditionDefault) */ {
  public:
   inline FieldOptions_EditionDefault() : FieldOptions_EditionDefault(nullptr) {}
   ~FieldOptions_EditionDefault() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FieldOptions_EditionDefault(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR FieldOptions_EditionDefault(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from)
-      : FieldOptions_EditionDefault(nullptr, from) {}
-  FieldOptions_EditionDefault(FieldOptions_EditionDefault&& from) noexcept
-    : FieldOptions_EditionDefault() {
+  inline FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from) : FieldOptions_EditionDefault(nullptr, from) {}
+  FieldOptions_EditionDefault(FieldOptions_EditionDefault&& from) noexcept : FieldOptions_EditionDefault() {
     *this = ::std::move(from);
   }
 
@@ -1428,9 +1423,9 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   inline FieldOptions_EditionDefault& operator=(FieldOptions_EditionDefault&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -1461,17 +1456,18 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
     return *internal_default_instance();
   }
   static inline const FieldOptions_EditionDefault* internal_default_instance() {
-    return reinterpret_cast<const FieldOptions_EditionDefault*>(&_FieldOptions_EditionDefault_default_instance_);
+    return reinterpret_cast<const FieldOptions_EditionDefault*>(
+        &_FieldOptions_EditionDefault_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 16;
   friend void swap(FieldOptions_EditionDefault& a, FieldOptions_EditionDefault& b) { a.Swap(&b); }
   inline void Swap(FieldOptions_EditionDefault* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -1491,11 +1487,12 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldOptions_EditionDefault& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const FieldOptions_EditionDefault& from) {
-    FieldOptions_EditionDefault::MergeImpl(*this, from);
-  }
+  void MergeFrom(const FieldOptions_EditionDefault& from) { FieldOptions_EditionDefault::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -1503,31 +1500,29 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FieldOptions_EditionDefault* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.FieldOptions.EditionDefault";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions.EditionDefault"; }
+
+ protected:
   explicit FieldOptions_EditionDefault(::google::protobuf::Arena* arena);
   FieldOptions_EditionDefault(::google::protobuf::Arena* arena, const FieldOptions_EditionDefault& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kValueFieldNumber = 2,
     kEditionFieldNumber = 3,
@@ -1563,7 +1558,6 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldOptions.EditionDefault)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 2, 1,
@@ -1575,7 +1569,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -1590,20 +1584,20 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FeatureSet final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSet) */ {
+class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSet) */ {
  public:
   inline FeatureSet() : FeatureSet(nullptr) {}
   ~FeatureSet() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FeatureSet(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR FeatureSet(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline FeatureSet(const FeatureSet& from)
-      : FeatureSet(nullptr, from) {}
-  FeatureSet(FeatureSet&& from) noexcept
-    : FeatureSet() {
+  inline FeatureSet(const FeatureSet& from) : FeatureSet(nullptr, from) {}
+  FeatureSet(FeatureSet&& from) noexcept : FeatureSet() {
     *this = ::std::move(from);
   }
 
@@ -1614,9 +1608,9 @@ class PROTOBUF_EXPORT FeatureSet final :
   inline FeatureSet& operator=(FeatureSet&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -1647,17 +1641,18 @@ class PROTOBUF_EXPORT FeatureSet final :
     return *internal_default_instance();
   }
   static inline const FeatureSet* internal_default_instance() {
-    return reinterpret_cast<const FeatureSet*>(&_FeatureSet_default_instance_);
+    return reinterpret_cast<const FeatureSet*>(
+        &_FeatureSet_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 25;
   friend void swap(FeatureSet& a, FeatureSet& b) { a.Swap(&b); }
   inline void Swap(FeatureSet* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -1677,11 +1672,12 @@ class PROTOBUF_EXPORT FeatureSet final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FeatureSet& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const FeatureSet& from) {
-    FeatureSet::MergeImpl(*this, from);
-  }
+  void MergeFrom(const FeatureSet& from) { FeatureSet::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -1689,29 +1685,27 @@ class PROTOBUF_EXPORT FeatureSet final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FeatureSet* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.FeatureSet";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet"; }
+
+ protected:
   explicit FeatureSet(::google::protobuf::Arena* arena);
   FeatureSet(::google::protobuf::Arena* arena, const FeatureSet& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using FieldPresence = FeatureSet_FieldPresence;
   static constexpr FieldPresence FIELD_PRESENCE_UNKNOWN = FeatureSet_FieldPresence_FIELD_PRESENCE_UNKNOWN;
   static constexpr FieldPresence EXPLICIT = FeatureSet_FieldPresence_EXPLICIT;
@@ -1733,7 +1727,6 @@ class PROTOBUF_EXPORT FeatureSet final :
   static inline bool FieldPresence_Parse(absl::string_view name, FieldPresence* value) {
     return FeatureSet_FieldPresence_Parse(name, value);
   }
-
   using EnumType = FeatureSet_EnumType;
   static constexpr EnumType ENUM_TYPE_UNKNOWN = FeatureSet_EnumType_ENUM_TYPE_UNKNOWN;
   static constexpr EnumType OPEN = FeatureSet_EnumType_OPEN;
@@ -1754,7 +1747,6 @@ class PROTOBUF_EXPORT FeatureSet final :
   static inline bool EnumType_Parse(absl::string_view name, EnumType* value) {
     return FeatureSet_EnumType_Parse(name, value);
   }
-
   using RepeatedFieldEncoding = FeatureSet_RepeatedFieldEncoding;
   static constexpr RepeatedFieldEncoding REPEATED_FIELD_ENCODING_UNKNOWN = FeatureSet_RepeatedFieldEncoding_REPEATED_FIELD_ENCODING_UNKNOWN;
   static constexpr RepeatedFieldEncoding PACKED = FeatureSet_RepeatedFieldEncoding_PACKED;
@@ -1775,7 +1767,6 @@ class PROTOBUF_EXPORT FeatureSet final :
   static inline bool RepeatedFieldEncoding_Parse(absl::string_view name, RepeatedFieldEncoding* value) {
     return FeatureSet_RepeatedFieldEncoding_Parse(name, value);
   }
-
   using Utf8Validation = FeatureSet_Utf8Validation;
   static constexpr Utf8Validation UTF8_VALIDATION_UNKNOWN = FeatureSet_Utf8Validation_UTF8_VALIDATION_UNKNOWN;
   static constexpr Utf8Validation NONE = FeatureSet_Utf8Validation_NONE;
@@ -1796,7 +1787,6 @@ class PROTOBUF_EXPORT FeatureSet final :
   static inline bool Utf8Validation_Parse(absl::string_view name, Utf8Validation* value) {
     return FeatureSet_Utf8Validation_Parse(name, value);
   }
-
   using MessageEncoding = FeatureSet_MessageEncoding;
   static constexpr MessageEncoding MESSAGE_ENCODING_UNKNOWN = FeatureSet_MessageEncoding_MESSAGE_ENCODING_UNKNOWN;
   static constexpr MessageEncoding LENGTH_PREFIXED = FeatureSet_MessageEncoding_LENGTH_PREFIXED;
@@ -1817,7 +1807,6 @@ class PROTOBUF_EXPORT FeatureSet final :
   static inline bool MessageEncoding_Parse(absl::string_view name, MessageEncoding* value) {
     return FeatureSet_MessageEncoding_Parse(name, value);
   }
-
   using JsonFormat = FeatureSet_JsonFormat;
   static constexpr JsonFormat JSON_FORMAT_UNKNOWN = FeatureSet_JsonFormat_JSON_FORMAT_UNKNOWN;
   static constexpr JsonFormat ALLOW = FeatureSet_JsonFormat_ALLOW;
@@ -1840,7 +1829,6 @@ class PROTOBUF_EXPORT FeatureSet final :
   }
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kFieldPresenceFieldNumber = 1,
     kEnumTypeFieldNumber = 2,
@@ -2095,7 +2083,6 @@ class PROTOBUF_EXPORT FeatureSet final :
   // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSet)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 6, 6,
@@ -2107,7 +2094,7 @@ class PROTOBUF_EXPORT FeatureSet final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -2115,7 +2102,6 @@ class PROTOBUF_EXPORT FeatureSet final :
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     int field_presence_;
@@ -2128,20 +2114,20 @@ class PROTOBUF_EXPORT FeatureSet final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions.Declaration) */ {
+class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions.Declaration) */ {
  public:
   inline ExtensionRangeOptions_Declaration() : ExtensionRangeOptions_Declaration(nullptr) {}
   ~ExtensionRangeOptions_Declaration() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions_Declaration(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from)
-      : ExtensionRangeOptions_Declaration(nullptr, from) {}
-  ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept
-    : ExtensionRangeOptions_Declaration() {
+  inline ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from) : ExtensionRangeOptions_Declaration(nullptr, from) {}
+  ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept : ExtensionRangeOptions_Declaration() {
     *this = ::std::move(from);
   }
 
@@ -2152,9 +2138,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   inline ExtensionRangeOptions_Declaration& operator=(ExtensionRangeOptions_Declaration&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -2185,17 +2171,18 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
     return *internal_default_instance();
   }
   static inline const ExtensionRangeOptions_Declaration* internal_default_instance() {
-    return reinterpret_cast<const ExtensionRangeOptions_Declaration*>(&_ExtensionRangeOptions_Declaration_default_instance_);
+    return reinterpret_cast<const ExtensionRangeOptions_Declaration*>(
+        &_ExtensionRangeOptions_Declaration_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 5;
   friend void swap(ExtensionRangeOptions_Declaration& a, ExtensionRangeOptions_Declaration& b) { a.Swap(&b); }
   inline void Swap(ExtensionRangeOptions_Declaration* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -2215,11 +2202,12 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions_Declaration& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const ExtensionRangeOptions_Declaration& from) {
-    ExtensionRangeOptions_Declaration::MergeImpl(*this, from);
-  }
+  void MergeFrom(const ExtensionRangeOptions_Declaration& from) { ExtensionRangeOptions_Declaration::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -2227,31 +2215,29 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(ExtensionRangeOptions_Declaration* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.ExtensionRangeOptions.Declaration";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions.Declaration"; }
+
+ protected:
   explicit ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena);
   ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena, const ExtensionRangeOptions_Declaration& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kFullNameFieldNumber = 2,
     kTypeFieldNumber = 3,
@@ -2329,7 +2315,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   // @@protoc_insertion_point(class_scope:google.protobuf.ExtensionRangeOptions.Declaration)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 5, 0,
@@ -2341,7 +2326,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -2359,20 +2344,20 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto.EnumReservedRange) */ {
+class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto.EnumReservedRange) */ {
  public:
   inline EnumDescriptorProto_EnumReservedRange() : EnumDescriptorProto_EnumReservedRange(nullptr) {}
   ~EnumDescriptorProto_EnumReservedRange() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from)
-      : EnumDescriptorProto_EnumReservedRange(nullptr, from) {}
-  EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept
-    : EnumDescriptorProto_EnumReservedRange() {
+  inline EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from) : EnumDescriptorProto_EnumReservedRange(nullptr, from) {}
+  EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept : EnumDescriptorProto_EnumReservedRange() {
     *this = ::std::move(from);
   }
 
@@ -2383,9 +2368,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   inline EnumDescriptorProto_EnumReservedRange& operator=(EnumDescriptorProto_EnumReservedRange&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -2416,17 +2401,18 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
     return *internal_default_instance();
   }
   static inline const EnumDescriptorProto_EnumReservedRange* internal_default_instance() {
-    return reinterpret_cast<const EnumDescriptorProto_EnumReservedRange*>(&_EnumDescriptorProto_EnumReservedRange_default_instance_);
+    return reinterpret_cast<const EnumDescriptorProto_EnumReservedRange*>(
+        &_EnumDescriptorProto_EnumReservedRange_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 9;
   friend void swap(EnumDescriptorProto_EnumReservedRange& a, EnumDescriptorProto_EnumReservedRange& b) { a.Swap(&b); }
   inline void Swap(EnumDescriptorProto_EnumReservedRange* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -2446,11 +2432,12 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto_EnumReservedRange& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const EnumDescriptorProto_EnumReservedRange& from) {
-    EnumDescriptorProto_EnumReservedRange::MergeImpl(*this, from);
-  }
+  void MergeFrom(const EnumDescriptorProto_EnumReservedRange& from) { EnumDescriptorProto_EnumReservedRange::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -2458,31 +2445,29 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(EnumDescriptorProto_EnumReservedRange* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.EnumDescriptorProto.EnumReservedRange";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto.EnumReservedRange"; }
+
+ protected:
   explicit EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena);
   EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena, const EnumDescriptorProto_EnumReservedRange& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kStartFieldNumber = 1,
     kEndFieldNumber = 2,
@@ -2512,7 +2497,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto.EnumReservedRange)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 2, 0,
@@ -2524,7 +2508,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -2539,20 +2523,20 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ReservedRange) */ {
+class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ReservedRange) */ {
  public:
   inline DescriptorProto_ReservedRange() : DescriptorProto_ReservedRange(nullptr) {}
   ~DescriptorProto_ReservedRange() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from)
-      : DescriptorProto_ReservedRange(nullptr, from) {}
-  DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
-    : DescriptorProto_ReservedRange() {
+  inline DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from) : DescriptorProto_ReservedRange(nullptr, from) {}
+  DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept : DescriptorProto_ReservedRange() {
     *this = ::std::move(from);
   }
 
@@ -2563,9 +2547,9 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   inline DescriptorProto_ReservedRange& operator=(DescriptorProto_ReservedRange&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -2596,17 +2580,18 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
     return *internal_default_instance();
   }
   static inline const DescriptorProto_ReservedRange* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto_ReservedRange*>(&_DescriptorProto_ReservedRange_default_instance_);
+    return reinterpret_cast<const DescriptorProto_ReservedRange*>(
+        &_DescriptorProto_ReservedRange_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 3;
   friend void swap(DescriptorProto_ReservedRange& a, DescriptorProto_ReservedRange& b) { a.Swap(&b); }
   inline void Swap(DescriptorProto_ReservedRange* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -2626,11 +2611,12 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ReservedRange& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const DescriptorProto_ReservedRange& from) {
-    DescriptorProto_ReservedRange::MergeImpl(*this, from);
-  }
+  void MergeFrom(const DescriptorProto_ReservedRange& from) { DescriptorProto_ReservedRange::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -2638,31 +2624,29 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(DescriptorProto_ReservedRange* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.DescriptorProto.ReservedRange";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ReservedRange"; }
+
+ protected:
   explicit DescriptorProto_ReservedRange(::google::protobuf::Arena* arena);
   DescriptorProto_ReservedRange(::google::protobuf::Arena* arena, const DescriptorProto_ReservedRange& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kStartFieldNumber = 1,
     kEndFieldNumber = 2,
@@ -2692,7 +2676,6 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto.ReservedRange)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 2, 0,
@@ -2704,7 +2687,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -2719,20 +2702,20 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UninterpretedOption final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption) */ {
+class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption) */ {
  public:
   inline UninterpretedOption() : UninterpretedOption(nullptr) {}
   ~UninterpretedOption() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR UninterpretedOption(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR UninterpretedOption(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline UninterpretedOption(const UninterpretedOption& from)
-      : UninterpretedOption(nullptr, from) {}
-  UninterpretedOption(UninterpretedOption&& from) noexcept
-    : UninterpretedOption() {
+  inline UninterpretedOption(const UninterpretedOption& from) : UninterpretedOption(nullptr, from) {}
+  UninterpretedOption(UninterpretedOption&& from) noexcept : UninterpretedOption() {
     *this = ::std::move(from);
   }
 
@@ -2743,9 +2726,9 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   inline UninterpretedOption& operator=(UninterpretedOption&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -2776,17 +2759,18 @@ class PROTOBUF_EXPORT UninterpretedOption final :
     return *internal_default_instance();
   }
   static inline const UninterpretedOption* internal_default_instance() {
-    return reinterpret_cast<const UninterpretedOption*>(&_UninterpretedOption_default_instance_);
+    return reinterpret_cast<const UninterpretedOption*>(
+        &_UninterpretedOption_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 24;
   friend void swap(UninterpretedOption& a, UninterpretedOption& b) { a.Swap(&b); }
   inline void Swap(UninterpretedOption* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -2806,11 +2790,12 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const UninterpretedOption& from) {
-    UninterpretedOption::MergeImpl(*this, from);
-  }
+  void MergeFrom(const UninterpretedOption& from) { UninterpretedOption::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -2818,33 +2803,30 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(UninterpretedOption* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.UninterpretedOption";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption"; }
+
+ protected:
   explicit UninterpretedOption(::google::protobuf::Arena* arena);
   UninterpretedOption(::google::protobuf::Arena* arena, const UninterpretedOption& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using NamePart = UninterpretedOption_NamePart;
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kNameFieldNumber = 2,
     kIdentifierValueFieldNumber = 3,
@@ -2959,7 +2941,6 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   // @@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 7, 1,
@@ -2971,7 +2952,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -2991,20 +2972,20 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT SourceCodeInfo final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo) */ {
+class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo) */ {
  public:
   inline SourceCodeInfo() : SourceCodeInfo(nullptr) {}
   ~SourceCodeInfo() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR SourceCodeInfo(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR SourceCodeInfo(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline SourceCodeInfo(const SourceCodeInfo& from)
-      : SourceCodeInfo(nullptr, from) {}
-  SourceCodeInfo(SourceCodeInfo&& from) noexcept
-    : SourceCodeInfo() {
+  inline SourceCodeInfo(const SourceCodeInfo& from) : SourceCodeInfo(nullptr, from) {}
+  SourceCodeInfo(SourceCodeInfo&& from) noexcept : SourceCodeInfo() {
     *this = ::std::move(from);
   }
 
@@ -3015,9 +2996,9 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   inline SourceCodeInfo& operator=(SourceCodeInfo&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -3048,17 +3029,18 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
     return *internal_default_instance();
   }
   static inline const SourceCodeInfo* internal_default_instance() {
-    return reinterpret_cast<const SourceCodeInfo*>(&_SourceCodeInfo_default_instance_);
+    return reinterpret_cast<const SourceCodeInfo*>(
+        &_SourceCodeInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 29;
   friend void swap(SourceCodeInfo& a, SourceCodeInfo& b) { a.Swap(&b); }
   inline void Swap(SourceCodeInfo* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -3078,11 +3060,12 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const SourceCodeInfo& from) {
-    SourceCodeInfo::MergeImpl(*this, from);
-  }
+  void MergeFrom(const SourceCodeInfo& from) { SourceCodeInfo::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -3090,33 +3073,30 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(SourceCodeInfo* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.SourceCodeInfo";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo"; }
+
+ protected:
   explicit SourceCodeInfo(::google::protobuf::Arena* arena);
   SourceCodeInfo(::google::protobuf::Arena* arena, const SourceCodeInfo& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using Location = SourceCodeInfo_Location;
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kLocationFieldNumber = 1,
   };
@@ -3141,7 +3121,6 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       0, 1, 1,
@@ -3153,7 +3132,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -3166,20 +3145,20 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT GeneratedCodeInfo final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo) */ {
+class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo) */ {
  public:
   inline GeneratedCodeInfo() : GeneratedCodeInfo(nullptr) {}
   ~GeneratedCodeInfo() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline GeneratedCodeInfo(const GeneratedCodeInfo& from)
-      : GeneratedCodeInfo(nullptr, from) {}
-  GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept
-    : GeneratedCodeInfo() {
+  inline GeneratedCodeInfo(const GeneratedCodeInfo& from) : GeneratedCodeInfo(nullptr, from) {}
+  GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept : GeneratedCodeInfo() {
     *this = ::std::move(from);
   }
 
@@ -3190,9 +3169,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   inline GeneratedCodeInfo& operator=(GeneratedCodeInfo&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -3223,17 +3202,18 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
     return *internal_default_instance();
   }
   static inline const GeneratedCodeInfo* internal_default_instance() {
-    return reinterpret_cast<const GeneratedCodeInfo*>(&_GeneratedCodeInfo_default_instance_);
+    return reinterpret_cast<const GeneratedCodeInfo*>(
+        &_GeneratedCodeInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 31;
   friend void swap(GeneratedCodeInfo& a, GeneratedCodeInfo& b) { a.Swap(&b); }
   inline void Swap(GeneratedCodeInfo* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -3253,11 +3233,12 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const GeneratedCodeInfo& from) {
-    GeneratedCodeInfo::MergeImpl(*this, from);
-  }
+  void MergeFrom(const GeneratedCodeInfo& from) { GeneratedCodeInfo::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -3265,33 +3246,30 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(GeneratedCodeInfo* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.GeneratedCodeInfo";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo"; }
+
+ protected:
   explicit GeneratedCodeInfo(::google::protobuf::Arena* arena);
   GeneratedCodeInfo(::google::protobuf::Arena* arena, const GeneratedCodeInfo& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using Annotation = GeneratedCodeInfo_Annotation;
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kAnnotationFieldNumber = 1,
   };
@@ -3316,7 +3294,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   // @@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       0, 1, 1,
@@ -3328,7 +3305,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -3341,20 +3318,20 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault) */ {
+class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault) */ {
  public:
   inline FeatureSetDefaults_FeatureSetEditionDefault() : FeatureSetDefaults_FeatureSetEditionDefault(nullptr) {}
   ~FeatureSetDefaults_FeatureSetEditionDefault() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR FeatureSetDefaults_FeatureSetEditionDefault(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline FeatureSetDefaults_FeatureSetEditionDefault(const FeatureSetDefaults_FeatureSetEditionDefault& from)
-      : FeatureSetDefaults_FeatureSetEditionDefault(nullptr, from) {}
-  FeatureSetDefaults_FeatureSetEditionDefault(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
-    : FeatureSetDefaults_FeatureSetEditionDefault() {
+  inline FeatureSetDefaults_FeatureSetEditionDefault(const FeatureSetDefaults_FeatureSetEditionDefault& from) : FeatureSetDefaults_FeatureSetEditionDefault(nullptr, from) {}
+  FeatureSetDefaults_FeatureSetEditionDefault(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept : FeatureSetDefaults_FeatureSetEditionDefault() {
     *this = ::std::move(from);
   }
 
@@ -3365,9 +3342,9 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   inline FeatureSetDefaults_FeatureSetEditionDefault& operator=(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -3398,17 +3375,18 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
     return *internal_default_instance();
   }
   static inline const FeatureSetDefaults_FeatureSetEditionDefault* internal_default_instance() {
-    return reinterpret_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(&_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_);
+    return reinterpret_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(
+        &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 26;
   friend void swap(FeatureSetDefaults_FeatureSetEditionDefault& a, FeatureSetDefaults_FeatureSetEditionDefault& b) { a.Swap(&b); }
   inline void Swap(FeatureSetDefaults_FeatureSetEditionDefault* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -3428,11 +3406,12 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const FeatureSetDefaults_FeatureSetEditionDefault& from) {
-    FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(*this, from);
-  }
+  void MergeFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from) { FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -3440,31 +3419,29 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault"; }
+
+ protected:
   explicit FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena);
   FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena, const FeatureSetDefaults_FeatureSetEditionDefault& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kFeaturesFieldNumber = 2,
     kEditionFieldNumber = 3,
@@ -3498,7 +3475,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 2, 2,
@@ -3510,7 +3486,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -3525,20 +3501,20 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ServiceOptions final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceOptions) */ {
+class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.ServiceOptions) */ {
  public:
   inline ServiceOptions() : ServiceOptions(nullptr) {}
   ~ServiceOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR ServiceOptions(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR ServiceOptions(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline ServiceOptions(const ServiceOptions& from)
-      : ServiceOptions(nullptr, from) {}
-  ServiceOptions(ServiceOptions&& from) noexcept
-    : ServiceOptions() {
+  inline ServiceOptions(const ServiceOptions& from) : ServiceOptions(nullptr, from) {}
+  ServiceOptions(ServiceOptions&& from) noexcept : ServiceOptions() {
     *this = ::std::move(from);
   }
 
@@ -3549,9 +3525,9 @@ class PROTOBUF_EXPORT ServiceOptions final :
   inline ServiceOptions& operator=(ServiceOptions&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -3582,17 +3558,18 @@ class PROTOBUF_EXPORT ServiceOptions final :
     return *internal_default_instance();
   }
   static inline const ServiceOptions* internal_default_instance() {
-    return reinterpret_cast<const ServiceOptions*>(&_ServiceOptions_default_instance_);
+    return reinterpret_cast<const ServiceOptions*>(
+        &_ServiceOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 21;
   friend void swap(ServiceOptions& a, ServiceOptions& b) { a.Swap(&b); }
   inline void Swap(ServiceOptions* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -3612,11 +3589,12 @@ class PROTOBUF_EXPORT ServiceOptions final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ServiceOptions& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const ServiceOptions& from) {
-    ServiceOptions::MergeImpl(*this, from);
-  }
+  void MergeFrom(const ServiceOptions& from) { ServiceOptions::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -3624,31 +3602,29 @@ class PROTOBUF_EXPORT ServiceOptions final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(ServiceOptions* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.ServiceOptions";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceOptions"; }
+
+ protected:
   explicit ServiceOptions(::google::protobuf::Arena* arena);
   ServiceOptions(::google::protobuf::Arena* arena, const ServiceOptions& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 34,
@@ -3878,7 +3854,6 @@ class PROTOBUF_EXPORT ServiceOptions final :
   // @@protoc_insertion_point(class_scope:google.protobuf.ServiceOptions)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       2, 3, 2,
@@ -3890,7 +3865,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -3898,7 +3873,6 @@ class PROTOBUF_EXPORT ServiceOptions final :
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
@@ -3908,20 +3882,20 @@ class PROTOBUF_EXPORT ServiceOptions final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT OneofOptions final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.OneofOptions) */ {
+class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.OneofOptions) */ {
  public:
   inline OneofOptions() : OneofOptions(nullptr) {}
   ~OneofOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR OneofOptions(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR OneofOptions(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline OneofOptions(const OneofOptions& from)
-      : OneofOptions(nullptr, from) {}
-  OneofOptions(OneofOptions&& from) noexcept
-    : OneofOptions() {
+  inline OneofOptions(const OneofOptions& from) : OneofOptions(nullptr, from) {}
+  OneofOptions(OneofOptions&& from) noexcept : OneofOptions() {
     *this = ::std::move(from);
   }
 
@@ -3932,9 +3906,9 @@ class PROTOBUF_EXPORT OneofOptions final :
   inline OneofOptions& operator=(OneofOptions&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -3965,17 +3939,18 @@ class PROTOBUF_EXPORT OneofOptions final :
     return *internal_default_instance();
   }
   static inline const OneofOptions* internal_default_instance() {
-    return reinterpret_cast<const OneofOptions*>(&_OneofOptions_default_instance_);
+    return reinterpret_cast<const OneofOptions*>(
+        &_OneofOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 18;
   friend void swap(OneofOptions& a, OneofOptions& b) { a.Swap(&b); }
   inline void Swap(OneofOptions* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -3995,11 +3970,12 @@ class PROTOBUF_EXPORT OneofOptions final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const OneofOptions& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const OneofOptions& from) {
-    OneofOptions::MergeImpl(*this, from);
-  }
+  void MergeFrom(const OneofOptions& from) { OneofOptions::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -4007,31 +3983,29 @@ class PROTOBUF_EXPORT OneofOptions final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(OneofOptions* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.OneofOptions";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.OneofOptions"; }
+
+ protected:
   explicit OneofOptions(::google::protobuf::Arena* arena);
   OneofOptions(::google::protobuf::Arena* arena, const OneofOptions& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 1,
@@ -4249,7 +4223,6 @@ class PROTOBUF_EXPORT OneofOptions final :
   // @@protoc_insertion_point(class_scope:google.protobuf.OneofOptions)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       2, 2, 2,
@@ -4261,7 +4234,7 @@ class PROTOBUF_EXPORT OneofOptions final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -4269,7 +4242,6 @@ class PROTOBUF_EXPORT OneofOptions final :
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
@@ -4278,20 +4250,20 @@ class PROTOBUF_EXPORT OneofOptions final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT MethodOptions final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.MethodOptions) */ {
+class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.MethodOptions) */ {
  public:
   inline MethodOptions() : MethodOptions(nullptr) {}
   ~MethodOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR MethodOptions(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR MethodOptions(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline MethodOptions(const MethodOptions& from)
-      : MethodOptions(nullptr, from) {}
-  MethodOptions(MethodOptions&& from) noexcept
-    : MethodOptions() {
+  inline MethodOptions(const MethodOptions& from) : MethodOptions(nullptr, from) {}
+  MethodOptions(MethodOptions&& from) noexcept : MethodOptions() {
     *this = ::std::move(from);
   }
 
@@ -4302,9 +4274,9 @@ class PROTOBUF_EXPORT MethodOptions final :
   inline MethodOptions& operator=(MethodOptions&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -4335,17 +4307,18 @@ class PROTOBUF_EXPORT MethodOptions final :
     return *internal_default_instance();
   }
   static inline const MethodOptions* internal_default_instance() {
-    return reinterpret_cast<const MethodOptions*>(&_MethodOptions_default_instance_);
+    return reinterpret_cast<const MethodOptions*>(
+        &_MethodOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 22;
   friend void swap(MethodOptions& a, MethodOptions& b) { a.Swap(&b); }
   inline void Swap(MethodOptions* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -4365,11 +4338,12 @@ class PROTOBUF_EXPORT MethodOptions final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MethodOptions& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const MethodOptions& from) {
-    MethodOptions::MergeImpl(*this, from);
-  }
+  void MergeFrom(const MethodOptions& from) { MethodOptions::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -4377,29 +4351,27 @@ class PROTOBUF_EXPORT MethodOptions final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(MethodOptions* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.MethodOptions";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.MethodOptions"; }
+
+ protected:
   explicit MethodOptions(::google::protobuf::Arena* arena);
   MethodOptions(::google::protobuf::Arena* arena, const MethodOptions& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using IdempotencyLevel = MethodOptions_IdempotencyLevel;
   static constexpr IdempotencyLevel IDEMPOTENCY_UNKNOWN = MethodOptions_IdempotencyLevel_IDEMPOTENCY_UNKNOWN;
   static constexpr IdempotencyLevel NO_SIDE_EFFECTS = MethodOptions_IdempotencyLevel_NO_SIDE_EFFECTS;
@@ -4422,7 +4394,6 @@ class PROTOBUF_EXPORT MethodOptions final :
   }
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 35,
@@ -4664,7 +4635,6 @@ class PROTOBUF_EXPORT MethodOptions final :
   // @@protoc_insertion_point(class_scope:google.protobuf.MethodOptions)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 4, 3,
@@ -4676,7 +4646,7 @@ class PROTOBUF_EXPORT MethodOptions final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -4684,7 +4654,6 @@ class PROTOBUF_EXPORT MethodOptions final :
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
@@ -4695,20 +4664,20 @@ class PROTOBUF_EXPORT MethodOptions final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT MessageOptions final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.MessageOptions) */ {
+class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.MessageOptions) */ {
  public:
   inline MessageOptions() : MessageOptions(nullptr) {}
   ~MessageOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR MessageOptions(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR MessageOptions(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline MessageOptions(const MessageOptions& from)
-      : MessageOptions(nullptr, from) {}
-  MessageOptions(MessageOptions&& from) noexcept
-    : MessageOptions() {
+  inline MessageOptions(const MessageOptions& from) : MessageOptions(nullptr, from) {}
+  MessageOptions(MessageOptions&& from) noexcept : MessageOptions() {
     *this = ::std::move(from);
   }
 
@@ -4719,9 +4688,9 @@ class PROTOBUF_EXPORT MessageOptions final :
   inline MessageOptions& operator=(MessageOptions&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -4752,17 +4721,18 @@ class PROTOBUF_EXPORT MessageOptions final :
     return *internal_default_instance();
   }
   static inline const MessageOptions* internal_default_instance() {
-    return reinterpret_cast<const MessageOptions*>(&_MessageOptions_default_instance_);
+    return reinterpret_cast<const MessageOptions*>(
+        &_MessageOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 15;
   friend void swap(MessageOptions& a, MessageOptions& b) { a.Swap(&b); }
   inline void Swap(MessageOptions* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -4782,11 +4752,12 @@ class PROTOBUF_EXPORT MessageOptions final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MessageOptions& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const MessageOptions& from) {
-    MessageOptions::MergeImpl(*this, from);
-  }
+  void MergeFrom(const MessageOptions& from) { MessageOptions::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -4794,31 +4765,29 @@ class PROTOBUF_EXPORT MessageOptions final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(MessageOptions* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.MessageOptions";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.MessageOptions"; }
+
+ protected:
   explicit MessageOptions(::google::protobuf::Arena* arena);
   MessageOptions(::google::protobuf::Arena* arena, const MessageOptions& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 12,
@@ -5096,7 +5065,6 @@ class PROTOBUF_EXPORT MessageOptions final :
   // @@protoc_insertion_point(class_scope:google.protobuf.MessageOptions)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 7, 2,
@@ -5108,7 +5076,7 @@ class PROTOBUF_EXPORT MessageOptions final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -5116,7 +5084,6 @@ class PROTOBUF_EXPORT MessageOptions final :
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
@@ -5130,20 +5097,20 @@ class PROTOBUF_EXPORT MessageOptions final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FileOptions final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FileOptions) */ {
+class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FileOptions) */ {
  public:
   inline FileOptions() : FileOptions(nullptr) {}
   ~FileOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FileOptions(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR FileOptions(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline FileOptions(const FileOptions& from)
-      : FileOptions(nullptr, from) {}
-  FileOptions(FileOptions&& from) noexcept
-    : FileOptions() {
+  inline FileOptions(const FileOptions& from) : FileOptions(nullptr, from) {}
+  FileOptions(FileOptions&& from) noexcept : FileOptions() {
     *this = ::std::move(from);
   }
 
@@ -5154,9 +5121,9 @@ class PROTOBUF_EXPORT FileOptions final :
   inline FileOptions& operator=(FileOptions&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -5187,17 +5154,18 @@ class PROTOBUF_EXPORT FileOptions final :
     return *internal_default_instance();
   }
   static inline const FileOptions* internal_default_instance() {
-    return reinterpret_cast<const FileOptions*>(&_FileOptions_default_instance_);
+    return reinterpret_cast<const FileOptions*>(
+        &_FileOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 14;
   friend void swap(FileOptions& a, FileOptions& b) { a.Swap(&b); }
   inline void Swap(FileOptions* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -5217,11 +5185,12 @@ class PROTOBUF_EXPORT FileOptions final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileOptions& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const FileOptions& from) {
-    FileOptions::MergeImpl(*this, from);
-  }
+  void MergeFrom(const FileOptions& from) { FileOptions::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -5229,29 +5198,27 @@ class PROTOBUF_EXPORT FileOptions final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FileOptions* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.FileOptions";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.FileOptions"; }
+
+ protected:
   explicit FileOptions(::google::protobuf::Arena* arena);
   FileOptions(::google::protobuf::Arena* arena, const FileOptions& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using OptimizeMode = FileOptions_OptimizeMode;
   static constexpr OptimizeMode SPEED = FileOptions_OptimizeMode_SPEED;
   static constexpr OptimizeMode CODE_SIZE = FileOptions_OptimizeMode_CODE_SIZE;
@@ -5274,7 +5241,6 @@ class PROTOBUF_EXPORT FileOptions final :
   }
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kJavaPackageFieldNumber = 1,
@@ -5792,7 +5758,6 @@ class PROTOBUF_EXPORT FileOptions final :
   // @@protoc_insertion_point(class_scope:google.protobuf.FileOptions)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       5, 22, 3,
@@ -5804,7 +5769,7 @@ class PROTOBUF_EXPORT FileOptions final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -5812,7 +5777,6 @@ class PROTOBUF_EXPORT FileOptions final :
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
@@ -5841,20 +5805,20 @@ class PROTOBUF_EXPORT FileOptions final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldOptions final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions) */ {
+class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions) */ {
  public:
   inline FieldOptions() : FieldOptions(nullptr) {}
   ~FieldOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FieldOptions(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR FieldOptions(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline FieldOptions(const FieldOptions& from)
-      : FieldOptions(nullptr, from) {}
-  FieldOptions(FieldOptions&& from) noexcept
-    : FieldOptions() {
+  inline FieldOptions(const FieldOptions& from) : FieldOptions(nullptr, from) {}
+  FieldOptions(FieldOptions&& from) noexcept : FieldOptions() {
     *this = ::std::move(from);
   }
 
@@ -5865,9 +5829,9 @@ class PROTOBUF_EXPORT FieldOptions final :
   inline FieldOptions& operator=(FieldOptions&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -5898,17 +5862,18 @@ class PROTOBUF_EXPORT FieldOptions final :
     return *internal_default_instance();
   }
   static inline const FieldOptions* internal_default_instance() {
-    return reinterpret_cast<const FieldOptions*>(&_FieldOptions_default_instance_);
+    return reinterpret_cast<const FieldOptions*>(
+        &_FieldOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 17;
   friend void swap(FieldOptions& a, FieldOptions& b) { a.Swap(&b); }
   inline void Swap(FieldOptions* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -5928,11 +5893,12 @@ class PROTOBUF_EXPORT FieldOptions final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldOptions& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const FieldOptions& from) {
-    FieldOptions::MergeImpl(*this, from);
-  }
+  void MergeFrom(const FieldOptions& from) { FieldOptions::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -5940,31 +5906,28 @@ class PROTOBUF_EXPORT FieldOptions final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FieldOptions* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.FieldOptions";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions"; }
+
+ protected:
   explicit FieldOptions(::google::protobuf::Arena* arena);
   FieldOptions(::google::protobuf::Arena* arena, const FieldOptions& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using EditionDefault = FieldOptions_EditionDefault;
-
   using CType = FieldOptions_CType;
   static constexpr CType STRING = FieldOptions_CType_STRING;
   static constexpr CType CORD = FieldOptions_CType_CORD;
@@ -5985,7 +5948,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   static inline bool CType_Parse(absl::string_view name, CType* value) {
     return FieldOptions_CType_Parse(name, value);
   }
-
   using JSType = FieldOptions_JSType;
   static constexpr JSType JS_NORMAL = FieldOptions_JSType_JS_NORMAL;
   static constexpr JSType JS_STRING = FieldOptions_JSType_JS_STRING;
@@ -6006,7 +5968,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   static inline bool JSType_Parse(absl::string_view name, JSType* value) {
     return FieldOptions_JSType_Parse(name, value);
   }
-
   using OptionRetention = FieldOptions_OptionRetention;
   static constexpr OptionRetention RETENTION_UNKNOWN = FieldOptions_OptionRetention_RETENTION_UNKNOWN;
   static constexpr OptionRetention RETENTION_RUNTIME = FieldOptions_OptionRetention_RETENTION_RUNTIME;
@@ -6027,7 +5988,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   static inline bool OptionRetention_Parse(absl::string_view name, OptionRetention* value) {
     return FieldOptions_OptionRetention_Parse(name, value);
   }
-
   using OptionTargetType = FieldOptions_OptionTargetType;
   static constexpr OptionTargetType TARGET_TYPE_UNKNOWN = FieldOptions_OptionTargetType_TARGET_TYPE_UNKNOWN;
   static constexpr OptionTargetType TARGET_TYPE_FILE = FieldOptions_OptionTargetType_TARGET_TYPE_FILE;
@@ -6057,7 +6017,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   }
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kTargetsFieldNumber = 19,
     kEditionDefaultsFieldNumber = 20,
@@ -6422,7 +6381,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldOptions)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       4, 13, 7,
@@ -6434,7 +6392,7 @@ class PROTOBUF_EXPORT FieldOptions final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -6442,7 +6400,6 @@ class PROTOBUF_EXPORT FieldOptions final :
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<int> targets_;
@@ -6462,20 +6419,20 @@ class PROTOBUF_EXPORT FieldOptions final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FeatureSetDefaults final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults) */ {
+class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults) */ {
  public:
   inline FeatureSetDefaults() : FeatureSetDefaults(nullptr) {}
   ~FeatureSetDefaults() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FeatureSetDefaults(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR FeatureSetDefaults(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline FeatureSetDefaults(const FeatureSetDefaults& from)
-      : FeatureSetDefaults(nullptr, from) {}
-  FeatureSetDefaults(FeatureSetDefaults&& from) noexcept
-    : FeatureSetDefaults() {
+  inline FeatureSetDefaults(const FeatureSetDefaults& from) : FeatureSetDefaults(nullptr, from) {}
+  FeatureSetDefaults(FeatureSetDefaults&& from) noexcept : FeatureSetDefaults() {
     *this = ::std::move(from);
   }
 
@@ -6486,9 +6443,9 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   inline FeatureSetDefaults& operator=(FeatureSetDefaults&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -6519,17 +6476,18 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
     return *internal_default_instance();
   }
   static inline const FeatureSetDefaults* internal_default_instance() {
-    return reinterpret_cast<const FeatureSetDefaults*>(&_FeatureSetDefaults_default_instance_);
+    return reinterpret_cast<const FeatureSetDefaults*>(
+        &_FeatureSetDefaults_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 27;
   friend void swap(FeatureSetDefaults& a, FeatureSetDefaults& b) { a.Swap(&b); }
   inline void Swap(FeatureSetDefaults* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -6549,11 +6507,12 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FeatureSetDefaults& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const FeatureSetDefaults& from) {
-    FeatureSetDefaults::MergeImpl(*this, from);
-  }
+  void MergeFrom(const FeatureSetDefaults& from) { FeatureSetDefaults::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -6561,33 +6520,30 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FeatureSetDefaults* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.FeatureSetDefaults";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults"; }
+
+ protected:
   explicit FeatureSetDefaults(::google::protobuf::Arena* arena);
   FeatureSetDefaults(::google::protobuf::Arena* arena, const FeatureSetDefaults& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using FeatureSetEditionDefault = FeatureSetDefaults_FeatureSetEditionDefault;
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kDefaultsFieldNumber = 1,
     kMinimumEditionFieldNumber = 4,
@@ -6636,7 +6592,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSetDefaults)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 3, 3,
@@ -6648,7 +6603,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -6664,20 +6619,20 @@ class PROTOBUF_EXPORT FeatureSetDefaults final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ExtensionRangeOptions final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions) */ {
+class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions) */ {
  public:
   inline ExtensionRangeOptions() : ExtensionRangeOptions(nullptr) {}
   ~ExtensionRangeOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline ExtensionRangeOptions(const ExtensionRangeOptions& from)
-      : ExtensionRangeOptions(nullptr, from) {}
-  ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
-    : ExtensionRangeOptions() {
+  inline ExtensionRangeOptions(const ExtensionRangeOptions& from) : ExtensionRangeOptions(nullptr, from) {}
+  ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept : ExtensionRangeOptions() {
     *this = ::std::move(from);
   }
 
@@ -6688,9 +6643,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   inline ExtensionRangeOptions& operator=(ExtensionRangeOptions&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -6721,17 +6676,18 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
     return *internal_default_instance();
   }
   static inline const ExtensionRangeOptions* internal_default_instance() {
-    return reinterpret_cast<const ExtensionRangeOptions*>(&_ExtensionRangeOptions_default_instance_);
+    return reinterpret_cast<const ExtensionRangeOptions*>(
+        &_ExtensionRangeOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 6;
   friend void swap(ExtensionRangeOptions& a, ExtensionRangeOptions& b) { a.Swap(&b); }
   inline void Swap(ExtensionRangeOptions* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -6751,11 +6707,12 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const ExtensionRangeOptions& from) {
-    ExtensionRangeOptions::MergeImpl(*this, from);
-  }
+  void MergeFrom(const ExtensionRangeOptions& from) { ExtensionRangeOptions::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -6763,31 +6720,28 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(ExtensionRangeOptions* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.ExtensionRangeOptions";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions"; }
+
+ protected:
   explicit ExtensionRangeOptions(::google::protobuf::Arena* arena);
   ExtensionRangeOptions(::google::protobuf::Arena* arena, const ExtensionRangeOptions& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using Declaration = ExtensionRangeOptions_Declaration;
-
   using VerificationState = ExtensionRangeOptions_VerificationState;
   static constexpr VerificationState DECLARATION = ExtensionRangeOptions_VerificationState_DECLARATION;
   static constexpr VerificationState UNVERIFIED = ExtensionRangeOptions_VerificationState_UNVERIFIED;
@@ -6809,7 +6763,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   }
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kDeclarationFieldNumber = 2,
     kUninterpretedOptionFieldNumber = 999,
@@ -7058,7 +7011,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   // @@protoc_insertion_point(class_scope:google.protobuf.ExtensionRangeOptions)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 4, 4,
@@ -7070,7 +7022,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -7078,7 +7030,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::ExtensionRangeOptions_Declaration > declaration_;
@@ -7089,20 +7040,20 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValueOptions final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueOptions) */ {
+class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueOptions) */ {
  public:
   inline EnumValueOptions() : EnumValueOptions(nullptr) {}
   ~EnumValueOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumValueOptions(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR EnumValueOptions(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline EnumValueOptions(const EnumValueOptions& from)
-      : EnumValueOptions(nullptr, from) {}
-  EnumValueOptions(EnumValueOptions&& from) noexcept
-    : EnumValueOptions() {
+  inline EnumValueOptions(const EnumValueOptions& from) : EnumValueOptions(nullptr, from) {}
+  EnumValueOptions(EnumValueOptions&& from) noexcept : EnumValueOptions() {
     *this = ::std::move(from);
   }
 
@@ -7113,9 +7064,9 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   inline EnumValueOptions& operator=(EnumValueOptions&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -7146,17 +7097,18 @@ class PROTOBUF_EXPORT EnumValueOptions final :
     return *internal_default_instance();
   }
   static inline const EnumValueOptions* internal_default_instance() {
-    return reinterpret_cast<const EnumValueOptions*>(&_EnumValueOptions_default_instance_);
+    return reinterpret_cast<const EnumValueOptions*>(
+        &_EnumValueOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 20;
   friend void swap(EnumValueOptions& a, EnumValueOptions& b) { a.Swap(&b); }
   inline void Swap(EnumValueOptions* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -7176,11 +7128,12 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumValueOptions& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const EnumValueOptions& from) {
-    EnumValueOptions::MergeImpl(*this, from);
-  }
+  void MergeFrom(const EnumValueOptions& from) { EnumValueOptions::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -7188,31 +7141,29 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(EnumValueOptions* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.EnumValueOptions";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueOptions"; }
+
+ protected:
   explicit EnumValueOptions(::google::protobuf::Arena* arena);
   EnumValueOptions(::google::protobuf::Arena* arena, const EnumValueOptions& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 2,
@@ -7454,7 +7405,6 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValueOptions)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 4, 2,
@@ -7466,7 +7416,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -7474,7 +7424,6 @@ class PROTOBUF_EXPORT EnumValueOptions final :
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
@@ -7485,20 +7434,20 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumOptions final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumOptions) */ {
+class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.EnumOptions) */ {
  public:
   inline EnumOptions() : EnumOptions(nullptr) {}
   ~EnumOptions() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumOptions(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR EnumOptions(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline EnumOptions(const EnumOptions& from)
-      : EnumOptions(nullptr, from) {}
-  EnumOptions(EnumOptions&& from) noexcept
-    : EnumOptions() {
+  inline EnumOptions(const EnumOptions& from) : EnumOptions(nullptr, from) {}
+  EnumOptions(EnumOptions&& from) noexcept : EnumOptions() {
     *this = ::std::move(from);
   }
 
@@ -7509,9 +7458,9 @@ class PROTOBUF_EXPORT EnumOptions final :
   inline EnumOptions& operator=(EnumOptions&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -7542,17 +7491,18 @@ class PROTOBUF_EXPORT EnumOptions final :
     return *internal_default_instance();
   }
   static inline const EnumOptions* internal_default_instance() {
-    return reinterpret_cast<const EnumOptions*>(&_EnumOptions_default_instance_);
+    return reinterpret_cast<const EnumOptions*>(
+        &_EnumOptions_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 19;
   friend void swap(EnumOptions& a, EnumOptions& b) { a.Swap(&b); }
   inline void Swap(EnumOptions* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -7572,11 +7522,12 @@ class PROTOBUF_EXPORT EnumOptions final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumOptions& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const EnumOptions& from) {
-    EnumOptions::MergeImpl(*this, from);
-  }
+  void MergeFrom(const EnumOptions& from) { EnumOptions::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -7584,31 +7535,29 @@ class PROTOBUF_EXPORT EnumOptions final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(EnumOptions* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.EnumOptions";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.EnumOptions"; }
+
+ protected:
   explicit EnumOptions(::google::protobuf::Arena* arena);
   EnumOptions(::google::protobuf::Arena* arena, const EnumOptions& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 7,
@@ -7862,7 +7811,6 @@ class PROTOBUF_EXPORT EnumOptions final :
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumOptions)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 5, 2,
@@ -7874,7 +7822,7 @@ class PROTOBUF_EXPORT EnumOptions final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -7882,7 +7830,6 @@ class PROTOBUF_EXPORT EnumOptions final :
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
@@ -7894,20 +7841,20 @@ class PROTOBUF_EXPORT EnumOptions final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT OneofDescriptorProto final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.OneofDescriptorProto) */ {
+class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.OneofDescriptorProto) */ {
  public:
   inline OneofDescriptorProto() : OneofDescriptorProto(nullptr) {}
   ~OneofDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR OneofDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR OneofDescriptorProto(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline OneofDescriptorProto(const OneofDescriptorProto& from)
-      : OneofDescriptorProto(nullptr, from) {}
-  OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
-    : OneofDescriptorProto() {
+  inline OneofDescriptorProto(const OneofDescriptorProto& from) : OneofDescriptorProto(nullptr, from) {}
+  OneofDescriptorProto(OneofDescriptorProto&& from) noexcept : OneofDescriptorProto() {
     *this = ::std::move(from);
   }
 
@@ -7918,9 +7865,9 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   inline OneofDescriptorProto& operator=(OneofDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -7951,17 +7898,18 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const OneofDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const OneofDescriptorProto*>(&_OneofDescriptorProto_default_instance_);
+    return reinterpret_cast<const OneofDescriptorProto*>(
+        &_OneofDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 8;
   friend void swap(OneofDescriptorProto& a, OneofDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(OneofDescriptorProto* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -7981,11 +7929,12 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const OneofDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const OneofDescriptorProto& from) {
-    OneofDescriptorProto::MergeImpl(*this, from);
-  }
+  void MergeFrom(const OneofDescriptorProto& from) { OneofDescriptorProto::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -7993,31 +7942,29 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(OneofDescriptorProto* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.OneofDescriptorProto";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.OneofDescriptorProto"; }
+
+ protected:
   explicit OneofDescriptorProto(::google::protobuf::Arena* arena);
   OneofDescriptorProto(::google::protobuf::Arena* arena, const OneofDescriptorProto& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kNameFieldNumber = 1,
     kOptionsFieldNumber = 2,
@@ -8057,7 +8004,6 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   // @@protoc_insertion_point(class_scope:google.protobuf.OneofDescriptorProto)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 2, 1,
@@ -8069,7 +8015,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -8084,20 +8030,20 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT MethodDescriptorProto final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.MethodDescriptorProto) */ {
+class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.MethodDescriptorProto) */ {
  public:
   inline MethodDescriptorProto() : MethodDescriptorProto(nullptr) {}
   ~MethodDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR MethodDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR MethodDescriptorProto(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline MethodDescriptorProto(const MethodDescriptorProto& from)
-      : MethodDescriptorProto(nullptr, from) {}
-  MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
-    : MethodDescriptorProto() {
+  inline MethodDescriptorProto(const MethodDescriptorProto& from) : MethodDescriptorProto(nullptr, from) {}
+  MethodDescriptorProto(MethodDescriptorProto&& from) noexcept : MethodDescriptorProto() {
     *this = ::std::move(from);
   }
 
@@ -8108,9 +8054,9 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   inline MethodDescriptorProto& operator=(MethodDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -8141,17 +8087,18 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const MethodDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const MethodDescriptorProto*>(&_MethodDescriptorProto_default_instance_);
+    return reinterpret_cast<const MethodDescriptorProto*>(
+        &_MethodDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 13;
   friend void swap(MethodDescriptorProto& a, MethodDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(MethodDescriptorProto* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -8171,11 +8118,12 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MethodDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const MethodDescriptorProto& from) {
-    MethodDescriptorProto::MergeImpl(*this, from);
-  }
+  void MergeFrom(const MethodDescriptorProto& from) { MethodDescriptorProto::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -8183,31 +8131,29 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(MethodDescriptorProto* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.MethodDescriptorProto";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.MethodDescriptorProto"; }
+
+ protected:
   explicit MethodDescriptorProto(::google::protobuf::Arena* arena);
   MethodDescriptorProto(::google::protobuf::Arena* arena, const MethodDescriptorProto& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kNameFieldNumber = 1,
     kInputTypeFieldNumber = 2,
@@ -8307,7 +8253,6 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   // @@protoc_insertion_point(class_scope:google.protobuf.MethodDescriptorProto)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 6, 1,
@@ -8319,7 +8264,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -8338,20 +8283,20 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldDescriptorProto final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldDescriptorProto) */ {
+class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FieldDescriptorProto) */ {
  public:
   inline FieldDescriptorProto() : FieldDescriptorProto(nullptr) {}
   ~FieldDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FieldDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR FieldDescriptorProto(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline FieldDescriptorProto(const FieldDescriptorProto& from)
-      : FieldDescriptorProto(nullptr, from) {}
-  FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
-    : FieldDescriptorProto() {
+  inline FieldDescriptorProto(const FieldDescriptorProto& from) : FieldDescriptorProto(nullptr, from) {}
+  FieldDescriptorProto(FieldDescriptorProto&& from) noexcept : FieldDescriptorProto() {
     *this = ::std::move(from);
   }
 
@@ -8362,9 +8307,9 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   inline FieldDescriptorProto& operator=(FieldDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -8395,17 +8340,18 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const FieldDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const FieldDescriptorProto*>(&_FieldDescriptorProto_default_instance_);
+    return reinterpret_cast<const FieldDescriptorProto*>(
+        &_FieldDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 7;
   friend void swap(FieldDescriptorProto& a, FieldDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(FieldDescriptorProto* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -8425,11 +8371,12 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const FieldDescriptorProto& from) {
-    FieldDescriptorProto::MergeImpl(*this, from);
-  }
+  void MergeFrom(const FieldDescriptorProto& from) { FieldDescriptorProto::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -8437,29 +8384,27 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FieldDescriptorProto* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.FieldDescriptorProto";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.FieldDescriptorProto"; }
+
+ protected:
   explicit FieldDescriptorProto(::google::protobuf::Arena* arena);
   FieldDescriptorProto(::google::protobuf::Arena* arena, const FieldDescriptorProto& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using Type = FieldDescriptorProto_Type;
   static constexpr Type TYPE_DOUBLE = FieldDescriptorProto_Type_TYPE_DOUBLE;
   static constexpr Type TYPE_FLOAT = FieldDescriptorProto_Type_TYPE_FLOAT;
@@ -8495,7 +8440,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   static inline bool Type_Parse(absl::string_view name, Type* value) {
     return FieldDescriptorProto_Type_Parse(name, value);
   }
-
   using Label = FieldDescriptorProto_Label;
   static constexpr Label LABEL_OPTIONAL = FieldDescriptorProto_Label_LABEL_OPTIONAL;
   static constexpr Label LABEL_REPEATED = FieldDescriptorProto_Label_LABEL_REPEATED;
@@ -8518,7 +8462,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   }
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kNameFieldNumber = 1,
     kExtendeeFieldNumber = 2,
@@ -8690,7 +8633,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldDescriptorProto)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       4, 11, 3,
@@ -8702,7 +8644,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -8726,20 +8668,20 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValueDescriptorProto final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueDescriptorProto) */ {
+class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueDescriptorProto) */ {
  public:
   inline EnumValueDescriptorProto() : EnumValueDescriptorProto(nullptr) {}
   ~EnumValueDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumValueDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR EnumValueDescriptorProto(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline EnumValueDescriptorProto(const EnumValueDescriptorProto& from)
-      : EnumValueDescriptorProto(nullptr, from) {}
-  EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
-    : EnumValueDescriptorProto() {
+  inline EnumValueDescriptorProto(const EnumValueDescriptorProto& from) : EnumValueDescriptorProto(nullptr, from) {}
+  EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept : EnumValueDescriptorProto() {
     *this = ::std::move(from);
   }
 
@@ -8750,9 +8692,9 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   inline EnumValueDescriptorProto& operator=(EnumValueDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -8783,17 +8725,18 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const EnumValueDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const EnumValueDescriptorProto*>(&_EnumValueDescriptorProto_default_instance_);
+    return reinterpret_cast<const EnumValueDescriptorProto*>(
+        &_EnumValueDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 11;
   friend void swap(EnumValueDescriptorProto& a, EnumValueDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(EnumValueDescriptorProto* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -8813,11 +8756,12 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumValueDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const EnumValueDescriptorProto& from) {
-    EnumValueDescriptorProto::MergeImpl(*this, from);
-  }
+  void MergeFrom(const EnumValueDescriptorProto& from) { EnumValueDescriptorProto::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -8825,31 +8769,29 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(EnumValueDescriptorProto* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.EnumValueDescriptorProto";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueDescriptorProto"; }
+
+ protected:
   explicit EnumValueDescriptorProto(::google::protobuf::Arena* arena);
   EnumValueDescriptorProto(::google::protobuf::Arena* arena, const EnumValueDescriptorProto& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kNameFieldNumber = 1,
     kOptionsFieldNumber = 3,
@@ -8901,7 +8843,6 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValueDescriptorProto)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       2, 3, 1,
@@ -8913,7 +8854,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -8929,20 +8870,20 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ExtensionRange) */ {
+class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ExtensionRange) */ {
  public:
   inline DescriptorProto_ExtensionRange() : DescriptorProto_ExtensionRange(nullptr) {}
   ~DescriptorProto_ExtensionRange() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from)
-      : DescriptorProto_ExtensionRange(nullptr, from) {}
-  DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
-    : DescriptorProto_ExtensionRange() {
+  inline DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from) : DescriptorProto_ExtensionRange(nullptr, from) {}
+  DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept : DescriptorProto_ExtensionRange() {
     *this = ::std::move(from);
   }
 
@@ -8953,9 +8894,9 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   inline DescriptorProto_ExtensionRange& operator=(DescriptorProto_ExtensionRange&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -8986,17 +8927,18 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
     return *internal_default_instance();
   }
   static inline const DescriptorProto_ExtensionRange* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto_ExtensionRange*>(&_DescriptorProto_ExtensionRange_default_instance_);
+    return reinterpret_cast<const DescriptorProto_ExtensionRange*>(
+        &_DescriptorProto_ExtensionRange_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 2;
   friend void swap(DescriptorProto_ExtensionRange& a, DescriptorProto_ExtensionRange& b) { a.Swap(&b); }
   inline void Swap(DescriptorProto_ExtensionRange* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -9016,11 +8958,12 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ExtensionRange& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const DescriptorProto_ExtensionRange& from) {
-    DescriptorProto_ExtensionRange::MergeImpl(*this, from);
-  }
+  void MergeFrom(const DescriptorProto_ExtensionRange& from) { DescriptorProto_ExtensionRange::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -9028,31 +8971,29 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(DescriptorProto_ExtensionRange* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.DescriptorProto.ExtensionRange";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ExtensionRange"; }
+
+ protected:
   explicit DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena);
   DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena, const DescriptorProto_ExtensionRange& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kOptionsFieldNumber = 3,
     kStartFieldNumber = 1,
@@ -9098,7 +9039,6 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto.ExtensionRange)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       2, 3, 1,
@@ -9110,7 +9050,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -9126,20 +9066,20 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ServiceDescriptorProto final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceDescriptorProto) */ {
+class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.ServiceDescriptorProto) */ {
  public:
   inline ServiceDescriptorProto() : ServiceDescriptorProto(nullptr) {}
   ~ServiceDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR ServiceDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR ServiceDescriptorProto(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline ServiceDescriptorProto(const ServiceDescriptorProto& from)
-      : ServiceDescriptorProto(nullptr, from) {}
-  ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
-    : ServiceDescriptorProto() {
+  inline ServiceDescriptorProto(const ServiceDescriptorProto& from) : ServiceDescriptorProto(nullptr, from) {}
+  ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept : ServiceDescriptorProto() {
     *this = ::std::move(from);
   }
 
@@ -9150,9 +9090,9 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   inline ServiceDescriptorProto& operator=(ServiceDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -9183,17 +9123,18 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const ServiceDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const ServiceDescriptorProto*>(&_ServiceDescriptorProto_default_instance_);
+    return reinterpret_cast<const ServiceDescriptorProto*>(
+        &_ServiceDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 12;
   friend void swap(ServiceDescriptorProto& a, ServiceDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(ServiceDescriptorProto* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -9213,11 +9154,12 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ServiceDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const ServiceDescriptorProto& from) {
-    ServiceDescriptorProto::MergeImpl(*this, from);
-  }
+  void MergeFrom(const ServiceDescriptorProto& from) { ServiceDescriptorProto::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -9225,31 +9167,29 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(ServiceDescriptorProto* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.ServiceDescriptorProto";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceDescriptorProto"; }
+
+ protected:
   explicit ServiceDescriptorProto(::google::protobuf::Arena* arena);
   ServiceDescriptorProto(::google::protobuf::Arena* arena, const ServiceDescriptorProto& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kMethodFieldNumber = 2,
     kNameFieldNumber = 1,
@@ -9308,7 +9248,6 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   // @@protoc_insertion_point(class_scope:google.protobuf.ServiceDescriptorProto)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       2, 3, 2,
@@ -9320,7 +9259,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -9336,20 +9275,20 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumDescriptorProto final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto) */ {
+class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto) */ {
  public:
   inline EnumDescriptorProto() : EnumDescriptorProto(nullptr) {}
   ~EnumDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline EnumDescriptorProto(const EnumDescriptorProto& from)
-      : EnumDescriptorProto(nullptr, from) {}
-  EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
-    : EnumDescriptorProto() {
+  inline EnumDescriptorProto(const EnumDescriptorProto& from) : EnumDescriptorProto(nullptr, from) {}
+  EnumDescriptorProto(EnumDescriptorProto&& from) noexcept : EnumDescriptorProto() {
     *this = ::std::move(from);
   }
 
@@ -9360,9 +9299,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   inline EnumDescriptorProto& operator=(EnumDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -9393,17 +9332,18 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const EnumDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const EnumDescriptorProto*>(&_EnumDescriptorProto_default_instance_);
+    return reinterpret_cast<const EnumDescriptorProto*>(
+        &_EnumDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 10;
   friend void swap(EnumDescriptorProto& a, EnumDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(EnumDescriptorProto* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -9423,11 +9363,12 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const EnumDescriptorProto& from) {
-    EnumDescriptorProto::MergeImpl(*this, from);
-  }
+  void MergeFrom(const EnumDescriptorProto& from) { EnumDescriptorProto::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -9435,33 +9376,30 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(EnumDescriptorProto* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.EnumDescriptorProto";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto"; }
+
+ protected:
   explicit EnumDescriptorProto(::google::protobuf::Arena* arena);
   EnumDescriptorProto(::google::protobuf::Arena* arena, const EnumDescriptorProto& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using EnumReservedRange = EnumDescriptorProto_EnumReservedRange;
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kValueFieldNumber = 2,
     kReservedRangeFieldNumber = 4,
@@ -9568,7 +9506,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 5, 3,
@@ -9580,7 +9517,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -9598,20 +9535,20 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DescriptorProto final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto) */ {
+class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto) */ {
  public:
   inline DescriptorProto() : DescriptorProto(nullptr) {}
   ~DescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR DescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR DescriptorProto(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline DescriptorProto(const DescriptorProto& from)
-      : DescriptorProto(nullptr, from) {}
-  DescriptorProto(DescriptorProto&& from) noexcept
-    : DescriptorProto() {
+  inline DescriptorProto(const DescriptorProto& from) : DescriptorProto(nullptr, from) {}
+  DescriptorProto(DescriptorProto&& from) noexcept : DescriptorProto() {
     *this = ::std::move(from);
   }
 
@@ -9622,9 +9559,9 @@ class PROTOBUF_EXPORT DescriptorProto final :
   inline DescriptorProto& operator=(DescriptorProto&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -9655,17 +9592,18 @@ class PROTOBUF_EXPORT DescriptorProto final :
     return *internal_default_instance();
   }
   static inline const DescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const DescriptorProto*>(&_DescriptorProto_default_instance_);
+    return reinterpret_cast<const DescriptorProto*>(
+        &_DescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 4;
   friend void swap(DescriptorProto& a, DescriptorProto& b) { a.Swap(&b); }
   inline void Swap(DescriptorProto* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -9685,11 +9623,12 @@ class PROTOBUF_EXPORT DescriptorProto final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const DescriptorProto& from) {
-    DescriptorProto::MergeImpl(*this, from);
-  }
+  void MergeFrom(const DescriptorProto& from) { DescriptorProto::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -9697,34 +9636,31 @@ class PROTOBUF_EXPORT DescriptorProto final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(DescriptorProto* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.DescriptorProto";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto"; }
+
+ protected:
   explicit DescriptorProto(::google::protobuf::Arena* arena);
   DescriptorProto(::google::protobuf::Arena* arena, const DescriptorProto& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
-
   using ExtensionRange = DescriptorProto_ExtensionRange;
   using ReservedRange = DescriptorProto_ReservedRange;
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kFieldFieldNumber = 2,
     kNestedTypeFieldNumber = 3,
@@ -9926,7 +9862,6 @@ class PROTOBUF_EXPORT DescriptorProto final :
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       4, 10, 8,
@@ -9938,7 +9873,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -9961,20 +9896,20 @@ class PROTOBUF_EXPORT DescriptorProto final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FileDescriptorProto final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorProto) */ {
+class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorProto) */ {
  public:
   inline FileDescriptorProto() : FileDescriptorProto(nullptr) {}
   ~FileDescriptorProto() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FileDescriptorProto(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR FileDescriptorProto(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline FileDescriptorProto(const FileDescriptorProto& from)
-      : FileDescriptorProto(nullptr, from) {}
-  FileDescriptorProto(FileDescriptorProto&& from) noexcept
-    : FileDescriptorProto() {
+  inline FileDescriptorProto(const FileDescriptorProto& from) : FileDescriptorProto(nullptr, from) {}
+  FileDescriptorProto(FileDescriptorProto&& from) noexcept : FileDescriptorProto() {
     *this = ::std::move(from);
   }
 
@@ -9985,9 +9920,9 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   inline FileDescriptorProto& operator=(FileDescriptorProto&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -10018,17 +9953,18 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     return *internal_default_instance();
   }
   static inline const FileDescriptorProto* internal_default_instance() {
-    return reinterpret_cast<const FileDescriptorProto*>(&_FileDescriptorProto_default_instance_);
+    return reinterpret_cast<const FileDescriptorProto*>(
+        &_FileDescriptorProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 1;
   friend void swap(FileDescriptorProto& a, FileDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(FileDescriptorProto* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -10048,11 +9984,12 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const FileDescriptorProto& from) {
-    FileDescriptorProto::MergeImpl(*this, from);
-  }
+  void MergeFrom(const FileDescriptorProto& from) { FileDescriptorProto::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -10060,31 +9997,29 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FileDescriptorProto* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.FileDescriptorProto";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorProto"; }
+
+ protected:
   explicit FileDescriptorProto(::google::protobuf::Arena* arena);
   FileDescriptorProto(::google::protobuf::Arena* arena, const FileDescriptorProto& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kDependencyFieldNumber = 3,
     kMessageTypeFieldNumber = 4,
@@ -10331,7 +10266,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorProto)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       4, 13, 7,
@@ -10343,7 +10277,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -10369,20 +10303,20 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
-};// -------------------------------------------------------------------
+};
+// -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FileDescriptorSet final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorSet) */ {
+class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorSet) */ {
  public:
   inline FileDescriptorSet() : FileDescriptorSet(nullptr) {}
   ~FileDescriptorSet() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR FileDescriptorSet(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR FileDescriptorSet(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline FileDescriptorSet(const FileDescriptorSet& from)
-      : FileDescriptorSet(nullptr, from) {}
-  FileDescriptorSet(FileDescriptorSet&& from) noexcept
-    : FileDescriptorSet() {
+  inline FileDescriptorSet(const FileDescriptorSet& from) : FileDescriptorSet(nullptr, from) {}
+  FileDescriptorSet(FileDescriptorSet&& from) noexcept : FileDescriptorSet() {
     *this = ::std::move(from);
   }
 
@@ -10393,9 +10327,9 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   inline FileDescriptorSet& operator=(FileDescriptorSet&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -10426,17 +10360,18 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
     return *internal_default_instance();
   }
   static inline const FileDescriptorSet* internal_default_instance() {
-    return reinterpret_cast<const FileDescriptorSet*>(&_FileDescriptorSet_default_instance_);
+    return reinterpret_cast<const FileDescriptorSet*>(
+        &_FileDescriptorSet_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(FileDescriptorSet& a, FileDescriptorSet& b) { a.Swap(&b); }
   inline void Swap(FileDescriptorSet* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -10456,11 +10391,12 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileDescriptorSet& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const FileDescriptorSet& from) {
-    FileDescriptorSet::MergeImpl(*this, from);
-  }
+  void MergeFrom(const FileDescriptorSet& from) { FileDescriptorSet::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -10468,31 +10404,29 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(FileDescriptorSet* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.FileDescriptorSet";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorSet"; }
+
+ protected:
   explicit FileDescriptorSet(::google::protobuf::Arena* arena);
   FileDescriptorSet(::google::protobuf::Arena* arena, const FileDescriptorSet& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kFileFieldNumber = 1,
   };
@@ -10517,7 +10451,6 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorSet)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       0, 1, 1,
@@ -10529,7 +10462,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
