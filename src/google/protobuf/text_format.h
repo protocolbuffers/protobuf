@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
@@ -81,6 +82,9 @@ PROTOBUF_EXPORT enum class Option;
 // Converts a protobuf message to a string with redaction enabled.
 PROTOBUF_EXPORT std::string StringifyMessage(const Message& message,
                                              Option option);
+
+class UnsetFieldsMetadataTextFormatTestUtil;
+class UnsetFieldsMetadataMessageDifferencerTestUtil;
 }  // namespace internal
 
 // This class implements protocol buffer text format, colloquially known as text
@@ -719,11 +723,40 @@ class PROTOBUF_EXPORT TextFormat {
     // the maximum allowed nesting of proto messages.
     void SetRecursionLimit(int limit) { recursion_limit_ = limit; }
 
-    // If called, the parser will report an error if a parsed field had no
+    // Uniquely addresses fields in a message that was explicitly unset in
+    // textproto. Example:
+    // "some_int_field: 0"
+    // where some_int_field is non-optional.
+    //
+    // This class should only be used to pass data between the text_format
+    // parser and the MessageDifferencer.
+    class UnsetFieldsMetadata {
+     public:
+      UnsetFieldsMetadata() = default;
+
+     private:
+      // Return a pointer to the unset field in the given message.
+      static const void* GetUnsetFieldAddress(const Message& message,
+                                              const Reflection& reflection,
+                                              const FieldDescriptor& fd);
+
+      // List of addresses of explicitly unset proto fields.
+      absl::flat_hash_set<const void*> addresses_;
+
+      friend class ::google::protobuf::internal::
+          UnsetFieldsMetadataMessageDifferencerTestUtil;
+      friend class ::google::protobuf::internal::UnsetFieldsMetadataTextFormatTestUtil;
+      friend class ::google::protobuf::util::MessageDifferencer;
+      friend class ::google::protobuf::TextFormat::Parser;
+    };
+
+    // If called, the parser will report the parsed fields that had no
     // effect on the resulting proto (for example, fields with no presence that
-    // were set to their default value).
-    void ErrorOnNoOpFields(bool return_error) {
-      error_on_no_op_fields_ = return_error;
+    // were set to their default value). These can be passed to the Partially()
+    // matcher as an indicator to explicitly check these fields are missing
+    // in the actual.
+    void OutputNoOpFields(UnsetFieldsMetadata* no_op_fields) {
+      no_op_fields_ = no_op_fields;
     }
 
    private:
@@ -748,7 +781,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool allow_relaxed_whitespace_;
     bool allow_singular_overwrites_;
     int recursion_limit_;
-    bool error_on_no_op_fields_ = false;
+    UnsetFieldsMetadata* no_op_fields_ = nullptr;
   };
 
 

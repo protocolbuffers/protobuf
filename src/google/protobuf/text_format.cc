@@ -295,6 +295,14 @@ const Descriptor* DefaultFinderFindAnyType(const Message& message,
 }
 }  // namespace
 
+const void* TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldAddress(
+    const Message& message, const Reflection& reflection,
+    const FieldDescriptor& fd) {
+  // reflection->GetRaw() is a simple cast for any non-repeated type, so for
+  // simplicity we just pass in char as the template argument.
+  return &reflection.GetRaw<char>(message, &fd);
+}
+
 // ===========================================================================
 // Internal class for parsing an ASCII representation of a Protocol Message.
 // This class makes use of the Protocol Message compiler's tokenizer found
@@ -331,7 +339,7 @@ class TextFormat::Parser::ParserImpl {
              bool allow_unknown_extension, bool allow_unknown_enum,
              bool allow_field_number, bool allow_relaxed_whitespace,
              bool allow_partial, int recursion_limit,
-             bool error_on_no_op_fields)
+             UnsetFieldsMetadata* no_op_fields)
       : error_collector_(error_collector),
         finder_(finder),
         parse_info_tree_(parse_info_tree),
@@ -349,7 +357,7 @@ class TextFormat::Parser::ParserImpl {
         recursion_limit_(recursion_limit),
         had_silent_marker_(false),
         had_errors_(false),
-        error_on_no_op_fields_(error_on_no_op_fields) {
+        no_op_fields_(no_op_fields) {
     // For backwards-compatibility with proto1, we need to allow the 'f' suffix
     // for floats.
     tokenizer_.set_allow_f_after_float(true);
@@ -834,19 +842,21 @@ class TextFormat::Parser::ParserImpl {
 // When checking for no-op operations, We verify that both the existing value in
 // the message and the new value are the default. If the existing field value is
 // not the default, setting it to the default should not be treated as a no-op.
-#define SET_FIELD(CPPTYPE, CPPTYPELCASE, VALUE)                   \
-  if (field->is_repeated()) {                                     \
-    reflection->Add##CPPTYPE(message, field, VALUE);              \
-  } else {                                                        \
-    if (error_on_no_op_fields_ && !field->has_presence() &&       \
-        field->default_value_##CPPTYPELCASE() ==                  \
-            reflection->Get##CPPTYPE(*message, field) &&          \
-        field->default_value_##CPPTYPELCASE() == VALUE) {         \
-      ReportError("Input field " + field->full_name() +           \
-                  " did not change resulting proto.");            \
-    } else {                                                      \
-      reflection->Set##CPPTYPE(message, field, std::move(VALUE)); \
-    }                                                             \
+// The pointer of this is kept in no_op_fields_ for bookkeeping.
+#define SET_FIELD(CPPTYPE, CPPTYPELCASE, VALUE)                            \
+  if (field->is_repeated()) {                                              \
+    reflection->Add##CPPTYPE(message, field, VALUE);                       \
+  } else {                                                                 \
+    if (no_op_fields_ && !field->has_presence() &&                         \
+        field->default_value_##CPPTYPELCASE() ==                           \
+            reflection->Get##CPPTYPE(*message, field) &&                   \
+        field->default_value_##CPPTYPELCASE() == VALUE) {                  \
+      no_op_fields_->addresses_.insert(                                    \
+          UnsetFieldsMetadata::GetUnsetFieldAddress(*message, *reflection, \
+                                                    *field));              \
+    } else {                                                               \
+      reflection->Set##CPPTYPE(message, field, std::move(VALUE));          \
+    }                                                                      \
   }
 
     switch (field->cpp_type()) {
@@ -1429,7 +1439,7 @@ class TextFormat::Parser::ParserImpl {
   int recursion_limit_;
   bool had_silent_marker_;
   bool had_errors_;
-  bool error_on_no_op_fields_;
+  UnsetFieldsMetadata* no_op_fields_{};
 
 };
 
@@ -1727,7 +1737,7 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_extension_, allow_unknown_enum_,
                     allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, error_on_no_op_fields_);
+                    allow_partial_, recursion_limit_, no_op_fields_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -1752,7 +1762,7 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_extension_, allow_unknown_enum_,
                     allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, error_on_no_op_fields_);
+                    allow_partial_, recursion_limit_, no_op_fields_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -1788,7 +1798,7 @@ bool TextFormat::Parser::ParseFieldValueFromString(absl::string_view input,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_extension_, allow_unknown_enum_,
                     allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, error_on_no_op_fields_);
+                    allow_partial_, recursion_limit_, no_op_fields_);
   return parser.ParseField(field, output);
 }
 
