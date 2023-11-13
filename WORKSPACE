@@ -1,5 +1,10 @@
 workspace(name = "com_google_protobuf")
 
+# An explicit self-reference to work around changes in Bazel 7.0
+# See https://github.com/bazelbuild/bazel/issues/19973#issuecomment-1787814450
+# buildifier: disable=duplicated-name
+local_repository(name = "com_google_protobuf", path = ".")
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
@@ -7,26 +12,23 @@ local_repository(
     path = "examples",
 )
 
-# We will soon merge upb and protobuf into the same Bazel repository, but for
-# now we depend on the separate Bazel repo in the upb/ directory. This is
-# important to ensure that the CI tests exercise upb at head instead of relying
-# on a stale version from protobuf_deps.bzl.
-local_repository(
-    name = "upb",
-    path = "upb",
-)
-
 # Load common dependencies first to ensure we use the correct version
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 
 protobuf_deps()
 
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+
 # Bazel platform rules.
 http_archive(
     name = "platforms",
-    sha256 = "a879ea428c6d56ab0ec18224f976515948822451473a80d06c2e50af0bbe5121",
-    strip_prefix = "platforms-da5541f26b7de1dc8e04c075c99df5351742a4a2",
-    urls = ["https://github.com/bazelbuild/platforms/archive/da5541f26b7de1dc8e04c075c99df5351742a4a2.zip"],  # 2022-05-27
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+    ],
+    sha256 = "3a561c99e7bdbe9173aa653fd579fe849f1d8d67395780ab4770b1f381431d51",
 )
 
 http_archive(
@@ -114,13 +116,9 @@ ruby_bundle(
     gemfile = "//ruby:Gemfile",
 )
 
-load("@upb//bazel:workspace_deps.bzl", "upb_deps")
-
-upb_deps()
-
 http_archive(
     name = "lua",
-    build_file = "@upb//bazel:lua.BUILD",
+    build_file = "//bazel:lua.BUILD",
     sha256 = "b9e2e4aad6789b3b63a056d442f7b39f0ecfca3ae0f1fc0ae4e9614401b69f4b",
     strip_prefix = "lua-5.2.4",
     urls = [
@@ -141,11 +139,11 @@ http_archive(
     urls = ["https://github.com/googleapis/googleapis/archive/30ed2662a85403cbdeb9ea38df1e414a2a276b83.zip"],
     strip_prefix = "googleapis-30ed2662a85403cbdeb9ea38df1e414a2a276b83",
     sha256 = "4dfc28101127d22abd6f0f6308d915d490c4594c0cfcf7643769c446d6763a46",
-    build_file = "@upb//benchmarks:BUILD.googleapis",
+    build_file = "//benchmarks:BUILD.googleapis",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("@upb//bazel:system_python.bzl", "system_python")
+load("//bazel:system_python.bzl", "system_python")
 
 system_python(
     name = "system_python",
@@ -156,30 +154,33 @@ load("@system_python//:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "pip_deps",
-    requirements = "@upb//python:requirements.txt",
-    requirements_overrides = {
-        "3.11": "@upb//python:requirements_311.txt",
-    },
+    requirements = "//python:requirements.txt",
 )
 
 load("@pip_deps//:requirements.bzl", "install_deps")
 
 install_deps()
 
-load("@utf8_range//:workspace_deps.bzl", "utf8_range_deps")
-
-utf8_range_deps()
-
 http_archive(
     name = "rules_fuzzing",
-    sha256 = "d9002dd3cd6437017f08593124fdd1b13b3473c7b929ceb0e60d317cb9346118",
-    strip_prefix = "rules_fuzzing-0.3.2",
-    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.3.2.zip"],
+    sha256 = "ff52ef4845ab00e95d29c02a9e32e9eff4e0a4c9c8a6bcf8407a2f19eb3f9190",
+    strip_prefix = "rules_fuzzing-0.4.1",
+    urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.4.1/rules_fuzzing-0.4.1.zip"],
+    patches = ["//third_party:rules_fuzzing.patch"],
+    patch_args = ["-p1"],
 )
 
 load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
 
 rules_fuzzing_dependencies()
+
+load("@rules_fuzzing//fuzzing:init.bzl", "rules_fuzzing_init")
+
+rules_fuzzing_init()
+
+load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "install_deps")
+
+fuzzing_py_deps_install_deps()
 
 bind(
     name = "python_headers",
@@ -188,8 +189,8 @@ bind(
 
 http_archive(
     name = "rules_rust",
-    sha256 = "4a9cb4fda6ccd5b5ec393b2e944822a62e050c7c06f1ea41607f14c4fdec57a2",
-    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.25.1/rules_rust-v0.25.1.tar.gz"],
+    sha256 = "9ecd0f2144f0a24e6bc71ebcc50a1ee5128cedeceb32187004532c9710cb2334",
+    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.29.1/rules_rust-v0.29.1.tar.gz"],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
@@ -197,3 +198,21 @@ load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_regi
 rules_rust_dependencies()
 
 rust_register_toolchains(edition = "2021")
+load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository")
+# to repin, invoke `CARGO_BAZEL_REPIN=1 bazel sync --only=crate_index`
+crates_repository(
+    name = "crate_index",
+    cargo_lockfile = "//:Cargo.lock",
+    lockfile = "//:Cargo.bazel.lock",
+    packages = {
+        "googletest": crate.spec(
+            version = ">0.0.0",
+        ),
+        "paste": crate.spec(
+          version = ">=1",
+        ),
+    },
+)
+
+load("@crate_index//:defs.bzl", "crate_repositories")
+crate_repositories()

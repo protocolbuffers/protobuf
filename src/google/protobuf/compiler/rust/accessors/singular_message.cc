@@ -1,36 +1,15 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -39,29 +18,72 @@ namespace compiler {
 namespace rust {
 
 void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
-  field.Emit(
-      {
-          {"field", field.desc().name()},
-      },
-      R"rs(
-          // inMsgImpl
-          pub fn r#$field$(&self) -> $Msg$View {
-            $Msg$View { msg: self.inner.msg, _phantom: std::marker::PhantomData }
+  Context<Descriptor> d = field.WithDesc(field.desc().message_type());
+
+  auto prefix = "crate::" + GetCrateRelativeQualifiedPath(d);
+
+  if (field.is_cpp()) {
+    field.Emit({{"prefix", prefix},
+                {"field", field.desc().name()},
+                {"getter_thunk", Thunk(field, "get")}},
+               R"rs(
+          pub fn r#$field$(&self) -> $prefix$View {
+            // For C++ kernel, getters automatically return the
+            // default_instance if the field is unset.
+            let submsg = unsafe { $getter_thunk$(self.inner.msg) };
+            $prefix$View::new($pbi$::Private, submsg)
           }
         )rs");
+  } else {
+    field.Emit({{"prefix", prefix},
+                {"field", field.desc().name()},
+                {"getter_thunk", Thunk(field, "get")}},
+               R"rs(
+          pub fn r#$field$(&self) -> $prefix$View {
+            let submsg = unsafe { $getter_thunk$(self.inner.msg) };
+            // For upb, getters return null if the field is unset, so we need to
+            // check for null and return the default instance manually. Note that
+            // a null ptr received from upb manifests as Option::None
+            match submsg {
+                // TODO:(b/304357029)
+                None => $prefix$View::new($pbi$::Private, $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
+                Some(field) => $prefix$View::new($pbi$::Private, field),
+              }
+          }
+        )rs");
+  }
 }
 
 void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
-  field.Emit({},
-             R"rs(
-                 // inExternC
+  field.Emit(
+      {
+          {"getter_thunk", Thunk(field, "get")},
+          {"ReturnType",
+           [&] {
+             if (field.is_cpp()) {
+               // guaranteed to have a nonnull submsg for the cpp kernel
+               field.Emit({}, "$pbi$::RawMessage;");
+             } else {
+               // upb kernel may return NULL for a submsg, we can detect this
+               // in terra rust if the option returned is None
+               field.Emit({}, "Option<$pbi$::RawMessage>;");
+             }
+           }},
+      },
+      R"rs(
+                  fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $ReturnType$;
                )rs");
 }
 
 void SingularMessage::InThunkCc(Context<FieldDescriptor> field) const {
-  field.Emit({},
+  field.Emit({{"QualifiedMsg",
+               cpp::QualifiedClassName(field.desc().containing_type())},
+              {"getter_thunk", Thunk(field, "get")},
+              {"field", cpp::FieldName(&field.desc())}},
              R"cc(
-               // inThunkCC
+               const void* $getter_thunk$($QualifiedMsg$* msg) {
+                 return static_cast<const void*>(&msg->$field$());
+               }
              )cc");
 }
 

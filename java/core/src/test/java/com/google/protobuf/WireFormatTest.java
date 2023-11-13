@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -35,6 +12,7 @@ import static com.google.common.truth.Truth.assertThat;
 import protobuf_unittest.UnittestMset.RawMessageSet;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
+import protobuf_unittest.UnittestMset.TestMessageSetExtension3;
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
@@ -48,6 +26,7 @@ import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -61,6 +40,13 @@ public class WireFormatTest {
   private static final int TYPE_ID_2 =
       TestMessageSetExtension2.getDescriptor().getExtensions().get(0).getNumber();
   private static final int UNKNOWN_TYPE_ID = 1550055;
+
+  @After
+  public void tearDown() {
+    // Whether to parse message sets eagerly is stored in a global static. Since some tests modify
+    // the value, make sure to reset it between test runs.
+    ExtensionRegistryLite.setEagerlyParseMessageSets(false);
+  }
 
   @Test
   public void testSerialization() throws Exception {
@@ -518,6 +504,73 @@ public class WireFormatTest {
         TestMessageSet.newBuilder().mergeFrom(data, extensionRegistry).build();
     assertThat(messageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI())
         .isEqualTo(123);
+  }
+
+  @Test
+  public void testParseAndUpdateMessageSetExtensionEagerly() throws Exception {
+    testParseAndUpdateMessageSetExtensionEagerlyWithFlag(true);
+  }
+
+  @Test
+  public void testParseAndUpdateMessageSetExtensionNotEagerly() throws Exception {
+    testParseAndUpdateMessageSetExtensionEagerlyWithFlag(false);
+  }
+
+  private void testParseAndUpdateMessageSetExtensionEagerlyWithFlag(boolean eagerParsing)
+      throws Exception {
+    ExtensionRegistryLite.setEagerlyParseMessageSets(eagerParsing);
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
+    extensionRegistry.add(TestMessageSetExtension1.messageSetExtension);
+    extensionRegistry.add(TestMessageSetExtension2.messageSetExtension);
+    extensionRegistry.add(TestMessageSetExtension3.messageSetExtension);
+
+    // Set up a RawMessageSet with 2 extensions
+    RawMessageSet raw =
+        RawMessageSet.newBuilder()
+            .addItem(
+                RawMessageSet.Item.newBuilder()
+                    .setTypeId(TYPE_ID_1)
+                    .setMessage(
+                        TestMessageSetExtension1.newBuilder().setI(123).build().toByteString())
+                    .build())
+            .addItem(
+                RawMessageSet.Item.newBuilder()
+                    .setTypeId(TYPE_ID_2)
+                    .setMessage(
+                        TestMessageSetExtension2.newBuilder().setStr("foo").build().toByteString())
+                    .build())
+            .build();
+
+    ByteString data = raw.toByteString();
+
+    // Parse as a TestMessageSet.
+    TestMessageSet messageSet = TestMessageSet.parseFrom(data, extensionRegistry);
+
+    // Update one extension and add a new one.
+    TestMessageSet.Builder builder = messageSet.toBuilder();
+    builder.setExtension(
+        TestMessageSetExtension2.messageSetExtension,
+        TestMessageSetExtension2.newBuilder().setStr("bar").build());
+    builder.setExtension(
+        TestMessageSetExtension3.messageSetExtension,
+        TestMessageSetExtension3.newBuilder().setRequiredInt(666).build());
+
+    TestMessageSet updatedMessageSet = builder.build();
+    // Check all 3 extensions
+    assertThat(updatedMessageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI())
+        .isEqualTo(123);
+    assertThat(
+            updatedMessageSet.getExtension(TestMessageSetExtension2.messageSetExtension).getStr())
+        .isEqualTo("bar");
+    assertThat(
+            updatedMessageSet
+                .getExtension(TestMessageSetExtension3.messageSetExtension)
+                .getRequiredInt())
+        .isEqualTo(666);
+
+    // Serialize and re-parse, and make sure we get the same message back
+    assertThat(TestMessageSet.parseFrom(updatedMessageSet.toByteString(), extensionRegistry))
+        .isEqualTo(updatedMessageSet);
   }
 
   // ================================================================

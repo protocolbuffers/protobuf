@@ -1,32 +1,9 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2023 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 
 # Decorates Descriptor with the `build_message_class` method that defines
@@ -42,7 +19,7 @@ module Google
       attach_function :encode_message,          :upb_Encode,                  [:Message, MiniTable.by_ref, :size_t, Internal::Arena, :pointer, :pointer], EncodeStatus
       attach_function :json_decode_message,     :upb_JsonDecode,              [:binary_string, :size_t, :Message, Descriptor, :DefPool, :int, Internal::Arena, Status.by_ref], :bool
       attach_function :json_encode_message,     :upb_JsonEncode,              [:Message, Descriptor, :DefPool, :int, :binary_string, :size_t, Status.by_ref], :size_t
-      attach_function :decode_message,          :upb_Decode,                              [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Internal::Arena], DecodeStatus
+      attach_function :decode_message,          :upb_Decode,                  [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Internal::Arena], DecodeStatus
       attach_function :get_mutable_message,     :upb_Message_Mutable,         [:Message, FieldDescriptor, Internal::Arena], MutableMessageValue.by_value
       attach_function :get_message_which_oneof, :upb_Message_WhichOneof,      [:Message, OneofDescriptor], FieldDescriptor
       attach_function :message_discard_unknown, :upb_Message_DiscardUnknown,  [:Message, Descriptor, :int], :bool
@@ -243,7 +220,7 @@ module Google
               if options.respond_to? :to_h
                 options options.to_h
               else
-                #TODO(jatl) can this error message be improve to include what was received?
+                #TODO can this error message be improve to include what was received?
                 raise ArgumentError.new "Expected hash arguments"
               end
             end
@@ -269,7 +246,7 @@ module Google
               if options.respond_to? :to_h
                 options = options.to_h
               else
-                #TODO(jatl) can this error message be improve to include what was received?
+                #TODO can this error message be improve to include what was received?
                 raise ArgumentError.new "Expected hash arguments"
               end
             end
@@ -316,11 +293,22 @@ module Google
 
           include Google::Protobuf::Internal::Convert
 
+          def internal_deep_freeze
+            freeze
+            self.class.descriptor.each do |field_descriptor|
+              next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(@msg, field_descriptor)
+              if field_descriptor.map? or field_descriptor.repeated? or field_descriptor.sub_message?
+                get_field(field_descriptor).send :internal_deep_freeze
+              end
+            end
+            self
+          end
+
           def self.setup_accessors!
             @descriptor.each do |field_descriptor|
               field_name = field_descriptor.name
               unless instance_methods(true).include?(field_name.to_sym)
-                #TODO(jatl) - at a high level, dispatching to either
+                #TODO - at a high level, dispatching to either
                 # index_internal or get_field would be logically correct, but slightly slower.
                 if field_descriptor.map?
                   define_method(field_name) do
@@ -449,7 +437,7 @@ module Google
             descriptor.each do |field_descriptor|
               next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(msg, field_descriptor)
               if field_descriptor.map?
-                # TODO(jatl) Adapted - from map#each_msg_val and map#inspect- can this be refactored to reduce echo without introducing a arena allocation?
+                # TODO Adapted - from map#each_msg_val and map#inspect- can this be refactored to reduce echo without introducing a arena allocation?
                 message_descriptor = field_descriptor.subtype
                 key_field_def = Google::Protobuf::FFI.get_field_by_number(message_descriptor, 1)
                 key_field_type = Google::Protobuf::FFI.get_type(key_field_def)
@@ -471,7 +459,7 @@ module Google
                 end
                 field_output << "#{field_descriptor.name}: {#{key_value_pairs.join(", ")}}"
               elsif field_descriptor.repeated?
-                # TODO(jatl) Adapted - from repeated_field#each - can this be refactored to reduce echo?
+                # TODO Adapted - from repeated_field#each - can this be refactored to reduce echo?
                 repeated_field_output = []
                 message_value = Google::Protobuf::FFI.get_message_value(msg, field_descriptor)
                 array = message_value[:array_val]
@@ -515,7 +503,7 @@ module Google
           def method_missing_internal(method_name, *args, mode: nil)
             raise ArgumentError.new "method_missing_internal called with invalid mode #{mode.inspect}" unless [:respond_to_missing?, :method_missing].include? mode
 
-            #TODO(jatl) not being allowed is not the same thing as not responding, but this is needed to pass tests
+            #TODO not being allowed is not the same thing as not responding, but this is needed to pass tests
             if method_name.to_s.end_with? '='
               if self.class.send(:oneof_field_names).include? method_name.to_s[0..-2].to_sym
                 return false if mode == :respond_to_missing?
@@ -536,7 +524,7 @@ module Google
             get_field field_descriptor unless field_descriptor.nil?
           end
 
-          #TODO(jatl) - well known types keeps us on our toes by overloading methods.
+          #TODO - well known types keeps us on our toes by overloading methods.
           # How much of the public API needs to be defended?
           def index_assign_internal(value, name: nil, field_descriptor: nil, wrap: false)
             raise FrozenError.new "can't modify frozen #{self.class}" if frozen?
@@ -642,6 +630,7 @@ module Google
             repeated_field = OBJECT_CACHE.get(array.address)
             if repeated_field.nil?
               repeated_field = RepeatedField.send(:construct_for_field, field, @arena, array: array)
+              repeated_field.send :internal_deep_freeze if frozen?
             end
             repeated_field
           end
@@ -654,6 +643,7 @@ module Google
             map_field = OBJECT_CACHE.get(map.address)
             if map_field.nil?
               map_field = Google::Protobuf::Map.send(:construct_for_field, field, @arena, map: map)
+              map_field.send :internal_deep_freeze if frozen?
             end
             map_field
           end

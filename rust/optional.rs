@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 //! Items specific to `optional` fields.
 #![allow(dead_code)]
@@ -234,7 +211,7 @@ pub struct PresentField<'msg, T>
 where
     T: ProxiedWithPresence + ?Sized + 'msg,
 {
-    inner: T::PresentMutData<'msg>,
+    pub(crate) inner: T::PresentMutData<'msg>,
 }
 
 impl<'msg, T: ProxiedWithPresence + ?Sized + 'msg> Debug for PresentField<'msg, T> {
@@ -312,7 +289,7 @@ pub struct AbsentField<'a, T>
 where
     T: ProxiedWithPresence + ?Sized + 'a,
 {
-    inner: T::AbsentMutData<'a>,
+    pub(crate) inner: T::AbsentMutData<'a>,
 }
 
 impl<'msg, T: ProxiedWithPresence + ?Sized + 'msg> Debug for AbsentField<'msg, T> {
@@ -539,7 +516,11 @@ mod tests {
         fn set_absent_to_default<'a>(
             absent_mutator: Self::AbsentMutData<'a>,
         ) -> Self::PresentMutData<'a> {
-            absent_mutator.as_view().val().set_on_absent(Private, absent_mutator)
+            SettableValue::<VtableProxied>::set_on_absent(
+                absent_mutator.as_view().val(),
+                Private,
+                absent_mutator,
+            )
         }
     }
 
@@ -609,7 +590,7 @@ mod tests {
 
     impl SettableValue<VtableProxied> for View<'_, VtableProxied> {
         fn set_on(self, _private: Private, mutator: Mut<VtableProxied>) {
-            self.val().set_on(Private, mutator)
+            SettableValue::<VtableProxied>::set_on(self.val(), Private, mutator)
         }
 
         fn set_on_absent<'a>(
@@ -617,7 +598,7 @@ mod tests {
             _private: Private,
             absent_mutator: <VtableProxied as ProxiedWithPresence>::AbsentMutData<'a>,
         ) -> <VtableProxied as ProxiedWithPresence>::PresentMutData<'a> {
-            self.val().set_on_absent(Private, absent_mutator)
+            SettableValue::<VtableProxied>::set_on_absent(self.val(), Private, absent_mutator)
         }
     }
 

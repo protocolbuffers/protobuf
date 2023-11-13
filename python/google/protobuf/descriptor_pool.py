@@ -1,32 +1,9 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Provides DescriptorPool to use as a container for proto2 descriptors.
 
@@ -58,11 +35,13 @@ directly instead of this class.
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import collections
+import threading
 import warnings
 
 from google.protobuf import descriptor
 from google.protobuf import descriptor_database
 from google.protobuf import text_encoding
+from google.protobuf.internal import python_edition_defaults
 from google.protobuf.internal import python_message
 
 _USE_C_DESCRIPTORS = descriptor._USE_C_DESCRIPTORS  # pylint: disable=protected-access
@@ -114,6 +93,8 @@ def _IsMessageSetExtension(field):
           field.type == descriptor.FieldDescriptor.TYPE_MESSAGE and
           field.label == descriptor.FieldDescriptor.LABEL_OPTIONAL)
 
+_edition_defaults_lock = threading.Lock()
+
 
 class DescriptorPool(object):
   """A collection of protobufs dynamically constructed by descriptor protos."""
@@ -154,6 +135,11 @@ class DescriptorPool(object):
     # full name or its tag number.
     self._extensions_by_name = collections.defaultdict(dict)
     self._extensions_by_number = collections.defaultdict(dict)
+    self._serialized_edition_defaults = (
+        python_edition_defaults._PROTOBUF_INTERNAL_PYTHON_EDITION_DEFAULTS
+    )
+    self._edition_defaults = None
+    self._feature_cache = dict()
 
   def _CheckConflictRegister(self, desc, desc_name, file_name):
     """Check if the descriptor name conflicts with another of the same name.
@@ -702,6 +688,113 @@ class DescriptorPool(object):
     service_descriptor = self.FindServiceByName(service_name)
     return service_descriptor.methods_by_name[method_name]
 
+  def SetFeatureSetDefaults(self, defaults):
+    """Sets the default feature mappings used during the build.
+
+    Args:
+      defaults: a FeatureSetDefaults message containing the new mappings.
+    """
+    if self._edition_defaults is not None:
+      raise ValueError(
+          "Feature set defaults can't be changed once the pool has started"
+          ' building!'
+      )
+
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf import descriptor_pb2
+
+    if not isinstance(defaults, descriptor_pb2.FeatureSetDefaults):
+      raise TypeError('SetFeatureSetDefaults called with invalid type')
+
+
+    if defaults.minimum_edition > defaults.maximum_edition:
+      raise ValueError(
+          'Invalid edition range %s to %s'
+          % (
+              descriptor_pb2.Edition.Name(defaults.minimum_edition),
+              descriptor_pb2.Edition.Name(defaults.maximum_edition),
+          )
+      )
+
+    prev_edition = descriptor_pb2.Edition.EDITION_UNKNOWN
+    for d in defaults.defaults:
+      if d.edition == descriptor_pb2.Edition.EDITION_UNKNOWN:
+        raise ValueError('Invalid edition EDITION_UNKNOWN specified')
+      if prev_edition >= d.edition:
+        raise ValueError(
+            'Feature set defaults are not strictly increasing.  %s is greater'
+            ' than or equal to %s'
+            % (
+                descriptor_pb2.Edition.Name(prev_edition),
+                descriptor_pb2.Edition.Name(d.edition),
+            )
+        )
+      prev_edition = d.edition
+    self._edition_defaults = defaults
+
+  def _CreateDefaultFeatures(self, edition):
+    """Creates a FeatureSet message with defaults for a specific edition.
+
+    Args:
+      edition: the edition to generate defaults for.
+
+    Returns:
+      A FeatureSet message with defaults for a specific edition.
+    """
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf import descriptor_pb2
+
+    with _edition_defaults_lock:
+      if not self._edition_defaults:
+        self._edition_defaults = descriptor_pb2.FeatureSetDefaults()
+        self._edition_defaults.ParseFromString(
+            self._serialized_edition_defaults
+        )
+
+    if edition < self._edition_defaults.minimum_edition:
+      raise TypeError(
+          'Edition %s is earlier than the minimum supported edition %s!'
+          % (
+              descriptor_pb2.Edition.Name(edition),
+              descriptor_pb2.Edition.Name(
+                  self._edition_defaults.minimum_edition
+              ),
+          )
+      )
+    if edition > self._edition_defaults.maximum_edition:
+      raise TypeError(
+          'Edition %s is later than the maximum supported edition %s!'
+          % (
+              descriptor_pb2.Edition.Name(edition),
+              descriptor_pb2.Edition.Name(
+                  self._edition_defaults.maximum_edition
+              ),
+          )
+      )
+    found = None
+    for d in self._edition_defaults.defaults:
+      if d.edition > edition:
+        break
+      found = d.features
+    if found is None:
+      raise TypeError(
+          'No valid default found for edition %s!'
+          % descriptor_pb2.Edition.Name(edition)
+      )
+
+    defaults = descriptor_pb2.FeatureSet()
+    defaults.CopyFrom(found)
+    return defaults
+
+  def _InternFeatures(self, features):
+    serialized = features.SerializeToString()
+    with _edition_defaults_lock:
+      cached = self._feature_cache.get(serialized)
+      if cached is None:
+        self._feature_cache[serialized] = features
+        cached = features
+    return cached
+
   def _FindFileContainingSymbolInDb(self, symbol):
     """Finds the file in descriptor DB containing the specified symbol.
 
@@ -742,17 +835,22 @@ class DescriptorPool(object):
       direct_deps = [self.FindFileByName(n) for n in file_proto.dependency]
       public_deps = [direct_deps[i] for i in file_proto.public_dependency]
 
+      # pylint: disable=g-import-not-at-top
+      from google.protobuf import descriptor_pb2
+
       file_descriptor = descriptor.FileDescriptor(
           pool=self,
           name=file_proto.name,
           package=file_proto.package,
           syntax=file_proto.syntax,
+          edition=descriptor_pb2.Edition.Name(file_proto.edition),
           options=_OptionsOrNone(file_proto),
           serialized_pb=file_proto.SerializeToString(),
           dependencies=direct_deps,
           public_dependencies=public_deps,
           # pylint: disable=protected-access
-          create_key=descriptor._internal_create_key)
+          create_key=descriptor._internal_create_key,
+      )
       scope = {}
 
       # This loop extracts all the message and enum types from all the
@@ -899,10 +997,10 @@ class DescriptorPool(object):
         file=file_desc,
         serialized_start=None,
         serialized_end=None,
-        syntax=syntax,
         is_map_entry=desc_proto.options.map_entry,
         # pylint: disable=protected-access
-        create_key=descriptor._internal_create_key)
+        create_key=descriptor._internal_create_key,
+    )
     for nested in desc.nested_types:
       nested.containing_type = desc
     for enum in desc.enum_types:
@@ -1282,7 +1380,7 @@ def _PrefixWithDot(name):
 
 
 if _USE_C_DESCRIPTORS:
-  # TODO(amauryfa): This pool could be constructed from Python code, when we
+  # TODO: This pool could be constructed from Python code, when we
   # support a flag like 'use_cpp_generated_pool=True'.
   # pylint: disable=protected-access
   _DEFAULT = descriptor._message.default_pool

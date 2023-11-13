@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 
@@ -139,11 +116,9 @@ ParseFunctionGenerator::ParseFunctionGenerator(
   if (should_generate_tctable()) {
     tc_table_info_.reset(new TailCallTableInfo(
         descriptor_, ordered_fields_,
-        {
-            /* is_lite */ GetOptimizeFor(descriptor->file(), options_) ==
-                FileOptions::LITE_RUNTIME,
-            /* uses_codegen */ true,
-        },
+        {/* is_lite */ GetOptimizeFor(descriptor->file(), options_) ==
+             FileOptions::LITE_RUNTIME,
+         /* uses_codegen */ true, options_.profile_driven_cluster_aux_subtable},
         GeneratedOptionProvider(this), has_bit_indices,
         inlined_string_indices));
   }
@@ -258,9 +233,12 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
              // Since most (>80%) messages are never present, messages that are
              // present are considered hot enough to be clustered together.
              if (IsPresentMessage(descriptor_, options_)) {
-               p->Emit("PROTOBUF_SECTION_VARIABLE(proto_parse_table_hot)");
+               p->Emit(
+                   "ABSL_ATTRIBUTE_SECTION_VARIABLE(proto_parse_table_hot)");
              } else {
-               p->Emit("PROTOBUF_SECTION_VARIABLE(proto_parse_table_lukewarm)");
+               p->Emit(
+                   "ABSL_ATTRIBUTE_SECTION_VARIABLE(proto_parse_table_"
+                   "lukewarm)");
              }
            }},
           {"table_size_log2", tc_table_info_->table_size_log2},
@@ -423,9 +401,29 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
       }
       format(
           "&$1$._instance,\n"
-          "$2$,  // fallback\n"
-          "",
+          "$2$,  // fallback\n",
           DefaultInstanceName(descriptor_, options_), fallback);
+      std::vector<const FieldDescriptor*> subtable_fields;
+      for (const auto& aux : tc_table_info_->aux_entries) {
+        if (aux.type == internal::TailCallTableInfo::kSubTable) {
+          subtable_fields.push_back(aux.field);
+        }
+      }
+      const auto* hottest = FindHottestField(subtable_fields, options_);
+      // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
+      // branches. Set the pointer to itself to avoid nullptr.
+      printer->Emit(
+          {{"hottest_type_name",
+            QualifiedClassName(
+                hottest == nullptr ? descriptor_ : hottest->message_type(),
+                options_)}},
+          // clang-format off
+          R"cc(
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+::_pbi::TcParser::GetTable<$hottest_type_name$>(),  // to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+          )cc");
+      // clang-format on
     }
     format("}, {{\n");
     {
@@ -585,17 +583,29 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
   format("};\n\n");  // _table_
 }
 
+static std::string TcParseFunctionName(internal::TcParseFunction func) {
+#define PROTOBUF_TC_PARSE_FUNCTION_X(value) #value,
+  static constexpr absl::string_view kNames[] = {
+      {}, PROTOBUF_TC_PARSE_FUNCTION_LIST};
+#undef PROTOBUF_TC_PARSE_FUNCTION_X
+  const int func_index = static_cast<int>(func);
+  ABSL_CHECK_GE(func_index, 0);
+  ABSL_CHECK_LT(func_index, std::end(kNames) - std::begin(kNames));
+  static constexpr absl::string_view ns = "::_pbi::TcParser::";
+  return absl::StrCat(ns, kNames[func_index]);
+}
+
 void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
   for (const auto& info : tc_table_info_->fast_path_fields) {
     if (auto* nonfield = info.AsNonField()) {
       // Fast slot that is not associated with a field. Eg end group tags.
-      format("{$1$, {$2$, $3$}},\n", nonfield->func_name, nonfield->coded_tag,
-             nonfield->nonfield_info);
+      format("{$1$, {$2$, $3$}},\n", TcParseFunctionName(nonfield->func),
+             nonfield->coded_tag, nonfield->nonfield_info);
     } else if (auto* as_field = info.AsField()) {
       PrintFieldComment(format, as_field->field, options_);
       ABSL_CHECK(!ShouldSplit(as_field->field, options_));
 
-      std::string func_name = as_field->func_name;
+      std::string func_name = TcParseFunctionName(as_field->func);
       if (GetOptimizeFor(as_field->field->file(), options_) ==
           FileOptions::SPEED) {
         // For 1-byte tags we have a more optimized version of the varint parser
@@ -631,141 +641,6 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
   }
 }
 
-static void FormatFieldKind(Formatter& format,
-                            const TailCallTableInfo::FieldEntryInfo& entry) {
-  // In here we convert the runtime value of entry.type_card back into a
-  // sequence of literal enum labels. We use the mnenonic labels for nicer
-  // codegen.
-  namespace fl = internal::field_layout;
-  const uint16_t type_card = entry.type_card;
-  const int rep_index = (type_card & fl::kRepMask) >> fl::kRepShift;
-  const int tv_index = (type_card & fl::kTvMask) >> fl::kTvShift;
-
-  // Use `0|` prefix to eagerly convert the enums to int to avoid enum-enum
-  // operations. They are deprecated in C++20.
-  format("(0 | ");
-  static constexpr const char* kFieldCardNames[] = {"Singular", "Optional",
-                                                    "Repeated", "Oneof"};
-  static_assert((fl::kFcSingular >> fl::kFcShift) == 0, "");
-  static_assert((fl::kFcOptional >> fl::kFcShift) == 1, "");
-  static_assert((fl::kFcRepeated >> fl::kFcShift) == 2, "");
-  static_assert((fl::kFcOneof >> fl::kFcShift) == 3, "");
-
-  format("::_fl::kFc$1$",
-         kFieldCardNames[(type_card & fl::kFcMask) >> fl::kFcShift]);
-
-#define PROTOBUF_INTERNAL_TYPE_CARD_CASE(x) \
-  case fl::k##x:                            \
-    format(" | ::_fl::k" #x);               \
-    break
-
-  switch (type_card & fl::kFkMask) {
-    case fl::kFkString: {
-      switch (type_card & ~fl::kFcMask & ~fl::kRepMask & ~fl::kSplitMask) {
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Bytes);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(RawString);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Utf8String);
-        default:
-          ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
-      }
-
-      static constexpr const char* kRepNames[] = {"AString", "IString", "Cord",
-                                                  "SPiece", "SString"};
-      static_assert((fl::kRepAString >> fl::kRepShift) == 0, "");
-      static_assert((fl::kRepIString >> fl::kRepShift) == 1, "");
-      static_assert((fl::kRepCord >> fl::kRepShift) == 2, "");
-      static_assert((fl::kRepSPiece >> fl::kRepShift) == 3, "");
-      static_assert((fl::kRepSString >> fl::kRepShift) == 4, "");
-
-      format(" | ::_fl::kRep$1$", kRepNames[rep_index]);
-      break;
-    }
-
-    case fl::kFkMessage: {
-      format(" | ::_fl::kMessage");
-
-      static constexpr const char* kRepNames[] = {nullptr, "Group", "Lazy"};
-      static_assert((fl::kRepGroup >> fl::kRepShift) == 1, "");
-      static_assert((fl::kRepLazy >> fl::kRepShift) == 2, "");
-
-      if (auto* rep = kRepNames[rep_index]) {
-        format(" | ::_fl::kRep$1$", rep);
-      }
-
-      static constexpr const char* kXFormNames[2][4] = {
-          {nullptr, "Default", "Table", "WeakPtr"}, {nullptr, "Eager", "Lazy"}};
-
-      static_assert((fl::kTvDefault >> fl::kTvShift) == 1, "");
-      static_assert((fl::kTvTable >> fl::kTvShift) == 2, "");
-      static_assert((fl::kTvWeakPtr >> fl::kTvShift) == 3, "");
-      static_assert((fl::kTvEager >> fl::kTvShift) == 1, "");
-      static_assert((fl::kTvLazy >> fl::kTvShift) == 2, "");
-
-      if (auto* xform = kXFormNames[rep_index == 2][tv_index]) {
-        format(" | ::_fl::kTv$1$", xform);
-      }
-      break;
-    }
-
-    case fl::kFkMap:
-      format(" | ::_fl::kMap");
-      break;
-
-    case fl::kFkNone:
-      break;
-
-    case fl::kFkVarint:
-    case fl::kFkPackedVarint:
-    case fl::kFkFixed:
-    case fl::kFkPackedFixed: {
-      switch (type_card & ~fl::kFcMask & ~fl::kSplitMask) {
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Bool);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Fixed32);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(UInt32);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(SFixed32);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Int32);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(SInt32);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Float);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Enum);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(EnumRange);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(OpenEnum);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Fixed64);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(UInt64);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(SFixed64);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Int64);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(SInt64);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Double);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedBool);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedFixed32);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedUInt32);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedSFixed32);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedInt32);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedSInt32);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedFloat);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedEnum);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedEnumRange);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedOpenEnum);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedFixed64);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedUInt64);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedSFixed64);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedInt64);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedSInt64);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(PackedDouble);
-        default:
-          ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
-      }
-    }
-  }
-
-  if (type_card & fl::kSplitMask) {
-    format(" | ::_fl::kSplitTrue");
-  }
-
-#undef PROTOBUF_INTERNAL_TYPE_CARD_CASE
-
-  format(")");
-}
-
 void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
   for (const auto& entry : tc_table_info_->field_entries) {
     const FieldDescriptor* field = entry.field;
@@ -797,7 +672,9 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
         format("0, ");
       }
       format("$1$,\n ", entry.aux_idx);
-      FormatFieldKind(format, entry);
+      // Use `0|` prefix to eagerly convert the enums to int to avoid enum-enum
+      // operations. They are deprecated in C++20.
+      format("(0 | $1$)", internal::TypeCardToString(entry.type_card));
     }
     format("},\n");
   }

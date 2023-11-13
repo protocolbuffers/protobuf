@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -180,6 +157,9 @@ message TestAllTypes {
     NestedMessage oneof_nested_message = 112;
     string oneof_string = 113;
     bytes oneof_bytes = 114;
+    string oneof_cord = 115 [ctype=CORD];
+    string oneof_string_piece = 116 [ctype=STRING_PIECE];
+    NestedMessage oneof_lazy_nested_message = 117 [lazy=true];
   }
 }
 
@@ -217,6 +197,7 @@ enum ForeignEnum {
   FOREIGN_FOO = 4;
   FOREIGN_BAR = 5;
   FOREIGN_BAZ = 6;
+  FOREIGN_BAX = 32;  // (1 << 32) to generate a 64b bitmask would be incorrect.
 }
 
 message TestReservedFields {
@@ -267,7 +248,7 @@ extend TestAllExtensions {
     optional_import_enum_extension = 23;
 
   optional string optional_string_piece_extension = 24 [ctype=STRING_PIECE];
-  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   optional string optional_cord_extension = 25;
 
@@ -311,7 +292,7 @@ extend TestAllExtensions {
     repeated_import_enum_extension = 53;
 
   repeated string repeated_string_piece_extension = 54 [ctype=STRING_PIECE];
-  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   repeated string repeated_cord_extension = 55;
 
@@ -344,7 +325,7 @@ extend TestAllExtensions {
 
   optional string default_string_piece_extension = 84 [ctype=STRING_PIECE,
                                                        default="abc"];
-  // TODO(b/294946958): ctype=CORD is not supported for extension. Add
+  // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   optional string default_cord_extension = 85 [default="123"];
 
@@ -433,10 +414,62 @@ message TestNestedChildExtensionData {
 // Required and closed enum fields are considered unknown fields if the value is
 // not valid. We need to make sure it functions as expected.
 message TestRequiredEnum {
-  // Required closed enum results in missing required fields.
   required ForeignEnum required_enum = 1;
+
   // A dummy optional field.
   optional int32 a = 2;
+}
+
+// TestRequiredEnum + using enum values that won't fit to 64 bitmask.
+message TestRequiredEnumNoMask {
+  enum NestedEnum {
+    UNSPECIFIED = 0;
+    FOO = 2;
+    BAR = 100;
+    BAZ = -1;  // Intentionally negative.
+  }
+
+  required NestedEnum required_enum = 1;
+
+  // A dummy optional field.
+  optional int32 a = 2;
+}
+
+message TestRequiredEnumMulti {
+  enum NestedEnum {
+    UNSPECIFIED = 0;
+    FOO = 1;
+    BAR = 2;
+    BAZ = 100;
+  }
+
+  // Intentionally placed in descending field number to force sorting in closed
+  // enum verification.
+  required NestedEnum required_enum_4 = 4;
+  optional int32 a_3 = 3;
+  required NestedEnum required_enum_2 = 2;
+  required ForeignEnum required_enum_1 = 1;
+}
+
+message TestRequiredNoMaskMulti {
+  enum NestedEnum {
+    UNSPECIFIED = 0;
+    FOO = 1;
+    BAR = 2;
+    BAZ = 100;
+  }
+
+  // Intentionally placed in descending field number to force sorting in closed
+  // enum verification. Also, using large field numbers to use tag only
+  // matching for required fields.
+  required fixed32 required_fixed32_80 = 80;
+  required fixed32 required_fixed32_70 = 70;
+
+  required NestedEnum required_enum_64 = 64;
+  required NestedEnum required_enum_4 = 4;
+  optional int32 a_3 = 3;
+  required NestedEnum required_enum_2 = 2;
+  required ForeignEnum required_enum_1 = 1;
 }
 
 // We have separate messages for testing required fields because it's
@@ -513,6 +546,9 @@ message TestNestedRequiredForeign {
   optional int32 dummy = 3;
   // optional message to test required closed enum.
   optional TestRequiredEnum required_enum = 5;
+  optional TestRequiredEnumNoMask required_enum_no_mask = 6;
+  optional TestRequiredEnumMulti required_enum_multi = 7;
+  optional TestRequiredNoMaskMulti required_no_mask = 9;
 }
 
 // Test that we can use NestedMessage from outside TestAllTypes.
@@ -1182,7 +1218,7 @@ extend TestExtensionInsideTable {
   optional int32 test_extension_inside_table_extension = 5;
 }
 
-// NOTE(b/202996544): Intentionally nested to mirror go/glep.
+// NOTE: Intentionally nested to mirror go/glep.
 message TestNestedGroupExtensionOuter {
   optional group Layer1OptionalGroup = 1 {
     repeated group Layer2RepeatedGroup = 2 {
@@ -1773,4 +1809,39 @@ message EnumsForBenchmark {
     C30109 = 30109;
     C31670 = 31670;
   }
+}
+
+message TestMessageWithManyRepeatedPtrFields {
+  repeated string repeated_string_1 = 1;
+  repeated string repeated_string_2 = 2;
+  repeated string repeated_string_3 = 3;
+  repeated string repeated_string_4 = 4;
+  repeated string repeated_string_5 = 5;
+  repeated string repeated_string_6 = 6;
+  repeated string repeated_string_7 = 7;
+  repeated string repeated_string_8 = 8;
+  repeated string repeated_string_9 = 9;
+  repeated string repeated_string_10 = 10;
+  repeated string repeated_string_11 = 11;
+  repeated string repeated_string_12 = 12;
+  repeated string repeated_string_13 = 13;
+  repeated string repeated_string_14 = 14;
+  repeated string repeated_string_15 = 15;
+  repeated string repeated_string_16 = 16;
+  repeated string repeated_string_17 = 17;
+  repeated string repeated_string_18 = 18;
+  repeated string repeated_string_19 = 19;
+  repeated string repeated_string_20 = 20;
+  repeated string repeated_string_21 = 21;
+  repeated string repeated_string_22 = 22;
+  repeated string repeated_string_23 = 23;
+  repeated string repeated_string_24 = 24;
+  repeated string repeated_string_25 = 25;
+  repeated string repeated_string_26 = 26;
+  repeated string repeated_string_27 = 27;
+  repeated string repeated_string_28 = 28;
+  repeated string repeated_string_29 = 29;
+  repeated string repeated_string_30 = 30;
+  repeated string repeated_string_31 = 31;
+  repeated string repeated_string_32 = 32;
 }

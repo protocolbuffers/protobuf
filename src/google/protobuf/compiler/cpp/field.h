@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -56,12 +33,17 @@ namespace cpp {
 // Customization points for each field codegen type. See FieldGenerator to
 // see how each of these functions is used.
 //
-// TODO(b/245791219): Make every function except the dtor in this generator
+// TODO: Make every function except the dtor in this generator
 // non-pure-virtual. A generator with no implementation should be able to
 // automatically not contribute any code to the message it is part of, as a
 // matter of clean composability.
 class FieldGeneratorBase {
  public:
+  // `GeneratorFunction` defines a subset of generator functions that may have
+  // additional optimizations or requirements such as 'uses a local `arena`
+  // variable instead of calling GetArena()'
+  enum class GeneratorFunction { kMergeFrom };
+
   FieldGeneratorBase(const FieldDescriptor* descriptor, const Options& options,
                      MessageSCCAnalyzer* scc_analyzer);
 
@@ -122,6 +104,10 @@ class FieldGeneratorBase {
   bool has_default_constexpr_constructor() const {
     return has_default_constexpr_constructor_;
   }
+
+  // Returns true if this generator requires an 'arena' parameter on the
+  // given generator function.
+  virtual bool RequiresArena(GeneratorFunction) const { return false; }
 
   virtual std::vector<io::Printer::Sub> MakeVars() const { return {}; }
 
@@ -253,6 +239,8 @@ class FieldGenerator {
   }
 
  public:
+  using GeneratorFunction = FieldGeneratorBase::GeneratorFunction;
+
   FieldGenerator(const FieldGenerator&) = delete;
   FieldGenerator& operator=(const FieldGenerator&) = delete;
   FieldGenerator(FieldGenerator&&) = default;
@@ -277,6 +265,11 @@ class FieldGenerator {
   bool is_inlined() const { return impl_->is_inlined(); }
   bool has_default_constexpr_constructor() const {
     return impl_->has_default_constexpr_constructor();
+  }
+
+  // Requirements: see FieldGeneratorBase for documentation
+  bool RequiresArena(GeneratorFunction function) const {
+    return impl_->RequiresArena(function);
   }
 
   // Prints private members needed to represent this field.
@@ -387,7 +380,7 @@ class FieldGenerator {
 
   // Generates a copy constructor
   //
-  // TODO(b/245791219): Document this properly.
+  // TODO: Document this properly.
   void GenerateCopyConstructorCode(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateCopyConstructorCode(p);
@@ -494,10 +487,10 @@ class FieldGenerator {
     impl_->GenerateIsInitialized(p);
   }
 
-  // TODO(b/245791219): Document this properly.
+  // TODO: Document this properly.
   bool IsInlined() const { return impl_->IsInlined(); }
 
-  // TODO(b/245791219): Document this properly.
+  // TODO: Document this properly.
   ArenaDtorNeeds NeedsArenaDestructor() const {
     return impl_->NeedsArenaDestructor();
   }
@@ -540,7 +533,7 @@ class FieldGeneratorTable {
 
 // Returns variables common to all fields.
 //
-// TODO(b/245791219): Make this function .cc-private.
+// TODO: Make this function .cc-private.
 std::vector<io::Printer::Sub> FieldVars(const FieldDescriptor* field,
                                         const Options& opts);
 }  // namespace cpp

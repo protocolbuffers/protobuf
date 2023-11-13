@@ -68,10 +68,18 @@ set(protobuf_HEADERS
   ${cpp_features_proto_proto_srcs}
   ${descriptor_proto_proto_srcs}
   ${plugin_proto_proto_srcs}
+  ${java_features_proto_proto_srcs}
 )
 foreach(_header ${protobuf_HEADERS})
-  string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _header ${_header})
-  get_filename_component(_extract_from "${protobuf_SOURCE_DIR}/src/${_header}" ABSOLUTE)
+  string(FIND ${_header} "${protobuf_SOURCE_DIR}/src" _find_src)
+  string(FIND ${_header} "${protobuf_SOURCE_DIR}" _find_nosrc)
+  if (_find_src GREATER -1)
+    set(_from_dir "${protobuf_SOURCE_DIR}/src")
+  elseif (_find_nosrc GREATER -1)
+    set(_from_dir "${protobuf_SOURCE_DIR}")
+  endif()
+  string(REPLACE "${_from_dir}" "" _header ${_header})
+  get_filename_component(_extract_from "${_from_dir}/${_header}" ABSOLUTE)
   get_filename_component(_extract_name ${_header} NAME)
   get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" DIRECTORY)
   install(FILES "${_extract_from}"

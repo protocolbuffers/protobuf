@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -39,6 +16,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <type_traits>
 
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
@@ -54,6 +32,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/generated_message_util.h"
@@ -113,6 +92,9 @@ void InitializeFileDescriptorDefaultInstances() {
       (InitializeFileDescriptorDefaultInstancesSlow(), std::true_type{});
   (void)init;
 #endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+}
+
+void InitializeLazyExtensionSet() {
 }
 
 bool ParseNamedEnum(const EnumDescriptor* descriptor, absl::string_view name,
@@ -408,7 +390,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
 
         case FieldDescriptor::CPPTYPE_STRING:
           switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other string reps.
+            default:  // TODO:  Support other string reps.
             case FieldOptions::STRING:
               total_size +=
                   GetRaw<RepeatedPtrField<std::string> >(message, field)
@@ -649,8 +631,8 @@ void SwapFieldHelper::SwapInlinedStrings(const Reflection* r, Message* lhs,
                                          Message* rhs,
                                          const FieldDescriptor* field) {
   // Inlined string field.
-  Arena* lhs_arena = lhs->GetArenaForAllocation();
-  Arena* rhs_arena = rhs->GetArenaForAllocation();
+  Arena* lhs_arena = lhs->GetArena();
+  Arena* rhs_arena = rhs->GetArena();
   auto* lhs_string = r->MutableRaw<InlinedStringField>(lhs, field);
   auto* rhs_string = r->MutableRaw<InlinedStringField>(rhs, field);
   uint32_t index = r->schema_.InlinedStringIndex(field);
@@ -662,10 +644,11 @@ void SwapFieldHelper::SwapInlinedStrings(const Reflection* r, Message* lhs,
   bool lhs_arena_dtor_registered = (lhs_array[0] & 0x1u) == 0;
   bool rhs_arena_dtor_registered = (rhs_array[0] & 0x1u) == 0;
   const uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
-  if (unsafe_shallow_swap || lhs_arena == rhs_arena) {
-    InlinedStringField::InternalSwap(lhs_string, lhs_arena,
-                                     lhs_arena_dtor_registered, lhs, rhs_string,
-                                     rhs_arena, rhs_arena_dtor_registered, rhs);
+  if (unsafe_shallow_swap) {
+    ABSL_DCHECK_EQ(lhs_arena, rhs_arena);
+    InlinedStringField::InternalSwap(lhs_string, lhs_arena_dtor_registered, lhs,
+                                     rhs_string, rhs_arena_dtor_registered, rhs,
+                                     lhs_arena);
   } else {
     const std::string temp = lhs_string->Get();
     lhs_string->Set(rhs_string->Get(), lhs_arena,
@@ -685,9 +668,8 @@ void SwapFieldHelper::SwapNonInlinedStrings(const Reflection* r, Message* lhs,
   if (unsafe_shallow_swap) {
     ArenaStringPtr::UnsafeShallowSwap(lhs_string, rhs_string);
   } else {
-    SwapFieldHelper::SwapArenaStringPtr(
-        lhs_string, lhs->GetArenaForAllocation(),  //
-        rhs_string, rhs->GetArenaForAllocation());
+    SwapFieldHelper::SwapArenaStringPtr(lhs_string, lhs->GetArena(),  //
+                                        rhs_string, rhs->GetArena());
   }
 }
 
@@ -719,7 +701,7 @@ void SwapFieldHelper::SwapArenaStringPtr(ArenaStringPtr* lhs, Arena* lhs_arena,
                                          ArenaStringPtr* rhs,
                                          Arena* rhs_arena) {
   if (lhs_arena == rhs_arena) {
-    ArenaStringPtr::InternalSwap(lhs, lhs_arena, rhs, rhs_arena);
+    ArenaStringPtr::InternalSwap(lhs, rhs, lhs_arena);
   } else if (lhs->IsDefault() && rhs->IsDefault()) {
     // Nothing to do.
   } else if (lhs->IsDefault()) {
@@ -770,8 +752,7 @@ void SwapFieldHelper::SwapMessageField(const Reflection* r, Message* lhs,
     std::swap(*r->MutableRaw<Message*>(lhs, field),
               *r->MutableRaw<Message*>(rhs, field));
   } else {
-    SwapMessage(r, lhs, lhs->GetArenaForAllocation(), rhs,
-                rhs->GetArenaForAllocation(), field);
+    SwapMessage(r, lhs, lhs->GetArena(), rhs, rhs->GetArena(), field);
   }
 }
 
@@ -1066,7 +1047,7 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
 void Reflection::Swap(Message* message1, Message* message2) const {
   if (message1 == message2) return;
 
-  // TODO(kenton):  Other Reflection methods should probably check this too.
+  // TODO:  Other Reflection methods should probably check this too.
   ABSL_CHECK_EQ(message1->GetReflection(), this)
       << "First argument to Swap() (of type \""
       << message1->GetDescriptor()->full_name()
@@ -1087,16 +1068,16 @@ void Reflection::Swap(Message* message1, Message* message2) const {
   // Check that both messages are in the same arena (or both on the heap). We
   // need to copy all data if not, due to ownership semantics.
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  if (message1->GetOwningArena() == nullptr ||
-      message1->GetOwningArena() != message2->GetOwningArena()) {
+  if (message1->GetArena() == nullptr ||
+      message1->GetArena() != message2->GetArena()) {
 #else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  if (message1->GetOwningArena() != message2->GetOwningArena()) {
+  if (message1->GetArena() != message2->GetArena()) {
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
     // One of the two is guaranteed to have an arena.  Switch things around
     // to guarantee that message1 has an arena.
-    Arena* arena = message1->GetOwningArena();
+    Arena* arena = message1->GetArena();
     if (arena == nullptr) {
-      arena = message2->GetOwningArena();
+      arena = message2->GetArena();
       std::swap(message1, message2);  // Swapping names for pointers!
     }
 
@@ -1121,7 +1102,7 @@ void Reflection::SwapFieldsImpl(
     const std::vector<const FieldDescriptor*>& fields) const {
   if (message1 == message2) return;
 
-  // TODO(kenton):  Other Reflection methods should probably check this too.
+  // TODO:  Other Reflection methods should probably check this too.
   ABSL_CHECK_EQ(message1->GetReflection(), this)
       << "First argument to SwapFields() (of type \""
       << message1->GetDescriptor()->full_name()
@@ -1176,8 +1157,7 @@ void Reflection::SwapFieldsImpl(
           if (field->options().ctype() == FieldOptions::STRING &&
               IsInlined(field)) {
             ABSL_DCHECK(!unsafe_shallow_swap ||
-                        message1->GetArenaForAllocation() ==
-                            message2->GetArenaForAllocation());
+                        message1->GetArena() == message2->GetArena());
             SwapInlinedStringDonated(message1, message2, field);
           }
         }
@@ -1195,8 +1175,7 @@ void Reflection::SwapFields(
 void Reflection::UnsafeShallowSwapFields(
     Message* message1, Message* message2,
     const std::vector<const FieldDescriptor*>& fields) const {
-  ABSL_DCHECK_EQ(message1->GetArenaForAllocation(),
-                 message2->GetArenaForAllocation());
+  ABSL_DCHECK_EQ(message1->GetArena(), message2->GetArena());
 
   SwapFieldsImpl<true>(message1, message2, fields);
 }
@@ -1204,7 +1183,7 @@ void Reflection::UnsafeShallowSwapFields(
 void Reflection::UnsafeArenaSwapFields(
     Message* lhs, Message* rhs,
     const std::vector<const FieldDescriptor*>& fields) const {
-  ABSL_DCHECK_EQ(lhs->GetArenaForAllocation(), rhs->GetArenaForAllocation());
+  ABSL_DCHECK_EQ(lhs->GetArena(), rhs->GetArena());
   UnsafeShallowSwapFields(lhs, rhs, fields);
 }
 
@@ -1228,7 +1207,7 @@ bool Reflection::HasField(const Message& message,
 }
 
 void Reflection::UnsafeArenaSwap(Message* lhs, Message* rhs) const {
-  ABSL_DCHECK_EQ(lhs->GetOwningArena(), rhs->GetOwningArena());
+  ABSL_DCHECK_EQ(lhs->GetArena(), rhs->GetArena());
   InternalSwap(lhs, rhs);
 }
 
@@ -1421,7 +1400,7 @@ void Reflection::ClearField(Message* message,
           if (schema_.HasBitIndex(field) == static_cast<uint32_t>(-1)) {
             // Proto3 does not have has-bits and we need to set a message field
             // to nullptr in order to indicate its un-presence.
-            if (message->GetArenaForAllocation() == nullptr) {
+            if (message->GetArena() == nullptr) {
               delete *MutableRaw<Message*>(message, field);
             }
             *MutableRaw<Message*>(message, field) = nullptr;
@@ -1450,7 +1429,7 @@ void Reflection::ClearField(Message* message,
 
       case FieldDescriptor::CPPTYPE_STRING: {
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
             MutableRaw<RepeatedPtrField<std::string> >(message, field)->Clear();
             break;
@@ -1500,7 +1479,7 @@ void Reflection::RemoveLast(Message* message,
 
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
             MutableRaw<RepeatedPtrField<std::string> >(message, field)
                 ->RemoveLast();
@@ -1541,7 +1520,7 @@ Message* Reflection::ReleaseLast(Message* message,
     }
   }
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  return MaybeForceCopy(message->GetArenaForAllocation(), released);
+  return MaybeForceCopy(message->GetArena(), released);
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -1899,7 +1878,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           if (!HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
             *MutableField<absl::Cord*>(message, field) =
-                Arena::Create<absl::Cord>(message->GetArenaForAllocation());
+                Arena::Create<absl::Cord>(message->GetArena());
           }
           *(*MutableField<absl::Cord*>(message, field)) = value;
           break;
@@ -1915,7 +1894,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
           MutableField<InlinedStringField>(message, field)
-              ->Set(value, message->GetArenaForAllocation(),
+              ->Set(value, message->GetArena(),
                     IsInlinedStringDonated(*message, field), states, mask,
                     message);
           break;
@@ -1930,7 +1909,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           MutableField<ArenaStringPtr>(message, field)->InitDefault();
         }
         MutableField<ArenaStringPtr>(message, field)
-            ->Set(std::move(value), message->GetArenaForAllocation());
+            ->Set(std::move(value), message->GetArena());
         break;
       }
     }
@@ -1951,7 +1930,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           if (!HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
             *MutableField<absl::Cord*>(message, field) =
-                Arena::Create<absl::Cord>(message->GetArenaForAllocation());
+                Arena::Create<absl::Cord>(message->GetArena());
           }
           *(*MutableField<absl::Cord*>(message, field)) = value;
         } else {
@@ -1975,12 +1954,12 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           uint32_t* states =
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
-          str->Set(std::string(value), message->GetArenaForAllocation(),
+          str->Set(std::string(value), message->GetArena(),
                    IsInlinedStringDonated(*message, field), states, mask,
                    message);
         } else {
           auto* str = MutableField<ArenaStringPtr>(message, field);
-          str->Set(std::string(value), message->GetArenaForAllocation());
+          str->Set(std::string(value), message->GetArena());
         }
         break;
       }
@@ -1996,7 +1975,7 @@ std::string Reflection::GetRepeatedString(const Message& message,
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
+      default:  // TODO:  Support other string reps.
       case FieldOptions::STRING:
         return GetRepeatedPtrField<std::string>(message, field, index);
     }
@@ -2012,7 +1991,7 @@ const std::string& Reflection::GetRepeatedStringReference(
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
+      default:  // TODO:  Support other string reps.
       case FieldOptions::STRING:
         return GetRepeatedPtrField<std::string>(message, field, index);
     }
@@ -2029,7 +2008,7 @@ void Reflection::SetRepeatedString(Message* message,
                                                     std::move(value));
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
+      default:  // TODO:  Support other string reps.
       case FieldOptions::STRING:
         MutableRepeatedField<std::string>(message, field, index)
             ->assign(std::move(value));
@@ -2047,7 +2026,7 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
                                             std::move(value), field);
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other string reps.
+      default:  // TODO:  Support other string reps.
       case FieldOptions::STRING:
         AddField<std::string>(message, field)->assign(std::move(value));
         break;
@@ -2285,7 +2264,7 @@ Message* Reflection::MutableMessage(Message* message,
         ClearOneof(message, field->containing_oneof());
         result_holder = MutableField<Message*>(message, field);
         const Message* default_message = GetDefaultMessageInstance(field);
-        *result_holder = default_message->New(message->GetArenaForAllocation());
+        *result_holder = default_message->New(message->GetArena());
       }
     } else {
       SetBit(message, field);
@@ -2293,7 +2272,7 @@ Message* Reflection::MutableMessage(Message* message,
 
     if (*result_holder == nullptr) {
       const Message* default_message = GetDefaultMessageInstance(field);
-      *result_holder = default_message->New(message->GetArenaForAllocation());
+      *result_holder = default_message->New(message->GetArena());
     }
     result = *result_holder;
     return result;
@@ -2327,7 +2306,7 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
       SetBit(message, field);
     }
     Message** sub_message_holder = MutableRaw<Message*>(message, field);
-    if (message->GetArenaForAllocation() == nullptr) {
+    if (message->GetArena() == nullptr) {
       delete *sub_message_holder;
     }
     *sub_message_holder = sub_message;
@@ -2336,21 +2315,19 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
 
 void Reflection::SetAllocatedMessage(Message* message, Message* sub_message,
                                      const FieldDescriptor* field) const {
-  ABSL_DCHECK(
-      sub_message == nullptr || sub_message->GetOwningArena() == nullptr ||
-      sub_message->GetOwningArena() == message->GetArenaForAllocation());
+  ABSL_DCHECK(sub_message == nullptr || sub_message->GetArena() == nullptr ||
+              sub_message->GetArena() == message->GetArena());
 
   // If message and sub-message are in different memory ownership domains
   // (different arenas, or one is on heap and one is not), then we may need to
   // do a copy.
   if (sub_message != nullptr &&
-      sub_message->GetOwningArena() != message->GetArenaForAllocation()) {
-    if (sub_message->GetOwningArena() == nullptr &&
-        message->GetArenaForAllocation() != nullptr) {
+      sub_message->GetArena() != message->GetArena()) {
+    if (sub_message->GetArena() == nullptr && message->GetArena() != nullptr) {
       // Case 1: parent is on an arena and child is heap-allocated. We can add
       // the child to the arena's Own() list to free on arena destruction, then
       // set our pointer.
-      message->GetArenaForAllocation()->Own(sub_message);
+      message->GetArena()->Own(sub_message);
       UnsafeArenaSetAllocatedMessage(message, sub_message, field);
     } else {
       // Case 2: all other cases. We need to make a copy. MutableMessage() will
@@ -2399,9 +2376,9 @@ Message* Reflection::ReleaseMessage(Message* message,
                                     MessageFactory* factory) const {
   Message* released = UnsafeArenaReleaseMessage(message, field, factory);
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  released = MaybeForceCopy(message->GetArenaForAllocation(), released);
+  released = MaybeForceCopy(message->GetArena(), released);
 #endif  // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (message->GetArenaForAllocation() != nullptr && released != nullptr) {
+  if (message->GetArena() != nullptr && released != nullptr) {
     Message* copy_from_arena = released->New();
     copy_from_arena->CopyFrom(*released);
     released = copy_from_arena;
@@ -2480,7 +2457,7 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
       } else {
         prototype = &repeated->Get<GenericTypeHandler<Message> >(0);
       }
-      result = prototype->New(message->GetArenaForAllocation());
+      result = prototype->New(message->GetArena());
       // We can guarantee here that repeated and result are either both heap
       // allocated or arena owned. So it is safe to call the unsafe version
       // of AddAllocated.
@@ -2700,7 +2677,7 @@ void Reflection::PrepareSplitMessageForWrite(Message* message) const {
   const void* default_split = GetSplitField(schema_.default_instance_);
   if (*split == default_split) {
     uint32_t size = schema_.SizeofSplit();
-    Arena* arena = message->GetArenaForAllocation();
+    Arena* arena = message->GetArena();
     *split = (arena == nullptr) ? ::operator new(size)
                                 : arena->AllocateAligned(size);
     memcpy(*split, default_split, size);
@@ -2738,7 +2715,7 @@ Type* Reflection::MutableRawNonOneof(Message* message,
   if (SplitFieldHasExtraIndirection(field)) {
     return AllocIfDefault(field,
                           *GetPointerAtOffset<Type*>(*split, field_offset),
-                          message->GetArenaForAllocation());
+                          message->GetArena());
   }
   return GetPointerAtOffset<Type>(*split, field_offset);
 }
@@ -2755,7 +2732,7 @@ Type* Reflection::MutableRaw(Message* message,
   if (SplitFieldHasExtraIndirection(field)) {
     return AllocIfDefault(field,
                           *GetPointerAtOffset<Type*>(*split, field_offset),
-                          message->GetArenaForAllocation());
+                          message->GetArena());
   }
   return GetPointerAtOffset<Type>(*split, field_offset);
 }
@@ -2836,8 +2813,8 @@ inline void ClearInlinedStringDonated(uint32_t index, uint32_t* array) {
 
 void Reflection::SwapInlinedStringDonated(Message* lhs, Message* rhs,
                                           const FieldDescriptor* field) const {
-  Arena* lhs_arena = lhs->GetArenaForAllocation();
-  Arena* rhs_arena = rhs->GetArenaForAllocation();
+  Arena* lhs_arena = lhs->GetArena();
+  Arena* rhs_arena = rhs->GetArena();
   // If arenas differ, inined string fields are swapped by copying values.
   // Donation status should not be swapped.
   if (lhs_arena != rhs_arena) {
@@ -2997,13 +2974,13 @@ void Reflection::ClearOneof(Message* message,
     ClearField(message, oneof_descriptor->field(0));
     return;
   }
-  // TODO(jieluo): Consider to cache the unused object instead of deleting
+  // TODO: Consider to cache the unused object instead of deleting
   // it. It will be much faster if an application switches a lot from
   // a few oneof fields.  Time/space tradeoff
   uint32_t oneof_case = GetOneofCase(*message, oneof_descriptor);
   if (oneof_case > 0) {
     const FieldDescriptor* field = descriptor_->FindFieldByNumber(oneof_case);
-    if (message->GetArenaForAllocation() == nullptr) {
+    if (message->GetArena() == nullptr) {
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (internal::cpp::EffectiveStringCType(field)) {
@@ -3218,21 +3195,20 @@ static uint32_t AlignTo(uint32_t v) {
 }
 
 static internal::TailCallParseFunc GetFastParseFunction(
-    absl::string_view func_name) {
-#define PROTOBUF_TC_PARSE_FUNCTION_X(value) \
-  {"::_pbi::TcParser::" #value, internal::TcParser::value},
-  static const auto* const map =
-      new absl::flat_hash_map<absl::string_view, internal::TailCallParseFunc>{
-          PROTOBUF_TC_PARSE_FUNCTION_LIST};
+    internal::TcParseFunction func) {
+#define PROTOBUF_TC_PARSE_FUNCTION_X(value) internal::TcParser::value,
+  static constexpr internal::TailCallParseFunc kFuncs[] = {
+      {}, PROTOBUF_TC_PARSE_FUNCTION_LIST};
 #undef PROTOBUF_TC_PARSE_FUNCTION_X
-  auto it = map->find(func_name);
-  if (it == map->end()) {
-    ABSL_DLOG(FATAL) << "Failed to find function: " << func_name;
+  const int index = static_cast<int>(func);
+  if (index < 0 || index >= std::end(kFuncs) - std::begin(kFuncs) ||
+      kFuncs[index] == nullptr) {
+    ABSL_DLOG(FATAL) << "Failed to find function: " << static_cast<int>(func);
     // Let's not crash in opt, just in case.
     // MiniParse is always a valid parser.
     return &internal::TcParser::MiniParse;
   }
-  return it->second;
+  return kFuncs[index];
 }
 
 const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
@@ -3246,8 +3222,19 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
   // `operator delete` unconditionally.
   void* p = ::operator new(sizeof(Table));
   auto* full_table = ::new (p)
-      Table{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr},
+      Table{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+             ,
+             nullptr
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+            },
             {{{&internal::TcParser::ReflectionParseLoop, {}}}}};
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+  // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
+  // branches. Here we don't know which field is the hottest, so set the pointer
+  // to itself to avoid nullptr.
+  full_table->header.to_prefetch = &full_table->header;
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   ABSL_DCHECK_EQ(static_cast<void*>(&full_table->header),
                  static_cast<void*>(full_table));
   return &full_table->header;
@@ -3259,11 +3246,11 @@ void Reflection::PopulateTcParseFastEntries(
   for (const auto& fast_field : table_info.fast_path_fields) {
     if (auto* nonfield = fast_field.AsNonField()) {
       // No field, but still a special entry.
-      *fast_entries++ = {GetFastParseFunction(nonfield->func_name),
+      *fast_entries++ = {GetFastParseFunction(nonfield->func),
                          {nonfield->coded_tag, nonfield->nonfield_info}};
     } else if (auto* as_field = fast_field.AsField()) {
       *fast_entries++ = {
-          GetFastParseFunction(as_field->func_name),
+          GetFastParseFunction(as_field->func),
           {as_field->coded_tag, as_field->hasbit_idx, as_field->aux_idx,
            static_cast<uint16_t>(schema_.GetFieldOffset(as_field->field))}};
     } else {
@@ -3440,6 +3427,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       {
           /* is_lite */ false,
           /* uses_codegen */ false,
+          /* should_profile_driven_cluster_aux_table */ false,
       },
       ReflectionOptionProvider(*this), has_bit_indices, inlined_string_indices);
 
@@ -3476,7 +3464,18 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       static_cast<uint16_t>(table_info.aux_entries.size()),
       aux_offset,
       schema_.default_instance_,
-      &internal::TcParser::ReflectionFallback};
+      &internal::TcParser::ReflectionFallback
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+      ,
+      nullptr
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  };
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+  // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
+  // branches. Here we don't know which field is the hottest, so set the pointer
+  // to itself to avoid nullptr.
+  res->to_prefetch = res;
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
 
   // Now copy the rest of the payloads
   PopulateTcParseFastEntries(table_info, res->fast_entry(0));
@@ -3511,7 +3510,7 @@ ReflectionSchema MigrationToReflectionSchema(
   // First 9 offsets are offsets to the special fields. The following offsets
   // are the proto fields.
   //
-  // TODO(congliu): Find a way to not encode sizeof_split_ in offsets.
+  // TODO: Find a way to not encode sizeof_split_ in offsets.
   result.offsets_ = offsets + migration_schema.offsets_index + 8;
   result.has_bit_indices_ = offsets + migration_schema.has_bit_indices_index;
   result.has_bits_offset_ = offsets[migration_schema.offsets_index + 0];
@@ -3688,6 +3687,7 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   // Reflection refers to the default fields so make sure they are initialized.
   internal::InitProtobufDefaults();
   internal::InitializeFileDescriptorDefaultInstances();
+  internal::InitializeLazyExtensionSet();
 
   // Ensure all dependent descriptors are registered to the generated descriptor
   // pool and message factory.

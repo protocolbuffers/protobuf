@@ -1,33 +1,10 @@
 #! /usr/bin/env python
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 #
 # See README for usage instructions.
 
@@ -50,6 +27,7 @@ from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.build_py import build_py as _build_py
 from packaging import version
 
+
 # Find the Protocol Compiler.
 if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
   protoc = os.environ['PROTOC']
@@ -57,9 +35,9 @@ elif os.path.exists('../bazel-bin/protoc'):
   protoc = '../bazel-bin/protoc'
 elif os.path.exists('../bazel-bin/protoc.exe'):
   protoc = '../bazel-bin/protoc.exe'
-elif os.path.exists('protoc'):
+elif os.path.exists('../protoc'):
   protoc = '../protoc'
-elif os.path.exists('protoc.exe'):
+elif os.path.exists('../protoc.exe'):
   protoc = '../protoc.exe'
 elif os.path.exists('../vsprojects/Debug/protoc.exe'):
   protoc = '../vsprojects/Debug/protoc.exe'
@@ -219,7 +197,7 @@ def GetOptionFromArgv(option_str):
 
 
 def _GetFlagValues(flag_long, flag_short):
-  """Searches sys.argv for distutils-style flags and yields values."""
+  """Searches sys.argv for setuptools-style flags and yields values."""
 
   expect_value = flag_long.endswith('=')
   flag_res = [re.compile(r'--?%s(=(.*))?' %
@@ -349,8 +327,10 @@ if __name__ == '__main__':
       if mac_target and (version.parse(mac_target) < version.parse('10.9.0')):
         os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
         os.environ['_PYTHON_HOST_PLATFORM'] = re.sub(
-            r'macosx-[0-9]+\.[0-9]+-(.+)', r'macosx-10.9-\1',
-            sysconfig.get_platform())
+            r'macosx-[0-9]+\.[0-9]+-(.+)',
+            r'macosx-10.9-\1',
+            sysconfig.get_platform(),
+        )
 
     # https://github.com/Theano/Theano/issues/4926
     if sys.platform == 'win32':

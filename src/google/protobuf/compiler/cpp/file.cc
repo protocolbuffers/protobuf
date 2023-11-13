@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -52,6 +29,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -60,6 +38,7 @@
 #include "google/protobuf/compiler/cpp/service.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -91,7 +70,7 @@ absl::flat_hash_map<absl::string_view, std::string> FileVars(
   };
 }
 
-// TODO(b/203101078): remove pragmas that suppresses uninitialized warnings when
+// TODO: remove pragmas that suppresses uninitialized warnings when
 // clang bug is fixed.
 void MuteWuninitialized(io::Printer* p) {
   p->Emit(R"(
@@ -109,154 +88,6 @@ void UnmuteWuninitialized(io::Printer* p) {
     #endif  // __llvm__
   )");
 }
-
-// TopologicalSortMessagesInFile topologically sorts and returns a vector of
-// proto descriptors defined in the file provided as input.  The underlying
-// graph is defined using dependency relationship between protos.  For example,
-// if proto A contains proto B as a member, then proto B would be ordered before
-// proto A in a topological ordering, assuming there is no mutual dependence
-// between the two protos.  The topological order is used to emit proto
-// declarations so that a proto is declared after all the protos it is dependent
-// on have been declared (again assuming no mutual dependence).  This is needed
-// in cases where we may declare proto B as a member of proto A using an object,
-// instead of a pointer.
-//
-// The proto dependencey graph can have cycles.  So instead of directly working
-// with protos, we compute strong connected components (SCCs) composed of protos
-// with mutual dependence.  The dependency graph on SCCs is a directed acyclic
-// graph (DAG) and therefore a topological order can be computed for it i.e. an
-// order where an SCC is ordered after all other SCCs it is dependent on have
-// been ordered.
-//
-// The function below first constructs the SCC graph and then computes a
-// deterministic topological order for the graph.
-//
-// For computing the SCC graph, we follow the following steps:
-// 1. Collect the descriptors for the messages in the file.
-// 2. Construct a map for descriptor to SCC mapping.
-// 3. Construct a map for dependence between SCCs, referred to as
-// child_to_parent_scc_map below.  This map constructed by running a BFS on the
-// SCCs.
-//
-// For computing a deterministic topological order on the graph computed in step
-// 3 above, we do the following:
-// 1. Since the graph on SCCs is a DAG, therefore there will be at least one SCC
-// that does not depend on other SCCs.  We first construct a list of all such
-// SCCs.
-// 2. Next we run a BFS starting with the list of SCCs computed in step 1.  For
-// each SCC, we track the number of the SCC it is dependent on and the number of
-// those SCC that have been ordered.  Once all the SCCs an SCC is dependent on
-// have been ordered, this SCC is added to list of SCCs that are to be ordered
-// next.
-// 3. Within an SCC, the descriptors are ordered on the basis of the full_name()
-// of the descriptors.
-std::vector<const Descriptor*> TopologicalSortMessagesInFile(
-    const FileDescriptor* file, MessageSCCAnalyzer& scc_analyzer) {
-  // Collect the messages defined in this file.
-  std::vector<const Descriptor*> messages_in_file = FlattenMessagesInFile(file);
-  if (messages_in_file.empty()) return {};
-  // Populate the map from the descriptor to the SCC to which the descriptor
-  // belongs.
-  absl::flat_hash_map<const Descriptor*, const SCC*> descriptor_to_scc_map;
-  descriptor_to_scc_map.reserve(messages_in_file.size());
-  for (const Descriptor* d : messages_in_file) {
-    descriptor_to_scc_map.emplace(d, scc_analyzer.GetSCC(d));
-  }
-  ABSL_DCHECK(messages_in_file.size() == descriptor_to_scc_map.size())
-      << "messages_in_file has duplicate messages!";
-  // Each parent SCC has information about the child SCCs i.e. SCCs for fields
-  // that are contained in the protos that belong to the parent SCC.  Use this
-  // information to construct the inverse map from child SCC to parent SCC.
-  absl::flat_hash_map<const SCC*, absl::flat_hash_set<const SCC*>>
-      child_to_parent_scc_map;
-  // For recording the number of edges from each SCC to other SCCs in the
-  // forward map.
-  absl::flat_hash_map<const SCC*, int> scc_to_outgoing_edges_map;
-  std::queue<const SCC*> sccs_to_process;
-  for (const auto& p : descriptor_to_scc_map) {
-    sccs_to_process.push(p.second);
-  }
-  // Run a BFS to fill the two data structures: child_to_parent_scc_map and
-  // scc_to_outgoing_edges_map.
-  while (!sccs_to_process.empty()) {
-    const SCC* scc = sccs_to_process.front();
-    sccs_to_process.pop();
-    auto& count = scc_to_outgoing_edges_map[scc];
-    for (const auto& child : scc->children) {
-      // Test whether this child has been seen thus far.  We do not know if the
-      // children SCC vector contains unique children SCC.
-      auto& parent_set = child_to_parent_scc_map[child];
-      if (parent_set.empty()) {
-        // Just added.
-        sccs_to_process.push(child);
-      }
-      auto ret = parent_set.insert(scc);
-      if (ret.second) {
-        ++count;
-      }
-    }
-  }
-  std::vector<const SCC*> next_scc_q;
-  // Find out the SCCs that do not have an outgoing edge i.e. the protos in this
-  // SCC do not depend on protos other than the ones in this SCC.
-  for (const auto& p : scc_to_outgoing_edges_map) {
-    if (p.second == 0) {
-      next_scc_q.push_back(p.first);
-    }
-  }
-  ABSL_DCHECK(!next_scc_q.empty()) << "No independent components!";
-  // Topologically sort the SCCs.
-  // If an SCC no longer has an outgoing edge i.e. all the SCCs it depends on
-  // have been ordered, then this SCC is now a candidate for ordering.
-  std::vector<const Descriptor*> sorted_messages;
-  while (!next_scc_q.empty()) {
-    std::vector<const SCC*> current_scc_q;
-    current_scc_q.swap(next_scc_q);
-    // SCCs present in the current_scc_q are topologically equivalent to each
-    // other.  Therefore they can be added to the output in any order.  We sort
-    // these SCCs by the full_name() of the first descriptor that belongs to the
-    // SCC.  This works well since the descriptors in each SCC are sorted by
-    // full_name() and also that a descriptor can be part of only one SCC.
-    std::sort(current_scc_q.begin(), current_scc_q.end(),
-              [](const SCC* a, const SCC* b) {
-                ABSL_DCHECK(!a->descriptors.empty()) << "No descriptors!";
-                ABSL_DCHECK(!b->descriptors.empty()) << "No descriptors!";
-                const Descriptor* ad = a->descriptors[0];
-                const Descriptor* bd = b->descriptors[0];
-                return ad->full_name() < bd->full_name();
-              });
-    while (!current_scc_q.empty()) {
-      const SCC* scc = current_scc_q.back();
-      current_scc_q.pop_back();
-      // Messages in an SCC are already sorted on full_name().  So we can emit
-      // them right away.
-      for (const Descriptor* d : scc->descriptors) {
-        // Only push messages that are defined in the file.
-        if (descriptor_to_scc_map.contains(d)) {
-          sorted_messages.push_back(d);
-        }
-      }
-      // Find all the SCCs that are dependent on the current SCC.
-      const auto& parents = child_to_parent_scc_map.find(scc);
-      if (parents == child_to_parent_scc_map.end()) continue;
-      for (const SCC* parent : parents->second) {
-        auto it = scc_to_outgoing_edges_map.find(parent);
-        ABSL_CHECK(it != scc_to_outgoing_edges_map.end());
-        ABSL_CHECK(it->second > 0);
-        // Reduce the dependency count for the SCC.  In case the dependency
-        // count reaches 0, add the SCC to the list of SCCs to be ordered next.
-        it->second--;
-        if (it->second == 0) {
-          next_scc_q.push_back(parent);
-        }
-      }
-    }
-  }
-  for (const auto& p : scc_to_outgoing_edges_map) {
-    ABSL_DCHECK(p.second == 0) << "SCC left behind!";
-  }
-  return sorted_messages;
-}
 }  // namespace
 
 bool FileGenerator::ShouldSkipDependencyImports(
@@ -269,7 +100,7 @@ bool FileGenerator::ShouldSkipDependencyImports(
   // Skip feature imports, which are a visible (but non-functional) deviation
   // between editions and legacy syntax.
   if (options_.strip_nonfunctional_codegen &&
-      dep->name() == "third_party/protobuf/cpp_features.proto") {
+      IsKnownFeatureProto(dep->name())) {
     return true;
   }
 
@@ -331,16 +162,22 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
                                  std::function<void()> cb) {
   auto v = p->WithVars(FileVars(file_, options_));
   auto guard = IncludeGuard(file_, file_type, options_);
+  p->Print(
+      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
+      "// source: $filename$\n");
+  if (options_.opensource_runtime) {
+    p->Print("// Protobuf C++ Version: $protobuf_cpp_version$\n",
+             "protobuf_cpp_version", PROTOBUF_CPP_VERSION_STRING);
+  }
+  p->Print("\n");
   p->Emit({{"cb", cb}, {"guard", guard}}, R"(
-    // Generated by the protocol buffer compiler.  DO NOT EDIT!
-    // source: $filename$
-
     #ifndef $guard$
     #define $guard$
 
     #include <limits>
     #include <string>
     #include <type_traits>
+    #include <utility>
 
     $cb$;
 
@@ -626,20 +463,28 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
   }
 
   absl::StrAppend(&target_basename, options_.proto_h ? ".proto.h" : ".pb.h");
+  p->Print(
+      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
+      "// source: $filename$\n");
+  if (options_.opensource_runtime) {
+    p->Print("// Protobuf C++ Version: $protobuf_cpp_version$\n",
+             "protobuf_cpp_version", PROTOBUF_CPP_VERSION_STRING);
+  }
+  p->Print("\n");
   p->Emit({{"h_include", CreateHeaderInclude(target_basename, file_)}},
           R"(
-        // Generated by the protocol buffer compiler.  DO NOT EDIT!
-        // source: $filename$
-
         #include $h_include$
 
         #include <algorithm>
       )");
 
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
-  // TODO(gerbens) This is to include parse_context.h, we need a better way
+  // TODO This is to include parse_context.h, we need a better way
   IncludeFile("third_party/protobuf/extension_set.h", p);
   IncludeFile("third_party/protobuf/wire_format_lite.h", p);
+  if (ShouldVerify(file_, options_, &scc_analyzer_)) {
+    IncludeFile("third_party/protobuf/wire_format_verify.h", p);
+  }
 
   // Unknown fields implementation in lite mode uses StringOutputStream
   if (!UseUnknownFieldSet(file_, options_) && !message_generators_.empty()) {
@@ -665,7 +510,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
       if (ShouldSkipDependencyImports(dep)) continue;
 
       std::string basename = StripProto(dep->name());
-      if (IsBootstrapProto(options_, file_)) {
+      if (options_.bootstrap) {
         GetBootstrapBasename(options_, basename, &basename);
       }
       p->Emit({{"name", basename}}, R"(
@@ -921,7 +766,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
   GenerateSourceIncludes(p);
   GenerateSourcePrelude(p);
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     MuteWuninitialized(p);
   }
 
@@ -955,7 +800,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
     message_generators_[idx]->GenerateSourceInProto2Namespace(p);
   }
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     UnmuteWuninitialized(p);
   }
 
@@ -1001,7 +846,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   GetCrossFileReferencesForFile(file_, &refs);
   GenerateInternalForwardDeclarations(refs, p);
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     MuteWuninitialized(p);
   }
 
@@ -1070,7 +915,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     // @@protoc_insertion_point(global_scope)
   )cc");
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     UnmuteWuninitialized(p);
   }
 
@@ -1143,13 +988,14 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
              }},
         },
         R"cc(
-          const ::uint32_t $tablename$::offsets[] PROTOBUF_SECTION_VARIABLE(
-              protodesc_cold) = {
-              $offsets$,
+          const ::uint32_t
+              $tablename$::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+                  protodesc_cold) = {
+                  $offsets$,
           };
 
           static const ::_pbi::MigrationSchema
-              schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+              schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
                   $schemas$,
           };
 
@@ -1224,7 +1070,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
           }
         }}},
       R"cc(
-        const char $desc_name$[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+        const char $desc_name$[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+            protodesc_cold) = {
             $encoded_file_proto$,
         };
       )cc");
@@ -1415,18 +1262,14 @@ class FileGenerator::ForwardDeclarations {
         // However, it increases the size of the pb.cc translation units so it
         // is a tradeoff.
         p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
-          template <>
-          $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(Arena*);
+          extern template void* Arena::DefaultConstruct<$class$>(Arena*);
         )cc");
-#ifdef PROTOBUF_EXPLICIT_CONSTRUCTORS
         if (!IsMapEntryMessage(c.second)) {
           p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
-            template <>
-            $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(
-                Arena*, const $class$& from);
+            extern template void* Arena::CopyConstruct<$class$>(Arena*,
+                                                                const void*);
           )cc");
         }
-#endif  // PROTOBUF_EXPLICIT_CONSTRUCTORS
       }
     }
   }
@@ -1555,8 +1398,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
   IncludeFile("third_party/protobuf/arena.h", p);
   IncludeFile("third_party/protobuf/arenastring.h", p);
-  if ((options_.force_inline_string || options_.profile_driven_inline_string) &&
-      !options_.opensource_runtime) {
+  if (IsStringInliningEnabled(options_)) {
     IncludeFile("third_party/protobuf/inlined_string_field.h", p);
   }
   if (HasSimpleBaseClasses(file_, options_)) {
@@ -1656,7 +1498,7 @@ void FileGenerator::GenerateDependencyIncludes(io::Printer* p) {
     }
 
     std::string basename = StripProto(dep->name());
-    if (IsBootstrapProto(options_, file_)) {
+    if (options_.bootstrap) {
       GetBootstrapBasename(options_, basename, &basename);
     }
 
@@ -1675,7 +1517,7 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(io::Printer* p) {
   // The TableStruct is also outputted in weak_message_field.cc, because the
   // weak fields must refer to table struct but cannot include the header.
   // Also it annotates extra weak attributes.
-  // TODO(gerbens) make sure this situation is handled better.
+  // TODO make sure this situation is handled better.
   p->Emit(R"cc(
     // Internal implementation detail -- do not use these members.
     struct $dllexport_decl $$tablename$ {
@@ -1736,7 +1578,7 @@ void FileGenerator::GenerateExtensionIdentifiers(io::Printer* p) {
 }
 
 void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* p) {
-  // TODO(gerbens) remove pragmas when gcc is no longer used. Current version
+  // TODO remove pragmas when gcc is no longer used. Current version
   // of gcc fires a bogus error when compiled with strict-aliasing.
   p->Emit(R"(
       #ifdef __GNUC__

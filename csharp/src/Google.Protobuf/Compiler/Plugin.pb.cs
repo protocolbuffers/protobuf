@@ -60,6 +60,7 @@ namespace Google.Protobuf.Compiler {
   /// <summary>
   /// The version number of protocol compiler.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Version : pb::IMessage<Version>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -428,6 +429,7 @@ namespace Google.Protobuf.Compiler {
   /// <summary>
   /// An encoded CodeGeneratorRequest is written to the plugin's stdin.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CodeGeneratorRequest : pb::IMessage<CodeGeneratorRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -795,6 +797,7 @@ namespace Google.Protobuf.Compiler {
   /// <summary>
   /// The plugin writes an encoded CodeGeneratorResponse to stdout.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CodeGeneratorResponse : pb::IMessage<CodeGeneratorResponse>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1107,6 +1110,7 @@ namespace Google.Protobuf.Compiler {
       /// <summary>
       /// Represents a single generated file.
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class File : pb::IMessage<File>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage

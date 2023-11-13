@@ -1,40 +1,21 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_COMPILER_RUST_CONTEXT_H__
 #define GOOGLE_PROTOBUF_COMPILER_RUST_CONTEXT_H__
+
+#include <algorithm>
+#include <vector>
 
 #include "absl/log/absl_log.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -66,6 +47,26 @@ struct Options {
   static absl::StatusOr<Options> Parse(absl::string_view param);
 };
 
+class RustGeneratorContext {
+ public:
+  explicit RustGeneratorContext(
+      const std::vector<const FileDescriptor*>* files_in_current_crate)
+      : files_in_current_crate_(*files_in_current_crate) {}
+
+  const FileDescriptor* primary_file() const {
+    return files_in_current_crate_.front();
+  }
+
+  bool is_file_in_current_crate(const FileDescriptor* f) const {
+    return std::find(files_in_current_crate_.begin(),
+                     files_in_current_crate_.end(),
+                     f) != files_in_current_crate_.end();
+  }
+
+ private:
+  const std::vector<const FileDescriptor*>& files_in_current_crate_;
+};
+
 // A context for generating a particular kind of definition.
 // This type acts as an options struct (as in go/totw/173) for most of the
 // generator.
@@ -75,14 +76,22 @@ struct Options {
 template <typename Descriptor>
 class Context {
  public:
-  Context(const Options* opts, const Descriptor* desc, io::Printer* printer)
-      : opts_(opts), desc_(desc), printer_(printer) {}
+  Context(const Options* opts, const Descriptor* desc,
+          const RustGeneratorContext* rust_generator_context,
+          io::Printer* printer)
+      : opts_(opts),
+        desc_(desc),
+        rust_generator_context_(rust_generator_context),
+        printer_(printer) {}
 
   Context(const Context&) = default;
   Context& operator=(const Context&) = default;
 
   const Descriptor& desc() const { return *desc_; }
   const Options& opts() const { return *opts_; }
+  const RustGeneratorContext& generator_context() const {
+    return *rust_generator_context_;
+  }
 
   bool is_cpp() const { return opts_->kernel == Kernel::kCpp; }
   bool is_upb() const { return opts_->kernel == Kernel::kUpb; }
@@ -93,16 +102,16 @@ class Context {
   // Creates a new context over a different descriptor.
   template <typename D>
   Context<D> WithDesc(const D& desc) const {
-    return Context<D>(opts_, &desc, printer_);
+    return Context<D>(opts_, &desc, rust_generator_context_, printer_);
   }
 
   template <typename D>
   Context<D> WithDesc(const D* desc) const {
-    return Context<D>(opts_, desc, printer_);
+    return Context<D>(opts_, desc, rust_generator_context_, printer_);
   }
 
   Context WithPrinter(io::Printer* printer) const {
-    return Context(opts_, desc_, printer);
+    return Context(opts_, desc_, rust_generator_context_, printer);
   }
 
   // Forwards to Emit(), which will likely be called all the time.
@@ -120,6 +129,7 @@ class Context {
  private:
   const Options* opts_;
   const Descriptor* desc_;
+  const RustGeneratorContext* rust_generator_context_;
   io::Printer* printer_;
 };
 }  // namespace rust

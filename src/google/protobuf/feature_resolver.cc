@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/feature_resolver.h"
 
@@ -75,24 +52,6 @@ template <typename... Args>
 absl::Status Error(Args... args) {
   return absl::FailedPreconditionError(absl::StrCat(args...));
 }
-
-struct EditionsLessThan {
-  bool operator()(absl::string_view a, absl::string_view b) const {
-    std::vector<absl::string_view> as = absl::StrSplit(a, '.');
-    std::vector<absl::string_view> bs = absl::StrSplit(b, '.');
-    size_t min_size = std::min(as.size(), bs.size());
-    for (size_t i = 0; i < min_size; ++i) {
-      if (as[i].size() != bs[i].size()) {
-        return as[i].size() < bs[i].size();
-      } else if (as[i] != bs[i]) {
-        return as[i] < bs[i];
-      }
-    }
-    // Both strings are equal up until an extra element, which makes that string
-    // more recent.
-    return as.size() < bs.size();
-  }
-};
 
 absl::Status ValidateDescriptor(const Descriptor& descriptor) {
   if (descriptor.oneof_decl_count() > 0) {
@@ -152,24 +111,22 @@ absl::Status ValidateExtension(const Descriptor& feature_set,
   return absl::OkStatus();
 }
 
-void CollectEditions(const Descriptor& descriptor,
-                     absl::string_view minimum_edition,
-                     absl::string_view maximum_edition,
-                     absl::btree_set<std::string, EditionsLessThan>& editions) {
+void CollectEditions(const Descriptor& descriptor, Edition maximum_edition,
+                     absl::btree_set<Edition>& editions) {
   for (int i = 0; i < descriptor.field_count(); ++i) {
     for (const auto& def : descriptor.field(i)->options().edition_defaults()) {
-      if (EditionsLessThan()(maximum_edition, def.edition())) continue;
+      if (maximum_edition < def.edition()) continue;
       editions.insert(def.edition());
     }
   }
 }
 
-absl::Status FillDefaults(absl::string_view edition, Message& msg) {
+absl::Status FillDefaults(Edition edition, Message& msg) {
   const Descriptor& descriptor = *msg.GetDescriptor();
 
   auto comparator = [](const FieldOptions::EditionDefault& a,
                        const FieldOptions::EditionDefault& b) {
-    return EditionsLessThan()(a.edition(), b.edition());
+    return a.edition() < b.edition();
   };
   FieldOptions::EditionDefault edition_lookup;
   edition_lookup.set_edition(edition);
@@ -212,24 +169,28 @@ absl::Status FillDefaults(absl::string_view edition, Message& msg) {
   return absl::OkStatus();
 }
 
-absl::Status ValidateMergedFeatures(const Message& msg) {
-  const Descriptor& descriptor = *msg.GetDescriptor();
-  const Reflection& reflection = *msg.GetReflection();
-  for (int i = 0; i < descriptor.field_count(); ++i) {
-    const FieldDescriptor& field = *descriptor.field(i);
-    // Validate enum features.
-    if (field.enum_type() != nullptr) {
-      ABSL_DCHECK(reflection.HasField(msg, &field));
-      int int_value = reflection.GetEnumValue(msg, &field);
-      const EnumValueDescriptor* value =
-          field.enum_type()->FindValueByNumber(int_value);
-      ABSL_DCHECK(value != nullptr);
-      if (value->number() == 0) {
-        return Error("Feature field ", field.full_name(),
-                     " must resolve to a known value, found ", value->name());
-      }
-    }
+absl::Status ValidateMergedFeatures(const FeatureSet& features) {
+// Avoid using reflection here because this is called early in the descriptor
+// builds.  Instead, a reflection-based test will be used to keep this in sync
+// with descriptor.proto.  These checks should be run on every global feature
+// in FeatureSet.
+#define CHECK_ENUM_FEATURE(FIELD, CAMELCASE, UPPERCASE)               \
+  if (!FeatureSet::CAMELCASE##_IsValid(features.FIELD()) ||           \
+      features.FIELD() == FeatureSet::UPPERCASE##_UNKNOWN) {          \
+    return Error("Feature field `" #FIELD                             \
+                 "` must resolve to a known value, found " #UPPERCASE \
+                 "_UNKNOWN");                                         \
   }
+
+  CHECK_ENUM_FEATURE(field_presence, FieldPresence, FIELD_PRESENCE)
+  CHECK_ENUM_FEATURE(enum_type, EnumType, ENUM_TYPE)
+  CHECK_ENUM_FEATURE(repeated_field_encoding, RepeatedFieldEncoding,
+                     REPEATED_FIELD_ENCODING)
+  CHECK_ENUM_FEATURE(utf8_validation, Utf8Validation, UTF8_VALIDATION)
+  CHECK_ENUM_FEATURE(message_encoding, MessageEncoding, MESSAGE_ENCODING)
+  CHECK_ENUM_FEATURE(json_format, JsonFormat, JSON_FORMAT)
+
+#undef CHECK_ENUM_FEATURE
 
   return absl::OkStatus();
 }
@@ -239,7 +200,11 @@ absl::Status ValidateMergedFeatures(const Message& msg) {
 absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
     const Descriptor* feature_set,
     absl::Span<const FieldDescriptor* const> extensions,
-    absl::string_view minimum_edition, absl::string_view maximum_edition) {
+    Edition minimum_edition, Edition maximum_edition) {
+  if (minimum_edition > maximum_edition) {
+    return Error("Invalid edition range, edition ", minimum_edition,
+                 " is newer than edition ", maximum_edition);
+  }
   // Find and validate the FeatureSet in the pool.
   if (feature_set == nullptr) {
     return Error(
@@ -254,11 +219,15 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
   }
 
   // Collect all the editions with unique defaults.
-  absl::btree_set<std::string, EditionsLessThan> editions;
-  CollectEditions(*feature_set, minimum_edition, maximum_edition, editions);
+  absl::btree_set<Edition> editions;
+  CollectEditions(*feature_set, maximum_edition, editions);
   for (const auto* extension : extensions) {
-    CollectEditions(*extension->message_type(), minimum_edition,
-                    maximum_edition, editions);
+    CollectEditions(*extension->message_type(), maximum_edition, editions);
+  }
+  if (editions.empty() || *editions.begin() > minimum_edition) {
+    // Always insert the minimum edition to make sure the full range is covered
+    // in valid defaults.
+    editions.insert(minimum_edition);
   }
 
   // Fill the default spec.
@@ -284,35 +253,41 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
 }
 
 absl::StatusOr<FeatureResolver> FeatureResolver::Create(
-    absl::string_view edition, const FeatureSetDefaults& compiled_defaults) {
-  if (EditionsLessThan()(edition, compiled_defaults.minimum_edition())) {
+    Edition edition, const FeatureSetDefaults& compiled_defaults) {
+  if (edition < compiled_defaults.minimum_edition()) {
     return Error("Edition ", edition,
                  " is earlier than the minimum supported edition ",
                  compiled_defaults.minimum_edition());
   }
-  if (EditionsLessThan()(compiled_defaults.maximum_edition(), edition)) {
+  if (compiled_defaults.maximum_edition() < edition) {
     return Error("Edition ", edition,
                  " is later than the maximum supported edition ",
                  compiled_defaults.maximum_edition());
   }
 
   // Validate compiled defaults.
-  absl::string_view prev_edition;
+  Edition prev_edition = EDITION_UNKNOWN;
   for (const auto& edition_default : compiled_defaults.defaults()) {
-    if (!prev_edition.empty()) {
-      if (!EditionsLessThan()(prev_edition, edition_default.edition())) {
+    if (edition_default.edition() == EDITION_UNKNOWN) {
+      return Error("Invalid edition ", edition_default.edition(),
+                   " specified.");
+    }
+    if (prev_edition != EDITION_UNKNOWN) {
+      if (edition_default.edition() <= prev_edition) {
         return Error(
             "Feature set defaults are not strictly increasing.  Edition ",
             prev_edition, " is greater than or equal to edition ",
             edition_default.edition(), ".");
       }
     }
+    RETURN_IF_ERROR(ValidateMergedFeatures(edition_default.features()));
+
     prev_edition = edition_default.edition();
   }
 
   // Select the matching edition defaults.
   auto comparator = [](const auto& a, const auto& b) {
-    return EditionsLessThan()(a.edition(), b.edition());
+    return a.edition() < b.edition();
   };
   FeatureSetDefaults::FeatureSetEditionDefault search;
   search.set_edition(edition);

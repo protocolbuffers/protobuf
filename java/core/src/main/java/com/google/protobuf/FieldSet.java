@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -523,11 +500,12 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   private void mergeFromField(final Map.Entry<T, Object> entry) {
     final T descriptor = entry.getKey();
     Object otherValue = entry.getValue();
-    if (otherValue instanceof LazyField) {
-      otherValue = ((LazyField) otherValue).getValue();
-    }
+    boolean isLazyField = otherValue instanceof LazyField;
 
     if (descriptor.isRepeated()) {
+      if (isLazyField) {
+        throw new IllegalStateException("Lazy fields can not be repeated");
+      }
       Object value = getField(descriptor);
       if (value == null) {
         value = new ArrayList<>();
@@ -539,9 +517,17 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     } else if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
       Object value = getField(descriptor);
       if (value == null) {
+        // New field.
         fields.put(descriptor, cloneIfMutable(otherValue));
+        if (isLazyField) {
+          hasLazyField = true;
+        }
       } else {
-        // Merge the messages.
+        // There is an existing field. Need to merge the messages.
+        if (otherValue instanceof LazyField) {
+          // Extract the actual value for lazy fields.
+          otherValue = ((LazyField) otherValue).getValue();
+        }
           value =
               descriptor
                   .internalMergeFrom(((MessageLite) value).toBuilder(), (MessageLite) otherValue)
@@ -549,6 +535,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         fields.put(descriptor, value);
       }
     } else {
+      if (isLazyField) {
+        throw new IllegalStateException("Lazy fields must be message-valued");
+      }
       fields.put(descriptor, cloneIfMutable(otherValue));
     }
   }
@@ -1297,11 +1286,12 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     private void mergeFromField(final Map.Entry<T, Object> entry) {
       final T descriptor = entry.getKey();
       Object otherValue = entry.getValue();
-      if (otherValue instanceof LazyField) {
-        otherValue = ((LazyField) otherValue).getValue();
-      }
+      boolean isLazyField = otherValue instanceof LazyField;
 
       if (descriptor.isRepeated()) {
+        if (isLazyField) {
+          throw new IllegalStateException("Lazy fields can not be repeated");
+        }
         List<Object> value = (List<Object>) getFieldAllowBuilders(descriptor);
         if (value == null) {
           value = new ArrayList<>();
@@ -1313,9 +1303,17 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       } else if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
         Object value = getFieldAllowBuilders(descriptor);
         if (value == null) {
+          // New field.
           fields.put(descriptor, FieldSet.cloneIfMutable(otherValue));
+          if (isLazyField) {
+            hasLazyField = true;
+          }
         } else {
-          // Merge the messages.
+          // There is an existing field. Need to merge the messages.
+          if (otherValue instanceof LazyField) {
+            // Extract the actual value for lazy fields.
+            otherValue = ((LazyField) otherValue).getValue();
+          }
           if (value instanceof MessageLite.Builder) {
             descriptor.internalMergeFrom((MessageLite.Builder) value, (MessageLite) otherValue);
           } else {
@@ -1327,6 +1325,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
           }
         }
       } else {
+        if (isLazyField) {
+          throw new IllegalStateException("Lazy fields must be message-valued");
+        }
         fields.put(descriptor, cloneIfMutable(otherValue));
       }
     }

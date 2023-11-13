@@ -1,41 +1,21 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/code_generator.h"
 
+#include <cstdint>
 #include <string>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_log.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
@@ -45,11 +25,17 @@
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest_features.pb.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace {
 
+#define ASSERT_OK(x) ASSERT_TRUE(x.ok()) << x.message();
+
+using ::testing::HasSubstr;
 using ::testing::NotNull;
 
 class TestGenerator : public CodeGenerator {
@@ -60,9 +46,36 @@ class TestGenerator : public CodeGenerator {
     return true;
   }
 
+  uint64_t GetSupportedFeatures() const override { return features_; }
+  void set_supported_features(uint64_t features) { features_ = features; }
+
+  std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
+    return feature_extensions_;
+  }
+  void set_feature_extensions(std::vector<const FieldDescriptor*> extensions) {
+    feature_extensions_ = extensions;
+  }
+
+  Edition GetMinimumEdition() const override { return minimum_edition_; }
+  void set_minimum_edition(Edition minimum_edition) {
+    minimum_edition_ = minimum_edition;
+  }
+
+  Edition GetMaximumEdition() const override { return maximum_edition_; }
+  void set_maximum_edition(Edition maximum_edition) {
+    maximum_edition_ = maximum_edition;
+  }
+
   // Expose the protected methods for testing.
   using CodeGenerator::GetResolvedSourceFeatures;
   using CodeGenerator::GetUnresolvedSourceFeatures;
+
+ private:
+  uint64_t features_ = CodeGenerator::Feature::FEATURE_SUPPORTS_EDITIONS;
+  Edition minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
+  Edition maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
+  std::vector<const FieldDescriptor*> feature_extensions_ = {
+      GetExtensionReflection(pb::test)};
 };
 
 class SimpleErrorCollector : public io::ErrorCollector {
@@ -74,11 +87,6 @@ class SimpleErrorCollector : public io::ErrorCollector {
 
 class CodeGeneratorTest : public ::testing::Test {
  protected:
-  void SetUp() override {
-    ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
-    ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
-  }
-
   const FileDescriptor* BuildFile(absl::string_view schema) {
     io::ArrayInputStream input_stream(schema.data(),
                                       static_cast<int>(schema.size()));
@@ -102,6 +110,8 @@ class CodeGeneratorTest : public ::testing::Test {
 };
 
 TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesRoot) {
+  ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
+  ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
     package protobuf_unittest;
@@ -123,6 +133,8 @@ TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesRoot) {
 }
 
 TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesInherited) {
+  ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
+  ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
     package protobuf_unittest;
@@ -156,6 +168,12 @@ TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesInherited) {
 }
 
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
+  TestGenerator generator;
+  generator.set_feature_extensions({GetExtensionReflection(pb::test)});
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
+
+  ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
+  ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
     package protobuf_unittest;
@@ -177,13 +195,18 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
   EXPECT_EQ(features.field_presence(), FeatureSet::EXPLICIT);
   EXPECT_EQ(features.enum_type(), FeatureSet::CLOSED);
 
-  // TODO(b/296638633) Flip this once generators can specify their feature sets.
-  EXPECT_FALSE(ext.has_int_message_feature());
+  EXPECT_TRUE(ext.has_int_message_feature());
   EXPECT_EQ(ext.int_file_feature(), 8);
   EXPECT_EQ(ext.string_source_feature(), "file");
 }
 
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
+  TestGenerator generator;
+  generator.set_feature_extensions({GetExtensionReflection(pb::test)});
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
+
+  ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
+  ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
     package protobuf_unittest;
@@ -222,6 +245,83 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
   EXPECT_EQ(ext.int_source_feature(), 5);
   EXPECT_EQ(ext.string_source_feature(), "field");
 }
+
+// TODO: Use the gtest versions once that's available in OSS.
+MATCHER_P(HasError, msg_matcher, "") {
+  return arg.status().code() == absl::StatusCode::kFailedPrecondition &&
+         ExplainMatchResult(msg_matcher, arg.status().message(),
+                            result_listener);
+}
+MATCHER_P(IsOkAndHolds, matcher, "") {
+  return arg.ok() && ExplainMatchResult(matcher, *arg, result_listener);
+}
+
+TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsInvalidExtension) {
+  TestGenerator generator;
+  generator.set_feature_extensions({nullptr});
+  EXPECT_THAT(generator.BuildFeatureSetDefaults(),
+              HasError(HasSubstr("Unknown extension")));
+}
+
+TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
+  TestGenerator generator;
+  generator.set_feature_extensions({});
+  generator.set_minimum_edition(EDITION_99997_TEST_ONLY);
+  generator.set_maximum_edition(EDITION_99999_TEST_ONLY);
+  EXPECT_THAT(generator.BuildFeatureSetDefaults(),
+              IsOkAndHolds(EqualsProto(R"pb(
+                defaults {
+                  edition: EDITION_PROTO2
+                  features {
+                    field_presence: EXPLICIT
+                    enum_type: CLOSED
+                    repeated_field_encoding: EXPANDED
+                    utf8_validation: NONE
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: LEGACY_BEST_EFFORT
+                  }
+                }
+                defaults {
+                  edition: EDITION_PROTO3
+                  features {
+                    field_presence: IMPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                }
+                defaults {
+                  edition: EDITION_2023
+                  features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                }
+                minimum_edition: EDITION_99997_TEST_ONLY
+                maximum_edition: EDITION_99999_TEST_ONLY
+              )pb")));
+}
+
+TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsUnsupported) {
+  TestGenerator generator;
+  generator.set_supported_features(0);
+  generator.set_feature_extensions({});
+  generator.set_minimum_edition(EDITION_99997_TEST_ONLY);
+  generator.set_maximum_edition(EDITION_99999_TEST_ONLY);
+  auto result = generator.BuildFeatureSetDefaults();
+
+  ASSERT_TRUE(result.ok()) << result.status().message();
+  EXPECT_EQ(result->minimum_edition(), PROTOBUF_MINIMUM_EDITION);
+  EXPECT_EQ(result->maximum_edition(), PROTOBUF_MAXIMUM_EDITION);
+}
+
+#include "google/protobuf/port_undef.inc"
 
 }  // namespace
 }  // namespace compiler

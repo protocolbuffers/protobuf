@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -117,8 +94,9 @@ class ParserTest : public testing::Test {
   ParserTest() : require_syntax_identifier_(false) {}
 
   // Set up the parser to parse the given text.
-  void SetupParser(const char* text) {
-    raw_input_ = absl::make_unique<io::ArrayInputStream>(text, strlen(text));
+  void SetupParser(absl::string_view text) {
+    raw_input_ =
+        absl::make_unique<io::ArrayInputStream>(text.data(), text.size());
     input_ =
         absl::make_unique<io::Tokenizer>(raw_input_.get(), &error_collector_);
     parser_ = absl::make_unique<Parser>();
@@ -147,7 +125,7 @@ class ParserTest : public testing::Test {
     ASSERT_TRUE(TextFormat::ParseFromString(output, &expected));
 
     // Compare by comparing debug strings.
-    // TODO(kenton):  Use differencer, once it is available.
+    // TODO:  Use differencer, once it is available.
     EXPECT_EQ(expected.DebugString(), actual.DebugString());
   }
 
@@ -169,7 +147,8 @@ class ParserTest : public testing::Test {
 
   // Same as above but does not expect that the parser parses the complete
   // input.
-  void ExpectHasEarlyExitErrors(const char* text, const char* expected_errors) {
+  void ExpectHasEarlyExitErrors(absl::string_view text,
+                                absl::string_view expected_errors) {
     SetupParser(text);
     SourceLocationTable source_locations;
     parser_->RecordSourceLocationsTo(&source_locations);
@@ -284,6 +263,16 @@ TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
   EXPECT_TRUE(error_collector_.warning_.find(
                   "Number should not come right after an underscore. Found: "
                   "song_name_1.") != std::string::npos);
+}
+
+TEST_F(ParserTest, RegressionNestedOpenBraceDoNotStackOverflow) {
+  std::string input("edition=\"a\000;", 12);
+  input += std::string(100000, '{');
+  ExpectHasEarlyExitErrors(
+      input,
+      "0:10: Unexpected end of string.\n"
+      "0:10: Invalid control characters encountered in text.\n"
+      "0:8: Unknown edition \"a\".\n");
 }
 
 // ===================================================================
@@ -879,7 +868,7 @@ TEST_F(ParseMessageTest, ReservedIdentifiers) {
       "}\n",
 
       "syntax: \"editions\" "
-      "edition: \"2023\" "
+      "edition: EDITION_2023 "
       "message_type {"
       "  name: \"TestMessage\""
       "  reserved_name: \"foo\""
@@ -939,6 +928,35 @@ TEST_F(ParseMessageTest, CompoundExtensionRange) {
       "  extension_range { start:100 end:536870912 }"
       "  extension_range { start:3   end:4         }"
       "}");
+}
+
+TEST_F(ParseMessageTest, MaxIntExtensionDoesNotOverflow) {
+  ExpectHasErrors(
+      R"(
+        syntax = "proto2";
+        message TestMessage {
+          extensions 2147483647;
+        }
+      )",
+      "3:31: Field number out of bounds.\n");
+  error_collector_.text_.clear();
+  ExpectHasErrors(
+      R"(
+        syntax = "proto2";
+        message TestMessage {
+          extensions 1 to 2147483647;
+        }
+      )",
+      "3:36: Field number out of bounds.\n");
+  error_collector_.text_.clear();
+  ExpectHasErrors(
+      R"(
+        syntax = "proto2";
+        message TestMessage {
+          extensions 2147483647 to 2147483647;
+        }
+      )",
+      "3:32: Field number out of bounds.\n");
 }
 
 TEST_F(ParseMessageTest, CompoundExtensionRangeWithOptions) {
@@ -1267,7 +1285,7 @@ TEST_F(ParseEnumTest, ReservedIdentifiers) {
       "}\n",
 
       "syntax: \"editions\" "
-      "edition: \"2023\" "
+      "edition: EDITION_2023 "
       "enum_type {"
       "  name: \"TestEnum\""
       "  value { name:\"FOO\" number:0 }"
@@ -4055,7 +4073,7 @@ typedef ParserTest ParseEditionsTest;
 TEST_F(ParseEditionsTest, Editions) {
   ExpectParsesTo(
       R"schema(
-        edition = "super-cool";
+        edition = "2023";
         message A {
           int32 b = 1;
         })schema",
@@ -4069,7 +4087,16 @@ TEST_F(ParseEditionsTest, Editions) {
       "  }"
       "}"
       "syntax: \"editions\""
-      "edition: \"super-cool\"\n");
+      "edition: EDITION_2023\n");
+}
+
+TEST_F(ParseEditionsTest, TestEdition) {
+  ExpectParsesTo(
+      R"schema(
+        edition = "99998_TEST_ONLY";
+      )schema",
+      "syntax: \"editions\""
+      "edition: EDITION_99998_TEST_ONLY\n");
 }
 
 TEST_F(ParseEditionsTest, ExtensionsParse) {
@@ -4095,7 +4122,7 @@ TEST_F(ParseEditionsTest, ExtensionsParse) {
       "  type: TYPE_STRING"
       "}"
       "syntax: \"editions\""
-      "edition: \"2023\"\n");
+      "edition: EDITION_2023\n");
 }
 
 TEST_F(ParseEditionsTest, MapFeatures) {
@@ -4154,7 +4181,7 @@ TEST_F(ParseEditionsTest, MapFeatures) {
              }
            }
            syntax: "editions"
-           edition: "2023")pb");
+           edition: EDITION_2023)pb");
 }
 
 TEST_F(ParseEditionsTest, EmptyEdition) {
@@ -4164,7 +4191,47 @@ TEST_F(ParseEditionsTest, EmptyEdition) {
         message A {
           optional int32 b = 1;
         })schema",
-      "1:18: A file's edition must be a nonempty string.\n");
+      "1:18: Unknown edition \"\".\n");
+}
+
+TEST_F(ParseEditionsTest, InvalidEdition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "2023_INVALID";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: Unknown edition \"2023_INVALID\".\n");
+}
+
+TEST_F(ParseEditionsTest, UnknownEdition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "UNKNOWN";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: Unknown edition \"UNKNOWN\".\n");
+}
+
+TEST_F(ParseEditionsTest, LegacyProto2Edition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "PROTO2";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: Unknown edition \"PROTO2\".\n");
+}
+
+TEST_F(ParseEditionsTest, LegacyProto3Edition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "PROTO3";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: Unknown edition \"PROTO3\".\n");
 }
 
 TEST_F(ParseEditionsTest, SyntaxEditions) {
@@ -4182,7 +4249,7 @@ TEST_F(ParseEditionsTest, MixedSyntaxAndEdition) {
   ExpectHasErrors(
       R"schema(
         syntax = "proto2";
-        edition = "super-cool";
+        edition = "2023";
         message A {
           optional int32 b = 1;
         })schema",
@@ -4192,7 +4259,7 @@ TEST_F(ParseEditionsTest, MixedSyntaxAndEdition) {
 TEST_F(ParseEditionsTest, MixedEditionAndSyntax) {
   ExpectHasErrors(
       R"schema(
-        edition = "super-cool";
+        edition = "2023";
         syntax = "proto2";
         message A {
           int32 b = 1;
@@ -4207,7 +4274,7 @@ TEST_F(ParseEditionsTest, OptionalKeywordBanned) {
         message A {
           optional int32 b = 1;
         })schema",
-      "3:10: Label \"optional\" is not supported in editions.  By default, all "
+      "3:10: Label \"optional\" is not supported in editions. By default, all "
       "singular fields have presence unless features.field_presence is set.\n");
 }
 
@@ -4259,8 +4326,8 @@ TEST_F(ParseEditionsTest, InvalidMerge) {
             features.enum_type = ENUM_TYPE_UNKNOWN
           ];
         })schema",
-      "5:17: Feature field google.protobuf.FeatureSet.field_presence must resolve to a "
-      "known value, found FIELD_PRESENCE_UNKNOWN\n");
+      "5:17: Feature field `field_presence` must resolve to a known value, "
+      "found FIELD_PRESENCE_UNKNOWN\n");
 }
 
 TEST_F(ParseEditionsTest, FeaturesWithoutEditions) {

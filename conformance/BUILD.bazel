@@ -22,6 +22,7 @@ exports_files([
     "failure_list_php_c.txt",
     "failure_list_python.txt",
     "failure_list_python_cpp.txt",
+    "failure_list_python_upb.txt",
     "failure_list_ruby.txt",
     "failure_list_jruby.txt",
     "failure_list_jruby_ffi.txt",
@@ -33,6 +34,7 @@ exports_files([
     "text_format_failure_list_php_c.txt",
     "text_format_failure_list_python.txt",
     "text_format_failure_list_python_cpp.txt",
+    "text_format_failure_list_python_upb.txt",
     "text_format_failure_list_ruby.txt",
     "text_format_failure_list_jruby.txt",
     "text_format_failure_list_jruby_ffi.txt",
@@ -130,6 +132,7 @@ internal_ruby_proto_library(
 
 cc_library(
     name = "conformance_test",
+    testonly = 1,
     srcs = [
         "conformance_test.cc",
         "conformance_test_runner.cc",
@@ -151,12 +154,16 @@ cc_library(
 
 cc_library(
     name = "binary_json_conformance_suite",
+    testonly = 1,
     srcs = ["binary_json_conformance_suite.cc"],
     hdrs = ["binary_json_conformance_suite.h"],
     deps = [
         ":conformance_test",
         ":test_messages_proto2_proto_cc",
         ":test_messages_proto3_proto_cc",
+        "//src/google/protobuf/editions:test_messages_proto2_editions_cc_proto",
+        "//src/google/protobuf/editions:test_messages_proto3_editions_cc_proto",
+        "@com_google_absl//absl/log:die_if_null",
         "@com_google_absl//absl/status",
         "@jsoncpp",
     ],
@@ -164,17 +171,24 @@ cc_library(
 
 cc_library(
     name = "text_format_conformance_suite",
+    testonly = 1,
     srcs = ["text_format_conformance_suite.cc"],
     hdrs = ["text_format_conformance_suite.h"],
     deps = [
         ":conformance_test",
         ":test_messages_proto2_proto_cc",
         ":test_messages_proto3_proto_cc",
+        "//src/google/protobuf/editions:test_messages_proto2_editions_cc_proto",
+        "//src/google/protobuf/editions:test_messages_proto3_editions_cc_proto",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:die_if_null",
+        "@com_google_absl//absl/strings",
     ],
 )
 
 cc_binary(
     name = "conformance_test_runner",
+    testonly = 1,
     srcs = ["conformance_test_main.cc"],
     visibility = ["//visibility:public"],
     deps = [
@@ -195,6 +209,8 @@ cc_binary(
         "//:protobuf",
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
+        "//src/google/protobuf/editions:test_messages_proto2_editions_cc_proto",
+        "//src/google/protobuf/editions:test_messages_proto3_editions_cc_proto",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
     ],
@@ -247,8 +263,8 @@ py_binary(
     deps = [
         ":conformance_py_proto",
         "//:protobuf_python",
-        "//python:test_messages_proto2_py_proto",
-        "//python:test_messages_proto3_py_proto",
+        "//python:_message",  # Make upb visible if we need it.
+        "//python:conformance_test_py_proto",
     ],
 )
 

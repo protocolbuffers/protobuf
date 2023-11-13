@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include <cstddef>
 
@@ -37,12 +14,18 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
 
+
+// clang-format off
+#include "google/protobuf/port_def.inc"
+// clang-format on
+
 namespace google {
 namespace protobuf {
 namespace internal {
 
 namespace {
 
+using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::Not;
 using ::testing::Optional;
@@ -105,6 +88,9 @@ TEST(FastVarints, NameHere) {
           offsetof(decltype(parse_table), field_names),  // no aux_entries
           nullptr,                                       // default instance
           FastParserGaveUp,                              // fallback
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+          nullptr,  // to_prefetch
+#endif              // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       // Fast Table:
       {{
@@ -296,6 +282,9 @@ TEST(IsEntryForFieldNumTest, Matcher) {
           0, 0,        // num_aux_entries, aux_offset,
           nullptr,     // default instance
           nullptr,     // fallback function
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+          nullptr,     // to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       }};
   // clang-format on
   int table_field_numbers[] = {1, 2, 3};
@@ -364,6 +353,9 @@ TEST_F(FindFieldEntryTest, SequentialFieldRange) {
           0, 0,        // num_aux_entries, aux_offset,
           nullptr,     // default instance
           {},          // fallback function
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+          nullptr,     // to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {},  // fast_entries
       // field_lookup_table for 2, 3, 4, 5, 111:
@@ -404,6 +396,9 @@ TEST_F(FindFieldEntryTest, SmallScanRange) {
           0, 0,        // num_aux_entries, aux_offset,
           nullptr,     // default instance
           {},          // fallback function
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+          nullptr,     // to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {},  // fast_entries
       // field_lookup_table for 1, 3, 4, 5, 7, 111:
@@ -452,6 +447,9 @@ TEST_F(FindFieldEntryTest, BinarySearchRange) {
           0, 0,        // num_aux_entries, aux_offset,
           nullptr,     // default instance
           {},          // fallback function
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+          nullptr,     // to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {},  // fast_entries
       // field_lookup_table for 1, 3, 4, 5, 6, 8, 9, 11, 12, 70
@@ -497,6 +495,9 @@ TEST_F(FindFieldEntryTest, OutOfRange) {
           offsetof(decltype(table), field_names),  // no aux_entries
           nullptr,     // default instance
           {},          // fallback function
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+          nullptr,     // to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {},  // fast_entries
       {{// field lookup table
@@ -547,6 +548,9 @@ TEST_F(FindFieldEntryTest, EmptyMessage) {
           offsetof(TableType, field_names),
           nullptr,     // default instance
           nullptr,     // fallback function
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+          nullptr,     // to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {},  // fast_entries
       {{// empty field lookup table
@@ -597,6 +601,9 @@ const TcParseTable<5, 134, 5, 2176, 55> test_all_types_table = {
         offsetof(decltype(test_all_types_table), aux_entries),
         nullptr,     // default instance
         nullptr,     // fallback function
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+        nullptr,     // to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     },
     {{
         // tail-call table
@@ -921,6 +928,7 @@ TEST(GeneratedMessageTctableLiteTest,
   proto.MergeFromString(serialized);
   EXPECT_LE(proto.vals().Capacity(), 2048);
 }
+
 
 }  // namespace internal
 }  // namespace protobuf

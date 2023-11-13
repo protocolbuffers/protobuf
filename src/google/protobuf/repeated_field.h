@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -167,7 +144,7 @@ class RepeatedField final
   constexpr RepeatedField();
   RepeatedField(const RepeatedField& rhs) : RepeatedField(nullptr, rhs) {}
 
-  // TODO(b/290091828): make this constructor private
+  // TODO: make this constructor private
   explicit RepeatedField(Arena* arena);
 
   template <typename Iter,
@@ -227,13 +204,13 @@ class RepeatedField final
   // Calling this routine inside a loop can cause quadratic behavior.
   void ExtractSubrange(int start, int num, Element* elements);
 
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear();
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   void MergeFrom(const RepeatedField& other);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void CopyFrom(const RepeatedField& other);
+  ABSL_ATTRIBUTE_REINITIALIZES void CopyFrom(const RepeatedField& other);
 
   // Replaces the contents with RepeatedField(begin, end).
   template <typename Iter>
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Assign(Iter begin, Iter end);
+  ABSL_ATTRIBUTE_REINITIALIZES void Assign(Iter begin, Iter end);
 
   // Reserves space to expand the field to at least the given size.  If the
   // array is grown, it will always be at least doubled in size.
@@ -316,7 +293,10 @@ class RepeatedField final
   // Gets the Arena on which this RepeatedField stores its elements.
   // Note: this can be inaccurate for split default fields so we make this
   // function non-const.
-  inline Arena* GetArena() { return GetOwningArena(); }
+  inline Arena* GetArena() {
+    return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
+                              : rep()->arena;
+  }
 
   // For internal use only.
   //
@@ -350,11 +330,6 @@ class RepeatedField final
 
   RepeatedField(Arena* arena, const RepeatedField& rhs);
 
-  // Gets the Arena on which this RepeatedField stores its elements.
-  inline Arena* GetOwningArena() const {
-    return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
-                              : rep()->arena;
-  }
 
   // Swaps entire contents with "other". Should be called only if the caller can
   // guarantee that both repeated fields are on the same arena or are on the
@@ -523,7 +498,7 @@ RepeatedField<Element>::~RepeatedField() {
 #ifndef NDEBUG
   // Try to trigger segfault / asan failure in non-opt builds if arena_
   // lifetime has ended before the destructor.
-  auto arena = GetOwningArena();
+  auto arena = GetArena();
   if (arena) (void)arena->SpaceAllocated();
 #endif
   if (total_size_ > 0) {
@@ -548,7 +523,7 @@ inline RepeatedField<Element>::RepeatedField(RepeatedField&& other) noexcept
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // other is on an arena. This field can't be on an arena because arena
   // construction always uses the Arena* accepting constructor.
-  if (other.GetOwningArena()) {
+  if (other.GetArena()) {
     CopyFrom(other);
   } else {
     InternalSwap(&other);
@@ -562,9 +537,9 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
-    if (GetOwningArena() != other.GetOwningArena()
+    if (GetArena() != other.GetArena()
 #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        || GetOwningArena() == nullptr
+        || GetArena() == nullptr
 #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       CopyFrom(other);
@@ -839,7 +814,8 @@ inline const Element* RepeatedField<Element>::data() const
 }
 
 template <typename Element>
-inline void RepeatedField<Element>::InternalSwap(RepeatedField* other) {
+inline void RepeatedField<Element>::InternalSwap(
+    RepeatedField* PROTOBUF_RESTRICT other) {
   ABSL_DCHECK(this != other);
 
   // Swap all fields at once.
@@ -856,14 +832,13 @@ template <typename Element>
 void RepeatedField<Element>::Swap(RepeatedField* other) {
   if (this == other) return;
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  if (GetOwningArena() != nullptr &&
-      GetOwningArena() == other->GetOwningArena()) {
+  if (GetArena() != nullptr && GetArena() == other->GetArena()) {
 #else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  if (GetOwningArena() == other->GetOwningArena()) {
+  if (GetArena() == other->GetArena()) {
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
     InternalSwap(other);
   } else {
-    RepeatedField<Element> temp(other->GetOwningArena());
+    RepeatedField<Element> temp(other->GetArena());
     temp.MergeFrom(*this);
     CopyFrom(*other);
     other->UnsafeArenaSwap(&temp);
@@ -873,7 +848,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
 template <typename Element>
 void RepeatedField<Element>::UnsafeArenaSwap(RepeatedField* other) {
   if (this == other) return;
-  ABSL_DCHECK_EQ(GetOwningArena(), other->GetOwningArena());
+  ABSL_DCHECK_EQ(GetArena(), other->GetArena());
   InternalSwap(other);
 }
 
@@ -962,7 +937,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
                                                               int new_size) {
   ABSL_DCHECK_GT(new_size, total_size_);
   Rep* new_rep;
-  Arena* arena = GetOwningArena();
+  Arena* arena = GetArena();
 
   new_size = internal::CalculateReserveSize<Element, kRepHeaderSize>(
       total_size_, new_size);
@@ -992,7 +967,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
     if (current_size > 0) {
       Element* pnew = new_rep->elements();
       Element* pold = elements();
-      // TODO(b/263791665): add absl::is_trivially_relocatable<Element>
+      // TODO: add absl::is_trivially_relocatable<Element>
       if (std::is_trivial<Element>::value) {
         memcpy(static_cast<void*>(pnew), pold, current_size * sizeof(Element));
       } else {

@@ -73,11 +73,7 @@ task :copy_third_party do
   unless File.exist? 'ext/google/protobuf_c/third_party/utf8_range'
     FileUtils.mkdir_p 'ext/google/protobuf_c/third_party/utf8_range'
     # We need utf8_range in-tree.
-    if  ENV['BAZEL'] == 'true'
-      utf8_root = '../external/utf8_range'
-    else
-      utf8_root = '../third_party/utf8_range'
-    end
+    utf8_root = '../third_party/utf8_range'
     %w[
       utf8_range.h naive.c range2-neon.c range2-neon.c range2-sse.c LICENSE
     ].each do |file|

@@ -121,6 +121,7 @@ namespace ProtobufUnittest {
   /// <summary>
   /// Retention attributes set on fields nested within a message
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OptionsMessage : pb::IMessage<OptionsMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -431,6 +432,7 @@ namespace ProtobufUnittest {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Extendee : pb::IExtendableMessage<Extendee>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -628,6 +630,7 @@ namespace ProtobufUnittest {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TopLevelMessage : pb::IExtendableMessage<TopLevelMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -967,6 +970,7 @@ namespace ProtobufUnittest {
         [pbr::OriginalName("NESTED_UNKNOWN")] NestedUnknown = 0,
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage

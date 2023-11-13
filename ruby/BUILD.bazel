@@ -6,10 +6,9 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
-load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
-load("//conformance:defs.bzl", "conformance_test")
 load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
+load("//conformance:defs.bzl", "conformance_test")
 
 ################################################################################
 # Ruby Runtime
@@ -100,8 +99,8 @@ ruby_library(
 genrule(
     name = "jruby_release",
     srcs = [
-        "@utf8_range//:utf8_range_srcs",
-        "@utf8_range//:LICENSE",
+        "//third_party/utf8_range:utf8_range_srcs",
+        "//third_party/utf8_range:LICENSE",
         "//ruby/lib/google:copy_jar",
         "//ruby/lib/google:dist_files",
         "//ruby/ext/google/protobuf_c:dist_files",
@@ -116,7 +115,7 @@ genrule(
             cp --parents -L "$$src" tmp
         done
         mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
-        for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
+        for utf in $(execpaths //third_party/utf8_range:utf8_range_srcs) $(execpath //third_party/utf8_range:LICENSE); do
             mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
         done
         for wkt in $(execpaths //:well_known_ruby_protos); do
@@ -139,8 +138,8 @@ genrule(
 genrule(
     name = "ruby_release",
     srcs = [
-        "@utf8_range//:utf8_range_srcs",
-        "@utf8_range//:LICENSE",
+        "//third_party/utf8_range:utf8_range_srcs",
+        "//third_party/utf8_range:LICENSE",
         "//:well_known_ruby_protos",
         "//ruby/ext/google/protobuf_c:dist_files",
         "//ruby/lib/google:dist_files",
@@ -154,7 +153,7 @@ genrule(
             cp --parents -L "$$src" "tmp"
         done
         mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
-        for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
+        for utf in $(execpaths //third_party/utf8_range:utf8_range_srcs) $(execpath //third_party/utf8_range:LICENSE); do
             mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
         done
         for wkt in $(execpaths //:well_known_ruby_protos); do

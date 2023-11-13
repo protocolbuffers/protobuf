@@ -23,11 +23,11 @@ genrule(
 pkg_files(
     name = "dist_files",
     srcs = [
-        "//ruby/compatibility_tests/v3.0.0/tests:dist_files",
         "BUILD.bazel",
-        "Rakefile",
         "README.md",
+        "Rakefile",
         "test.sh",
+        "//ruby/compatibility_tests/v3.0.0/tests:dist_files",
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],

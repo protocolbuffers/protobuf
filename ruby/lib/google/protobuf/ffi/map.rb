@@ -1,32 +1,9 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2022 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 module Google
   module Protobuf
@@ -78,7 +55,7 @@ module Google
       # message type.
       def self.new(key_type, value_type, value_typeclass = nil, init_hashmap = {})
         instance = allocate
-        # TODO(jatl) This argument mangling doesn't agree with the type signature,
+        # TODO This argument mangling doesn't agree with the type signature,
         # but does align with the text of the comments and is required to make unit tests pass.
         if init_hashmap.empty? and ![:enum, :message].include?(value_type)
           init_hashmap = value_typeclass
@@ -292,6 +269,17 @@ module Google
 
       include Google::Protobuf::Internal::Convert
 
+      def internal_deep_freeze
+        freeze
+        if value_type == :message
+          internal_iterator do |iterator|
+            value_message_value = Google::Protobuf::FFI.map_value(@map_ptr, iterator)
+            convert_upb_to_ruby(value_message_value, value_type, descriptor, arena).send :internal_deep_freeze
+          end
+        end
+        self
+      end
+
       def internal_iterator
         iter = ::FFI::MemoryPointer.new(:size_t, 1)
         iter.write(:size_t, Google::Protobuf::FFI::Upb_Map_Begin)
@@ -328,7 +316,7 @@ module Google
           end
         when Google::Protobuf::Map
           unless key_type == other.send(:key_type) and value_type == other.send(:value_type) and descriptor == other.descriptor
-            raise ArgumentError.new "Attempt to merge Map with mismatching types" #TODO(jatl) Improve error message by adding type information
+            raise ArgumentError.new "Attempt to merge Map with mismatching types" #TODO Improve error message by adding type information
           end
           arena.fuse(other.send(:arena))
           iter = ::FFI::MemoryPointer.new(:size_t, 1)
@@ -337,7 +325,7 @@ module Google
             Google::Protobuf::FFI.map_set(@map_ptr, key_message_value, value_message_value, arena)
           end
         else
-          raise ArgumentError.new "Unknown type merging into Map" #TODO(jatl) improve this error message by including type information
+          raise ArgumentError.new "Unknown type merging into Map" #TODO improve this error message by including type information
         end
         self
       end
@@ -350,12 +338,12 @@ module Google
         @name = name || 'Map'
 
         unless [:int32, :int64, :uint32, :uint64, :bool, :string, :bytes].include? key_type
-          raise ArgumentError.new "Invalid key type for map." #TODO(jatl) improve error message to include what type was passed
+          raise ArgumentError.new "Invalid key type for map." #TODO improve error message to include what type was passed
         end
         @key_type = key_type
 
         unless [:int32, :int64, :uint32, :uint64, :bool, :string, :bytes, :enum, :message].include? value_type
-          raise ArgumentError.new "Invalid value type for map." #TODO(jatl) improve error message to include what type was passed
+          raise ArgumentError.new "Invalid value type for map." #TODO improve error message to include what type was passed
         end
         @value_type = value_type
 

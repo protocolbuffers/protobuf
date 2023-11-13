@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/rust/generator.h"
 
@@ -119,15 +96,18 @@ void EmitPubUseOfOwnMessages(Context<FileDescriptor>& primary_file,
     primary_file.Emit({{"mod", mod}, {"Msg", name}},
                       R"rs(
                         pub use crate::$mod$::$Msg$;
+                        // TODO Address use for imported crates
+                        pub use crate::$mod$::$Msg$View;
                       )rs");
   }
 }
 
 // Emits `pub use <crate_name>::<public package>::Msg` for all messages of a
-// `dep` into the `primary_file`.
+// `dep` into the `primary_file`. This should only be called for 'import public'
+// deps.
 //
 // `dep` is a primary src of a dependency of the current `proto_library`.
-// TODO(b/270124215): Add support for public import of non-primary srcs of deps.
+// TODO: Add support for public import of non-primary srcs of deps.
 void EmitPubUseForImportedMessages(Context<FileDescriptor>& primary_file,
                                    const Context<FileDescriptor>& dep) {
   std::string crate_name = GetCrateName(dep);
@@ -137,26 +117,24 @@ void EmitPubUseForImportedMessages(Context<FileDescriptor>& primary_file,
     primary_file.Emit({{"crate", crate_name}, {"pkg::Msg", path}},
                       R"rs(
                         pub use $crate$::$pkg::Msg$;
+                        pub use $crate$::$pkg::Msg$View;
                       )rs");
   }
 }
 
 // Emits all public imports of the current file
-void EmitPublicImports(
-    Context<FileDescriptor>& primary_file,
-    const std::vector<const FileDescriptor*>& files_in_current_crate) {
-  absl::flat_hash_set<const FileDescriptor*> files(
-      files_in_current_crate.begin(), files_in_current_crate.end());
+void EmitPublicImports(Context<FileDescriptor>& primary_file) {
   for (int i = 0; i < primary_file.desc().public_dependency_count(); ++i) {
     auto dep_file = primary_file.desc().public_dependency(i);
     // If the publicly imported file is a src of the current `proto_library`
     // we don't need to emit `pub use` here, we already do it for all srcs in
     // RustGenerator::Generate. In other words, all srcs are implicitly publicly
     // imported into the primary file for Protobuf Rust.
-    // TODO(b/270124215): Handle the case where a non-primary src with the same
+    // TODO: Handle the case where a non-primary src with the same
     // declared package as the primary src publicly imports a file that the
     // primary doesn't.
-    if (files.contains(dep_file)) continue;
+    if (primary_file.generator_context().is_file_in_current_crate(dep_file))
+      continue;
     auto dep = primary_file.WithDesc(dep_file);
     EmitPubUseForImportedMessages(primary_file, dep);
   }
@@ -225,7 +203,13 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
     return false;
   }
 
-  Context<FileDescriptor> file(&*opts, file_desc, nullptr);
+  std::vector<const FileDescriptor*> files_in_current_crate;
+  generator_context->ListParsedFiles(&files_in_current_crate);
+
+  RustGeneratorContext rust_generator_context(&files_in_current_crate);
+
+  Context<FileDescriptor> file(&*opts, file_desc, &rust_generator_context,
+                               nullptr);
 
   auto outfile = absl::WrapUnique(generator_context->Open(GetRsFile(file)));
   io::Printer printer(outfile.get());
@@ -247,15 +231,13 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
 
   )rs");
 
-  std::vector<const FileDescriptor*> files_in_current_crate;
-  generator_context->ListParsedFiles(&files_in_current_crate);
   std::vector<Context<FileDescriptor>> file_contexts;
   for (const FileDescriptor* f : files_in_current_crate) {
     file_contexts.push_back(file.WithDesc(*f));
   }
 
   // Generating the primary file?
-  if (file_desc == files_in_current_crate.front()) {
+  if (file_desc == rust_generator_context.primary_file()) {
     auto non_primary_srcs = absl::MakeConstSpan(file_contexts).subspan(1);
     DeclareSubmodulesForNonPrimarySrcs(file, non_primary_srcs);
 
@@ -271,7 +253,7 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
     }
   }
 
-  EmitPublicImports(file, files_in_current_crate);
+  EmitPublicImports(file);
 
   std::unique_ptr<io::ZeroCopyOutputStream> thunks_cc;
   std::unique_ptr<io::Printer> thunks_printer;

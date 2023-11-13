@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 syntax = "proto2";
 
@@ -53,51 +30,51 @@ message TestFeatures {
   optional int32 int_file_feature = 1 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: "2025", value: "5" },
-    edition_defaults = { edition: "2023.1.2", value: "3" },
-    edition_defaults = { edition: "2023", value: "1" },
-    edition_defaults = { edition: "2023.1", value: "2" },
-    edition_defaults = { edition: "2024", value: "4" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "-2" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "-3" },
+    edition_defaults = { edition: EDITION_2023, value: "1" },
+    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "2" },
+    edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "3" }
   ];
   optional int32 int_extension_range_feature = 2 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition: "2023", value: "1" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "1" }
   ];
   optional int32 int_message_feature = 3 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_MESSAGE,
-    edition_defaults = { edition: "2023", value: "1" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "1" }
   ];
   optional int32 int_field_feature = 4 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition: "2023", value: "1" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "1" }
   ];
   optional int32 int_oneof_feature = 5 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ONEOF,
-    edition_defaults = { edition: "2023", value: "1" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "1" }
   ];
   optional int32 int_enum_feature = 6 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
-    edition_defaults = { edition: "2023", value: "1" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "1" }
   ];
   optional int32 int_enum_entry_feature = 7 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM_ENTRY,
-    edition_defaults = { edition: "2023", value: "1" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "1" }
   ];
   optional int32 int_service_feature = 8 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_SERVICE,
-    edition_defaults = { edition: "2023", value: "1" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "1" }
   ];
   optional int32 int_method_feature = 9 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_METHOD,
-    edition_defaults = { edition: "2023", value: "1" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "1" }
   ];
   optional int32 int_multiple_feature = 10 [
     retention = RETENTION_RUNTIME,
@@ -110,20 +87,20 @@ message TestFeatures {
     targets = TARGET_TYPE_METHOD,
     targets = TARGET_TYPE_ONEOF,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition: "2023", value: "1" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "1" }
   ];
 
   optional bool bool_field_feature = 11 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition: "2023", value: "false" },
-    edition_defaults = { edition: "2023.1", value: "true" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "false" },
+    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "true" }
   ];
   optional float float_field_feature = 12 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition: "2023", value: "1.1" },
-    edition_defaults = { edition: "2023.1", value: "1.2" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "1.1" },
+    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "1.2" }
   ];
 
   message MessageFeature {
@@ -135,16 +112,19 @@ message TestFeatures {
   optional MessageFeature message_field_feature = 13 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition: "2023.1", value: "int_field: 2" },
-    edition_defaults = { edition: "2024", value: "string_field: '2024'" },
     edition_defaults = {
-      edition: "2023",
-      value: "bool_field: true int_field: 1 float_field: 1.5 string_field: '2023'"
+      edition: EDITION_99997_TEST_ONLY,
+      value: "int_field: 2"
     },
     edition_defaults = {
-      edition: "2025",
-      value: "int_field: 4 string_field: '2025'"
-    }
+      edition: EDITION_99998_TEST_ONLY,
+      value: "string_field: '2024'"
+    },
+    edition_defaults = {
+      edition: EDITION_2023,
+      value: "bool_field: true int_field: 1 float_field: 1.5 string_field: '2023'"
+    },
+    edition_defaults = { edition: EDITION_PROTO2, value: "" }
   ];
 
   enum EnumFeature {
@@ -158,11 +138,19 @@ message TestFeatures {
   optional EnumFeature enum_field_feature = 14 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition: "2023.10", value: "ENUM_VALUE3" },
-    edition_defaults = { edition: "2023.9", value: "ENUM_VALUE2" },
-    edition_defaults = { edition: "2025", value: "ENUM_VALUE5" },
-    edition_defaults = { edition: "2023", value: "ENUM_VALUE1" },
-    edition_defaults = { edition: "2024", value: "ENUM_VALUE4" }
+    edition_defaults = {
+      edition: EDITION_PROTO2,
+      value: "TEST_ENUM_FEATURE_UNKNOWN"
+    },
+    edition_defaults = { edition: EDITION_2023, value: "ENUM_VALUE1" },
+    edition_defaults = {
+      edition: EDITION_99997_TEST_ONLY,
+      value: "ENUM_VALUE2"
+    },
+    edition_defaults = {
+      edition: EDITION_99998_TEST_ONLY,
+      value: "ENUM_VALUE3"
+    }
   ];
 
   optional int32 int_source_feature = 15 [
@@ -176,7 +164,7 @@ message TestFeatures {
     targets = TARGET_TYPE_METHOD,
     targets = TARGET_TYPE_ONEOF,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition: "2023", value: "1" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "1" }
   ];
 
   optional string string_source_feature = 16 [
@@ -190,6 +178,6 @@ message TestFeatures {
     targets = TARGET_TYPE_METHOD,
     targets = TARGET_TYPE_ONEOF,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition: "2023", value: "'2023'" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "'2023'" }
   ];
 }

@@ -111,11 +111,13 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/parser.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_edition_defaults.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_database.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_legacy.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_visitor.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/dynamic_message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/endian.h
@@ -241,6 +243,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_cleanup.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/endian.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/explicitly_constructed.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.h
@@ -288,7 +291,6 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/empty_package.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/open_enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/unused_imports.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/weak_imports.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/enum.cc
@@ -338,6 +340,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator_factory.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/map_field_lite.cc
@@ -382,9 +385,11 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessors.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_bytes.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/map.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/repeated_scalar.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_scalar.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_string.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/unsupported_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/generator.cc
@@ -448,6 +453,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator_factory.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/map_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/map_field_lite.h
@@ -504,6 +510,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/relative_path.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.h
 )
 
@@ -579,6 +586,26 @@ set(plugin_proto_hdrs
 # @//src/google/protobuf/compiler:plugin_proto
 set(plugin_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin_proto-descriptor-set.proto.bin
+)
+
+# @//java/core:java_features_proto
+set(java_features_proto_proto_srcs
+  ${protobuf_SOURCE_DIR}/java/core/src/main/java/com/google/protobuf/java_features.proto
+)
+
+# @//java/core:java_features_proto
+set(java_features_proto_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.proto.pb.cc
+)
+
+# @//java/core:java_features_proto
+set(java_features_proto_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.proto.pb.h
+)
+
+# @//java/core:java_features_proto
+set(java_features_proto_files
+  ${protobuf_SOURCE_DIR}/java/core/java_features_proto-descriptor-set.proto.bin
 )
 
 # @//pkg:common_test
@@ -700,6 +727,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_features.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_public.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_invalid_features.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies_custom_option.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies_enum.proto
@@ -745,6 +773,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/allowlist_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/arena_ctor_visibility_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/bootstrap_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/copy_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/file_unittest.cc

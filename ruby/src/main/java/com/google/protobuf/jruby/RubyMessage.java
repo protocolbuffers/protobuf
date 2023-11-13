@@ -628,7 +628,11 @@ public class RubyMessage extends RubyObject {
         input.setRecursionLimit(((RubyNumeric) recursionLimit).getIntValue());
       }
     }
+    return decodeBytes(context, ret, input, /*freeze*/ false);
+  }
 
+  public static IRubyObject decodeBytes(
+      ThreadContext context, RubyMessage ret, CodedInputStream input, boolean freeze) {
     try {
       ret.builder.mergeFrom(input);
     } catch (Exception e) {
@@ -658,7 +662,9 @@ public class RubyMessage extends RubyObject {
                 }
               });
     }
-
+    if (freeze) {
+      ret.deepFreeze(context);
+    }
     return ret;
   }
 
@@ -809,6 +815,22 @@ public class RubyMessage extends RubyObject {
       }
     }
     return ret;
+  }
+
+  protected IRubyObject deepFreeze(ThreadContext context) {
+    setFrozen(true);
+    for (FieldDescriptor fdef : descriptor.getFields()) {
+      if (fdef.isMapField()) {
+        ((RubyMap) fields.get(fdef)).deepFreeze(context);
+      } else if (fdef.isRepeated()) {
+        this.getRepeatedField(context, fdef).deepFreeze(context);
+      } else if (fields.containsKey(fdef)) {
+        if (fdef.getType() == FieldDescriptor.Type.MESSAGE) {
+          ((RubyMessage) fields.get(fdef)).deepFreeze(context);
+        }
+      }
+    }
+    return this;
   }
 
   protected DynamicMessage build(ThreadContext context, int depth, int recursionLimit) {

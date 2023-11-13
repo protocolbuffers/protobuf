@@ -1,39 +1,24 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
+#include <cmath>
+#include <limits>
+#include <string>
+
+#include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/strtod.h"
 
 namespace google {
 namespace protobuf {
@@ -46,6 +31,72 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
           {"field", field.desc().name()},
           {"Scalar", PrimitiveRsTypeName(field.desc())},
           {"hazzer_thunk", Thunk(field, "has")},
+          {"default_value",
+           [&] {
+             switch (field.desc().type()) {
+               case FieldDescriptor::TYPE_DOUBLE:
+                 if (std::isfinite(field.desc().default_value_double())) {
+                   return absl::StrCat(
+                       io::SimpleDtoa(field.desc().default_value_double()),
+                       "f64");
+                 } else if (std::isnan(field.desc().default_value_double())) {
+                   return std::string("f64::NAN");
+                 } else if (field.desc().default_value_double() ==
+                            std::numeric_limits<double>::infinity()) {
+                   return std::string("f64::INFINITY");
+                 } else if (field.desc().default_value_double() ==
+                            -std::numeric_limits<double>::infinity()) {
+                   return std::string("f64::NEG_INFINITY");
+                 } else {
+                   ABSL_LOG(FATAL) << "unreachable";
+                 }
+               case FieldDescriptor::TYPE_FLOAT:
+                 if (std::isfinite(field.desc().default_value_float())) {
+                   return absl::StrCat(
+                       io::SimpleFtoa(field.desc().default_value_float()),
+                       "f32");
+                 } else if (std::isnan(field.desc().default_value_float())) {
+                   return std::string("f32::NAN");
+                 } else if (field.desc().default_value_float() ==
+                            std::numeric_limits<float>::infinity()) {
+                   return std::string("f32::INFINITY");
+                 } else if (field.desc().default_value_float() ==
+                            -std::numeric_limits<float>::infinity()) {
+                   return std::string("f32::NEG_INFINITY");
+                 } else {
+                   ABSL_LOG(FATAL) << "unreachable";
+                 }
+               case FieldDescriptor::TYPE_INT32:
+               case FieldDescriptor::TYPE_SFIXED32:
+               case FieldDescriptor::TYPE_SINT32:
+                 return absl::StrFormat("%d",
+                                        field.desc().default_value_int32());
+               case FieldDescriptor::TYPE_INT64:
+               case FieldDescriptor::TYPE_SFIXED64:
+               case FieldDescriptor::TYPE_SINT64:
+                 return absl::StrFormat("%d",
+                                        field.desc().default_value_int64());
+               case FieldDescriptor::TYPE_FIXED64:
+               case FieldDescriptor::TYPE_UINT64:
+                 return absl::StrFormat("%u",
+                                        field.desc().default_value_uint64());
+               case FieldDescriptor::TYPE_FIXED32:
+               case FieldDescriptor::TYPE_UINT32:
+                 return absl::StrFormat("%u",
+                                        field.desc().default_value_uint32());
+               case FieldDescriptor::TYPE_BOOL:
+                 return absl::StrFormat("%v",
+                                        field.desc().default_value_bool());
+               case FieldDescriptor::TYPE_STRING:
+               case FieldDescriptor::TYPE_GROUP:
+               case FieldDescriptor::TYPE_MESSAGE:
+               case FieldDescriptor::TYPE_BYTES:
+               case FieldDescriptor::TYPE_ENUM:
+                 ABSL_LOG(FATAL) << "Non-singular scalar field type passed: "
+                                 << field.desc().type_name();
+             }
+             ABSL_LOG(FATAL) << "unreachable";
+           }()},
           {"getter",
            [&] {
              field.Emit({}, R"rs(
@@ -59,28 +110,88 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
              if (!field.desc().is_optional()) return;
              if (!field.desc().has_presence()) return;
              field.Emit({}, R"rs(
-                  pub fn r#$field$_opt(&self) -> Option<$Scalar$> {
+                  pub fn r#$field$_opt(&self) -> $pb$::Optional<$Scalar$> {
                     if !unsafe { $hazzer_thunk$(self.inner.msg) } {
-                      return None;
+                      return $pb$::Optional::Unset($default_value$);
                     }
-                    Some(unsafe { $getter_thunk$(self.inner.msg) })
+                    let value = unsafe { $getter_thunk$(self.inner.msg) };
+                    $pb$::Optional::Set(value)
                   }
                   )rs");
            }},
           {"getter_thunk", Thunk(field, "get")},
           {"setter_thunk", Thunk(field, "set")},
           {"clearer_thunk", Thunk(field, "clear")},
+          {"field_setter",
+           [&] {
+             if (field.desc().has_presence()) {
+               field.Emit({}, R"rs(
+                  pub fn r#$field$_set(&mut self, val: Option<$Scalar$>) {
+                    match val {
+                      Some(val) => unsafe { $setter_thunk$(self.inner.msg, val) },
+                      None => unsafe { $clearer_thunk$(self.inner.msg) },
+                    }
+                  }
+                )rs");
+             }
+           }},
+          {"field_mutator_getter",
+           [&] {
+             if (field.desc().has_presence()) {
+               field.Emit({}, R"rs(
+                  pub fn r#$field$_mut(&mut self) -> $pb$::FieldEntry<'_, $Scalar$> {
+                    static VTABLE: $pbi$::PrimitiveOptionalMutVTable<$Scalar$> =
+                      $pbi$::PrimitiveOptionalMutVTable::new(
+                        $pbi$::Private,
+                        $getter_thunk$,
+                        $setter_thunk$,
+                        $clearer_thunk$,
+                        $default_value$,
+                      );
+
+                      unsafe {
+                        let has = $hazzer_thunk$(self.inner.msg);
+                        $pbi$::new_vtable_field_entry::<$Scalar$>(
+                          $pbi$::Private,
+                          $pbr$::MutatorMessageRef::new($pbi$::Private, &mut self.inner),
+                          &VTABLE,
+                          has,
+                        )
+                      }
+                  }
+                )rs");
+             } else {
+               field.Emit({}, R"rs(
+                  pub fn r#$field$_mut(&mut self) -> $pb$::Mut<'_, $Scalar$> {
+                    static VTABLE: $pbi$::PrimitiveVTable<$Scalar$> =
+                      $pbi$::PrimitiveVTable::new(
+                        $pbi$::Private,
+                        $getter_thunk$,
+                        $setter_thunk$,
+                      );
+
+                      $pb$::PrimitiveMut::from_singular(
+                        $pbi$::Private,
+                        unsafe {
+                          $pbi$::RawVTableMutator::new(
+                            $pbi$::Private,
+                            $pbr$::MutatorMessageRef::new(
+                              $pbi$::Private, &mut self.inner
+                            ),
+                            &VTABLE,
+                          )
+                        },
+                      )
+                  }
+                )rs");
+             }
+           }},
       },
       R"rs(
           $getter$
           $getter_opt$
-
-          pub fn $field$_set(&mut self, val: Option<$Scalar$>) {
-            match val {
-              Some(val) => unsafe { $setter_thunk$(self.inner.msg, val) },
-              None => unsafe { $clearer_thunk$(self.inner.msg) },
-            }
-          }
+          $field_setter$
+          $field_mutator_getter$
         )rs");
 }
 

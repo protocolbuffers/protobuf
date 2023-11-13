@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -34,14 +11,19 @@
 
 #include "google/protobuf/extension_set.h"
 
+#include <algorithm>
+#include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/extension_set_inl.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -129,13 +111,11 @@ bool GeneratedExtensionFinder::Find(int number, ExtensionInfo* output) {
 
 void ExtensionSet::RegisterExtension(const MessageLite* extendee, int number,
                                      FieldType type, bool is_repeated,
-                                     bool is_packed,
-                                     LazyEagerVerifyFnType verify_func) {
+                                     bool is_packed) {
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_ENUM);
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_MESSAGE);
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_GROUP);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
-                     verify_func);
+  ExtensionInfo info(extendee, number, type, is_repeated, is_packed);
   Register(info);
 }
 
@@ -157,7 +137,7 @@ void ExtensionSet::RegisterEnumExtension(const MessageLite* extendee,
                                          bool is_repeated, bool is_packed,
                                          EnumValidityFunc* is_valid) {
   ABSL_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed, nullptr);
+  ExtensionInfo info(extendee, number, type, is_repeated, is_packed);
   info.enum_validity_check.func = CallNoArgValidityFunc;
   // See comment in CallNoArgValidityFunc() about why we use a c-style cast.
   info.enum_validity_check.arg = (void*)is_valid;
@@ -168,11 +148,12 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
                                             int number, FieldType type,
                                             bool is_repeated, bool is_packed,
                                             const MessageLite* prototype,
-                                            LazyEagerVerifyFnType verify_func) {
+                                            LazyEagerVerifyFnType verify_func,
+                                            LazyAnnotation is_lazy) {
   ABSL_CHECK(type == WireFormatLite::TYPE_MESSAGE ||
              type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
-                     verify_func);
+                     verify_func, is_lazy);
   info.message_info = {prototype};
   Register(info);
 }
@@ -649,9 +630,8 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
     ClearExtension(number);
     return;
   }
-  ABSL_DCHECK(message->GetOwningArena() == nullptr ||
-              message->GetOwningArena() == arena_);
-  Arena* message_arena = message->GetOwningArena();
+  ABSL_DCHECK(message->GetArena() == nullptr || message->GetArena() == arena_);
+  Arena* message_arena = message->GetArena();
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
@@ -1123,7 +1103,7 @@ void ExtensionSet::Swap(const MessageLite* extendee, ExtensionSet* other) {
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
     InternalSwap(other);
   } else {
-    // TODO(cfallin, rohananil): We maybe able to optimize a case where we are
+    // TODO: We maybe able to optimize a case where we are
     // swapping from heap to arena-allocated extension set, by just Own()'ing
     // the extensions.
     ExtensionSet extension_set;
@@ -1158,7 +1138,7 @@ void ExtensionSet::SwapExtension(const MessageLite* extendee,
   if (this_ext == other_ext) return;
 
   if (this_ext != nullptr && other_ext != nullptr) {
-    // TODO(cfallin, rohananil): We could further optimize these cases,
+    // TODO: We could further optimize these cases,
     // especially avoid creation of ExtensionSet, and move MergeFrom logic
     // into Extensions itself (which takes arena as an argument).
     // We do it this way to reuse the copy-across-arenas logic already
@@ -1957,6 +1937,8 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
+std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena* arena)>
+    ExtensionSet::maybe_create_lazy_extension_;
 
 }  // namespace internal
 }  // namespace protobuf
