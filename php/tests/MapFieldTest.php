@@ -258,15 +258,15 @@ class MapFieldTest extends TestBase {
 
         // Test set.
         $arr[0] = 1;
-        $this->assertFloatEquals(1.0, $arr[0], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.0, $arr[0], MAX_FLOAT_DIFF);
 
         $arr[1] = 1.1;
-        $this->assertFloatEquals(1.1, $arr[1], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.1, $arr[1], MAX_FLOAT_DIFF);
 
         $arr[2] = '2';
-        $this->assertFloatEquals(2.0, $arr[2], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(2.0, $arr[2], MAX_FLOAT_DIFF);
         $arr[3] = '3.1';
-        $this->assertFloatEquals(3.1, $arr[3], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(3.1, $arr[3], MAX_FLOAT_DIFF);
 
         $this->assertEquals(4, count($arr));
     }
@@ -280,15 +280,15 @@ class MapFieldTest extends TestBase {
 
         // Test set.
         $arr[0] = 1;
-        $this->assertFloatEquals(1.0, $arr[0], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.0, $arr[0], MAX_FLOAT_DIFF);
 
         $arr[1] = 1.1;
-        $this->assertFloatEquals(1.1, $arr[1], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(1.1, $arr[1], MAX_FLOAT_DIFF);
 
         $arr[2] = '2';
-        $this->assertFloatEquals(2.0, $arr[2], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(2.0, $arr[2], MAX_FLOAT_DIFF);
         $arr[3] = '3.1';
-        $this->assertFloatEquals(3.1, $arr[3], MAX_FLOAT_DIFF);
+        $this->assertEqualsWithDelta(3.1, $arr[3], MAX_FLOAT_DIFF);
 
         $this->assertEquals(4, count($arr));
     }
