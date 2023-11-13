@@ -77,10 +77,8 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline CppFeatures(const CppFeatures& from) : CppFeatures(nullptr, from) {}
-  CppFeatures(CppFeatures&& from) noexcept : CppFeatures() {
-    *this = ::std::move(from);
-  }
-
+  inline CppFeatures(CppFeatures&& from) noexcept
+      : CppFeatures(nullptr, std::move(from)) {}
   inline CppFeatures& operator=(const CppFeatures& from) {
     CopyFrom(from);
     return *this;
@@ -181,6 +179,10 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
  protected:
   explicit CppFeatures(::google::protobuf::Arena* arena);
   CppFeatures(::google::protobuf::Arena* arena, const CppFeatures& from);
+  CppFeatures(::google::protobuf::Arena* arena, CppFeatures&& from) noexcept
+      : CppFeatures(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 

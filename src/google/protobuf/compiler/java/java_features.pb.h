@@ -108,10 +108,8 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline JavaFeatures(const JavaFeatures& from) : JavaFeatures(nullptr, from) {}
-  JavaFeatures(JavaFeatures&& from) noexcept : JavaFeatures() {
-    *this = ::std::move(from);
-  }
-
+  inline JavaFeatures(JavaFeatures&& from) noexcept
+      : JavaFeatures(nullptr, std::move(from)) {}
   inline JavaFeatures& operator=(const JavaFeatures& from) {
     CopyFrom(from);
     return *this;
@@ -212,6 +210,10 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
  protected:
   explicit JavaFeatures(::google::protobuf::Arena* arena);
   JavaFeatures(::google::protobuf::Arena* arena, const JavaFeatures& from);
+  JavaFeatures(::google::protobuf::Arena* arena, JavaFeatures&& from) noexcept
+      : JavaFeatures(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 

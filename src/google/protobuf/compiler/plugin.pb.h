@@ -125,10 +125,8 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Version(const Version& from) : Version(nullptr, from) {}
-  Version(Version&& from) noexcept : Version() {
-    *this = ::std::move(from);
-  }
-
+  inline Version(Version&& from) noexcept
+      : Version(nullptr, std::move(from)) {}
   inline Version& operator=(const Version& from) {
     CopyFrom(from);
     return *this;
@@ -229,6 +227,10 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
  protected:
   explicit Version(::google::protobuf::Arena* arena);
   Version(::google::protobuf::Arena* arena, const Version& from);
+  Version(::google::protobuf::Arena* arena, Version&& from) noexcept
+      : Version(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -337,10 +339,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
       ::google::protobuf::internal::ConstantInitialized);
 
   inline CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from) : CodeGeneratorResponse_File(nullptr, from) {}
-  CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept : CodeGeneratorResponse_File() {
-    *this = ::std::move(from);
-  }
-
+  inline CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept
+      : CodeGeneratorResponse_File(nullptr, std::move(from)) {}
   inline CodeGeneratorResponse_File& operator=(const CodeGeneratorResponse_File& from) {
     CopyFrom(from);
     return *this;
@@ -441,6 +441,10 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
  protected:
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* arena);
   CodeGeneratorResponse_File(::google::protobuf::Arena* arena, const CodeGeneratorResponse_File& from);
+  CodeGeneratorResponse_File(::google::protobuf::Arena* arena, CodeGeneratorResponse_File&& from) noexcept
+      : CodeGeneratorResponse_File(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -565,10 +569,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
       ::google::protobuf::internal::ConstantInitialized);
 
   inline CodeGeneratorResponse(const CodeGeneratorResponse& from) : CodeGeneratorResponse(nullptr, from) {}
-  CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept : CodeGeneratorResponse() {
-    *this = ::std::move(from);
-  }
-
+  inline CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept
+      : CodeGeneratorResponse(nullptr, std::move(from)) {}
   inline CodeGeneratorResponse& operator=(const CodeGeneratorResponse& from) {
     CopyFrom(from);
     return *this;
@@ -669,6 +671,10 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
  protected:
   explicit CodeGeneratorResponse(::google::protobuf::Arena* arena);
   CodeGeneratorResponse(::google::protobuf::Arena* arena, const CodeGeneratorResponse& from);
+  CodeGeneratorResponse(::google::protobuf::Arena* arena, CodeGeneratorResponse&& from) noexcept
+      : CodeGeneratorResponse(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -792,10 +798,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
       ::google::protobuf::internal::ConstantInitialized);
 
   inline CodeGeneratorRequest(const CodeGeneratorRequest& from) : CodeGeneratorRequest(nullptr, from) {}
-  CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept : CodeGeneratorRequest() {
-    *this = ::std::move(from);
-  }
-
+  inline CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept
+      : CodeGeneratorRequest(nullptr, std::move(from)) {}
   inline CodeGeneratorRequest& operator=(const CodeGeneratorRequest& from) {
     CopyFrom(from);
     return *this;
@@ -896,6 +900,10 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
  protected:
   explicit CodeGeneratorRequest(::google::protobuf::Arena* arena);
   CodeGeneratorRequest(::google::protobuf::Arena* arena, const CodeGeneratorRequest& from);
+  CodeGeneratorRequest(::google::protobuf::Arena* arena, CodeGeneratorRequest&& from) noexcept
+      : CodeGeneratorRequest(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
