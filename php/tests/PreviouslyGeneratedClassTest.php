@@ -9,6 +9,9 @@ class PreviouslyGeneratedClassTest extends TestBase
     # Test compatibility for previously unreserved words.
     #########################################################
 
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testPrefixForReservedWords()
     {
         // In newer versions of PHP, we cannot reference the old class name.
