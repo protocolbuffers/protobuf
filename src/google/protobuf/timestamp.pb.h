@@ -71,18 +71,17 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Timestamp final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
+class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
  public:
   inline Timestamp() : Timestamp(nullptr) {}
   ~Timestamp() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR Timestamp(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR Timestamp(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline Timestamp(const Timestamp& from)
-      : Timestamp(nullptr, from) {}
-  Timestamp(Timestamp&& from) noexcept
-    : Timestamp() {
+  inline Timestamp(const Timestamp& from) : Timestamp(nullptr, from) {}
+  Timestamp(Timestamp&& from) noexcept : Timestamp() {
     *this = ::std::move(from);
   }
 
@@ -93,9 +92,9 @@ class PROTOBUF_EXPORT Timestamp final :
   inline Timestamp& operator=(Timestamp&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -126,17 +125,18 @@ class PROTOBUF_EXPORT Timestamp final :
     return *internal_default_instance();
   }
   static inline const Timestamp* internal_default_instance() {
-    return reinterpret_cast<const Timestamp*>(&_Timestamp_default_instance_);
+    return reinterpret_cast<const Timestamp*>(
+        &_Timestamp_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Timestamp& a, Timestamp& b) { a.Swap(&b); }
   inline void Swap(Timestamp* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -156,11 +156,12 @@ class PROTOBUF_EXPORT Timestamp final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Timestamp& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const Timestamp& from) {
-    Timestamp::MergeImpl(*this, from);
-  }
+  void MergeFrom(const Timestamp& from) { Timestamp::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -168,31 +169,29 @@ class PROTOBUF_EXPORT Timestamp final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(Timestamp* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.Timestamp";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.Timestamp"; }
+
+ protected:
   explicit Timestamp(::google::protobuf::Arena* arena);
   Timestamp(::google::protobuf::Arena* arena, const Timestamp& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kSecondsFieldNumber = 1,
     kNanosFieldNumber = 2,
@@ -220,7 +219,6 @@ class PROTOBUF_EXPORT Timestamp final :
   // @@protoc_insertion_point(class_scope:google.protobuf.Timestamp)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 2, 0,
@@ -232,7 +230,7 @@ class PROTOBUF_EXPORT Timestamp final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,

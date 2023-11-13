@@ -71,18 +71,17 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Any final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
+class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
  public:
   inline Any() : Any(nullptr) {}
   ~Any() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR Any(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR Any(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline Any(const Any& from)
-      : Any(nullptr, from) {}
-  Any(Any&& from) noexcept
-    : Any() {
+  inline Any(const Any& from) : Any(nullptr, from) {}
+  Any(Any&& from) noexcept : Any() {
     *this = ::std::move(from);
   }
 
@@ -93,9 +92,9 @@ class PROTOBUF_EXPORT Any final :
   inline Any& operator=(Any&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -126,10 +125,12 @@ class PROTOBUF_EXPORT Any final :
     return *internal_default_instance();
   }
   static inline const Any* internal_default_instance() {
-    return reinterpret_cast<const Any*>(&_Any_default_instance_);
+    return reinterpret_cast<const Any*>(
+        &_Any_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
-  // implements Any -----------------------------------------------
+  // implements Any
+  // -----------------------------------------------
 
   bool PackFrom(const ::google::protobuf::Message& message) {
     ABSL_DCHECK_NE(&message, this);
@@ -179,11 +180,11 @@ class PROTOBUF_EXPORT Any final :
   friend void swap(Any& a, Any& b) { a.Swap(&b); }
   inline void Swap(Any* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -203,11 +204,12 @@ class PROTOBUF_EXPORT Any final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Any& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const Any& from) {
-    Any::MergeImpl(*this, from);
-  }
+  void MergeFrom(const Any& from) { Any::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -215,31 +217,29 @@ class PROTOBUF_EXPORT Any final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(Any* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.Any";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.Any"; }
+
+ protected:
   explicit Any(::google::protobuf::Arena* arena);
   Any(::google::protobuf::Arena* arena, const Any& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kTypeUrlFieldNumber = 1,
     kValueFieldNumber = 2,
@@ -279,7 +279,6 @@ class PROTOBUF_EXPORT Any final :
   // @@protoc_insertion_point(class_scope:google.protobuf.Any)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 2, 0,
@@ -291,7 +290,7 @@ class PROTOBUF_EXPORT Any final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,

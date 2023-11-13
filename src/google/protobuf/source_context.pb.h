@@ -71,18 +71,17 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT SourceContext final :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceContext) */ {
+class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.SourceContext) */ {
  public:
   inline SourceContext() : SourceContext(nullptr) {}
   ~SourceContext() override;
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR SourceContext(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR SourceContext(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline SourceContext(const SourceContext& from)
-      : SourceContext(nullptr, from) {}
-  SourceContext(SourceContext&& from) noexcept
-    : SourceContext() {
+  inline SourceContext(const SourceContext& from) : SourceContext(nullptr, from) {}
+  SourceContext(SourceContext&& from) noexcept : SourceContext() {
     *this = ::std::move(from);
   }
 
@@ -93,9 +92,9 @@ class PROTOBUF_EXPORT SourceContext final :
   inline SourceContext& operator=(SourceContext&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -126,17 +125,18 @@ class PROTOBUF_EXPORT SourceContext final :
     return *internal_default_instance();
   }
   static inline const SourceContext* internal_default_instance() {
-    return reinterpret_cast<const SourceContext*>(&_SourceContext_default_instance_);
+    return reinterpret_cast<const SourceContext*>(
+        &_SourceContext_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(SourceContext& a, SourceContext& b) { a.Swap(&b); }
   inline void Swap(SourceContext* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -156,11 +156,12 @@ class PROTOBUF_EXPORT SourceContext final :
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceContext& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom( const SourceContext& from) {
-    SourceContext::MergeImpl(*this, from);
-  }
+  void MergeFrom(const SourceContext& from) { SourceContext::MergeImpl(*this, from); }
+
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(::google::protobuf::Message& to_msg,
+                        const ::google::protobuf::Message& from_msg);
+
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -168,31 +169,29 @@ class PROTOBUF_EXPORT SourceContext final :
   ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   void SharedDtor();
   void InternalSwap(SourceContext* other);
-
-  private:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.SourceContext";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.SourceContext"; }
+
+ protected:
   explicit SourceContext(::google::protobuf::Arena* arena);
   SourceContext(::google::protobuf::Arena* arena, const SourceContext& from);
-  const ::google::protobuf::MessageLite::ClassData* GetClassData() const final;
-  public:
+  const ::google::protobuf::MessageLite::ClassData* GetClassData()
+      const final;
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   enum : int {
     kFileNameFieldNumber = 1,
   };
@@ -215,7 +214,6 @@ class PROTOBUF_EXPORT SourceContext final :
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceContext)
  private:
   class _Internal;
-
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       0, 1, 0,
@@ -227,7 +225,7 @@ class PROTOBUF_EXPORT SourceContext final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,

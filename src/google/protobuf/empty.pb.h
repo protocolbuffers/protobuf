@@ -72,17 +72,16 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Empty final :
-    public ::google::protobuf::internal::ZeroFieldsBase /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
+class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFieldsBase
+/* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
  public:
   inline Empty() : Empty(nullptr) {}
-  template<typename = void>
-  explicit PROTOBUF_CONSTEXPR Empty(::google::protobuf::internal::ConstantInitialized);
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR Empty(
+      ::google::protobuf::internal::ConstantInitialized);
 
-  inline Empty(const Empty& from)
-      : Empty(nullptr, from) {}
-  Empty(Empty&& from) noexcept
-    : Empty() {
+  inline Empty(const Empty& from) : Empty(nullptr, from) {}
+  Empty(Empty&& from) noexcept : Empty() {
     *this = ::std::move(from);
   }
 
@@ -93,9 +92,9 @@ class PROTOBUF_EXPORT Empty final :
   inline Empty& operator=(Empty&& from) noexcept {
     if (this == &from) return *this;
     if (GetArena() == from.GetArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
         && GetArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
     ) {
       InternalSwap(&from);
     } else {
@@ -126,17 +125,18 @@ class PROTOBUF_EXPORT Empty final :
     return *internal_default_instance();
   }
   static inline const Empty* internal_default_instance() {
-    return reinterpret_cast<const Empty*>(&_Empty_default_instance_);
+    return reinterpret_cast<const Empty*>(
+        &_Empty_default_instance_);
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Empty& a, Empty& b) { a.Swap(&b); }
   inline void Swap(Empty* other) {
     if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-  #else   // PROTOBUF_FORCE_COPY_IN_SWAP
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetArena() == other->GetArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -161,35 +161,31 @@ class PROTOBUF_EXPORT Empty final :
   void MergeFrom(const Empty& from) {
     ::google::protobuf::internal::ZeroFieldsBase::MergeImpl(*this, from);
   }
-  public:
 
-  private:
+  public:
+ private:
   friend class ::google::protobuf::internal::AnyMetadata;
-  static ::absl::string_view FullMessageName() {
-    return "google.protobuf.Empty";
-  }
-  protected:
+  static ::absl::string_view FullMessageName() { return "google.protobuf.Empty"; }
+
+ protected:
   explicit Empty(::google::protobuf::Arena* arena);
   Empty(::google::protobuf::Arena* arena, const Empty& from);
-  public:
 
+ public:
   ::google::protobuf::Metadata GetMetadata() const final;
-
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Empty)
  private:
   class _Internal;
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct PROTOBUF_EXPORT Impl_ {
+  struct Impl_ {
     inline explicit constexpr Impl_(
         ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
