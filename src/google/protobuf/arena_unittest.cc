@@ -1571,7 +1571,7 @@ TEST(ArenaTest, SpaceReuseForArraysSizeChecks) {
 }
 
 TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
-#ifdef ADDRESS_SANITIZER
+#ifdef PROTOBUF_ASAN
   char buf[1024]{};
   constexpr int kSize = 32;
   {
@@ -1605,9 +1605,9 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
     ASSERT_FALSE(__asan_address_is_poisoned(&c));
   }
 
-#else   // ADDRESS_SANITIZER
+#else   // PROTOBUF_ASAN
   GTEST_SKIP();
-#endif  // ADDRESS_SANITIZER
+#endif  // PROTOBUF_ASAN
 }
 
 
