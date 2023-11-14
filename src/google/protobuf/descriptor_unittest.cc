@@ -7034,8 +7034,71 @@ TEST_F(ValidationErrorTest, ValidateProto3EnumFromProto2) {
       "    field { name:'bar' number:1 label:LABEL_OPTIONAL type:TYPE_ENUM "
       "            type_name: 'foo.FooEnum' }"
       "}",
-      "bar.proto: Foo.bar: TYPE: Enum type \"foo.FooEnum\" is not a proto3 "
+      "bar.proto: Foo.bar: TYPE: Enum type \"foo.FooEnum\" is not an open "
       "enum, but is used in \"Foo\" which is a proto3 message type.\n");
+}
+
+TEST_F(ValidationErrorTest, ValidateProto3ClosedEnum) {
+  // Define a closed enum in an editions file.
+  BuildFile(R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 enum_type {
+                   name: 'FooEnum'
+                   value { name: 'DEFAULT_OPTION' number: 0 }
+                   options { features { enum_type: CLOSED } }
+                 })pb");
+
+  BuildFileWithErrors(
+      R"pb(name: 'bar.proto'
+           dependency: 'foo.proto'
+           syntax: 'proto3'
+           message_type {
+             name: 'Foo'
+             field {
+               name: 'bar'
+               number: 1
+               label: LABEL_OPTIONAL
+               type: TYPE_ENUM
+               type_name: 'foo.FooEnum'
+             }
+           })pb",
+      "bar.proto: Foo.bar: TYPE: Enum type \"foo.FooEnum\" is not an open "
+      "enum, but is used in \"Foo\" which is a proto3 message type.\n");
+}
+
+TEST_F(ValidationErrorTest, ValidateProto3OpenEnum) {
+  // Define an open enum in an editions file.
+  const FileDescriptor* foo =
+      BuildFile(R"pb(name: 'foo.proto'
+                     package: 'foo'
+                     syntax: 'editions'
+                     edition: EDITION_2023
+                     enum_type {
+                       name: 'FooEnum'
+                       value { name: 'DEFAULT_OPTION' number: 0 }
+                     })pb");
+  const EnumDescriptor* enm = foo->enum_type(0);
+  ASSERT_NE(enm, nullptr);
+
+  const FileDescriptor* bar = BuildFile(
+      R"pb(name: 'bar.proto'
+           dependency: 'foo.proto'
+           syntax: 'proto3'
+           message_type {
+             name: 'Foo'
+             field {
+               name: 'bar'
+               number: 1
+               label: LABEL_OPTIONAL
+               type: TYPE_ENUM
+               type_name: 'foo.FooEnum'
+             }
+           })pb");
+  ASSERT_NE(bar, nullptr);
+
+  EXPECT_EQ(bar->message_type(0)->field(0)->enum_type(), enm);
 }
 
 TEST_F(ValidationErrorTest, ValidateProto3Extension) {

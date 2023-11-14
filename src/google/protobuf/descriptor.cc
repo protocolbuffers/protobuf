@@ -7711,17 +7711,13 @@ void DescriptorBuilder::ValidateProto3Field(const FieldDescriptor* field,
              "Explicit default values are not allowed in proto3.");
   }
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM &&
-      field->enum_type() &&
-      FileDescriptorLegacy(field->enum_type()->file()).syntax() !=
-          FileDescriptorLegacy::Syntax::SYNTAX_PROTO3 &&
-      FileDescriptorLegacy(field->enum_type()->file()).syntax() !=
-          FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN) {
-    // Proto3 messages can only use Proto3 enum types; otherwise we can't
+      field->enum_type() && field->enum_type()->is_closed()) {
+    // Proto3 messages can only use open enum types; otherwise we can't
     // guarantee that the default value is zero.
     AddError(
         field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE, [&] {
           return absl::StrCat("Enum type \"", field->enum_type()->full_name(),
-                              "\" is not a proto3 enum, but is used in \"",
+                              "\" is not an open enum, but is used in \"",
                               field->containing_type()->full_name(),
                               "\" which is a proto3 message type.");
         });
