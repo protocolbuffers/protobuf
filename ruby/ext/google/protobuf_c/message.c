@@ -977,9 +977,12 @@ VALUE Message_decode_bytes(int size, const char* bytes, int options,
   VALUE msg_rb = initialize_rb_class_with_no_args(klass);
   Message* msg = ruby_to_Message(msg_rb);
 
+  const upb_FileDef* file = upb_MessageDef_File(msg->msgdef);
+  const upb_ExtensionRegistry* extreg =
+      upb_DefPool_ExtensionRegistry(upb_FileDef_Pool(file));
   upb_DecodeStatus status = upb_Decode(bytes, size, (upb_Message*)msg->msg,
                                        upb_MessageDef_MiniTable(msg->msgdef),
-                                       NULL, options, Arena_get(msg->arena));
+                                       extreg, options, Arena_get(msg->arena));
   if (status != kUpb_DecodeStatus_Ok) {
     rb_raise(cParseError, "Error occurred during parsing");
   }
@@ -1303,9 +1306,12 @@ upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
   upb_Message* new_msg = upb_Message_New(layout, arena);
   char* data;
 
+  const upb_FileDef* file = upb_MessageDef_File(m);
+  const upb_ExtensionRegistry* extreg =
+      upb_DefPool_ExtensionRegistry(upb_FileDef_Pool(file));
   if (upb_Encode(msg, layout, 0, tmp_arena, &data, &size) !=
           kUpb_EncodeStatus_Ok ||
-      upb_Decode(data, size, new_msg, layout, NULL, 0, arena) !=
+      upb_Decode(data, size, new_msg, layout, extreg, 0, arena) !=
           kUpb_DecodeStatus_Ok) {
     upb_Arena_Free(tmp_arena);
     rb_raise(cParseError, "Error occurred copying proto");
