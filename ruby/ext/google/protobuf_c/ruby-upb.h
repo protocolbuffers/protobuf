@@ -434,7 +434,34 @@ typedef enum {
 extern "C" {
 #endif
 
-UPB_INLINE bool upb_FieldType_IsPackable(upb_FieldType type) {
+// Convert from upb_FieldType to upb_CType
+UPB_INLINE upb_CType upb_FieldType_CType(upb_FieldType field_type) {
+  static const upb_CType c_type[] = {
+      kUpb_CType_Double,   // kUpb_FieldType_Double
+      kUpb_CType_Float,    // kUpb_FieldType_Float
+      kUpb_CType_Int64,    // kUpb_FieldType_Int64
+      kUpb_CType_UInt64,   // kUpb_FieldType_UInt64
+      kUpb_CType_Int32,    // kUpb_FieldType_Int32
+      kUpb_CType_UInt64,   // kUpb_FieldType_Fixed64
+      kUpb_CType_UInt32,   // kUpb_FieldType_Fixed32
+      kUpb_CType_Bool,     // kUpb_FieldType_Bool
+      kUpb_CType_String,   // kUpb_FieldType_String
+      kUpb_CType_Message,  // kUpb_FieldType_Group
+      kUpb_CType_Message,  // kUpb_FieldType_Message
+      kUpb_CType_Bytes,    // kUpb_FieldType_Bytes
+      kUpb_CType_UInt32,   // kUpb_FieldType_UInt32
+      kUpb_CType_Enum,     // kUpb_FieldType_Enum
+      kUpb_CType_Int32,    // kUpb_FieldType_SFixed32
+      kUpb_CType_Int64,    // kUpb_FieldType_SFixed64
+      kUpb_CType_Int32,    // kUpb_FieldType_SInt32
+      kUpb_CType_Int64,    // kUpb_FieldType_SInt64
+  };
+
+  // -1 here because the enum is one-based but the table is zero-based.
+  return c_type[field_type - 1];
+}
+
+UPB_INLINE bool upb_FieldType_IsPackable(upb_FieldType field_type) {
   // clang-format off
   const unsigned kUnpackableTypes =
       (1 << kUpb_FieldType_String) |
@@ -442,7 +469,7 @@ UPB_INLINE bool upb_FieldType_IsPackable(upb_FieldType type) {
       (1 << kUpb_FieldType_Message) |
       (1 << kUpb_FieldType_Group);
   // clang-format on
-  return (1 << type) & ~kUnpackableTypes;
+  return (1 << field_type) & ~kUnpackableTypes;
 }
 
 #ifdef __cplusplus
@@ -867,6 +894,10 @@ UPB_API void* upb_Array_MutableDataPtr(upb_Array* arr);
 #ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 #define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 
 #ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
 #define UPB_MESSAGE_INTERNAL_EXTENSION_H_
@@ -1185,38 +1216,7 @@ upb_MiniTableField_Type(const upb_MiniTableField* field) {
 }
 
 UPB_API_INLINE upb_CType upb_MiniTableField_CType(const upb_MiniTableField* f) {
-  switch (upb_MiniTableField_Type(f)) {
-    case kUpb_FieldType_Double:
-      return kUpb_CType_Double;
-    case kUpb_FieldType_Float:
-      return kUpb_CType_Float;
-    case kUpb_FieldType_Int64:
-    case kUpb_FieldType_SInt64:
-    case kUpb_FieldType_SFixed64:
-      return kUpb_CType_Int64;
-    case kUpb_FieldType_Int32:
-    case kUpb_FieldType_SFixed32:
-    case kUpb_FieldType_SInt32:
-      return kUpb_CType_Int32;
-    case kUpb_FieldType_UInt64:
-    case kUpb_FieldType_Fixed64:
-      return kUpb_CType_UInt64;
-    case kUpb_FieldType_UInt32:
-    case kUpb_FieldType_Fixed32:
-      return kUpb_CType_UInt32;
-    case kUpb_FieldType_Enum:
-      return kUpb_CType_Enum;
-    case kUpb_FieldType_Bool:
-      return kUpb_CType_Bool;
-    case kUpb_FieldType_String:
-      return kUpb_CType_String;
-    case kUpb_FieldType_Bytes:
-      return kUpb_CType_Bytes;
-    case kUpb_FieldType_Group:
-    case kUpb_FieldType_Message:
-      return kUpb_CType_Message;
-  }
-  UPB_UNREACHABLE();
+  return upb_FieldType_CType(upb_MiniTableField_Type(f));
 }
 
 UPB_API_INLINE bool upb_MiniTableField_IsExtension(
@@ -2148,6 +2148,73 @@ bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
 
 #endif /* UPB_MESSAGE_INTERNAL_H_ */
 
+#ifndef UPB_MESSAGE_INTERNAL_SIZE_LOG2_H_
+#define UPB_MESSAGE_INTERNAL_SIZE_LOG2_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Return the log2 of the storage size in bytes for a upb_CType
+UPB_INLINE int upb_SizeLog2_CType(upb_CType c_type) {
+  static const int8_t size[] = {
+      0,               // kUpb_CType_Bool
+      2,               // kUpb_CType_Float
+      2,               // kUpb_CType_Int32
+      2,               // kUpb_CType_UInt32
+      2,               // kUpb_CType_Enum
+      UPB_SIZE(2, 3),  // kUpb_CType_Message
+      3,               // kUpb_CType_Double
+      3,               // kUpb_CType_Int64
+      3,               // kUpb_CType_UInt64
+      UPB_SIZE(3, 4),  // kUpb_CType_String
+      UPB_SIZE(3, 4),  // kUpb_CType_Bytes
+  };
+
+  // -1 here because the enum is one-based but the table is zero-based.
+  return size[c_type - 1];
+}
+
+// Return the log2 of the storage size in bytes for a upb_FieldType
+UPB_INLINE int upb_SizeLog2_FieldType(upb_FieldType field_type) {
+  static const int8_t size[] = {
+      3,               // kUpb_FieldType_Double
+      2,               // kUpb_FieldType_Float
+      3,               // kUpb_FieldType_Int64
+      3,               // kUpb_FieldType_UInt64
+      2,               // kUpb_FieldType_Int32
+      3,               // kUpb_FieldType_Fixed64
+      2,               // kUpb_FieldType_Fixed32
+      0,               // kUpb_FieldType_Bool
+      UPB_SIZE(3, 4),  // kUpb_FieldType_String
+      UPB_SIZE(2, 3),  // kUpb_FieldType_Group
+      UPB_SIZE(2, 3),  // kUpb_FieldType_Message
+      UPB_SIZE(3, 4),  // kUpb_FieldType_Bytes
+      2,               // kUpb_FieldType_UInt32
+      2,               // kUpb_FieldType_Enum
+      2,               // kUpb_FieldType_SFixed32
+      3,               // kUpb_FieldType_SFixed64
+      2,               // kUpb_FieldType_SInt32
+      3,               // kUpb_FieldType_SInt64
+  };
+
+  // -1 here because the enum is one-based but the table is zero-based.
+  return size[field_type - 1];
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_INTERNAL_SIZE_LOG2_H_ */
+
 // Must be last.
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -2290,28 +2357,8 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
 
 UPB_INLINE size_t
 _upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
-  const unsigned char table[] = {
-      0,
-      3,               // kUpb_FieldType_Double = 1,
-      2,               // kUpb_FieldType_Float = 2,
-      3,               // kUpb_FieldType_Int64 = 3,
-      3,               // kUpb_FieldType_UInt64 = 4,
-      2,               // kUpb_FieldType_Int32 = 5,
-      3,               // kUpb_FieldType_Fixed64 = 6,
-      2,               // kUpb_FieldType_Fixed32 = 7,
-      0,               // kUpb_FieldType_Bool = 8,
-      UPB_SIZE(3, 4),  // kUpb_FieldType_String = 9,
-      UPB_SIZE(2, 3),  // kUpb_FieldType_Group = 10,
-      UPB_SIZE(2, 3),  // kUpb_FieldType_Message = 11,
-      UPB_SIZE(3, 4),  // kUpb_FieldType_Bytes = 12,
-      2,               // kUpb_FieldType_UInt32 = 13,
-      2,               // kUpb_FieldType_Enum = 14,
-      2,               // kUpb_FieldType_SFixed32 = 15,
-      3,               // kUpb_FieldType_SFixed64 = 16,
-      2,               // kUpb_FieldType_SInt32 = 17,
-      3,               // kUpb_FieldType_SInt64 = 18,
-  };
-  return table[field->UPB_PRIVATE(descriptortype)];
+  return upb_SizeLog2_FieldType(
+      (upb_FieldType)field->UPB_PRIVATE(descriptortype));
 }
 
 // Here we define universal getter/setter functions for message fields.
@@ -2544,12 +2591,6 @@ UPB_INLINE uintptr_t _upb_tag_arrptr(void* ptr, int elem_size_lg2) {
   UPB_ASSERT(elem_size_lg2 <= 4);
   UPB_ASSERT(((uintptr_t)ptr & 7) == 0);
   return (uintptr_t)ptr | (unsigned)elem_size_lg2;
-}
-
-extern const char _upb_Array_CTypeSizeLg2Table[];
-
-UPB_INLINE size_t _upb_Array_CTypeSizeLg2(upb_CType ctype) {
-  return _upb_Array_CTypeSizeLg2Table[ctype];
 }
 
 UPB_INLINE upb_Array* _upb_Array_New(upb_Arena* a, size_t init_capacity,

@@ -5559,7 +5559,7 @@ upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
                                const upb_MiniTable* sub, upb_Arena* arena) {
   size_t size = array->size;
   upb_Array* cloned_array =
-      _upb_Array_New(arena, size, _upb_Array_CTypeSizeLg2(value_type));
+      _upb_Array_New(arena, size, upb_SizeLog2_CType(value_type));
   if (!cloned_array) {
     return NULL;
   }
@@ -5728,24 +5728,11 @@ upb_Message* upb_Message_DeepClone(const upb_Message* message,
 
 #include <string.h>
 
+
 // Must be last.
 
-const char _upb_Array_CTypeSizeLg2Table[] = {
-    [kUpb_CType_Bool] = 0,
-    [kUpb_CType_Float] = 2,
-    [kUpb_CType_Int32] = 2,
-    [kUpb_CType_UInt32] = 2,
-    [kUpb_CType_Enum] = 2,
-    [kUpb_CType_Message] = UPB_SIZE(2, 3),
-    [kUpb_CType_Double] = 3,
-    [kUpb_CType_Int64] = 3,
-    [kUpb_CType_UInt64] = 3,
-    [kUpb_CType_String] = UPB_SIZE(3, 4),
-    [kUpb_CType_Bytes] = UPB_SIZE(3, 4),
-};
-
 upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
-  return _upb_Array_New(a, 4, _upb_Array_CTypeSizeLg2(type));
+  return _upb_Array_New(a, 4, upb_SizeLog2_CType(type));
 }
 
 const void* upb_Array_DataPtr(const upb_Array* arr) {
@@ -8902,6 +8889,9 @@ upb_ExtensionRange* _upb_ExtensionRanges_New(
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 // Must be last.
@@ -8972,38 +8962,7 @@ const char* upb_FieldDef_FullName(const upb_FieldDef* f) {
 }
 
 upb_CType upb_FieldDef_CType(const upb_FieldDef* f) {
-  switch (f->type_) {
-    case kUpb_FieldType_Double:
-      return kUpb_CType_Double;
-    case kUpb_FieldType_Float:
-      return kUpb_CType_Float;
-    case kUpb_FieldType_Int64:
-    case kUpb_FieldType_SInt64:
-    case kUpb_FieldType_SFixed64:
-      return kUpb_CType_Int64;
-    case kUpb_FieldType_Int32:
-    case kUpb_FieldType_SFixed32:
-    case kUpb_FieldType_SInt32:
-      return kUpb_CType_Int32;
-    case kUpb_FieldType_UInt64:
-    case kUpb_FieldType_Fixed64:
-      return kUpb_CType_UInt64;
-    case kUpb_FieldType_UInt32:
-    case kUpb_FieldType_Fixed32:
-      return kUpb_CType_UInt32;
-    case kUpb_FieldType_Enum:
-      return kUpb_CType_Enum;
-    case kUpb_FieldType_Bool:
-      return kUpb_CType_Bool;
-    case kUpb_FieldType_String:
-      return kUpb_CType_String;
-    case kUpb_FieldType_Bytes:
-      return kUpb_CType_Bytes;
-    case kUpb_FieldType_Group:
-    case kUpb_FieldType_Message:
-      return kUpb_CType_Message;
-  }
-  UPB_UNREACHABLE();
+  return upb_FieldType_CType(f->type_);
 }
 
 upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f) {
@@ -12559,30 +12518,8 @@ static const char* _upb_Decoder_DecodeEnumPacked(
 
 upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
                                     const upb_MiniTableField* field) {
-  /* Maps descriptor type -> elem_size_lg2.  */
-  static const uint8_t kElemSizeLg2[] = {
-      [0] = -1,  // invalid descriptor type
-      [kUpb_FieldType_Double] = 3,
-      [kUpb_FieldType_Float] = 2,
-      [kUpb_FieldType_Int64] = 3,
-      [kUpb_FieldType_UInt64] = 3,
-      [kUpb_FieldType_Int32] = 2,
-      [kUpb_FieldType_Fixed64] = 3,
-      [kUpb_FieldType_Fixed32] = 2,
-      [kUpb_FieldType_Bool] = 0,
-      [kUpb_FieldType_String] = UPB_SIZE(3, 4),
-      [kUpb_FieldType_Group] = UPB_SIZE(2, 3),
-      [kUpb_FieldType_Message] = UPB_SIZE(2, 3),
-      [kUpb_FieldType_Bytes] = UPB_SIZE(3, 4),
-      [kUpb_FieldType_UInt32] = 2,
-      [kUpb_FieldType_Enum] = 2,
-      [kUpb_FieldType_SFixed32] = 2,
-      [kUpb_FieldType_SFixed64] = 3,
-      [kUpb_FieldType_SInt32] = 2,
-      [kUpb_FieldType_SInt64] = 3,
-  };
-
-  size_t lg2 = kElemSizeLg2[field->UPB_PRIVATE(descriptortype)];
+  const upb_FieldType field_type = field->UPB_PRIVATE(descriptortype);
+  const size_t lg2 = upb_SizeLog2_FieldType(field_type);
   upb_Array* ret = _upb_Array_New(&d->arena, 4, lg2);
   if (!ret) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   return ret;
