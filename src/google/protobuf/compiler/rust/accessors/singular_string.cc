@@ -52,14 +52,12 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
                          {"transform_view", transform_view}},
                         R"rs(
             pub fn $field$_opt(&self) -> $pb$::Optional<&$proxied_type$> {
-              unsafe {
-                let view = $getter_thunk$(self.inner.msg).as_ref();
+                let view = unsafe { $getter_thunk$(self.inner.msg).as_ref() };
                 $pb$::Optional::new(
                   $transform_view$ ,
-                  $hazzer_thunk$(self.inner.msg)
+                  unsafe { $hazzer_thunk$(self.inner.msg) }
                 )
               }
-            }
           )rs");
            }},
           {"field_mutator_getter",
