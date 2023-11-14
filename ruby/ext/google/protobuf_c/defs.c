@@ -144,18 +144,24 @@ VALUE DescriptorPool_add_serialized_file(VALUE _self,
  * call-seq:
  *     DescriptorPool.lookup(name) => descriptor
  *
- * Finds a Descriptor or EnumDescriptor by name and returns it, or nil if none
- * exists with the given name.
+ * Finds a Descriptor, EnumDescriptor or FieldDescriptor by name and returns it,
+ * or nil if none exists with the given name.
  */
 static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   DescriptorPool* self = ruby_to_DescriptorPool(_self);
   const char* name_str = get_str(name);
   const upb_MessageDef* msgdef;
   const upb_EnumDef* enumdef;
+  const upb_FieldDef* fielddef;
 
   msgdef = upb_DefPool_FindMessageByName(self->symtab, name_str);
   if (msgdef) {
     return get_msgdef_obj(_self, msgdef);
+  }
+
+  fielddef = upb_DefPool_FindExtensionByName(self->symtab, name_str);
+  if (fielddef) {
+    return get_fielddef_obj(_self, fielddef);
   }
 
   enumdef = upb_DefPool_FindEnumByName(self->symtab, name_str);
