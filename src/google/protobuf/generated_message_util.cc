@@ -15,6 +15,7 @@
 #include <limits>
 #include <vector>
 
+#include "absl/base/call_once.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -49,18 +50,15 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 
 PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
-static bool InitProtobufDefaultsImpl() {
-  fixed_address_empty_string.DefaultConstruct();
-  OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
-
-
-  init_protobuf_defaults_state.store(true, std::memory_order_release);
-  return true;
-}
-
 void InitProtobufDefaultsSlow() {
-  static bool is_inited = InitProtobufDefaultsImpl();
-  (void)is_inited;
+  PROTOBUF_CONSTINIT static absl::once_flag once;
+  absl::call_once(once, [] {
+    fixed_address_empty_string.DefaultConstruct();
+    OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
+
+
+    init_protobuf_defaults_state.store(true, std::memory_order_release);
+  });
 }
 // Force the initialization of the empty string.
 // Normally, registration would do it, but we don't have any guarantee that
