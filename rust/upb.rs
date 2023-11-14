@@ -8,6 +8,7 @@
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
 use crate::__internal::{Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
+use core::fmt::Debug;
 use paste::paste;
 use std::alloc;
 use std::alloc::Layout;
@@ -567,7 +568,7 @@ macro_rules! impl_scalar_map_for_key_type {
 macro_rules! impl_scalar_map_for_key_types {
     ($($t:ty, $ufield:ident, $upb_tag:expr;)*) => {
         paste! { $(
-                pub trait [< MapWith $t:camel KeyOps >] {
+                pub trait [< MapWith $t:camel KeyOps >] : Sync + Send + Copy + Clone + Debug {
                     fn new_map(a: RawArena) -> RawMap;
                     fn clear(m: RawMap);
                     fn size(m: RawMap) -> usize;
@@ -648,6 +649,12 @@ extern "C" {
         removed_value: *mut upb_MessageValue,
     ) -> bool;
     fn upb_Map_Clear(map: RawMap);
+}
+
+#[cfg(test)]
+pub(crate) fn new_map_inner() -> MapInner<'static, i32, i64> {
+    let arena = Box::leak::<'static>(Box::new(Arena::new()));
+    MapInner::<'static, i32, i64>::new(arena)
 }
 
 #[cfg(test)]
