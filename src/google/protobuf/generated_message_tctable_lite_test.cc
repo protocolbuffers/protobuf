@@ -861,7 +861,7 @@ TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRange) {
 // This test checks that the parser doesn't overflow an int32 when computing the
 // array's new length.
 TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRangeLargeSize) {
-#ifdef ABSL_HAVE_MEMORY_SANITIZER
+#ifdef PROTOBUF_MSAN
   // This test attempts to allocate 8GB of memory, which OOMs MSAN.
   return;
 #endif

@@ -450,7 +450,7 @@ TEST(RepeatedField, ReserveLarge) {
 }
 
 TEST(RepeatedField, ReserveHuge) {
-#if defined(ABSL_HAVE_ADDRESS_SANITIZER) || defined(ABSL_HAVE_MEMORY_SANITIZER)
+#if defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN)
   GTEST_SKIP() << "Disabled because sanitizer is active";
 #endif
   // Largest value that does not clamp to the large limit:
@@ -1172,17 +1172,17 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
   }
 }
 
-#if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
-                                      defined(ABSL_HAVE_MEMORY_SANITIZER))
+#if defined(GTEST_HAS_DEATH_TEST) && \
+    (defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN))
 
 // This function verifies that the code dies under ASAN or MSAN trying to both
 // read and write the reserved element directly beyond the last element.
 void VerifyDeathOnWriteAndReadAccessBeyondEnd(RepeatedField<int64_t>& field) {
   auto* end = field.Mutable(field.size() - 1) + 1;
-#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+#if defined(PROTOBUF_ASAN)
   EXPECT_DEATH(*end = 1, "container-overflow");
   EXPECT_DEATH(EXPECT_NE(*end, 1), "container-overflow");
-#elif defined(ABSL_HAVE_MEMORY_SANITIZER)
+#elif defined(PROTOBUF_MSAN)
   EXPECT_DEATH(EXPECT_NE(*end, 1), "use-of-uninitialized-value");
 #endif
 

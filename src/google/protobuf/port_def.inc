@@ -73,15 +73,6 @@
 #define PROTOBUF_has_warning_DEFINED_
 #endif
 
-#ifdef ADDRESS_SANITIZER
-#include <sanitizer/asan_interface.h>
-#define PROTOBUF_POISON_MEMORY_REGION(p, n) ASAN_POISON_MEMORY_REGION(p, n)
-#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n) ASAN_UNPOISON_MEMORY_REGION(p, n)
-#else  // ADDRESS_SANITIZER
-#define PROTOBUF_POISON_MEMORY_REGION(p, n)
-#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n)
-#endif  // ADDRESS_SANITIZER
-
 // Portable PROTOBUF_BUILTIN_BSWAPxx definitions
 // Code must check for availability, e.g.: `defined(PROTOBUF_BUILTIN_BSWAP32)`
 #ifdef PROTOBUF_BUILTIN_BSWAP16
@@ -692,7 +683,21 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #    define PROTOBUF_TSAN 1
 #  endif
 #  endif
+#  ifdef __SANITIZE_MEMORY__
+#  if    __SANITIZE_MEMORY__
+#    define PROTOBUF_ASAN 1
+#  endif
+#  endif
 #endif
+
+#ifdef PROTOBUF_ASAN
+#include <sanitizer/asan_interface.h>
+#define PROTOBUF_POISON_MEMORY_REGION(p, n) ASAN_POISON_MEMORY_REGION(p, n)
+#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n) ASAN_UNPOISON_MEMORY_REGION(p, n)
+#else  // PROTOBUF_ASAN
+#define PROTOBUF_POISON_MEMORY_REGION(p, n)
+#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n)
+#endif  // PROTOBUF_ASAN
 
 #ifdef PROTOBUF_TSAN_READ
 #error PROTOBUF_TSAN_READ was previously defined
