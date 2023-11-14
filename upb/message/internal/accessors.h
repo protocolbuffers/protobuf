@@ -56,54 +56,74 @@ extern "C" {
 
 // Hasbit access ///////////////////////////////////////////////////////////////
 
-UPB_INLINE size_t _upb_hasbit_ofs(size_t idx) { return idx / 8; }
+UPB_INLINE size_t _upb_Hasbit_Offset(size_t index) { return index / 8; }
 
-UPB_INLINE char _upb_hasbit_mask(size_t idx) { return 1 << (idx % 8); }
+UPB_INLINE char _upb_Hasbit_Mask(size_t index) { return 1 << (index % 8); }
 
-UPB_INLINE bool _upb_hasbit(const upb_Message* msg, size_t idx) {
-  return (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), const char) &
-          _upb_hasbit_mask(idx)) != 0;
-}
-
-UPB_INLINE void _upb_sethas(const upb_Message* msg, size_t idx) {
-  (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), char)) |= _upb_hasbit_mask(idx);
-}
-
-UPB_INLINE void _upb_clearhas(const upb_Message* msg, size_t idx) {
-  (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), char)) &= ~_upb_hasbit_mask(idx);
-}
-
-UPB_INLINE size_t _upb_Message_Hasidx(const upb_MiniTableField* f) {
+UPB_INLINE size_t _upb_Hasbit_Index(const upb_MiniTableField* f) {
   UPB_ASSERT(f->presence > 0);
   return f->presence;
 }
 
-UPB_INLINE bool _upb_hasbit_field(const upb_Message* msg,
-                                  const upb_MiniTableField* f) {
-  return _upb_hasbit(msg, _upb_Message_Hasidx(f));
+UPB_INLINE bool _upb_Message_GetHasbitByIndex(const upb_Message* msg,
+                                              size_t index) {
+  const size_t offset = _upb_Hasbit_Offset(index);
+  const char mask = _upb_Hasbit_Mask(index);
+  return (*UPB_PTR_AT(msg, offset, const char) & mask) != 0;
 }
 
-UPB_INLINE void _upb_sethas_field(const upb_Message* msg,
-                                  const upb_MiniTableField* f) {
-  _upb_sethas(msg, _upb_Message_Hasidx(f));
+UPB_INLINE void _upb_Message_SetHasbitByIndex(const upb_Message* msg,
+                                              size_t index) {
+  const size_t offset = _upb_Hasbit_Offset(index);
+  const char mask = _upb_Hasbit_Mask(index);
+  (*UPB_PTR_AT(msg, offset, char)) |= mask;
+}
+
+UPB_INLINE void _upb_Message_ClearHasbitByIndex(const upb_Message* msg,
+                                                size_t index) {
+  const size_t offset = _upb_Hasbit_Offset(index);
+  const char mask = _upb_Hasbit_Mask(index);
+  (*UPB_PTR_AT(msg, offset, char)) &= ~mask;
+}
+
+UPB_INLINE bool _upb_Message_GetHasbitByField(const upb_Message* msg,
+                                              const upb_MiniTableField* f) {
+  return _upb_Message_GetHasbitByIndex(msg, _upb_Hasbit_Index(f));
+}
+
+UPB_INLINE void _upb_Message_SetHasbitByField(const upb_Message* msg,
+                                              const upb_MiniTableField* f) {
+  _upb_Message_SetHasbitByIndex(msg, _upb_Hasbit_Index(f));
+}
+
+UPB_INLINE void _upb_Message_ClearHasbitByField(const upb_Message* msg,
+                                                const upb_MiniTableField* f) {
+  _upb_Message_ClearHasbitByIndex(msg, _upb_Hasbit_Index(f));
 }
 
 // Oneof case access ///////////////////////////////////////////////////////////
 
-UPB_INLINE size_t _upb_oneofcase_ofs(const upb_MiniTableField* f) {
+UPB_INLINE size_t _upb_OneofCase_Offset(const upb_MiniTableField* f) {
   UPB_ASSERT(f->presence < 0);
   return ~(ptrdiff_t)f->presence;
 }
 
-UPB_INLINE uint32_t* _upb_oneofcase_field(upb_Message* msg,
-                                          const upb_MiniTableField* f) {
-  return UPB_PTR_AT(msg, _upb_oneofcase_ofs(f), uint32_t);
+UPB_INLINE uint32_t* _upb_Message_OneofCasePtr(upb_Message* msg,
+                                               const upb_MiniTableField* f) {
+  return UPB_PTR_AT(msg, _upb_OneofCase_Offset(f), uint32_t);
 }
 
-UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
-                                            const upb_MiniTableField* f) {
-  return *_upb_oneofcase_field((upb_Message*)msg, f);
+UPB_INLINE uint32_t _upb_Message_GetOneofCase(const upb_Message* msg,
+                                              const upb_MiniTableField* f) {
+  return *_upb_Message_OneofCasePtr((upb_Message*)msg, f);
 }
+
+UPB_INLINE void _upb_Message_SetOneofCase(upb_Message* msg,
+                                          const upb_MiniTableField* f) {
+  *_upb_Message_OneofCasePtr(msg, f) = f->number;
+}
+
+// TODO: implement _upb_Message_ClearOneofCase()
 
 // LINT.ThenChange(GoogleInternalName2)
 
@@ -124,9 +144,9 @@ UPB_INLINE const void* _upb_MiniTableField_GetConstPtr(
 UPB_INLINE void _upb_Message_SetPresence(upb_Message* msg,
                                          const upb_MiniTableField* field) {
   if (field->presence > 0) {
-    _upb_sethas_field(msg, field);
+    _upb_Message_SetHasbitByField(msg, field);
   } else if (_upb_MiniTableField_InOneOf(field)) {
-    *_upb_oneofcase_field(msg, field) = field->number;
+    _upb_Message_SetOneofCase(msg, field);
   }
 }
 
@@ -217,9 +237,9 @@ UPB_INLINE bool _upb_Message_HasNonExtensionField(
   UPB_ASSERT(upb_MiniTableField_HasPresence(field));
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   if (_upb_MiniTableField_InOneOf(field)) {
-    return _upb_getoneofcase_field(msg, field) == field->number;
+    return _upb_Message_GetOneofCase(msg, field) == field->number;
   } else {
-    return _upb_hasbit_field(msg, field);
+    return _upb_Message_GetHasbitByField(msg, field);
   }
 }
 
@@ -308,11 +328,11 @@ UPB_INLINE void _upb_Message_ClearExtensionField(
 UPB_INLINE void _upb_Message_ClearNonExtensionField(
     upb_Message* msg, const upb_MiniTableField* field) {
   if (field->presence > 0) {
-    _upb_clearhas(msg, _upb_Message_Hasidx(field));
+    _upb_Message_ClearHasbitByField(msg, field);
   } else if (_upb_MiniTableField_InOneOf(field)) {
-    uint32_t* oneof_case = _upb_oneofcase_field(msg, field);
-    if (*oneof_case != field->number) return;
-    *oneof_case = 0;
+    uint32_t* ptr = _upb_Message_OneofCasePtr(msg, field);
+    if (*ptr != field->number) return;
+    *ptr = 0;
   }
   const char zeros[16] = {0};
   _upb_MiniTable_CopyFieldData(_upb_MiniTableField_GetPtr(msg, field), zeros,

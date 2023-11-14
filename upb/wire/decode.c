@@ -671,10 +671,10 @@ static const char* _upb_Decoder_DecodeToSubMessage(
 
   /* Set presence if necessary. */
   if (field->presence > 0) {
-    _upb_sethas_field(msg, field);
+    _upb_Message_SetHasbitByField(msg, field);
   } else if (field->presence < 0) {
     /* Oneof case */
-    uint32_t* oneof_case = _upb_oneofcase_field(msg, field);
+    uint32_t* oneof_case = _upb_Message_OneofCasePtr(msg, field);
     if (op == kUpb_DecodeOp_SubMessage && *oneof_case != field->number) {
       memset(mem, 0, sizeof(void*));
     }
