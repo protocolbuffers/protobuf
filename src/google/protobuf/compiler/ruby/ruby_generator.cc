@@ -38,9 +38,6 @@ void GenerateMessageAssignment(absl::string_view prefix,
                                const Descriptor* message, io::Printer* printer);
 void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
                             io::Printer* printer);
-void GenerateExtensionAssignment(absl::string_view prefix,
-                            const FieldDescriptor* f,
-                            io::Printer* printer);
 std::string DefaultValueForField(const FieldDescriptor* field);
 
 template<class numeric_type>
@@ -143,9 +140,6 @@ void GenerateMessageAssignment(absl::string_view prefix,
   for (int i = 0; i < message->enum_type_count(); i++) {
     GenerateEnumAssignment(nested_prefix, message->enum_type(i), printer);
   }
-  for (int i = 0; i < message->extension_count(); i++) {
-    GenerateExtensionAssignment(nested_prefix, message->extension(i), printer);
-  }
 }
 
 void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
@@ -158,18 +152,6 @@ void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
     "::Google::Protobuf::DescriptorPool.generated_pool."
     "lookup(\"$full_name$\").enummodule\n",
     "full_name", en->full_name());
-}
-
-void GenerateExtensionAssignment(absl::string_view prefix, const FieldDescriptor* f,
-                            io::Printer* printer) {
-  printer->Print(
-    "$prefix$$name$ = ",
-    "prefix", prefix,
-    "name", RubifyConstant(f->name()));
-  printer->Print(
-    "::Google::Protobuf::DescriptorPool.generated_pool."
-    "lookup(\"$full_name$\")\n",
-    "full_name", f->full_name());
 }
 
 int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
@@ -335,9 +317,6 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
   }
   for (int i = 0; i < file->enum_type_count(); i++) {
     GenerateEnumAssignment("", file->enum_type(i), printer);
-  }
-  for (int i = 0; i < file->extension_count(); i++) {
-    GenerateExtensionAssignment("", file->extension(i), printer);
   }
   EndPackageModules(levels, printer);
 

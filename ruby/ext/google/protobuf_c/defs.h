@@ -79,7 +79,4 @@ extern VALUE generated_pool;
 // Call at startup to register all types in this module.
 void Defs_register(VALUE module);
 
-// FieldDescriptor
-VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb);
-
 #endif  // RUBY_PROTOBUF_DEFS_H_

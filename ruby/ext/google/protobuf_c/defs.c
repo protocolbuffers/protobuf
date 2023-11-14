@@ -839,7 +839,7 @@ static VALUE FieldDescriptor_subtype(VALUE _self) {
  * Returns the value set for this field on the given message. Raises an
  * exception if message is of the wrong type.
  */
-VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
+static VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_MessageDef* m;
 
