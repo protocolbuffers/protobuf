@@ -322,6 +322,7 @@ impl<'msg, T: RepeatedScalarOps> RepeatedField<'msg, T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use googletest::prelude::*;
     use std::boxed::Box;
 
     // We need to allocate the byte array so SerializedData can own it and
@@ -335,30 +336,30 @@ mod tests {
     #[test]
     fn test_serialized_data_roundtrip() {
         let (ptr, len) = allocate_byte_array(b"Hello world");
-        let serialized_data = SerializedData { data: NonNull::new(ptr).unwrap(), len: len };
-        assert_eq!(&*serialized_data, b"Hello world");
+        let serialized_data = SerializedData { data: NonNull::new(ptr).unwrap(), len };
+        assert_that!(&*serialized_data, eq(b"Hello world"));
     }
 
     #[test]
     fn repeated_field() {
         let mut r = RepeatedField::<i32>::new();
-        assert_eq!(r.len(), 0);
+        assert_that!(r.len(), eq(0));
         r.push(32);
-        assert_eq!(r.get(0), Some(32));
+        assert_that!(r.get(0), eq(Some(32)));
 
         let mut r = RepeatedField::<u32>::new();
-        assert_eq!(r.len(), 0);
+        assert_that!(r.len(), eq(0));
         r.push(32);
-        assert_eq!(r.get(0), Some(32));
+        assert_that!(r.get(0), eq(Some(32)));
 
         let mut r = RepeatedField::<f64>::new();
-        assert_eq!(r.len(), 0);
+        assert_that!(r.len(), eq(0));
         r.push(0.1234f64);
-        assert_eq!(r.get(0), Some(0.1234));
+        assert_that!(r.get(0), eq(Some(0.1234)));
 
         let mut r = RepeatedField::<bool>::new();
-        assert_eq!(r.len(), 0);
+        assert_that!(r.len(), eq(0));
         r.push(true);
-        assert_eq!(r.get(0), Some(true));
+        assert_that!(r.get(0), eq(Some(true)));
     }
 }

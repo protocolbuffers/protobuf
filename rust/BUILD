@@ -113,6 +113,9 @@ rust_test(
     name = "protobuf_cpp_test",
     crate = ":protobuf_cpp",
     rustc_flags = ["--cfg=cpp_kernel"],
+    deps = [
+        "@crate_index//:googletest",
+    ],
 )
 
 rust_library(
