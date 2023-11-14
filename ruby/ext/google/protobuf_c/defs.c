@@ -581,7 +581,7 @@ typedef struct {
   VALUE descriptor_pool;  // Owns the upb_FieldDef.
 } FieldDescriptor;
 
-VALUE cFieldDescriptor = Qnil;
+static VALUE cFieldDescriptor = Qnil;
 
 static void FieldDescriptor_mark(void* _self) {
   FieldDescriptor* self = _self;
