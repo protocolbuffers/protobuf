@@ -335,7 +335,7 @@ pub struct BytesOptionalMutVTable {
 
 impl BytesMutVTable {
     #[doc(hidden)]
-    pub const fn new(
+    pub const unsafe fn new(
         _private: Private,
         getter: unsafe extern "C" fn(msg: RawMessage) -> PtrAndLen,
         setter: unsafe extern "C" fn(msg: RawMessage, val: PtrAndLen),
