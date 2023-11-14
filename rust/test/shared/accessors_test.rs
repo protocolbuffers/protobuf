@@ -667,11 +667,16 @@ fn test_nonempty_default_string_accessors() {
 
 #[test]
 fn test_singular_msg_field() {
-    use crate::TestAllTypes_::NestedMessageView;
-    let msg = TestAllTypes::new();
-    // TODO: fetch the inner integer `bb`
-    // call should look like msg.optional_nested_message().bb()
-    let _msg: NestedMessageView = msg.optional_nested_message();
+    use crate::TestAllTypes_::{NestedMessageMut, NestedMessageView};
+
+    let mut msg = TestAllTypes::new();
+    let msg_view: NestedMessageView = msg.optional_nested_message();
+    // testing reading an int inside a view
+    assert_that!(msg_view.bb(), eq(0));
+
+    let msg_mut: NestedMessageMut = msg.optional_nested_message_mut();
+    // test reading an int inside a mut
+    assert_that!(msg_mut.bb(), eq(0));
 }
 
 #[test]

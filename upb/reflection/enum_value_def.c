@@ -64,6 +64,11 @@ bool upb_EnumValueDef_HasOptions(const upb_EnumValueDef* v) {
   return v->opts != (void*)kUpbDefOptDefault;
 }
 
+const UPB_DESC(FeatureSet) *
+    upb_EnumValueDef_ResolvedFeatures(const upb_EnumValueDef* e) {
+  return e->resolved_features;
+}
+
 const upb_EnumDef* upb_EnumValueDef_Enum(const upb_EnumValueDef* v) {
   return v->parent;
 }

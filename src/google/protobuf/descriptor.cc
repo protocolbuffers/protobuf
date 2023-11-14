@@ -36,6 +36,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -4555,12 +4556,34 @@ const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
   return result;
 }
 
-void DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
-  ABSL_CHECK(!build_started_)
-      << "Feature set defaults can't be changed once the pool has started "
-         "building.";
+absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
+  if (build_started_) {
+    return absl::FailedPreconditionError(
+        "Feature set defaults can't be changed once the pool has started "
+        "building.");
+  }
+  if (spec.minimum_edition() > spec.maximum_edition()) {
+    return absl::InvalidArgumentError(
+        absl::StrCat("Invalid edition range ", spec.minimum_edition(), " to ",
+                     spec.maximum_edition(), "."));
+  }
+  Edition prev_edition = EDITION_UNKNOWN;
+  for (const auto& edition_default : spec.defaults()) {
+    if (edition_default.edition() == EDITION_UNKNOWN) {
+      return absl::InvalidArgumentError(absl::StrCat(
+          "Invalid edition ", edition_default.edition(), " specified."));
+    }
+    if (edition_default.edition() <= prev_edition) {
+      return absl::InvalidArgumentError(absl::StrCat(
+          "Feature set defaults are not strictly increasing.  Edition ",
+          prev_edition, " is greater than or equal to edition ",
+          edition_default.edition(), "."));
+    }
+    prev_edition = edition_default.edition();
+  }
   feature_set_defaults_spec_ =
       absl::make_unique<FeatureSetDefaults>(std::move(spec));
+  return absl::OkStatus();
 }
 
 DescriptorBuilder::DescriptorBuilder(

@@ -261,6 +261,14 @@ impl<'msg> MutatorMessageRef<'msg> {
         MutatorMessageRef { msg: msg.msg, arena: &msg.arena }
     }
 
+    pub fn from_parent(
+        _private: Private,
+        parent_msg: &'msg mut MessageInner,
+        message_field_ptr: RawMessage,
+    ) -> Self {
+        MutatorMessageRef { msg: message_field_ptr, arena: &parent_msg.arena }
+    }
+
     pub fn msg(&self) -> RawMessage {
         self.msg
     }

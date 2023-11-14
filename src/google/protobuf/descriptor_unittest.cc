@@ -75,12 +75,14 @@ template <typename T>
 absl::Status GetStatus(const absl::StatusOr<T>& s) {
   return s.status();
 }
-MATCHER_P(StatusIs, status,
-          absl::StrCat(".status() is ", testing::PrintToString(status))) {
-  return GetStatus(arg).code() == status;
+MATCHER_P2(StatusIs, status, message,
+           absl::StrCat(".status() is ", testing::PrintToString(status))) {
+  return GetStatus(arg).code() == status &&
+         testing::ExplainMatchResult(message, GetStatus(arg).message(),
+                                     result_listener);
 }
-#define EXPECT_OK(x) EXPECT_THAT(x, StatusIs(absl::StatusCode::kOk))
-#define ASSERT_OK(x) ASSERT_THAT(x, StatusIs(absl::StatusCode::kOk))
+#define EXPECT_OK(x) EXPECT_THAT(x, StatusIs(absl::StatusCode::kOk, testing::_))
+#define ASSERT_OK(x) ASSERT_THAT(x, StatusIs(absl::StatusCode::kOk, testing::_))
 
 namespace google {
 namespace protobuf {
@@ -7238,7 +7240,7 @@ class FeaturesTest : public FeaturesBaseTest {
          GetExtensionReflection(pb::TestMessage::Nested::test_nested)},
         EDITION_PROTO2, EDITION_99999_TEST_ONLY);
     ASSERT_OK(default_spec);
-    pool_.SetFeatureSetDefaults(std::move(default_spec).value());
+    ASSERT_OK(pool_.SetFeatureSetDefaults(std::move(default_spec).value()));
   }
 };
 
@@ -10326,6 +10328,99 @@ INSTANTIATE_TEST_SUITE_P(
                  })pb")),
     [](const ::testing::TestParamInfo<FeaturesDebugStringTest::ParamType>&
            info) { return std::string(std::get<0>(info.param)); });
+
+using DescriptorPoolFeaturesTest = FeaturesBaseTest;
+
+TEST_F(DescriptorPoolFeaturesTest, BuildStarted) {
+  BuildDescriptorMessagesInTestPool();
+  FeatureSetDefaults defaults = ParseTextOrDie(R"pb()pb");
+  EXPECT_THAT(pool_.SetFeatureSetDefaults(std::move(defaults)),
+              StatusIs(absl::StatusCode::kFailedPrecondition,
+                       HasSubstr("defaults can't be changed")));
+}
+
+TEST_F(DescriptorPoolFeaturesTest, InvalidRange) {
+  FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
+    minimum_edition: EDITION_2023
+    maximum_edition: EDITION_PROTO2
+  )pb");
+  EXPECT_THAT(pool_.SetFeatureSetDefaults(std::move(defaults)),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       AllOf(HasSubstr("Invalid edition range"),
+                             HasSubstr("PROTO2"), HasSubstr("2023"))));
+}
+
+TEST_F(DescriptorPoolFeaturesTest, UnknownDefaults) {
+  FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
+    defaults {
+      edition: EDITION_UNKNOWN
+      features {}
+    }
+    minimum_edition: EDITION_PROTO2
+    maximum_edition: EDITION_2023
+  )pb");
+  EXPECT_THAT(pool_.SetFeatureSetDefaults(std::move(defaults)),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       AllOf(HasSubstr("Invalid edition UNKNOWN"))));
+}
+
+TEST_F(DescriptorPoolFeaturesTest, NotStrictlyIncreasing) {
+  FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
+    defaults {
+      edition: EDITION_PROTO3
+      features {}
+    }
+    defaults {
+      edition: EDITION_PROTO2
+      features {}
+    }
+    minimum_edition: EDITION_PROTO2
+    maximum_edition: EDITION_2023
+  )pb");
+  EXPECT_THAT(
+      pool_.SetFeatureSetDefaults(std::move(defaults)),
+      StatusIs(
+          absl::StatusCode::kInvalidArgument,
+          AllOf(
+              HasSubstr("not strictly increasing"),
+              HasSubstr("PROTO3 is greater than or equal to edition PROTO2"))));
+}
+
+TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
+  FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
+    defaults {
+      edition: EDITION_PROTO2
+      features {
+        field_presence: EXPLICIT
+        enum_type: CLOSED
+        repeated_field_encoding: EXPANDED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+      }
+    }
+    minimum_edition: EDITION_PROTO2
+    maximum_edition: EDITION_2023
+  )pb");
+  EXPECT_OK(pool_.SetFeatureSetDefaults(std::move(defaults)));
+
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_PROTO3
+  )pb");
+
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
+  EXPECT_THAT(GetFeatures(file), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: CLOSED
+                repeated_field_encoding: EXPANDED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+              )pb"));
+}
 
 
 

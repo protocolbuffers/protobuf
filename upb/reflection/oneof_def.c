@@ -45,6 +45,11 @@ bool upb_OneofDef_HasOptions(const upb_OneofDef* o) {
   return o->opts != (void*)kUpbDefOptDefault;
 }
 
+const UPB_DESC(FeatureSet) *
+    upb_OneofDef_ResolvedFeatures(const upb_OneofDef* o) {
+  return o->resolved_features;
+}
+
 const char* upb_OneofDef_FullName(const upb_OneofDef* o) {
   return o->full_name;
 }

@@ -16,6 +16,8 @@
 #include <Python.h>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
@@ -95,7 +97,9 @@ static PyDescriptorPool* _CreateDescriptorPool() {
   cpool->is_owned = false;
   cpool->is_mutable = false;
 
-  cpool->descriptor_options = new std::unordered_map<const void*, PyObject*>();
+  cpool->descriptor_options = new absl::flat_hash_map<const void*, PyObject*>();
+  cpool->descriptor_features =
+      new absl::flat_hash_map<const void*, PyObject*>();
 
   cpool->py_message_factory = message_factory::NewMessageFactory(
       &PyMessageFactory_Type, cpool);
@@ -191,12 +195,16 @@ static void Dealloc(PyObject* pself) {
   PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
   descriptor_pool_map->erase(self->pool);
   Py_CLEAR(self->py_message_factory);
-  for (std::unordered_map<const void*, PyObject*>::iterator it =
-           self->descriptor_options->begin();
+  for (auto it = self->descriptor_options->begin();
        it != self->descriptor_options->end(); ++it) {
     Py_DECREF(it->second);
   }
   delete self->descriptor_options;
+  for (auto it = self->descriptor_features->begin();
+       it != self->descriptor_features->end(); ++it) {
+    Py_DECREF(it->second);
+  }
+  delete self->descriptor_features;
   delete self->database;
   if (self->is_owned) {
     delete self->pool;
@@ -635,11 +643,51 @@ static PyObject* Add(PyObject* self, PyObject* file_descriptor_proto) {
   return AddSerializedFile(self, serialized_pb.get());
 }
 
+static PyObject* SetFeatureSetDefaults(PyObject* pself, PyObject* pdefaults) {
+  PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
+
+  if (!self->is_mutable) {
+    PyErr_SetString(
+        PyExc_RuntimeError,
+        "This DescriptorPool is not mutable and cannot add new definitions.");
+    return nullptr;
+  }
+
+  if (!PyObject_TypeCheck(pdefaults, CMessage_Type)) {
+    PyErr_Format(PyExc_TypeError,
+                 "SetFeatureSetDefaults called with invalid type: got %s.",
+                 Py_TYPE(pdefaults)->tp_name);
+    return nullptr;
+  }
+
+  CMessage* defaults = reinterpret_cast<CMessage*>(pdefaults);
+  if (defaults->message->GetDescriptor() !=
+      FeatureSetDefaults::GetDescriptor()) {
+    PyErr_Format(PyExc_TypeError,
+                 "SetFeatureSetDefaults called with invalid type: "
+                 " got %s.",
+                 defaults->message->GetDescriptor()->full_name().c_str());
+    return nullptr;
+  }
+
+  absl::Status status =
+      const_cast<DescriptorPool*>(self->pool)
+          ->SetFeatureSetDefaults(
+              *reinterpret_cast<FeatureSetDefaults*>(defaults->message));
+  if (!status.ok()) {
+    PyErr_SetString(PyExc_ValueError, std::string(status.message()).c_str());
+    return nullptr;
+  }
+  Py_RETURN_NONE;
+}
+
 static PyMethodDef Methods[] = {
     {"Add", Add, METH_O,
      "Adds the FileDescriptorProto and its types to this pool."},
     {"AddSerializedFile", AddSerializedFile, METH_O,
      "Adds a serialized FileDescriptorProto to this pool."},
+    {"SetFeatureSetDefaults", SetFeatureSetDefaults, METH_O,
+     "Sets the default feature mappings used during the build."},
 
     {"AddFileDescriptor", AddFileDescriptor, METH_O,
      "No-op. Add() must have been called before."},

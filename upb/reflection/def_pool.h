@@ -29,6 +29,11 @@ UPB_API upb_DefPool* upb_DefPool_New(void);
 UPB_API const UPB_DESC(FeatureSetDefaults) *
     upb_DefPool_FeatureSetDefaults(const upb_DefPool* s);
 
+UPB_API bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
+                                               const char* serialized_defaults,
+                                               size_t serialized_len,
+                                               upb_Status* status);
+
 UPB_API const upb_MessageDef* upb_DefPool_FindMessageByName(
     const upb_DefPool* s, const char* sym);
 

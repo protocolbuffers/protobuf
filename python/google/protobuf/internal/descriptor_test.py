@@ -20,6 +20,7 @@ from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import legacy_features_pb2
 from google.protobuf.internal import test_util
+from google.protobuf.internal import testing_refleaks
 
 from google.protobuf.internal import _parameterized
 from google.protobuf import unittest_custom_options_pb2
@@ -60,6 +61,7 @@ service DescriptorTestService {
 warnings.simplefilter('error', DeprecationWarning)
 
 
+@testing_refleaks.TestCase
 class DescriptorTest(unittest.TestCase):
 
   def setUp(self):
@@ -1218,11 +1220,7 @@ class MakeDescriptorTest(unittest.TestCase):
                        json_names[index])
 
 
-# TODO Add _GetFeatures for upb and C++.
-@unittest.skipIf(
-    api_implementation.Type() != 'python',
-    'Features field is only available with the pure python implementation',
-)
+@testing_refleaks.TestCase
 class FeaturesTest(_parameterized.TestCase):
 
   @_parameterized.named_parameters([
@@ -1369,15 +1367,11 @@ def SetTestFeature(proto, value):
   ].int_multiple_feature = value
 
 
-# TODO Add _GetFeatures for upb and C++.
-@unittest.skipIf(
-    api_implementation.Type() != 'python',
-    'Features field is only available with the pure python implementation',
-)
+@testing_refleaks.TestCase
 class FeatureInheritanceTest(unittest.TestCase):
 
   def setUp(self):
-    super().setUp()
+    super(FeatureInheritanceTest, self).setUp()
     self.file_proto = descriptor_pb2.FileDescriptorProto(
         name='some/filename/some.proto',
         package='protobuf_unittest',
@@ -1434,7 +1428,13 @@ class FeatureInheritanceTest(unittest.TestCase):
     )
 
   def BuildPool(self):
-    pool = descriptor_pool.DescriptorPool()
+
+    # These can't be put onto the fixture without breaking the refleak checks.
+    class ReturnObject:
+      pass
+
+    ret = ReturnObject()
+    ret.pool = descriptor_pool.DescriptorPool()
     defaults = descriptor_pb2.FeatureSetDefaults(
         defaults=[
             descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
@@ -1448,166 +1448,169 @@ class FeatureInheritanceTest(unittest.TestCase):
     defaults.defaults[0].features.Extensions[
         unittest_features_pb2.test
     ].int_multiple_feature = 1
-    pool.SetFeatureSetDefaults(defaults)
+    ret.pool.SetFeatureSetDefaults(defaults)
 
-    self.file = pool.AddSerializedFile(self.file_proto.SerializeToString())
-    self.top_message = pool.FindMessageTypeByName('protobuf_unittest.TopMessage')
-    self.top_enum = pool.FindEnumTypeByName('protobuf_unittest.TopEnum')
-    self.top_extension = pool.FindExtensionByName(
+    ret.file = ret.pool.AddSerializedFile(self.file_proto.SerializeToString())
+    ret.top_message = ret.pool.FindMessageTypeByName(
+        'protobuf_unittest.TopMessage'
+    )
+    ret.top_enum = ret.pool.FindEnumTypeByName('protobuf_unittest.TopEnum')
+    ret.top_extension = ret.pool.FindExtensionByName(
         'protobuf_unittest.top_extension'
     )
-    self.nested_message = self.top_message.nested_types_by_name['NestedMessage']
-    self.nested_enum = self.top_message.enum_types_by_name['NestedEnum']
-    self.nested_extension = self.top_message.extensions_by_name[
+    ret.nested_message = ret.top_message.nested_types_by_name['NestedMessage']
+    ret.nested_enum = ret.top_message.enum_types_by_name['NestedEnum']
+    ret.nested_extension = ret.top_message.extensions_by_name[
         'nested_extension'
     ]
-    self.field = self.top_message.fields_by_name['field']
-    self.oneof = self.top_message.oneofs_by_name['Oneof']
-    self.oneof_field = self.top_message.fields_by_name['oneof_field']
-    self.enum_value = self.top_enum.values_by_name['TOP_VALUE']
-    self.service = pool.FindServiceByName('protobuf_unittest.TestService')
-    self.method = self.service.methods_by_name['CallMethod']
+    ret.field = ret.top_message.fields_by_name['field']
+    ret.oneof = ret.top_message.oneofs_by_name['Oneof']
+    ret.oneof_field = ret.top_message.fields_by_name['oneof_field']
+    ret.enum_value = ret.top_enum.values_by_name['TOP_VALUE']
+    ret.service = ret.pool.FindServiceByName('protobuf_unittest.TestService')
+    ret.method = ret.service.methods_by_name['CallMethod']
+    return ret
 
   def testFileDefaults(self):
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.file), 1)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.file), 1)
 
   def testFileOverride(self):
     SetTestFeature(self.file_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.file), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.file), 3)
 
   def testFileMessageInherit(self):
     SetTestFeature(self.file_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.top_message), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.top_message), 3)
 
   def testFileMessageOverride(self):
     SetTestFeature(self.file_proto, 3)
     SetTestFeature(self.top_message_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.top_message), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.top_message), 5)
 
   def testFileEnumInherit(self):
     SetTestFeature(self.file_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.top_enum), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.top_enum), 3)
 
   def testFileEnumOverride(self):
     SetTestFeature(self.file_proto, 3)
     SetTestFeature(self.top_enum_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.top_enum), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.top_enum), 5)
 
   def testFileExtensionInherit(self):
     SetTestFeature(self.file_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.top_extension), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.top_extension), 3)
 
   def testFileExtensionOverride(self):
     SetTestFeature(self.file_proto, 3)
     SetTestFeature(self.top_extension_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.top_extension), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.top_extension), 5)
 
   def testFileServiceInherit(self):
     SetTestFeature(self.file_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.service), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.service), 3)
 
   def testFileServiceOverride(self):
     SetTestFeature(self.file_proto, 3)
     SetTestFeature(self.service_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.service), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.service), 5)
 
   def testMessageFieldInherit(self):
     SetTestFeature(self.top_message_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.field), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.field), 3)
 
   def testMessageFieldOverride(self):
     SetTestFeature(self.top_message_proto, 3)
     SetTestFeature(self.field_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.field), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.field), 5)
 
   def testMessageEnumInherit(self):
     SetTestFeature(self.top_message_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.nested_enum), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.nested_enum), 3)
 
   def testMessageEnumOverride(self):
     SetTestFeature(self.top_message_proto, 3)
     SetTestFeature(self.nested_enum_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.nested_enum), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.nested_enum), 5)
 
   def testMessageMessageInherit(self):
     SetTestFeature(self.top_message_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.nested_message), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.nested_message), 3)
 
   def testMessageMessageOverride(self):
     SetTestFeature(self.top_message_proto, 3)
     SetTestFeature(self.nested_message_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.nested_message), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.nested_message), 5)
 
   def testMessageExtensionInherit(self):
     SetTestFeature(self.top_message_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.nested_extension), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.nested_extension), 3)
 
   def testMessageExtensionOverride(self):
     SetTestFeature(self.top_message_proto, 3)
     SetTestFeature(self.nested_extension_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.nested_extension), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.nested_extension), 5)
 
   def testMessageOneofInherit(self):
     SetTestFeature(self.top_message_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.oneof), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.oneof), 3)
 
   def testMessageOneofOverride(self):
     SetTestFeature(self.top_message_proto, 3)
     SetTestFeature(self.oneof_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.oneof), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.oneof), 5)
 
   def testOneofFieldInherit(self):
     SetTestFeature(self.oneof_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.oneof_field), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.oneof_field), 3)
 
   def testOneofFieldOverride(self):
     SetTestFeature(self.oneof_proto, 3)
     SetTestFeature(self.oneof_field_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.oneof_field), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.oneof_field), 5)
 
   def testEnumValueInherit(self):
     SetTestFeature(self.top_enum_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.enum_value), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.enum_value), 3)
 
   def testEnumValueOverride(self):
     SetTestFeature(self.top_enum_proto, 3)
     SetTestFeature(self.enum_value_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.enum_value), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.enum_value), 5)
 
   def testServiceMethodInherit(self):
     SetTestFeature(self.service_proto, 3)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.method), 3)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.method), 3)
 
   def testServiceMethodOverride(self):
     SetTestFeature(self.service_proto, 3)
     SetTestFeature(self.method_proto, 5)
-    self.BuildPool()
-    self.assertEqual(GetTestFeature(self.method), 5)
+    pool = self.BuildPool()
+    self.assertEqual(GetTestFeature(pool.method), 5)
 
 
 if __name__ == '__main__':
