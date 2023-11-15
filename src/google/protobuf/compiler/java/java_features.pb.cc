@@ -155,12 +155,6 @@ class JavaFeatures::_Internal {
   using HasBits = decltype(std::declval<JavaFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_);
-  static void set_has_legacy_closed_enum(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_utf8_validation(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
 JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
@@ -344,8 +338,8 @@ void JavaFeatures::MergeImpl(::google::protobuf::Message& to_msg, const ::google
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.utf8_validation_ = from._impl_.utf8_validation_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 

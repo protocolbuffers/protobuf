@@ -339,6 +339,7 @@ inline bool JavaFeatures::legacy_closed_enum() const {
 }
 inline void JavaFeatures::set_legacy_closed_enum(bool value) {
   _internal_set_legacy_closed_enum(value);
+  _impl_._has_bits_[0] |= 0x00000001u;
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.legacy_closed_enum)
 }
 inline bool JavaFeatures::_internal_legacy_closed_enum() const {
@@ -347,7 +348,6 @@ inline bool JavaFeatures::_internal_legacy_closed_enum() const {
 }
 inline void JavaFeatures::_internal_set_legacy_closed_enum(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.legacy_closed_enum_ = value;
 }
 
@@ -367,6 +367,7 @@ inline ::pb::JavaFeatures_Utf8Validation JavaFeatures::utf8_validation() const {
 }
 inline void JavaFeatures::set_utf8_validation(::pb::JavaFeatures_Utf8Validation value) {
   _internal_set_utf8_validation(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.utf8_validation)
 }
 inline ::pb::JavaFeatures_Utf8Validation JavaFeatures::_internal_utf8_validation() const {
@@ -376,7 +377,6 @@ inline ::pb::JavaFeatures_Utf8Validation JavaFeatures::_internal_utf8_validation
 inline void JavaFeatures::_internal_set_utf8_validation(::pb::JavaFeatures_Utf8Validation value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   assert(::pb::JavaFeatures_Utf8Validation_IsValid(value));
-  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.utf8_validation_ = value;
 }
 

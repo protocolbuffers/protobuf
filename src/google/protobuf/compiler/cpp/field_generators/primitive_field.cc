@@ -192,16 +192,16 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
       return _internal_$name$();
     }
-    inline void $Msg$::set_$name$($Type$ value) {
-      $PrepareSplitMessageForWrite$;
-      _internal_set_$name$(value);
-      $annotate_set$;
-      // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
-    }
   )cc");
 
   if (is_oneof()) {
     p->Emit(R"cc(
+      inline void $Msg$::set_$name$($Type$ value) {
+        $PrepareSplitMessageForWrite$;
+        _internal_set_$name$(value);
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
       inline $Type$ $Msg$::_internal_$name$() const {
         if ($has_field$) {
           return $field_$;
@@ -218,13 +218,19 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
     )cc");
   } else {
     p->Emit(R"cc(
+      inline void $Msg$::set_$name$($Type$ value) {
+        $PrepareSplitMessageForWrite$;
+        _internal_set_$name$(value);
+        $set_hasbit$;
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
       inline $Type$ $Msg$::_internal_$name$() const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
       inline void $Msg$::_internal_set_$name$($Type$ value) {
         $TsanDetectConcurrentMutation$;
-        $set_hasbit$;
         $field_$ = value;
       }
     )cc");

@@ -2121,15 +2121,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   for (auto field : FieldRange(descriptor_)) {
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     field_generators_.get(field).GenerateInternalAccessorDeclarations(p);
-    if (HasHasbit(field)) {
-      int has_bit_index = HasBitIndex(field);
-      ABSL_CHECK_NE(has_bit_index, kNoHasbit) << field->full_name();
-      format(
-          "static void set_has_$1$(HasBits* has_bits) {\n"
-          "  (*has_bits)[$2$] |= $3$u;\n"
-          "}\n",
-          FieldName(field), has_bit_index / 32, (1u << (has_bit_index % 32)));
-    }
   }
   if (num_required_fields_ > 0) {
     const std::vector<uint32_t> masks_for_has_bits = RequiredFieldsBitMask();
@@ -3668,9 +3659,16 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
     while (it != next) {
       const std::vector<const FieldDescriptor*>& fields = it->fields;
-      const bool check_has_byte = fields.size() > 1 &&
-                                  HasByteIndex(fields.front()) != kNoHasbit &&
+      const bool cache_has_bits = HasByteIndex(fields.front()) != kNoHasbit;
+      const bool check_has_byte = cache_has_bits && fields.size() > 1 &&
                                   !IsLikelyPresent(fields.back(), options_);
+
+      if (cache_has_bits &&
+          cached_has_word_index != HasWordIndex(fields.front())) {
+        cached_has_word_index = HasWordIndex(fields.front());
+        format("cached_has_bits = from.$has_bits$[$1$];\n",
+               cached_has_word_index);
+      }
 
       if (check_has_byte) {
         // Emit an if() that will let us skip the whole chunk if none are set.
@@ -3684,18 +3682,11 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         ABSL_DCHECK_LE(2, popcnt(chunk_mask));
         ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-        if (cached_has_word_index != HasWordIndex(fields.front())) {
-          cached_has_word_index = HasWordIndex(fields.front());
-          format("cached_has_bits = from.$has_bits$[$1$];\n",
-                 cached_has_word_index);
-        }
-
         format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
         format.Indent();
       }
 
       // Go back and emit merging code for each of the fields we processed.
-      bool deferred_has_bit_changes = false;
       for (const auto* field : fields) {
         const auto& generator = field_generators_.get(field);
 
@@ -3733,10 +3724,6 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           format.Indent();
 
           if (check_has_byte && IsPOD(field)) {
-            // Defer hasbit modification until the end of chunk.
-            // This can reduce the number of loads/stores by up to 7 per 8
-            // fields.
-            deferred_has_bit_changes = true;
             generator.GenerateCopyConstructorCode(p);
           } else {
             generator.GenerateMergingCode(p);
@@ -3748,13 +3735,6 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       }
 
       if (check_has_byte) {
-        if (deferred_has_bit_changes) {
-          // Flush the has bits for the primitives we deferred.
-          ABSL_CHECK_LE(0, cached_has_word_index);
-          format("_this->$has_bits$[$1$] |= cached_has_bits;\n",
-                 cached_has_word_index);
-        }
-
         format.Outdent();
         format("}\n");
       }
@@ -3772,6 +3752,18 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       // Reset here as it may have been updated in just closed if statement.
       cached_has_word_index = -1;
     }
+  }
+
+  if (HasBitsSize() == 1) {
+    // Optimization to avoid a load. Assuming that most messages have fewer than
+    // 32 fields, this seems useful.
+    p->Emit(R"cc(
+      _this->$has_bits$[0] |= cached_has_bits;
+    )cc");
+  } else if (HasBitsSize() > 1) {
+    p->Emit(R"cc(
+      _this->$has_bits$.Or(from.$has_bits$);
+    )cc");
   }
 
   // Merge oneof fields. Oneof field requires oneof case check.

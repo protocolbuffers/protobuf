@@ -8,6 +8,9 @@
 #ifndef GOOGLE_PROTOBUF_HAS_BITS_H__
 #define GOOGLE_PROTOBUF_HAS_BITS_H__
 
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <initializer_list>
 
 #include "google/protobuf/stubs/common.h"
@@ -54,7 +57,12 @@ class HasBits {
   }
 
   void Or(const HasBits<doublewords>& rhs) {
-    for (int i = 0; i < doublewords; i++) has_bits_[i] |= rhs.has_bits_[i];
+    for (int i = 0; (i + 1) < doublewords; i += 2) {
+      Write64B(Read64B(i) | rhs.Read64B(i), i);
+    }
+    if ((doublewords % 2) != 0) {
+      has_bits_[doublewords - 1] |= rhs.has_bits_[doublewords - 1];
+    }
   }
 
   bool empty() const;
@@ -73,6 +81,16 @@ class HasBits {
     for (size_t ix = n; ix < doublewords; ++ix) {
       dst[ix] = 0;
     }
+  }
+
+  uint64_t Read64B(int index) const {
+    uint64_t v;
+    memcpy(&v, has_bits_ + index, sizeof(v));
+    return v;
+  }
+
+  void Write64B(uint64_t v, int index) {
+    memcpy(has_bits_ + index, &v, sizeof(v));
   }
 
   uint32_t has_bits_[doublewords];

@@ -169,16 +169,16 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
       return _internal_$name$();
     }
-    inline void $Msg$::set_$name$($Enum$ value) {
-      $PrepareSplitMessageForWrite$;
-      _internal_set_$name$(value);
-      $annotate_set$;
-      // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
-    }
   )cc");
 
   if (is_oneof()) {
     p->Emit(R"cc(
+      inline void $Msg$::set_$name$($Enum$ value) {
+        $PrepareSplitMessageForWrite$;
+        _internal_set_$name$(value);
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
       inline $Enum$ $Msg$::_internal_$name$() const {
         if ($has_field$) {
           return static_cast<$Enum$>($field_$);
@@ -196,6 +196,13 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
+      inline void $Msg$::set_$name$($Enum$ value) {
+        $PrepareSplitMessageForWrite$;
+        _internal_set_$name$(value);
+        $set_hasbit$;
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
       inline $Enum$ $Msg$::_internal_$name$() const {
         $TsanDetectConcurrentRead$;
         return static_cast<$Enum$>($field_$);
@@ -203,7 +210,6 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       inline void $Msg$::_internal_set_$name$($Enum$ value) {
         $TsanDetectConcurrentMutation$;
         $assert_valid$;
-        $set_hasbit$;
         $field_$ = value;
       }
     )cc");
