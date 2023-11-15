@@ -10,7 +10,7 @@ edition = "2023";
 // This file contains various edge cases we've collected from migrating real
 // protos in order to lock down the transformations.
 
-// LINT:ALLOW_GROUPS
+// LINT: ALLOW_GROUPS
 
 package protobuf_editions_test;
 

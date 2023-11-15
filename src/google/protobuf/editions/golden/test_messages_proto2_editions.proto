@@ -9,7 +9,7 @@
 //
 // - conformance tests
 
-// LINT:ALLOW_GROUPS
+// LINT: ALLOW_GROUPS
 
 edition = "2023";
 
