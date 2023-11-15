@@ -13187,10 +13187,10 @@ static const char* _upb_Decoder_DecodeToSubMessage(
 
   /* Set presence if necessary. */
   if (field->presence > 0) {
-    _upb_sethas_field(msg, field);
+    _upb_Message_SetHasbitByField(msg, field);
   } else if (field->presence < 0) {
     /* Oneof case */
-    uint32_t* oneof_case = _upb_oneofcase_field(msg, field);
+    uint32_t* oneof_case = _upb_Message_OneofCasePtr(msg, field);
     if (op == kUpb_DecodeOp_SubMessage && *oneof_case != field->number) {
       memset(mem, 0, sizeof(void*));
     }
@@ -15290,7 +15290,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
                                 const upb_MiniTableSub* subs,
                                 const upb_MiniTableField* f) {
   if (f->presence == 0) {
-    /* Proto3 presence or map/array. */
+    // Proto3 presence or map/array.
     const void* mem = UPB_PTR_AT(msg, f->offset, void);
     switch (_upb_MiniTableField_GetRep(f)) {
       case kUpb_FieldRep_1Byte: {
@@ -15316,11 +15316,11 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
         UPB_UNREACHABLE();
     }
   } else if (f->presence > 0) {
-    /* Proto2 presence: hasbit. */
-    return _upb_hasbit_field(msg, f);
+    // Proto2 presence: hasbit.
+    return _upb_Message_GetHasbitByField(msg, f);
   } else {
-    /* Field is in a oneof. */
-    return _upb_getoneofcase_field(msg, f) == f->number;
+    // Field is in a oneof.
+    return _upb_Message_GetOneofCase(msg, f) == f->number;
   }
 }
 
