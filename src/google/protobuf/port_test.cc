@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 //
+#include "google/protobuf/port.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -25,6 +27,16 @@ TEST(PortTest, ProtobufAssume) {
   EXPECT_DEBUG_DEATH(
       PROTOBUF_ASSUME(assume_var_for_test == 2),
       "port_test\\.cc:.*Assumption failed: 'assume_var_for_test == 2'");
+#endif
+}
+
+TEST(PortTest, UnreachableTrapsOnDebugMode) {
+#ifdef GTEST_HAS_DEATH_TEST
+  EXPECT_DEBUG_DEATH(Unreachable(), "Assumption failed: 'Unreachable'");
+#if defined(__GNUC__) && __has_builtin(__builtin_FILE)
+  EXPECT_DEBUG_DEATH(Unreachable(),
+                     "port_test\\.cc:.*Assumption failed: 'Unreachable'");
+#endif
 #endif
 }
 

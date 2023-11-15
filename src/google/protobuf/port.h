@@ -201,6 +201,20 @@ inline constexpr bool DebugHardenStringValues() {
 #endif
 }
 
+#if defined(__GNUC__) && defined(__has_builtin) && \
+    __has_builtin(__builtin_FILE) && __has_builtin(__builtin_LINE)
+[[noreturn]] inline void Unreachable(const char* file = __builtin_FILE(),
+                                     int line = __builtin_LINE()) {
+#else
+[[noreturn]] inline void Unreachable(const char* file = "", int line = 0) {
+#endif
+#if defined(NDEBUG) && defined(__GNUC__) && defined(__has_builtin) && \
+    __has_builtin(__builtin_unreachable)
+  __builtin_unreachable();
+#endif
+  protobuf_assumption_failed("Unreachable", file, line);
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
