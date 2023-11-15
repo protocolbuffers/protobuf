@@ -239,6 +239,7 @@ cc_test(
     deps = [
         ":port_def",
         ":varint_shuffle",
+        "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -439,6 +440,7 @@ cc_library(
         "//src/google/protobuf/stubs:lite",
         "//third_party/utf8_range:utf8_validity",
         "@com_google_absl//absl/base",
+        "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/hash",
