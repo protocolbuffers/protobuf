@@ -239,7 +239,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   UPB_ASSERT(upb_MiniTable_GetSubMessageTable(mini_table, field) ==
              sub_mini_table);
   bool is_oneof = _upb_MiniTableField_InOneOf(field);
-  if (!is_oneof || _upb_getoneofcase_field(msg, field) == field->number) {
+  if (!is_oneof || _upb_Message_GetOneofCase(msg, field) == field->number) {
     UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
   }
   upb_UnknownToMessageRet ret;
@@ -271,7 +271,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   } while (unknown.status == kUpb_FindUnknown_Ok);
   if (message) {
     if (is_oneof) {
-      *_upb_oneofcase_field(msg, field) = field->number;
+      _upb_Message_SetOneofCase(msg, field);
     }
     upb_Message_SetMessage(msg, mini_table, field, message);
     ret.message = message;
