@@ -27,6 +27,8 @@ fn test_nested_views() {
     assert_that!(inner_msg.sfixed32(), eq(0));
     assert_that!(inner_msg.sfixed64(), eq(0));
     assert_that!(inner_msg.bool(), eq(false));
+    assert_that!(*inner_msg.string().as_bytes(), empty());
+    assert_that!(*inner_msg.bytes(), empty());
 }
 
 #[test]
@@ -48,6 +50,8 @@ fn test_nested_muts() {
     assert_that!(inner_msg.sfixed32(), eq(0));
     assert_that!(inner_msg.sfixed64(), eq(0));
     assert_that!(inner_msg.bool(), eq(false));
+    assert_that!(*inner_msg.string().as_bytes(), empty());
+    assert_that!(*inner_msg.bytes(), empty());
 }
 
 #[test]

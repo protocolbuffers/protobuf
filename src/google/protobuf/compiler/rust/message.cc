@@ -9,6 +9,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -163,46 +164,66 @@ void MessageDrop(Context<Descriptor> msg) {
   )rs");
 }
 
-// TODO: deferring on strings and bytes for now, eventually this
-// check will go away as we support more than just simple scalars
-bool IsSimpleScalar(FieldDescriptor::Type type) {
-  return type == FieldDescriptor::TYPE_DOUBLE ||
-         type == FieldDescriptor::TYPE_FLOAT ||
-         type == FieldDescriptor::TYPE_INT32 ||
-         type == FieldDescriptor::TYPE_INT64 ||
-         type == FieldDescriptor::TYPE_UINT32 ||
-         type == FieldDescriptor::TYPE_UINT64 ||
-         type == FieldDescriptor::TYPE_SINT32 ||
-         type == FieldDescriptor::TYPE_SINT64 ||
-         type == FieldDescriptor::TYPE_FIXED32 ||
-         type == FieldDescriptor::TYPE_FIXED64 ||
-         type == FieldDescriptor::TYPE_SFIXED32 ||
-         type == FieldDescriptor::TYPE_SFIXED64 ||
-         type == FieldDescriptor::TYPE_BOOL;
-}
-
 void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
-  // If we're dealing with a Mut, the getter must be supplied self.inner.msg()
-  // whereas a View has to be supplied self.msg
-  field.Emit(
-      {
-          {"field", field.desc().name()},
-          {"getter_thunk", Thunk(field, "get")},
-          {"self", is_mut ? "self.inner.msg()" : "self.msg"},
-          {"Scalar", PrimitiveRsTypeName(field.desc())},
-      },
-      R"rs(
-    pub fn r#$field$(&self) -> $Scalar$ {
-      unsafe { $getter_thunk$($self$) }
-    }
-  )rs");
+  auto fieldName = field.desc().name();
+  auto fieldType = field.desc().type();
+  auto getter_thunk = Thunk(field, "get");
+  // If we're dealing with a Mut, the getter must be supplied
+  // self.inner.msg() whereas a View has to be supplied self.msg
+  auto self = is_mut ? "self.inner.msg()" : "self.msg";
+  auto returnType = PrimitiveRsTypeName(field.desc());
+
+  if (fieldType == FieldDescriptor::TYPE_STRING) {
+    field.Emit(
+        {
+            {"field", fieldName},
+            {"self", self},
+            {"getter_thunk", getter_thunk},
+            {"ReturnType", returnType},
+        },
+        R"rs(
+              pub fn r#$field$(&self) -> &$ReturnType$ {
+                let s = unsafe { $getter_thunk$($self$).as_ref() };
+                unsafe { __pb::ProtoStr::from_utf8_unchecked(s) }
+              }
+            )rs");
+  } else if (fieldType == FieldDescriptor::TYPE_BYTES) {
+    field.Emit(
+        {
+            {"field", fieldName},
+            {"self", self},
+            {"getter_thunk", getter_thunk},
+            {"ReturnType", returnType},
+        },
+        R"rs(
+              pub fn r#$field$(&self) -> &$ReturnType$ {
+                unsafe { $getter_thunk$($self$).as_ref() }
+              }
+            )rs");
+  } else {
+    field.Emit({{"field", fieldName},
+                {"getter_thunk", getter_thunk},
+                {"self", self},
+                {"ReturnType", returnType}},
+               R"rs(
+            pub fn r#$field$(&self) -> $ReturnType$ {
+              unsafe { $getter_thunk$($self$) }
+            }
+          )rs");
+  }
 }
 
 void AccessorsForViewOrMut(Context<Descriptor> msg, bool is_mut) {
   for (int i = 0; i < msg.desc().field_count(); ++i) {
     auto field = msg.WithDesc(*msg.desc().field(i));
     if (field.desc().is_repeated()) continue;
-    if (!IsSimpleScalar(field.desc().type())) continue;
+    // TODO - add cord support
+    if (field.desc().options().has_ctype()) continue;
+    // TODO
+    if (field.desc().type() == FieldDescriptor::TYPE_MESSAGE ||
+        field.desc().type() == FieldDescriptor::TYPE_ENUM ||
+        field.desc().type() == FieldDescriptor::TYPE_GROUP)
+      continue;
     GetterForViewOrMut(field, is_mut);
     msg.printer().PrintRaw("\n");
   }

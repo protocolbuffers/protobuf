@@ -24,6 +24,8 @@ message Outer {
     optional sfixed32 sfixed32 = 11;
     optional sfixed64 sfixed64 = 12;
     optional bool bool = 13;
+    optional string string = 14;
+    optional bytes bytes = 15;
 
     message SuperInner {
       message DuperInner {
