@@ -22,6 +22,7 @@
 #include <typeinfo>
 
 
+#include "absl/base/config.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -199,6 +200,18 @@ inline constexpr bool DebugHardenStringValues() {
 #else
   return false;
 #endif
+}
+
+#if ABSL_HAVE_BUILTIN(__builtin_FILE) && ABSL_HAVE_BUILTIN(__builtin_LINE)
+[[noreturn]] inline void Unreachable(const char* file = __builtin_FILE(),
+                                     int line = __builtin_LINE()) {
+#else
+[[noreturn]] inline void Unreachable(const char* file = "", int line = 0) {
+#endif
+#if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
+  __builtin_unreachable();
+#endif
+  protobuf_assumption_failed("Unreachable", file, line);
 }
 
 }  // namespace internal

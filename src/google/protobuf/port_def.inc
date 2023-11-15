@@ -1030,8 +1030,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 namespace google {
 namespace protobuf {
 namespace internal {
-PROTOBUF_EXPORT void protobuf_assumption_failed(const char *pred,
-                                                const char *file, int line);
+[[noreturn]] PROTOBUF_EXPORT void protobuf_assumption_failed(const char *pred,
+                                                             const char *file,
+                                                             int line);
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
