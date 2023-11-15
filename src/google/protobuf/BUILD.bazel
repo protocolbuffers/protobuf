@@ -887,6 +887,7 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         ":cc_lite_test_protos",
+        ":port_def",
         ":test_util2",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",

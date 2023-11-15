@@ -536,7 +536,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
   UntypedMapBase& operator=(const UntypedMapBase&) = delete;
 
  protected:
-  enum { kMinTableSize = 8 };
+  // 16 bytes is the minimum useful size for the array cache in the arena.
+  enum { kMinTableSize = 16 / sizeof(void*) };
 
  public:
   Arena* arena() const { return this->alloc_.arena(); }
@@ -649,7 +650,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   void DeleteTable(TableEntryPtr* table, map_index_t n) {
-    AllocFor<TableEntryPtr>(alloc_).deallocate(table, n);
+    if (auto* a = arena()) {
+      a->ReturnArrayMemory(table, n * sizeof(TableEntryPtr));
+    } else {
+      internal::SizedDelete(table, n * sizeof(TableEntryPtr));
+    }
   }
 
   NodeBase* DestroyTree(Tree* tree);
@@ -664,13 +669,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
   map_index_t BucketNumberFromHash(uint64_t h) const {
     // We xor the hash value against the random seed so that we effectively
     // have a random hash function.
-    h ^= seed_;
-
-    // We use the multiplication method to determine the bucket number from
-    // the hash value. The constant kPhi (suggested by Knuth) is roughly
-    // (sqrt(5) - 1) / 2 * 2^64.
-    constexpr uint64_t kPhi = uint64_t{0x9e3779b97f4a7c15};
-    return (MultiplyWithOverflow(kPhi, h) >> 32) & (num_buckets_ - 1);
+    // We use absl::Hash to do bit mixing for uniform bucket selection.
+    return absl::HashOf(h ^ seed_) & (num_buckets_ - 1);
   }
 
   TableEntryPtr* CreateEmptyTable(map_index_t n) {
@@ -683,29 +683,29 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   // Return a randomish value.
   map_index_t Seed() const {
-    // We get a little bit of randomness from the address of the map. The
-    // lower bits are not very random, due to alignment, so we discard them
-    // and shift the higher bits into their place.
-    map_index_t s = reinterpret_cast<uintptr_t>(this) >> 4;
+    uint64_t s = 0;
 #if !defined(GOOGLE_PROTOBUF_NO_RDTSC)
 #if defined(__APPLE__)
     // Use a commpage-based fast time function on Apple environments (MacOS,
     // iOS, tvOS, watchOS, etc).
-    s += mach_absolute_time();
+    s = mach_absolute_time();
 #elif defined(__x86_64__) && defined(__GNUC__)
     uint32_t hi, lo;
     asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
-    s += ((static_cast<uint64_t>(hi) << 32) | lo);
+    s = ((static_cast<uint64_t>(hi) << 32) | lo);
 #elif defined(__aarch64__) && defined(__GNUC__)
     // There is no rdtsc on ARMv8. CNTVCT_EL0 is the virtual counter of the
     // system timer. It runs at a different frequency than the CPU's, but is
     // the best source of time-based entropy we get.
     uint64_t virtual_timer_value;
     asm volatile("mrs %0, cntvct_el0" : "=r"(virtual_timer_value));
-    s += virtual_timer_value;
+    s = virtual_timer_value;
 #endif
 #endif  // !defined(GOOGLE_PROTOBUF_NO_RDTSC)
-    return s;
+    // Add entropy from the address of the map and the address of the table
+    // array.
+    return static_cast<map_index_t>(
+        absl::HashOf(s, table_, static_cast<const void*>(this)));
   }
 
   enum {
@@ -988,6 +988,18 @@ class KeyMapBase : public UntypedMapBase {
         static_cast<KeyNode*>(node)->key());
   }
 
+  // Have it a separate function for testing.
+  static size_type CalculateHiCutoff(size_type num_buckets) {
+    // We want the high cutoff to follow this rules:
+    //  - When num_buckets_ == kGlobalEmptyTableSize, then make it 0 to force an
+    //    allocation.
+    //  - When num_buckets_ < 8, then make it num_buckets_ to avoid
+    //    a reallocation. A large load factor is not that important on small
+    //    tables and saves memory.
+    //  - Otherwise, make it 75% of num_buckets_.
+    return num_buckets - num_buckets / 16 * 4 - num_buckets % 2;
+  }
+
   // Returns whether it did resize.  Currently this is only used when
   // num_elements_ increases, though it could be used in other situations.
   // It checks for load too low as well as load too high: because any number
@@ -997,13 +1009,12 @@ class KeyMapBase : public UntypedMapBase {
   // policy that sometimes we resize down as well as up, clients can easily
   // keep O(size()) = O(number of buckets) if they want that.
   bool ResizeIfLoadIsOutOfRange(size_type new_size) {
-    const size_type kMaxMapLoadTimes16 = 12;  // controls RAM vs CPU tradeoff
-    const size_type hi_cutoff = num_buckets_ * kMaxMapLoadTimes16 / 16;
+    const size_type hi_cutoff = CalculateHiCutoff(num_buckets_);
     const size_type lo_cutoff = hi_cutoff / 4;
     // We don't care how many elements are in trees.  If a lot are,
     // we may resize even though there are many empty buckets.  In
     // practice, this seems fine.
-    if (PROTOBUF_PREDICT_FALSE(new_size >= hi_cutoff)) {
+    if (PROTOBUF_PREDICT_FALSE(new_size > hi_cutoff)) {
       if (num_buckets_ <= max_size() / 2) {
         Resize(num_buckets_ * 2);
         return true;
