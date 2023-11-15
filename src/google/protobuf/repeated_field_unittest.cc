@@ -1076,9 +1076,18 @@ TEST(RepeatedField, MutableDataIsMutable) {
 TEST(RepeatedField, SubscriptOperators) {
   RepeatedField<int> field;
   field.Add(1);
+  field.Add(2);
+
   EXPECT_EQ(1, field.Get(0));
   EXPECT_EQ(1, field[0]);
+  EXPECT_EQ(1, field.front());
+  EXPECT_EQ(2, field.Get(1));
+  EXPECT_EQ(2, field[1]);
+  EXPECT_EQ(2, field.back());
+
   EXPECT_EQ(field.Mutable(0), &field[0]);
+  EXPECT_EQ(field.Mutable(1), &field[1]);
+  
   const RepeatedField<int>& const_field = field;
   EXPECT_EQ(field.data(), &const_field[0]);
 }
@@ -1434,6 +1443,8 @@ TEST(RepeatedPtrField, Small) {
   EXPECT_EQ(field.size(), 1);
   EXPECT_EQ(field.Get(0), "foo");
   EXPECT_EQ(field.at(0), "foo");
+  EXPECT_EQ(field.front(), "foo");
+  EXPECT_EQ(field.back(), "foo");
 
   field.Add()->assign("bar");
 
@@ -1441,8 +1452,10 @@ TEST(RepeatedPtrField, Small) {
   EXPECT_EQ(field.size(), 2);
   EXPECT_EQ(field.Get(0), "foo");
   EXPECT_EQ(field.at(0), "foo");
+  EXPECT_EQ(field.front(), "foo");
   EXPECT_EQ(field.Get(1), "bar");
   EXPECT_EQ(field.at(1), "bar");
+  EXPECT_EQ(field.back(), "bar");
 
   field.Mutable(1)->assign("baz");
 
@@ -1450,8 +1463,10 @@ TEST(RepeatedPtrField, Small) {
   EXPECT_EQ(field.size(), 2);
   EXPECT_EQ(field.Get(0), "foo");
   EXPECT_EQ(field.at(0), "foo");
+  EXPECT_EQ(field.front(), "foo");
   EXPECT_EQ(field.Get(1), "baz");
   EXPECT_EQ(field.at(1), "baz");
+  EXPECT_EQ(field.back(), "baz");
 
   field.RemoveLast();
 
@@ -1459,6 +1474,8 @@ TEST(RepeatedPtrField, Small) {
   EXPECT_EQ(field.size(), 1);
   EXPECT_EQ(field.Get(0), "foo");
   EXPECT_EQ(field.at(0), "foo");
+  EXPECT_EQ(field.front(), "foo");
+  EXPECT_EQ(field.back(), "foo");
 
   field.Clear();
 
@@ -2114,9 +2131,18 @@ TEST(RepeatedPtrField, MutableDataIsMutable) {
 TEST(RepeatedPtrField, SubscriptOperators) {
   RepeatedPtrField<std::string> field;
   *field.Add() = "1";
+  *field.Add() = "2";
+
   EXPECT_EQ("1", field.Get(0));
   EXPECT_EQ("1", field[0]);
+  EXPECT_EQ("1", field.front());
+  EXPECT_EQ("2", field.Get(1));
+  EXPECT_EQ("2", field[1]);
+  EXPECT_EQ("2", field.back());
+
   EXPECT_EQ(field.Mutable(0), &field[0]);
+  EXPECT_EQ(field.Mutable(1), &field[1]);
+
   const RepeatedPtrField<std::string>& const_field = field;
   EXPECT_EQ(*field.data(), &const_field[0]);
 }
@@ -2237,16 +2263,58 @@ TEST_F(RepeatedFieldIteratorTest, MutableIteration) {
   EXPECT_EQ(2, *(proto_array_.end() - 1));
 }
 
+TEST_F(RepeatedFieldIteratorTest, MutableReverseIteration) {
+  RepeatedField<int>::reverse_iterator iter = proto_array_.rbegin();
+  EXPECT_EQ(2, *iter);
+  ++iter;
+  EXPECT_EQ(1, *iter++);
+  EXPECT_EQ(0, *iter);
+  ++iter;
+  EXPECT_TRUE(proto_array_.rend() == iter);
+
+  EXPECT_EQ(0, *(proto_array_.rend() - 1));
+}
+
 TEST_F(RepeatedFieldIteratorTest, ConstIteration) {
   const RepeatedField<int>& const_proto_array = proto_array_;
   RepeatedField<int>::const_iterator iter = const_proto_array.begin();
+  auto iter_begin = proto_array_.cbegin();
+  auto iter_end = proto_array_.cend();
+  static_assert(std::is_same<decltype(iter), decltype(iter_begin)>::value);
+  static_assert(std::is_same<decltype(iter), decltype(iter_end)>::value);
+
+  EXPECT_TRUE(iter_begin == iter);
+  EXPECT_TRUE(const_proto_array.cbegin() == iter);
   EXPECT_EQ(0, *iter);
   ++iter;
   EXPECT_EQ(1, *iter++);
   EXPECT_EQ(2, *iter);
   ++iter;
+  EXPECT_TRUE(iter_end == iter);
   EXPECT_TRUE(const_proto_array.end() == iter);
+  EXPECT_TRUE(const_proto_array.cend() == iter);
   EXPECT_EQ(2, *(const_proto_array.end() - 1));
+}
+
+TEST_F(RepeatedFieldIteratorTest, ConstReverseIteration) {
+  const RepeatedField<int>& const_proto_array = proto_array_;
+  RepeatedField<int>::const_reverse_iterator iter = const_proto_array.rbegin();
+  auto iter_begin = proto_array_.crbegin();
+  auto iter_end = proto_array_.crend();
+  static_assert(std::is_same<decltype(iter), decltype(iter_begin)>::value);
+  static_assert(std::is_same<decltype(iter), decltype(iter_end)>::value);
+
+  EXPECT_TRUE(iter_begin == iter);
+  EXPECT_TRUE(const_proto_array.crbegin() == iter);
+  EXPECT_EQ(2, *iter);
+  ++iter;
+  EXPECT_EQ(1, *iter++);
+  EXPECT_EQ(0, *iter);
+  ++iter;
+  EXPECT_TRUE(iter_end == iter)
+  EXPECT_TRUE(const_proto_array.rend() == iter);
+  EXPECT_TRUE(const_proto_array.crend() == iter);
+  EXPECT_EQ(0, *(const_proto_array.rend() - 1));
 }
 
 TEST_F(RepeatedFieldIteratorTest, Mutation) {
@@ -2290,13 +2358,21 @@ TEST_F(RepeatedPtrFieldIteratorTest, ConstIteration) {
   const RepeatedPtrField<std::string>& const_proto_array = proto_array_;
   RepeatedPtrField<std::string>::const_iterator iter =
       const_proto_array.begin();
-  iter - const_proto_array.cbegin();
+  auto iter_begin = proto_array_.cbegin();
+  auto iter_end = proto_array_.cend();
+  static_assert(std::is_same<decltype(iter), decltype(iter_begin)>::value);
+  static_assert(std::is_same<decltype(iter), decltype(iter_end)>::value);
+
+  EXPECT_TRUE(iter_begin == iter);
+  EXPECT_TRUE(const_proto_array.cbegin() == iter);
   EXPECT_EQ("foo", *iter);
   ++iter;
   EXPECT_EQ("bar", *(iter++));
   EXPECT_EQ("baz", *iter);
   ++iter;
+  EXPECT_TRUE(iter_end == iter)
   EXPECT_TRUE(const_proto_array.end() == iter);
+  EXPECT_TRUE(const_proto_array.cend() == iter);
   EXPECT_EQ("baz", *(--const_proto_array.end()));
 }
 
@@ -2315,12 +2391,21 @@ TEST_F(RepeatedPtrFieldIteratorTest, ConstReverseIteration) {
   const RepeatedPtrField<std::string>& const_proto_array = proto_array_;
   RepeatedPtrField<std::string>::const_reverse_iterator iter =
       const_proto_array.rbegin();
+  auto iter_begin = proto_array_.crbegin();
+  auto iter_end = proto_array_.crend();
+  static_assert(std::is_same<decltype(iter), decltype(iter_begin)>::value);
+  static_assert(std::is_same<decltype(iter), decltype(iter_end)>::value);
+
+  EXPECT_TRUE(iter_begin == iter);
+  EXPECT_TRUE(const_proto_array.crbegin() == iter);
   EXPECT_EQ("baz", *iter);
   ++iter;
   EXPECT_EQ("bar", *(iter++));
   EXPECT_EQ("foo", *iter);
   ++iter;
+  EXPECT_TRUE(iter_end == iter)
   EXPECT_TRUE(const_proto_array.rend() == iter);
+  EXPECT_TRUE(const_proto_array.crend() == iter);
   EXPECT_EQ("foo", *(--const_proto_array.rend()));
 }
 
