@@ -66,6 +66,7 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         ":context",
+        ":helpers",
         ":naming",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler/cpp:names_internal",
@@ -140,5 +141,18 @@ cc_test(
         ":relative_path",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "helpers",
+    srcs = ["accessors/helpers.cc"],
+    hdrs = ["accessors/helpers.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":context",
+        "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
     ],
 )
