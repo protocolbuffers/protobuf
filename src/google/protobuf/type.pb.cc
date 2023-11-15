@@ -434,15 +434,8 @@ class Type::_Internal {
   using HasBits = decltype(std::declval<Type>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(Type, _impl_._has_bits_);
-  static const ::google::protobuf::SourceContext& source_context(const Type* msg);
-  static void set_has_source_context(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::SourceContext& Type::_Internal::source_context(const Type* msg) {
-  return *msg->_impl_.source_context_;
-}
 void Type::clear_source_context() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
@@ -673,8 +666,7 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
   // .google.protobuf.SourceContext source_context = 5;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        5, _Internal::source_context(this),
-        _Internal::source_context(this).GetCachedSize(), target, stream);
+        5, *_impl_.source_context_, _impl_.source_context_->GetCachedSize(), target, stream);
   }
 
   // .google.protobuf.Syntax syntax = 6;
@@ -776,7 +768,8 @@ void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
   if (!from._internal_edition().empty()) {
     _this->_internal_set_edition(from._internal_edition());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(from._impl_.source_context_ != nullptr);
     if (_this->_impl_.source_context_ == nullptr) {
       _this->_impl_.source_context_ =
@@ -784,11 +777,11 @@ void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
     } else {
       _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
     }
-    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   if (from._internal_syntax() != 0) {
     _this->_internal_set_syntax(from._internal_syntax());
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -1278,15 +1271,8 @@ class Enum::_Internal {
   using HasBits = decltype(std::declval<Enum>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(Enum, _impl_._has_bits_);
-  static const ::google::protobuf::SourceContext& source_context(const Enum* msg);
-  static void set_has_source_context(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::SourceContext& Enum::_Internal::source_context(const Enum* msg) {
-  return *msg->_impl_.source_context_;
-}
 void Enum::clear_source_context() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
@@ -1500,8 +1486,7 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
   // .google.protobuf.SourceContext source_context = 4;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        4, _Internal::source_context(this),
-        _Internal::source_context(this).GetCachedSize(), target, stream);
+        4, *_impl_.source_context_, _impl_.source_context_->GetCachedSize(), target, stream);
   }
 
   // .google.protobuf.Syntax syntax = 5;
@@ -1596,7 +1581,8 @@ void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
   if (!from._internal_edition().empty()) {
     _this->_internal_set_edition(from._internal_edition());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(from._impl_.source_context_ != nullptr);
     if (_this->_impl_.source_context_ == nullptr) {
       _this->_impl_.source_context_ =
@@ -1604,11 +1590,11 @@ void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
     } else {
       _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
     }
-    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   if (from._internal_syntax() != 0) {
     _this->_internal_set_syntax(from._internal_syntax());
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -1900,15 +1886,8 @@ class Option::_Internal {
   using HasBits = decltype(std::declval<Option>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(Option, _impl_._has_bits_);
-  static const ::google::protobuf::Any& value(const Option* msg);
-  static void set_has_value(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::Any& Option::_Internal::value(const Option* msg) {
-  return *msg->_impl_.value_;
-}
 void Option::clear_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.value_ != nullptr) _impl_.value_->Clear();
@@ -2060,8 +2039,7 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
   // .google.protobuf.Any value = 2;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        2, _Internal::value(this),
-        _Internal::value(this).GetCachedSize(), target, stream);
+        2, *_impl_.value_, _impl_.value_->GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2110,7 +2088,8 @@ void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::prot
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(from._impl_.value_ != nullptr);
     if (_this->_impl_.value_ == nullptr) {
       _this->_impl_.value_ =
@@ -2118,8 +2097,8 @@ void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::prot
     } else {
       _this->_impl_.value_->MergeFrom(*from._impl_.value_);
     }
-    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 

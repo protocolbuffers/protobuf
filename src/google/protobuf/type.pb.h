@@ -1531,7 +1531,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Type::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Type.name)
 }
@@ -1546,12 +1545,10 @@ inline const std::string& Type::_internal_name() const {
 }
 inline void Type::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* Type::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* Type::release_name() {
@@ -1827,7 +1824,6 @@ inline ::google::protobuf::SourceContext* Type::unsafe_arena_release_source_cont
 }
 inline ::google::protobuf::SourceContext* Type::_internal_mutable_source_context() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.source_context_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
     _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(p);
@@ -1835,6 +1831,7 @@ inline ::google::protobuf::SourceContext* Type::_internal_mutable_source_context
   return _impl_.source_context_;
 }
 inline ::google::protobuf::SourceContext* Type::mutable_source_context() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::SourceContext* _msg = _internal_mutable_source_context();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.source_context)
   return _msg;
@@ -1879,7 +1876,6 @@ inline ::google::protobuf::Syntax Type::_internal_syntax() const {
 }
 inline void Type::_internal_set_syntax(::google::protobuf::Syntax value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.syntax_ = value;
 }
 
@@ -1897,7 +1893,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Type::set_edition(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Type.edition)
 }
@@ -1912,12 +1907,10 @@ inline const std::string& Type::_internal_edition() const {
 }
 inline void Type::_internal_set_edition(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.edition_.Set(value, GetArena());
 }
 inline std::string* Type::_internal_mutable_edition() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.edition_.Mutable( GetArena());
 }
 inline std::string* Type::release_edition() {
@@ -1959,7 +1952,6 @@ inline ::google::protobuf::Field_Kind Field::_internal_kind() const {
 }
 inline void Field::_internal_set_kind(::google::protobuf::Field_Kind value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.kind_ = value;
 }
 
@@ -1982,7 +1974,6 @@ inline ::google::protobuf::Field_Cardinality Field::_internal_cardinality() cons
 }
 inline void Field::_internal_set_cardinality(::google::protobuf::Field_Cardinality value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.cardinality_ = value;
 }
 
@@ -2005,7 +1996,6 @@ inline ::int32_t Field::_internal_number() const {
 }
 inline void Field::_internal_set_number(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.number_ = value;
 }
 
@@ -2023,7 +2013,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Field::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.name)
 }
@@ -2038,12 +2027,10 @@ inline const std::string& Field::_internal_name() const {
 }
 inline void Field::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* Field::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* Field::release_name() {
@@ -2076,7 +2063,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Field::set_type_url(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.type_url)
 }
@@ -2091,12 +2077,10 @@ inline const std::string& Field::_internal_type_url() const {
 }
 inline void Field::_internal_set_type_url(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.type_url_.Set(value, GetArena());
 }
 inline std::string* Field::_internal_mutable_type_url() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.type_url_.Mutable( GetArena());
 }
 inline std::string* Field::release_type_url() {
@@ -2134,7 +2118,6 @@ inline ::int32_t Field::_internal_oneof_index() const {
 }
 inline void Field::_internal_set_oneof_index(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.oneof_index_ = value;
 }
 
@@ -2157,7 +2140,6 @@ inline bool Field::_internal_packed() const {
 }
 inline void Field::_internal_set_packed(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.packed_ = value;
 }
 
@@ -2224,7 +2206,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Field::set_json_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.json_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.json_name)
 }
@@ -2239,12 +2220,10 @@ inline const std::string& Field::_internal_json_name() const {
 }
 inline void Field::_internal_set_json_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.json_name_.Set(value, GetArena());
 }
 inline std::string* Field::_internal_mutable_json_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.json_name_.Mutable( GetArena());
 }
 inline std::string* Field::release_json_name() {
@@ -2277,7 +2256,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Field::set_default_value(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.default_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.default_value)
 }
@@ -2292,12 +2270,10 @@ inline const std::string& Field::_internal_default_value() const {
 }
 inline void Field::_internal_set_default_value(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.default_value_.Set(value, GetArena());
 }
 inline std::string* Field::_internal_mutable_default_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.default_value_.Mutable( GetArena());
 }
 inline std::string* Field::release_default_value() {
@@ -2334,7 +2310,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Enum::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Enum.name)
 }
@@ -2349,12 +2324,10 @@ inline const std::string& Enum::_internal_name() const {
 }
 inline void Enum::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* Enum::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* Enum::release_name() {
@@ -2529,7 +2502,6 @@ inline ::google::protobuf::SourceContext* Enum::unsafe_arena_release_source_cont
 }
 inline ::google::protobuf::SourceContext* Enum::_internal_mutable_source_context() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.source_context_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
     _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(p);
@@ -2537,6 +2509,7 @@ inline ::google::protobuf::SourceContext* Enum::_internal_mutable_source_context
   return _impl_.source_context_;
 }
 inline ::google::protobuf::SourceContext* Enum::mutable_source_context() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::SourceContext* _msg = _internal_mutable_source_context();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.source_context)
   return _msg;
@@ -2581,7 +2554,6 @@ inline ::google::protobuf::Syntax Enum::_internal_syntax() const {
 }
 inline void Enum::_internal_set_syntax(::google::protobuf::Syntax value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.syntax_ = value;
 }
 
@@ -2599,7 +2571,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Enum::set_edition(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Enum.edition)
 }
@@ -2614,12 +2585,10 @@ inline const std::string& Enum::_internal_edition() const {
 }
 inline void Enum::_internal_set_edition(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.edition_.Set(value, GetArena());
 }
 inline std::string* Enum::_internal_mutable_edition() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.edition_.Mutable( GetArena());
 }
 inline std::string* Enum::release_edition() {
@@ -2656,7 +2625,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void EnumValue::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValue.name)
 }
@@ -2671,12 +2639,10 @@ inline const std::string& EnumValue::_internal_name() const {
 }
 inline void EnumValue::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* EnumValue::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* EnumValue::release_name() {
@@ -2714,7 +2680,6 @@ inline ::int32_t EnumValue::_internal_number() const {
 }
 inline void EnumValue::_internal_set_number(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.number_ = value;
 }
 
@@ -2785,7 +2750,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Option::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Option.name)
 }
@@ -2800,12 +2764,10 @@ inline const std::string& Option::_internal_name() const {
 }
 inline void Option::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* Option::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* Option::release_name() {
@@ -2882,7 +2844,6 @@ inline ::google::protobuf::Any* Option::unsafe_arena_release_value() {
 }
 inline ::google::protobuf::Any* Option::_internal_mutable_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.value_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::Any>(GetArena());
     _impl_.value_ = reinterpret_cast<::google::protobuf::Any*>(p);
@@ -2890,6 +2851,7 @@ inline ::google::protobuf::Any* Option::_internal_mutable_value() {
   return _impl_.value_;
 }
 inline ::google::protobuf::Any* Option::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::Any* _msg = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Option.value)
   return _msg;

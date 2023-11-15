@@ -281,7 +281,6 @@ inline ::int64_t Timestamp::_internal_seconds() const {
 }
 inline void Timestamp::_internal_set_seconds(::int64_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.seconds_ = value;
 }
 
@@ -304,7 +303,6 @@ inline ::int32_t Timestamp::_internal_nanos() const {
 }
 inline void Timestamp::_internal_set_nanos(::int32_t value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.nanos_ = value;
 }
 

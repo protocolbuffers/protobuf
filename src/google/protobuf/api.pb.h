@@ -836,7 +836,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Api::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Api.name)
 }
@@ -851,12 +850,10 @@ inline const std::string& Api::_internal_name() const {
 }
 inline void Api::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* Api::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* Api::release_name() {
@@ -983,7 +980,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Api::set_version(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.version_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Api.version)
 }
@@ -998,12 +994,10 @@ inline const std::string& Api::_internal_version() const {
 }
 inline void Api::_internal_set_version(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.version_.Set(value, GetArena());
 }
 inline std::string* Api::_internal_mutable_version() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.version_.Mutable( GetArena());
 }
 inline std::string* Api::release_version() {
@@ -1080,7 +1074,6 @@ inline ::google::protobuf::SourceContext* Api::unsafe_arena_release_source_conte
 }
 inline ::google::protobuf::SourceContext* Api::_internal_mutable_source_context() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_._has_bits_[0] |= 0x00000001u;
   if (_impl_.source_context_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
     _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(p);
@@ -1088,6 +1081,7 @@ inline ::google::protobuf::SourceContext* Api::_internal_mutable_source_context(
   return _impl_.source_context_;
 }
 inline ::google::protobuf::SourceContext* Api::mutable_source_context() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
   ::google::protobuf::SourceContext* _msg = _internal_mutable_source_context();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.source_context)
   return _msg;
@@ -1181,7 +1175,6 @@ inline ::google::protobuf::Syntax Api::_internal_syntax() const {
 }
 inline void Api::_internal_set_syntax(::google::protobuf::Syntax value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.syntax_ = value;
 }
 
@@ -1203,7 +1196,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Method::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.name)
 }
@@ -1218,12 +1210,10 @@ inline const std::string& Method::_internal_name() const {
 }
 inline void Method::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* Method::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* Method::release_name() {
@@ -1256,7 +1246,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Method::set_request_type_url(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.request_type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_type_url)
 }
@@ -1271,12 +1260,10 @@ inline const std::string& Method::_internal_request_type_url() const {
 }
 inline void Method::_internal_set_request_type_url(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.request_type_url_.Set(value, GetArena());
 }
 inline std::string* Method::_internal_mutable_request_type_url() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.request_type_url_.Mutable( GetArena());
 }
 inline std::string* Method::release_request_type_url() {
@@ -1314,7 +1301,6 @@ inline bool Method::_internal_request_streaming() const {
 }
 inline void Method::_internal_set_request_streaming(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.request_streaming_ = value;
 }
 
@@ -1332,7 +1318,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Method::set_response_type_url(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.response_type_url_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_type_url)
 }
@@ -1347,12 +1332,10 @@ inline const std::string& Method::_internal_response_type_url() const {
 }
 inline void Method::_internal_set_response_type_url(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.response_type_url_.Set(value, GetArena());
 }
 inline std::string* Method::_internal_mutable_response_type_url() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.response_type_url_.Mutable( GetArena());
 }
 inline std::string* Method::release_response_type_url() {
@@ -1390,7 +1373,6 @@ inline bool Method::_internal_response_streaming() const {
 }
 inline void Method::_internal_set_response_streaming(bool value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.response_streaming_ = value;
 }
 
@@ -1458,7 +1440,6 @@ inline ::google::protobuf::Syntax Method::_internal_syntax() const {
 }
 inline void Method::_internal_set_syntax(::google::protobuf::Syntax value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.syntax_ = value;
 }
 
@@ -1480,7 +1461,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Mixin::set_name(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.name)
 }
@@ -1495,12 +1475,10 @@ inline const std::string& Mixin::_internal_name() const {
 }
 inline void Mixin::_internal_set_name(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* Mixin::_internal_mutable_name() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* Mixin::release_name() {
@@ -1533,7 +1511,6 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Mixin::set_root(Arg_&& arg,
                                                      Args_... args) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.root_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.root)
 }
@@ -1548,12 +1525,10 @@ inline const std::string& Mixin::_internal_root() const {
 }
 inline void Mixin::_internal_set_root(const std::string& value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   _impl_.root_.Set(value, GetArena());
 }
 inline std::string* Mixin::_internal_mutable_root() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ;
   return _impl_.root_.Mutable( GetArena());
 }
 inline std::string* Mixin::release_root() {

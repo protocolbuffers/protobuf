@@ -250,15 +250,8 @@ class Api::_Internal {
   using HasBits = decltype(std::declval<Api>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(Api, _impl_._has_bits_);
-  static const ::google::protobuf::SourceContext& source_context(const Api* msg);
-  static void set_has_source_context(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::SourceContext& Api::_Internal::source_context(const Api* msg) {
-  return *msg->_impl_.source_context_;
-}
 void Api::clear_options() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.options_.Clear();
@@ -493,8 +486,7 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
   // .google.protobuf.SourceContext source_context = 5;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        5, _Internal::source_context(this),
-        _Internal::source_context(this).GetCachedSize(), target, stream);
+        5, *_impl_.source_context_, _impl_.source_context_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.Mixin mixins = 6;
@@ -597,7 +589,8 @@ void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobu
   if (!from._internal_version().empty()) {
     _this->_internal_set_version(from._internal_version());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(from._impl_.source_context_ != nullptr);
     if (_this->_impl_.source_context_ == nullptr) {
       _this->_impl_.source_context_ =
@@ -605,11 +598,11 @@ void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobu
     } else {
       _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
     }
-    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   if (from._internal_syntax() != 0) {
     _this->_internal_set_syntax(from._internal_syntax());
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 

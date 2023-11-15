@@ -456,16 +456,8 @@ class Value::_Internal {
  public:
   static constexpr ::int32_t kOneofCaseOffset =
     PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_._oneof_case_);
-  static const ::google::protobuf::Struct& struct_value(const Value* msg);
-  static const ::google::protobuf::ListValue& list_value(const Value* msg);
 };
 
-const ::google::protobuf::Struct& Value::_Internal::struct_value(const Value* msg) {
-  return *msg->_impl_.kind_.struct_value_;
-}
-const ::google::protobuf::ListValue& Value::_Internal::list_value(const Value* msg) {
-  return *msg->_impl_.kind_.list_value_;
-}
 void Value::set_allocated_struct_value(::google::protobuf::Struct* struct_value) {
   ::google::protobuf::Arena* message_arena = GetArena();
   clear_kind();
@@ -715,14 +707,12 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
     }
     case kStructValue: {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          5, _Internal::struct_value(this),
-          _Internal::struct_value(this).GetCachedSize(), target, stream);
+          5, *_impl_.kind_.struct_value_, _impl_.kind_.struct_value_->GetCachedSize(), target, stream);
       break;
     }
     case kListValue: {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          6, _Internal::list_value(this),
-          _Internal::list_value(this).GetCachedSize(), target, stream);
+          6, *_impl_.kind_.list_value_, _impl_.kind_.list_value_->GetCachedSize(), target, stream);
       break;
     }
     default:
