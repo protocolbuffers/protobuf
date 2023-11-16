@@ -192,20 +192,12 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #endif
 
+// Defines the Protobuf C++ Version for checking version compatibility at
+// compilation time.
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 4025000
-
-#ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
-#error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
-#endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 4025000
-
-#ifdef PROTOBUF_MIN_PROTOC_VERSION
-#error PROTOBUF_MIN_PROTOC_VERSION was previously defined
-#endif
-#define PROTOBUF_MIN_PROTOC_VERSION 4025000
+#define PROTOBUF_VERSION 4026000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
@@ -318,10 +310,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_IGNORE_DEPRECATION_START
 #define PROTOBUF_IGNORE_DEPRECATION_STOP
 #endif
-
-// The minimum library version which works with the current version of the
-// headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 4025000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
