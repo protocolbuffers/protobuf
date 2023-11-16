@@ -111,6 +111,7 @@ class Map final : public AccessorGenerator {
   ~Map() override = default;
   void InMsgImpl(Context<FieldDescriptor> field) const override;
   void InExternC(Context<FieldDescriptor> field) const override;
+  void InThunkCc(Context<FieldDescriptor> field) const override;
 };
 
 }  // namespace rust

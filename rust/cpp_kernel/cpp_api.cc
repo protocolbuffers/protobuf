@@ -1,3 +1,4 @@
+#include "google/protobuf/map.h"
 #include "google/protobuf/repeated_field.h"
 
 extern "C" {
@@ -36,4 +37,61 @@ expose_repeated_field_methods(uint64_t, u64);
 expose_repeated_field_methods(int64_t, i64);
 
 #undef expose_repeated_field_methods
+
+#define expose_scalar_map_methods(key_ty, rust_key_ty, value_ty,       \
+                                  rust_value_ty)                       \
+  google::protobuf::Map<key_ty, value_ty>*                                       \
+      __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_new() {          \
+    return new google::protobuf::Map<key_ty, value_ty>();                        \
+  }                                                                    \
+  void __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_clear(          \
+      google::protobuf::Map<key_ty, value_ty>* m) {                              \
+    m->clear();                                                        \
+  }                                                                    \
+  size_t __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_size(         \
+      google::protobuf::Map<key_ty, value_ty>* m) {                              \
+    return m->size();                                                  \
+  }                                                                    \
+  void __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_insert(         \
+      google::protobuf::Map<key_ty, value_ty>* m, key_ty key, value_ty val) {    \
+    (*m)[key] = val;                                                   \
+  }                                                                    \
+  bool __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_get(            \
+      google::protobuf::Map<key_ty, value_ty>* m, key_ty key, value_ty* value) { \
+    auto it = m->find(key);                                            \
+    if (it == m->end()) {                                              \
+      return false;                                                    \
+    }                                                                  \
+    *value = it->second;                                               \
+    return true;                                                       \
+  }                                                                    \
+  bool __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_remove(         \
+      google::protobuf::Map<key_ty, value_ty>* m, key_ty key, value_ty* value) { \
+    auto it = m->find(key);                                            \
+    if (it == m->end()) {                                              \
+      return false;                                                    \
+    } else {                                                           \
+      *value = it->second;                                             \
+      m->erase(it);                                                    \
+      return true;                                                     \
+    }                                                                  \
+  }
+
+#define expose_scalar_map_methods_for_key_type(key_ty, rust_key_ty) \
+  expose_scalar_map_methods(key_ty, rust_key_ty, int32_t, i32);     \
+  expose_scalar_map_methods(key_ty, rust_key_ty, uint32_t, u32);    \
+  expose_scalar_map_methods(key_ty, rust_key_ty, float, f32);       \
+  expose_scalar_map_methods(key_ty, rust_key_ty, double, f64);      \
+  expose_scalar_map_methods(key_ty, rust_key_ty, bool, bool);       \
+  expose_scalar_map_methods(key_ty, rust_key_ty, uint64_t, u64);    \
+  expose_scalar_map_methods(key_ty, rust_key_ty, int64_t, i64);
+
+expose_scalar_map_methods_for_key_type(int32_t, i32);
+expose_scalar_map_methods_for_key_type(uint32_t, u32);
+expose_scalar_map_methods_for_key_type(bool, bool);
+expose_scalar_map_methods_for_key_type(uint64_t, u64);
+expose_scalar_map_methods_for_key_type(int64_t, i64);
+
+#undef expose_scalar_map_methods
+#undef expose_map_methods
 }

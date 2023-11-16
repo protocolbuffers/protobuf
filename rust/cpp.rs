@@ -7,7 +7,7 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::{Private, RawArena, RawMessage, RawRepeatedField};
+use crate::__internal::{Private, RawArena, RawMap, RawMessage, RawRepeatedField};
 use paste::paste;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
@@ -319,6 +319,143 @@ impl<'msg, T: RepeatedScalarOps> RepeatedField<'msg, T> {
     }
 }
 
+#[derive(Debug)]
+pub struct Map<'msg, K: ?Sized, V: ?Sized> {
+    inner: MapInner<'msg>,
+    _phantom_key: PhantomData<&'msg mut K>,
+    _phantom_value: PhantomData<&'msg mut V>,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct MapInner<'msg> {
+    pub raw: RawMap,
+    pub _phantom: PhantomData<&'msg ()>,
+}
+
+// These use manual impls instead of derives to avoid unnecessary bounds on `K`
+// and `V`. This problem is referred to as "perfect derive".
+// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
+impl<'msg, K: ?Sized, V: ?Sized> Copy for Map<'msg, K, V> {}
+impl<'msg, K: ?Sized, V: ?Sized> Clone for Map<'msg, K, V> {
+    fn clone(&self) -> Map<'msg, K, V> {
+        *self
+    }
+}
+
+impl<'msg, K: ?Sized, V: ?Sized> Map<'msg, K, V> {
+    pub fn from_inner(_private: Private, inner: MapInner<'msg>) -> Self {
+        Map { inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
+    }
+}
+
+macro_rules! impl_scalar_map_values {
+    ($kt:ty, $trait:ident for $($t:ty),*) => {
+        paste! { $(
+            extern "C" {
+                fn [< __pb_rust_Map_ $kt _ $t _new >]() -> RawMap;
+                fn [< __pb_rust_Map_ $kt _ $t _clear >](m: RawMap);
+                fn [< __pb_rust_Map_ $kt _ $t _size >](m: RawMap) -> usize;
+                fn [< __pb_rust_Map_ $kt _ $t _insert >](m: RawMap, key: $kt, value: $t);
+                fn [< __pb_rust_Map_ $kt _ $t _get >](m: RawMap, key: $kt, value: *mut $t) -> bool;
+                fn [< __pb_rust_Map_ $kt _ $t _remove >](m: RawMap, key: $kt, value: *mut $t) -> bool;
+            }
+            impl $trait for $t {
+                fn new_map() -> RawMap {
+                    unsafe { [< __pb_rust_Map_ $kt _ $t _new >]() }
+                }
+
+                fn clear(m: RawMap) {
+                    unsafe { [< __pb_rust_Map_ $kt _ $t _clear >](m) }
+                }
+
+                fn size(m: RawMap) -> usize {
+                    unsafe { [< __pb_rust_Map_ $kt _ $t _size >](m) }
+                }
+
+                fn insert(m: RawMap, key: $kt, value: $t) {
+                    unsafe { [< __pb_rust_Map_ $kt _ $t _insert >](m, key, value) }
+                }
+
+                fn get(m: RawMap, key: $kt) -> Option<$t> {
+                    let mut val: $t = Default::default();
+                    let found = unsafe { [< __pb_rust_Map_ $kt _ $t _get >](m, key, &mut val) };
+                    if !found {
+                        return None;
+                    }
+                    Some(val)
+                }
+
+                fn remove(m: RawMap, key: $kt) -> Option<$t> {
+                    let mut val: $t = Default::default();
+                    let removed =
+                        unsafe { [< __pb_rust_Map_ $kt _ $t _remove >](m, key, &mut val) };
+                    if !removed {
+                        return None;
+                    }
+                    Some(val)
+                }
+            }
+         )* }
+    }
+}
+
+macro_rules! impl_scalar_maps {
+    ($($t:ty),*) => {
+        paste! { $(
+                pub trait [< MapWith $t:camel KeyOps >] {
+                    fn new_map() -> RawMap;
+                    fn clear(m: RawMap);
+                    fn size(m: RawMap) -> usize;
+                    fn insert(m: RawMap, key: $t, value: Self);
+                    fn get(m: RawMap, key: $t) -> Option<Self>
+                    where
+                        Self: Sized;
+                    fn remove(m: RawMap, key: $t) -> Option<Self>
+                    where
+                        Self: Sized;
+                }
+
+                impl_scalar_map_values!(
+                    $t, [< MapWith $t:camel KeyOps >] for i32, u32, f32, f64, bool, u64, i64
+                );
+
+                impl<'msg, V: [< MapWith $t:camel KeyOps >]> Map<'msg, $t, V> {
+                    pub fn new() -> Self {
+                        let inner = MapInner { raw: V::new_map(), _phantom: PhantomData };
+                        Map {
+                            inner,
+                            _phantom_key: PhantomData,
+                            _phantom_value: PhantomData
+                        }
+                    }
+
+                    pub fn size(&self) -> usize {
+                        V::size(self.inner.raw)
+                    }
+
+                    pub fn clear(&mut self) {
+                        V::clear(self.inner.raw)
+                    }
+
+                    pub fn get(&self, key: $t) -> Option<V> {
+                        V::get(self.inner.raw, key)
+                    }
+
+                    pub fn remove(&mut self, key: $t) -> Option<V> {
+                        V::remove(self.inner.raw, key)
+                    }
+
+                    pub fn insert(&mut self, key: $t, value: V) -> bool {
+                        V::insert(self.inner.raw, key, value);
+                        true
+                    }
+                }
+        )* }
+    }
+}
+
+impl_scalar_maps!(i32, u32, bool, u64, i64);
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -361,5 +498,45 @@ mod tests {
         assert_that!(r.len(), eq(0));
         r.push(true);
         assert_that!(r.get(0), eq(Some(true)));
+    }
+
+    #[test]
+    fn i32_i32_map() {
+        let mut map = Map::<'_, i32, i32>::new();
+        assert_that!(map.size(), eq(0));
+
+        assert_that!(map.insert(1, 2), eq(true));
+        assert_that!(map.get(1), eq(Some(2)));
+        assert_that!(map.get(3), eq(None));
+        assert_that!(map.size(), eq(1));
+
+        assert_that!(map.remove(1), eq(Some(2)));
+        assert_that!(map.size(), eq(0));
+        assert_that!(map.remove(1), eq(None));
+
+        assert_that!(map.insert(4, 5), eq(true));
+        assert_that!(map.insert(6, 7), eq(true));
+        map.clear();
+        assert_that!(map.size(), eq(0));
+    }
+
+    #[test]
+    fn i64_f64_map() {
+        let mut map = Map::<'_, i64, f64>::new();
+        assert_that!(map.size(), eq(0));
+
+        assert_that!(map.insert(1, 2.5), eq(true));
+        assert_that!(map.get(1), eq(Some(2.5)));
+        assert_that!(map.get(3), eq(None));
+        assert_that!(map.size(), eq(1));
+
+        assert_that!(map.remove(1), eq(Some(2.5)));
+        assert_that!(map.size(), eq(0));
+        assert_that!(map.remove(1), eq(None));
+
+        assert_that!(map.insert(4, 5.1), eq(true));
+        assert_that!(map.insert(6, 7.2), eq(true));
+        map.clear();
+        assert_that!(map.size(), eq(0));
     }
 }

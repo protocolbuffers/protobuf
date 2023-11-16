@@ -313,6 +313,21 @@ rust_upb_proto_library(
     deps = [":nested_proto"],
 )
 
+cc_proto_library(
+    name = "map_unittest_cc_proto",
+    testonly = True,
+    deps = ["//src/google/protobuf:map_unittest_proto"],
+)
+
+rust_cc_proto_library(
+    name = "map_unittest_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":map_unittest_cc_proto"],
+)
+
 rust_upb_proto_library(
     name = "map_unittest_upb_rust_proto",
     testonly = True,

@@ -281,10 +281,30 @@ rust_test(
 )
 
 rust_test(
+    name = "accessors_map_cpp_test",
+    srcs = ["accessors_map_test.rs"],
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust/test:map_unittest_cc_rust_proto",
+    ],
+)
+
+rust_test(
     name = "accessors_map_upb_test",
     srcs = ["accessors_map_test.rs"],
     proc_macro_deps = [
         "@crate_index//:paste",
+    ],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
     ],
     deps = [
         "@crate_index//:googletest",
