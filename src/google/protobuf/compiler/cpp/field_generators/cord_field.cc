@@ -352,8 +352,9 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         clear_$oneof_name$();
         set_has_$name$();
         $field$ = new ::absl::Cord;
-        if (GetArena() != nullptr) {
-          GetArena()->Own($field$);
+        ::$proto_ns$::Arena* arena = GetArena();
+        if (arena != nullptr) {
+          arena->Own($field$);
         }
       }
       *$field$ = value;
@@ -372,8 +373,9 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         clear_$oneof_name$();
         set_has_$name$();
         $field$ = new ::absl::Cord;
-        if (GetArena() != nullptr) {
-          GetArena()->Own($field$);
+        ::$proto_ns$::Arena* arena = GetArena();
+        if (arena != nullptr) {
+          arena->Own($field$);
         }
       }
       *$field$ = value;
@@ -387,8 +389,9 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         clear_$oneof_name$();
         set_has_$name$();
         $field$ = new ::absl::Cord;
-        if (GetArena() != nullptr) {
-          GetArena()->Own($field$);
+        ::$proto_ns$::Arena* arena = GetArena();
+        if (arena != nullptr) {
+          arena->Own($field$);
         }
       }
       return $field$;
