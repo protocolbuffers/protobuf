@@ -27,6 +27,7 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
           {"prefix", prefix},
           {"field", field.desc().name()},
           {"getter_thunk", Thunk(field, "get")},
+          {"getter_mut_thunk", Thunk(field, "get_mut")},
           {"clearer_thunk", Thunk(field, "clear")},
           {
               "view_body",
@@ -72,7 +73,7 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
         )rs");
              } else {
                field.Emit({}, R"rs(
-                    let submsg = unsafe { $getter_thunk$(self.inner.msg) };
+                    let submsg = unsafe { $getter_mut_thunk$(self.inner.msg) };
                     $prefix$Mut::new($pbi$::Private, &mut self.inner, submsg)
                   )rs");
              }
@@ -97,6 +98,7 @@ void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
   field.Emit(
       {
           {"getter_thunk", Thunk(field, "get")},
+          {"getter_mut_thunk", Thunk(field, "get_mut")},
           {"clearer_thunk", Thunk(field, "clear")},
           {"ReturnType",
            [&] {
@@ -112,6 +114,7 @@ void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
       },
       R"rs(
                   fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $ReturnType$;
+                  fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage) -> $ReturnType$;
                   fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
                )rs");
 }
@@ -120,11 +123,15 @@ void SingularMessage::InThunkCc(Context<FieldDescriptor> field) const {
   field.Emit({{"QualifiedMsg",
                cpp::QualifiedClassName(field.desc().containing_type())},
               {"getter_thunk", Thunk(field, "get")},
+              {"getter_mut_thunk", Thunk(field, "get_mut")},
               {"clearer_thunk", Thunk(field, "clear")},
               {"field", cpp::FieldName(&field.desc())}},
              R"cc(
                const void* $getter_thunk$($QualifiedMsg$* msg) {
                  return static_cast<const void*>(&msg->$field$());
+               }
+               void* $getter_mut_thunk$($QualifiedMsg$* msg) {
+                 return static_cast<void*>(msg->mutable_$field$());
                }
                void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
              )cc");
