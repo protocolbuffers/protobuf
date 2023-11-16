@@ -238,7 +238,7 @@ constexpr MapTypeCard MakeMapTypeCard(WireFormatLite::FieldType type) {
 
     case WireFormatLite::TYPE_GROUP:
     default:
-      PROTOBUF_ASSUME(false);
+      Unreachable();
   }
 }
 

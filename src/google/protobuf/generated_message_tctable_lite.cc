@@ -27,6 +27,7 @@
 #include "google/protobuf/map.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/varint_shuffle.h"
@@ -2013,14 +2014,14 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
               is_split, uint32_t, (is_split ? 0 : field_layout::kTvRange)>(
               PROTOBUF_TC_PARAM_PASS);
         default:
-          PROTOBUF_ASSUME(false);
+          Unreachable();
       }
     case field_layout::kRep8Bits >> field_layout::kRepShift:
       PROTOBUF_MUSTTAIL return MpRepeatedVarintT<is_split, bool, 0>(
           PROTOBUF_TC_PARAM_PASS);
 
     default:
-      PROTOBUF_ASSUME(false);
+      Unreachable();
       return nullptr;  // To silence -Werror=return-type in some toolchains
   }
 }
@@ -2110,14 +2111,14 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedVarint(PROTOBUF_TC_PARAM_DECL) {
               is_split, uint32_t, (is_split ? 0 : field_layout::kTvRange)>(
               PROTOBUF_TC_PARAM_PASS);
         default:
-          PROTOBUF_ASSUME(false);
+          Unreachable();
       }
     case field_layout::kRep8Bits >> field_layout::kRepShift:
       PROTOBUF_MUSTTAIL return MpPackedVarintT<is_split, bool, 0>(
           PROTOBUF_TC_PARAM_PASS);
 
     default:
-      PROTOBUF_ASSUME(false);
+      Unreachable();
       return nullptr;  // To silence -Werror=return-type in some toolchains
   }
 }
@@ -2216,7 +2217,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
     }
 
     default:
-      PROTOBUF_ASSUME(false);
+      Unreachable();
   }
 
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr || !is_valid)) {
@@ -2503,7 +2504,7 @@ static void SerializeMapKey(const NodeBase* node, MapTypeCard type_card,
           }
           break;
         default:
-          PROTOBUF_ASSUME(false);
+          Unreachable();
       }
       break;
     case WireFormatLite::WIRETYPE_FIXED32:
@@ -2522,7 +2523,7 @@ static void SerializeMapKey(const NodeBase* node, MapTypeCard type_card,
           &coded_output);
       break;
     default:
-      PROTOBUF_ASSUME(false);
+      Unreachable();
   }
 }
 
@@ -2567,7 +2568,7 @@ PROTOBUF_ALWAYS_INLINE inline void TcParser::InitializeMapNodeEntry(
       aux[1].create_in_arena(map.arena(), reinterpret_cast<MessageLite*>(obj));
       break;
     default:
-      PROTOBUF_ASSUME(false);
+      Unreachable();
   }
 }
 
@@ -2661,7 +2662,7 @@ const char* TcParser::ParseOneMapEntry(
             memcpy(obj, &tmp, sizeof(tmp));
             continue;
           default:
-            PROTOBUF_ASSUME(false);
+            Unreachable();
         }
       case WFL::WIRETYPE_FIXED32:
         ptr = ReadFixed<uint32_t>(obj, ptr);
@@ -2697,7 +2698,7 @@ const char* TcParser::ParseOneMapEntry(
           continue;
         }
       default:
-        PROTOBUF_ASSUME(false);
+        Unreachable();
     }
   }
   return ptr;
@@ -2772,7 +2773,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
                     static_cast<KeyMapBase<std::string>::KeyNode*>(node));
             break;
           default:
-            PROTOBUF_ASSUME(false);
+            Unreachable();
         }
       }
     }

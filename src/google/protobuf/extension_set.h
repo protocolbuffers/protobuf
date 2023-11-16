@@ -789,7 +789,7 @@ class PROTOBUF_EXPORT ExtensionSet {
         // someone
         // adds a new wire type.
     }
-    PROTOBUF_ASSUME(false);  // switch handles all possible enum values
+    Unreachable();  // switch handles all possible enum values
     return false;
   }
 
