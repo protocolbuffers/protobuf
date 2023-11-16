@@ -8,7 +8,7 @@
 use crate::{
     __internal::Private,
     __runtime::{
-        Map, MapInner, MapWithBoolKeyOps, MapWithI32KeyOps, MapWithI64KeyOps, MapWithU32KeyOps,
+        MapInner, MapWithBoolKeyOps, MapWithI32KeyOps, MapWithI64KeyOps, MapWithU32KeyOps,
         MapWithU64KeyOps,
     },
 };
@@ -17,24 +17,24 @@ use paste::paste;
 #[derive(Clone, Copy)]
 #[repr(transparent)]
 pub struct MapView<'a, K: ?Sized, V: ?Sized> {
-    inner: Map<'a, K, V>,
+    inner: MapInner<'a, K, V>,
 }
 
 #[derive(Clone, Copy)]
 #[repr(transparent)]
 pub struct MapMut<'a, K: ?Sized, V: ?Sized> {
-    inner: Map<'a, K, V>,
+    inner: MapInner<'a, K, V>,
 }
 
 impl<'a, K: ?Sized, V: ?Sized> MapView<'a, K, V> {
-    pub fn from_inner(_private: Private, inner: MapInner<'a>) -> Self {
-        Self { inner: Map::<'a, K, V>::from_inner(_private, inner) }
+    pub fn from_inner(_private: Private, inner: MapInner<'a, K, V>) -> Self {
+        Self { inner }
     }
 }
 
 impl<'a, K: ?Sized, V: ?Sized> MapMut<'a, K, V> {
-    pub fn from_inner(_private: Private, inner: MapInner<'a>) -> Self {
-        Self { inner: Map::<'a, K, V>::from_inner(_private, inner) }
+    pub fn from_inner(_private: Private, inner: MapInner<'a, K, V>) -> Self {
+        Self { inner }
     }
 }
 

@@ -474,46 +474,40 @@ pub unsafe fn empty_array() -> RepeatedFieldInner<'static> {
 ///
 /// TODO: Split MapInner into mut and const variants to
 /// enforce safety. The returned array must never be mutated.
-pub unsafe fn empty_map() -> MapInner<'static> {
-    fn new_map_inner() -> MapInner<'static> {
+pub unsafe fn empty_map<K: ?Sized + 'static, V: ?Sized + 'static>() -> MapInner<'static, K, V> {
+    fn new_map_inner() -> MapInner<'static, i32, i32> {
         // TODO: Consider creating empty map in C.
         let arena = Box::leak::<'static>(Box::new(Arena::new()));
         // Provide `i32` as a placeholder type.
-        Map::<'static, i32, i32>::new(arena).inner
+        MapInner::<'static, i32, i32>::new(arena)
     }
     thread_local! {
-        static MAP: MapInner<'static> = new_map_inner();
+        static MAP: MapInner<'static, i32, i32> = new_map_inner();
     }
 
-    MAP.with(|inner| *inner)
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct MapInner<'msg> {
-    pub raw: RawMap,
-    pub arena: &'msg Arena,
+    MAP.with(|inner| MapInner {
+        raw: inner.raw,
+        arena: inner.arena,
+        _phantom_key: PhantomData,
+        _phantom_value: PhantomData,
+    })
 }
 
 #[derive(Debug)]
-pub struct Map<'msg, K: ?Sized, V: ?Sized> {
-    inner: MapInner<'msg>,
-    _phantom_key: PhantomData<&'msg mut K>,
-    _phantom_value: PhantomData<&'msg mut V>,
+pub struct MapInner<'msg, K: ?Sized, V: ?Sized> {
+    pub raw: RawMap,
+    pub arena: &'msg Arena,
+    pub _phantom_key: PhantomData<&'msg mut K>,
+    pub _phantom_value: PhantomData<&'msg mut V>,
 }
 
 // These use manual impls instead of derives to avoid unnecessary bounds on `K`
 // and `V`. This problem is referred to as "perfect derive".
 // https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
-impl<'msg, K: ?Sized, V: ?Sized> Copy for Map<'msg, K, V> {}
-impl<'msg, K: ?Sized, V: ?Sized> Clone for Map<'msg, K, V> {
-    fn clone(&self) -> Map<'msg, K, V> {
+impl<'msg, K: ?Sized, V: ?Sized> Copy for MapInner<'msg, K, V> {}
+impl<'msg, K: ?Sized, V: ?Sized> Clone for MapInner<'msg, K, V> {
+    fn clone(&self) -> MapInner<'msg, K, V> {
         *self
-    }
-}
-
-impl<'msg, K: ?Sized, V: ?Sized> Map<'msg, K, V> {
-    pub fn from_inner(_private: Private, inner: MapInner<'msg>) -> Self {
-        Map { inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
     }
 }
 
@@ -596,34 +590,34 @@ macro_rules! impl_scalar_map_for_key_types {
                     bool, bool_val, UpbCType::Bool, false;
                 );
 
-                impl<'msg, V: [< MapWith $t:camel KeyOps >]> Map<'msg, $t, V> {
+                impl<'msg, V: [< MapWith $t:camel KeyOps >]> MapInner<'msg, $t, V> {
                     pub fn new(arena: &'msg mut Arena) -> Self {
-                        let inner = MapInner { raw: V::new_map(arena.raw()), arena };
-                        Map {
-                            inner,
+                        MapInner {
+                            raw: V::new_map(arena.raw()),
+                            arena,
                             _phantom_key: PhantomData,
                             _phantom_value: PhantomData
                         }
                     }
 
                     pub fn size(&self) -> usize {
-                        V::size(self.inner.raw)
+                        V::size(self.raw)
                     }
 
                     pub fn clear(&mut self) {
-                        V::clear(self.inner.raw)
+                        V::clear(self.raw)
                     }
 
                     pub fn get(&self, key: $t) -> Option<V> {
-                        V::get(self.inner.raw, key)
+                        V::get(self.raw, key)
                     }
 
                     pub fn remove(&mut self, key: $t) -> Option<V> {
-                        V::remove(self.inner.raw, key)
+                        V::remove(self.raw, key)
                     }
 
                     pub fn insert(&mut self, key: $t, value: V) -> bool {
-                        V::insert(self.inner.raw, self.inner.arena.raw(), key, value)
+                        V::insert(self.raw, self.arena.raw(), key, value)
                     }
                 }
         )* }
@@ -717,7 +711,7 @@ mod tests {
     #[test]
     fn i32_i32_map() {
         let mut arena = Arena::new();
-        let mut map = Map::<'_, i32, i32>::new(&mut arena);
+        let mut map = MapInner::<'_, i32, i32>::new(&mut arena);
         assert_that!(map.size(), eq(0));
 
         assert_that!(map.insert(1, 2), eq(true));
@@ -738,7 +732,7 @@ mod tests {
     #[test]
     fn i64_f64_map() {
         let mut arena = Arena::new();
-        let mut map = Map::<'_, i64, f64>::new(&mut arena);
+        let mut map = MapInner::<'_, i64, f64>::new(&mut arena);
         assert_that!(map.size(), eq(0));
 
         assert_that!(map.insert(1, 2.5), eq(true));

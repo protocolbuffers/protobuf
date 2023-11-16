@@ -320,31 +320,19 @@ impl<'msg, T: RepeatedScalarOps> RepeatedField<'msg, T> {
 }
 
 #[derive(Debug)]
-pub struct Map<'msg, K: ?Sized, V: ?Sized> {
-    inner: MapInner<'msg>,
-    _phantom_key: PhantomData<&'msg mut K>,
-    _phantom_value: PhantomData<&'msg mut V>,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct MapInner<'msg> {
+pub struct MapInner<'msg, K: ?Sized, V: ?Sized> {
     pub raw: RawMap,
-    pub _phantom: PhantomData<&'msg ()>,
+    pub _phantom_key: PhantomData<&'msg mut K>,
+    pub _phantom_value: PhantomData<&'msg mut V>,
 }
 
 // These use manual impls instead of derives to avoid unnecessary bounds on `K`
 // and `V`. This problem is referred to as "perfect derive".
 // https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
-impl<'msg, K: ?Sized, V: ?Sized> Copy for Map<'msg, K, V> {}
-impl<'msg, K: ?Sized, V: ?Sized> Clone for Map<'msg, K, V> {
-    fn clone(&self) -> Map<'msg, K, V> {
+impl<'msg, K: ?Sized, V: ?Sized> Copy for MapInner<'msg, K, V> {}
+impl<'msg, K: ?Sized, V: ?Sized> Clone for MapInner<'msg, K, V> {
+    fn clone(&self) -> MapInner<'msg, K, V> {
         *self
-    }
-}
-
-impl<'msg, K: ?Sized, V: ?Sized> Map<'msg, K, V> {
-    pub fn from_inner(_private: Private, inner: MapInner<'msg>) -> Self {
-        Map { inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
     }
 }
 
@@ -419,34 +407,35 @@ macro_rules! impl_scalar_maps {
                     $t, [< MapWith $t:camel KeyOps >] for i32, u32, f32, f64, bool, u64, i64
                 );
 
-                impl<'msg, V: [< MapWith $t:camel KeyOps >]> Map<'msg, $t, V> {
-                    pub fn new() -> Self {
-                        let inner = MapInner { raw: V::new_map(), _phantom: PhantomData };
-                        Map {
-                            inner,
+                impl<'msg, V: [< MapWith $t:camel KeyOps >]> Default for MapInner<'msg, $t, V> {
+                    fn default() -> Self {
+                        MapInner {
+                            raw: V::new_map(),
                             _phantom_key: PhantomData,
                             _phantom_value: PhantomData
                         }
                     }
+                }
 
+                impl<'msg, V: [< MapWith $t:camel KeyOps >]> MapInner<'msg, $t, V> {
                     pub fn size(&self) -> usize {
-                        V::size(self.inner.raw)
+                        V::size(self.raw)
                     }
 
                     pub fn clear(&mut self) {
-                        V::clear(self.inner.raw)
+                        V::clear(self.raw)
                     }
 
                     pub fn get(&self, key: $t) -> Option<V> {
-                        V::get(self.inner.raw, key)
+                        V::get(self.raw, key)
                     }
 
                     pub fn remove(&mut self, key: $t) -> Option<V> {
-                        V::remove(self.inner.raw, key)
+                        V::remove(self.raw, key)
                     }
 
                     pub fn insert(&mut self, key: $t, value: V) -> bool {
-                        V::insert(self.inner.raw, key, value);
+                        V::insert(self.raw, key, value);
                         true
                     }
                 }
@@ -502,7 +491,7 @@ mod tests {
 
     #[test]
     fn i32_i32_map() {
-        let mut map = Map::<'_, i32, i32>::new();
+        let mut map: MapInner<'_, i32, i32> = Default::default();
         assert_that!(map.size(), eq(0));
 
         assert_that!(map.insert(1, 2), eq(true));
@@ -522,7 +511,7 @@ mod tests {
 
     #[test]
     fn i64_f64_map() {
-        let mut map = Map::<'_, i64, f64>::new();
+        let mut map: MapInner<'_, i64, f64> = Default::default();
         assert_that!(map.size(), eq(0));
 
         assert_that!(map.insert(1, 2.5), eq(true));
