@@ -21,14 +21,10 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/reflection/def.hpp"
+#include "upb_generator/mangle.h"
 
 // Must be last
 #include "upb/port/def.inc"
-
-// Generate a mangled C name for a proto object.
-static std::string MangleName(absl::string_view name) {
-  return absl::StrReplaceAll(name, {{"_", "_0"}, {".", "__"}});
-}
 
 namespace upb {
 namespace generator {
@@ -58,10 +54,6 @@ void EmitFileWarning(absl::string_view name, Output& output) {
       " * Do not edit -- your changes will be discarded when the file is\n"
       " * regenerated. */\n\n",
       name);
-}
-
-std::string MessageInit(absl::string_view full_name) {
-  return MangleName(full_name) + "_msg_init";
 }
 
 std::string MessageInitName(upb::MessageDefPtr descriptor) {
