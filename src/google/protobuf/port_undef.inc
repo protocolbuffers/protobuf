@@ -92,6 +92,11 @@
 
 // Restore macros that may have been #undef'd in port_def.inc.
 
+#ifdef PROTOBUF_DID_UNDEF_noreturn
+#pragma pop_macro("noreturn")
+#undef PROTOBUF_DID_UNDEF_noreturn
+#endif
+
 #ifdef PROTOBUF_DID_UNDEF_PACKAGE
 #pragma pop_macro("PACKAGE")
 #undef PROTOBUF_DID_UNDEF_PACKAGE
