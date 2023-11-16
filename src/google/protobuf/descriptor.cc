@@ -9431,7 +9431,7 @@ void FieldDescriptor::InternalTypeOnceInit() const {
     if (!default_value_enum_) {
       // We use the first defined value as the default
       // if a default is not explicitly defined.
-      ABSL_CHECK(enum_type->value_count());
+      ABSL_CHECK_GT(enum_type->value_count(), 0);
       default_value_enum_ = enum_type->value(0);
     }
   }
