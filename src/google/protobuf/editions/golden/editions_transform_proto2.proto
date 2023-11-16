@@ -34,7 +34,7 @@ service EmptyService {
 }
 
 service BasicService {
-  rpc BasicMethod(EmptyMessage) returns (EmptyMessage);
+  rpc BasicMethod(EmptyMessage) returns (EmptyMessage) {}
 }
 
 // clang-format off
