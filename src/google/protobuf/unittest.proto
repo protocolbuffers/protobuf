@@ -15,19 +15,19 @@
 
 syntax = "proto2";
 
-// Some generic_services option(s) added automatically.
-// See:  http://go/proto2-generic-services-default
-option cc_generic_services = true;     // auto-added
-option java_generic_services = true;   // auto-added
-option py_generic_services = true;     // auto-added
-option cc_enable_arenas = true;
-
 import "google/protobuf/unittest_import.proto";
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
 // In test_util.h we do "using namespace unittest = protobuf_unittest".
 package protobuf_unittest;
+
+// Some generic_services option(s) added automatically.
+// See:  http://go/proto2-generic-services-default
+option cc_generic_services = true;     // auto-added
+option java_generic_services = true;   // auto-added
+option py_generic_services = true;     // auto-added
+option cc_enable_arenas = true;
 
 // Protos optimized for SPEED use a strict superset of the generated code
 // of equivalent ones optimized for CODE_SIZE, so we should optimize all our
