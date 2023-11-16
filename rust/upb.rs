@@ -13,7 +13,7 @@ use std::alloc::Layout;
 use std::cell::UnsafeCell;
 use std::fmt;
 use std::marker::PhantomData;
-use std::mem::MaybeUninit;
+use std::mem::{size_of, MaybeUninit};
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
 use std::slice;
@@ -370,7 +370,9 @@ extern "C" {
     fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
     fn upb_Array_Get(arr: RawRepeatedField, i: usize) -> upb_MessageValue;
     fn upb_Array_Append(arr: RawRepeatedField, val: upb_MessageValue, arena: RawArena);
-    fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena);
+    fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena) -> bool;
+    fn upb_Array_MutableDataPtr(arr: RawRepeatedField) -> *mut std::ffi::c_void;
+    fn upb_Array_DataPtr(arr: RawRepeatedField) -> *const std::ffi::c_void;
 }
 
 macro_rules! impl_repeated_primitives {
@@ -412,16 +414,18 @@ macro_rules! impl_repeated_primitives {
                     ) }
                 }
                 pub fn copy_from(&mut self, src: &RepeatedField<'_, $rs_type>) {
-                    // TODO: Optimize this copy_from implementation using memcopy.
-                    // NOTE: `src` cannot be `self` because this would violate borrowing rules.
-                    unsafe { upb_Array_Resize(self.inner.raw, 0, self.inner.arena.raw()) };
-                    // `upb_Array_DeepClone` is not used here because it returns
-                    // a new `upb_Array*`. The contained `RawRepeatedField` must
-                    // then be set to this new pointer, but other copies of this
-                    // pointer may exist because of re-borrowed `RepeatedMut`s.
-                    // Alternatively, a `clone_into` method could be exposed by upb.
-                    for i in 0..src.len() {
-                        self.push(src.get(i).unwrap());
+                    // SAFETY:
+                    // - `upb_Array_Resize` is unsafe but assumed to be always sound to call.
+                    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
+                    //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
+                    unsafe {
+                        if (!upb_Array_Resize(self.inner.raw, src.len(), self.inner.arena.raw())) {
+                            panic!("upb_Array_Resize failed.");
+                        }
+                        ptr::copy_nonoverlapping(
+                          upb_Array_DataPtr(src.inner.raw).cast::<u8>(),
+                          upb_Array_MutableDataPtr(self.inner.raw).cast::<u8>(),
+                          size_of::<$rs_type>() * src.len());
                     }
                 }
             }
