@@ -199,11 +199,23 @@ fn test_oneof_accessors() {
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
+    // TODO: the submessage api is still in progress so we can't yet
+    // cause a submsg to be set here.
+
+    // msg.oneof_nested_message_mut().or_default(); // Cause the nested_message
+    // field to become set.
+
+    // assert_that!(msg.oneof_bytes_opt(),
+    // eq(Optional::Unset(_))); assert_that!(msg.oneof_field(),
+    // matches_pattern!(OneofNestedMessage(_)));
+
     msg.oneof_uint32_set(Some(7));
     msg.oneof_bytes_mut().set(b"123");
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
-
     assert_that!(msg.oneof_field(), matches_pattern!(OneofBytes(eq(b"123"))));
+
+    msg.oneof_bytes_mut().clear();
+    assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 }
 
 #[test]
