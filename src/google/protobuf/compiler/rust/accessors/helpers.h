@@ -19,6 +19,10 @@ namespace compiler {
 namespace rust {
 
 // Returns the field's default value as a Rust literal / identifier.
+//
+// Both strings and bytes are represented as a byte string literal, i.e. in the
+// format `b"default value here"`. It is the caller's responsibility to convert
+// the byte literal to an actual string, if needed.
 std::string DefaultValue(Context<FieldDescriptor> field);
 
 }  // namespace rust

@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
+#include "google/protobuf/compiler/rust/accessors/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
@@ -69,8 +69,7 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
                    {
                        {"field", field.desc().name()},
                        {"proxied_type", proxied_type},
-                       {"default_val",
-                        absl::CHexEscape(field.desc().default_value_string())},
+                       {"default_val", DefaultValue(field)},
                        {"view_type", proxied_type},
                        {"transform_field_entry",
                         [&] {
@@ -98,7 +97,7 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
                   $getter_thunk$,
                   $setter_thunk$,
                   $clearer_thunk$,
-                  b"$default_val$",
+                  $default_val$,
                 )
               };
               let out = unsafe {

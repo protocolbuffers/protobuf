@@ -12,6 +12,7 @@
 #include <string>
 
 #include "absl/log/absl_log.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -72,12 +73,13 @@ std::string DefaultValue(Context<FieldDescriptor> field) {
     case FieldDescriptor::TYPE_BOOL:
       return absl::StrFormat("%v", field.desc().default_value_bool());
     case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES:
+      return absl::StrFormat(
+          "b\"%s\"", absl::CHexEscape(field.desc().default_value_string()));
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_MESSAGE:
-    case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_ENUM:
-      ABSL_LOG(FATAL) << "Non-singular scalar field type passed: "
-                      << field.desc().type_name();
+      ABSL_LOG(FATAL) << "Unsupported field type: " << field.desc().type_name();
   }
   ABSL_LOG(FATAL) << "unreachable";
 }
