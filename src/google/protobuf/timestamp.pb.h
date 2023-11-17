@@ -75,10 +75,8 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Timestamp(const Timestamp& from) : Timestamp(nullptr, from) {}
-  Timestamp(Timestamp&& from) noexcept : Timestamp() {
-    *this = ::std::move(from);
-  }
-
+  inline Timestamp(Timestamp&& from) noexcept
+      : Timestamp(nullptr, std::move(from)) {}
   inline Timestamp& operator=(const Timestamp& from) {
     CopyFrom(from);
     return *this;
@@ -179,6 +177,10 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
  protected:
   explicit Timestamp(::google::protobuf::Arena* arena);
   Timestamp(::google::protobuf::Arena* arena, const Timestamp& from);
+  Timestamp(::google::protobuf::Arena* arena, Timestamp&& from) noexcept
+      : Timestamp(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 

@@ -120,10 +120,8 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline ListValue(const ListValue& from) : ListValue(nullptr, from) {}
-  ListValue(ListValue&& from) noexcept : ListValue() {
-    *this = ::std::move(from);
-  }
-
+  inline ListValue(ListValue&& from) noexcept
+      : ListValue(nullptr, std::move(from)) {}
   inline ListValue& operator=(const ListValue& from) {
     CopyFrom(from);
     return *this;
@@ -224,6 +222,10 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
  protected:
   explicit ListValue(::google::protobuf::Arena* arena);
   ListValue(::google::protobuf::Arena* arena, const ListValue& from);
+  ListValue(::google::protobuf::Arena* arena, ListValue&& from) noexcept
+      : ListValue(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -293,10 +295,8 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Struct(const Struct& from) : Struct(nullptr, from) {}
-  Struct(Struct&& from) noexcept : Struct() {
-    *this = ::std::move(from);
-  }
-
+  inline Struct(Struct&& from) noexcept
+      : Struct(nullptr, std::move(from)) {}
   inline Struct& operator=(const Struct& from) {
     CopyFrom(from);
     return *this;
@@ -397,6 +397,10 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
  protected:
   explicit Struct(::google::protobuf::Arena* arena);
   Struct(::google::protobuf::Arena* arena, const Struct& from);
+  Struct(::google::protobuf::Arena* arena, Struct&& from) noexcept
+      : Struct(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -494,10 +498,8 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Value(const Value& from) : Value(nullptr, from) {}
-  Value(Value&& from) noexcept : Value() {
-    *this = ::std::move(from);
-  }
-
+  inline Value(Value&& from) noexcept
+      : Value(nullptr, std::move(from)) {}
   inline Value& operator=(const Value& from) {
     CopyFrom(from);
     return *this;
@@ -607,6 +609,10 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
  protected:
   explicit Value(::google::protobuf::Arena* arena);
   Value(::google::protobuf::Arena* arena, const Value& from);
+  Value(::google::protobuf::Arena* arena, Value&& from) noexcept
+      : Value(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 

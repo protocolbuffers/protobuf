@@ -75,10 +75,8 @@ class PROTOBUF_EXPORT Duration final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Duration(const Duration& from) : Duration(nullptr, from) {}
-  Duration(Duration&& from) noexcept : Duration() {
-    *this = ::std::move(from);
-  }
-
+  inline Duration(Duration&& from) noexcept
+      : Duration(nullptr, std::move(from)) {}
   inline Duration& operator=(const Duration& from) {
     CopyFrom(from);
     return *this;
@@ -179,6 +177,10 @@ class PROTOBUF_EXPORT Duration final : public ::google::protobuf::Message
  protected:
   explicit Duration(::google::protobuf::Arena* arena);
   Duration(::google::protobuf::Arena* arena, const Duration& from);
+  Duration(::google::protobuf::Arena* arena, Duration&& from) noexcept
+      : Duration(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 

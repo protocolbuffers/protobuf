@@ -83,10 +83,8 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Mixin(const Mixin& from) : Mixin(nullptr, from) {}
-  Mixin(Mixin&& from) noexcept : Mixin() {
-    *this = ::std::move(from);
-  }
-
+  inline Mixin(Mixin&& from) noexcept
+      : Mixin(nullptr, std::move(from)) {}
   inline Mixin& operator=(const Mixin& from) {
     CopyFrom(from);
     return *this;
@@ -187,6 +185,10 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
  protected:
   explicit Mixin(::google::protobuf::Arena* arena);
   Mixin(::google::protobuf::Arena* arena, const Mixin& from);
+  Mixin(::google::protobuf::Arena* arena, Mixin&& from) noexcept
+      : Mixin(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -272,10 +274,8 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Method(const Method& from) : Method(nullptr, from) {}
-  Method(Method&& from) noexcept : Method() {
-    *this = ::std::move(from);
-  }
-
+  inline Method(Method&& from) noexcept
+      : Method(nullptr, std::move(from)) {}
   inline Method& operator=(const Method& from) {
     CopyFrom(from);
     return *this;
@@ -376,6 +376,10 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
  protected:
   explicit Method(::google::protobuf::Arena* arena);
   Method(::google::protobuf::Arena* arena, const Method& from);
+  Method(::google::protobuf::Arena* arena, Method&& from) noexcept
+      : Method(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -535,10 +539,8 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Api(const Api& from) : Api(nullptr, from) {}
-  Api(Api&& from) noexcept : Api() {
-    *this = ::std::move(from);
-  }
-
+  inline Api(Api&& from) noexcept
+      : Api(nullptr, std::move(from)) {}
   inline Api& operator=(const Api& from) {
     CopyFrom(from);
     return *this;
@@ -639,6 +641,10 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
  protected:
   explicit Api(::google::protobuf::Arena* arena);
   Api(::google::protobuf::Arena* arena, const Api& from);
+  Api(::google::protobuf::Arena* arena, Api&& from) noexcept
+      : Api(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 

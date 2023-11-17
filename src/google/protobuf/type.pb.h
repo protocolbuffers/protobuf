@@ -209,10 +209,8 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Option(const Option& from) : Option(nullptr, from) {}
-  Option(Option&& from) noexcept : Option() {
-    *this = ::std::move(from);
-  }
-
+  inline Option(Option&& from) noexcept
+      : Option(nullptr, std::move(from)) {}
   inline Option& operator=(const Option& from) {
     CopyFrom(from);
     return *this;
@@ -313,6 +311,10 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
  protected:
   explicit Option(::google::protobuf::Arena* arena);
   Option(::google::protobuf::Arena* arena, const Option& from);
+  Option(::google::protobuf::Arena* arena, Option&& from) noexcept
+      : Option(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -398,10 +400,8 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Field(const Field& from) : Field(nullptr, from) {}
-  Field(Field&& from) noexcept : Field() {
-    *this = ::std::move(from);
-  }
-
+  inline Field(Field&& from) noexcept
+      : Field(nullptr, std::move(from)) {}
   inline Field& operator=(const Field& from) {
     CopyFrom(from);
     return *this;
@@ -502,6 +502,10 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
  protected:
   explicit Field(::google::protobuf::Arena* arena);
   Field(::google::protobuf::Arena* arena, const Field& from);
+  Field(::google::protobuf::Arena* arena, Field&& from) noexcept
+      : Field(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -760,10 +764,8 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline EnumValue(const EnumValue& from) : EnumValue(nullptr, from) {}
-  EnumValue(EnumValue&& from) noexcept : EnumValue() {
-    *this = ::std::move(from);
-  }
-
+  inline EnumValue(EnumValue&& from) noexcept
+      : EnumValue(nullptr, std::move(from)) {}
   inline EnumValue& operator=(const EnumValue& from) {
     CopyFrom(from);
     return *this;
@@ -864,6 +866,10 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
  protected:
   explicit EnumValue(::google::protobuf::Arena* arena);
   EnumValue(::google::protobuf::Arena* arena, const EnumValue& from);
+  EnumValue(::google::protobuf::Arena* arena, EnumValue&& from) noexcept
+      : EnumValue(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -963,10 +969,8 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Type(const Type& from) : Type(nullptr, from) {}
-  Type(Type&& from) noexcept : Type() {
-    *this = ::std::move(from);
-  }
-
+  inline Type(Type&& from) noexcept
+      : Type(nullptr, std::move(from)) {}
   inline Type& operator=(const Type& from) {
     CopyFrom(from);
     return *this;
@@ -1067,6 +1071,10 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
  protected:
   explicit Type(::google::protobuf::Arena* arena);
   Type(::google::protobuf::Arena* arena, const Type& from);
+  Type(::google::protobuf::Arena* arena, Type&& from) noexcept
+      : Type(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -1252,10 +1260,8 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Enum(const Enum& from) : Enum(nullptr, from) {}
-  Enum(Enum&& from) noexcept : Enum() {
-    *this = ::std::move(from);
-  }
-
+  inline Enum(Enum&& from) noexcept
+      : Enum(nullptr, std::move(from)) {}
   inline Enum& operator=(const Enum& from) {
     CopyFrom(from);
     return *this;
@@ -1356,6 +1362,10 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
  protected:
   explicit Enum(::google::protobuf::Arena* arena);
   Enum(::google::protobuf::Arena* arena, const Enum& from);
+  Enum(::google::protobuf::Arena* arena, Enum&& from) noexcept
+      : Enum(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 

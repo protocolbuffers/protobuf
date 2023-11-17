@@ -75,10 +75,8 @@ class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline SourceContext(const SourceContext& from) : SourceContext(nullptr, from) {}
-  SourceContext(SourceContext&& from) noexcept : SourceContext() {
-    *this = ::std::move(from);
-  }
-
+  inline SourceContext(SourceContext&& from) noexcept
+      : SourceContext(nullptr, std::move(from)) {}
   inline SourceContext& operator=(const SourceContext& from) {
     CopyFrom(from);
     return *this;
@@ -179,6 +177,10 @@ class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
  protected:
   explicit SourceContext(::google::protobuf::Arena* arena);
   SourceContext(::google::protobuf::Arena* arena, const SourceContext& from);
+  SourceContext(::google::protobuf::Arena* arena, SourceContext&& from) noexcept
+      : SourceContext(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 

@@ -75,10 +75,8 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline FieldMask(const FieldMask& from) : FieldMask(nullptr, from) {}
-  FieldMask(FieldMask&& from) noexcept : FieldMask() {
-    *this = ::std::move(from);
-  }
-
+  inline FieldMask(FieldMask&& from) noexcept
+      : FieldMask(nullptr, std::move(from)) {}
   inline FieldMask& operator=(const FieldMask& from) {
     CopyFrom(from);
     return *this;
@@ -179,6 +177,10 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
  protected:
   explicit FieldMask(::google::protobuf::Arena* arena);
   FieldMask(::google::protobuf::Arena* arena, const FieldMask& from);
+  FieldMask(::google::protobuf::Arena* arena, FieldMask&& from) noexcept
+      : FieldMask(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 

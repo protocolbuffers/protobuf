@@ -75,10 +75,8 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Any(const Any& from) : Any(nullptr, from) {}
-  Any(Any&& from) noexcept : Any() {
-    *this = ::std::move(from);
-  }
-
+  inline Any(Any&& from) noexcept
+      : Any(nullptr, std::move(from)) {}
   inline Any& operator=(const Any& from) {
     CopyFrom(from);
     return *this;
@@ -227,6 +225,10 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
  protected:
   explicit Any(::google::protobuf::Arena* arena);
   Any(::google::protobuf::Arena* arena, const Any& from);
+  Any(::google::protobuf::Arena* arena, Any&& from) noexcept
+      : Any(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 

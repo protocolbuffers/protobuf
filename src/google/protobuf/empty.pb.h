@@ -75,10 +75,8 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Empty(const Empty& from) : Empty(nullptr, from) {}
-  Empty(Empty&& from) noexcept : Empty() {
-    *this = ::std::move(from);
-  }
-
+  inline Empty(Empty&& from) noexcept
+      : Empty(nullptr, std::move(from)) {}
   inline Empty& operator=(const Empty& from) {
     CopyFrom(from);
     return *this;
@@ -164,6 +162,10 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
  protected:
   explicit Empty(::google::protobuf::Arena* arena);
   Empty(::google::protobuf::Arena* arena, const Empty& from);
+  Empty(::google::protobuf::Arena* arena, Empty&& from) noexcept
+      : Empty(arena) {
+    *this = ::std::move(from);
+  }
 
  public:
   ::google::protobuf::Metadata GetMetadata() const final;

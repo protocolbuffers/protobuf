@@ -99,10 +99,8 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline UInt64Value(const UInt64Value& from) : UInt64Value(nullptr, from) {}
-  UInt64Value(UInt64Value&& from) noexcept : UInt64Value() {
-    *this = ::std::move(from);
-  }
-
+  inline UInt64Value(UInt64Value&& from) noexcept
+      : UInt64Value(nullptr, std::move(from)) {}
   inline UInt64Value& operator=(const UInt64Value& from) {
     CopyFrom(from);
     return *this;
@@ -203,6 +201,10 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
  protected:
   explicit UInt64Value(::google::protobuf::Arena* arena);
   UInt64Value(::google::protobuf::Arena* arena, const UInt64Value& from);
+  UInt64Value(::google::protobuf::Arena* arena, UInt64Value&& from) noexcept
+      : UInt64Value(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -264,10 +266,8 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline UInt32Value(const UInt32Value& from) : UInt32Value(nullptr, from) {}
-  UInt32Value(UInt32Value&& from) noexcept : UInt32Value() {
-    *this = ::std::move(from);
-  }
-
+  inline UInt32Value(UInt32Value&& from) noexcept
+      : UInt32Value(nullptr, std::move(from)) {}
   inline UInt32Value& operator=(const UInt32Value& from) {
     CopyFrom(from);
     return *this;
@@ -368,6 +368,10 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
  protected:
   explicit UInt32Value(::google::protobuf::Arena* arena);
   UInt32Value(::google::protobuf::Arena* arena, const UInt32Value& from);
+  UInt32Value(::google::protobuf::Arena* arena, UInt32Value&& from) noexcept
+      : UInt32Value(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -429,10 +433,8 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline StringValue(const StringValue& from) : StringValue(nullptr, from) {}
-  StringValue(StringValue&& from) noexcept : StringValue() {
-    *this = ::std::move(from);
-  }
-
+  inline StringValue(StringValue&& from) noexcept
+      : StringValue(nullptr, std::move(from)) {}
   inline StringValue& operator=(const StringValue& from) {
     CopyFrom(from);
     return *this;
@@ -533,6 +535,10 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
  protected:
   explicit StringValue(::google::protobuf::Arena* arena);
   StringValue(::google::protobuf::Arena* arena, const StringValue& from);
+  StringValue(::google::protobuf::Arena* arena, StringValue&& from) noexcept
+      : StringValue(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -600,10 +606,8 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Int64Value(const Int64Value& from) : Int64Value(nullptr, from) {}
-  Int64Value(Int64Value&& from) noexcept : Int64Value() {
-    *this = ::std::move(from);
-  }
-
+  inline Int64Value(Int64Value&& from) noexcept
+      : Int64Value(nullptr, std::move(from)) {}
   inline Int64Value& operator=(const Int64Value& from) {
     CopyFrom(from);
     return *this;
@@ -704,6 +708,10 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
  protected:
   explicit Int64Value(::google::protobuf::Arena* arena);
   Int64Value(::google::protobuf::Arena* arena, const Int64Value& from);
+  Int64Value(::google::protobuf::Arena* arena, Int64Value&& from) noexcept
+      : Int64Value(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -765,10 +773,8 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline Int32Value(const Int32Value& from) : Int32Value(nullptr, from) {}
-  Int32Value(Int32Value&& from) noexcept : Int32Value() {
-    *this = ::std::move(from);
-  }
-
+  inline Int32Value(Int32Value&& from) noexcept
+      : Int32Value(nullptr, std::move(from)) {}
   inline Int32Value& operator=(const Int32Value& from) {
     CopyFrom(from);
     return *this;
@@ -869,6 +875,10 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
  protected:
   explicit Int32Value(::google::protobuf::Arena* arena);
   Int32Value(::google::protobuf::Arena* arena, const Int32Value& from);
+  Int32Value(::google::protobuf::Arena* arena, Int32Value&& from) noexcept
+      : Int32Value(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -930,10 +940,8 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline FloatValue(const FloatValue& from) : FloatValue(nullptr, from) {}
-  FloatValue(FloatValue&& from) noexcept : FloatValue() {
-    *this = ::std::move(from);
-  }
-
+  inline FloatValue(FloatValue&& from) noexcept
+      : FloatValue(nullptr, std::move(from)) {}
   inline FloatValue& operator=(const FloatValue& from) {
     CopyFrom(from);
     return *this;
@@ -1034,6 +1042,10 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
  protected:
   explicit FloatValue(::google::protobuf::Arena* arena);
   FloatValue(::google::protobuf::Arena* arena, const FloatValue& from);
+  FloatValue(::google::protobuf::Arena* arena, FloatValue&& from) noexcept
+      : FloatValue(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -1095,10 +1107,8 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline DoubleValue(const DoubleValue& from) : DoubleValue(nullptr, from) {}
-  DoubleValue(DoubleValue&& from) noexcept : DoubleValue() {
-    *this = ::std::move(from);
-  }
-
+  inline DoubleValue(DoubleValue&& from) noexcept
+      : DoubleValue(nullptr, std::move(from)) {}
   inline DoubleValue& operator=(const DoubleValue& from) {
     CopyFrom(from);
     return *this;
@@ -1199,6 +1209,10 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
  protected:
   explicit DoubleValue(::google::protobuf::Arena* arena);
   DoubleValue(::google::protobuf::Arena* arena, const DoubleValue& from);
+  DoubleValue(::google::protobuf::Arena* arena, DoubleValue&& from) noexcept
+      : DoubleValue(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -1260,10 +1274,8 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline BytesValue(const BytesValue& from) : BytesValue(nullptr, from) {}
-  BytesValue(BytesValue&& from) noexcept : BytesValue() {
-    *this = ::std::move(from);
-  }
-
+  inline BytesValue(BytesValue&& from) noexcept
+      : BytesValue(nullptr, std::move(from)) {}
   inline BytesValue& operator=(const BytesValue& from) {
     CopyFrom(from);
     return *this;
@@ -1364,6 +1376,10 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
  protected:
   explicit BytesValue(::google::protobuf::Arena* arena);
   BytesValue(::google::protobuf::Arena* arena, const BytesValue& from);
+  BytesValue(::google::protobuf::Arena* arena, BytesValue&& from) noexcept
+      : BytesValue(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -1431,10 +1447,8 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline BoolValue(const BoolValue& from) : BoolValue(nullptr, from) {}
-  BoolValue(BoolValue&& from) noexcept : BoolValue() {
-    *this = ::std::move(from);
-  }
-
+  inline BoolValue(BoolValue&& from) noexcept
+      : BoolValue(nullptr, std::move(from)) {}
   inline BoolValue& operator=(const BoolValue& from) {
     CopyFrom(from);
     return *this;
@@ -1535,6 +1549,10 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
  protected:
   explicit BoolValue(::google::protobuf::Arena* arena);
   BoolValue(::google::protobuf::Arena* arena, const BoolValue& from);
+  BoolValue(::google::protobuf::Arena* arena, BoolValue&& from) noexcept
+      : BoolValue(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
