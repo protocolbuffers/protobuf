@@ -612,6 +612,12 @@ void MessageGenerator::AddGenerators(
   }
 }
 
+static auto AddOneofNames(io::Printer* p, const OneofDescriptor* oneof) {
+  return p->WithVars({{"name", oneof->name()},
+                      {"NAME", absl::AsciiStrToUpper(oneof->name())},
+                      {"index", oneof->index()}});
+}
+
 void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
   auto v = p->WithVars(MessageVars(descriptor_));
 
@@ -2904,10 +2910,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   auto generate_copy_oneof_fields = [&]() {
     for (const auto* oneof : OneOfRange(descriptor_)) {
+      auto names = AddOneofNames(p, oneof);
       p->Emit(
-          {{"name", oneof->name()},
-           {"NAME", absl::AsciiStrToUpper(oneof->name())},
-           {"cases",
+          {{"cases",
             [&] {
               for (const auto* field : FieldRange(oneof)) {
                 p->Emit(
@@ -2930,6 +2935,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
               case $NAME$_NOT_SET:
                 break;
                 $cases$;
+              default:
+                ::_pbi::Unreachable();
+                break;
             }
           )cc");
     }
@@ -3335,43 +3343,47 @@ void MessageGenerator::GenerateOneofClear(io::Printer* p) {
   // Generated function clears the active field and union case (e.g. foo_case_).
   int i = 0;
   for (auto oneof : OneOfRange(descriptor_)) {
-    Formatter format(p);
-    auto v = p->WithVars({{"oneofname", oneof->name()}});
-
-    format(
-        "void $classname$::clear_$oneofname$() {\n"
-        "// @@protoc_insertion_point(one_of_clear_start:$full_name$)\n");
-    format.Indent();
-    format("PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);\n");
-    format("switch ($oneofname$_case()) {\n");
-    format.Indent();
-    for (auto field : FieldRange(oneof)) {
-      format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
-      format.Indent();
-      // We clear only allocated objects in oneofs
-      if (!IsStringOrMessage(field)) {
-        format("// No need to clear\n");
-      } else {
-        field_generators_.get(field).GenerateClearingCode(p);
-      }
-      format("break;\n");
-      format.Outdent();
-      format("}\n");
-    }
-    format(
-        "case $1$_NOT_SET: {\n"
-        "  break;\n"
-        "}\n",
-        absl::AsciiStrToUpper(oneof->name()));
-    format.Outdent();
-    format(
-        "}\n"
-        "$oneof_case$[$1$] = $2$_NOT_SET;\n",
-        i, absl::AsciiStrToUpper(oneof->name()));
-    format.Outdent();
-    format(
-        "}\n"
-        "\n");
+    auto names = AddOneofNames(p, oneof);
+    p->Emit(
+        {
+            {"cases",
+             [&] {
+               for (auto field : FieldRange(oneof)) {
+                 p->Emit(
+                     {{"label", UnderscoresToCamelCase(field->name(), true)},
+                      {"clear_code",
+                       [&] {
+                         // We clear only allocated objects in oneofs
+                         if (!IsStringOrMessage(field)) {
+                           p->Emit("// No need to clear\n");
+                         } else {
+                           field_generators_.get(field).GenerateClearingCode(p);
+                         }
+                       }}},
+                     R"cc(
+                       case k$label$: {
+                         $clear_code$;
+                         break;
+                       }
+                     )cc");
+               }
+             }},
+        },
+        R"cc(
+          void $classname$::clear_$name$() {
+            // @@protoc_insertion_point(one_of_clear_start:$full_name$)
+            PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+            switch ($name$_case()) {
+              $cases$;
+              case $NAME$_NOT_SET:
+                break;
+              default:
+                ::_pbi::Unreachable();
+                break;
+            }
+            $oneof_case$[$index$] = $NAME$_NOT_SET;
+          }
+        )cc");
     i++;
   }
 }
@@ -3771,23 +3783,34 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
   // Merge oneof fields. Oneof field requires oneof case check.
   for (auto oneof : OneOfRange(descriptor_)) {
-    format("switch (from.$1$_case()) {\n", oneof->name());
-    format.Indent();
-    for (auto field : FieldRange(oneof)) {
-      format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
-      format.Indent();
-      field_generators_.get(field).GenerateMergingCode(p);
-      format("break;\n");
-      format.Outdent();
-      format("}\n");
-    }
-    format(
-        "case $1$_NOT_SET: {\n"
-        "  break;\n"
-        "}\n",
-        absl::AsciiStrToUpper(oneof->name()));
-    format.Outdent();
-    format("}\n");
+    auto names = AddOneofNames(p, oneof);
+    p->Emit({{"cases",
+              [&] {
+                for (auto field : FieldRange(oneof)) {
+                  p->Emit(
+                      {{"label", UnderscoresToCamelCase(field->name(), true)},
+                       {"code",
+                        [&] {
+                          field_generators_.get(field).GenerateMergingCode(p);
+                        }}},
+                      R"cc(
+                        case k$label$: {
+                          $code$;
+                          break;
+                        }
+                      )cc");
+                }
+              }}},
+            R"cc(
+              switch (from.$name$_case()) {
+                $cases$;
+                case $NAME$_NOT_SET:
+                  break;
+                default:
+                  ::_pbi::Unreachable();
+                  break;
+              }
+            )cc");
   }
   if (num_weak_fields_) {
     format(
@@ -3886,28 +3909,41 @@ void MessageGenerator::GenerateSerializeOneofFields(
   }
   // We have multiple mutually exclusive choices.  Emit a switch statement.
   const OneofDescriptor* oneof = fields[0]->containing_oneof();
-  p->Emit({{"name", oneof->name()},
-           {"cases",
+  auto names = AddOneofNames(p, oneof);
+  p->Emit({{"cases",
             [&] {
               for (const auto* field : fields) {
-                p->Emit({{"Name", UnderscoresToCamelCase(field->name(), true)},
+                p->Emit({{"label", UnderscoresToCamelCase(field->name(), true)},
                          {"body",
                           [&] {
                             field_generators_.get(field)
                                 .GenerateSerializeWithCachedSizesToArray(p);
                           }}},
                         R"cc(
-                          case k$Name$: {
+                          case k$label$: {
                             $body$;
                             break;
                           }
                         )cc");
               }
+            }},
+           {"unreachable_if_all_fields",
+            // If all the fields are here, print the Unreachable tag for
+            // better codegen.
+            [&] {
+              if (fields.size() == oneof->field_count()) {
+                p->Emit(R"cc(
+                  ::_pbi::Unreachable();
+                )cc");
+              }
             }}},
           R"cc(
             switch ($name$_case()) {
               $cases$;
+              case $NAME$_NOT_SET:
+                break;
               default:
+                $unreachable_if_all_fields$;
                 break;
             }
           )cc");
@@ -4487,24 +4523,34 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   // Fields inside a oneof don't use _has_bits_ so we count them in a separate
   // pass.
   for (auto oneof : OneOfRange(descriptor_)) {
-    format("switch ($1$_case()) {\n", oneof->name());
-    format.Indent();
-    for (auto field : FieldRange(oneof)) {
-      PrintFieldComment(format, field, options_);
-      format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
-      format.Indent();
-      field_generators_.get(field).GenerateByteSize(p);
-      format("break;\n");
-      format.Outdent();
-      format("}\n");
-    }
-    format(
-        "case $1$_NOT_SET: {\n"
-        "  break;\n"
-        "}\n",
-        absl::AsciiStrToUpper(oneof->name()));
-    format.Outdent();
-    format("}\n");
+    auto names = AddOneofNames(p, oneof);
+    p->Emit(
+        {{"cases",
+          [&] {
+            for (auto field : FieldRange(oneof)) {
+              PrintFieldComment(format, field, options_);
+              p->Emit(
+                  {{"label", UnderscoresToCamelCase(field->name(), true)},
+                   {"code",
+                    [&] { field_generators_.get(field).GenerateByteSize(p); }}},
+                  R"cc(
+                    case k$label$: {
+                      $code$;
+                      break;
+                    }
+                  )cc");
+            }
+          }}},
+        R"cc(
+          switch ($name$_case()) {
+            $cases$;
+            case $NAME$_NOT_SET:
+              break;
+            default:
+              ::_pbi::Unreachable();
+              break;
+          }
+        )cc");
   }
 
   if (num_weak_fields_) {
