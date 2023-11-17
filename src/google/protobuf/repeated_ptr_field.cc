@@ -88,7 +88,7 @@ void RepeatedPtrFieldBase::Reserve(int capacity) {
 }
 
 void RepeatedPtrFieldBase::DestroyProtos() {
-  Destroy<GenericTypeHandler<MessageLite>>();
+  PROTOBUF_ALWAYS_INLINE_CALL Destroy<GenericTypeHandler<MessageLite>>();
 
   // TODO:  Eliminate this store when invoked from the destructor,
   // since it is dead.
