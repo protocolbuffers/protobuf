@@ -11,12 +11,12 @@
 #include <array>
 #include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <string>
 #include <thread>
 #include <type_traits>
-#include <typeinfo>
 #include <utility>
 #include <vector>
 
@@ -26,6 +26,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
+#include "absl/utility/utility.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/extension_set.h"
@@ -47,7 +48,7 @@
 #include "google/protobuf/port_def.inc"
 
 using proto2_arena_unittest::ArenaMessage;
-using protobuf_unittest::ForeignMessage;
+using protobuf_unittest::NestedTestAllTypes;
 using protobuf_unittest::TestAllExtensions;
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
@@ -314,6 +315,80 @@ TEST(ArenaTest, CreateDestroy) {
   // The arena message should still exist.
   EXPECT_EQ(strlen(original.optional_string().c_str()),
             strlen(arena_message->optional_string().c_str()));
+}
+
+TEST(ArenaTest, MoveCtorOnArena) {
+  Arena arena;
+
+  ASSERT_EQ(arena.SpaceUsed(), 0);
+
+  auto* original = Arena::CreateMessage<NestedTestAllTypes>(&arena);
+  TestUtil::SetAllFields(original->mutable_payload());
+  TestUtil::ExpectAllFieldsSet(original->payload());
+
+  auto usage_original = arena.SpaceUsed();
+  auto* moved =
+      Arena::CreateMessage<NestedTestAllTypes>(&arena, std::move(*original));
+  auto usage_by_move = arena.SpaceUsed() - usage_original;
+
+  TestUtil::ExpectAllFieldsSet(moved->payload());
+
+  // The only extra allocation with moves is sizeof(NestedTestAllTypes).
+  EXPECT_EQ(usage_by_move, sizeof(NestedTestAllTypes));
+  EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
+
+  // Status after move is unspecified and must not be assumed. It's merely
+  // checking current implementation specifics for protobuf internal.
+  TestUtil::ExpectClear(original->payload());
+}
+
+TEST(ArenaTest, RepeatedFieldMoveCtorOnArena) {
+  Arena arena;
+
+  auto* original = Arena::CreateMessage<RepeatedField<int32_t>>(&arena);
+  original->Add(1);
+  original->Add(2);
+  ASSERT_EQ(original->size(), 2);
+  ASSERT_EQ(original->Get(0), 1);
+  ASSERT_EQ(original->Get(1), 2);
+
+  auto* moved = Arena::CreateMessage<RepeatedField<int32_t>>(
+      &arena, std::move(*original));
+
+  EXPECT_EQ(moved->size(), 2);
+  EXPECT_EQ(moved->Get(0), 1);
+  EXPECT_EQ(moved->Get(1), 2);
+
+  // Status after move is unspecified and must not be assumed. It's merely
+  // checking current implementation specifics for protobuf internal.
+  EXPECT_EQ(original->size(), 0);
+}
+
+TEST(ArenaTest, RepeatedPtrFieldMoveCtorOnArena) {
+  Arena arena;
+
+  ASSERT_EQ(arena.SpaceUsed(), 0);
+
+  auto* original = Arena::CreateMessage<RepeatedPtrField<TestAllTypes>>(&arena);
+  auto* msg = original->Add();
+  TestUtil::SetAllFields(msg);
+  TestUtil::ExpectAllFieldsSet(*msg);
+
+  auto usage_original = arena.SpaceUsed();
+  auto* moved = Arena::CreateMessage<RepeatedPtrField<TestAllTypes>>(
+      &arena, std::move(*original));
+  auto usage_by_move = arena.SpaceUsed() - usage_original;
+
+  EXPECT_EQ(moved->size(), 1);
+  TestUtil::ExpectAllFieldsSet(moved->Get(0));
+
+  // The only extra allocation with moves is sizeof(RepeatedPtrField).
+  EXPECT_EQ(usage_by_move, sizeof(internal::RepeatedPtrFieldBase));
+  EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
+
+  // Status after move is unspecified and must not be assumed. It's merely
+  // checking current implementation specifics for protobuf internal.
+  EXPECT_EQ(original->size(), 0);
 }
 
 struct OnlyArenaConstructible {

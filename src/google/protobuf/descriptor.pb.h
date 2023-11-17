@@ -706,10 +706,8 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
       ::google::protobuf::internal::ConstantInitialized);
 
   inline UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from) : UninterpretedOption_NamePart(nullptr, from) {}
-  UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept : UninterpretedOption_NamePart() {
-    *this = ::std::move(from);
-  }
-
+  inline UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
+      : UninterpretedOption_NamePart(nullptr, std::move(from)) {}
   inline UninterpretedOption_NamePart& operator=(const UninterpretedOption_NamePart& from) {
     CopyFrom(from);
     return *this;
@@ -810,6 +808,10 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
  protected:
   explicit UninterpretedOption_NamePart(::google::protobuf::Arena* arena);
   UninterpretedOption_NamePart(::google::protobuf::Arena* arena, const UninterpretedOption_NamePart& from);
+  UninterpretedOption_NamePart(::google::protobuf::Arena* arena, UninterpretedOption_NamePart&& from) noexcept
+      : UninterpretedOption_NamePart(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -892,10 +894,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
       ::google::protobuf::internal::ConstantInitialized);
 
   inline SourceCodeInfo_Location(const SourceCodeInfo_Location& from) : SourceCodeInfo_Location(nullptr, from) {}
-  SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept : SourceCodeInfo_Location() {
-    *this = ::std::move(from);
-  }
-
+  inline SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
+      : SourceCodeInfo_Location(nullptr, std::move(from)) {}
   inline SourceCodeInfo_Location& operator=(const SourceCodeInfo_Location& from) {
     CopyFrom(from);
     return *this;
@@ -996,6 +996,10 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
  protected:
   explicit SourceCodeInfo_Location(::google::protobuf::Arena* arena);
   SourceCodeInfo_Location(::google::protobuf::Arena* arena, const SourceCodeInfo_Location& from);
+  SourceCodeInfo_Location(::google::protobuf::Arena* arena, SourceCodeInfo_Location&& from) noexcept
+      : SourceCodeInfo_Location(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -1156,10 +1160,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
       ::google::protobuf::internal::ConstantInitialized);
 
   inline GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from) : GeneratedCodeInfo_Annotation(nullptr, from) {}
-  GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept : GeneratedCodeInfo_Annotation() {
-    *this = ::std::move(from);
-  }
-
+  inline GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
+      : GeneratedCodeInfo_Annotation(nullptr, std::move(from)) {}
   inline GeneratedCodeInfo_Annotation& operator=(const GeneratedCodeInfo_Annotation& from) {
     CopyFrom(from);
     return *this;
@@ -1260,6 +1262,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
  protected:
   explicit GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena);
   GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena, const GeneratedCodeInfo_Annotation& from);
+  GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena, GeneratedCodeInfo_Annotation&& from) noexcept
+      : GeneratedCodeInfo_Annotation(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -1409,10 +1415,8 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
       ::google::protobuf::internal::ConstantInitialized);
 
   inline FieldOptions_EditionDefault(const FieldOptions_EditionDefault& from) : FieldOptions_EditionDefault(nullptr, from) {}
-  FieldOptions_EditionDefault(FieldOptions_EditionDefault&& from) noexcept : FieldOptions_EditionDefault() {
-    *this = ::std::move(from);
-  }
-
+  inline FieldOptions_EditionDefault(FieldOptions_EditionDefault&& from) noexcept
+      : FieldOptions_EditionDefault(nullptr, std::move(from)) {}
   inline FieldOptions_EditionDefault& operator=(const FieldOptions_EditionDefault& from) {
     CopyFrom(from);
     return *this;
@@ -1513,6 +1517,10 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
  protected:
   explicit FieldOptions_EditionDefault(::google::protobuf::Arena* arena);
   FieldOptions_EditionDefault(::google::protobuf::Arena* arena, const FieldOptions_EditionDefault& from);
+  FieldOptions_EditionDefault(::google::protobuf::Arena* arena, FieldOptions_EditionDefault&& from) noexcept
+      : FieldOptions_EditionDefault(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -1595,10 +1603,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline FeatureSet(const FeatureSet& from) : FeatureSet(nullptr, from) {}
-  FeatureSet(FeatureSet&& from) noexcept : FeatureSet() {
-    *this = ::std::move(from);
-  }
-
+  inline FeatureSet(FeatureSet&& from) noexcept
+      : FeatureSet(nullptr, std::move(from)) {}
   inline FeatureSet& operator=(const FeatureSet& from) {
     CopyFrom(from);
     return *this;
@@ -1699,6 +1705,10 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
  protected:
   explicit FeatureSet(::google::protobuf::Arena* arena);
   FeatureSet(::google::protobuf::Arena* arena, const FeatureSet& from);
+  FeatureSet(::google::protobuf::Arena* arena, FeatureSet&& from) noexcept
+      : FeatureSet(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -2126,10 +2136,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
       ::google::protobuf::internal::ConstantInitialized);
 
   inline ExtensionRangeOptions_Declaration(const ExtensionRangeOptions_Declaration& from) : ExtensionRangeOptions_Declaration(nullptr, from) {}
-  ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept : ExtensionRangeOptions_Declaration() {
-    *this = ::std::move(from);
-  }
-
+  inline ExtensionRangeOptions_Declaration(ExtensionRangeOptions_Declaration&& from) noexcept
+      : ExtensionRangeOptions_Declaration(nullptr, std::move(from)) {}
   inline ExtensionRangeOptions_Declaration& operator=(const ExtensionRangeOptions_Declaration& from) {
     CopyFrom(from);
     return *this;
@@ -2230,6 +2238,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
  protected:
   explicit ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena);
   ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena, const ExtensionRangeOptions_Declaration& from);
+  ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena, ExtensionRangeOptions_Declaration&& from) noexcept
+      : ExtensionRangeOptions_Declaration(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -2357,10 +2369,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
       ::google::protobuf::internal::ConstantInitialized);
 
   inline EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from) : EnumDescriptorProto_EnumReservedRange(nullptr, from) {}
-  EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept : EnumDescriptorProto_EnumReservedRange() {
-    *this = ::std::move(from);
-  }
-
+  inline EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept
+      : EnumDescriptorProto_EnumReservedRange(nullptr, std::move(from)) {}
   inline EnumDescriptorProto_EnumReservedRange& operator=(const EnumDescriptorProto_EnumReservedRange& from) {
     CopyFrom(from);
     return *this;
@@ -2461,6 +2471,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
  protected:
   explicit EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena);
   EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena, const EnumDescriptorProto_EnumReservedRange& from);
+  EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena, EnumDescriptorProto_EnumReservedRange&& from) noexcept
+      : EnumDescriptorProto_EnumReservedRange(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -2537,10 +2551,8 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
       ::google::protobuf::internal::ConstantInitialized);
 
   inline DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from) : DescriptorProto_ReservedRange(nullptr, from) {}
-  DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept : DescriptorProto_ReservedRange() {
-    *this = ::std::move(from);
-  }
-
+  inline DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
+      : DescriptorProto_ReservedRange(nullptr, std::move(from)) {}
   inline DescriptorProto_ReservedRange& operator=(const DescriptorProto_ReservedRange& from) {
     CopyFrom(from);
     return *this;
@@ -2641,6 +2653,10 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
  protected:
   explicit DescriptorProto_ReservedRange(::google::protobuf::Arena* arena);
   DescriptorProto_ReservedRange(::google::protobuf::Arena* arena, const DescriptorProto_ReservedRange& from);
+  DescriptorProto_ReservedRange(::google::protobuf::Arena* arena, DescriptorProto_ReservedRange&& from) noexcept
+      : DescriptorProto_ReservedRange(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -2717,10 +2733,8 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
       ::google::protobuf::internal::ConstantInitialized);
 
   inline UninterpretedOption(const UninterpretedOption& from) : UninterpretedOption(nullptr, from) {}
-  UninterpretedOption(UninterpretedOption&& from) noexcept : UninterpretedOption() {
-    *this = ::std::move(from);
-  }
-
+  inline UninterpretedOption(UninterpretedOption&& from) noexcept
+      : UninterpretedOption(nullptr, std::move(from)) {}
   inline UninterpretedOption& operator=(const UninterpretedOption& from) {
     CopyFrom(from);
     return *this;
@@ -2821,6 +2835,10 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
  protected:
   explicit UninterpretedOption(::google::protobuf::Arena* arena);
   UninterpretedOption(::google::protobuf::Arena* arena, const UninterpretedOption& from);
+  UninterpretedOption(::google::protobuf::Arena* arena, UninterpretedOption&& from) noexcept
+      : UninterpretedOption(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -2988,10 +3006,8 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline SourceCodeInfo(const SourceCodeInfo& from) : SourceCodeInfo(nullptr, from) {}
-  SourceCodeInfo(SourceCodeInfo&& from) noexcept : SourceCodeInfo() {
-    *this = ::std::move(from);
-  }
-
+  inline SourceCodeInfo(SourceCodeInfo&& from) noexcept
+      : SourceCodeInfo(nullptr, std::move(from)) {}
   inline SourceCodeInfo& operator=(const SourceCodeInfo& from) {
     CopyFrom(from);
     return *this;
@@ -3092,6 +3108,10 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
  protected:
   explicit SourceCodeInfo(::google::protobuf::Arena* arena);
   SourceCodeInfo(::google::protobuf::Arena* arena, const SourceCodeInfo& from);
+  SourceCodeInfo(::google::protobuf::Arena* arena, SourceCodeInfo&& from) noexcept
+      : SourceCodeInfo(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -3162,10 +3182,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
       ::google::protobuf::internal::ConstantInitialized);
 
   inline GeneratedCodeInfo(const GeneratedCodeInfo& from) : GeneratedCodeInfo(nullptr, from) {}
-  GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept : GeneratedCodeInfo() {
-    *this = ::std::move(from);
-  }
-
+  inline GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept
+      : GeneratedCodeInfo(nullptr, std::move(from)) {}
   inline GeneratedCodeInfo& operator=(const GeneratedCodeInfo& from) {
     CopyFrom(from);
     return *this;
@@ -3266,6 +3284,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
  protected:
   explicit GeneratedCodeInfo(::google::protobuf::Arena* arena);
   GeneratedCodeInfo(::google::protobuf::Arena* arena, const GeneratedCodeInfo& from);
+  GeneratedCodeInfo(::google::protobuf::Arena* arena, GeneratedCodeInfo&& from) noexcept
+      : GeneratedCodeInfo(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -3336,10 +3358,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
       ::google::protobuf::internal::ConstantInitialized);
 
   inline FeatureSetDefaults_FeatureSetEditionDefault(const FeatureSetDefaults_FeatureSetEditionDefault& from) : FeatureSetDefaults_FeatureSetEditionDefault(nullptr, from) {}
-  FeatureSetDefaults_FeatureSetEditionDefault(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept : FeatureSetDefaults_FeatureSetEditionDefault() {
-    *this = ::std::move(from);
-  }
-
+  inline FeatureSetDefaults_FeatureSetEditionDefault(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
+      : FeatureSetDefaults_FeatureSetEditionDefault(nullptr, std::move(from)) {}
   inline FeatureSetDefaults_FeatureSetEditionDefault& operator=(const FeatureSetDefaults_FeatureSetEditionDefault& from) {
     CopyFrom(from);
     return *this;
@@ -3440,6 +3460,10 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
  protected:
   explicit FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena);
   FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena, const FeatureSetDefaults_FeatureSetEditionDefault& from);
+  FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena, FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
+      : FeatureSetDefaults_FeatureSetEditionDefault(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -3520,10 +3544,8 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline ServiceOptions(const ServiceOptions& from) : ServiceOptions(nullptr, from) {}
-  ServiceOptions(ServiceOptions&& from) noexcept : ServiceOptions() {
-    *this = ::std::move(from);
-  }
-
+  inline ServiceOptions(ServiceOptions&& from) noexcept
+      : ServiceOptions(nullptr, std::move(from)) {}
   inline ServiceOptions& operator=(const ServiceOptions& from) {
     CopyFrom(from);
     return *this;
@@ -3624,6 +3646,10 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
  protected:
   explicit ServiceOptions(::google::protobuf::Arena* arena);
   ServiceOptions(::google::protobuf::Arena* arena, const ServiceOptions& from);
+  ServiceOptions(::google::protobuf::Arena* arena, ServiceOptions&& from) noexcept
+      : ServiceOptions(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -3902,10 +3928,8 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline OneofOptions(const OneofOptions& from) : OneofOptions(nullptr, from) {}
-  OneofOptions(OneofOptions&& from) noexcept : OneofOptions() {
-    *this = ::std::move(from);
-  }
-
+  inline OneofOptions(OneofOptions&& from) noexcept
+      : OneofOptions(nullptr, std::move(from)) {}
   inline OneofOptions& operator=(const OneofOptions& from) {
     CopyFrom(from);
     return *this;
@@ -4006,6 +4030,10 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
  protected:
   explicit OneofOptions(::google::protobuf::Arena* arena);
   OneofOptions(::google::protobuf::Arena* arena, const OneofOptions& from);
+  OneofOptions(::google::protobuf::Arena* arena, OneofOptions&& from) noexcept
+      : OneofOptions(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -4271,10 +4299,8 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline MethodOptions(const MethodOptions& from) : MethodOptions(nullptr, from) {}
-  MethodOptions(MethodOptions&& from) noexcept : MethodOptions() {
-    *this = ::std::move(from);
-  }
-
+  inline MethodOptions(MethodOptions&& from) noexcept
+      : MethodOptions(nullptr, std::move(from)) {}
   inline MethodOptions& operator=(const MethodOptions& from) {
     CopyFrom(from);
     return *this;
@@ -4375,6 +4401,10 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
  protected:
   explicit MethodOptions(::google::protobuf::Arena* arena);
   MethodOptions(::google::protobuf::Arena* arena, const MethodOptions& from);
+  MethodOptions(::google::protobuf::Arena* arena, MethodOptions&& from) noexcept
+      : MethodOptions(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -4686,10 +4716,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline MessageOptions(const MessageOptions& from) : MessageOptions(nullptr, from) {}
-  MessageOptions(MessageOptions&& from) noexcept : MessageOptions() {
-    *this = ::std::move(from);
-  }
-
+  inline MessageOptions(MessageOptions&& from) noexcept
+      : MessageOptions(nullptr, std::move(from)) {}
   inline MessageOptions& operator=(const MessageOptions& from) {
     CopyFrom(from);
     return *this;
@@ -4790,6 +4818,10 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
  protected:
   explicit MessageOptions(::google::protobuf::Arena* arena);
   MessageOptions(::google::protobuf::Arena* arena, const MessageOptions& from);
+  MessageOptions(::google::protobuf::Arena* arena, MessageOptions&& from) noexcept
+      : MessageOptions(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -5120,10 +5152,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline FileOptions(const FileOptions& from) : FileOptions(nullptr, from) {}
-  FileOptions(FileOptions&& from) noexcept : FileOptions() {
-    *this = ::std::move(from);
-  }
-
+  inline FileOptions(FileOptions&& from) noexcept
+      : FileOptions(nullptr, std::move(from)) {}
   inline FileOptions& operator=(const FileOptions& from) {
     CopyFrom(from);
     return *this;
@@ -5224,6 +5254,10 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
  protected:
   explicit FileOptions(::google::protobuf::Arena* arena);
   FileOptions(::google::protobuf::Arena* arena, const FileOptions& from);
+  FileOptions(::google::protobuf::Arena* arena, FileOptions&& from) noexcept
+      : FileOptions(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -5829,10 +5863,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline FieldOptions(const FieldOptions& from) : FieldOptions(nullptr, from) {}
-  FieldOptions(FieldOptions&& from) noexcept : FieldOptions() {
-    *this = ::std::move(from);
-  }
-
+  inline FieldOptions(FieldOptions&& from) noexcept
+      : FieldOptions(nullptr, std::move(from)) {}
   inline FieldOptions& operator=(const FieldOptions& from) {
     CopyFrom(from);
     return *this;
@@ -5933,6 +5965,10 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
  protected:
   explicit FieldOptions(::google::protobuf::Arena* arena);
   FieldOptions(::google::protobuf::Arena* arena, const FieldOptions& from);
+  FieldOptions(::google::protobuf::Arena* arena, FieldOptions&& from) noexcept
+      : FieldOptions(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -6444,10 +6480,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
       ::google::protobuf::internal::ConstantInitialized);
 
   inline FeatureSetDefaults(const FeatureSetDefaults& from) : FeatureSetDefaults(nullptr, from) {}
-  FeatureSetDefaults(FeatureSetDefaults&& from) noexcept : FeatureSetDefaults() {
-    *this = ::std::move(from);
-  }
-
+  inline FeatureSetDefaults(FeatureSetDefaults&& from) noexcept
+      : FeatureSetDefaults(nullptr, std::move(from)) {}
   inline FeatureSetDefaults& operator=(const FeatureSetDefaults& from) {
     CopyFrom(from);
     return *this;
@@ -6548,6 +6582,10 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
  protected:
   explicit FeatureSetDefaults(::google::protobuf::Arena* arena);
   FeatureSetDefaults(::google::protobuf::Arena* arena, const FeatureSetDefaults& from);
+  FeatureSetDefaults(::google::protobuf::Arena* arena, FeatureSetDefaults&& from) noexcept
+      : FeatureSetDefaults(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -6645,10 +6683,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       ::google::protobuf::internal::ConstantInitialized);
 
   inline ExtensionRangeOptions(const ExtensionRangeOptions& from) : ExtensionRangeOptions(nullptr, from) {}
-  ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept : ExtensionRangeOptions() {
-    *this = ::std::move(from);
-  }
-
+  inline ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
+      : ExtensionRangeOptions(nullptr, std::move(from)) {}
   inline ExtensionRangeOptions& operator=(const ExtensionRangeOptions& from) {
     CopyFrom(from);
     return *this;
@@ -6749,6 +6785,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
  protected:
   explicit ExtensionRangeOptions(::google::protobuf::Arena* arena);
   ExtensionRangeOptions(::google::protobuf::Arena* arena, const ExtensionRangeOptions& from);
+  ExtensionRangeOptions(::google::protobuf::Arena* arena, ExtensionRangeOptions&& from) noexcept
+      : ExtensionRangeOptions(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -7067,10 +7107,8 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       ::google::protobuf::internal::ConstantInitialized);
 
   inline EnumValueOptions(const EnumValueOptions& from) : EnumValueOptions(nullptr, from) {}
-  EnumValueOptions(EnumValueOptions&& from) noexcept : EnumValueOptions() {
-    *this = ::std::move(from);
-  }
-
+  inline EnumValueOptions(EnumValueOptions&& from) noexcept
+      : EnumValueOptions(nullptr, std::move(from)) {}
   inline EnumValueOptions& operator=(const EnumValueOptions& from) {
     CopyFrom(from);
     return *this;
@@ -7171,6 +7209,10 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
  protected:
   explicit EnumValueOptions(::google::protobuf::Arena* arena);
   EnumValueOptions(::google::protobuf::Arena* arena, const EnumValueOptions& from);
+  EnumValueOptions(::google::protobuf::Arena* arena, EnumValueOptions&& from) noexcept
+      : EnumValueOptions(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -7462,10 +7504,8 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline EnumOptions(const EnumOptions& from) : EnumOptions(nullptr, from) {}
-  EnumOptions(EnumOptions&& from) noexcept : EnumOptions() {
-    *this = ::std::move(from);
-  }
-
+  inline EnumOptions(EnumOptions&& from) noexcept
+      : EnumOptions(nullptr, std::move(from)) {}
   inline EnumOptions& operator=(const EnumOptions& from) {
     CopyFrom(from);
     return *this;
@@ -7566,6 +7606,10 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
  protected:
   explicit EnumOptions(::google::protobuf::Arena* arena);
   EnumOptions(::google::protobuf::Arena* arena, const EnumOptions& from);
+  EnumOptions(::google::protobuf::Arena* arena, EnumOptions&& from) noexcept
+      : EnumOptions(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -7870,10 +7914,8 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
       ::google::protobuf::internal::ConstantInitialized);
 
   inline OneofDescriptorProto(const OneofDescriptorProto& from) : OneofDescriptorProto(nullptr, from) {}
-  OneofDescriptorProto(OneofDescriptorProto&& from) noexcept : OneofDescriptorProto() {
-    *this = ::std::move(from);
-  }
-
+  inline OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
+      : OneofDescriptorProto(nullptr, std::move(from)) {}
   inline OneofDescriptorProto& operator=(const OneofDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -7974,6 +8016,10 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
  protected:
   explicit OneofDescriptorProto(::google::protobuf::Arena* arena);
   OneofDescriptorProto(::google::protobuf::Arena* arena, const OneofDescriptorProto& from);
+  OneofDescriptorProto(::google::protobuf::Arena* arena, OneofDescriptorProto&& from) noexcept
+      : OneofDescriptorProto(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -8060,10 +8106,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
       ::google::protobuf::internal::ConstantInitialized);
 
   inline MethodDescriptorProto(const MethodDescriptorProto& from) : MethodDescriptorProto(nullptr, from) {}
-  MethodDescriptorProto(MethodDescriptorProto&& from) noexcept : MethodDescriptorProto() {
-    *this = ::std::move(from);
-  }
-
+  inline MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
+      : MethodDescriptorProto(nullptr, std::move(from)) {}
   inline MethodDescriptorProto& operator=(const MethodDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -8164,6 +8208,10 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
  protected:
   explicit MethodDescriptorProto(::google::protobuf::Arena* arena);
   MethodDescriptorProto(::google::protobuf::Arena* arena, const MethodDescriptorProto& from);
+  MethodDescriptorProto(::google::protobuf::Arena* arena, MethodDescriptorProto&& from) noexcept
+      : MethodDescriptorProto(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -8314,10 +8362,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
       ::google::protobuf::internal::ConstantInitialized);
 
   inline FieldDescriptorProto(const FieldDescriptorProto& from) : FieldDescriptorProto(nullptr, from) {}
-  FieldDescriptorProto(FieldDescriptorProto&& from) noexcept : FieldDescriptorProto() {
-    *this = ::std::move(from);
-  }
-
+  inline FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
+      : FieldDescriptorProto(nullptr, std::move(from)) {}
   inline FieldDescriptorProto& operator=(const FieldDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -8418,6 +8464,10 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
  protected:
   explicit FieldDescriptorProto(::google::protobuf::Arena* arena);
   FieldDescriptorProto(::google::protobuf::Arena* arena, const FieldDescriptorProto& from);
+  FieldDescriptorProto(::google::protobuf::Arena* arena, FieldDescriptorProto&& from) noexcept
+      : FieldDescriptorProto(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -8700,10 +8750,8 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
       ::google::protobuf::internal::ConstantInitialized);
 
   inline EnumValueDescriptorProto(const EnumValueDescriptorProto& from) : EnumValueDescriptorProto(nullptr, from) {}
-  EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept : EnumValueDescriptorProto() {
-    *this = ::std::move(from);
-  }
-
+  inline EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
+      : EnumValueDescriptorProto(nullptr, std::move(from)) {}
   inline EnumValueDescriptorProto& operator=(const EnumValueDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -8804,6 +8852,10 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
  protected:
   explicit EnumValueDescriptorProto(::google::protobuf::Arena* arena);
   EnumValueDescriptorProto(::google::protobuf::Arena* arena, const EnumValueDescriptorProto& from);
+  EnumValueDescriptorProto(::google::protobuf::Arena* arena, EnumValueDescriptorProto&& from) noexcept
+      : EnumValueDescriptorProto(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -8903,10 +8955,8 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
       ::google::protobuf::internal::ConstantInitialized);
 
   inline DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from) : DescriptorProto_ExtensionRange(nullptr, from) {}
-  DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept : DescriptorProto_ExtensionRange() {
-    *this = ::std::move(from);
-  }
-
+  inline DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
+      : DescriptorProto_ExtensionRange(nullptr, std::move(from)) {}
   inline DescriptorProto_ExtensionRange& operator=(const DescriptorProto_ExtensionRange& from) {
     CopyFrom(from);
     return *this;
@@ -9007,6 +9057,10 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
  protected:
   explicit DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena);
   DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena, const DescriptorProto_ExtensionRange& from);
+  DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena, DescriptorProto_ExtensionRange&& from) noexcept
+      : DescriptorProto_ExtensionRange(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -9100,10 +9154,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
       ::google::protobuf::internal::ConstantInitialized);
 
   inline ServiceDescriptorProto(const ServiceDescriptorProto& from) : ServiceDescriptorProto(nullptr, from) {}
-  ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept : ServiceDescriptorProto() {
-    *this = ::std::move(from);
-  }
-
+  inline ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
+      : ServiceDescriptorProto(nullptr, std::move(from)) {}
   inline ServiceDescriptorProto& operator=(const ServiceDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -9204,6 +9256,10 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
  protected:
   explicit ServiceDescriptorProto(::google::protobuf::Arena* arena);
   ServiceDescriptorProto(::google::protobuf::Arena* arena, const ServiceDescriptorProto& from);
+  ServiceDescriptorProto(::google::protobuf::Arena* arena, ServiceDescriptorProto&& from) noexcept
+      : ServiceDescriptorProto(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -9310,10 +9366,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
       ::google::protobuf::internal::ConstantInitialized);
 
   inline EnumDescriptorProto(const EnumDescriptorProto& from) : EnumDescriptorProto(nullptr, from) {}
-  EnumDescriptorProto(EnumDescriptorProto&& from) noexcept : EnumDescriptorProto() {
-    *this = ::std::move(from);
-  }
-
+  inline EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
+      : EnumDescriptorProto(nullptr, std::move(from)) {}
   inline EnumDescriptorProto& operator=(const EnumDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -9414,6 +9468,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
  protected:
   explicit EnumDescriptorProto(::google::protobuf::Arena* arena);
   EnumDescriptorProto(::google::protobuf::Arena* arena, const EnumDescriptorProto& from);
+  EnumDescriptorProto(::google::protobuf::Arena* arena, EnumDescriptorProto&& from) noexcept
+      : EnumDescriptorProto(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -9571,10 +9629,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
       ::google::protobuf::internal::ConstantInitialized);
 
   inline DescriptorProto(const DescriptorProto& from) : DescriptorProto(nullptr, from) {}
-  DescriptorProto(DescriptorProto&& from) noexcept : DescriptorProto() {
-    *this = ::std::move(from);
-  }
-
+  inline DescriptorProto(DescriptorProto&& from) noexcept
+      : DescriptorProto(nullptr, std::move(from)) {}
   inline DescriptorProto& operator=(const DescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -9675,6 +9731,10 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
  protected:
   explicit DescriptorProto(::google::protobuf::Arena* arena);
   DescriptorProto(::google::protobuf::Arena* arena, const DescriptorProto& from);
+  DescriptorProto(::google::protobuf::Arena* arena, DescriptorProto&& from) noexcept
+      : DescriptorProto(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -9933,10 +9993,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
       ::google::protobuf::internal::ConstantInitialized);
 
   inline FileDescriptorProto(const FileDescriptorProto& from) : FileDescriptorProto(nullptr, from) {}
-  FileDescriptorProto(FileDescriptorProto&& from) noexcept : FileDescriptorProto() {
-    *this = ::std::move(from);
-  }
-
+  inline FileDescriptorProto(FileDescriptorProto&& from) noexcept
+      : FileDescriptorProto(nullptr, std::move(from)) {}
   inline FileDescriptorProto& operator=(const FileDescriptorProto& from) {
     CopyFrom(from);
     return *this;
@@ -10037,6 +10095,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
  protected:
   explicit FileDescriptorProto(::google::protobuf::Arena* arena);
   FileDescriptorProto(::google::protobuf::Arena* arena, const FileDescriptorProto& from);
+  FileDescriptorProto(::google::protobuf::Arena* arena, FileDescriptorProto&& from) noexcept
+      : FileDescriptorProto(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 
@@ -10341,10 +10403,8 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
       ::google::protobuf::internal::ConstantInitialized);
 
   inline FileDescriptorSet(const FileDescriptorSet& from) : FileDescriptorSet(nullptr, from) {}
-  FileDescriptorSet(FileDescriptorSet&& from) noexcept : FileDescriptorSet() {
-    *this = ::std::move(from);
-  }
-
+  inline FileDescriptorSet(FileDescriptorSet&& from) noexcept
+      : FileDescriptorSet(nullptr, std::move(from)) {}
   inline FileDescriptorSet& operator=(const FileDescriptorSet& from) {
     CopyFrom(from);
     return *this;
@@ -10445,6 +10505,10 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
  protected:
   explicit FileDescriptorSet(::google::protobuf::Arena* arena);
   FileDescriptorSet(::google::protobuf::Arena* arena, const FileDescriptorSet& from);
+  FileDescriptorSet(::google::protobuf::Arena* arena, FileDescriptorSet&& from) noexcept
+      : FileDescriptorSet(arena) {
+    *this = ::std::move(from);
+  }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
 

@@ -1052,12 +1052,13 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
                 Element, decltype(*std::declval<Iter>())>::value>::type>
   RepeatedPtrField(Iter begin, Iter end);
 
-  RepeatedPtrField(const RepeatedPtrField& other)
-      : RepeatedPtrField(nullptr, other) {}
+  RepeatedPtrField(const RepeatedPtrField& rhs)
+      : RepeatedPtrField(nullptr, rhs) {}
   RepeatedPtrField& operator=(const RepeatedPtrField& other)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  RepeatedPtrField(RepeatedPtrField&& other) noexcept;
+  RepeatedPtrField(RepeatedPtrField&& rhs) noexcept
+      : RepeatedPtrField(nullptr, std::move(rhs)) {}
   RepeatedPtrField& operator=(RepeatedPtrField&& other) noexcept
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
@@ -1331,6 +1332,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   using TypeHandler = internal::GenericTypeHandler<Element>;
 
   RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
+  RepeatedPtrField(Arena* arena, RepeatedPtrField&& rhs);
 
 
   // Implementations for ExtractSubrange(). The copying behavior must be
@@ -1401,19 +1403,18 @@ inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
 }
 
 template <typename Element>
-inline RepeatedPtrField<Element>::RepeatedPtrField(
-    RepeatedPtrField&& other) noexcept
-    : RepeatedPtrField() {
+inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena,
+                                                   RepeatedPtrField&& rhs)
+    : RepeatedPtrField(arena) {
 #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-  CopyFrom(other);
+  CopyFrom(rhs);
 #else   // PROTOBUF_FORCE_COPY_IN_MOVE
-  // We don't just call Swap(&other) here because it would perform 3 copies if
-  // other is on an arena. This field can't be on an arena because arena
-  // construction always uses the Arena* accepting constructor.
-  if (other.GetArena()) {
-    CopyFrom(other);
+  // We don't just call Swap(&rhs) here because it would perform 3 copies if rhs
+  // is on a different arena.
+  if (arena != rhs.GetArena()) {
+    CopyFrom(rhs);
   } else {
-    InternalSwap(&other);
+    InternalSwap(&rhs);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
 }
