@@ -153,8 +153,9 @@ class PROTOBUF_EXPORT Duration final : public ::google::protobuf::Message
   void MergeFrom(const Duration& from) { Duration::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;

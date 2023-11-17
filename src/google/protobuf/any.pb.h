@@ -201,8 +201,9 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
   void MergeFrom(const Any& from) { Any::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;

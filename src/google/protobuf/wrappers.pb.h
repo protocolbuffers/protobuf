@@ -177,8 +177,9 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
   void MergeFrom(const UInt64Value& from) { UInt64Value::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -341,8 +342,9 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
   void MergeFrom(const UInt32Value& from) { UInt32Value::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -505,8 +507,9 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
   void MergeFrom(const StringValue& from) { StringValue::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -675,8 +678,9 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
   void MergeFrom(const Int64Value& from) { Int64Value::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -839,8 +843,9 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
   void MergeFrom(const Int32Value& from) { Int32Value::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -1003,8 +1008,9 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
   void MergeFrom(const FloatValue& from) { FloatValue::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -1167,8 +1173,9 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
   void MergeFrom(const DoubleValue& from) { DoubleValue::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -1331,8 +1338,9 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
   void MergeFrom(const BytesValue& from) { BytesValue::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -1501,8 +1509,9 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
   void MergeFrom(const BoolValue& from) { BoolValue::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
