@@ -35,6 +35,31 @@ public final class FieldMaskUtil {
 
   private FieldMaskUtil() {}
 
+  public static FieldMask fromMessage(Message message) {
+    List<String> fields = new ArrayList<String>();
+    fromMessage(message, "", fields);
+
+    return FieldMask.newBuilder().addAllPaths(fields).build();
+  }
+
+  private static void fromMessage(Message message, String prefix, List<String> fields) {
+    for (FieldDescriptor field : message.getDescriptorForType().getFields()) {
+      String newPrefix = (prefix.isEmpty() ? "" : prefix + ".") + field.getName();
+
+      if (field.isRepeated()) {
+        if (message.getRepeatedFieldCount(field) > 0) {
+          fields.add(newPrefix);
+        }
+      } else if (message.hasField(field)) {
+        if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+          fromMessage((Message) message.getField(field), newPrefix, fields);
+        } else {
+          fields.add(newPrefix);
+        }
+      }
+    }
+  }
+
   /**
    * Converts a FieldMask to a string.
    */

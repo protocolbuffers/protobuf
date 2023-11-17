@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.protobuf.FieldMask;
 import protobuf_unittest.UnittestProto.NestedTestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes;
+import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -21,6 +22,107 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link FieldMaskUtil}. */
 @RunWith(JUnit4.class)
 public class FieldMaskUtilTest {
+  @Test
+  public void testFromMessage() throws Exception {
+    // empty message
+    assertThat(FieldMaskUtil.fromMessage(TestAllTypes.getDefaultInstance()))
+        .isEqualTo(FieldMask.getDefaultInstance());
+    // empty message field set
+    assertThat(
+            FieldMaskUtil.fromMessage(
+                TestAllTypes.newBuilder()
+                    .setOptionalNestedMessage(TestAllTypes.NestedMessage.getDefaultInstance())
+                    .build()))
+        .isEqualTo(FieldMask.getDefaultInstance());
+    // primitive field set
+    assertThat(FieldMaskUtil.fromMessage(TestAllTypes.newBuilder().setOptionalInt32(1234).build()))
+        .isEqualTo(FieldMask.newBuilder().addPaths("optional_int32").build());
+    // repeated field set
+    assertThat(FieldMaskUtil.fromMessage(TestAllTypes.newBuilder().addRepeatedInt32(1234).build()))
+        .isEqualTo(FieldMask.newBuilder().addPaths("repeated_int32").build());
+    // enum field set
+    assertThat(
+            FieldMaskUtil.fromMessage(
+                TestAllTypes.newBuilder()
+                    .setOptionalNestedEnum(TestAllTypes.NestedEnum.FOO)
+                    .build()))
+        .isEqualTo(FieldMask.newBuilder().addPaths("optional_nested_enum").build());
+    // oneof field set
+    assertThat(FieldMaskUtil.fromMessage(TestAllTypes.newBuilder().setOneofString("1234").build()))
+        .isEqualTo(FieldMask.newBuilder().addPaths("oneof_string").build());
+    // message field set
+    assertThat(
+            FieldMaskUtil.fromMessage(
+                TestAllTypes.newBuilder()
+                    .setOptionalNestedMessage(TestAllTypes.NestedMessage.newBuilder().setBb(1234))
+                    .build()))
+        .isEqualTo(FieldMask.newBuilder().addPaths("optional_nested_message.bb").build());
+    // repeated message field set
+    assertThat(
+            FieldMaskUtil.fromMessage(
+                TestAllTypes.newBuilder()
+                    .addRepeatedNestedMessage(TestAllTypes.NestedMessage.newBuilder().setBb(1234))
+                    .build()))
+        .isEqualTo(FieldMask.newBuilder().addPaths("repeated_nested_message").build());
+    // multiple fields set
+    assertThat(
+            FieldMaskUtil.fromMessage(
+                TestAllTypes.newBuilder()
+                    .setOptionalInt32(1234)
+                    .setOneofNestedMessage(TestAllTypes.NestedMessage.newBuilder().setBb(5678))
+                    .addRepeatedInt32(1000)
+                    .setOptionalNestedMessage(TestAllTypes.NestedMessage.newBuilder().setBb(1234))
+                    .addRepeatedNestedMessage(TestAllTypes.NestedMessage.newBuilder().setBb(5678))
+                    .setOptionalNestedEnum(TestAllTypes.NestedEnum.FOO)
+                    .build()))
+        .isEqualTo(
+            FieldMask.newBuilder()
+                .addAllPaths(
+                    Arrays.asList(
+                        "optional_int32",
+                        "optional_nested_message.bb",
+                        "optional_nested_enum",
+                        "repeated_int32",
+                        "repeated_nested_message",
+                        "oneof_nested_message.bb"))
+                .build());
+    // recursive message set
+    // root
+    // |-child
+    //   |-child
+    //     |-payload
+    //       |-optional_int32
+    //     |-child
+    //       |-payload
+    //         |-optional_string
+    //   |-payload
+    //     |-optional_nested_message
+    //       |-bb
+    assertThat(
+            FieldMaskUtil.fromMessage(
+                NestedTestAllTypes.newBuilder()
+                    .setChild(
+                        NestedTestAllTypes.newBuilder()
+                            .setChild(
+                                NestedTestAllTypes.newBuilder()
+                                    .setChild(
+                                        NestedTestAllTypes.newBuilder()
+                                            .setPayload(
+                                                TestAllTypes.newBuilder().setOptionalString("ff")))
+                                    .setPayload(TestAllTypes.newBuilder().setOptionalInt32(1234)))
+                            .setPayload(
+                                TestAllTypes.newBuilder()
+                                    .setOptionalNestedMessage(
+                                        TestAllTypes.NestedMessage.newBuilder().setBb(1234))))
+                    .build()))
+        .isEqualTo(
+            FieldMask.newBuilder()
+                .addPaths("child.child.child.payload.optional_string")
+                .addPaths("child.child.payload.optional_int32")
+                .addPaths("child.payload.optional_nested_message.bb")
+                .build());
+  }
+
   @Test
   public void testIsValid() throws Exception {
     assertThat(FieldMaskUtil.isValid(NestedTestAllTypes.class, "payload")).isTrue();
