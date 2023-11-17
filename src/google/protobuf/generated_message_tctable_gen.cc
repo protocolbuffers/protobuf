@@ -713,7 +713,7 @@ uint16_t MakeTypeCardForField(
         }
         break;
       default:
-        PROTOBUF_ASSUME(false);
+        Unreachable();
     }
   }
 
