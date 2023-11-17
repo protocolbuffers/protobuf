@@ -527,7 +527,7 @@ class PROTOBUF_EXPORT MessageLite {
     // Note: The order of arguments in the functions is chosen so that it has
     // the same ABI as the member function that calls them. Eg the `this`
     // pointer becomes the first argument in the free function.
-    void (*merge_to_from)(Message& to, const Message& from_msg);
+    void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
     // LITE objects (ie !descriptor_methods) collocate their name as a
     // char[] just beyond the ClassData.
@@ -536,7 +536,8 @@ class PROTOBUF_EXPORT MessageLite {
     // Offset of the CachedSize member.
     uint32_t cached_size_offset;
 
-    constexpr ClassData(void (*merge_to_from)(Message& to, const Message&),
+    constexpr ClassData(void (*merge_to_from)(MessageLite& to,
+                                              const MessageLite&),
                         void (*on_demand_register_arena_dtor)(MessageLite&,
                                                               Arena&),
                         const DescriptorMethods* descriptor_methods,

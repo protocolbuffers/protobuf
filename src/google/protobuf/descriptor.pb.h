@@ -784,8 +784,9 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
   void MergeFrom(const UninterpretedOption_NamePart& from) { UninterpretedOption_NamePart::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -969,8 +970,9 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
   void MergeFrom(const SourceCodeInfo_Location& from) { SourceCodeInfo_Location::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -1232,8 +1234,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   void MergeFrom(const GeneratedCodeInfo_Annotation& from) { GeneratedCodeInfo_Annotation::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -1484,8 +1487,9 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
   void MergeFrom(const FieldOptions_EditionDefault& from) { FieldOptions_EditionDefault::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -1669,8 +1673,9 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   void MergeFrom(const FeatureSet& from) { FeatureSet::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -2199,8 +2204,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
   void MergeFrom(const ExtensionRangeOptions_Declaration& from) { ExtensionRangeOptions_Declaration::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -2429,8 +2435,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
   void MergeFrom(const EnumDescriptorProto_EnumReservedRange& from) { EnumDescriptorProto_EnumReservedRange::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -2608,8 +2615,9 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
   void MergeFrom(const DescriptorProto_ReservedRange& from) { DescriptorProto_ReservedRange::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -2787,8 +2795,9 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   void MergeFrom(const UninterpretedOption& from) { UninterpretedOption::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -3057,8 +3066,9 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
   void MergeFrom(const SourceCodeInfo& from) { SourceCodeInfo::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -3230,8 +3240,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
   void MergeFrom(const GeneratedCodeInfo& from) { GeneratedCodeInfo::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -3403,8 +3414,9 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   void MergeFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from) { FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -3586,8 +3598,9 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   void MergeFrom(const ServiceOptions& from) { ServiceOptions::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -3967,8 +3980,9 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   void MergeFrom(const OneofOptions& from) { OneofOptions::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -4335,8 +4349,9 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   void MergeFrom(const MethodOptions& from) { MethodOptions::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -4749,8 +4764,9 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   void MergeFrom(const MessageOptions& from) { MessageOptions::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -5182,8 +5198,9 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   void MergeFrom(const FileOptions& from) { FileOptions::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -5890,8 +5907,9 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   void MergeFrom(const FieldOptions& from) { FieldOptions::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -6504,8 +6522,9 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   void MergeFrom(const FeatureSetDefaults& from) { FeatureSetDefaults::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -6704,8 +6723,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   void MergeFrom(const ExtensionRangeOptions& from) { ExtensionRangeOptions::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -7125,8 +7145,9 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   void MergeFrom(const EnumValueOptions& from) { EnumValueOptions::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -7519,8 +7540,9 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   void MergeFrom(const EnumOptions& from) { EnumOptions::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -7926,8 +7948,9 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   void MergeFrom(const OneofDescriptorProto& from) { OneofDescriptorProto::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -8115,8 +8138,9 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   void MergeFrom(const MethodDescriptorProto& from) { MethodDescriptorProto::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -8368,8 +8392,9 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   void MergeFrom(const FieldDescriptorProto& from) { FieldDescriptorProto::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -8753,8 +8778,9 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   void MergeFrom(const EnumValueDescriptorProto& from) { EnumValueDescriptorProto::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -8955,8 +8981,9 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
   void MergeFrom(const DescriptorProto_ExtensionRange& from) { DescriptorProto_ExtensionRange::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -9151,8 +9178,9 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   void MergeFrom(const ServiceDescriptorProto& from) { ServiceDescriptorProto::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -9360,8 +9388,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   void MergeFrom(const EnumDescriptorProto& from) { EnumDescriptorProto::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -9620,8 +9649,9 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   void MergeFrom(const DescriptorProto& from) { DescriptorProto::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -9981,8 +10011,9 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   void MergeFrom(const FileDescriptorProto& from) { FileDescriptorProto::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -10388,8 +10419,9 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
   void MergeFrom(const FileDescriptorSet& from) { FileDescriptorSet::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;

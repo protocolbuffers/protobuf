@@ -203,8 +203,9 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   void MergeFrom(const Version& from) { Version::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -414,8 +415,9 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   void MergeFrom(const CodeGeneratorResponse_File& from) { CodeGeneratorResponse_File::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -641,8 +643,9 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   void MergeFrom(const CodeGeneratorResponse& from) { CodeGeneratorResponse::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
@@ -867,8 +870,9 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   void MergeFrom(const CodeGeneratorRequest& from) { CodeGeneratorRequest::MergeImpl(*this, from); }
 
   private:
-  static void MergeImpl(::google::protobuf::Message& to_msg,
-                        const ::google::protobuf::Message& from_msg);
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
 
   public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;

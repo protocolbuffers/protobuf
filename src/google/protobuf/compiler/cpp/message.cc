@@ -1650,8 +1650,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                 void MergeFrom(const $classname$& from) { $classname$::MergeImpl(*this, from); }
 
                 private:
-                static void MergeImpl(::$proto_ns$::Message& to_msg,
-                                      const ::$proto_ns$::Message& from_msg);
+                static void MergeImpl(
+                    ::$proto_ns$::MessageLite& to_msg,
+                    const ::$proto_ns$::MessageLite& from_msg);
 
                 public:
               )cc");
@@ -3609,8 +3610,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         "  $classname$* const _this = this;\n");
   } else {
     format(
-        "void $classname$::MergeImpl(::$proto_ns$::Message& to_msg, const "
-        "::$proto_ns$::Message& from_msg) {\n"
+        "void $classname$::MergeImpl(::$proto_ns$::MessageLite& to_msg, const "
+        "::$proto_ns$::MessageLite& from_msg) {\n"
         "  auto* const _this = static_cast<$classname$*>(&to_msg);\n"
         "  auto& from = static_cast<const $classname$&>(from_msg);\n");
   }

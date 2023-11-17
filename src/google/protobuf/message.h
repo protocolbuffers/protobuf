@@ -370,7 +370,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
                                        internal::CachedSize* cached_size) const;
 
   // Reflection based version for reflection based types.
-  static void MergeImpl(Message& to, const Message& from);
+  static void MergeImpl(MessageLite& to, const MessageLite& from);
 
   static const DescriptorMethods kDescriptorMethods;
 
