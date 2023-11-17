@@ -23,7 +23,6 @@
     <!-- Include PDB in the built .nupkg -->
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IsTrimmable>true</IsTrimmable>
-    <EnableAOTAnalyzer>true</EnableAOTAnalyzer>
     <!-- Disable warnings about AOT and trimming features on older targets, e.g. netstandard2.0.
          For now, continue to apply these features to these targets because some packages don't have a target that supports them -->
     <NoWarn>$(NoWarn);NETSDK1195;NETSDK1210</NoWarn>	  
