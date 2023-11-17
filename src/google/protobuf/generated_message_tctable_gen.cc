@@ -196,10 +196,14 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
       break;
     case FieldDescriptor::TYPE_MESSAGE:
       picked =
-          (HasLazyRep(field, options) ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMl)
-           : options.use_direct_tcparser_table
-               ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMt)
-               : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMd));
+          HasLazyRep(field, options) ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMl)
+          : message_options.uses_codegen && !message_options.is_lite &&
+                  field->message_type()->options().message_set_wire_format() &&
+                  options.use_direct_tcparser_table && !field->is_repeated()
+              ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMS)
+          : options.use_direct_tcparser_table
+              ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMt)
+              : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMd);
       break;
     case FieldDescriptor::TYPE_GROUP:
       picked = (options.use_direct_tcparser_table
@@ -733,6 +737,22 @@ TailCallTableInfo::TailCallTableInfo(
     const OptionProvider& option_provider,
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices) {
+  if (descriptor->options().message_set_wire_format()) {
+    ABSL_DCHECK(ordered_fields.empty());
+    ABSL_DCHECK(inlined_string_indices.empty());
+    fast_path_fields = {{TailCallTableInfo::FastFieldInfo::NonField{
+        message_options.is_lite
+            ? TcParseFunction::kMessageSetWireFormatParseLoopLite
+            : TcParseFunction::kMessageSetWireFormatParseLoop,
+        0, 0}}};
+    table_size_log2 = 0;
+
+    num_to_entry_table = MakeNumToEntryTable(ordered_fields);
+    field_name_data = GenerateFieldNames(descriptor, field_entries,
+                                         message_options, option_provider);
+    return;
+  }
+
   ABSL_DCHECK(std::is_sorted(ordered_fields.begin(), ordered_fields.end(),
                              [](const auto* lhs, const auto* rhs) {
                                return lhs->number() < rhs->number();

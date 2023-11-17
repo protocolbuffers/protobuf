@@ -689,7 +689,7 @@ void ValidateTestMessageSet(const std::string& test_case,
             .GetPrototype(
                 PROTO2_WIREFORMAT_UNITTEST::TestMessageSet::descriptor())
             ->New());
-    msg->ParseFromString(data);
+    ASSERT_TRUE(msg->ParseFromString(data));
     auto* reflection = msg->GetReflection();
     std::vector<const FieldDescriptor*> fields;
     reflection->ListFields(*msg, &fields);

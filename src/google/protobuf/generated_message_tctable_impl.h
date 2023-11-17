@@ -328,33 +328,36 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
 // Examples:
 //   FastV8S1, FastZ64S2, FastEr1P2, FastBcS1, FastMtR2, FastEndG1
 //
-#define PROTOBUF_TC_PARSE_FUNCTION_LIST            \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV8)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV32)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV64)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastZ32)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastZ64)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastF32)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastF64)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEv)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr0)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr1)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastB)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastS)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastU)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBi)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSi)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUi)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBc)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSc)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUc)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGd) \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGt) \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMd) \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMt) \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastMl)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_END_GROUP()
+#define PROTOBUF_TC_PARSE_FUNCTION_LIST                           \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV8)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV32)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV64)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastZ32)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastZ64)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastF32)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastF64)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEv)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr0)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr1)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastB)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastS)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastU)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBi)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSi)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUi)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBc)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSc)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUc)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGd)                \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGt)                \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMd)                \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMt)                \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastMS)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastMl)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_END_GROUP()                     \
+  PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoopLite) \
+  PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoop)
 
 #define PROTOBUF_TC_PARSE_FUNCTION_X(value) k##value,
 enum class TcParseFunction : uint8_t { kNone, PROTOBUF_TC_PARSE_FUNCTION_LIST };
@@ -389,6 +392,14 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* GenericFallbackLite(PROTOBUF_TC_PARAM_DECL);
   static const char* ReflectionFallback(PROTOBUF_TC_PARAM_DECL);
   static const char* ReflectionParseLoop(PROTOBUF_TC_PARAM_DECL);
+
+  // These follow the "fast" function ABI but implement the whole loop for
+  // message_set_wire_format types.
+  // They provide the same code _InternalParse does for these types.
+  static const char* MessageSetWireFormatParseLoop(
+      PROTOBUF_TC_PARAM_NO_DATA_DECL);
+  static const char* MessageSetWireFormatParseLoopLite(
+      PROTOBUF_TC_PARAM_NO_DATA_DECL);
 
   PROTOBUF_NOINLINE
   static const char* ParseLoop(MessageLite* msg, const char* ptr,
@@ -531,7 +542,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   // Functions referenced by generated fast tables (message types):
   //   M: message    G: group
-  //   d: default*   t: TcParseTable* (the contents of aux)  l: lazy
+  //   d: default*   t: TcParseTable*  l: lazy  S: MessageSet
   //   S: singular   R: repeated
   //   1/2: tag length (bytes)
   PROTOBUF_NOINLINE static const char* FastMdS1(PROTOBUF_TC_PARAM_DECL);
@@ -554,6 +565,9 @@ class PROTOBUF_EXPORT TcParser final {
 
   PROTOBUF_NOINLINE static const char* FastMlS1(PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE static const char* FastMlS2(PROTOBUF_TC_PARAM_DECL);
+
+  PROTOBUF_NOINLINE static const char* FastMSS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastMSS2(PROTOBUF_TC_PARAM_DECL);
 
   // NOTE: Do not dedup RefAt by having one call the other with a const_cast. It
   // causes ICEs of gcc 7.5.
@@ -695,6 +709,8 @@ class PROTOBUF_EXPORT TcParser final {
   static inline const char* RepeatedParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType>
   static inline const char* LazyMessage(PROTOBUF_TC_PARAM_DECL);
+  template <typename TagType>
+  static inline const char* MessageSetMessage(PROTOBUF_TC_PARAM_DECL);
 
   template <typename TagType>
   static const char* FastEndGroupImpl(PROTOBUF_TC_PARAM_DECL);
@@ -776,6 +792,15 @@ class PROTOBUF_EXPORT TcParser final {
           msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(),
           ptr, ctx);
     }
+  }
+
+  template <class MessageBaseT>
+  static const char* MessageSetWireFormatParseLoopImpl(
+      PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+    return RefAt<ExtensionSet>(msg, table->extension_offset)
+        .ParseMessageSet(
+            ptr, static_cast<const MessageBaseT*>(table->default_instance),
+            &msg->_internal_metadata_, ctx);
   }
 
   // Note: `inline` is needed on template function declarations below to avoid
