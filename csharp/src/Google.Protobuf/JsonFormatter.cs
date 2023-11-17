@@ -968,8 +968,12 @@ namespace Google.Protobuf
 
             [UnconditionalSuppressMessage("Trimming", "IL2072",
                 Justification = "The field for the value must still be present. It will be returned by reflection, will be in this collection, and its name can be resolved.")]
+            [UnconditionalSuppressMessage("Trimming", "IL2067",
+                Justification = "The field for the value must still be present. It will be returned by reflection, will be in this collection, and its name can be resolved.")]
             internal static string GetOriginalName(object value)
             {
+                // Warnings are suppressed on this method. However, this code has been tested in an AOT app and verified that it works.
+                // Issue https://github.com/protocolbuffers/protobuf/issues/14788 discusses changes to guarantee that enum fields are never trimmed.
                 Dictionary<object, string> nameMapping = dictionaries.GetOrAdd(value.GetType(), static t => GetNameMapping(t));
 
                 // If this returns false, originalName will be null, which is what we want.

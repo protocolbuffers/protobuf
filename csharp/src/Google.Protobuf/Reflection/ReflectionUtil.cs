@@ -104,6 +104,7 @@ namespace Google.Protobuf.Reflection
         /// the type that declares the method, and the second argument to the first parameter type of the method.
         /// </summary>
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Dynamic code won't call Type.MakeGenericType.")]
         internal static IExtensionReflectionHelper CreateExtensionHelper(Extension extension)
         {
 #if NET5_0_OR_GREATER
@@ -128,6 +129,7 @@ namespace Google.Protobuf.Reflection
         /// an object is pretty cheap.
         /// </summary>
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Dynamic code won't call Type.MakeGenericType.")]
         private static IReflectionHelper GetReflectionHelper(Type t1, Type t2)
         {
 #if NET5_0_OR_GREATER
