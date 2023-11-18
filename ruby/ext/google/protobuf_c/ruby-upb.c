@@ -5726,6 +5726,7 @@ upb_Message* upb_Message_DeepClone(const upb_Message* message,
 }
 
 
+#include <stdint.h>
 #include <string.h>
 
 
@@ -5746,7 +5747,7 @@ size_t upb_Array_Size(const upb_Array* arr) { return arr->size; }
 upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
   upb_MessageValue ret;
   const char* data = _upb_array_constptr(arr);
-  int lg2 = arr->data & 7;
+  const int lg2 = _upb_Array_ElemSizeLg2(arr);
   UPB_ASSERT(i < arr->size);
   memcpy(&ret, data + (i << lg2), 1 << lg2);
   return ret;
@@ -5754,7 +5755,7 @@ upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
 
 void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
   char* data = _upb_array_ptr(arr);
-  int lg2 = arr->data & 7;
+  const int lg2 = _upb_Array_ElemSizeLg2(arr);
   UPB_ASSERT(i < arr->size);
   memcpy(data + (i << lg2), &val, 1 << lg2);
 }
@@ -5770,7 +5771,7 @@ bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
 
 void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
                     size_t count) {
-  const int lg2 = arr->data & 7;
+  const int lg2 = _upb_Array_ElemSizeLg2(arr);
   char* data = _upb_array_ptr(arr);
   memmove(&data[dst_idx << lg2], &data[src_idx << lg2], count << lg2);
 }
@@ -5807,7 +5808,7 @@ bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
   }
   const size_t newsize = arr->size;
   if (newsize > oldsize) {
-    const int lg2 = arr->data & 7;
+    const int lg2 = _upb_Array_ElemSizeLg2(arr);
     char* data = _upb_array_ptr(arr);
     memset(data + (oldsize << lg2), 0, (newsize - oldsize) << lg2);
   }
@@ -5818,19 +5819,18 @@ bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
 
 bool _upb_array_realloc(upb_Array* arr, size_t min_capacity, upb_Arena* arena) {
   size_t new_capacity = UPB_MAX(arr->capacity, 4);
-  int elem_size_lg2 = arr->data & 7;
-  size_t old_bytes = arr->capacity << elem_size_lg2;
-  size_t new_bytes;
+  const int lg2 = _upb_Array_ElemSizeLg2(arr);
+  size_t old_bytes = arr->capacity << lg2;
   void* ptr = _upb_array_ptr(arr);
 
   // Log2 ceiling of size.
   while (new_capacity < min_capacity) new_capacity *= 2;
 
-  new_bytes = new_capacity << elem_size_lg2;
+  const size_t new_bytes = new_capacity << lg2;
   ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
   if (!ptr) return false;
 
-  arr->data = _upb_tag_arrptr(ptr, elem_size_lg2);
+  _upb_Array_SetTaggedPtr(arr, ptr, lg2);
   arr->capacity = new_capacity;
   return true;
 }
@@ -13544,17 +13544,17 @@ UPB_FORCEINLINE
 static void* fastdecode_resizearr(upb_Decoder* d, void* dst,
                                   fastdecode_arr* farr, int valbytes) {
   if (UPB_UNLIKELY(dst == farr->end)) {
-    size_t old_size = farr->arr->capacity;
-    size_t old_bytes = old_size * valbytes;
-    size_t new_size = old_size * 2;
-    size_t new_bytes = new_size * valbytes;
+    size_t old_capacity = farr->arr->capacity;
+    size_t old_bytes = old_capacity * valbytes;
+    size_t new_capacity = old_capacity * 2;
+    size_t new_bytes = new_capacity * valbytes;
     char* old_ptr = _upb_array_ptr(farr->arr);
     char* new_ptr = upb_Arena_Realloc(&d->arena, old_ptr, old_bytes, new_bytes);
     uint8_t elem_size_lg2 = __builtin_ctz(valbytes);
-    farr->arr->capacity = new_size;
-    farr->arr->data = _upb_array_tagptr(new_ptr, elem_size_lg2);
-    dst = (void*)(new_ptr + (old_size * valbytes));
-    farr->end = (void*)(new_ptr + (new_size * valbytes));
+    _upb_Array_SetTaggedPtr(farr->arr, new_ptr, elem_size_lg2);
+    farr->arr->capacity = new_capacity;
+    dst = (void*)(new_ptr + (old_capacity * valbytes));
+    farr->end = (void*)(new_ptr + (new_capacity * valbytes));
   }
   return dst;
 }
