@@ -1092,14 +1092,16 @@ bool AllowedExtendeeInProto3(const std::string& name) {
 }
 
 const FeatureSetDefaults& GetCppFeatureSetDefaults() {
-  static const FeatureSetDefaults* default_spec = [] {
-    auto* defaults = new FeatureSetDefaults();
-    internal::ParseNoReflection(
-        absl::string_view{PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
-                          sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
-        *defaults);
-    return defaults;
-  }();
+  static const FeatureSetDefaults* default_spec =
+      internal::OnShutdownDelete([] {
+        auto* defaults = new FeatureSetDefaults();
+        internal::ParseNoReflection(
+            absl::string_view{
+                PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
+                sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
+            *defaults);
+        return defaults;
+      }());
   return *default_spec;
 }
 
