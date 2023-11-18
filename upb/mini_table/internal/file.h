@@ -8,10 +8,6 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_FILE_H_
 #define UPB_MINI_TABLE_INTERNAL_FILE_H_
 
-#include "upb/mini_table/internal/enum.h"
-#include "upb/mini_table/internal/extension.h"
-#include "upb/mini_table/internal/message.h"
-
 // Must be last.
 #include "upb/port/def.inc"
 

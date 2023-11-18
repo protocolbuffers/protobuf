@@ -4,15 +4,18 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
+
 #ifndef UPB_MINI_TABLE_INTERNAL_SUB_H_
 #define UPB_MINI_TABLE_INTERNAL_SUB_H_
 
-#include "upb/mini_table/internal/enum.h"
-#include "upb/mini_table/internal/message.h"
+// Must be last.
+#include "upb/port/def.inc"
 
 union upb_MiniTableSub {
   const struct upb_MiniTable* submsg;
   const struct upb_MiniTableEnum* subenum;
 };
+
+#include "upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_INTERNAL_SUB_H_ */
