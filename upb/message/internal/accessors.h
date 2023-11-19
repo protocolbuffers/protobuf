@@ -30,24 +30,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-#if defined(__GNUC__) && !defined(__clang__)
-// GCC raises incorrect warnings in these functions.  It thinks that we are
-// overrunning buffers, but we carefully write the functions in this file to
-// guarantee that this is impossible.  GCC gets this wrong due it its failure
-// to perform constant propagation as we expect:
-//   - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108217
-//   - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108226
-//
-// Unfortunately this also indicates that GCC is not optimizing away the
-// switch() in cases where it should be, compromising the performance.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
-#if __GNUC__ >= 11
-#pragma GCC diagnostic ignored "-Wstringop-overread"
-#endif
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -150,44 +132,6 @@ UPB_INLINE void _upb_Message_SetPresence(upb_Message* msg,
   }
 }
 
-UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
-                                              const upb_MiniTableField* field) {
-  char zero[16] = {0};
-  switch (_upb_MiniTableField_GetRep(field)) {
-    case kUpb_FieldRep_1Byte:
-      return memcmp(&zero, default_val, 1) != 0;
-    case kUpb_FieldRep_4Byte:
-      return memcmp(&zero, default_val, 4) != 0;
-    case kUpb_FieldRep_8Byte:
-      return memcmp(&zero, default_val, 8) != 0;
-    case kUpb_FieldRep_StringView: {
-      const upb_StringView* sv = (const upb_StringView*)default_val;
-      return sv->size != 0;
-    }
-  }
-  UPB_UNREACHABLE();
-}
-
-UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
-                                             const upb_MiniTableField* field) {
-  switch (_upb_MiniTableField_GetRep(field)) {
-    case kUpb_FieldRep_1Byte:
-      memcpy(to, from, 1);
-      return;
-    case kUpb_FieldRep_4Byte:
-      memcpy(to, from, 4);
-      return;
-    case kUpb_FieldRep_8Byte:
-      memcpy(to, from, 8);
-      return;
-    case kUpb_FieldRep_StringView: {
-      memcpy(to, from, sizeof(upb_StringView));
-      return;
-    }
-  }
-  UPB_UNREACHABLE();
-}
-
 UPB_INLINE size_t
 _upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
   return upb_SizeLog2_FieldType(
@@ -248,13 +192,13 @@ static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
     const void* default_val, void* val) {
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   if ((_upb_MiniTableField_InOneOf(field) ||
-       _upb_MiniTable_ValueIsNonZero(default_val, field)) &&
+       !_upb_MiniTableField_ValueIsZero(field, default_val)) &&
       !_upb_Message_HasNonExtensionField(msg, field)) {
-    _upb_MiniTable_CopyFieldData(val, default_val, field);
+    _upb_MiniTableField_CopyValue(field, val, default_val);
     return;
   }
-  _upb_MiniTable_CopyFieldData(val, _upb_MiniTableField_GetConstPtr(msg, field),
-                               field);
+  _upb_MiniTableField_CopyValue(field, val,
+                                _upb_MiniTableField_GetConstPtr(msg, field));
 }
 
 UPB_INLINE void _upb_Message_GetExtensionField(
@@ -263,9 +207,9 @@ UPB_INLINE void _upb_Message_GetExtensionField(
   UPB_ASSUME(upb_MiniTableField_IsExtension(&mt_ext->field));
   const upb_Message_Extension* ext = _upb_Message_Getext(msg, mt_ext);
   if (ext) {
-    _upb_MiniTable_CopyFieldData(val, &ext->data, &mt_ext->field);
+    _upb_MiniTableField_CopyValue(&mt_ext->field, val, &ext->data);
   } else {
-    _upb_MiniTable_CopyFieldData(val, default_val, &mt_ext->field);
+    _upb_MiniTableField_CopyValue(&mt_ext->field, val, default_val);
   }
 }
 
@@ -284,8 +228,8 @@ UPB_INLINE void _upb_Message_SetNonExtensionField(
     upb_Message* msg, const upb_MiniTableField* field, const void* val) {
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   _upb_Message_SetPresence(msg, field);
-  _upb_MiniTable_CopyFieldData(_upb_MiniTableField_GetPtr(msg, field), val,
-                               field);
+  _upb_MiniTableField_CopyValue(field, _upb_MiniTableField_GetPtr(msg, field),
+                                val);
 }
 
 UPB_INLINE bool _upb_Message_SetExtensionField(
@@ -295,7 +239,7 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
   upb_Message_Extension* ext =
       _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
   if (!ext) return false;
-  _upb_MiniTable_CopyFieldData(&ext->data, val, &mt_ext->field);
+  _upb_MiniTableField_CopyValue(&mt_ext->field, &ext->data, val);
   return true;
 }
 
@@ -335,8 +279,8 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
     *ptr = 0;
   }
   const char zeros[16] = {0};
-  _upb_MiniTable_CopyFieldData(_upb_MiniTableField_GetPtr(msg, field), zeros,
-                               field);
+  _upb_MiniTableField_CopyValue(field, _upb_MiniTableField_GetPtr(msg, field),
+                                zeros);
 }
 
 UPB_INLINE void _upb_Message_AssertMapIsUntagged(
@@ -370,10 +314,6 @@ UPB_INLINE upb_Map* _upb_Message_GetOrCreateMutableMap(
 
 #ifdef __cplusplus
 } /* extern "C" */
-#endif
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
 #endif
 
 #include "upb/port/undef.inc"

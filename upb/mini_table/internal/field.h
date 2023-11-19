@@ -9,8 +9,10 @@
 #define UPB_MINI_TABLE_INTERNAL_FIELD_H_
 
 #include <stdint.h>
+#include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -67,14 +69,14 @@ typedef enum {
 
 #define kUpb_FieldRep_Shift 6
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 UPB_INLINE upb_FieldRep
 _upb_MiniTableField_GetRep(const struct upb_MiniTableField* field) {
   return (upb_FieldRep)(field->mode >> kUpb_FieldRep_Shift);
 }
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 UPB_INLINE upb_FieldMode
 upb_FieldMode_Get(const struct upb_MiniTableField* field) {
@@ -103,6 +105,74 @@ UPB_INLINE bool upb_IsRepeatedOrMap(const struct upb_MiniTableField* field) {
 UPB_INLINE bool upb_IsSubMessage(const struct upb_MiniTableField* field) {
   return field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Message ||
          field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group;
+}
+
+#if defined(__GNUC__) && !defined(__clang__)
+// GCC raises incorrect warnings in these functions.  It thinks that we are
+// overrunning buffers, but we carefully write the functions in this file to
+// guarantee that this is impossible.  GCC gets this wrong due it its failure
+// to perform constant propagation as we expect:
+//   - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108217
+//   - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108226
+//
+// Unfortunately this also indicates that GCC is not optimizing away the
+// switch() in cases where it should be, compromising the performance.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#if __GNUC__ >= 11
+#pragma GCC diagnostic ignored "-Wstringop-overread"
+#endif
+#endif
+
+UPB_INLINE void _upb_MiniTableField_CopyValue(
+    const struct upb_MiniTableField* field, void* to, const void* from) {
+  switch (_upb_MiniTableField_GetRep(field)) {
+    case kUpb_FieldRep_1Byte:
+      memcpy(to, from, 1);
+      return;
+    case kUpb_FieldRep_4Byte:
+      memcpy(to, from, 4);
+      return;
+    case kUpb_FieldRep_8Byte:
+      memcpy(to, from, 8);
+      return;
+    case kUpb_FieldRep_StringView: {
+      memcpy(to, from, sizeof(upb_StringView));
+      return;
+    }
+  }
+  UPB_UNREACHABLE();
+}
+
+UPB_INLINE bool _upb_MiniTableField_ValueEquals(
+    const struct upb_MiniTableField* field, const void* a, const void* b) {
+  switch (_upb_MiniTableField_GetRep(field)) {
+    case kUpb_FieldRep_1Byte:
+      return memcmp(a, b, 1) == 0;
+    case kUpb_FieldRep_4Byte:
+      return memcmp(a, b, 4) == 0;
+    case kUpb_FieldRep_8Byte:
+      return memcmp(a, b, 8) == 0;
+    case kUpb_FieldRep_StringView: {
+      const upb_StringView* sva = (const upb_StringView*)a;
+      const upb_StringView* svb = (const upb_StringView*)b;
+      if (sva->size != svb->size) return false;
+      if (sva->size == 0) return true;
+      return memcmp(sva->data, svb->data, sva->size) == 0;
+    }
+  }
+  UPB_UNREACHABLE();
+}
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+UPB_INLINE bool _upb_MiniTableField_ValueIsZero(
+    const struct upb_MiniTableField* field, const void* val) {
+  const char zero[16] = {0};
+  return _upb_MiniTableField_ValueEquals(field, val, zero);
 }
 
 #ifdef __cplusplus

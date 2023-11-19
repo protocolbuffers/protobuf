@@ -14,6 +14,7 @@
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
@@ -129,7 +130,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
           if (!val.array_val || upb_Array_Size(val.array_val) == 0) continue;
           break;
         case kUpb_FieldMode_Scalar:
-          if (!_upb_MiniTable_ValueIsNonZero(&val, field)) continue;
+          if (_upb_MiniTableField_ValueIsZero(field, &val)) continue;
           break;
       }
     }
