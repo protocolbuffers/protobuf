@@ -8,9 +8,11 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_FIELD_H_
 #define UPB_MINI_TABLE_INTERNAL_FIELD_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/mini_table/internal/size_log2.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -93,6 +95,12 @@ UPB_INLINE void _upb_MiniTableField_CheckIsMap(
   UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_NativePointer);
   UPB_ASSUME(upb_FieldMode_Get(field) == kUpb_FieldMode_Map);
   UPB_ASSUME(field->presence == 0);
+}
+
+UPB_INLINE size_t
+_upb_MiniTableField_ElemSizeLg2(const struct upb_MiniTableField* field) {
+  return upb_FieldType_SizeLg2(
+      (upb_FieldType)field->UPB_PRIVATE(descriptortype));
 }
 
 #ifdef __cplusplus

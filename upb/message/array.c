@@ -13,13 +13,13 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/array.h"
-#include "upb/message/internal/size_log2.h"
+#include "upb/mini_table/internal/size_log2.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
-  return _upb_Array_New(a, 4, upb_SizeLog2_CType(type));
+  return _upb_Array_New(a, 4, upb_CType_SizeLg2(type));
 }
 
 const void* upb_Array_DataPtr(const upb_Array* arr) {
