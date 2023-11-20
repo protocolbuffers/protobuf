@@ -184,7 +184,7 @@ def protobuf_deps():
 def protobuf_register_toolchains():
     "registers source toolchain"
     native.register_toolchains("//:protoc_toolchain")
-    native.register_toolchains("//:cc_source_toolchain")
+    native.register_toolchains("//:cc_toolchain_toolchain")
     native.register_toolchains("//:javalite_source_toolchain")
     native.register_toolchains("//:java_source_toolchain")
-    native.register_toolchains("//:python_source_toolchain")
+    native.register_toolchains("//:python_toolchain_toolchain")

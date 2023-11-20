@@ -195,16 +195,9 @@ cc_binary(
 )
 
 proto_toolchain(
-    name = "protoc_source_toolchain",
+    name = "protoc_toolchain",
     proto_compiler = ":protoc"
 )
-
-toolchain(
-    name = "protoc_toolchain",
-    toolchain = ":protoc_source_toolchain",
-    toolchain_type = "@rules_proto//proto:toolchain_type",
-)
-
 
 ################################################################################
 # C++ runtime
@@ -358,15 +351,9 @@ proto_lang_toolchain(
     command_line = "--python_out=%s",
     progress_message = "Generating Python proto_library %{label}",
     runtime = ":protobuf_python",
+    toolchain_type = "@rules_python//python/proto:toolchain_type",
     visibility = ["//visibility:public"],
 )
-
-toolchain(
-    name = "python_source_toolchain",
-    toolchain = ":python_toolchain",
-    toolchain_type = "@rules_python//python/proto:toolchain_type",
-)
-
 
 ################################################################################
 # CC support
@@ -380,13 +367,8 @@ proto_lang_toolchain(
     ],
     command_line = "--cpp_out=$(OUT)",
     runtime = "//src/google/protobuf:protobuf_nowkt",
-    visibility = ["//visibility:public"],
-)
-
-toolchain(
-    name = "cc_source_toolchain",
-    toolchain = ":cc_toolchain",
     toolchain_type = "@rules_cc//cc/proto:toolchain_type",
+    visibility = ["//visibility:public"],
 )
 
 ################################################################################
