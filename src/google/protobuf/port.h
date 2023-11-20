@@ -202,17 +202,21 @@ inline constexpr bool DebugHardenStringValues() {
 #endif
 }
 
-#if ABSL_HAVE_BUILTIN(__builtin_FILE) && ABSL_HAVE_BUILTIN(__builtin_LINE)
-[[noreturn]] inline void Unreachable(const char* file = __builtin_FILE(),
-                                     int line = __builtin_LINE()) {
-#else
-[[noreturn]] inline void Unreachable(const char* file = "", int line = 0) {
-#endif
 #if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
+[[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE inline void
+Unreachable() {
   __builtin_unreachable();
-#endif
+}
+#elif ABSL_HAVE_BUILTIN(__builtin_FILE) && ABSL_HAVE_BUILTIN(__builtin_LINE)
+[[noreturn]] ABSL_ATTRIBUTE_COLD inline void Unreachable(
+    const char* file = __builtin_FILE(), int line = __builtin_LINE()) {
   protobuf_assumption_failed("Unreachable", file, line);
 }
+#else
+[[noreturn]] ABSL_ATTRIBUTE_COLD inline void Unreachable() {
+  protobuf_assumption_failed("Unreachable", "", 0);
+}
+#endif
 
 }  // namespace internal
 }  // namespace protobuf
