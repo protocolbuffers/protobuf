@@ -196,7 +196,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   memcpy(dst, src, mini_table->size);
   for (size_t i = 0; i < mini_table->field_count; ++i) {
     const upb_MiniTableField* field = &mini_table->fields[i];
-    if (!upb_IsRepeatedOrMap(field)) {
+    if (!upb_MiniTableField_IsRepeatedOrMap(field)) {
       switch (upb_MiniTableField_CType(field)) {
         case kUpb_CType_Message: {
           upb_TaggedMessagePtr tagged =
@@ -263,7 +263,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
     upb_Message_Extension* dst_ext =
         _upb_Message_GetOrCreateExtension(dst, msg_ext->ext, arena);
     if (!dst_ext) return NULL;
-    if (!upb_IsRepeatedOrMap(field)) {
+    if (!upb_MiniTableField_IsRepeatedOrMap(field)) {
       if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
         return NULL;
       }

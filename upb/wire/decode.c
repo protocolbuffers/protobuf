@@ -608,8 +608,8 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
 
   UPB_ASSERT(entry);
   UPB_ASSERT(entry->field_count == 2);
-  UPB_ASSERT(!upb_IsRepeatedOrMap(&entry->fields[0]));
-  UPB_ASSERT(!upb_IsRepeatedOrMap(&entry->fields[1]));
+  UPB_ASSERT(!upb_MiniTableField_IsRepeatedOrMap(&entry->fields[0]));
+  UPB_ASSERT(!upb_MiniTableField_IsRepeatedOrMap(&entry->fields[1]));
 
   if (!map) {
     map = _upb_Decoder_CreateMap(d, entry);

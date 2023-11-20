@@ -21,6 +21,7 @@ cc_library(
     deps = [
         ":internal",
         "//upb:base",
+        "//upb:base_internal",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:mini_table_internal",

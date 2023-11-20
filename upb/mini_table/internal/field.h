@@ -95,16 +95,6 @@ UPB_INLINE void _upb_MiniTableField_CheckIsMap(
   UPB_ASSUME(field->presence == 0);
 }
 
-UPB_INLINE bool upb_IsRepeatedOrMap(const struct upb_MiniTableField* field) {
-  // This works because upb_FieldMode has no value 3.
-  return !(field->mode & kUpb_FieldMode_Scalar);
-}
-
-UPB_INLINE bool upb_IsSubMessage(const struct upb_MiniTableField* field) {
-  return field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Message ||
-         field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group;
-}
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

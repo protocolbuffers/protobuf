@@ -40,20 +40,32 @@ UPB_API_INLINE upb_CType upb_MiniTableField_CType(const upb_MiniTableField* f) {
   return upb_FieldType_CType(upb_MiniTableField_Type(f));
 }
 
-UPB_API_INLINE bool upb_MiniTableField_IsExtension(
-    const upb_MiniTableField* field) {
-  return field->mode & kUpb_LabelFlags_IsExtension;
-}
-
 UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
     const upb_MiniTableField* field) {
   return field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Enum;
 }
 
+UPB_API_INLINE bool upb_MiniTableField_IsExtension(
+    const upb_MiniTableField* field) {
+  return field->mode & kUpb_LabelFlags_IsExtension;
+}
+
+UPB_API_INLINE bool upb_MiniTableField_IsRepeatedOrMap(
+    const upb_MiniTableField* field) {
+  // This works because upb_FieldMode has no value 3.
+  return !(field->mode & kUpb_FieldMode_Scalar);
+}
+
+UPB_API_INLINE bool upb_MiniTableField_IsSubMessage(
+    const upb_MiniTableField* field) {
+  return field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Message ||
+         field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group;
+}
+
 UPB_API_INLINE bool upb_MiniTableField_HasPresence(
     const upb_MiniTableField* field) {
   if (upb_MiniTableField_IsExtension(field)) {
-    return !upb_IsRepeatedOrMap(field);
+    return !upb_MiniTableField_IsRepeatedOrMap(field);
   } else {
     return field->presence != 0;
   }

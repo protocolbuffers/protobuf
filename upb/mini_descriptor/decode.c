@@ -8,16 +8,24 @@
 #include "upb/mini_descriptor/decode.h"
 
 #include <inttypes.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/internal/log2.h"
+#include "upb/base/status.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/decoder.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_descriptor/internal/wire_constants.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -497,7 +505,7 @@ int upb_MtDecoder_CompareFields(const void* _a, const void* _b) {
 #define UPB_COMBINE(rep, ty, idx) (((rep << type_bits) | ty) << idx_bits) | idx
   uint32_t a_packed = UPB_COMBINE(a->rep, a->type, a->field_index);
   uint32_t b_packed = UPB_COMBINE(b->rep, b->type, b->field_index);
-  assert(a_packed != b_packed);
+  UPB_ASSERT(a_packed != b_packed);
 #undef UPB_COMBINE
   return a_packed < b_packed ? -1 : 1;
 }
@@ -630,7 +638,7 @@ static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
                            name, expected_num, (int)f->number);
   }
 
-  if (upb_IsRepeatedOrMap(f)) {
+  if (upb_MiniTableField_IsRepeatedOrMap(f)) {
     upb_MdDecoder_ErrorJmp(
         &d->base, "map %s cannot be repeated or map, or be in oneof", name);
   }
@@ -805,7 +813,7 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
 
   if (extendee->ext & kUpb_ExtMode_IsMessageSet) {
     // Extensions of MessageSet must be messages.
-    if (!upb_IsSubMessage(f)) return NULL;
+    if (!upb_MiniTableField_IsSubMessage(f)) return NULL;
 
     // Extensions of MessageSet must be non-repeating.
     if ((f->mode & kUpb_FieldMode_Mask) == kUpb_FieldMode_Array) return NULL;

@@ -212,7 +212,7 @@ _upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
 //                                       const upb_MiniTableField* field,
 //                                       bool value, upb_Arena* a) {
 //     UPB_ASSUME(field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bool);
-//     UPB_ASSUME(!upb_IsRepeatedOrMap(field));
+//     UPB_ASSUME(!upb_MiniTableField_IsRepeatedOrMap(field));
 //     UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_1Byte);
 //     _upb_Message_SetField(msg, field, &value, a);
 //   }
