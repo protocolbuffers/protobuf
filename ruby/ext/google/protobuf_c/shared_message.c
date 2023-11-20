@@ -32,6 +32,7 @@ uint64_t shared_Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
   } else {
     upb_Arena_Free(arena);
     upb_Status_SetErrorMessage(status, "Error calculating hash");
+    return 0;
   }
 }
 
@@ -61,5 +62,6 @@ bool shared_Message_Equal(const upb_Message* m1, const upb_Message* m2,
   } else {
     upb_Arena_Free(arena_tmp);
     upb_Status_SetErrorMessage(status, "Error comparing messages");
+    return 0;
   }
 }
