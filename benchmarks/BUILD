@@ -102,18 +102,27 @@ py_binary(
     name = "gen_synthetic_protos",
     srcs = ["gen_synthetic_protos.py"],
     python_version = "PY3",
+    deps = [
+        "//third_party/py/google/protobuf:use_fast_cpp_protos",  # Automatically added go/proto_python_upb_flip
+    ],
 )
 
 py_binary(
     name = "gen_upb_binary_c",
     srcs = ["gen_upb_binary_c.py"],
     python_version = "PY3",
+    deps = [
+        "//third_party/py/google/protobuf:use_fast_cpp_protos",  # Automatically added go/proto_python_upb_flip
+    ],
 )
 
 py_binary(
     name = "gen_protobuf_binary_cc",
     srcs = ["gen_protobuf_binary_cc.py"],
     python_version = "PY3",
+    deps = [
+        "//third_party/py/google/protobuf:use_fast_cpp_protos",  # Automatically added go/proto_python_upb_flip
+    ],
 )
 
 genrule(

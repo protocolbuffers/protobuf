@@ -18,6 +18,9 @@ py_binary(
     name = "amalgamate",
     srcs = ["amalgamate.py"],
     visibility = ["//upb:__pkg__"],
+    deps = [
+        "//third_party/py/google/protobuf:use_fast_cpp_protos",  # Automatically added go/proto_python_upb_flip
+    ],
 )
 
 # py_proto_library() is private rule, only intended for internal use by upb.
