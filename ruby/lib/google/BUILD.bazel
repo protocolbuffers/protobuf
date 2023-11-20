@@ -76,9 +76,12 @@ ruby_library(
         "//ruby:linux_ffi_enabled": ["libprotobuf_c_ffi.so"],
         "//conditions:default": [],
     }),
-    includes = ["ruby/lib"],
+    includes = [
+        "ruby",
+        "ruby/lib",
+    ],
     visibility = ["//ruby:__pkg__"],
-    deps = ["//:well_known_ruby_protos"] + select({
+    deps = ["//ruby:well_known_ruby_protos"] + select({
         "//ruby:ffi_enabled": [
             "@protobuf_bundle//:ffi",
             "@protobuf_bundle//:ffi-compiler",

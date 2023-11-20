@@ -1,6 +1,6 @@
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_test")
-load("//:protobuf.bzl", "internal_ruby_proto_library")
+load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
 internal_ruby_proto_library(
     name = "test_ruby_protos",
