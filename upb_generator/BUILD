@@ -102,6 +102,7 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//protos_generator:__pkg__"],
     deps = [
+        ":mangle",
         "//upb:mini_table",
         "//upb:mini_table_internal",
         "//upb:port",
@@ -186,6 +187,20 @@ bootstrap_cc_library(
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "mangle",
+    srcs = ["mangle.cc"],
+    hdrs = ["mangle.h"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    visibility = [
+        "//rust:__subpackages__",
+        "//upb:friends",
+    ],
+    deps = [
         "@com_google_absl//absl/strings",
     ],
 )
