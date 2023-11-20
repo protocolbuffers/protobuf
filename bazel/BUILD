@@ -26,6 +26,9 @@ py_binary(
 bzl_library(
     name = "py_proto_library_bzl",
     srcs = ["py_proto_library.bzl"],
+    deps = [
+        "@rules_python//python:py_info_bzl",
+    ],
 )
 
 bzl_library(

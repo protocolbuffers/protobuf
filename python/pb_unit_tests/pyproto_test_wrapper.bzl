@@ -25,7 +25,7 @@ def pyproto_test_wrapper(name, deps = []):
 
 # begin:google_only
 #
-# load("//third_party/bazel_rules/rules_python/python:py_test.bzl", "py_test")
+# load("@rules_python//python:py_test.bzl", "py_test")
 #
 # def pyproto_test_wrapper(name):
 #     src = name + "_wrapper.py"
