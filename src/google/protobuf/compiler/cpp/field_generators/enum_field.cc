@@ -74,7 +74,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->_internal_set_$name$(from._internal_$name$());
+      _this->$field_$ = from.$field_$;
     )cc");
   }
 
@@ -175,7 +175,12 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     p->Emit(R"cc(
       inline void $Msg$::set_$name$($Enum$ value) {
         $PrepareSplitMessageForWrite$;
-        _internal_set_$name$(value);
+        $assert_valid$;
+        if ($not_has_field$) {
+          clear_$oneof_name$();
+          set_has_$name$();
+        }
+        $field_$ = value;
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
@@ -184,14 +189,6 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           return static_cast<$Enum$>($field_$);
         }
         return static_cast<$Enum$>($kDefault$);
-      }
-      inline void $Msg$::_internal_set_$name$($Enum$ value) {
-        $assert_valid$;
-        if ($not_has_field$) {
-          clear_$oneof_name$();
-          set_has_$name$();
-        }
-        $field_$ = value;
       }
     )cc");
   } else {
