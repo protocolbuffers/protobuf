@@ -113,15 +113,10 @@ struct TypeImplementsMergeBehaviorProbeForMergeFrom {
       type;
 };
 
-template <typename T, typename = void>
-struct TypeImplementsMergeBehavior
-    : TypeImplementsMergeBehaviorProbeForMergeFrom<T> {};
-
-
-template <>
-struct TypeImplementsMergeBehavior<std::string> {
-  typedef std::true_type type;
-};
+template <typename T>
+using TypeImplementsMergeBehavior =
+    absl::disjunction<std::is_same<T, std::string>,
+                      TypeImplementsMergeBehaviorProbeForMergeFrom<T>>;
 
 template <typename T>
 struct IsMovable
