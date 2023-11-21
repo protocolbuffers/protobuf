@@ -1129,36 +1129,35 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                            : std::string(p->LookupVar("file_level_metadata"))},
       },
       R"cc(
-        static ::absl::once_flag $desc_table$_once;
-        const ::_pbi::DescriptorTable $desc_table$ = {
-            false,
-            $eager$,
-            $file_proto_len$,
-            $proto_name$,
-            "$filename$",
-            &$desc_table$_once,
-            $deps_ptr$,
-            $num_deps$,
-            $num_msgs$,
-            schemas,
-            file_default_instances,
-            $tablename$::offsets,
-            $msgs_ptr$,
-            $file_level_enum_descriptors$,
-            $file_level_service_descriptors$,
+        PROTOBUF_CONSTINIT
+        PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::_pbi::DescriptorTable
+            $desc_table$ = {
+                $eager$,
+                $file_proto_len$,
+                $proto_name$,
+                "$filename$",
+                $deps_ptr$,
+                $num_deps$,
+                $num_msgs$,
+                schemas,
+                file_default_instances,
+                $tablename$::offsets,
+                $msgs_ptr$,
+                $file_level_enum_descriptors$,
+                $file_level_service_descriptors$,
         };
 
-        // This function exists to be marked as weak.
-        // It can significantly speed up compilation by breaking up LLVM's SCC
-        // in the .pb.cc translation units. Large translation units see a
-        // reduction of more than 35% of walltime for optimized builds. Without
-        // the weak attribute all the messages in the file, including all the
-        // vtables and everything they use become part of the same SCC through
-        // a cycle like:
-        // GetMetadata -> descriptor table -> default instances ->
-        //   vtables -> GetMetadata
-        // By adding a weak function here we break the connection from the
-        // individual vtables back into the descriptor table.
+        //~ This function exists to be marked as weak.
+        //~ It can significantly speed up compilation by breaking up LLVM's SCC
+        //~ in the .pb.cc translation units. Large translation units see a
+        //~ reduction of more than 35% of walltime for optimized builds. Without
+        //~ the weak attribute all the messages in the file, including all the
+        //~ vtables and everything they use become part of the same SCC through
+        //~ a cycle like:
+        //~ GetMetadata -> descriptor table -> default instances ->
+        //~   vtables -> GetMetadata
+        //~ By adding a weak function here we break the connection from the
+        //~ individual vtables back into the descriptor table.
         PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* $desc_table$_getter() {
           return &$desc_table$;
         }

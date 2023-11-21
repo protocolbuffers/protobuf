@@ -2063,24 +2063,13 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
         "    : SuperType(arena) {}\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      if (!descriptor_->options().map_entry()) {
-        format(
-            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-            "$annotate_reflection$"
-            "  return ::_pbi::AssignDescriptors(\n"
-            "      &$desc_table$_getter, &$desc_table$_once,\n"
-            "      $file_level_metadata$[$1$]);\n"
-            "}\n",
-            index_in_file_messages_);
-      } else {
-        format(
-            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-            "  return ::_pbi::AssignDescriptors(\n"
-            "      &$desc_table$_getter, &$desc_table$_once,\n"
-            "      $file_level_metadata$[$1$]);\n"
-            "}\n",
-            index_in_file_messages_);
-      }
+      format(
+          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
+          "  return ::_pbi::AssignDescriptors(\n"
+          "      &$desc_table$_getter, &$desc_table$.once,\n"
+          "      $file_level_metadata$[$1$]);\n"
+          "}\n",
+          index_in_file_messages_);
     }
     return;
   }
@@ -2210,24 +2199,14 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   format("\n");
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    if (!descriptor_->options().map_entry()) {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "$annotate_reflection$"
-          "  return ::_pbi::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
-    } else {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "  return ::_pbi::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
-    }
+    format(
+        "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
+        "$annotate_reflection$"
+        "  return ::_pbi::AssignDescriptors(\n"
+        "      &$desc_table$_getter, &$desc_table$.once,\n"
+        "      $file_level_metadata$[$1$]);\n"
+        "}\n",
+        index_in_file_messages_);
   }
 
   if (HasTracker(descriptor_, options_)) {
