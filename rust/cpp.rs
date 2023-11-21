@@ -8,6 +8,7 @@
 // Rust Protobuf runtime using the C++ kernel.
 
 use crate::__internal::{Private, RawArena, RawMap, RawMessage, RawRepeatedField};
+use core::fmt::Debug;
 use paste::paste;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
@@ -390,7 +391,7 @@ macro_rules! impl_scalar_map_values {
 macro_rules! impl_scalar_maps {
     ($($t:ty),*) => {
         paste! { $(
-                pub trait [< MapWith $t:camel KeyOps >] {
+                pub trait [< MapWith $t:camel KeyOps >] : Sync + Send + Copy + Clone + Debug {
                     fn new_map() -> RawMap;
                     fn clear(m: RawMap);
                     fn size(m: RawMap) -> usize;
@@ -444,6 +445,11 @@ macro_rules! impl_scalar_maps {
 }
 
 impl_scalar_maps!(i32, u32, bool, u64, i64);
+
+#[cfg(test)]
+pub(crate) fn new_map_inner() -> MapInner<'static, i32, i64> {
+    Default::default()
+}
 
 #[cfg(test)]
 mod tests {
