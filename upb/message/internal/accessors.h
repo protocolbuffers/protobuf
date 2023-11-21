@@ -12,14 +12,12 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
-#include "upb/message/internal/size_log2.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -183,12 +181,6 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
     }
   }
   UPB_UNREACHABLE();
-}
-
-UPB_INLINE size_t
-_upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
-  return upb_SizeLog2_FieldType(
-      (upb_FieldType)field->UPB_PRIVATE(descriptortype));
 }
 
 // Here we define universal getter/setter functions for message fields.

@@ -107,7 +107,6 @@ cc_library(
         "internal/map_entry.h",
         "internal/map_sorter.h",
         "internal/message.h",
-        "internal/size_log2.h",
         "map_gencode_util.h",
     ],
     copts = UPB_DEFAULT_COPTS,
@@ -121,6 +120,7 @@ cc_library(
         "//upb:hash",
         "//upb:mem",
         "//upb:mini_table",
+        "//upb:mini_table_internal",
         "//upb:port",
     ],
 )

@@ -6,8 +6,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_MESSAGE_INTERNAL_SIZE_LOG2_H_
-#define UPB_MESSAGE_INTERNAL_SIZE_LOG2_H_
+#ifndef UPB_MINI_TABLE_INTERNAL_SIZE_LOG2_H_
+#define UPB_MINI_TABLE_INTERNAL_SIZE_LOG2_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 // Return the log2 of the storage size in bytes for a upb_CType
-UPB_INLINE int upb_SizeLog2_CType(upb_CType c_type) {
+UPB_INLINE int upb_CType_SizeLg2(upb_CType c_type) {
   static const int8_t size[] = {
       0,               // kUpb_CType_Bool
       2,               // kUpb_CType_Float
@@ -42,7 +42,7 @@ UPB_INLINE int upb_SizeLog2_CType(upb_CType c_type) {
 }
 
 // Return the log2 of the storage size in bytes for a upb_FieldType
-UPB_INLINE int upb_SizeLog2_FieldType(upb_FieldType field_type) {
+UPB_INLINE int upb_FieldType_SizeLg2(upb_FieldType field_type) {
   static const int8_t size[] = {
       3,               // kUpb_FieldType_Double
       2,               // kUpb_FieldType_Float
@@ -74,4 +74,4 @@ UPB_INLINE int upb_SizeLog2_FieldType(upb_FieldType field_type) {
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MESSAGE_INTERNAL_SIZE_LOG2_H_ */
+#endif /* UPB_MINI_TABLE_INTERNAL_SIZE_LOG2_H_ */
