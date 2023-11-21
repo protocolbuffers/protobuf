@@ -5874,6 +5874,8 @@ void upb_Arena_DecRefFor(upb_Arena* arena, const void* owner) {
 }
 
 
+#include <string.h>
+
 
 // Must be last.
 
@@ -5894,12 +5896,10 @@ upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
   // hence assuming a zero default is valid.
   upb_MessageValue default_val;
   memset(&default_val, 0, sizeof(upb_MessageValue));
-  upb_MessageValue map_entry_key;
-  upb_MessageValue map_entry_value;
-  _upb_Message_GetField(map_entry_message, map_entry_key_field, &default_val,
-                        &map_entry_key);
-  _upb_Message_GetField(map_entry_message, map_entry_value_field, &default_val,
-                        &map_entry_value);
+  upb_MessageValue map_entry_key =
+      upb_Message_GetField(map_entry_message, map_entry_key_field, default_val);
+  upb_MessageValue map_entry_value = upb_Message_GetField(
+      map_entry_message, map_entry_value_field, default_val);
   return upb_Map_Insert(map, map_entry_key, map_entry_value, arena);
 }
 
@@ -11193,9 +11193,7 @@ const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
 upb_MessageValue upb_Message_GetFieldByDef(const upb_Message* msg,
                                            const upb_FieldDef* f) {
   upb_MessageValue default_val = upb_FieldDef_Default(f);
-  upb_MessageValue ret;
-  _upb_Message_GetField(msg, upb_FieldDef_MiniTable(f), &default_val, &ret);
-  return ret;
+  return upb_Message_GetField(msg, upb_FieldDef_MiniTable(f), default_val);
 }
 
 upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
@@ -11239,7 +11237,7 @@ make:
 
 bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
                                upb_MessageValue val, upb_Arena* a) {
-  return _upb_Message_SetField(msg, upb_FieldDef_MiniTable(f), &val, a);
+  return upb_Message_SetField(msg, upb_FieldDef_MiniTable(f), val, a);
 }
 
 void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f) {
