@@ -238,14 +238,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     element_at(ExchangeCurrentSize(current_size_ + 1)) = result;
   }
 
-  template <typename TypeHandler>
-  void Delete(int index) {
-    ABSL_DCHECK_GE(index, 0);
-    ABSL_DCHECK_LT(index, current_size_);
-    using H = CommonHandler<TypeHandler>;
-    Delete<H>(element_at(index), arena_);
-  }
-
   // Must be called from destructor.
   //
   // Pre-condition: NeedsDestroy() returns true.
