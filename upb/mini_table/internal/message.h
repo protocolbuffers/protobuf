@@ -9,7 +9,6 @@
 #define UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 
 #include "upb/message/types.h"
-#include "upb/mini_table/internal/field.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -34,8 +33,6 @@ typedef enum {
   // entry.  *Only* used during table building!
   kUpb_ExtMode_IsMapEntry = 4,
 } upb_ExtMode;
-
-union upb_MiniTableSub;
 
 // upb_MiniTable represents the memory layout of a given upb_MessageDef.
 // The members are public so generated code can initialize them,

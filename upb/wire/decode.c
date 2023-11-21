@@ -33,7 +33,6 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/enum.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
@@ -356,34 +355,23 @@ static void _upb_Decoder_AddUnknownVarints(upb_Decoder* d, upb_Message* msg,
   }
 }
 
-UPB_NOINLINE
-static bool _upb_Decoder_CheckEnumSlow(upb_Decoder* d, const char* ptr,
-                                       upb_Message* msg,
-                                       const upb_MiniTableEnum* e,
-                                       const upb_MiniTableField* field,
-                                       uint32_t v) {
-  if (_upb_MiniTable_CheckEnumValueSlow(e, v)) return true;
-
-  // Unrecognized enum goes into unknown fields.
-  // For packed fields the tag could be arbitrarily far in the past, so we
-  // just re-encode the tag and value here.
-  uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Varint;
-  upb_Message* unknown_msg =
-      field->mode & kUpb_LabelFlags_IsExtension ? d->unknown_msg : msg;
-  _upb_Decoder_AddUnknownVarints(d, unknown_msg, tag, v);
-  return false;
-}
-
 UPB_FORCEINLINE
 static bool _upb_Decoder_CheckEnum(upb_Decoder* d, const char* ptr,
                                    upb_Message* msg, const upb_MiniTableEnum* e,
                                    const upb_MiniTableField* field,
                                    wireval* val) {
-  uint32_t v = val->uint32_val;
+  const uint32_t v = val->uint32_val;
 
-  _kUpb_FastEnumCheck_Status status = _upb_MiniTable_CheckEnumValueFast(e, v);
-  if (UPB_LIKELY(status == _kUpb_FastEnumCheck_ValueIsInEnum)) return true;
-  return _upb_Decoder_CheckEnumSlow(d, ptr, msg, e, field, v);
+  if (UPB_LIKELY(upb_MiniTableEnum_CheckValue(e, v))) return true;
+
+  // Unrecognized enum goes into unknown fields.
+  // For packed fields the tag could be arbitrarily far in the past,
+  // so we just re-encode the tag and value here.
+  const uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Varint;
+  upb_Message* unknown_msg =
+      field->mode & kUpb_LabelFlags_IsExtension ? d->unknown_msg : msg;
+  _upb_Decoder_AddUnknownVarints(d, unknown_msg, tag, v);
+  return false;
 }
 
 UPB_NOINLINE
