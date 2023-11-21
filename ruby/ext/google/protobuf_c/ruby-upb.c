@@ -5559,7 +5559,7 @@ upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
                                const upb_MiniTable* sub, upb_Arena* arena) {
   size_t size = array->size;
   upb_Array* cloned_array =
-      _upb_Array_New(arena, size, upb_SizeLog2_CType(value_type));
+      _upb_Array_New(arena, size, upb_CType_SizeLg2(value_type));
   if (!cloned_array) {
     return NULL;
   }
@@ -5733,7 +5733,7 @@ upb_Message* upb_Message_DeepClone(const upb_Message* message,
 // Must be last.
 
 upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
-  return _upb_Array_New(a, 4, upb_SizeLog2_CType(type));
+  return _upb_Array_New(a, 4, upb_CType_SizeLg2(type));
 }
 
 const void* upb_Array_DataPtr(const upb_Array* arr) {
@@ -12507,7 +12507,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
 upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
                                     const upb_MiniTableField* field) {
   const upb_FieldType field_type = field->UPB_PRIVATE(descriptortype);
-  const size_t lg2 = upb_SizeLog2_FieldType(field_type);
+  const size_t lg2 = upb_FieldType_SizeLg2(field_type);
   upb_Array* ret = _upb_Array_New(&d->arena, 4, lg2);
   if (!ret) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   return ret;
