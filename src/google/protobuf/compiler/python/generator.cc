@@ -502,7 +502,7 @@ void Generator::PrintResolvedFeatures() const {
     }                                                                         \
   }
 
-  internal::VisitDescriptors(*file_, [&](const Descriptor& msg) {
+  google::protobuf::internal::VisitDescriptors(*file_, [&](const Descriptor& msg) {
     printer_->Emit(
         {{"resolved_features", GetResolvedFeatures(msg)},
          {"descriptor_name", ModuleLevelDescriptorName(msg)},
@@ -516,7 +516,7 @@ void Generator::PrintResolvedFeatures() const {
           $ext_features$
         )py");
   });
-  internal::VisitDescriptors(*file_, [&](const EnumDescriptor& enm) {
+  google::protobuf::internal::VisitDescriptors(*file_, [&](const EnumDescriptor& enm) {
     printer_->Emit({{"resolved_features", GetResolvedFeatures(enm)},
                     {"descriptor_name", ModuleLevelDescriptorName(enm)},
                     {"value_features", MAKE_NESTED(enm, value, "values")}},

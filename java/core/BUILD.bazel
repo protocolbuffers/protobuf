@@ -85,6 +85,7 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/RawMessageInfo.java",
     "src/main/java/com/google/protobuf/Reader.java",
     "src/main/java/com/google/protobuf/RopeByteString.java",
+    "src/main/java/com/google/protobuf/RuntimeVersion.java",
     "src/main/java/com/google/protobuf/Schema.java",
     "src/main/java/com/google/protobuf/SchemaFactory.java",
     "src/main/java/com/google/protobuf/SchemaUtil.java",

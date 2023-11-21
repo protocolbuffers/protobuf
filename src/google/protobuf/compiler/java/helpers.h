@@ -60,6 +60,10 @@ void PrintEnumVerifierLogic(
     absl::string_view var_name, absl::string_view terminating_string,
     bool enforce_lite);
 
+// Prints the Protobuf Java Version validator checking that the runtime and
+// gencode versions are compatible.
+void PrintGencodeVersionValidator(io::Printer* printer);
+
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
 std::string ToCamelCase(absl::string_view input, bool lower_first);

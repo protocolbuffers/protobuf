@@ -340,6 +340,15 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   printer->Print("private static final long serialVersionUID = 0L;\n");
 
   printer->Indent();
+
+  if (context_->options().opensource_runtime) {
+    printer->Print("static {\n");
+    printer->Indent();
+    PrintGencodeVersionValidator(printer);
+    printer->Outdent();
+    printer->Print("}\n");
+  }
+
   // Using builder_type, instead of Builder, prevents the Builder class from
   // being loaded into PermGen space when the default instance is created.
   // This optimizes the PermGen space usage for clients that do not modify
