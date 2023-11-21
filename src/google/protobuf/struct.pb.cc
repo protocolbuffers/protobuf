@@ -182,36 +182,24 @@ const char descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto[] ABSL_A
     "rotobuf/types/known/structpb\370\001\001\242\002\003GPB\252\002\036"
     "Google.Protobuf.WellKnownTypesb\006proto3"
 };
-static ::absl::once_flag descriptor_table_google_2fprotobuf_2fstruct_2eproto_once;
-const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fstruct_2eproto = {
-    false,
-    false,
-    638,
-    descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto,
-    "google/protobuf/struct.proto",
-    &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
-    nullptr,
-    0,
-    4,
-    schemas,
-    file_default_instances,
-    TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets,
-    file_level_metadata_google_2fprotobuf_2fstruct_2eproto,
-    file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto,
-    file_level_service_descriptors_google_2fprotobuf_2fstruct_2eproto,
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::_pbi::DescriptorTable
+    descriptor_table_google_2fprotobuf_2fstruct_2eproto = {
+        false,
+        638,
+        descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto,
+        "google/protobuf/struct.proto",
+        nullptr,
+        0,
+        4,
+        schemas,
+        file_default_instances,
+        TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets,
+        file_level_metadata_google_2fprotobuf_2fstruct_2eproto,
+        file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto,
+        file_level_service_descriptors_google_2fprotobuf_2fstruct_2eproto,
 };
 
-// This function exists to be marked as weak.
-// It can significantly speed up compilation by breaking up LLVM's SCC
-// in the .pb.cc translation units. Large translation units see a
-// reduction of more than 35% of walltime for optimized builds. Without
-// the weak attribute all the messages in the file, including all the
-// vtables and everything they use become part of the same SCC through
-// a cycle like:
-// GetMetadata -> descriptor table -> default instances ->
-//   vtables -> GetMetadata
-// By adding a weak function here we break the connection from the
-// individual vtables back into the descriptor table.
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2fstruct_2eproto;
 }
@@ -236,7 +224,7 @@ Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Are
     : SuperType(arena) {}
 ::google::protobuf::Metadata Struct_FieldsEntry_DoNotUse::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto.once,
       file_level_metadata_google_2fprotobuf_2fstruct_2eproto[0]);
 }
 // ===================================================================
@@ -447,7 +435,7 @@ void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT other) {
 
 ::google::protobuf::Metadata Struct::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto.once,
       file_level_metadata_google_2fprotobuf_2fstruct_2eproto[1]);
 }
 // ===================================================================
@@ -840,7 +828,7 @@ void Value::InternalSwap(Value* PROTOBUF_RESTRICT other) {
 
 ::google::protobuf::Metadata Value::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto.once,
       file_level_metadata_google_2fprotobuf_2fstruct_2eproto[2]);
 }
 // ===================================================================
@@ -1027,7 +1015,7 @@ void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT other) {
 
 ::google::protobuf::Metadata ListValue::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto.once,
       file_level_metadata_google_2fprotobuf_2fstruct_2eproto[3]);
 }
 // @@protoc_insertion_point(namespace_scope)
