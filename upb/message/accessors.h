@@ -66,7 +66,7 @@ UPB_API_INLINE bool upb_Message_HasField(const upb_Message* msg,
 
 UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
     const upb_Message* message, const upb_MiniTableField* oneof_field) {
-  UPB_ASSUME(_upb_MiniTableField_InOneOf(oneof_field));
+  UPB_ASSUME(upb_MiniTableField_IsInOneof(oneof_field));
   return _upb_Message_GetOneofCase(message, oneof_field);
 }
 

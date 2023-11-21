@@ -238,7 +238,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   // PromotoUnknownToMessage.
   UPB_ASSERT(upb_MiniTable_GetSubMessageTable(mini_table, field) ==
              sub_mini_table);
-  bool is_oneof = _upb_MiniTableField_InOneOf(field);
+  bool is_oneof = upb_MiniTableField_IsInOneof(field);
   if (!is_oneof || _upb_Message_GetOneofCase(msg, field) == field->number) {
     UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
   }
