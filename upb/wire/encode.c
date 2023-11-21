@@ -26,6 +26,7 @@
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/map_entry.h"
 #include "upb/message/internal/map_sorter.h"
+#include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
 #include "upb/mini_table/extension.h"
@@ -307,7 +308,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
                          const upb_MiniTableSub* subs,
                          const upb_MiniTableField* f) {
   const upb_Array* arr = *UPB_PTR_AT(msg, f->offset, upb_Array*);
-  bool packed = f->mode & kUpb_LabelFlags_IsPacked;
+  bool packed = upb_MiniTableField_IsPacked(f);
   size_t pre_len = e->limit - e->ptr;
 
   if (arr == NULL || arr->size == 0) {
@@ -461,7 +462,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
   if (f->presence == 0) {
     // Proto3 presence or map/array.
     const void* mem = UPB_PTR_AT(msg, f->offset, void);
-    switch (_upb_MiniTableField_GetRep(f)) {
+    switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
       case kUpb_FieldRep_1Byte: {
         char ch;
         memcpy(&ch, mem, 1);
@@ -496,7 +497,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
 static void encode_field(upb_encstate* e, const upb_Message* msg,
                          const upb_MiniTableSub* subs,
                          const upb_MiniTableField* field) {
-  switch (upb_FieldMode_Get(field)) {
+  switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(field)) {
     case kUpb_FieldMode_Array:
       encode_array(e, msg, subs, field);
       break;

@@ -597,8 +597,8 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
 
   UPB_ASSERT(entry);
   UPB_ASSERT(entry->field_count == 2);
-  UPB_ASSERT(!upb_MiniTableField_IsRepeatedOrMap(&entry->fields[0]));
-  UPB_ASSERT(!upb_MiniTableField_IsRepeatedOrMap(&entry->fields[1]));
+  UPB_ASSERT(upb_MiniTableField_IsScalar(&entry->fields[0]));
+  UPB_ASSERT(upb_MiniTableField_IsScalar(&entry->fields[1]));
 
   if (!map) {
     map = _upb_Decoder_CreateMap(d, entry);
@@ -1043,7 +1043,7 @@ int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
   };
 
   int ndx = field->UPB_PRIVATE(descriptortype);
-  if (upb_FieldMode_Get(field) == kUpb_FieldMode_Array) ndx += kRepeatedBase;
+  if (upb_MiniTableField_IsArray(field)) ndx += kRepeatedBase;
   int op = kDelimitedOps[ndx];
 
   if (op == kUpb_DecodeOp_SubMessage) {

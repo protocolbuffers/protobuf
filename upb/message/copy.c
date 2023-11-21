@@ -33,10 +33,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-static bool upb_MessageField_IsMap(const upb_MiniTableField* field) {
-  return upb_FieldMode_Get(field) == kUpb_FieldMode_Map;
-}
-
 static upb_StringView upb_Clone_StringView(upb_StringView str,
                                            upb_Arena* arena) {
   if (str.size == 0) {
@@ -164,7 +160,7 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
                                         const upb_MiniTable* mini_table,
                                         const upb_MiniTableField* field,
                                         upb_Message* clone, upb_Arena* arena) {
-  _upb_MiniTableField_CheckIsArray(field);
+  UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(field);
   upb_Array* cloned_array = upb_Array_DeepClone(
       array, upb_MiniTableField_CType(field),
       upb_MiniTableField_CType(field) == kUpb_CType_Message &&
@@ -197,7 +193,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   memcpy(dst, src, mini_table->size);
   for (size_t i = 0; i < mini_table->field_count; ++i) {
     const upb_MiniTableField* field = &mini_table->fields[i];
-    if (!upb_MiniTableField_IsRepeatedOrMap(field)) {
+    if (upb_MiniTableField_IsScalar(field)) {
       switch (upb_MiniTableField_CType(field)) {
         case kUpb_CType_Message: {
           upb_TaggedMessagePtr tagged =
@@ -237,7 +233,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
           break;
       }
     } else {
-      if (upb_MessageField_IsMap(field)) {
+      if (upb_MiniTableField_IsMap(field)) {
         const upb_Map* map = upb_Message_GetMap(src, field);
         if (map != NULL) {
           if (!upb_Message_Map_DeepClone(map, mini_table, field, dst, arena)) {
@@ -264,7 +260,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
     upb_Message_Extension* dst_ext =
         _upb_Message_GetOrCreateExtension(dst, msg_ext->ext, arena);
     if (!dst_ext) return NULL;
-    if (!upb_MiniTableField_IsRepeatedOrMap(field)) {
+    if (upb_MiniTableField_IsScalar(field)) {
       if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
         return NULL;
       }

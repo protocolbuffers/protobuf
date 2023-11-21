@@ -148,7 +148,7 @@ UPB_INLINE void _upb_Message_SetPresence(upb_Message* msg,
 UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
                                               const upb_MiniTableField* field) {
   char zero[16] = {0};
-  switch (_upb_MiniTableField_GetRep(field)) {
+  switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(field)) {
     case kUpb_FieldRep_1Byte:
       return memcmp(&zero, default_val, 1) != 0;
     case kUpb_FieldRep_4Byte:
@@ -165,7 +165,7 @@ UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
 
 UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
                                              const upb_MiniTableField* field) {
-  switch (_upb_MiniTableField_GetRep(field)) {
+  switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(field)) {
     case kUpb_FieldRep_1Byte:
       memcpy(to, from, 1);
       return;
@@ -201,8 +201,9 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
 //                                       const upb_MiniTableField* field,
 //                                       bool value, upb_Arena* a) {
 //     UPB_ASSUME(field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bool);
-//     UPB_ASSUME(!upb_MiniTableField_IsRepeatedOrMap(field));
-//     UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_1Byte);
+//     UPB_ASSUME(upb_MiniTableField_IsScalar(field));
+//     UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(field) ==
+//                kUpb_FieldRep_1Byte);
 //     upb_Message_SetField(msg, field, &value, a);
 //   }
 //
@@ -269,7 +270,7 @@ UPB_INLINE void _upb_Message_GetExtensionField(
 // is unset (as message fields do have presence).
 UPB_INLINE upb_MutableMessageValue _upb_Message_GetMutableField(
     const upb_Message* msg, const upb_MiniTableField* field) {
-  UPB_ASSUME(upb_MiniTableField_IsRepeatedOrMap(field) ||
+  UPB_ASSUME(!upb_MiniTableField_IsScalar(field) ||
              upb_MiniTableField_IsSubMessage(field));
 
   upb_MutableMessageValue default_val;
@@ -335,7 +336,7 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
 UPB_INLINE void _upb_Message_AssertMapIsUntagged(
     const upb_Message* msg, const upb_MiniTableField* field) {
   UPB_UNUSED(msg);
-  _upb_MiniTableField_CheckIsMap(field);
+  UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
 #ifndef NDEBUG
   upb_TaggedMessagePtr default_val = 0;
   upb_TaggedMessagePtr tagged;
@@ -347,7 +348,7 @@ UPB_INLINE void _upb_Message_AssertMapIsUntagged(
 UPB_INLINE upb_Map* _upb_Message_GetOrCreateMutableMap(
     upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
     size_t val_size, upb_Arena* arena) {
-  _upb_MiniTableField_CheckIsMap(field);
+  UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
   _upb_Message_AssertMapIsUntagged(msg, field);
   upb_Map* map = NULL;
   upb_Map* default_map_value = NULL;
@@ -355,7 +356,7 @@ UPB_INLINE upb_Map* _upb_Message_GetOrCreateMutableMap(
   if (!map) {
     map = _upb_Map_New(arena, key_size, val_size);
     // Check again due to: https://godbolt.org/z/7WfaoKG1r
-    _upb_MiniTableField_CheckIsMap(field);
+    UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
     _upb_Message_SetNonExtensionField(msg, field, &map);
   }
   return map;

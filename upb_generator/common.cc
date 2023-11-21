@@ -140,15 +140,18 @@ std::string GetModeInit(const upb_MiniTableField* field32,
 
 std::string GetFieldRep(const upb_MiniTableField* field32,
                         const upb_MiniTableField* field64) {
-  switch (_upb_MiniTableField_GetRep(field32)) {
+  const auto rep32 = UPB_PRIVATE(_upb_MiniTableField_GetRep)(field32);
+  const auto rep64 = UPB_PRIVATE(_upb_MiniTableField_GetRep)(field64);
+
+  switch (rep32) {
     case kUpb_FieldRep_1Byte:
       return "kUpb_FieldRep_1Byte";
       break;
     case kUpb_FieldRep_4Byte: {
-      if (_upb_MiniTableField_GetRep(field64) == kUpb_FieldRep_4Byte) {
+      if (rep64 == kUpb_FieldRep_4Byte) {
         return "kUpb_FieldRep_4Byte";
       } else {
-        assert(_upb_MiniTableField_GetRep(field64) == kUpb_FieldRep_8Byte);
+        assert(rep64 == kUpb_FieldRep_8Byte);
         return "UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte)";
       }
       break;

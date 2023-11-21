@@ -638,7 +638,7 @@ static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
                            name, expected_num, (int)f->number);
   }
 
-  if (upb_MiniTableField_IsRepeatedOrMap(f)) {
+  if (!upb_MiniTableField_IsScalar(f)) {
     upb_MdDecoder_ErrorJmp(
         &d->base, "map %s cannot be repeated or map, or be in oneof", name);
   }
@@ -816,7 +816,7 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
     if (!upb_MiniTableField_IsSubMessage(f)) return NULL;
 
     // Extensions of MessageSet must be non-repeating.
-    if ((f->mode & kUpb_FieldMode_Mask) == kUpb_FieldMode_Array) return NULL;
+    if (upb_MiniTableField_IsArray(f)) return NULL;
   }
 
   ext->UPB_PRIVATE(extendee) = extendee;

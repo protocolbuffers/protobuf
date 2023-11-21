@@ -8,8 +8,10 @@
 #include "upb/mini_table/message.h"
 
 #include <inttypes.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include "upb/mem/arena.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
 
 // Must be last.
@@ -44,13 +46,9 @@ const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   return NULL;
 }
 
-static bool upb_MiniTable_Is_Oneof(const upb_MiniTableField* f) {
-  return f->presence < 0;
-}
-
 const upb_MiniTableField* upb_MiniTable_GetOneof(const upb_MiniTable* m,
                                                  const upb_MiniTableField* f) {
-  if (UPB_UNLIKELY(!upb_MiniTable_Is_Oneof(f))) {
+  if (UPB_UNLIKELY(!upb_MiniTableField_IsInOneof(f))) {
     return NULL;
   }
   const upb_MiniTableField* ptr = &m->fields[0];
