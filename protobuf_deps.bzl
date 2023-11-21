@@ -101,14 +101,6 @@ def protobuf_deps():
             url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
         )
 
-    if not native.existing_rule("rules_ruby"):
-        _github_archive(
-            name = "rules_ruby",
-            repo = "https://github.com/protocolbuffers/rules_ruby",
-            commit = "b7f3e9756f3c45527be27bc38840d5a1ba690436",
-            sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
-        )
-
     if not native.existing_rule("rules_jvm_external"):
         _github_archive(
             name = "rules_jvm_external",
