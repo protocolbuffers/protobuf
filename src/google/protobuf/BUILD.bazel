@@ -780,6 +780,7 @@ exports_files(
     visibility = [
         "//:__pkg__",
         "//python:__pkg__",
+        "//ruby:__pkg__",
     ],
 )
 
