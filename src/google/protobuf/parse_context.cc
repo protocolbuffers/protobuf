@@ -188,24 +188,15 @@ const char* EpsCopyInputStream::SkipFallback(const char* ptr, int size) {
 const char* EpsCopyInputStream::ReadStringFallback(const char* ptr, int size,
                                                    std::string* str) {
   str->clear();
-  if (PROTOBUF_PREDICT_TRUE(size <= buffer_end_ - ptr + limit_)) {
-    // Reserve the string up to a static safe size. If strings are bigger than
-    // this we proceed by growing the string as needed. This protects against
-    // malicious payloads making protobuf hold on to a lot of memory.
-    str->reserve(str->size() + std::min<int>(size, kSafeStringSize));
-  }
-  return AppendSize(ptr, size,
-                    [str](const char* p, int s) { str->append(p, s); });
+  return AppendStringFallback(ptr, size, str);
 }
 
 const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
                                                      std::string* str) {
-  if (PROTOBUF_PREDICT_TRUE(size <= buffer_end_ - ptr + limit_)) {
-    // Reserve the string up to a static safe size. If strings are bigger than
-    // this we proceed by growing the string as needed. This protects against
-    // malicious payloads making protobuf hold on to a lot of memory.
-    str->reserve(str->size() + std::min<int>(size, kSafeStringSize));
-  }
+  // Reserve the string up to a static safe size. If strings are bigger than
+  // this we proceed by growing the string as needed. This protects against
+  // malicious payloads making protobuf hold on to a lot of memory.
+  str->reserve(str->size() + std::min<int>(size, kSafeStringSize));
   return AppendSize(ptr, size,
                     [str](const char* p, int s) { str->append(p, s); });
 }
