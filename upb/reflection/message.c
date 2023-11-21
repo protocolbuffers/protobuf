@@ -47,9 +47,7 @@ const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
 upb_MessageValue upb_Message_GetFieldByDef(const upb_Message* msg,
                                            const upb_FieldDef* f) {
   upb_MessageValue default_val = upb_FieldDef_Default(f);
-  upb_MessageValue ret;
-  _upb_Message_GetField(msg, upb_FieldDef_MiniTable(f), &default_val, &ret);
-  return ret;
+  return upb_Message_GetField(msg, upb_FieldDef_MiniTable(f), default_val);
 }
 
 upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
@@ -93,7 +91,7 @@ make:
 
 bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
                                upb_MessageValue val, upb_Arena* a) {
-  return _upb_Message_SetField(msg, upb_FieldDef_MiniTable(f), &val, a);
+  return upb_Message_SetField(msg, upb_FieldDef_MiniTable(f), val, a);
 }
 
 void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f) {

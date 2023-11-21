@@ -7,15 +7,15 @@
 
 #include "upb/message/accessors.h"
 
+#include <string.h>
+
+#include "upb/mem/arena.h"
 #include "upb/message/array.h"
-#include "upb/message/internal/array.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
-#include "upb/wire/decode.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/encode.h"
-#include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/reader.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -37,12 +37,10 @@ upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
   // hence assuming a zero default is valid.
   upb_MessageValue default_val;
   memset(&default_val, 0, sizeof(upb_MessageValue));
-  upb_MessageValue map_entry_key;
-  upb_MessageValue map_entry_value;
-  _upb_Message_GetField(map_entry_message, map_entry_key_field, &default_val,
-                        &map_entry_key);
-  _upb_Message_GetField(map_entry_message, map_entry_value_field, &default_val,
-                        &map_entry_value);
+  upb_MessageValue map_entry_key =
+      upb_Message_GetField(map_entry_message, map_entry_key_field, default_val);
+  upb_MessageValue map_entry_value = upb_Message_GetField(
+      map_entry_message, map_entry_value_field, default_val);
   return upb_Map_Insert(map, map_entry_key, map_entry_value, arena);
 }
 

@@ -15,6 +15,7 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
+#include "upb/message/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
@@ -214,7 +215,7 @@ _upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
 //     UPB_ASSUME(field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bool);
 //     UPB_ASSUME(!upb_MiniTableField_IsRepeatedOrMap(field));
 //     UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_1Byte);
-//     _upb_Message_SetField(msg, field, &value, a);
+//     upb_Message_SetField(msg, field, &value, a);
 //   }
 //
 // As a result, we can use these universal getters/setters for *all* message
@@ -269,15 +270,31 @@ UPB_INLINE void _upb_Message_GetExtensionField(
   }
 }
 
-UPB_INLINE void _upb_Message_GetField(const upb_Message* msg,
-                                      const upb_MiniTableField* field,
-                                      const void* default_val, void* val) {
+// Gets a mutable Array, Map or Message field.
+// NOTE: For repeated/map fields, the resulting upb_Array*/upb_Map* can
+// be NULL if a upb_Array/upb_Map has not been allocated yet. Array/map
+// fields do not have presence, so this is semantically identical to a
+// pointer to an empty array/map, and must be treated the same for all
+// semantic purposes.
+//
+// For message fields, the pointer is guaranteed to be NULL iff the field
+// is unset (as message fields do have presence).
+UPB_INLINE upb_MutableMessageValue _upb_Message_GetMutableField(
+    const upb_Message* msg, const upb_MiniTableField* field) {
+  UPB_ASSUME(upb_MiniTableField_IsRepeatedOrMap(field) ||
+             upb_MiniTableField_IsSubMessage(field));
+
+  upb_MutableMessageValue default_val;
+  default_val.msg = NULL;
+
+  upb_MutableMessageValue ret;
   if (upb_MiniTableField_IsExtension(field)) {
     _upb_Message_GetExtensionField(msg, (upb_MiniTableExtension*)field,
-                                   default_val, val);
+                                   &default_val, &ret);
   } else {
-    _upb_Message_GetNonExtensionField(msg, field, default_val, val);
+    _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
   }
+  return ret;
 }
 
 UPB_INLINE void _upb_Message_SetNonExtensionField(
@@ -297,18 +314,6 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
   if (!ext) return false;
   _upb_MiniTable_CopyFieldData(&ext->data, val, &mt_ext->field);
   return true;
-}
-
-UPB_INLINE bool _upb_Message_SetField(upb_Message* msg,
-                                      const upb_MiniTableField* field,
-                                      const void* val, upb_Arena* a) {
-  if (upb_MiniTableField_IsExtension(field)) {
-    const upb_MiniTableExtension* ext = (const upb_MiniTableExtension*)field;
-    return _upb_Message_SetExtensionField(msg, ext, val, a);
-  } else {
-    _upb_Message_SetNonExtensionField(msg, field, val);
-    return true;
-  }
 }
 
 UPB_INLINE void _upb_Message_ClearExtensionField(
