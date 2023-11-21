@@ -398,6 +398,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/oneof.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/relative_path.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.cc
 )
 
@@ -797,6 +798,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/plugin_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions_test.cc
 )
 
 # @//src/google/protobuf/compiler:test_proto_srcs
