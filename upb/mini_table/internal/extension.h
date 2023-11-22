@@ -41,12 +41,12 @@ UPB_INLINE uint32_t UPB_PRIVATE(_upb_MiniTableExtension_Number)(
 UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
     _upb_MiniTableExtension_GetSubMessage)(
     const struct upb_MiniTableExtension* e) {
-  return e->UPB_PRIVATE(sub).submsg;
+  return e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(
     struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
-  e->UPB_PRIVATE(sub).submsg = m;
+  e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
 }
 
 #ifdef __cplusplus

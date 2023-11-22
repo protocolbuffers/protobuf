@@ -7,6 +7,17 @@
 
 #include "upb/mini_descriptor/link.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "upb/base/descriptor_constants.h"
+#include "upb/mini_table/enum.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -43,7 +54,7 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   // TODO: Add this assert back once YouTube is updated to not call
   // this function repeatedly.
   // UPB_ASSERT(table_sub->submsg == &_kUpb_MiniTable_Empty);
-  table_sub->submsg = sub;
+  *table_sub = upb_MiniTableSub_FromMessage(sub);
   return true;
 }
 
@@ -56,7 +67,7 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
 
   upb_MiniTableSub* table_sub =
       (void*)&table->subs[field->UPB_PRIVATE(submsg_index)];
-  table_sub->subenum = sub;
+  *table_sub = upb_MiniTableSub_FromEnum(sub);
   return true;
 }
 

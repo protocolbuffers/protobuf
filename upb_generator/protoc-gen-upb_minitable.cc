@@ -385,16 +385,18 @@ void WriteMessageField(upb::FieldDefPtr field,
 
 std::string GetSub(upb::FieldDefPtr field) {
   if (auto message_def = field.message_type()) {
-    return absl::Substitute("{.submsg = &$0}", MessageInitName(message_def));
+    return absl::Substitute("{.UPB_PRIVATE(submsg) = &$0}",
+                            MessageInitName(message_def));
   }
 
   if (auto enum_def = field.enum_subdef()) {
     if (enum_def.is_closed()) {
-      return absl::Substitute("{.subenum = &$0}", EnumInit(enum_def));
+      return absl::Substitute("{.UPB_PRIVATE(subenum) = &$0}",
+                              EnumInit(enum_def));
     }
   }
 
-  return std::string("{.submsg = NULL}");
+  return std::string("{.UPB_PRIVATE(submsg) = NULL}");
 }
 
 // Writes a single message into a .upb.c source file.

@@ -22,6 +22,7 @@
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/encode.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
+#include "upb/mini_table/enum.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
@@ -934,9 +935,11 @@ void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
     upb_MiniTableExtension* mut_ext = (upb_MiniTableExtension*)ext;
     upb_MiniTableSub sub = {NULL};
     if (upb_FieldDef_IsSubMessage(f)) {
-      sub.submsg = upb_MessageDef_MiniTable(f->sub.msgdef);
+      const upb_MiniTable* submsg = upb_MessageDef_MiniTable(f->sub.msgdef);
+      sub = upb_MiniTableSub_FromMessage(submsg);
     } else if (_upb_FieldDef_IsClosedEnum(f)) {
-      sub.subenum = _upb_EnumDef_MiniTable(f->sub.enumdef);
+      const upb_MiniTableEnum* subenum = _upb_EnumDef_MiniTable(f->sub.enumdef);
+      sub = upb_MiniTableSub_FromEnum(subenum);
     }
     bool ok2 = upb_MiniTableExtension_Init(desc.data, desc.size, mut_ext,
                                            upb_MessageDef_MiniTable(f->msgdef),

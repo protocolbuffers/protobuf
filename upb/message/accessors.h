@@ -28,10 +28,10 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
 
 // Must be last.
-#include "upb/mini_table/internal/field.h"
-#include "upb/mini_table/message.h"
 #include "upb/port/def.inc"
 
 #ifdef __cplusplus
@@ -346,7 +346,8 @@ UPB_API_INLINE void _upb_Message_SetTaggedMessagePtr(
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(field) ==
              UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
   UPB_ASSUME(upb_MiniTableField_IsScalar(field));
-  UPB_ASSERT(mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg);
+  UPB_ASSERT(upb_MiniTableSub_Message(
+      mini_table->subs[field->UPB_PRIVATE(submsg_index)]));
   _upb_Message_SetNonExtensionField(msg, field, &sub_message);
 }
 
@@ -365,8 +366,8 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   upb_Message* sub_message = *UPB_PTR_AT(msg, field->offset, upb_Message*);
   if (!sub_message) {
-    const upb_MiniTable* sub_mini_table =
-        mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
+    const upb_MiniTable* sub_mini_table = upb_MiniTableSub_Message(
+        mini_table->subs[field->UPB_PRIVATE(submsg_index)]);
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
     *UPB_PTR_AT(msg, field->offset, upb_Message*) = sub_message;

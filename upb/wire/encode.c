@@ -271,7 +271,8 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
     case kUpb_FieldType_Group: {
       size_t size;
       upb_TaggedMessagePtr submsg = *(upb_TaggedMessagePtr*)field_mem;
-      const upb_MiniTable* subm = subs[f->UPB_PRIVATE(submsg_index)].submsg;
+      const upb_MiniTable* subm =
+          upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
       if (submsg == 0) {
         return;
       }
@@ -285,7 +286,8 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
     case kUpb_FieldType_Message: {
       size_t size;
       upb_TaggedMessagePtr submsg = *(upb_TaggedMessagePtr*)field_mem;
-      const upb_MiniTable* subm = subs[f->UPB_PRIVATE(submsg_index)].submsg;
+      const upb_MiniTable* subm =
+          upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
       if (submsg == 0) {
         return;
       }
@@ -374,7 +376,8 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     case kUpb_FieldType_Group: {
       const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
       const upb_TaggedMessagePtr* ptr = start + arr->size;
-      const upb_MiniTable* subm = subs[f->UPB_PRIVATE(submsg_index)].submsg;
+      const upb_MiniTable* subm =
+          upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
@@ -389,7 +392,8 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     case kUpb_FieldType_Message: {
       const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
       const upb_TaggedMessagePtr* ptr = start + arr->size;
-      const upb_MiniTable* subm = subs[f->UPB_PRIVATE(submsg_index)].submsg;
+      const upb_MiniTable* subm =
+          upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
@@ -428,7 +432,8 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
                        const upb_MiniTableSub* subs,
                        const upb_MiniTableField* f) {
   const upb_Map* map = *UPB_PTR_AT(msg, f->offset, const upb_Map*);
-  const upb_MiniTable* layout = subs[f->UPB_PRIVATE(submsg_index)].submsg;
+  const upb_MiniTable* layout =
+      upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSERT(layout->field_count == 2);
 
   if (map == NULL) return;

@@ -15,6 +15,7 @@
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
 #include "upb/wire/encode.h"
 
 // Must be last.
@@ -22,11 +23,12 @@
 
 upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
                                                const upb_MiniTable* mini_table,
-                                               const upb_MiniTableField* field,
+                                               const upb_MiniTableField* f,
                                                upb_Message* map_entry_message,
                                                upb_Arena* arena) {
+  // TODO: use a variant of upb_MiniTable_GetSubMessageTable() here.
   const upb_MiniTable* map_entry_mini_table =
-      mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
+      upb_MiniTableSub_Message(mini_table->subs[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSERT(map_entry_mini_table);
   UPB_ASSERT(map_entry_mini_table->field_count == 2);
   const upb_MiniTableField* map_entry_key_field =

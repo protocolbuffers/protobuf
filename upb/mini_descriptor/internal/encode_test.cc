@@ -28,6 +28,7 @@
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
 
 // begin:google_only
 // #include "testing/fuzzing/fuzztest.h"
@@ -240,8 +241,8 @@ TEST_P(MiniTableTest, SubsInitializedToEmpty) {
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(table->field_count, 2);
-  EXPECT_EQ(table->subs[0].submsg, &_kUpb_MiniTable_Empty);
-  EXPECT_EQ(table->subs[1].submsg, &_kUpb_MiniTable_Empty);
+  EXPECT_EQ(upb_MiniTableSub_Message(table->subs[0]), &_kUpb_MiniTable_Empty);
+  EXPECT_EQ(upb_MiniTableSub_Message(table->subs[1]), &_kUpb_MiniTable_Empty);
 }
 
 TEST(MiniTableEnumTest, PositiveAndNegative) {
