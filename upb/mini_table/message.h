@@ -16,11 +16,11 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+typedef struct upb_MiniTable upb_MiniTable;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct upb_MiniTable upb_MiniTable;
 
 UPB_API const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number);

@@ -7,8 +7,13 @@
 
 #include "upb/mini_table/extension_registry.h"
 
+#include <stdint.h>
+
 #include "upb/hash/str_table.h"
+#include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/internal/extension.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"

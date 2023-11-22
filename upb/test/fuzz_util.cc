@@ -12,6 +12,7 @@
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/internal/extension.h"
 
 // Must be last
 #include "upb/port/def.inc"

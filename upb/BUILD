@@ -116,6 +116,7 @@ cc_library(
         ":message_internal",
         ":mini_descriptor",
         ":mini_table",
+        ":mini_table_internal",
         ":wire",
         ":wire_internal",
     ],

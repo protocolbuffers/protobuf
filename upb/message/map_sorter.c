@@ -7,7 +7,16 @@
 
 #include "upb/message/internal/map_sorter.h"
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/internal/log2.h"
+#include "upb/base/string_view.h"
+#include "upb/message/internal/extension.h"
+#include "upb/message/map.h"
+#include "upb/mini_table/internal/extension.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -128,7 +137,7 @@ static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
   const upb_Message_Extension* const* b = _b;
   uint32_t a_num = (*a)->ext->field.number;
   uint32_t b_num = (*b)->ext->field.number;
-  assert(a_num != b_num);
+  UPB_ASSERT(a_num != b_num);
   return a_num < b_num ? -1 : 1;
 }
 

@@ -8,8 +8,6 @@
 #ifndef UPB_MINI_TABLE_EXTENSION_H_
 #define UPB_MINI_TABLE_EXTENSION_H_
 
-#include "upb/mini_table/internal/extension.h"
-
 typedef struct upb_MiniTableExtension upb_MiniTableExtension;
 
 #endif /* UPB_MINI_TABLE_EXTENSION_H_ */
