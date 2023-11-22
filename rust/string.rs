@@ -185,7 +185,10 @@ impl<'msg> MutProxy<'msg> for BytesMut<'msg> {
 }
 
 impl SettableValue<[u8]> for &'_ [u8] {
-    fn set_on(self, _private: Private, mutator: BytesMut<'_>) {
+    fn set_on<'a>(self, _private: Private, mutator: Mut<'a, [u8]>)
+    where
+        [u8]: 'a,
+    {
         // SAFETY: this is a `bytes` field with no restriction on UTF-8.
         unsafe { mutator.inner.set(self) }
     }
@@ -695,7 +698,10 @@ impl<'msg> MutProxy<'msg> for ProtoStrMut<'msg> {
 }
 
 impl SettableValue<ProtoStr> for &'_ ProtoStr {
-    fn set_on(self, _private: Private, mutator: ProtoStrMut<'_>) {
+    fn set_on<'b>(self, _private: Private, mutator: Mut<'b, ProtoStr>)
+    where
+        ProtoStr: 'b,
+    {
         // SAFETY: A `ProtoStr` has the same UTF-8 validity requirement as the runtime.
         unsafe { mutator.bytes.inner.set(self.as_bytes()) }
     }

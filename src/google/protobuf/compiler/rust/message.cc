@@ -367,7 +367,9 @@ void GenerateRs(Context<Descriptor> msg) {
         }
 
         impl<'a> $pb$::SettableValue<$Msg$> for $Msg$View<'a> {
-          fn set_on(self, _private: $pb$::__internal::Private, _mutator: $pb$::Mut<$Msg$>) {
+          fn set_on<'b>(self, _private: $pb$::__internal::Private, _mutator: $pb$::Mut<'b, $Msg$>)
+          where
+            $Msg$: 'b {
             todo!()
           }
         }

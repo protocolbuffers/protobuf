@@ -138,7 +138,9 @@ macro_rules! impl_repeated_primitives {
             }
 
             impl <'a> SettableValue<Repeated<$t>> for RepeatedView<'a, $t> {
-                fn set_on(self, _private: Private, mut mutator: Mut<'_, Repeated<$t>>) {
+                fn set_on<'b> (self, _private: Private, mut mutator: Mut<'b, Repeated<$t>>)
+                where
+                    Repeated<$t>: 'b {
                     mutator.copy_from(self);
                 }
             }
