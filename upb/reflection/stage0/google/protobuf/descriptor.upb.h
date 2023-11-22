@@ -150,8 +150,8 @@ typedef enum {
 
 typedef enum {
   google_protobuf_FeatureSet_UTF8_VALIDATION_UNKNOWN = 0,
-  google_protobuf_FeatureSet_NONE = 1,
-  google_protobuf_FeatureSet_VERIFY = 2
+  google_protobuf_FeatureSet_VERIFY = 2,
+  google_protobuf_FeatureSet_NONE = 3
 } google_protobuf_FeatureSet_Utf8Validation;
 
 typedef enum {
