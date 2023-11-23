@@ -1005,18 +1005,24 @@ int _upb_Decoder_GetVarintOp(const upb_MiniTableField* field) {
   return kVarintOps[field->UPB_PRIVATE(descriptortype)];
 }
 
-UPB_FORCEINLINE
-static void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
-                                       const upb_MiniTableField* field,
-                                       int* op) {
-  // If sub-message is not linked, treat as unknown.
-  if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension) return;
+// This returns a DecodeOp enum (kUpb_DecodeOp_SubMessage,
+// kUpb_DecodeOp_UnknownField, etc).
+static int _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
+                                      const upb_MiniTableField* field) {
+  if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension) {
+    return kUpb_DecodeOp_SubMessage;
+  }
+
   const upb_MiniTable* mt_sub =
       _upb_MiniTableSubs_MessageByField(mt->UPB_PRIVATE(subs), field);
-  if ((d->options & kUpb_DecodeOption_ExperimentalAllowUnlinked) ||
-      !UPB_PRIVATE(_upb_MiniTable_IsEmpty)(mt_sub)) {
-    return;
+  if (!UPB_PRIVATE(_upb_MiniTable_IsEmpty)(mt_sub)) {
+    return kUpb_DecodeOp_SubMessage;
   }
+
+  if (d->options & kUpb_DecodeOption_ExperimentalAllowUnlinked) {
+    return kUpb_DecodeOp_SubMessage;
+  }
+
 #ifndef NDEBUG
   const upb_MiniTableField* oneof = upb_MiniTable_GetOneof(mt, field);
   if (oneof) {
@@ -1030,13 +1036,26 @@ static void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
     } while (upb_MiniTable_NextOneofField(mt, &oneof));
   }
 #endif  // NDEBUG
-  *op = kUpb_DecodeOp_UnknownField;
+
+  return kUpb_DecodeOp_UnknownField;
 }
 
-int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
-                                const upb_MiniTableField* field) {
+static int _upb_Decoder_MaybeVerifyUtf8(upb_Decoder* d,
+                                        const upb_MiniTableField* field) {
+  if (!(field->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsAlternate) ||
+      !UPB_UNLIKELY(d->options & kUpb_DecodeOption_AlwaysValidateUtf8))
+    return kUpb_DecodeOp_Bytes;
+
+  return kUpb_DecodeOp_String;
+}
+
+static int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
+                                       const upb_MiniTableField* field) {
   enum { kRepeatedBase = 19 };
 
+  // This table is used to map field types to decode ops. However, not all the
+  // field types here may be used, since specialized logic in this function may
+  // determine the decode op based on more than just the field type.
   static const int8_t kDelimitedOps[] = {
       /* For non-repeated field type. */
       [kUpb_FakeFieldType_FieldNotFound] =
@@ -1083,15 +1102,17 @@ int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
       // repeated msgset type
   };
 
-  int ndx = field->UPB_PRIVATE(descriptortype);
-  if (upb_MiniTableField_IsArray(field)) ndx += kRepeatedBase;
-  int op = kDelimitedOps[ndx];
+  const int ndx = field->UPB_PRIVATE(descriptortype);
+  const bool is_array = upb_MiniTableField_IsArray(field);
 
-  if (op == kUpb_DecodeOp_SubMessage) {
-    _upb_Decoder_CheckUnlinked(d, mt, field, &op);
+  if (ndx == kUpb_FieldType_Message ||
+      (ndx == kUpb_FieldType_Group && is_array)) {
+    return _upb_Decoder_CheckUnlinked(d, mt, field);
+  } else if (ndx == kUpb_FieldType_Bytes) {
+    return _upb_Decoder_MaybeVerifyUtf8(d, field);
+  } else {
+    return kDelimitedOps[ndx + (is_array ? kRepeatedBase : 0)];
   }
-
-  return op;
 }
 
 UPB_FORCEINLINE
@@ -1133,8 +1154,7 @@ static const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
     case kUpb_WireType_StartGroup:
       val->uint32_val = field->UPB_PRIVATE(number);
       if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group) {
-        *op = kUpb_DecodeOp_SubMessage;
-        _upb_Decoder_CheckUnlinked(d, mt, field, op);
+        *op = _upb_Decoder_CheckUnlinked(d, mt, field);
       } else if (field->UPB_PRIVATE(descriptortype) ==
                  kUpb_FakeFieldType_MessageSetItem) {
         *op = kUpb_DecodeOp_MessageSetItem;
