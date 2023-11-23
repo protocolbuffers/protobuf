@@ -1023,8 +1023,21 @@ static void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
   *op = kUpb_DecodeOp_UnknownField;
 }
 
-int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
-                                const upb_MiniTableField* field) {
+static int _upb_Decoder_MaybeVerifyUtf8(upb_Decoder* d,
+                                        const upb_MiniTableField* field) {
+  if (!(field->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsAlternate)) {
+    return kUpb_DecodeOp_Bytes;
+  }
+
+  if (UPB_LIKELY(!(d->options & kUpb_DecodeOption_AlwaysValidateUtf8))) {
+    return kUpb_DecodeOp_Bytes;
+  }
+
+  return kUpb_DecodeOp_String;
+}
+
+static int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
+                                       const upb_MiniTableField* field) {
   enum { kRepeatedBase = 19 };
 
   static const int8_t kDelimitedOps[] = {
@@ -1079,9 +1092,12 @@ int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
 
   if (op == kUpb_DecodeOp_SubMessage) {
     _upb_Decoder_CheckUnlinked(d, mt, field, &op);
+    return kUpb_DecodeOp_SubMessage;
+  } else if (op == kUpb_DecodeOp_Bytes) {
+    return _upb_Decoder_MaybeVerifyUtf8(d, field);
+  } else {
+    return op;
   }
-
-  return op;
 }
 
 UPB_FORCEINLINE
