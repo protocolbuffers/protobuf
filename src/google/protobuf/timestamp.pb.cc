@@ -82,24 +82,36 @@ const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] ABS
     "tobuf/types/known/timestamppb\370\001\001\242\002\003GPB\252\002"
     "\036Google.Protobuf.WellKnownTypesb\006proto3"
 };
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::_pbi::DescriptorTable
-    descriptor_table_google_2fprotobuf_2ftimestamp_2eproto = {
-        false,
-        239,
-        descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto,
-        "google/protobuf/timestamp.proto",
-        nullptr,
-        0,
-        1,
-        schemas,
-        file_default_instances,
-        TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets,
-        file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto,
-        file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
-        file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
+static ::absl::once_flag descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once;
+const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2ftimestamp_2eproto = {
+    false,
+    false,
+    239,
+    descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto,
+    "google/protobuf/timestamp.proto",
+    &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once,
+    nullptr,
+    0,
+    1,
+    schemas,
+    file_default_instances,
+    TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets,
+    file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto,
+    file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
+    file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
 };
 
+// This function exists to be marked as weak.
+// It can significantly speed up compilation by breaking up LLVM's SCC
+// in the .pb.cc translation units. Large translation units see a
+// reduction of more than 35% of walltime for optimized builds. Without
+// the weak attribute all the messages in the file, including all the
+// vtables and everything they use become part of the same SCC through
+// a cycle like:
+// GetMetadata -> descriptor table -> default instances ->
+//   vtables -> GetMetadata
+// By adding a weak function here we break the connection from the
+// individual vtables back into the descriptor table.
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto;
 }
@@ -313,7 +325,7 @@ void Timestamp::InternalSwap(Timestamp* PROTOBUF_RESTRICT other) {
 
 ::google::protobuf::Metadata Timestamp::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto.once,
+      &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once,
       file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto[0]);
 }
 // @@protoc_insertion_point(namespace_scope)
