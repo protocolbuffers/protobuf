@@ -1068,9 +1068,22 @@ int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
 
   if (op == kUpb_DecodeOp_SubMessage) {
     _upb_Decoder_CheckUnlinked(d, mt, field, &op);
+    return kUpb_DecodeOp_SubMessage;
   }
 
-  return op;
+  if (op != kUpb_DecodeOp_Bytes) {
+    return op;
+  }
+
+  if (!(field->mode & kUpb_LabelFlags_IsAlternate)) {
+    return kUpb_DecodeOp_Bytes;
+  }
+
+  if (UPB_LIKELY(!(d->options & kUpb_DecodeOption_EnforceUtf8))) {
+    return kUpb_DecodeOp_Bytes;
+  }
+
+  return kUpb_DecodeOp_String;
 }
 
 UPB_FORCEINLINE

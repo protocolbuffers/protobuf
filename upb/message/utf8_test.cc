@@ -13,6 +13,8 @@
 #include "upb/mem/arena.hpp"
 #include "upb/message/utf8_test.upb.h"
 #include "upb/message/utf8_test.upb_minitable.h"
+#include "upb/message/utf8_test_proto2.upb.h"
+#include "upb/message/utf8_test_proto2.upb_minitable.h"
 #include "upb/wire/decode.h"
 
 namespace {
@@ -67,6 +69,98 @@ TEST(Utf8Test, RepeatedProto3FieldValidates) {
       nullptr, 0, arena.ptr());
 
   // Parse fails, because proto3 string fields validate UTF-8.
+  ASSERT_EQ(kUpb_DecodeStatus_BadUtf8, status);
+}
+
+TEST(Utf8Test, Proto2BytesValidates) {
+  upb::Arena arena;
+  size_t size;
+  char* data = GetBadUtf8Payload(arena.ptr(), &size);
+
+  upb_test_TestUtf8Proto2Bytes* msg =
+      upb_test_TestUtf8Proto2Bytes_new(arena.ptr());
+
+  upb_DecodeStatus status;
+  status = upb_Decode(data, size, msg, &upb_0test__TestUtf8Proto2Bytes_msg_init,
+                      nullptr, 0, arena.ptr());
+
+  // Parse succeeds, because proto2 bytes fields don't validate UTF-8.
+  ASSERT_EQ(kUpb_DecodeStatus_Ok, status);
+}
+
+TEST(Utf8Test, Proto2RepeatedBytesValidates) {
+  upb::Arena arena;
+  size_t size;
+  char* data = GetBadUtf8Payload(arena.ptr(), &size);
+
+  upb_test_TestUtf8RepeatedProto2Bytes* msg =
+      upb_test_TestUtf8RepeatedProto2Bytes_new(arena.ptr());
+
+  upb_DecodeStatus status;
+  status = upb_Decode(data, size, msg,
+                      &upb_0test__TestUtf8RepeatedProto2Bytes_msg_init, nullptr,
+                      0, arena.ptr());
+
+  // Parse succeeds, because proto2 bytes fields don't validate UTF-8.
+  ASSERT_EQ(kUpb_DecodeStatus_Ok, status);
+}
+
+TEST(Utf8Test, Proto2StringValidates) {
+  upb::Arena arena;
+  size_t size;
+  char* data = GetBadUtf8Payload(arena.ptr(), &size);
+
+  upb_test_TestUtf8Proto2String* msg =
+      upb_test_TestUtf8Proto2String_new(arena.ptr());
+
+  upb_DecodeStatus status;
+  status =
+      upb_Decode(data, size, msg, &upb_0test__TestUtf8Proto2String_msg_init,
+                 nullptr, 0, arena.ptr());
+
+  // Parse succeeds, because proto2 string fields don't validate UTF-8.
+  ASSERT_EQ(kUpb_DecodeStatus_Ok, status);
+}
+
+TEST(Utf8Test, Proto2FieldFailsValidation) {
+  upb::Arena arena;
+  size_t size;
+  char* data = GetBadUtf8Payload(arena.ptr(), &size);
+
+  upb_test_TestUtf8Proto2String* msg =
+      upb_test_TestUtf8Proto2String_new(arena.ptr());
+
+  upb_DecodeStatus status;
+  status =
+      upb_Decode(data, size, msg, &upb_0test__TestUtf8Proto2String_msg_init,
+                 nullptr, 0, arena.ptr());
+
+  // Parse fails, because we pass in kUpb_DecodeOption_EnforceUtf8 to force
+  // validation of proto2 string fields.
+  status =
+      upb_Decode(data, size, msg, &upb_0test__TestUtf8Proto2String_msg_init,
+                 nullptr, kUpb_DecodeOption_EnforceUtf8, arena.ptr());
+  ASSERT_EQ(kUpb_DecodeStatus_BadUtf8, status);
+}
+
+TEST(Utf8Test, Proto2RepeatedFieldFailsValidation) {
+  upb::Arena arena;
+  size_t size;
+  char* data = GetBadUtf8Payload(arena.ptr(), &size);
+
+  upb_test_TestUtf8RepeatedProto2String* msg =
+      upb_test_TestUtf8RepeatedProto2String_new(arena.ptr());
+
+  upb_DecodeStatus status;
+  status = upb_Decode(data, size, msg,
+                      &upb_0test__TestUtf8RepeatedProto2String_msg_init,
+                      nullptr, 0, arena.ptr());
+
+  // Parse fails, because we pass in kUpb_DecodeOption_EnforceUtf8 to force
+  // validation of proto2 string fields.
+  status = upb_Decode(data, size, msg,
+                      &upb_0test__TestUtf8RepeatedProto2String_msg_init,
+                      nullptr, kUpb_DecodeOption_EnforceUtf8, arena.ptr());
   ASSERT_EQ(kUpb_DecodeStatus_BadUtf8, status);
 }
 

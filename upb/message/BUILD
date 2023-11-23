@@ -381,7 +381,12 @@ proto_library(
     name = "utf8_test_proto",
     testonly = 1,
     srcs = ["utf8_test.proto"],
-    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+)
+
+proto_library(
+    name = "utf8_test_proto2_proto",
+    testonly = 1,
+    srcs = ["utf8_test_proto2.proto"],
 )
 
 upb_minitable_proto_library(
@@ -390,16 +395,30 @@ upb_minitable_proto_library(
     deps = [":utf8_test_proto"],
 )
 
+upb_minitable_proto_library(
+    name = "utf8_test_proto2_upb_minitable_proto",
+    testonly = 1,
+    deps = [":utf8_test_proto2_proto"],
+)
+
 upb_c_proto_library(
     name = "utf8_test_upb_proto",
     testonly = 1,
     deps = [":utf8_test_proto"],
 )
 
+upb_c_proto_library(
+    name = "utf8_test_proto2_upb_proto",
+    testonly = 1,
+    deps = [":utf8_test_proto2_proto"],
+)
+
 cc_test(
     name = "utf8_test",
     srcs = ["utf8_test.cc"],
     deps = [
+        ":utf8_test_proto2_upb_minitable_proto",
+        ":utf8_test_proto2_upb_proto",
         ":utf8_test_upb_minitable_proto",
         ":utf8_test_upb_proto",
         "@com_google_googletest//:gtest_main",

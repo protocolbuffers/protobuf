@@ -18,8 +18,6 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":internal",
-        ":types",
         "//upb:mem",
         "//upb:message",
         "//upb:mini_table",

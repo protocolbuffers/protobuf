@@ -83,6 +83,15 @@ enum {
    *    be created by the parser or the message-copying logic in message/copy.h.
    */
   kUpb_DecodeOption_ExperimentalAllowUnlinked = 4,
+
+  /* EXPERIMENTAL:
+   *
+   * If set, decoding will enforce UTF-8 validation for string fields, even for
+   * proto2. Normally, only proto3 string fields will be validated for UTF-8.
+   * Decoding will return kUpb_DecodeStatus_BadUtf8 for non-UTF-8 strings, which
+   * is the same behavior as non-UTF-8 proto3 string fields.
+   */
+  kUpb_DecodeOption_EnforceUtf8 = 8,
 };
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
