@@ -33,7 +33,7 @@ ReflectionClassGenerator::ReflectionClassGenerator(const FileDescriptor* file,
                                                    const Options* options)
     : SourceGeneratorBase(options),
       file_(file) {
-  namespace_ = GetFileNamespace(file);
+  namespace_ = options.root_namespace + GetFileNamespace(file);
   reflectionClassname_ = GetReflectionClassUnqualifiedName(file);
   extensionClassname_ = GetExtensionClassUnqualifiedName(file);
 }

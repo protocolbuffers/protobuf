@@ -51,7 +51,9 @@ bool Generator::Generate(const FileDescriptor* file,
       cli_options.file_extension = options[i].second;
     } else if (options[i].first == "base_namespace") {
       cli_options.base_namespace = options[i].second;
-      cli_options.base_namespace_specified = true;
+      cli_options.base_namespace_specified = true; 
+    } else if (options[i].first == "root_namespace") {
+      cli_options.root_namespace = options[i].second;
     } else if (options[i].first == "internal_access") {
       cli_options.internal_access = true;
     } else if (options[i].first == "serializable") {

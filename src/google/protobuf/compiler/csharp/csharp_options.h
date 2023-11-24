@@ -21,6 +21,7 @@ struct Options {
       file_extension(".cs"),
       base_namespace(""),
       base_namespace_specified(false),
+      root_namespace(""),
       internal_access(false),
       serializable(false) {
   }
@@ -42,6 +43,7 @@ struct Options {
   // string, meaning "create a full directory hierarchy, starting from the first
   // segment of the namespace."
   bool base_namespace_specified;
+  std::string root_namespace;
   // Whether the generated classes should have accessibility level of "internal".
   // Defaults to false that generates "public" classes.
   bool internal_access;
