@@ -1865,8 +1865,8 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "SED\020\002\"V\n\025RepeatedFieldEncoding\022#\n\037REPEAT"
     "ED_FIELD_ENCODING_UNKNOWN\020\000\022\n\n\006PACKED\020\001\022"
     "\014\n\010EXPANDED\020\002\"C\n\016Utf8Validation\022\033\n\027UTF8_"
-    "VALIDATION_UNKNOWN\020\000\022\010\n\004NONE\020\001\022\n\n\006VERIFY"
-    "\020\002\"S\n\017MessageEncoding\022\034\n\030MESSAGE_ENCODIN"
+    "VALIDATION_UNKNOWN\020\000\022\n\n\006VERIFY\020\002\022\010\n\004NONE"
+    "\020\003\"S\n\017MessageEncoding\022\034\n\030MESSAGE_ENCODIN"
     "G_UNKNOWN\020\000\022\023\n\017LENGTH_PREFIXED\020\001\022\r\n\tDELI"
     "MITED\020\002\"H\n\nJsonFormat\022\027\n\023JSON_FORMAT_UNK"
     "NOWN\020\000\022\t\n\005ALLOW\020\001\022\026\n\022LEGACY_BEST_EFFORT\020"
@@ -2261,16 +2261,16 @@ const ::google::protobuf::EnumDescriptor* FeatureSet_Utf8Validation_descriptor()
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[12];
 }
 PROTOBUF_CONSTINIT const uint32_t FeatureSet_Utf8Validation_internal_data_[] = {
-    196608u, 0u, };
+    65536u, 32u, 6u, };
 bool FeatureSet_Utf8Validation_IsValid(int value) {
-  return 0 <= value && value <= 2;
+  return 0 <= value && value <= 3 && ((13u >> value) & 1) != 0;
 }
 #if (__cplusplus < 201703) && \
   (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
 constexpr FeatureSet_Utf8Validation FeatureSet::UTF8_VALIDATION_UNKNOWN;
-constexpr FeatureSet_Utf8Validation FeatureSet::NONE;
 constexpr FeatureSet_Utf8Validation FeatureSet::VERIFY;
+constexpr FeatureSet_Utf8Validation FeatureSet::NONE;
 constexpr FeatureSet_Utf8Validation FeatureSet::Utf8Validation_MIN;
 constexpr FeatureSet_Utf8Validation FeatureSet::Utf8Validation_MAX;
 constexpr int FeatureSet::Utf8Validation_ARRAYSIZE;
@@ -11396,8 +11396,8 @@ constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2> FeatureSet::_table_ = {
     {::_pbi::TcParser::FastEr0S1,
      {24, 2, 2, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.repeated_field_encoding_)}},
     // optional .google.protobuf.FeatureSet.Utf8Validation utf8_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {::_pbi::TcParser::FastEr0S1,
-     {32, 3, 2, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.utf8_validation_)}},
+    {::_pbi::TcParser::FastEvS1,
+     {32, 3, 3, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.utf8_validation_)}},
     // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::FastEr0S1,
      {40, 4, 2, PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.message_encoding_)}},
@@ -11419,7 +11419,7 @@ constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2> FeatureSet::_table_ = {
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional .google.protobuf.FeatureSet.Utf8Validation utf8_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.utf8_validation_), _Internal::kHasBitsOffset + 3, 3,
-    (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
+    (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
     // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.message_encoding_), _Internal::kHasBitsOffset + 4, 4,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
@@ -11430,7 +11430,7 @@ constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2> FeatureSet::_table_ = {
     {0, 4},
     {0, 3},
     {0, 3},
-    {0, 3},
+    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::FeatureSet_Utf8Validation_internal_data_},
     {0, 3},
     {0, 3},
   }}, {{
