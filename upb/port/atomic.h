@@ -18,31 +18,41 @@
 // IWYU pragma: end_exports
 
 #define upb_Atomic_Init(addr, val) atomic_init(addr, val)
-#define upb_Atomic_Load(addr, order) atomic_load_explicit(addr, order)
-#define upb_Atomic_Store(addr, val, order) \
-  atomic_store_explicit(addr, val, order)
+#define upb_Atomic_LoadAcquire(addr) \
+  atomic_load_explicit(addr, memory_order_acquire)
+#define upb_Atomic_LoadRelaxed(addr) \
+  atomic_load_explicit(addr, memory_order_relaxed)
+#define upb_Atomic_StoreRelaxed(addr, val) \
+  atomic_store_explicit(addr, val, memory_order_relaxed)
+#define upb_Atomic_StoreRelease(addr, val) \
+  atomic_store_explicit(addr, val, memory_order_release)
 #define upb_Atomic_Add(addr, val, order) \
   atomic_fetch_add_explicit(addr, val, order)
 #define upb_Atomic_Sub(addr, val, order) \
   atomic_fetch_sub_explicit(addr, val, order)
-#define upb_Atomic_Exchange(addr, val, order) \
-  atomic_exchange_explicit(addr, val, order)
-#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
-                                         success_order, failure_order) \
-  atomic_compare_exchange_strong_explicit(addr, expected, desired,     \
-                                          success_order, failure_order)
-#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
-                                       failure_order)                          \
-  atomic_compare_exchange_weak_explicit(addr, expected, desired,               \
-                                        success_order, failure_order)
+#define upb_Atomic_ExchangeRelaxed(addr, val) \
+  atomic_exchange_explicit(addr, val, memory_order_relaxed)
+#define upb_Atomic_CompareExchangeStrongRelaxedRelaxed(addr, expected, \
+                                                       desired)        \
+  atomic_compare_exchange_strong_explicit(                             \
+      addr, expected, desired, memory_order_relaxed, memory_order_relaxed)
+#define upb_Atomic_CompareExchangeStrongReleaseAcquire(addr, expected, \
+                                                       desired)        \
+  atomic_compare_exchange_strong_explicit(                             \
+      addr, expected, desired, memory_order_release, memory_order_acquire)
+#define upb_Atomic_CompareExchangeWeakReleaseAcquire(addr, expected, desired) \
+  atomic_compare_exchange_weak_explicit(                                      \
+      addr, expected, desired, memory_order_release, memory_order_acquire)
 
 #else  // !UPB_USE_C11_ATOMICS
 
 #include <string.h>
 
 #define upb_Atomic_Init(addr, val) (*addr = val)
-#define upb_Atomic_Load(addr, order) (*addr)
-#define upb_Atomic_Store(addr, val, order) (*(addr) = val)
+#define upb_Atomic_LoadAcquire(addr) (*addr)
+#define upb_Atomic_LoadRelaxed(addr) (*addr)
+#define upb_Atomic_StoreRelaxed(addr, val) (*(addr) = val)
+#define upb_Atomic_StoreRelease(addr, val) (*(addr) = val)
 #define upb_Atomic_Add(addr, val, order) (*(addr) += val)
 #define upb_Atomic_Sub(addr, val, order) (*(addr) -= val)
 
@@ -53,7 +63,7 @@ UPB_INLINE void* _upb_NonAtomic_Exchange(void* addr, void* value) {
   return old;
 }
 
-#define upb_Atomic_Exchange(addr, val, order) _upb_NonAtomic_Exchange(addr, val)
+#define upb_Atomic_ExchangeRelaxed(addr, val) _upb_NonAtomic_Exchange(addr, val)
 
 // `addr` and `expected` are logically double pointers.
 UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
@@ -68,13 +78,16 @@ UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
   }
 }
 
-#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
-                                         success_order, failure_order) \
+#define upb_Atomic_CompareExchangeStrongRelaxedRelaxed(addr, expected, \
+                                                       desired)        \
   _upb_NonAtomic_CompareExchangeStrongP((void*)addr, (void*)expected,  \
                                         (void*)desired)
-#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
-                                       failure_order)                          \
-  upb_Atomic_CompareExchangeStrong(addr, expected, desired, 0, 0)
+#define upb_Atomic_CompareExchangeStrongReleaseAcquire(addr, expected, \
+                                                       desired)        \
+  _upb_NonAtomic_CompareExchangeStrongP((void*)addr, (void*)expected,  \
+                                        (void*)desired)
+#define upb_Atomic_CompareExchangeWeakReleaseAcquire(addr, expected, desired) \
+  upb_Atomic_CompareExchangeStrongReleaseAcquire(addr, expected, desired)
 
 #endif
 
