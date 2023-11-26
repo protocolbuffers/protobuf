@@ -50,11 +50,11 @@ UPB_API bool upb_Arena_Fuse(upb_Arena* a, upb_Arena* b);
 bool upb_Arena_IncRefFor(upb_Arena* arena, const void* owner);
 void upb_Arena_DecRefFor(upb_Arena* arena, const void* owner);
 
-void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size);
+void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size);
 size_t upb_Arena_SpaceAllocated(upb_Arena* arena);
 uint32_t upb_Arena_DebugRefCount(upb_Arena* arena);
 
-UPB_INLINE size_t _upb_ArenaHas(upb_Arena* a) {
+UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(upb_Arena* a) {
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
   return (size_t)(h->end - h->ptr);
 }
@@ -62,8 +62,8 @@ UPB_INLINE size_t _upb_ArenaHas(upb_Arena* a) {
 UPB_API_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
   size = UPB_ALIGN_MALLOC(size);
   size_t span = size + UPB_ASAN_GUARD_SIZE;
-  if (UPB_UNLIKELY(_upb_ArenaHas(a) < span)) {
-    return _upb_Arena_SlowMalloc(a, size);
+  if (UPB_UNLIKELY(UPB_PRIVATE(_upb_ArenaHas)(a) < span)) {
+    return UPB_PRIVATE(_upb_Arena_SlowMalloc)(a, size);
   }
 
   // We have enough space to do a fast malloc.
@@ -102,7 +102,7 @@ UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
 
   if (is_most_recent_alloc) {
     ptrdiff_t diff = size - oldsize;
-    if ((ptrdiff_t)_upb_ArenaHas(a) >= diff) {
+    if ((ptrdiff_t)UPB_PRIVATE(_upb_ArenaHas)(a) >= diff) {
       h->ptr += diff;
       return ptr;
     }
