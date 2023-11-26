@@ -173,7 +173,7 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LONGJMP(buf, val) longjmp(buf, val)
 #endif
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__cplusplus)
 #define UPB_USE_C11_ATOMICS
 #define UPB_ATOMIC(T) _Atomic(T)
 #else

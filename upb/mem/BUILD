@@ -44,9 +44,9 @@ cc_test(
     name = "arena_test",
     srcs = ["arena_test.cc"],
     deps = [
+        ":internal",
+        ":mem",
         "@com_google_googletest//:gtest_main",
-        "//upb:mem",
-        "//upb:mem_internal",
         "//upb:port",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/random:distributions",
