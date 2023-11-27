@@ -492,10 +492,11 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
 void WriteEnum(upb::EnumDefPtr e, Output& output) {
   std::string values_init = "{\n";
   const upb_MiniTableEnum* mt = e.mini_table();
-  uint32_t value_count = (mt->mask_limit / 32) + mt->value_count;
+  uint32_t value_count =
+      (mt->UPB_PRIVATE(mask_limit) / 32) + mt->UPB_PRIVATE(value_count);
   for (uint32_t i = 0; i < value_count; i++) {
-    absl::StrAppend(&values_init, "                0x", absl::Hex(mt->data[i]),
-                    ",\n");
+    absl::StrAppend(&values_init, "                0x",
+                    absl::Hex(mt->UPB_PRIVATE(data)[i]), ",\n");
   }
   values_init += "    }";
 
@@ -507,7 +508,8 @@ void WriteEnum(upb::EnumDefPtr e, Output& output) {
             $3,
         };
       )cc",
-      EnumInit(e), mt->mask_limit, mt->value_count, values_init);
+      EnumInit(e), mt->UPB_PRIVATE(mask_limit), mt->UPB_PRIVATE(value_count),
+      values_init);
   output("\n");
 }
 
