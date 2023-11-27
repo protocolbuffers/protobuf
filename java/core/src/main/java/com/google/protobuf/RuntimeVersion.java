@@ -30,6 +30,25 @@ public final class RuntimeVersion {
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
 
   /**
+   * Validates that the gencode is in the same domain as the runtime.
+   *
+   * <p>This method is directly called by the google-internal gencode to verify no cross-domain
+   * usages.
+   *
+   * @param gencodeDomain the domain where Protobuf Java code was generated.
+   * @throws ProtobufRuntimeVersionException if gencodeDomain is not the same as DOMAIN.
+   */
+  public static void validateProtobufGencodeDomain(RuntimeDomain gencodeDomain) {
+    if (gencodeDomain != DOMAIN) {
+      throw new ProtobufRuntimeVersionException(
+          String.format(
+              "Mismatched Protobuf Gencode/Runtime domains: gencode %s, runtime %s. Cross-domain"
+                  + " usage of Protobuf is not supported.",
+              gencodeDomain, DOMAIN));
+    }
+  }
+
+  /**
    * Validates that the gencode version is compatible with this runtime version according to
    * https://protobuf.dev/support/cross-version-runtime-guarantee/.
    *
@@ -37,7 +56,7 @@ public final class RuntimeVersion {
    *
    * <p>This method is only for Protobuf Java gencode; do not call it elsewhere.
    *
-   * @param domain the domain where Protobuf Java code was generated. Currently ignored.
+   * @param domain the domain where Protobuf Java code was generated.
    * @param major the major version of Protobuf Java gencode.
    * @param minor the minor version of Protobuf Java gencode.
    * @param patch the micro/patch version of Protobuf Java gencode.
@@ -58,6 +77,8 @@ public final class RuntimeVersion {
       throw new ProtobufRuntimeVersionException(
           "Invalid gencode version: " + versionString(major, minor, patch, suffix));
     }
+
+    validateProtobufGencodeDomain(domain);
 
     String gencodeVersionString = versionString(major, minor, patch, suffix);
     // Check that runtime major version is the same as the gencode major version.
