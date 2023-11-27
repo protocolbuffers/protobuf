@@ -28,7 +28,9 @@ struct MapBenchmarkPeer {
 
   template <typename T>
   static double GetMeanProbeLength(const T& map) {
+    // XXX
     double total_probe_cost = 0;
+    /*
     for (map_index_t b = 0; b < map.num_buckets_; ++b) {
       if (map.TableEntryIsList(b)) {
         auto* node = internal::TableEntryToNode(map.table_[b]);
@@ -46,19 +48,8 @@ struct MapBenchmarkPeer {
                             std::log2(tree_size);
       }
     }
+    */
     return total_probe_cost / map.size();
-  }
-
-  template <typename T>
-  static double GetPercentTree(const T& map) {
-    size_t total_tree_size = 0;
-    for (map_index_t b = 0; b < map.num_buckets_; ++b) {
-      if (map.TableEntryIsTree(b)) {
-        total_tree_size += TableEntryToTree(map.table_[b])->size();
-      }
-    }
-    return static_cast<double>(total_tree_size) /
-           static_cast<double>(map.size());
   }
 };
 }  // namespace protobuf
@@ -111,7 +102,6 @@ struct Ratios {
   double min_load;
   double avg_load;
   double max_load;
-  double percent_tree;
 };
 
 template <class ElemFn>
@@ -132,7 +122,6 @@ Ratios CollectMeanProbeLengths() {
 
   while (t.size() < min_max_sizes.max_load) t[elem()];
   result.max_load = Peer::GetMeanProbeLength(t);
-  result.percent_tree = Peer::GetPercentTree(t);
 
   return result;
 }
@@ -297,7 +286,6 @@ int main(int argc, char** argv) {
     print("min", &Ratios::min_load);
     print("avg", &Ratios::avg_load);
     print("max", &Ratios::max_load);
-    print("tree_percent", &Ratios::percent_tree);
   }
   absl::PrintF("  ],\n");
   absl::PrintF("  \"context\": {\n");

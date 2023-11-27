@@ -222,6 +222,30 @@ class PROTOBUF_EXPORT MapKey {
     }
   }
 
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const MapKey& key) {
+    sink.Append(key.DebugString());
+  }
+
+  std::string DebugString() const {
+    switch (type_) {
+      case FieldDescriptor::CPPTYPE_STRING:
+        return absl::StrCat(val_.string_value_.get());
+      case FieldDescriptor::CPPTYPE_INT64:
+        return absl::StrCat(val_.int64_value_);
+      case FieldDescriptor::CPPTYPE_INT32:
+        return absl::StrCat(val_.int32_value_);
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return absl::StrCat(val_.uint64_value_);
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return absl::StrCat(val_.uint32_value_);
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return absl::StrCat(val_.bool_value_);
+      default:
+        return "n/a";
+    }
+  }
+
  private:
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
@@ -260,11 +284,6 @@ namespace internal {
 template <>
 struct is_internal_map_key_type<MapKey> : std::true_type {};
 
-template <>
-struct RealKeyToVariantKey<MapKey> {
-  VariantKey operator()(const MapKey& value) const;
-};
-
 }  // namespace internal
 
 }  // namespace protobuf
@@ -273,8 +292,23 @@ namespace std {
 template <>
 struct hash<google::protobuf::MapKey> {
   size_t operator()(const google::protobuf::MapKey& map_key) const {
-    return ::google::protobuf::internal::RealKeyToVariantKey<::google::protobuf::MapKey>{}(map_key)
-        .Hash();
+    switch (map_key.type()) {
+      case google::protobuf::FieldDescriptor::CPPTYPE_STRING:
+        return absl::HashOf(map_key.GetStringValue());
+      case google::protobuf::FieldDescriptor::CPPTYPE_INT64:
+        return absl::HashOf(map_key.GetInt64Value());
+      case google::protobuf::FieldDescriptor::CPPTYPE_INT32:
+        return absl::HashOf(map_key.GetInt32Value());
+      case google::protobuf::FieldDescriptor::CPPTYPE_UINT64:
+        return absl::HashOf(map_key.GetUInt64Value());
+      case google::protobuf::FieldDescriptor::CPPTYPE_UINT32:
+        return absl::HashOf(map_key.GetUInt32Value());
+      case google::protobuf::FieldDescriptor::CPPTYPE_BOOL:
+        return absl::HashOf(map_key.GetBoolValue());
+      default:
+        google::protobuf::internal::Unreachable();
+        return 0;
+    }
   }
   bool operator()(const google::protobuf::MapKey& map_key1,
                   const google::protobuf::MapKey& map_key2) const {

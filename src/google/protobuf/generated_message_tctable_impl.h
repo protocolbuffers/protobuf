@@ -647,9 +647,8 @@ class PROTOBUF_EXPORT TcParser final {
                                             int key_type, int value_type) {
     using MapType = typename MapField::MapType;
     using Node = typename MapType::Node;
-    static_assert(alignof(Node) == alignof(NodeBase), "");
     // Verify the assumption made in MpMap, guaranteed by Map<>.
-    assert(PROTOBUF_FIELD_OFFSET(Node, kv.first) == sizeof(NodeBase));
+    assert(PROTOBUF_FIELD_OFFSET(Node, kv.first) == 0);
     return {
         MakeMapTypeCard(static_cast<WireFormatLite::FieldType>(key_type)),
         MakeMapTypeCard(static_cast<WireFormatLite::FieldType>(value_type)),

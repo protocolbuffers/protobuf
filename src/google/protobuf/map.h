@@ -204,11 +204,7 @@ using KeyForBase = typename KeyForBaseImpl<T>::type;
 // only accept `key_type`.
 template <typename key_type>
 struct TransparentSupport {
-  // We hash all the scalars as uint64_t so that we can implement the same hash
-  // function for VariantKey. This way we can have MapKey provide the same hash
-  // as the underlying value would have.
-  using hash = std::hash<
-      std::conditional_t<std::is_scalar<key_type>::value, uint64_t, key_type>>;
+  using hash = std::hash<key_type>;
 
   static bool Equals(const key_type& a, const key_type& b) { return a == b; }
 
@@ -294,117 +290,32 @@ constexpr MapNodeSizeInfoT MakeNodeInfo(uint16_t size, uint16_t value_offset) {
 }
 
 struct NodeBase {
-  // Align the node to allow KeyNode to predict the location of the key.
-  // This way sizeof(NodeBase) contains any possible padding it was going to
-  // have between NodeBase and the key.
-  alignas(kMaxMessageAlignment) NodeBase* next;
-
-  void* GetVoidKey() { return this + 1; }
-  const void* GetVoidKey() const { return this + 1; }
+  void* GetVoidKey() { return this; }
+  const void* GetVoidKey() const { return this; }
 
   void* GetVoidValue(MapNodeSizeInfoT size_info) {
     return reinterpret_cast<char*>(this) + ValueOffsetFromInfo(size_info);
   }
 };
 
-inline NodeBase* EraseFromLinkedList(NodeBase* item, NodeBase* head) {
-  if (head == item) {
-    return head->next;
-  } else {
-    head->next = EraseFromLinkedList(item, head->next);
-    return head;
-  }
-}
-
-constexpr size_t MapTreeLengthThreshold() { return 8; }
-inline bool TableEntryIsTooLong(NodeBase* node) {
-  const size_t kMaxLength = MapTreeLengthThreshold();
-  size_t count = 0;
-  do {
-    ++count;
-    node = node->next;
-  } while (node != nullptr);
-  // Invariant: no linked list ever is more than kMaxLength in length.
-  ABSL_DCHECK_LE(count, kMaxLength);
-  return count >= kMaxLength;
-}
-
-// Similar to the public MapKey, but specialized for the internal
-// implementation.
-struct VariantKey {
-  // We make this value 16 bytes to make it cheaper to pass in the ABI.
-  // Can't overload string_view this way, so we unpack the fields.
-  // data==nullptr means this is a number and `integral` is the value.
-  // data!=nullptr means this is a string and `integral` is the size.
-  const char* data;
-  uint64_t integral;
-
-  explicit VariantKey(uint64_t v) : data(nullptr), integral(v) {}
-  explicit VariantKey(absl::string_view v)
-      : data(v.data()), integral(v.size()) {
-    // We use `data` to discriminate between the types, so make sure it is never
-    // null here.
-    if (data == nullptr) data = "";
-  }
-
-  size_t Hash() const {
-    return data == nullptr ? std::hash<uint64_t>{}(integral)
-                           : absl::Hash<absl::string_view>{}(
-                                 absl::string_view(data, integral));
-  }
-
-  friend bool operator<(const VariantKey& left, const VariantKey& right) {
-    ABSL_DCHECK_EQ(left.data == nullptr, right.data == nullptr);
-    if (left.integral != right.integral) {
-      // If they are numbers with different value, or strings with different
-      // size, check the number only.
-      return left.integral < right.integral;
-    }
-    if (left.data == nullptr) {
-      // If they are numbers they have the same value, so return.
-      return false;
-    }
-    // They are strings of the same size, so check the bytes.
-    return memcmp(left.data, right.data, left.integral) < 0;
-  }
-};
-
-// This is to be specialized by MapKey.
-template <typename T>
-struct RealKeyToVariantKey {
-  VariantKey operator()(T value) const { return VariantKey(value); }
-};
-
-template <>
-struct RealKeyToVariantKey<std::string> {
-  template <typename T>
-  VariantKey operator()(const T& value) const {
-    return VariantKey(TransparentSupport<std::string>::ImplicitConvert(value));
-  }
-};
-
-// We use a single kind of tree for all maps. This reduces code duplication.
-using TreeForMap =
-    absl::btree_map<VariantKey, NodeBase*, std::less<VariantKey>,
-                    MapAllocator<std::pair<const VariantKey, NodeBase*>>>;
-
 // Type safe tagged pointer.
 // We convert to/from nodes and trees using the operations below.
 // They ensure that the tags are used correctly.
 // There are three states:
 //  - x == 0: the entry is empty
+//  - x == 1: Tombstone
 //  - x != 0 && (x&1) == 0: the entry is a node list
-//  - x != 0 && (x&1) == 1: the entry is a tree
 enum class TableEntryPtr : uintptr_t;
 
+inline TableEntryPtr TombstoneEntry() { return static_cast<TableEntryPtr>(1); }
 inline bool TableEntryIsEmpty(TableEntryPtr entry) {
   return entry == TableEntryPtr{};
 }
-inline bool TableEntryIsTree(TableEntryPtr entry) {
-  return (static_cast<uintptr_t>(entry) & 1) == 1;
+inline bool TableEntryIsTombstone(TableEntryPtr entry) {
+  return static_cast<uintptr_t>(entry) == 1;
 }
 inline bool TableEntryIsList(TableEntryPtr entry) {
-  return !TableEntryIsTree(entry);
+  return static_cast<uintptr_t>(entry) > 1;
 }
 inline bool TableEntryIsNonEmptyList(TableEntryPtr entry) {
   return !TableEntryIsEmpty(entry) && TableEntryIsList(entry);
@@ -416,14 +327,6 @@ inline NodeBase* TableEntryToNode(TableEntryPtr entry) {
 inline TableEntryPtr NodeToTableEntry(NodeBase* node) {
   ABSL_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
   return static_cast<TableEntryPtr>(reinterpret_cast<uintptr_t>(node));
-}
-inline TreeForMap* TableEntryToTree(TableEntryPtr entry) {
-  ABSL_DCHECK(TableEntryIsTree(entry));
-  return reinterpret_cast<TreeForMap*>(static_cast<uintptr_t>(entry) - 1);
-}
-inline TableEntryPtr TreeToTableEntry(TreeForMap* node) {
-  ABSL_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
-  return static_cast<TableEntryPtr>(reinterpret_cast<uintptr_t>(node) | 1);
 }
 
 // This captures all numeric types.
@@ -499,13 +402,7 @@ class UntypedMapIterator {
 
   // The definition of operator++ is handled in the derived type. We would not
   // be able to return the right type from here.
-  void PlusPlus() {
-    if (node_->next == nullptr) {
-      SearchFrom(bucket_index_ + 1);
-    } else {
-      node_ = node_->next;
-    }
-  }
+  void PlusPlus() { SearchFrom(bucket_index_ + 1); }
 
   NodeBase* node_;
   const UntypedMapBase* m_;
@@ -519,7 +416,6 @@ class UntypedMapIterator {
 // parser) by having non-template code that can handle all instantiations.
 class PROTOBUF_EXPORT UntypedMapBase {
   using Allocator = internal::MapAllocator<void*>;
-  using Tree = internal::TreeForMap;
 
  public:
   using size_type = size_t;
@@ -528,7 +424,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
       : num_elements_(0),
         num_buckets_(internal::kGlobalEmptyTableSize),
         seed_(0),
-        index_of_first_non_null_(internal::kGlobalEmptyTableSize),
+        growth_left_(0),
         table_(const_cast<TableEntryPtr*>(internal::kGlobalEmptyTable)),
         alloc_(arena) {}
 
@@ -546,7 +442,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     std::swap(num_elements_, other->num_elements_);
     std::swap(num_buckets_, other->num_buckets_);
     std::swap(seed_, other->seed_);
-    std::swap(index_of_first_non_null_, other->index_of_first_non_null_);
+    std::swap(growth_left_, other->growth_left_);
     std::swap(table_, other->table_);
     std::swap(alloc_, other->alloc_);
   }
@@ -587,36 +483,14 @@ class PROTOBUF_EXPORT UntypedMapBase {
 #endif
   }
 
-  // Helper for InsertUnique.  Handles the case where bucket b is a
-  // not-too-long linked list.
-  void InsertUniqueInList(map_index_t b, NodeBase* node) {
-    if (!TableEntryIsEmpty(b) && ShouldInsertAfterHead(node)) {
-      auto* first = TableEntryToNode(table_[b]);
-      node->next = first->next;
-      first->next = node;
-    } else {
-      node->next = TableEntryToNode(table_[b]);
-      table_[b] = NodeToTableEntry(node);
-    }
-  }
-
   bool TableEntryIsEmpty(map_index_t b) const {
     return internal::TableEntryIsEmpty(table_[b]);
   }
   bool TableEntryIsNonEmptyList(map_index_t b) const {
     return internal::TableEntryIsNonEmptyList(table_[b]);
   }
-  bool TableEntryIsTree(map_index_t b) const {
-    return internal::TableEntryIsTree(table_[b]);
-  }
   bool TableEntryIsList(map_index_t b) const {
     return internal::TableEntryIsList(table_[b]);
-  }
-
-  // Return whether table_[b] is a linked list that seems awfully long.
-  // Requires table_[b] to point to a non-empty linked list.
-  bool TableEntryIsTooLong(map_index_t b) {
-    return internal::TableEntryIsTooLong(TableEntryToNode(table_[b]));
   }
 
   // Return a power of two no less than max(kMinTableSize, n).
@@ -636,8 +510,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   NodeBase* AllocNode(size_t node_size) {
-    PROTOBUF_ASSUME(node_size % sizeof(NodeBase) == 0);
-    return AllocFor<NodeBase>(alloc_).allocate(node_size / sizeof(NodeBase));
+    if (Arena* a = arena()) {
+      return static_cast<NodeBase*>(a->AllocateAligned(node_size));
+    } else {
+      return static_cast<NodeBase*>(::operator new(node_size));
+    }
   }
 
   void DeallocNode(NodeBase* node, MapNodeSizeInfoT size_info) {
@@ -645,28 +522,20 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   void DeallocNode(NodeBase* node, size_t node_size) {
-    PROTOBUF_ASSUME(node_size % sizeof(NodeBase) == 0);
-    AllocFor<NodeBase>(alloc_).deallocate(node, node_size / sizeof(NodeBase));
+    if (arena() == nullptr) {
+      internal::SizedDelete(node, node_size);
+    }
   }
 
   void DeleteTable(TableEntryPtr* table, map_index_t n) {
-    if (auto* a = arena()) {
+    if (Arena* a = arena()) {
       a->ReturnArrayMemory(table, n * sizeof(TableEntryPtr));
     } else {
       internal::SizedDelete(table, n * sizeof(TableEntryPtr));
     }
   }
 
-  NodeBase* DestroyTree(Tree* tree);
-  using GetKey = VariantKey (*)(NodeBase*);
-  void InsertUniqueInTree(map_index_t b, GetKey get_key, NodeBase* node);
-  void TransferTree(Tree* tree, GetKey get_key);
-  TableEntryPtr ConvertToTree(NodeBase* node, GetKey get_key);
-  void EraseFromTree(map_index_t b, typename Tree::iterator tree_it);
-
-  map_index_t VariantBucketNumber(VariantKey key) const;
-
-  map_index_t BucketNumberFromHash(uint64_t h) const {
+  map_index_t BucketNumberFromHash(size_t h) const {
     // We xor the hash value against the random seed so that we effectively
     // have a random hash function.
     // We use absl::Hash to do bit mixing for uniform bucket selection.
@@ -676,7 +545,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
   TableEntryPtr* CreateEmptyTable(map_index_t n) {
     ABSL_DCHECK_GE(n, map_index_t{kMinTableSize});
     ABSL_DCHECK_EQ(n & (n - 1), 0u);
-    TableEntryPtr* result = AllocFor<TableEntryPtr>(alloc_).allocate(n);
+    Arena* a = arena();
+    TableEntryPtr* result =
+        a != nullptr ? Arena::CreateArray<TableEntryPtr>(a, n)
+                     : static_cast<TableEntryPtr*>(
+                           ::operator new(n * sizeof(TableEntryPtr)));
     memset(result, 0, n * sizeof(result[0]));
     return result;
   }
@@ -758,50 +631,34 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   void ClearTable(ClearInput input);
 
-  NodeAndBucket FindFromTree(map_index_t b, VariantKey key,
-                             Tree::iterator* it) const;
-
   // Space used for the table, trees, and nodes.
   // Does not include the indirect space used. Eg the data of a std::string.
   size_t SpaceUsedInTable(size_t sizeof_node) const;
 
+  void ResetGrowthLeft() {
+    growth_left_ = num_buckets_ - num_buckets_ / 16 * 4;
+  }
+
   map_index_t num_elements_;
   map_index_t num_buckets_;
   map_index_t seed_;
-  map_index_t index_of_first_non_null_;
+  map_index_t growth_left_;
   TableEntryPtr* table_;  // an array with num_buckets_ entries
   Allocator alloc_;
 };
 
 inline UntypedMapIterator::UntypedMapIterator(const UntypedMapBase* m) : m_(m) {
-  if (m_->index_of_first_non_null_ == m_->num_buckets_) {
-    bucket_index_ = 0;
-    node_ = nullptr;
-  } else {
-    bucket_index_ = m_->index_of_first_non_null_;
-    TableEntryPtr entry = m_->table_[bucket_index_];
-    node_ = PROTOBUF_PREDICT_TRUE(TableEntryIsList(entry))
-                ? TableEntryToNode(entry)
-                : TableEntryToTree(entry)->begin()->second;
-    PROTOBUF_ASSUME(node_ != nullptr);
-  }
+  SearchFrom(0);
 }
 
 inline void UntypedMapIterator::SearchFrom(map_index_t start_bucket) {
-  ABSL_DCHECK(m_->index_of_first_non_null_ == m_->num_buckets_ ||
-              !m_->TableEntryIsEmpty(m_->index_of_first_non_null_));
   for (map_index_t i = start_bucket; i < m_->num_buckets_; ++i) {
     TableEntryPtr entry = m_->table_[i];
-    if (entry == TableEntryPtr{}) continue;
-    bucket_index_ = i;
-    if (PROTOBUF_PREDICT_TRUE(TableEntryIsList(entry))) {
+    if (TableEntryIsNonEmptyList(entry)) {
+      bucket_index_ = i;
       node_ = TableEntryToNode(entry);
-    } else {
-      TreeForMap* tree = TableEntryToTree(entry);
-      ABSL_DCHECK(!tree->empty());
-      node_ = tree->begin()->second;
+      return;
     }
-    return;
   }
   node_ = nullptr;
   bucket_index_ = 0;
@@ -850,6 +707,7 @@ struct KeyNode : NodeBase {
   decltype(auto) key() const { return ReadKey<Key>(GetVoidKey()); }
 };
 
+// XXX
 // KeyMapBase is a chaining hash map with the additional feature that some
 // buckets can be converted to use an ordered container.  This ensures O(lg n)
 // bounds on find, insert, and erase, while avoiding the overheads of ordered
@@ -862,6 +720,7 @@ struct KeyNode : NodeBase {
 // 2. As is typical for hash_map and such, the Keys and Values are always
 //    stored in linked list nodes.  Pointers to elements are never invalidated
 //    until the element is deleted.
+// XXX
 // 3. The trees' payload type is pointer to linked-list node.  Tree-converting
 //    a bucket doesn't copy Key-Value pairs.
 // 4. Once we've tree-converted a bucket, it is never converted back unless the
@@ -870,6 +729,7 @@ struct KeyNode : NodeBase {
 // 5. Mutations to a map do not invalidate the map's iterators, pointers to
 //    elements, or references to elements.
 // 6. Except for erase(iterator), any non-const method can reorder iterators.
+// XXX
 // 7. Uses VariantKey when using the Tree representation, which holds all
 //    possible key types as a variant value.
 
@@ -888,14 +748,6 @@ class KeyMapBase : public UntypedMapBase {
  protected:
   using KeyNode = internal::KeyNode<Key>;
 
-  // Trees. The payload type is a copy of Key, so that we can query the tree
-  // with Keys that are not in any particular data structure.
-  // The value is a void* pointing to Node. We use void* instead of Node* to
-  // avoid code bloat. That way there is only one instantiation of the tree
-  // class per key type.
-  using Tree = internal::TreeForMap;
-  using TreeIterator = typename Tree::iterator;
-
  public:
   hasher hash_function() const { return {}; }
 
@@ -904,42 +756,57 @@ class KeyMapBase : public UntypedMapBase {
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
 
+  size_t HashElement(typename TS::ViewType k) { return hasher{}(k); }
+
   PROTOBUF_NOINLINE void erase_no_destroy(map_index_t b, KeyNode* node) {
-    TreeIterator tree_it;
-    const bool is_list = revalidate_if_necessary(b, node, &tree_it);
-    if (is_list) {
-      ABSL_DCHECK(TableEntryIsNonEmptyList(b));
-      auto* head = TableEntryToNode(table_[b]);
-      head = EraseFromLinkedList(node, head);
-      table_[b] = NodeToTableEntry(head);
-    } else {
-      EraseFromTree(b, tree_it);
+    // Force bucket_index to be in range.
+    b &= (num_buckets_ - 1);
+    // Bucket number does not match the node. Let's find it again.
+    if (table_[b] != NodeToTableEntry(node)) {
+      b = FindExisting(HashElement(node->key()), node->key()).bucket;
     }
+
+    ABSL_DCHECK(table_[b] == NodeToTableEntry(node));
+    table_[b] = TombstoneEntry();
     --num_elements_;
-    if (PROTOBUF_PREDICT_FALSE(b == index_of_first_non_null_)) {
-      while (index_of_first_non_null_ < num_buckets_ &&
-             TableEntryIsEmpty(index_of_first_non_null_)) {
-        ++index_of_first_non_null_;
-      }
-    }
   }
 
-  NodeAndBucket FindHelper(typename TS::ViewType k,
-                           TreeIterator* it = nullptr) const {
-    map_index_t b = BucketNumber(k);
-    if (TableEntryIsNonEmptyList(b)) {
-      auto* node = internal::TableEntryToNode(table_[b]);
-      do {
+  class Prober {
+   public:
+    Prober(map_index_t bucket, map_index_t capacity)
+        : bucket_(bucket), index_(0), mask_(capacity - 1) {}
+
+    map_index_t bucket() const { return bucket_; }
+
+    bool Next() {
+      index_ += 1;
+      if (index_ > mask_) return false;
+      bucket_ += index_;
+      bucket_ &= mask_;
+      return true;
+    }
+
+   private:
+    map_index_t bucket_;
+    map_index_t index_;
+    map_index_t mask_;
+  };
+
+  NodeAndBucket FindExisting(size_t hash, typename TS::ViewType k) const {
+    Prober prober(BucketNumberFromHash(hash), num_buckets_);
+
+    do {
+      map_index_t b = prober.bucket();
+      if (TableEntryIsEmpty(b)) break;
+      if (TableEntryIsNonEmptyList(b)) {
+        auto* node = internal::TableEntryToNode(table_[b]);
         if (TS::Equals(static_cast<KeyNode*>(node)->key(), k)) {
           return {node, b};
-        } else {
-          node = node->next;
         }
-      } while (node != nullptr);
-    } else if (TableEntryIsTree(b)) {
-      return FindFromTree(b, internal::RealKeyToVariantKey<Key>{}(k), it);
-    }
-    return {nullptr, b};
+      }
+    } while (prober.Next());
+
+    return {};
   }
 
   // Insert the given node.
@@ -947,57 +814,45 @@ class KeyMapBase : public UntypedMapBase {
   // Gives ownership to the caller.
   // If the key is unique, it returns `nullptr`.
   KeyNode* InsertOrReplaceNode(KeyNode* node) {
-    KeyNode* to_erase = nullptr;
-    auto p = this->FindHelper(node->key());
-    if (p.node != nullptr) {
-      erase_no_destroy(p.bucket, static_cast<KeyNode*>(p.node));
-      to_erase = static_cast<KeyNode*>(p.node);
-    } else if (ResizeIfLoadIsOutOfRange(num_elements_ + 1)) {
-      p = FindHelper(node->key());
+    decltype(auto) view = TS::ToView(node->key());
+    const size_t hash = HashElement(view);
+    {
+      const auto p = this->FindExisting(hash, view);
+      if (p.node != nullptr) {
+        // We found one. Replace the node in the same slot.
+        KeyNode* to_erase = static_cast<KeyNode*>(p.node);
+        table_[p.bucket] = NodeToTableEntry(node);
+        assert(this->FindExisting(hash, TS::ToView(node->key())).node == node);
+        return to_erase;
+      }
     }
-    const map_index_t b = p.bucket;  // bucket number
-    InsertUnique(b, node);
+    ResizeIfLoadIsOutOfRange();
+    InsertUnique(hash, node);
     ++num_elements_;
-    return to_erase;
+    assert(this->FindExisting(hash, TS::ToView(node->key())).node == node);
+    return nullptr;
   }
 
   // Insert the given Node in bucket b.  If that would make bucket b too big,
   // and bucket b is not a tree, create a tree for buckets b.
   // Requires count(*KeyPtrFromNodePtr(node)) == 0 and that b is the correct
   // bucket.  num_elements_ is not modified.
-  void InsertUnique(map_index_t b, KeyNode* node) {
-    ABSL_DCHECK(index_of_first_non_null_ == num_buckets_ ||
-                !TableEntryIsEmpty(index_of_first_non_null_));
-    // In practice, the code that led to this point may have already
-    // determined whether we are inserting into an empty list, a short list,
-    // or whatever.  But it's probably cheap enough to recompute that here;
-    // it's likely that we're inserting into an empty or short list.
-    ABSL_DCHECK(FindHelper(node->key()).node == nullptr);
-    if (TableEntryIsEmpty(b)) {
-      InsertUniqueInList(b, node);
-      index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
-    } else if (TableEntryIsNonEmptyList(b) && !TableEntryIsTooLong(b)) {
-      InsertUniqueInList(b, node);
-    } else {
-      InsertUniqueInTree(b, NodeToVariantKey, node);
+  map_index_t InsertUnique(size_t hash, KeyNode* node) {
+    assert(growth_left_ > 0);
+    Prober prober(BucketNumberFromHash(hash), num_buckets_);
+
+    while (true) {
+      map_index_t b = prober.bucket();
+      if (!TableEntryIsNonEmptyList(b)) {
+        table_[b] = NodeToTableEntry(node);
+        --growth_left_;
+        return b;
+      }
+      bool more = prober.Next();
+      // There must be an empty slot, so we only debug-check that we didn't wrap
+      // around.
+      ABSL_DCHECK(more);
     }
-  }
-
-  static VariantKey NodeToVariantKey(NodeBase* node) {
-    return internal::RealKeyToVariantKey<Key>{}(
-        static_cast<KeyNode*>(node)->key());
-  }
-
-  // Have it a separate function for testing.
-  static size_type CalculateHiCutoff(size_type num_buckets) {
-    // We want the high cutoff to follow this rules:
-    //  - When num_buckets_ == kGlobalEmptyTableSize, then make it 0 to force an
-    //    allocation.
-    //  - When num_buckets_ < 8, then make it num_buckets_ to avoid
-    //    a reallocation. A large load factor is not that important on small
-    //    tables and saves memory.
-    //  - Otherwise, make it 75% of num_buckets_.
-    return num_buckets - num_buckets / 16 * 4 - num_buckets % 2;
   }
 
   // Returns whether it did resize.  Currently this is only used when
@@ -1008,18 +863,24 @@ class KeyMapBase : public UntypedMapBase {
   // destroy the expected big-O bounds for some operations. By having the
   // policy that sometimes we resize down as well as up, clients can easily
   // keep O(size()) = O(number of buckets) if they want that.
-  bool ResizeIfLoadIsOutOfRange(size_type new_size) {
-    const size_type hi_cutoff = CalculateHiCutoff(num_buckets_);
-    const size_type lo_cutoff = hi_cutoff / 4;
-    // We don't care how many elements are in trees.  If a lot are,
-    // we may resize even though there are many empty buckets.  In
-    // practice, this seems fine.
-    if (PROTOBUF_PREDICT_FALSE(new_size > hi_cutoff)) {
-      if (num_buckets_ <= max_size() / 2) {
-        Resize(num_buckets_ * 2);
-        return true;
+  bool ResizeIfLoadIsOutOfRange() {
+    if (PROTOBUF_PREDICT_FALSE(growth_left_ == 0)) {
+      map_index_t new_capacity;
+      if (num_elements_ < num_buckets_ / 2) {
+        // Too many tombstones. Resize on the same size.
+        new_capacity = num_buckets_;
+      } else if (num_buckets_ <= max_size() / 2) {
+        new_capacity = num_buckets_ * 2;
+      } else {
+        new_capacity = max_size();
       }
-    } else if (PROTOBUF_PREDICT_FALSE(new_size <= lo_cutoff &&
+      Resize(new_capacity);
+      return true;
+    }
+    /*
+       XXX Revive this
+      const size_type lo_cutoff = num_buckets_ / 8;
+     else if (PROTOBUF_PREDICT_FALSE(new_size <= lo_cutoff &&
                                       num_buckets_ > kMinTableSize)) {
       size_type lg2_of_size_reduction_factor = 1;
       // It's possible we want to shrink a lot here... size() could even be 0.
@@ -1036,6 +897,7 @@ class KeyMapBase : public UntypedMapBase {
         return true;
       }
     }
+    */
     return false;
   }
 
@@ -1044,7 +906,8 @@ class KeyMapBase : public UntypedMapBase {
     if (num_buckets_ == kGlobalEmptyTableSize) {
       // This is the global empty array.
       // Just overwrite with a new one. No need to transfer or free anything.
-      num_buckets_ = index_of_first_non_null_ = kMinTableSize;
+      num_buckets_ = kMinTableSize;
+      ResetGrowthLeft();
       table_ = CreateEmptyTable(num_buckets_);
       seed_ = Seed();
       return;
@@ -1054,61 +917,15 @@ class KeyMapBase : public UntypedMapBase {
     const auto old_table = table_;
     const map_index_t old_table_size = num_buckets_;
     num_buckets_ = new_num_buckets;
+    ResetGrowthLeft();
     table_ = CreateEmptyTable(num_buckets_);
-    const map_index_t start = index_of_first_non_null_;
-    index_of_first_non_null_ = num_buckets_;
-    for (map_index_t i = start; i < old_table_size; ++i) {
+    for (map_index_t i = 0; i < old_table_size; ++i) {
       if (internal::TableEntryIsNonEmptyList(old_table[i])) {
-        TransferList(static_cast<KeyNode*>(TableEntryToNode(old_table[i])));
-      } else if (internal::TableEntryIsTree(old_table[i])) {
-        this->TransferTree(TableEntryToTree(old_table[i]), NodeToVariantKey);
+        auto* node = static_cast<KeyNode*>(TableEntryToNode(old_table[i]));
+        InsertUnique(HashElement(node->key()), node);
       }
     }
     DeleteTable(old_table, old_table_size);
-  }
-
-  // Transfer all nodes in the list `node` into `this`.
-  void TransferList(KeyNode* node) {
-    do {
-      auto* next = static_cast<KeyNode*>(node->next);
-      InsertUnique(BucketNumber(node->key()), node);
-      node = next;
-    } while (node != nullptr);
-  }
-
-  map_index_t BucketNumber(typename TS::ViewType k) const {
-    ABSL_DCHECK_EQ(BucketNumberFromHash(hash_function()(k)),
-                   VariantBucketNumber(RealKeyToVariantKey<Key>{}(k)));
-    return BucketNumberFromHash(hash_function()(k));
-  }
-
-  // Assumes node_ and m_ are correct and non-null, but other fields may be
-  // stale.  Fix them as needed.  Then return true iff node_ points to a
-  // Node in a list.  If false is returned then *it is modified to be
-  // a valid iterator for node_.
-  bool revalidate_if_necessary(map_index_t& bucket_index, KeyNode* node,
-                               TreeIterator* it) const {
-    // Force bucket_index to be in range.
-    bucket_index &= (num_buckets_ - 1);
-    // Common case: the bucket we think is relevant points to `node`.
-    if (table_[bucket_index] == NodeToTableEntry(node)) return true;
-    // Less common: the bucket is a linked list with node_ somewhere in it,
-    // but not at the head.
-    if (TableEntryIsNonEmptyList(bucket_index)) {
-      auto* l = TableEntryToNode(table_[bucket_index]);
-      while ((l = l->next) != nullptr) {
-        if (l == node) {
-          return true;
-        }
-      }
-    }
-    // Well, bucket_index_ still might be correct, but probably
-    // not.  Revalidate just to be sure.  This case is rare enough that we
-    // don't worry about potential optimizations, such as having a custom
-    // find-like method that compares Node* instead of the key.
-    auto res = FindHelper(node->key(), it);
-    bucket_index = res.bucket;
-    return TableEntryIsList(bucket_index);
   }
 };
 
@@ -1138,7 +955,7 @@ template <typename Key, typename T>
 class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using Base = typename Map::KeyMapBase;
 
-  using TS = internal::TransparentSupport<Key>;
+  using TS = internal::TransparentSupport<internal::KeyForBase<Key>>;
 
  public:
   using key_type = Key;
@@ -1216,8 +1033,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
                     !std::is_reference<key_type>::value,
                 "We do not support reference types.");
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
-    static_assert(alignof(internal::NodeBase) >= alignof(mapped_type),
-                  "Alignment of mapped type is too high.");
     static_assert(
         absl::disjunction<internal::is_supported_integral_type<key_type>,
                           internal::is_supported_string_type<key_type>,
@@ -1395,7 +1210,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
   template <typename K = key_type>
   iterator find(const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    auto res = this->FindHelper(TS::ToView(key));
+    auto res =
+        this->FindExisting(this->HashElement(TS::ToView(key)), TS::ToView(key));
     return iterator(static_cast<Node*>(res.node), this, res.bucket);
   }
 
@@ -1547,22 +1363,14 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     using key_type = Key;
     using mapped_type = T;
     static constexpr internal::MapNodeSizeInfoT size_info() {
+      static_assert(sizeof(Node) == sizeof(value_type), "");
       return internal::MakeNodeInfo(sizeof(Node),
                                     PROTOBUF_FIELD_OFFSET(Node, kv.second));
     }
     value_type kv;
   };
 
-  using Tree = internal::TreeForMap;
-  using TreeIterator = typename Tree::iterator;
   using TableEntryPtr = internal::TableEntryPtr;
-
-  static Node* NodeFromTreeIterator(TreeIterator it) {
-    static_assert(
-        PROTOBUF_FIELD_OFFSET(Node, kv.first) == Base::KeyNode::kOffset, "");
-    static_assert(alignof(Node) == alignof(internal::NodeBase), "");
-    return static_cast<Node*>(it->second);
-  }
 
   void DestroyNode(Node* node) {
     if (this->alloc_.arena() == nullptr) {
@@ -1592,16 +1400,19 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   template <typename K, typename... Args>
   std::pair<iterator, bool> TryEmplaceInternal(K&& k, Args&&... args) {
-    auto p = this->FindHelper(TS::ToView(k));
-    // Case 1: key was already present.
-    if (p.node != nullptr)
-      return std::make_pair(
-          iterator(static_cast<Node*>(p.node), this, p.bucket), false);
-    // Case 2: insert.
-    if (this->ResizeIfLoadIsOutOfRange(this->num_elements_ + 1)) {
-      p = this->FindHelper(TS::ToView(k));
+    decltype(auto) view = TS::ToView(k);
+    const size_t hash = this->HashElement(view);
+    {
+      const auto p = this->FindExisting(hash, view);
+      // Case 1: key was already present.
+      if (p.node != nullptr) {
+        return std::make_pair(
+            iterator(static_cast<Node*>(p.node), this, p.bucket), false);
+      }
     }
-    const auto b = p.bucket;  // bucket number
+    // Case 2: insert.
+    this->ResizeIfLoadIsOutOfRange();
+
     // If K is not key_type, make the conversion to key_type explicit.
     using TypeToInit = typename std::conditional<
         std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
@@ -1621,9 +1432,11 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     // Note: if `T` is arena constructible, `Args` needs to be empty.
     Arena::CreateInArenaStorage(&node->kv.second, this->alloc_.arena(),
                                 std::forward<Args>(args)...);
+    ABSL_DCHECK_EQ(hash, this->HashElement(node->key()));
 
-    this->InsertUnique(b, node);
+    auto b = this->InsertUnique(hash, node);
     ++this->num_elements_;
+    assert(this->FindExisting(hash, TS::ToView(node->key())).node == node);
     return std::make_pair(iterator(node, this, b), true);
   }
 

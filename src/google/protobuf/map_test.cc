@@ -170,27 +170,6 @@ TEST(MapTest, CopyConstructMessagesWithArena) {
   EXPECT_EQ(map1["2"].GetArena(), &arena);
 }
 
-TEST(MapTest, LoadFactorCalculationWorks) {
-  // Three stages:
-  //  - empty
-  //  - small
-  //  - large
-
-  const auto calculate = MapTestPeer::CalculateHiCutoff;
-  // empty
-  EXPECT_EQ(calculate(kGlobalEmptyTableSize), 0);
-
-  // small
-  EXPECT_EQ(calculate(2), 2);
-  EXPECT_EQ(calculate(4), 4);
-  EXPECT_EQ(calculate(8), 8);
-
-  // large
-  for (int i = 16; i < 10000; i *= 2) {
-    EXPECT_EQ(calculate(i), .75 * i) << "i=" << i;
-  }
-}
-
 TEST(MapTest, NaturalGrowthOnArenasReuseBlocks) {
   Arena arena;
   std::vector<Map<int, int>*> values;
