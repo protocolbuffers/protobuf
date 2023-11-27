@@ -5559,7 +5559,7 @@ upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
                                const upb_MiniTable* sub, upb_Arena* arena) {
   size_t size = array->size;
   upb_Array* cloned_array =
-      _upb_Array_New(arena, size, upb_CType_SizeLg2(value_type));
+      UPB_PRIVATE(_upb_Array_New)(arena, size, upb_CType_SizeLg2(value_type));
   if (!cloned_array) {
     return NULL;
   }
@@ -5733,7 +5733,7 @@ upb_Message* upb_Message_DeepClone(const upb_Message* message,
 // Must be last.
 
 upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
-  return _upb_Array_New(a, 4, upb_CType_SizeLg2(type));
+  return UPB_PRIVATE(_upb_Array_New)(a, 4, upb_CType_SizeLg2(type));
 }
 
 const void* upb_Array_DataPtr(const upb_Array* arr) {
@@ -5747,7 +5747,7 @@ size_t upb_Array_Size(const upb_Array* arr) { return arr->size; }
 upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
   upb_MessageValue ret;
   const char* data = _upb_array_constptr(arr);
-  const int lg2 = _upb_Array_ElemSizeLg2(arr);
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
   UPB_ASSERT(i < arr->size);
   memcpy(&ret, data + (i << lg2), 1 << lg2);
   return ret;
@@ -5755,7 +5755,7 @@ upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
 
 void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
   char* data = _upb_array_ptr(arr);
-  const int lg2 = _upb_Array_ElemSizeLg2(arr);
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
   UPB_ASSERT(i < arr->size);
   memcpy(data + (i << lg2), &val, 1 << lg2);
 }
@@ -5771,7 +5771,7 @@ bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
 
 void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
                     size_t count) {
-  const int lg2 = _upb_Array_ElemSizeLg2(arr);
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
   char* data = _upb_array_ptr(arr);
   memmove(&data[dst_idx << lg2], &data[src_idx << lg2], count << lg2);
 }
@@ -5808,20 +5808,19 @@ bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
   }
   const size_t newsize = arr->size;
   if (newsize > oldsize) {
-    const int lg2 = _upb_Array_ElemSizeLg2(arr);
+    const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
     char* data = _upb_array_ptr(arr);
     memset(data + (oldsize << lg2), 0, (newsize - oldsize) << lg2);
   }
   return true;
 }
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-bool _upb_array_realloc(upb_Array* arr, size_t min_capacity, upb_Arena* arena) {
-  size_t new_capacity = UPB_MAX(arr->capacity, 4);
-  const int lg2 = _upb_Array_ElemSizeLg2(arr);
-  size_t old_bytes = arr->capacity << lg2;
-  void* ptr = _upb_array_ptr(arr);
+bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
+                                     upb_Arena* arena) {
+  size_t new_capacity = UPB_MAX(array->UPB_PRIVATE(capacity), 4);
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);
+  size_t old_bytes = array->UPB_PRIVATE(capacity) << lg2;
+  void* ptr = _upb_array_ptr(array);
 
   // Log2 ceiling of size.
   while (new_capacity < min_capacity) new_capacity *= 2;
@@ -5830,8 +5829,8 @@ bool _upb_array_realloc(upb_Array* arr, size_t min_capacity, upb_Arena* arena) {
   ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
   if (!ptr) return false;
 
-  _upb_Array_SetTaggedPtr(arr, ptr, lg2);
-  arr->capacity = new_capacity;
+  UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, ptr, lg2);
+  array->UPB_PRIVATE(capacity) = new_capacity;
   return true;
 }
 
@@ -12143,8 +12142,9 @@ static void _upb_Decoder_VerifyUtf8(upb_Decoder* d, const char* buf, int len) {
 }
 
 static bool _upb_Decoder_Reserve(upb_Decoder* d, upb_Array* arr, size_t elem) {
-  bool need_realloc = arr->capacity - arr->size < elem;
-  if (need_realloc && !_upb_array_realloc(arr, arr->size + elem, &d->arena)) {
+  bool need_realloc = arr->UPB_PRIVATE(capacity) - arr->size < elem;
+  if (need_realloc &&
+      !UPB_PRIVATE(_upb_Array_Realloc)(arr, arr->size + elem, &d->arena)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
   return need_realloc;
@@ -12508,7 +12508,7 @@ upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
                                     const upb_MiniTableField* field) {
   const upb_FieldType field_type = field->UPB_PRIVATE(descriptortype);
   const size_t lg2 = upb_FieldType_SizeLg2(field_type);
-  upb_Array* ret = _upb_Array_New(&d->arena, 4, lg2);
+  upb_Array* ret = UPB_PRIVATE(_upb_Array_New)(&d->arena, 4, lg2);
   if (!ret) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   return ret;
 }
@@ -13532,15 +13532,15 @@ UPB_FORCEINLINE
 static void* fastdecode_resizearr(upb_Decoder* d, void* dst,
                                   fastdecode_arr* farr, int valbytes) {
   if (UPB_UNLIKELY(dst == farr->end)) {
-    size_t old_capacity = farr->arr->capacity;
+    size_t old_capacity = farr->arr->UPB_PRIVATE(capacity);
     size_t old_bytes = old_capacity * valbytes;
     size_t new_capacity = old_capacity * 2;
     size_t new_bytes = new_capacity * valbytes;
     char* old_ptr = _upb_array_ptr(farr->arr);
     char* new_ptr = upb_Arena_Realloc(&d->arena, old_ptr, old_bytes, new_bytes);
     uint8_t elem_size_lg2 = __builtin_ctz(valbytes);
-    _upb_Array_SetTaggedPtr(farr->arr, new_ptr, elem_size_lg2);
-    farr->arr->capacity = new_capacity;
+    UPB_PRIVATE(_upb_Array_SetTaggedPtr)(farr->arr, new_ptr, elem_size_lg2);
+    farr->arr->UPB_PRIVATE(capacity) = new_capacity;
     dst = (void*)(new_ptr + (old_capacity * valbytes));
     farr->end = (void*)(new_ptr + (new_capacity * valbytes));
   }
@@ -13622,13 +13622,13 @@ static void* fastdecode_getfield(upb_Decoder* d, const char* ptr,
       *(uint32_t*)msg |= *hasbits;
       *hasbits = 0;
       if (UPB_LIKELY(!*arr_p)) {
-        farr->arr = _upb_Array_New(&d->arena, 8, elem_size_lg2);
+        farr->arr = UPB_PRIVATE(_upb_Array_New)(&d->arena, 8, elem_size_lg2);
         *arr_p = farr->arr;
       } else {
         farr->arr = *arr_p;
       }
       begin = _upb_array_ptr(farr->arr);
-      farr->end = begin + (farr->arr->capacity * valbytes);
+      farr->end = begin + (farr->arr->UPB_PRIVATE(capacity) * valbytes);
       *data = _upb_FastDecoder_LoadTag(ptr);
       return begin + (farr->arr->size * valbytes);
     }
@@ -13907,7 +13907,8 @@ TAGBYTES(p)
   int elems = size / valbytes;                                              \
                                                                             \
   if (UPB_LIKELY(!arr)) {                                                   \
-    *arr_p = arr = _upb_Array_New(&d->arena, elems, elem_size_lg2);         \
+    *arr_p = arr =                                                          \
+        UPB_PRIVATE(_upb_Array_New)(&d->arena, elems, elem_size_lg2);       \
     if (!arr) {                                                             \
       _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);            \
     }                                                                       \
