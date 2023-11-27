@@ -935,9 +935,9 @@ UPB_API void* upb_Array_MutableDataPtr(upb_Array* arr);
 // Must be last.
 
 struct upb_MiniTableEnum {
-  uint32_t mask_limit;   // Limit enum value that can be tested with mask.
-  uint32_t value_count;  // Number of values after the bitfield.
-  uint32_t data[];       // Bitmask + enumerated values follow.
+  uint32_t UPB_PRIVATE(mask_limit);   // Highest that can be tested with mask.
+  uint32_t UPB_PRIVATE(value_count);  // Number of values after the bitfield.
+  uint32_t UPB_PRIVATE(data)[];       // Bitmask + enumerated values follow.
 };
 
 #ifdef __cplusplus
@@ -947,19 +947,22 @@ extern "C" {
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(
     const struct upb_MiniTableEnum* e, uint32_t val) {
   if (UPB_LIKELY(val < 64)) {
-    const uint64_t mask = e->data[0] | ((uint64_t)e->data[1] << 32);
+    const uint64_t mask =
+        e->UPB_PRIVATE(data)[0] | ((uint64_t)e->UPB_PRIVATE(data)[1] << 32);
     const uint64_t bit = 1ULL << val;
     return (mask & bit) != 0;
   }
-  if (UPB_LIKELY(val < e->mask_limit)) {
-    const uint32_t mask = e->data[val / 32];
+  if (UPB_LIKELY(val < e->UPB_PRIVATE(mask_limit))) {
+    const uint32_t mask = e->UPB_PRIVATE(data)[val / 32];
     const uint32_t bit = 1ULL << (val % 32);
     return (mask & bit) != 0;
   }
 
   // OPT: binary search long lists?
-  const uint32_t* start = &e->data[e->mask_limit / 32];
-  const uint32_t* limit = &e->data[e->mask_limit / 32 + e->value_count];
+  const uint32_t* start =
+      &e->UPB_PRIVATE(data)[e->UPB_PRIVATE(mask_limit) / 32];
+  const uint32_t* limit = &e->UPB_PRIVATE(
+      data)[e->UPB_PRIVATE(mask_limit) / 32 + e->UPB_PRIVATE(value_count)];
   for (const uint32_t* p = start; p < limit; p++) {
     if (*p == val) return true;
   }
@@ -11942,10 +11945,6 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
 
 #endif /* UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_ */
 
-#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
-#define UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
-
-
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
 
@@ -11999,6 +11998,10 @@ UPB_INLINE const char* _upb_Base92_DecodeVarint(const char* ptr,
 
 
 #endif  // UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
+
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
+
 
 // Must be last.
 
