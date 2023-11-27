@@ -135,6 +135,21 @@ static upb_MessageValue PyUpb_MaybeCopyString(const char* ptr, size_t size,
   return ret;
 }
 
+static upb_MessageValue PyUpb_MaybeCopyPybuffer(Py_buffer* pbuf,
+                                                upb_Arena* arena) {
+  upb_MessageValue ret;
+  ret.str_val.size = pbuf->len;
+  // NULL reports to the caller that an error has occurred
+  ret.str_val.data = NULL;
+  if (arena) {
+    char* buf = upb_Arena_Malloc(arena, pbuf->len);
+    if (PyBuffer_ToContiguous(buf, pbuf, pbuf->len, 'A'))
+      ret.str_val.data = buf;
+  } else if (PyBuffer_IsContiguous(pbuf, 'A') == 1)
+    ret.str_val.data = pbuf->buf;
+  return ret;
+}
+
 const char* upb_FieldDef_TypeString(const upb_FieldDef* f) {
   switch (upb_FieldDef_CType(f)) {
     case kUpb_CType_Double:
@@ -229,10 +244,15 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
       val->bool_val = PyLong_AsLong(obj);
       return !PyErr_Occurred();
     case kUpb_CType_Bytes: {
-      char* ptr;
-      Py_ssize_t size;
-      if (PyBytes_AsStringAndSize(obj, &ptr, &size) < 0) return false;
-      *val = PyUpb_MaybeCopyString(ptr, size, arena);
+      if (PyMemoryView_Check(obj) < 0) {
+        char* ptr;
+        Py_ssize_t size;
+        if (PyBytes_AsStringAndSize(obj, &ptr, &size) < 0) return false;
+        *val = PyUpb_MaybeCopyString(ptr, size, arena);
+      } else {
+        *val = PyUpb_MaybeCopyPybuffer(PyMemoryView_GET_BUFFER(obj), arena);
+        if (val->str_val.data == NULL) return false;
+      }
       return true;
     }
     case kUpb_CType_String: {
