@@ -108,7 +108,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->_internal_set_$name$(from._internal_$name$());
+      _this->$field_$ = from.$field_$;
     )cc");
   }
 
@@ -198,7 +198,11 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
     p->Emit(R"cc(
       inline void $Msg$::set_$name$($Type$ value) {
         $PrepareSplitMessageForWrite$;
-        _internal_set_$name$(value);
+        if ($not_has_field$) {
+          clear_$oneof_name$();
+          set_has_$name$();
+        }
+        $field_$ = value;
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
@@ -207,13 +211,6 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
           return $field_$;
         }
         return $kDefault$;
-      }
-      inline void $Msg$::_internal_set_$name$($Type$ value) {
-        if ($not_has_field$) {
-          clear_$oneof_name$();
-          set_has_$name$();
-        }
-        $field_$ = value;
       }
     )cc");
   } else {

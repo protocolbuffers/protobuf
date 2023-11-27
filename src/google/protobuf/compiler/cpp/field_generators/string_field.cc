@@ -88,10 +88,27 @@ class SingularString : public FieldGeneratorBase {
             )cc");
   }
 
+  bool RequiresArena(GeneratorFunction function) const override {
+    switch (function) {
+      case GeneratorFunction::kMergeFrom:
+        return is_oneof();
+    }
+    return false;
+  }
+
   void GenerateMergingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      _this->_internal_set_$name$(from._internal_$name$());
-    )cc");
+    if (is_oneof()) {
+      p->Emit(R"cc(
+        if (oneof_needs_init) {
+          _this->$field_$.InitDefault();
+        }
+        _this->$field_$.Set(from._internal_$name$(), arena);
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        _this->_internal_set_$name$(from._internal_$name$());
+      )cc");
+    }
   }
 
   void GenerateArenaDestructorCode(io::Printer* p) const override {

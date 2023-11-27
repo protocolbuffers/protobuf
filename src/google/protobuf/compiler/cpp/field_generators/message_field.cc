@@ -322,7 +322,7 @@ void SingularMessage::GenerateInternalAccessorDefinitions(
   // practice, the linker is then not able to throw them out making implicit
   // weak dependencies not work at all.
 
-  if (!is_weak()) return;
+  if (!is_weak() || is_oneof()) return;
 
   // These private accessors are used by MergeFrom and
   // MergePartialFromCodedStream, and their purpose is to provide access to
@@ -336,28 +336,11 @@ void SingularMessage::GenerateInternalAccessorDefinitions(
                msg->$set_hasbit$;
              )cc");
            }},
-          {"is_already_set",
-           [&] {
-             if (!is_oneof()) {
-               p->Emit("msg->$field_$ == nullptr");
-             } else {
-               p->Emit("msg->$not_has_field$");
-             }
-           }},
-          {"clear_oneof",
-           [&] {
-             if (!is_oneof()) return;
-             p->Emit(R"cc(
-               msg->clear_$oneof_name$();
-               msg->set_has_$name$();
-             )cc");
-           }},
       },
       R"cc(
         $pb$::MessageLite* $Msg$::_Internal::mutable_$name$($Msg$* msg) {
           $update_hasbit$;
-          if ($is_already_set$) {
-            $clear_oneof$;
+          if (msg->$field_$ == nullptr) {
             msg->$field_$ = $kDefaultPtr$->New(msg->GetArena());
           }
           return msg->$field_$;
@@ -398,7 +381,7 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
 bool SingularMessage::RequiresArena(GeneratorFunction function) const {
   switch (function) {
     case GeneratorFunction::kMergeFrom:
-      return !(is_weak() || is_oneof() || should_split());
+      return !(is_weak() || should_split());
   }
   return false;
 }
@@ -408,7 +391,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     p->Emit(
         "_Internal::mutable_$name$(_this)->CheckTypeAndMergeFrom(\n"
         "    *from.$field_$);\n");
-  } else if (is_oneof() || should_split()) {
+  } else if (should_split()) {
     p->Emit(
         "_this->_internal_mutable_$name$()->$Submsg$::MergeFrom(\n"
         "    from._internal_$name$());\n");
@@ -548,6 +531,8 @@ class OneofMessage : public SingularMessage {
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateConstructorCode(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
+  void GenerateMergingCode(io::Printer* p) const override;
+  bool RequiresArena(GeneratorFunction func) const override;
 };
 
 void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
@@ -687,6 +672,34 @@ void OneofMessage::GenerateIsInitialized(io::Printer* p) const {
   p->Emit(R"cc(
     if ($has_field$ && !$field_$->IsInitialized()) return false;
   )cc");
+}
+
+void OneofMessage::GenerateMergingCode(io::Printer* p) const {
+  if (is_weak()) {
+    p->Emit(R"cc(
+      if (oneof_needs_init) {
+        _this->$field_$ = from.$field_$->New(arena);
+      }
+      _this->$field_$->CheckTypeAndMergeFrom(*from.$field_$);
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      if (oneof_needs_init) {
+        _this->$field_$ =
+            $superclass$::CopyConstruct<$Submsg$>(arena, *from.$field_$);
+      } else {
+        _this->$field_$->MergeFrom(from._internal_$name$());
+      }
+    )cc");
+  }
+}
+
+bool OneofMessage::RequiresArena(GeneratorFunction func) const {
+  switch (func) {
+    case GeneratorFunction::kMergeFrom:
+      return true;
+  }
+  return false;
 }
 
 class RepeatedMessage : public FieldGeneratorBase {

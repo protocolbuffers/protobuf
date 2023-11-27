@@ -3771,23 +3771,44 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
   // Merge oneof fields. Oneof field requires oneof case check.
   for (auto oneof : OneOfRange(descriptor_)) {
-    format("switch (from.$1$_case()) {\n", oneof->name());
-    format.Indent();
-    for (auto field : FieldRange(oneof)) {
-      format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
-      format.Indent();
-      field_generators_.get(field).GenerateMergingCode(p);
-      format("break;\n");
-      format.Outdent();
-      format("}\n");
-    }
-    format(
-        "case $1$_NOT_SET: {\n"
-        "  break;\n"
-        "}\n",
-        absl::AsciiStrToUpper(oneof->name()));
-    format.Outdent();
-    format("}\n");
+    p->Emit({{"name", oneof->name()},
+             {"NAME", absl::AsciiStrToUpper(oneof->name())},
+             {"index", oneof->index()},
+             {"cases",
+              [&] {
+                for (const auto* field : FieldRange(oneof)) {
+                  p->Emit(
+                      {{"Label", UnderscoresToCamelCase(field->name(), true)},
+                       {"body",
+                        [&] {
+                          field_generators_.get(field).GenerateMergingCode(p);
+                        }}},
+                      R"cc(
+                        case k$Label$: {
+                          $body$;
+                          break;
+                        }
+                      )cc");
+                }
+              }}},
+            R"cc(
+              if (const uint32_t oneof_from_case = from.$oneof_case$[$index$]) {
+                const uint32_t oneof_to_case = _this->$oneof_case$[$index$];
+                const bool oneof_needs_init = oneof_to_case != oneof_from_case;
+                if (oneof_needs_init) {
+                  if (oneof_to_case != 0) {
+                    _this->clear_$name$();
+                  }
+                  _this->$oneof_case$[$index$] = oneof_from_case;
+                }
+
+                switch (oneof_from_case) {
+                  $cases$;
+                  case $NAME$_NOT_SET:
+                    break;
+                }
+              }
+            )cc");
   }
   if (num_weak_fields_) {
     format(

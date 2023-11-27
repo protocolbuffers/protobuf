@@ -270,7 +270,7 @@ void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _this->_internal_set_legacy_closed_enum(from._internal_legacy_closed_enum());
+    _this->_impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
