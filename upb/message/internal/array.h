@@ -111,7 +111,8 @@ UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(upb_Array* array, size_t i,
 }
 
 // LINT.ThenChange(
-//  GoogleInternalName1,
+//  //depot/google3/java/com/google/android/libraries/elements/adl/UpbMessageValueUtils.java:array_iteration,
+//  GoogleInternalName0,
 //  //depot/google3/third_party/upb/bits/typescript/array.ts
 //)
 
