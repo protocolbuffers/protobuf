@@ -26,6 +26,8 @@ import unittest
 from unittest import mock
 import warnings
 
+import numpy as np
+
 cmp = lambda x, y: (x > y) - (x < y)
 
 from google.protobuf.internal import api_implementation # pylint: disable=g-import-not-at-top
@@ -1286,6 +1288,28 @@ class MessageTest(unittest.TestCase):
     m.optional_string = 'bar'
     self.assertNotEqual(m, ComparesWithFoo())
     self.assertNotEqual(ComparesWithFoo(), m)
+
+  def testMemoryViewToBytes(self, message_module):
+    message = message_module.TestAllTypes()
+    message.single_bytes = memoryview(b'abcdef')
+    self.assertEqual(message.single_bytes, b'abcdef')
+
+  def testMemoryViewToRepeatedBytes(self, message_module):
+    message = message_module.TestAllTypes()
+    message.repeated_bytes.append(memoryview(b'a'))
+    message.repeated_bytes.append(memoryview(b'c'))
+    message.repeated_bytes.append(memoryview(b'b'))
+    message.repeated_bytes.sort()
+    self.assertEqual(message.repeated_bytes[0], b'a')
+    self.assertEqual(message.repeated_bytes[1], b'b')
+    self.assertEqual(message.repeated_bytes[2], b'c')
+    self.assertEqual(str(message.repeated_bytes), str([b'a', b'b', b'c']))
+
+  def testNonContiguousMemoryViewToBytes(self, message_module):
+    message = message_module.TestAllTypes()
+    message.single_bytes = np.arange(10, dtype=np.int8)[::2].data
+    np.testing.assert_equal(
+        np.frombuffer(message.single_bytes, dtype=np.int8), [0, 2, 4, 6, 8])
 
 
 # Class to test proto2-only features (required, extensions, etc.)
