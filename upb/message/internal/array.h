@@ -23,7 +23,8 @@
 extern "C" {
 #endif
 
-// LINT.IfChange(struct_definition)
+// LINT.IfChange(upb_Array)
+
 // Our internal representation for repeated fields.
 struct upb_Array {
   // This is a tagged pointer. Bits #0 and #1 encode the elem size as follows:
@@ -110,9 +111,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(upb_Array* array, size_t i,
   memcpy(arr_data + (i * elem_size), data, elem_size);
 }
 
-// LINT.ThenChange(
-//  GoogleInternalName1,
-//)
+// LINT.ThenChange(GoogleInternalName0)
 
 #ifdef __cplusplus
 } /* extern "C" */
