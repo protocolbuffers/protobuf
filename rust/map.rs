@@ -78,7 +78,9 @@ macro_rules! impl_scalar_map_keys {
         }
 
         impl<'a, V: [< MapWith $t:camel KeyOps >]> SettableValue<Map<$t, V>> for MapView<'a, $t, V> {
-          fn set_on(self, _private: Private, mut mutator: Mut<'_, Map<$t, V>>) {
+          fn set_on<'b>(self, _private: Private, mut mutator: Mut<'b, Map<$t, V>>)
+          where
+            Map<$t, V>: 'b {
             mutator.copy_from(self);
           }
         }

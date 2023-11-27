@@ -589,7 +589,10 @@ mod tests {
     }
 
     impl SettableValue<VtableProxied> for View<'_, VtableProxied> {
-        fn set_on(self, _private: Private, mutator: Mut<VtableProxied>) {
+        fn set_on<'a>(self, _private: Private, mutator: Mut<'a, VtableProxied>)
+        where
+            VtableProxied: 'a,
+        {
             SettableValue::<VtableProxied>::set_on(self.val(), Private, mutator)
         }
 
@@ -603,7 +606,10 @@ mod tests {
     }
 
     impl SettableValue<VtableProxied> for i32 {
-        fn set_on(self, _private: Private, mutator: Mut<VtableProxied>) {
+        fn set_on<'a>(self, _private: Private, mutator: Mut<'a, VtableProxied>)
+        where
+            VtableProxied: 'a,
+        {
             (mutator.vtable.set)(mutator.msg, self)
         }
 

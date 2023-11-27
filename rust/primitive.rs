@@ -116,7 +116,7 @@ macro_rules! impl_singular_primitives {
           }
 
           impl SettableValue<$t> for $t {
-              fn set_on(self, _private: Private, mutator: Mut<'_, $t>) {
+              fn set_on<'a>(self, _private: Private, mutator: Mut<'a, $t>) where $t: 'a {
                 match mutator {
                   PrimitiveMut::Singular(s) => {
                       unsafe { (s.inner).set(self) };
