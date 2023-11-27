@@ -108,8 +108,6 @@ class SingularMessage : public FieldGeneratorBase {
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
-  void GenerateInternalAccessorDeclarations(io::Printer* p) const override;
-  void GenerateInternalAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
@@ -307,47 +305,6 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       )cc");
 }
 
-void SingularMessage::GenerateInternalAccessorDeclarations(
-    io::Printer* p) const {
-  if (!is_weak()) return;
-
-  p->Emit(R"cc(
-    static $pb$::MessageLite* mutable_$name$($Msg$* msg);
-  )cc");
-}
-
-void SingularMessage::GenerateInternalAccessorDefinitions(
-    io::Printer* p) const {
-  // In theory, these accessors could be inline in _Internal. However, in
-  // practice, the linker is then not able to throw them out making implicit
-  // weak dependencies not work at all.
-
-  if (!is_weak() || is_oneof()) return;
-
-  // These private accessors are used by MergeFrom and
-  // MergePartialFromCodedStream, and their purpose is to provide access to
-  // the field without creating a strong dependency on the message type.
-  p->Emit(
-      {
-          {"update_hasbit",
-           [&] {
-             if (!has_hasbit_) return;
-             p->Emit(R"cc(
-               msg->$set_hasbit$;
-             )cc");
-           }},
-      },
-      R"cc(
-        $pb$::MessageLite* $Msg$::_Internal::mutable_$name$($Msg$* msg) {
-          $update_hasbit$;
-          if (msg->$field_$ == nullptr) {
-            msg->$field_$ = $kDefaultPtr$->New(msg->GetArena());
-          }
-          return msg->$field_$;
-        }
-      )cc");
-}
-
 void SingularMessage::GenerateClearingCode(io::Printer* p) const {
   if (!has_hasbit_) {
     // If we don't have has-bits, message presence is indicated only by ptr !=
@@ -381,7 +338,7 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
 bool SingularMessage::RequiresArena(GeneratorFunction function) const {
   switch (function) {
     case GeneratorFunction::kMergeFrom:
-      return !(is_weak() || should_split());
+      return !should_split();
   }
   return false;
 }
@@ -389,8 +346,12 @@ bool SingularMessage::RequiresArena(GeneratorFunction function) const {
 void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   if (is_weak()) {
     p->Emit(
-        "_Internal::mutable_$name$(_this)->CheckTypeAndMergeFrom(\n"
-        "    *from.$field_$);\n");
+        R"cc(
+          if (_this->$field_$ == nullptr) {
+            _this->$field_$ = from.$field_$->New(arena);
+          }
+          _this->$field_$->CheckTypeAndMergeFrom(*from.$field_$);
+        )cc");
   } else if (should_split()) {
     p->Emit(
         "_this->_internal_mutable_$name$()->$Submsg$::MergeFrom(\n"
