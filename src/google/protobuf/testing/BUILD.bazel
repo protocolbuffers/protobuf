@@ -19,8 +19,8 @@ cc_library(
         "googletest.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/testing",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     deps = [
         "//:protobuf_lite",  # for ShutdownProtobufLibrary
         "//src/google/protobuf/io",

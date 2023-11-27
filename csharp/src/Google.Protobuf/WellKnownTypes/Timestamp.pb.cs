@@ -131,6 +131,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()
   /// ) to obtain a formatter capable of generating timestamps in this format.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Timestamp : pb::IMessage<Timestamp>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage

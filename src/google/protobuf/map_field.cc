@@ -1,39 +1,19 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/map_field.h"
 
+#include <utility>
 #include <vector>
 
-#include "google/protobuf/port.h"
+#include "absl/log/absl_check.h"
+#include "google/protobuf/map.h"
 #include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -43,159 +23,267 @@ namespace protobuf {
 namespace internal {
 using ::google::protobuf::internal::DownCast;
 
-void MapFieldBase::Destruct() {
-  if (arena_ == nullptr) {
-    delete repeated_field_;
+VariantKey RealKeyToVariantKey<MapKey>::operator()(const MapKey& value) const {
+  switch (value.type()) {
+    case FieldDescriptor::CPPTYPE_STRING:
+      return VariantKey(value.GetStringValue());
+    case FieldDescriptor::CPPTYPE_INT64:
+      return VariantKey(value.GetInt64Value());
+    case FieldDescriptor::CPPTYPE_INT32:
+      return VariantKey(value.GetInt32Value());
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return VariantKey(value.GetUInt64Value());
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return VariantKey(value.GetUInt32Value());
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return VariantKey(static_cast<uint64_t>(value.GetBoolValue()));
+    default:
+      Unreachable();
+      return VariantKey(uint64_t{});
   }
-  repeated_field_ = nullptr;
+}
+
+MapFieldBase::~MapFieldBase() {
+  ABSL_DCHECK_EQ(arena(), nullptr);
+  delete maybe_payload();
+}
+
+const UntypedMapBase& MapFieldBase::GetMapImpl(const MapFieldBaseForParse& map,
+                                               bool is_mutable) {
+  const auto& self = static_cast<const MapFieldBase&>(map);
+  self.SyncMapWithRepeatedField();
+  if (is_mutable) const_cast<MapFieldBase&>(self).SetMapDirty();
+  return self.GetMapRaw();
+}
+
+void MapFieldBase::MapBegin(MapIterator* map_iter) const {
+  map_iter->iter_ = GetMap().begin();
+  SetMapIteratorValue(map_iter);
+}
+
+void MapFieldBase::MapEnd(MapIterator* map_iter) const {
+  map_iter->iter_ = UntypedMapBase::EndIterator();
+}
+
+bool MapFieldBase::EqualIterator(const MapIterator& a,
+                                 const MapIterator& b) const {
+  return a.iter_.Equals(b.iter_);
+}
+
+void MapFieldBase::IncreaseIterator(MapIterator* map_iter) const {
+  map_iter->iter_.PlusPlus();
+  SetMapIteratorValue(map_iter);
+}
+
+void MapFieldBase::CopyIterator(MapIterator* this_iter,
+                                const MapIterator& that_iter) const {
+  this_iter->iter_ = that_iter.iter_;
+  this_iter->key_.SetType(that_iter.key_.type());
+  // MapValueRef::type() fails when containing data is null. However, if
+  // this_iter points to MapEnd, data can be null.
+  this_iter->value_.SetType(
+      static_cast<FieldDescriptor::CppType>(that_iter.value_.type_));
+  SetMapIteratorValue(this_iter);
 }
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
   ConstAccess();
   SyncRepeatedFieldWithMap();
-  return *reinterpret_cast<RepeatedPtrFieldBase*>(repeated_field_);
+  return reinterpret_cast<RepeatedPtrFieldBase&>(payload().repeated_field);
 }
 
 RepeatedPtrFieldBase* MapFieldBase::MutableRepeatedField() {
   MutableAccess();
   SyncRepeatedFieldWithMap();
   SetRepeatedDirty();
-  return reinterpret_cast<RepeatedPtrFieldBase*>(repeated_field_);
+  return reinterpret_cast<RepeatedPtrFieldBase*>(&payload().repeated_field);
 }
 
-void MapFieldBase::SwapState(MapFieldBase* other) {
-  // a relaxed swap of the atomic
-  auto other_state = other->state_.load(std::memory_order_relaxed);
-  auto this_state = state_.load(std::memory_order_relaxed);
-  other->state_.store(this_state, std::memory_order_relaxed);
-  state_.store(other_state, std::memory_order_relaxed);
+template <typename T>
+static void SwapRelaxed(std::atomic<T>& a, std::atomic<T>& b) {
+  auto value_b = b.load(std::memory_order_relaxed);
+  auto value_a = a.load(std::memory_order_relaxed);
+  b.store(value_a, std::memory_order_relaxed);
+  a.store(value_b, std::memory_order_relaxed);
 }
 
-void SwapRepeatedPtrToNull(RepeatedPtrField<Message>** from,
-                           RepeatedPtrField<Message>** to, Arena* from_arena,
-                           Arena* to_arena) {
-  ABSL_DCHECK(*from != nullptr);
-  ABSL_DCHECK(*to == nullptr);
-  *to = Arena::CreateMessage<RepeatedPtrField<Message> >(to_arena);
-  **to = std::move(**from);
-  if (from_arena == nullptr) {
-    delete *from;
-  }
-  *from = nullptr;
-}
-
-void MapFieldBase::Swap(MapFieldBase* other) {
-  if (arena_ == other->arena_) {
-    InternalSwap(other);
-    return;
-  }
-  if (repeated_field_ != nullptr || other->repeated_field_ != nullptr) {
-    if (repeated_field_ == nullptr) {
-      SwapRepeatedPtrToNull(&other->repeated_field_, &repeated_field_,
-                            other->arena_, arena_);
-    } else if (other->repeated_field_ == nullptr) {
-      SwapRepeatedPtrToNull(&repeated_field_, &other->repeated_field_, arena_,
-                            other->arena_);
+MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
+  auto p = payload_.load(std::memory_order_acquire);
+  if (!IsPayload(p)) {
+    auto* arena = ToArena(p);
+    auto* payload = Arena::Create<ReflectionPayload>(arena, arena);
+    auto new_p = ToTaggedPtr(payload);
+    if (payload_.compare_exchange_strong(p, new_p, std::memory_order_acq_rel)) {
+      // We were able to store it.
+      p = new_p;
     } else {
-      repeated_field_->Swap(other->repeated_field_);
+      // Someone beat us to it. Throw away the one we made. `p` already contains
+      // the one we want.
+      if (arena == nullptr) delete payload;
     }
   }
-  SwapState(other);
+  return *ToPayload(p);
 }
 
-void MapFieldBase::UnsafeShallowSwap(MapFieldBase* other) {
-  ABSL_DCHECK_EQ(arena_, other->arena_);
-  InternalSwap(other);
+void MapFieldBase::SwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
+  if (lhs.arena() == rhs.arena()) {
+    lhs.InternalSwap(&rhs);
+    return;
+  }
+  auto* p1 = lhs.maybe_payload();
+  auto* p2 = rhs.maybe_payload();
+  if (p1 == nullptr && p2 == nullptr) return;
+
+  if (p1 == nullptr) p1 = &lhs.payload();
+  if (p2 == nullptr) p2 = &rhs.payload();
+  p1->repeated_field.Swap(&p2->repeated_field);
+  SwapRelaxed(p1->state, p2->state);
+}
+
+void MapFieldBase::UnsafeShallowSwapImpl(MapFieldBase& lhs, MapFieldBase& rhs) {
+  ABSL_DCHECK_EQ(lhs.arena(), rhs.arena());
+  lhs.InternalSwap(&rhs);
 }
 
 void MapFieldBase::InternalSwap(MapFieldBase* other) {
-  std::swap(arena_, other->arena_);
-  std::swap(repeated_field_, other->repeated_field_);
-  SwapState(other);
+  SwapRelaxed(payload_, other->payload_);
 }
 
 size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
   ConstAccess();
-  mutex_.Lock();
-  size_t size = SpaceUsedExcludingSelfNoLock();
-  mutex_.Unlock();
-  ConstAccess();
-  return size;
-}
-
-size_t MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
-  if (repeated_field_ != nullptr) {
-    return repeated_field_->SpaceUsedExcludingSelfLong();
-  } else {
-    return 0;
+  size_t size = 0;
+  if (auto* p = maybe_payload()) {
+    {
+      absl::MutexLock lock(&p->mutex);
+      size = SpaceUsedExcludingSelfNoLock();
+    }
+    ConstAccess();
   }
+  return size;
 }
 
 bool MapFieldBase::IsMapValid() const {
   ConstAccess();
   // "Acquire" insures the operation after SyncRepeatedFieldWithMap won't get
   // executed before state_ is checked.
-  int state = state_.load(std::memory_order_acquire);
-  return state != STATE_MODIFIED_REPEATED;
+  return state() != STATE_MODIFIED_REPEATED;
 }
 
 bool MapFieldBase::IsRepeatedFieldValid() const {
   ConstAccess();
-  int state = state_.load(std::memory_order_acquire);
-  return state != STATE_MODIFIED_MAP;
+  return state() != STATE_MODIFIED_MAP;
 }
 
 void MapFieldBase::SetMapDirty() {
   MutableAccess();
   // These are called by (non-const) mutator functions. So by our API it's the
   // callers responsibility to have these calls properly ordered.
-  state_.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
+  payload().state.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
 }
 
 void MapFieldBase::SetRepeatedDirty() {
   MutableAccess();
   // These are called by (non-const) mutator functions. So by our API it's the
   // callers responsibility to have these calls properly ordered.
-  state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
+  payload().state.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
 }
 
 void MapFieldBase::SyncRepeatedFieldWithMap() const {
   ConstAccess();
-  // acquire here matches with release below to ensure that we can only see a
-  // value of CLEAN after all previous changes have been synced.
-  switch (state_.load(std::memory_order_acquire)) {
-    case STATE_MODIFIED_MAP:
-      mutex_.Lock();
+  if (state() == STATE_MODIFIED_MAP) {
+    auto& p = payload();
+    {
+      absl::MutexLock lock(&p.mutex);
       // Double check state, because another thread may have seen the same
       // state and done the synchronization before the current thread.
-      if (state_.load(std::memory_order_relaxed) == STATE_MODIFIED_MAP) {
-        SyncRepeatedFieldWithMapNoLock();
-        state_.store(CLEAN, std::memory_order_release);
+      if (p.state.load(std::memory_order_relaxed) == STATE_MODIFIED_MAP) {
+        const_cast<MapFieldBase*>(this)->SyncRepeatedFieldWithMapNoLock();
+        p.state.store(CLEAN, std::memory_order_release);
       }
-      mutex_.Unlock();
-      ConstAccess();
-      break;
-    case CLEAN:
-      mutex_.Lock();
-      // Double check state
-      if (state_.load(std::memory_order_relaxed) == CLEAN) {
-        if (repeated_field_ == nullptr) {
-          repeated_field_ =
-              Arena::CreateMessage<RepeatedPtrField<Message> >(arena_);
-        }
-        state_.store(CLEAN, std::memory_order_release);
-      }
-      mutex_.Unlock();
-      ConstAccess();
-      break;
-    default:
-      break;
+    }
+    ConstAccess();
   }
 }
 
-void MapFieldBase::SyncRepeatedFieldWithMapNoLock() const {
-  if (repeated_field_ == nullptr) {
-    repeated_field_ = Arena::CreateMessage<RepeatedPtrField<Message> >(arena_);
+void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
+  const Message* prototype = GetPrototype();
+  const Reflection* reflection = prototype->GetReflection();
+  const Descriptor* descriptor = prototype->GetDescriptor();
+  const FieldDescriptor* key_des = descriptor->map_key();
+  const FieldDescriptor* val_des = descriptor->map_value();
+
+  RepeatedPtrField<Message>& rep = payload().repeated_field;
+  rep.Clear();
+
+  MapIterator it(this, descriptor);
+  MapIterator end(this, descriptor);
+
+  it.iter_ = GetMapRaw().begin();
+  SetMapIteratorValue(&it);
+  end.iter_ = UntypedMapBase::EndIterator();
+
+  for (; !EqualIterator(it, end); IncreaseIterator(&it)) {
+    Message* new_entry = prototype->New(arena());
+    rep.AddAllocated(new_entry);
+    const MapKey& map_key = it.GetKey();
+    switch (key_des->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_STRING:
+        reflection->SetString(new_entry, key_des, map_key.GetStringValue());
+        break;
+      case FieldDescriptor::CPPTYPE_INT64:
+        reflection->SetInt64(new_entry, key_des, map_key.GetInt64Value());
+        break;
+      case FieldDescriptor::CPPTYPE_INT32:
+        reflection->SetInt32(new_entry, key_des, map_key.GetInt32Value());
+        break;
+      case FieldDescriptor::CPPTYPE_UINT64:
+        reflection->SetUInt64(new_entry, key_des, map_key.GetUInt64Value());
+        break;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        reflection->SetUInt32(new_entry, key_des, map_key.GetUInt32Value());
+        break;
+      case FieldDescriptor::CPPTYPE_BOOL:
+        reflection->SetBool(new_entry, key_des, map_key.GetBoolValue());
+        break;
+      default:
+        Unreachable();
+    }
+
+    const MapValueRef& map_val = it.GetValueRef();
+    switch (val_des->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_STRING:
+        reflection->SetString(new_entry, val_des, map_val.GetStringValue());
+        break;
+      case FieldDescriptor::CPPTYPE_INT64:
+        reflection->SetInt64(new_entry, val_des, map_val.GetInt64Value());
+        break;
+      case FieldDescriptor::CPPTYPE_INT32:
+        reflection->SetInt32(new_entry, val_des, map_val.GetInt32Value());
+        break;
+      case FieldDescriptor::CPPTYPE_UINT64:
+        reflection->SetUInt64(new_entry, val_des, map_val.GetUInt64Value());
+        break;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        reflection->SetUInt32(new_entry, val_des, map_val.GetUInt32Value());
+        break;
+      case FieldDescriptor::CPPTYPE_BOOL:
+        reflection->SetBool(new_entry, val_des, map_val.GetBoolValue());
+        break;
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+        reflection->SetDouble(new_entry, val_des, map_val.GetDoubleValue());
+        break;
+      case FieldDescriptor::CPPTYPE_FLOAT:
+        reflection->SetFloat(new_entry, val_des, map_val.GetFloatValue());
+        break;
+      case FieldDescriptor::CPPTYPE_ENUM:
+        reflection->SetEnumValue(new_entry, val_des, map_val.GetEnumValue());
+        break;
+      case FieldDescriptor::CPPTYPE_MESSAGE: {
+        const Message& message = map_val.GetMessageValue();
+        reflection->MutableMessage(new_entry, val_des)->CopyFrom(message);
+        break;
+      }
+    }
   }
 }
 
@@ -203,65 +291,142 @@ void MapFieldBase::SyncMapWithRepeatedField() const {
   ConstAccess();
   // acquire here matches with release below to ensure that we can only see a
   // value of CLEAN after all previous changes have been synced.
-  if (state_.load(std::memory_order_acquire) == STATE_MODIFIED_REPEATED) {
-    mutex_.Lock();
-    // Double check state, because another thread may have seen the same state
-    // and done the synchronization before the current thread.
-    if (state_.load(std::memory_order_relaxed) == STATE_MODIFIED_REPEATED) {
-      SyncMapWithRepeatedFieldNoLock();
-      state_.store(CLEAN, std::memory_order_release);
+  if (state() == STATE_MODIFIED_REPEATED) {
+    auto& p = payload();
+    {
+      absl::MutexLock lock(&p.mutex);
+      // Double check state, because another thread may have seen the same state
+      // and done the synchronization before the current thread.
+      if (p.state.load(std::memory_order_relaxed) == STATE_MODIFIED_REPEATED) {
+        const_cast<MapFieldBase*>(this)->SyncMapWithRepeatedFieldNoLock();
+        p.state.store(CLEAN, std::memory_order_release);
+      }
     }
-    mutex_.Unlock();
     ConstAccess();
   }
 }
 
+void MapFieldBase::SyncMapWithRepeatedFieldNoLock() {
+  ClearMapNoSync();
+
+  RepeatedPtrField<Message>& rep = payload().repeated_field;
+
+  if (rep.empty()) return;
+
+  const Message* prototype = &rep[0];
+  const Reflection* reflection = prototype->GetReflection();
+  const Descriptor* descriptor = prototype->GetDescriptor();
+  const FieldDescriptor* key_des = descriptor->map_key();
+  const FieldDescriptor* val_des = descriptor->map_value();
+
+  for (const Message& elem : rep) {
+    // MapKey type will be set later.
+    MapKey map_key;
+    switch (key_des->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_STRING:
+        map_key.SetStringValue(reflection->GetString(elem, key_des));
+        break;
+      case FieldDescriptor::CPPTYPE_INT64:
+        map_key.SetInt64Value(reflection->GetInt64(elem, key_des));
+        break;
+      case FieldDescriptor::CPPTYPE_INT32:
+        map_key.SetInt32Value(reflection->GetInt32(elem, key_des));
+        break;
+      case FieldDescriptor::CPPTYPE_UINT64:
+        map_key.SetUInt64Value(reflection->GetUInt64(elem, key_des));
+        break;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        map_key.SetUInt32Value(reflection->GetUInt32(elem, key_des));
+        break;
+      case FieldDescriptor::CPPTYPE_BOOL:
+        map_key.SetBoolValue(reflection->GetBool(elem, key_des));
+        break;
+      default:
+        Unreachable();
+    }
+
+    MapValueRef map_val;
+    map_val.SetType(val_des->cpp_type());
+    InsertOrLookupMapValueNoSync(map_key, &map_val);
+
+    switch (val_des->cpp_type()) {
+#define HANDLE_TYPE(CPPTYPE, METHOD)                                    \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE:                              \
+    map_val.Set##METHOD##Value(reflection->Get##METHOD(elem, val_des)); \
+    break;
+      HANDLE_TYPE(INT32, Int32);
+      HANDLE_TYPE(INT64, Int64);
+      HANDLE_TYPE(UINT32, UInt32);
+      HANDLE_TYPE(UINT64, UInt64);
+      HANDLE_TYPE(DOUBLE, Double);
+      HANDLE_TYPE(FLOAT, Float);
+      HANDLE_TYPE(BOOL, Bool);
+      HANDLE_TYPE(STRING, String);
+#undef HANDLE_TYPE
+      case FieldDescriptor::CPPTYPE_ENUM:
+        map_val.SetEnumValue(reflection->GetEnumValue(elem, val_des));
+        break;
+      case FieldDescriptor::CPPTYPE_MESSAGE: {
+        map_val.MutableMessageValue()->CopyFrom(
+            reflection->GetMessage(elem, val_des));
+        break;
+      }
+    }
+  }
+}
+
+void MapFieldBase::Clear() {
+  if (ReflectionPayload* p = maybe_payload()) {
+    p->repeated_field.Clear();
+  }
+
+  ClearMapNoSync();
+  // Data in map and repeated field are both empty, but we can't set status
+  // CLEAN. Because clear is a generated API, we cannot invalidate previous
+  // reference to map.
+  SetMapDirty();
+}
+
+int MapFieldBase::size() const { return GetMap().size(); }
+
+bool MapFieldBase::InsertOrLookupMapValue(const MapKey& map_key,
+                                          MapValueRef* val) {
+  SyncMapWithRepeatedField();
+  SetMapDirty();
+  return InsertOrLookupMapValueNoSync(map_key, val);
+}
+
 // ------------------DynamicMapField------------------
 DynamicMapField::DynamicMapField(const Message* default_entry)
-    : default_entry_(default_entry) {}
-
-DynamicMapField::DynamicMapField(const Message* default_entry, Arena* arena)
-    : TypeDefinedMapFieldBase<MapKey, MapValueRef>(arena),
-      map_(arena),
+    : DynamicMapField::TypeDefinedMapFieldBase(&kVTable),
       default_entry_(default_entry) {}
 
+DynamicMapField::DynamicMapField(const Message* default_entry, Arena* arena)
+    : TypeDefinedMapFieldBase<MapKey, MapValueRef>(&kVTable, arena),
+      default_entry_(default_entry) {}
+
+constexpr DynamicMapField::VTable DynamicMapField::kVTable =
+    MakeVTable<DynamicMapField>();
+
 DynamicMapField::~DynamicMapField() {
-  if (arena_ == nullptr) {
-    // DynamicMapField owns map values. Need to delete them before clearing the
-    // map.
-    for (auto& kv : map_) {
-      kv.second.DeleteData();
-    }
-    map_.clear();
+  ABSL_DCHECK_EQ(arena(), nullptr);
+  // DynamicMapField owns map values. Need to delete them before clearing the
+  // map.
+  for (auto& kv : map_) {
+    kv.second.DeleteData();
   }
-  Destruct();
+  map_.clear();
 }
 
-int DynamicMapField::size() const { return GetMap().size(); }
-
-void DynamicMapField::Clear() {
-  Map<MapKey, MapValueRef>* map = &const_cast<DynamicMapField*>(this)->map_;
-  if (MapFieldBase::arena_ == nullptr) {
-    for (Map<MapKey, MapValueRef>::iterator iter = map->begin();
-         iter != map->end(); ++iter) {
-      iter->second.DeleteData();
+void DynamicMapField::ClearMapNoSyncImpl(MapFieldBase& base) {
+  auto& self = static_cast<DynamicMapField&>(base);
+  if (self.arena() == nullptr) {
+    for (auto& elem : self.map_) {
+      elem.second.DeleteData();
     }
   }
 
-  map->clear();
-
-  if (MapFieldBase::repeated_field_ != nullptr) {
-    MapFieldBase::repeated_field_->Clear();
-  }
-  // Data in map and repeated field are both empty, but we can't set status
-  // CLEAN which will invalidate previous reference to map.
-  MapFieldBase::SetMapDirty();
-}
-
-bool DynamicMapField::ContainsMapKey(const MapKey& map_key) const {
-  const Map<MapKey, MapValueRef>& map = GetMap();
-  Map<MapKey, MapValueRef>::const_iterator iter = map.find(map_key);
-  return iter != map.end();
+  self.map_.clear();
 }
 
 void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
@@ -270,11 +435,11 @@ void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
   // Allocate memory for the MapValueRef, and initialize to
   // default value.
   switch (val_des->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, TYPE)                           \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE: {                 \
-    TYPE* value = Arena::Create<TYPE>(MapFieldBase::arena_); \
-    map_val->SetValue(value);                                \
-    break;                                                   \
+#define HANDLE_TYPE(CPPTYPE, TYPE)              \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE: {    \
+    auto* value = Arena::Create<TYPE>(arena()); \
+    map_val->SetValue(value);                   \
+    break;                                      \
   }
     HANDLE_TYPE(INT32, int32_t);
     HANDLE_TYPE(INT64, int64_t);
@@ -289,22 +454,21 @@ void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
     case FieldDescriptor::CPPTYPE_MESSAGE: {
       const Message& message =
           default_entry_->GetReflection()->GetMessage(*default_entry_, val_des);
-      Message* value = message.New(MapFieldBase::arena_);
+      Message* value = message.New(arena());
       map_val->SetValue(value);
       break;
     }
   }
 }
 
-bool DynamicMapField::InsertOrLookupMapValue(const MapKey& map_key,
-                                             MapValueRef* val) {
-  // Always use mutable map because users may change the map value by
-  // MapValueRef.
-  Map<MapKey, MapValueRef>* map = MutableMap();
-  Map<MapKey, MapValueRef>::iterator iter = map->find(map_key);
-  if (iter == map->end()) {
-    MapValueRef& map_val = map_[map_key];
-    AllocateMapValue(&map_val);
+bool DynamicMapField::InsertOrLookupMapValueNoSyncImpl(MapFieldBase& base,
+                                                       const MapKey& map_key,
+                                                       MapValueRef* val) {
+  auto& self = static_cast<DynamicMapField&>(base);
+  Map<MapKey, MapValueRef>::iterator iter = self.map_.find(map_key);
+  if (iter == self.map_.end()) {
+    MapValueRef& map_val = self.map_[map_key];
+    self.AllocateMapValue(&map_val);
     val->CopyFrom(map_val);
     return true;
   }
@@ -314,57 +478,11 @@ bool DynamicMapField::InsertOrLookupMapValue(const MapKey& map_key,
   return false;
 }
 
-bool DynamicMapField::LookupMapValue(const MapKey& map_key,
-                                     MapValueConstRef* val) const {
-  const Map<MapKey, MapValueRef>& map = GetMap();
-  Map<MapKey, MapValueRef>::const_iterator iter = map.find(map_key);
-  if (iter == map.end()) {
-    return false;
-  }
-  // map_key is already in the map. Make sure (*map)[map_key] is not called.
-  // [] may reorder the map and iterators.
-  val->CopyFrom(iter->second);
-  return true;
-}
-
-bool DynamicMapField::DeleteMapValue(const MapKey& map_key) {
-  MapFieldBase::SyncMapWithRepeatedField();
-  Map<MapKey, MapValueRef>::iterator iter = map_.find(map_key);
-  if (iter == map_.end()) {
-    return false;
-  }
-  // Set map dirty only if the delete is successful.
-  MapFieldBase::SetMapDirty();
-  if (MapFieldBase::arena_ == nullptr) {
-    iter->second.DeleteData();
-  }
-  map_.erase(iter);
-  return true;
-}
-
-const Map<MapKey, MapValueRef>& DynamicMapField::GetMap() const {
-  MapFieldBase::SyncMapWithRepeatedField();
-  return map_;
-}
-
-Map<MapKey, MapValueRef>* DynamicMapField::MutableMap() {
-  MapFieldBase::SyncMapWithRepeatedField();
-  MapFieldBase::SetMapDirty();
-  return &map_;
-}
-
-void DynamicMapField::SetMapIteratorValue(MapIterator* map_iter) const {
-  Map<MapKey, MapValueRef>::const_iterator iter =
-      TypeDefinedMapFieldBase<MapKey, MapValueRef>::InternalGetIterator(
-          map_iter);
-  if (iter == map_.end()) return;
-  map_iter->key_.CopyFrom(iter->first);
-  map_iter->value_.CopyFrom(iter->second);
-}
-
-void DynamicMapField::MergeFrom(const MapFieldBase& other) {
-  ABSL_DCHECK(IsMapValid() && other.IsMapValid());
-  Map<MapKey, MapValueRef>* map = MutableMap();
+void DynamicMapField::MergeFromImpl(MapFieldBase& base,
+                                    const MapFieldBase& other) {
+  auto& self = static_cast<DynamicMapField&>(base);
+  ABSL_DCHECK(self.IsMapValid() && other.IsMapValid());
+  Map<MapKey, MapValueRef>* map = self.MutableMap();
   const DynamicMapField& other_field =
       reinterpret_cast<const DynamicMapField&>(other);
   for (Map<MapKey, MapValueRef>::const_iterator other_it =
@@ -373,15 +491,15 @@ void DynamicMapField::MergeFrom(const MapFieldBase& other) {
     Map<MapKey, MapValueRef>::iterator iter = map->find(other_it->first);
     MapValueRef* map_val;
     if (iter == map->end()) {
-      map_val = &map_[other_it->first];
-      AllocateMapValue(map_val);
+      map_val = &self.map_[other_it->first];
+      self.AllocateMapValue(map_val);
     } else {
       map_val = &iter->second;
     }
 
     // Copy map value
     const FieldDescriptor* field_descriptor =
-        default_entry_->GetDescriptor()->map_value();
+        self.default_entry_->GetDescriptor()->map_value();
     switch (field_descriptor->cpp_type()) {
       case FieldDescriptor::CPPTYPE_INT32: {
         map_val->SetInt32Value(other_it->second.GetInt32Value());
@@ -428,191 +546,20 @@ void DynamicMapField::MergeFrom(const MapFieldBase& other) {
   }
 }
 
-void DynamicMapField::Swap(MapFieldBase* other) {
-  DynamicMapField* other_field = DownCast<DynamicMapField*>(other);
-  std::swap(this->MapFieldBase::repeated_field_, other_field->repeated_field_);
-  map_.swap(other_field->map_);
-  // a relaxed swap of the atomic
-  auto other_state = other_field->state_.load(std::memory_order_relaxed);
-  auto this_state = this->MapFieldBase::state_.load(std::memory_order_relaxed);
-  other_field->state_.store(this_state, std::memory_order_relaxed);
-  this->MapFieldBase::state_.store(other_state, std::memory_order_relaxed);
+const Message* DynamicMapField::GetPrototypeImpl(const MapFieldBase& map) {
+  return static_cast<const DynamicMapField&>(map).default_entry_;
 }
 
-void DynamicMapField::SyncRepeatedFieldWithMapNoLock() const {
-  const Reflection* reflection = default_entry_->GetReflection();
-  const FieldDescriptor* key_des = default_entry_->GetDescriptor()->map_key();
-  const FieldDescriptor* val_des = default_entry_->GetDescriptor()->map_value();
-  if (MapFieldBase::repeated_field_ == nullptr) {
-    MapFieldBase::repeated_field_ =
-        Arena::CreateMessage<RepeatedPtrField<Message> >(MapFieldBase::arena_);
-  }
-
-  MapFieldBase::repeated_field_->Clear();
-
-  for (Map<MapKey, MapValueRef>::const_iterator it = map_.begin();
-       it != map_.end(); ++it) {
-    Message* new_entry = default_entry_->New(MapFieldBase::arena_);
-    MapFieldBase::repeated_field_->AddAllocated(new_entry);
-    const MapKey& map_key = it->first;
-    switch (key_des->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_STRING:
-        reflection->SetString(new_entry, key_des, map_key.GetStringValue());
-        break;
-      case FieldDescriptor::CPPTYPE_INT64:
-        reflection->SetInt64(new_entry, key_des, map_key.GetInt64Value());
-        break;
-      case FieldDescriptor::CPPTYPE_INT32:
-        reflection->SetInt32(new_entry, key_des, map_key.GetInt32Value());
-        break;
-      case FieldDescriptor::CPPTYPE_UINT64:
-        reflection->SetUInt64(new_entry, key_des, map_key.GetUInt64Value());
-        break;
-      case FieldDescriptor::CPPTYPE_UINT32:
-        reflection->SetUInt32(new_entry, key_des, map_key.GetUInt32Value());
-        break;
-      case FieldDescriptor::CPPTYPE_BOOL:
-        reflection->SetBool(new_entry, key_des, map_key.GetBoolValue());
-        break;
-      case FieldDescriptor::CPPTYPE_DOUBLE:
-      case FieldDescriptor::CPPTYPE_FLOAT:
-      case FieldDescriptor::CPPTYPE_ENUM:
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        ABSL_LOG(FATAL) << "Can't get here.";
-        break;
-    }
-    const MapValueRef& map_val = it->second;
-    switch (val_des->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_STRING:
-        reflection->SetString(new_entry, val_des, map_val.GetStringValue());
-        break;
-      case FieldDescriptor::CPPTYPE_INT64:
-        reflection->SetInt64(new_entry, val_des, map_val.GetInt64Value());
-        break;
-      case FieldDescriptor::CPPTYPE_INT32:
-        reflection->SetInt32(new_entry, val_des, map_val.GetInt32Value());
-        break;
-      case FieldDescriptor::CPPTYPE_UINT64:
-        reflection->SetUInt64(new_entry, val_des, map_val.GetUInt64Value());
-        break;
-      case FieldDescriptor::CPPTYPE_UINT32:
-        reflection->SetUInt32(new_entry, val_des, map_val.GetUInt32Value());
-        break;
-      case FieldDescriptor::CPPTYPE_BOOL:
-        reflection->SetBool(new_entry, val_des, map_val.GetBoolValue());
-        break;
-      case FieldDescriptor::CPPTYPE_DOUBLE:
-        reflection->SetDouble(new_entry, val_des, map_val.GetDoubleValue());
-        break;
-      case FieldDescriptor::CPPTYPE_FLOAT:
-        reflection->SetFloat(new_entry, val_des, map_val.GetFloatValue());
-        break;
-      case FieldDescriptor::CPPTYPE_ENUM:
-        reflection->SetEnumValue(new_entry, val_des, map_val.GetEnumValue());
-        break;
-      case FieldDescriptor::CPPTYPE_MESSAGE: {
-        const Message& message = map_val.GetMessageValue();
-        reflection->MutableMessage(new_entry, val_des)->CopyFrom(message);
-        break;
-      }
-    }
-  }
-}
-
-void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
-  Map<MapKey, MapValueRef>* map = &const_cast<DynamicMapField*>(this)->map_;
-  const Reflection* reflection = default_entry_->GetReflection();
-  const FieldDescriptor* key_des = default_entry_->GetDescriptor()->map_key();
-  const FieldDescriptor* val_des = default_entry_->GetDescriptor()->map_value();
-  // DynamicMapField owns map values. Need to delete them before clearing
-  // the map.
-  if (MapFieldBase::arena_ == nullptr) {
-    for (Map<MapKey, MapValueRef>::iterator iter = map->begin();
-         iter != map->end(); ++iter) {
-      iter->second.DeleteData();
-    }
-  }
-  map->clear();
-  for (RepeatedPtrField<Message>::iterator it =
-           MapFieldBase::repeated_field_->begin();
-       it != MapFieldBase::repeated_field_->end(); ++it) {
-    // MapKey type will be set later.
-    MapKey map_key;
-    switch (key_des->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_STRING:
-        map_key.SetStringValue(reflection->GetString(*it, key_des));
-        break;
-      case FieldDescriptor::CPPTYPE_INT64:
-        map_key.SetInt64Value(reflection->GetInt64(*it, key_des));
-        break;
-      case FieldDescriptor::CPPTYPE_INT32:
-        map_key.SetInt32Value(reflection->GetInt32(*it, key_des));
-        break;
-      case FieldDescriptor::CPPTYPE_UINT64:
-        map_key.SetUInt64Value(reflection->GetUInt64(*it, key_des));
-        break;
-      case FieldDescriptor::CPPTYPE_UINT32:
-        map_key.SetUInt32Value(reflection->GetUInt32(*it, key_des));
-        break;
-      case FieldDescriptor::CPPTYPE_BOOL:
-        map_key.SetBoolValue(reflection->GetBool(*it, key_des));
-        break;
-      case FieldDescriptor::CPPTYPE_DOUBLE:
-      case FieldDescriptor::CPPTYPE_FLOAT:
-      case FieldDescriptor::CPPTYPE_ENUM:
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        ABSL_LOG(FATAL) << "Can't get here.";
-        break;
-    }
-
-    if (MapFieldBase::arena_ == nullptr) {
-      // Remove existing map value with same key.
-      Map<MapKey, MapValueRef>::iterator iter = map->find(map_key);
-      if (iter != map->end()) {
-        iter->second.DeleteData();
-      }
-    }
-
-    MapValueRef& map_val = (*map)[map_key];
-    map_val.SetType(val_des->cpp_type());
-    switch (val_des->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, TYPE, METHOD)                   \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE: {                 \
-    TYPE* value = Arena::Create<TYPE>(MapFieldBase::arena_); \
-    *value = reflection->Get##METHOD(*it, val_des);          \
-    map_val.SetValue(value);                                 \
-    break;                                                   \
-  }
-      HANDLE_TYPE(INT32, int32_t, Int32);
-      HANDLE_TYPE(INT64, int64_t, Int64);
-      HANDLE_TYPE(UINT32, uint32_t, UInt32);
-      HANDLE_TYPE(UINT64, uint64_t, UInt64);
-      HANDLE_TYPE(DOUBLE, double, Double);
-      HANDLE_TYPE(FLOAT, float, Float);
-      HANDLE_TYPE(BOOL, bool, Bool);
-      HANDLE_TYPE(STRING, std::string, String);
-      HANDLE_TYPE(ENUM, int32_t, EnumValue);
-#undef HANDLE_TYPE
-      case FieldDescriptor::CPPTYPE_MESSAGE: {
-        const Message& message = reflection->GetMessage(*it, val_des);
-        Message* value = message.New(MapFieldBase::arena_);
-        value->CopyFrom(message);
-        map_val.SetValue(value);
-        break;
-      }
-    }
-  }
-}
-
-size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
+size_t DynamicMapField::SpaceUsedExcludingSelfNoLockImpl(
+    const MapFieldBase& map) {
+  auto& self = static_cast<const DynamicMapField&>(map);
   size_t size = 0;
-  if (MapFieldBase::repeated_field_ != nullptr) {
-    size += MapFieldBase::repeated_field_->SpaceUsedExcludingSelfLong();
+  if (auto* p = self.maybe_payload()) {
+    size += p->repeated_field.SpaceUsedExcludingSelfLong();
   }
-  size += sizeof(map_);
-  size_t map_size = map_.size();
+  size_t map_size = self.map_.size();
   if (map_size) {
-    Map<MapKey, MapValueRef>::const_iterator it = map_.begin();
+    Map<MapKey, MapValueRef>::const_iterator it = self.map_.begin();
     size += sizeof(it->first) * map_size;
     size += sizeof(it->second) * map_size;
     // If key is string, add the allocated space.
@@ -637,7 +584,7 @@ size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
       HANDLE_TYPE(ENUM, int32_t);
 #undef HANDLE_TYPE
       case FieldDescriptor::CPPTYPE_MESSAGE: {
-        while (it != map_.end()) {
+        while (it != self.map_.end()) {
           const Message& message = it->second.GetMessageValue();
           size += message.GetReflection()->SpaceUsedLong(message);
           ++it;

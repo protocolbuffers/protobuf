@@ -1,38 +1,16 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Tests for google.protobuf.message_factory."""
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import unittest
+import gc
 
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
@@ -42,7 +20,7 @@ from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
-
+from google.protobuf import descriptor
 
 @testing_refleaks.TestCase
 class MessageFactoryTest(unittest.TestCase):
@@ -122,7 +100,8 @@ class MessageFactoryTest(unittest.TestCase):
       # Get messages should work when a file comes before its dependencies:
       # factory_test2_fd comes before factory_test1_fd.
       messages = message_factory.GetMessages([self.factory_test2_fd,
-                                              self.factory_test1_fd])
+                                              self.factory_test1_fd],
+                                             descriptor_pool.Default())
       self.assertTrue(
           set(['google.protobuf.python.internal.Factory2Message',
                'google.protobuf.python.internal.Factory1Message'],
@@ -149,16 +128,14 @@ class MessageFactoryTest(unittest.TestCase):
       self.assertEqual(None,
                        msg1.Extensions._FindExtensionByNumber(12321))
       self.assertEqual(2, len(msg1.Extensions))
-      if api_implementation.Type() == 'cpp':
-        self.assertRaises(TypeError,
-                          msg1.Extensions._FindExtensionByName, 0)
-        self.assertRaises(TypeError,
-                          msg1.Extensions._FindExtensionByNumber, '')
-      else:
+      if api_implementation.Type() == 'python':
         self.assertEqual(None,
                          msg1.Extensions._FindExtensionByName(0))
         self.assertEqual(None,
                          msg1.Extensions._FindExtensionByNumber(''))
+      else:
+        self.assertRaises(TypeError, msg1.Extensions._FindExtensionByName, 0)
+        self.assertRaises(TypeError, msg1.Extensions._FindExtensionByNumber, '')
 
   def testDuplicateExtensionNumber(self):
     pool = descriptor_pool.DescriptorPool()
@@ -183,7 +160,8 @@ class MessageFactoryTest(unittest.TestCase):
         number=2,
         label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
         type_name='Extension',
-        extendee='Container')
+        extendee='Container',
+    )
     pool.Add(f)
     msgs = message_factory.GetMessageClassesForFiles([f.name], pool)
     self.assertIn('google.protobuf.python.internal.Extension', msgs)
@@ -199,7 +177,8 @@ class MessageFactoryTest(unittest.TestCase):
         number=2,
         label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
         type_name='Duplicate',
-        extendee='Container')
+        extendee='Container',
+    )
     pool.Add(f)
 
     with self.assertRaises(Exception) as cm:
@@ -242,25 +221,23 @@ class MessageFactoryTest(unittest.TestCase):
         number=2,
         label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
         type_name='ValueType',
-        extendee='Container')
+        extendee='Container',
+    )
     f3.message_type.add(name='Extension').extension.add(
         name='nested_extension_field',
         number=3,
         label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
         type_name='ValueType',
-        extendee='Container')
+        extendee='Container',
+    )
 
-    class SimpleDescriptorDB:
-
-      def __init__(self, files):
-        self._files = files
-
-      def FindFileByName(self, name):
-        return self._files[name]
-
-    db = SimpleDescriptorDB({f1.name: f1, f2.name: f2, f3.name: f3})
-
-    pool = descriptor_pool.DescriptorPool(db)
+    pool = descriptor_pool.Default()
+    try:
+      pool.Add(f1)
+      pool.Add(f2)
+      pool.Add(f3)
+    except:
+      pass
     msgs = message_factory.GetMessageClassesForFiles(
         [f1.name, f3.name], pool)  # Deliberately not f2.
     msg = msgs['google.protobuf.python.internal.Container']
@@ -272,11 +249,24 @@ class MessageFactoryTest(unittest.TestCase):
     m.Extensions[ext2].setting = 345
     serialized = m.SerializeToString()
 
-    pool = descriptor_pool.DescriptorPool(db)
+    f1.name='google/protobuf/internal/another/container.proto'
+    f1.package='google.protobuf.python.internal.another'
+    f2.name='google/protobuf/internal/another/value_type.proto'
+    f2.package='google.protobuf.python.internal.another'
+    f3.name='google/protobuf/internal/another/extension.proto'
+    f3.package='google.protobuf.python.internal.another'
+    f3.ClearField('dependency')
+    f3.dependency.extend([f1.name, f2.name])
+    try:
+      pool.Add(f1)
+      pool.Add(f2)
+      pool.Add(f3)
+    except:
+      pass
     msgs = message_factory.GetMessageClassesForFiles(
         [f1.name, f3.name], pool)  # Deliberately not f2.
-    msg = msgs['google.protobuf.python.internal.Container']
-    desc = msgs['google.protobuf.python.internal.Extension'].DESCRIPTOR
+    msg = msgs['google.protobuf.python.internal.another.Container']
+    desc = msgs['google.protobuf.python.internal.another.Extension'].DESCRIPTOR
     ext1 = desc.file.extensions_by_name['top_level_extension_field']
     ext2 = desc.extensions_by_name['nested_extension_field']
     m = msg.FromString(serialized)
@@ -284,6 +274,49 @@ class MessageFactoryTest(unittest.TestCase):
     self.assertEqual(234, m.Extensions[ext1].setting)
     self.assertEqual(345, m.Extensions[ext2].setting)
 
+  def testDescriptorKeepConcreteClass(self):
+    def loadFile():
+      f= descriptor_pb2.FileDescriptorProto(
+        name='google/protobuf/internal/meta_class.proto',
+        package='google.protobuf.python.internal')
+      msg_proto = f.message_type.add(name='Empty')
+      msg_proto.nested_type.add(name='Nested')
+      msg_proto.field.add(name='nested_field',
+                          number=1,
+                          label=descriptor.FieldDescriptor.LABEL_REPEATED,
+                          type=descriptor.FieldDescriptor.TYPE_MESSAGE,
+                          type_name='Nested')
+      return message_factory.GetMessages([f])
+
+    messages = loadFile()
+    for des, meta_class in messages.items():
+      message = meta_class()
+      nested_des = message.DESCRIPTOR.nested_types_by_name['Nested']
+      nested_msg = nested_des._concrete_class()
+
+  def testOndemandCreateMetaClass(self):
+    def loadFile():
+      f = descriptor_pb2.FileDescriptorProto.FromString(
+        factory_test1_pb2.DESCRIPTOR.serialized_pb)
+      return message_factory.GetMessages([f])
+
+    messages = loadFile()
+    data = factory_test1_pb2.Factory1Message()
+    data.map_field['hello'] = 'welcome'
+    # Force GC to collect. UPB python will clean up the map entry class.
+    # cpp extension and pure python will still keep the map entry class.
+    gc.collect()
+    message = messages['google.protobuf.python.internal.Factory1Message']()
+    message.ParseFromString(data.SerializeToString())
+    value = message.map_field
+    values = [
+        # The entry class will be created on demand in upb python.
+        value.GetEntryClass()(key=k, value=value[k]) for k in sorted(value)
+    ]
+    gc.collect()
+    self.assertEqual(1, len(values))
+    self.assertEqual('hello', values[0].key)
+    self.assertEqual('welcome', values[0].value)
 
 if __name__ == '__main__':
   unittest.main()

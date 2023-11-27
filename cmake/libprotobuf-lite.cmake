@@ -1,6 +1,7 @@
 # CMake definitions for libprotobuf_lite (the "lite" C++ protobuf runtime).
 
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
+include(${protobuf_SOURCE_DIR}/cmake/protobuf-configure-target.cmake)
 
 add_library(libprotobuf-lite ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_lite_srcs}
@@ -24,6 +25,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 endif()
 target_include_directories(libprotobuf-lite PUBLIC ${protobuf_SOURCE_DIR}/src)
 target_link_libraries(libprotobuf-lite PUBLIC ${protobuf_ABSL_USED_TARGETS})
+protobuf_configure_target(libprotobuf-lite)
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotobuf-lite
     PUBLIC  PROTOBUF_USE_DLLS

@@ -1,0 +1,2 @@
+# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
+# https://github.com/protocolbuffers/protobuf/issues/14313

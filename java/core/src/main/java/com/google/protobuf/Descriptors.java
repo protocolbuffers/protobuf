@@ -1,38 +1,16 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
 import static com.google.protobuf.Internal.checkNotNull;
 
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
+import com.google.protobuf.DescriptorProtos.Edition;
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.DescriptorProtos.EnumOptions;
 import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProto;
@@ -162,10 +140,13 @@ public final class Descriptors {
     }
 
     /** The syntax of the .proto file. */
-    public enum Syntax {
+    @Deprecated
+    public
+    enum Syntax {
       UNKNOWN("unknown"),
       PROTO2("proto2"),
-      PROTO3("proto3");
+      PROTO3("proto3"),
+      EDITIONS("editions");
 
       Syntax(String name) {
         this.name = name;
@@ -175,17 +156,38 @@ public final class Descriptors {
     }
 
     /** Get the syntax of the .proto file. */
-    public Syntax getSyntax() {
+    @Deprecated
+    public
+    Syntax getSyntax() {
       if (Syntax.PROTO3.name.equals(proto.getSyntax())) {
         return Syntax.PROTO3;
+      } else if (Syntax.EDITIONS.name.equals(proto.getSyntax())) {
+        return Syntax.EDITIONS;
       }
       return Syntax.PROTO2;
+    }
+
+    /** Get the edition of the .proto file. */
+    public Edition getEdition() {
+      return proto.getEdition();
+    }
+
+    /** Gets the name of the edition as specified in the .proto file. */
+    public String getEditionName() {
+      if (proto.getEdition().equals(Edition.EDITION_UNKNOWN)) {
+        return "";
+      }
+      return proto.getEdition().name().substring("EDITION_".length());
     }
 
     public void copyHeadingTo(FileDescriptorProto.Builder protoBuilder) {
       protoBuilder.setName(getName()).setSyntax(getSyntax().name);
       if (!getPackage().isEmpty()) {
         protoBuilder.setPackage(getPackage());
+      }
+
+      if (getSyntax().equals(Syntax.EDITIONS)) {
+        protoBuilder.setEdition(getEdition());
       }
 
       if (!getOptions().equals(FileOptions.getDefaultInstance())) {
@@ -602,6 +604,15 @@ public final class Descriptors {
       pool.addPackage(packageName, this);
       pool.addSymbol(message);
     }
+
+    /**
+     * This method is to be called by generated code only. It resolves features for the descriptor
+     * and all of its children.
+     *
+     * <p>TODO Implement and use this method in gencode once users using prebuilt jars
+     * with stale runtimes updated.
+     */
+    public void resolveAllFeatures() {}
 
     /** Look up and cross-link all field types, etc. */
     private void crossLink() throws DescriptorValidationException {
@@ -1262,7 +1273,9 @@ public final class Descriptors {
      * Returns true if this field was syntactically written with "optional" in the .proto file.
      * Excludes singular proto3 fields that do not have a label.
      */
-    public boolean hasOptionalKeyword() {
+    @Deprecated
+    public
+    boolean hasOptionalKeyword() {
       return isProto3Optional
           || (file.getSyntax() == Syntax.PROTO2 && isOptional() && getContainingOneof() == null);
     }
@@ -2816,10 +2829,6 @@ public final class Descriptors {
       return proto.getOptions();
     }
 
-    public boolean isSynthetic() {
-      return fields.length == 1 && fields[0].isProto3Optional;
-    }
-
     /** Get a list of this message type's fields. */
     public List<FieldDescriptor> getFields() {
       return Collections.unmodifiableList(Arrays.asList(fields));
@@ -2832,6 +2841,12 @@ public final class Descriptors {
     @Override
     public OneofDescriptorProto toProto() {
       return proto;
+    }
+
+    @Deprecated
+    public
+    boolean isSynthetic() {
+      return fields.length == 1 && fields[0].isProto3Optional;
     }
 
     private void setProto(final OneofDescriptorProto proto) {

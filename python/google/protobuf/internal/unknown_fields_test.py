@@ -1,33 +1,10 @@
 # -*- coding: utf-8 -*-
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Test for preservation of unknown fields in the pure Python implementation."""
 
@@ -177,25 +154,6 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     self.empty_message = unittest_pb2.TestEmptyMessage()
     self.empty_message.ParseFromString(self.all_fields_data)
 
-  # InternalCheckUnknownField() is an additional Pure Python check which checks
-  # a detail of unknown fields. It cannot be used by the C++
-  # implementation because some protect members are called.
-  # The test is added for historical reasons. It is not necessary as
-  # serialized string is checked.
-  # TODO(jieluo): Remove message._unknown_fields.
-  def InternalCheckUnknownField(self, name, expected_value):
-    if api_implementation.Type() != 'python':
-      return
-    field_descriptor = self.descriptor.fields_by_name[name]
-    wire_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type]
-    field_tag = encoder.TagBytes(field_descriptor.number, wire_type)
-    result_dict = {}
-    for tag_bytes, value in self.empty_message._unknown_fields:
-      if tag_bytes == field_tag:
-        decoder = unittest_pb2.TestAllTypes._decoders_by_tag[tag_bytes][0]
-        decoder(memoryview(value), 0, len(value), self.all_fields, result_dict)
-    self.assertEqual(expected_value, result_dict[field_descriptor])
-
   def CheckUnknownField(self, name, unknown_field_set, expected_value):
     field_descriptor = self.descriptor.fields_by_name[name]
     expected_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[
@@ -223,50 +181,36 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     self.CheckUnknownField('optional_nested_enum',
                            unknown_field_set,
                            self.all_fields.optional_nested_enum)
-    self.InternalCheckUnknownField('optional_nested_enum',
-                                   self.all_fields.optional_nested_enum)
 
     # Test repeated enum.
     self.CheckUnknownField('repeated_nested_enum',
                            unknown_field_set,
                            self.all_fields.repeated_nested_enum)
-    self.InternalCheckUnknownField('repeated_nested_enum',
-                                   self.all_fields.repeated_nested_enum)
 
     # Test varint.
     self.CheckUnknownField('optional_int32',
                            unknown_field_set,
                            self.all_fields.optional_int32)
-    self.InternalCheckUnknownField('optional_int32',
-                                   self.all_fields.optional_int32)
 
     # Test fixed32.
     self.CheckUnknownField('optional_fixed32',
                            unknown_field_set,
                            self.all_fields.optional_fixed32)
-    self.InternalCheckUnknownField('optional_fixed32',
-                                   self.all_fields.optional_fixed32)
 
     # Test fixed64.
     self.CheckUnknownField('optional_fixed64',
                            unknown_field_set,
                            self.all_fields.optional_fixed64)
-    self.InternalCheckUnknownField('optional_fixed64',
-                                   self.all_fields.optional_fixed64)
 
     # Test length delimited.
     self.CheckUnknownField('optional_string',
                            unknown_field_set,
                            self.all_fields.optional_string.encode('utf-8'))
-    self.InternalCheckUnknownField('optional_string',
-                                   self.all_fields.optional_string)
 
     # Test group.
     self.CheckUnknownField('optionalgroup',
                            unknown_field_set,
                            (17, 0, 117))
-    self.InternalCheckUnknownField('optionalgroup',
-                                   self.all_fields.optionalgroup)
 
     self.assertEqual(98, len(unknown_field_set))
 

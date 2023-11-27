@@ -1,6 +1,7 @@
 # CMake definitions for libprotoc (the protobuf compiler library).
 
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
+include(${protobuf_SOURCE_DIR}/cmake/protobuf-configure-target.cmake)
 
 add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
   ${libprotoc_srcs}
@@ -17,6 +18,7 @@ if(protobuf_HAVE_LD_VERSION_SCRIPT)
 endif()
 target_link_libraries(libprotoc PRIVATE libprotobuf)
 target_link_libraries(libprotoc PUBLIC ${protobuf_ABSL_USED_TARGETS})
+protobuf_configure_target(libprotoc)
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotoc
     PUBLIC  PROTOBUF_USE_DLLS

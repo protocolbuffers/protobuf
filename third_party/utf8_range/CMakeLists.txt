@@ -73,6 +73,11 @@ if (utf8_range_ENABLE_INSTALL)
   install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
   )
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/utf8_range.pc.cmake
+                 ${CMAKE_CURRENT_BINARY_DIR}/utf8_range.pc @ONLY)
+  install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/utf8_range.pc
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
   # Install public headers explicitly.
   install(FILES utf8_range.h utf8_validity.h

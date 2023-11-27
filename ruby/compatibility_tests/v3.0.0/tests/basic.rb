@@ -119,42 +119,43 @@ module BasicTest
 
     def test_defaults
       m = TestMessage.new
-      assert m.optional_int32 == 0
-      assert m.optional_int64 == 0
-      assert m.optional_uint32 == 0
-      assert m.optional_uint64 == 0
-      assert m.optional_bool == false
-      assert m.optional_float == 0.0
-      assert m.optional_double == 0.0
-      assert m.optional_string == ""
-      assert m.optional_bytes == ""
-      assert m.optional_msg == nil
-      assert m.optional_enum == :Default
+      assert_equal 0, m.optional_int32
+      assert_equal 0, m.optional_int64
+      assert_equal 0, m.optional_uint32
+      assert_equal 0, m.optional_uint64
+      refute m.optional_bool
+      assert_equal 0.0, m.optional_float
+      assert_equal 0.0, m.optional_double
+      assert_empty m.optional_string
+      assert_empty m.optional_bytes
+      assert_nil m.optional_msg
+      assert_equal :Default, m.optional_enum
     end
 
     def test_setters
       m = TestMessage.new
       m.optional_int32 = -42
-      assert m.optional_int32 == -42
+      assert_equal -42, m.optional_int32
       m.optional_int64 = -0x1_0000_0000
-      assert m.optional_int64 == -0x1_0000_0000
+      assert_equal -0x1_0000_0000, m.optional_int64
       m.optional_uint32 = 0x9000_0000
-      assert m.optional_uint32 == 0x9000_0000
+      assert_equal 0x9000_0000, m.optional_uint32
       m.optional_uint64 = 0x9000_0000_0000_0000
-      assert m.optional_uint64 == 0x9000_0000_0000_0000
+      assert_equal 0x9000_0000_0000_0000, m.optional_uint64
       m.optional_bool = true
-      assert m.optional_bool == true
+      assert m.optional_bool
       m.optional_float = 0.5
-      assert m.optional_float == 0.5
+      assert_equal 0.5, m.optional_float
       m.optional_double = 0.5
+      assert_equal 0.5, m.optional_double
       m.optional_string = "hello"
-      assert m.optional_string == "hello"
+      assert_equal "hello", m.optional_string
       m.optional_bytes = "world".encode!('ASCII-8BIT')
-      assert m.optional_bytes == "world"
+      assert_equal "world", m.optional_bytes
       m.optional_msg = TestMessage2.new(:foo => 42)
-      assert m.optional_msg == TestMessage2.new(:foo => 42)
+      assert_equal m.optional_msg, TestMessage2.new(:foo => 42)
       m.optional_msg = nil
-      assert m.optional_msg == nil
+      assert_nil m.optional_msg
     end
 
     def test_ctor_args
@@ -162,13 +163,13 @@ module BasicTest
                           :optional_msg => TestMessage2.new,
                           :optional_enum => :C,
                           :repeated_string => ["hello", "there", "world"])
-      assert m.optional_int32 == -42
-      assert m.optional_msg.class == TestMessage2
-      assert m.repeated_string.length == 3
-      assert m.optional_enum == :C
-      assert m.repeated_string[0] == "hello"
-      assert m.repeated_string[1] == "there"
-      assert m.repeated_string[2] == "world"
+      assert_equal -42, m.optional_int32
+      assert_instance_of TestMessage2, m.optional_msg
+      assert_equal 3, m.repeated_string.length
+      assert_equal :C, m.optional_enum
+      assert_equal "hello", m.repeated_string[0]
+      assert_equal "there", m.repeated_string[1]
+      assert_equal "world", m.repeated_string[2]
     end
 
     def test_inspect
@@ -183,93 +184,67 @@ module BasicTest
     def test_hash
       m1 = TestMessage.new(:optional_int32 => 42)
       m2 = TestMessage.new(:optional_int32 => 102)
-      assert m1.hash != 0
-      assert m2.hash != 0
+      refute_equal 0, m1.hash
+      refute_equal 0, m2.hash
       # relying on the randomness here -- if hash function changes and we are
       # unlucky enough to get a collision, then change the values above.
-      assert m1.hash != m2.hash
+      refute_equal m1.hash, m2.hash
     end
 
     def test_unknown_field_errors
-      e = assert_raise NoMethodError do
+      e = assert_raises NoMethodError do
         TestMessage.new.hello
       end
       assert_match(/hello/, e.message)
 
-      e = assert_raise NoMethodError do
+      e = assert_raises NoMethodError do
         TestMessage.new.hello = "world"
       end
       assert_match(/hello/, e.message)
     end
 
     def test_initialization_map_errors
-      e = assert_raise ArgumentError do
+      e = assert_raises ArgumentError do
         TestMessage.new(:hello => "world")
       end
       assert_match(/hello/, e.message)
 
-      e = assert_raise ArgumentError do
+      e = assert_raises ArgumentError do
         MapMessage.new(:map_string_int32 => "hello")
       end
-      assert_equal e.message, "Expected Hash object as initializer value for map field 'map_string_int32' (given String)."
-
-      e = assert_raise ArgumentError do
+      assert_equal "Expected Hash object as initializer value for map field 'map_string_int32' (given String).", e.message
+      e = assert_raises ArgumentError do
         TestMessage.new(:repeated_uint32 => "hello")
       end
-      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32' (given String)."
+      assert_equal "Expected array as initializer value for repeated field 'repeated_uint32' (given String).", e.message
     end
 
     def test_type_errors
       m = TestMessage.new
 
-      # Use rescue to allow subclasses of error
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m.optional_int32 = "hello"
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m.optional_string = nil
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m.optional_bool = 42
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m.optional_msg = TestMessage.new  # expects TestMessage2
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m.repeated_int32 = []  # needs RepeatedField
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m.repeated_msg.push TestMessage.new
-      rescue TypeError
-        success = true
       end
-      assert(success)
     end
 
     def test_string_encoding
@@ -282,11 +257,11 @@ module BasicTest
       assert_equal Encoding::ASCII_8BIT, m.optional_bytes.encoding
       assert_equal "Test string ASCII", m.optional_bytes
 
-      assert_raise Encoding::UndefinedConversionError do
+      assert_raises Encoding::UndefinedConversionError do
         m.optional_bytes = "Test string UTF-8 \u0100".encode!('UTF-8')
       end
 
-      assert_raise Encoding::UndefinedConversionError do
+      assert_raises Encoding::UndefinedConversionError do
         m.optional_string = ["FFFF"].pack('H*')
       end
 
@@ -296,134 +271,109 @@ module BasicTest
 
       # strings are immutable so we can't do this, but serialize should catch it.
       m.optional_string = "asdf".encode!('UTF-8')
-      assert_raise do
+      assert_raises do
         m.optional_string.encode!('ASCII-8BIT')
       end
     end
 
     def test_rptfield_int32
       l = Google::Protobuf::RepeatedField.new(:int32)
-      assert l.count == 0
+      assert_equal 0, l.count
       l = Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
-      assert l.count == 3
+      assert_equal 3, l.count
       assert_equal [1, 2, 3], l
-      assert_equal l, [1, 2, 3]
+      assert_equal [1, 2, 3], l
       l.push 4
-      assert l == [1, 2, 3, 4]
+      assert_equal [1, 2, 3, 4], l
       dst_list = []
       l.each { |val| dst_list.push val }
-      assert dst_list == [1, 2, 3, 4]
-      assert l.to_a == [1, 2, 3, 4]
-      assert l[0] == 1
-      assert l[3] == 4
+      assert_equal [1, 2, 3, 4], dst_list
+      assert_equal [1, 2, 3, 4], l.to_a
+      assert_equal 1, l[0]
+      assert_equal 4, l[3]
       l[0] = 5
-      assert l == [5, 2, 3, 4]
-
+      assert_equal [5, 2, 3, 4], l
       l2 = l.dup
-      assert l == l2
-      assert l.object_id != l2.object_id
+      assert_equal l, l2
+      refute_same l, l2
       l2.push 6
-      assert l.count == 4
-      assert l2.count == 5
-
-      assert l.inspect == '[5, 2, 3, 4]'
-
+      assert_equal 4, l.count
+      assert_equal 5, l2.count
+      assert_equal '[5, 2, 3, 4]', l.inspect
       l.concat([7, 8, 9])
-      assert l == [5, 2, 3, 4, 7, 8, 9]
-      assert l.pop == 9
-      assert l == [5, 2, 3, 4, 7, 8]
-
-      success = false
-      begin
-        m = TestMessage.new
-        l.push m
-      rescue TypeError
-        success = true
-      end
-      assert(success)
-
+      assert_equal [5, 2, 3, 4, 7, 8, 9], l
+      assert_equal 9, l.pop
+      assert_equal [5, 2, 3, 4, 7, 8], l
       m = TestMessage.new
-      m.repeated_int32 = l
-      assert m.repeated_int32 == [5, 2, 3, 4, 7, 8]
-      assert m.repeated_int32.object_id == l.object_id
-      l.push 42
-      assert m.repeated_int32.pop == 42
+      assert_raises Google::Protobuf::TypeError do
+        l.push m
+      end
 
+      m.repeated_int32 = l
+      assert_equal [5, 2, 3, 4, 7, 8], m.repeated_int32
+      assert_same m.repeated_int32, l
+      l.push 42
+      assert_equal 42, m.repeated_int32.pop
       l3 = l + l.dup
-      assert l3.count == l.count * 2
+      assert_equal l.count * 2, l3.count
       l.count.times do |i|
-        assert l3[i] == l[i]
-        assert l3[l.count + i] == l[i]
+        assert_equal l[i], l3[i]
+        assert_equal l[i], l3[l.count + i]
       end
 
       l.clear
-      assert l.count == 0
+      assert_equal 0, l.count
       l += [1, 2, 3, 4]
       l.replace([5, 6, 7, 8])
-      assert l == [5, 6, 7, 8]
-
+      assert_equal [5, 6, 7, 8], l
       l4 = Google::Protobuf::RepeatedField.new(:int32)
       l4[5] = 42
-      assert l4 == [0, 0, 0, 0, 0, 42]
-
+      assert_equal [0, 0, 0, 0, 0, 42], l4
       l4 << 100
-      assert l4 == [0, 0, 0, 0, 0, 42, 100]
+      assert_equal [0, 0, 0, 0, 0, 42, 100], l4
       l4 << 101 << 102
-      assert l4 == [0, 0, 0, 0, 0, 42, 100, 101, 102]
+      assert_equal [0, 0, 0, 0, 0, 42, 100, 101, 102], l4
     end
 
     def test_parent_rptfield
       #make sure we set the RepeatedField and can add to it
       m = TestMessage.new
-      assert m.repeated_string == []
+      assert_empty m.repeated_string
       m.repeated_string << 'ok'
       m.repeated_string.push('ok2')
-      assert m.repeated_string == ['ok', 'ok2']
+      assert_equal ['ok', 'ok2'], m.repeated_string
       m.repeated_string += ['ok3']
-      assert m.repeated_string == ['ok', 'ok2', 'ok3']
+      assert_equal ['ok', 'ok2', 'ok3'], m.repeated_string
     end
 
     def test_rptfield_msg
       l = Google::Protobuf::RepeatedField.new(:message, TestMessage)
       l.push TestMessage.new
-      assert l.count == 1
-
-      success = false
-      begin
+      assert_equal 1, l.count
+      assert_raises Google::Protobuf::TypeError do
         l.push TestMessage2.new
-      rescue TypeError
-        success = true
       end
-      assert(success)
-
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         l.push 42
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
       l2 = l.dup
-      assert l2[0] == l[0]
-      assert l2[0].object_id == l[0].object_id
-
+      assert_equal l[0], l2[0]
+      assert_same l2[0], l[0]
       l2 = Google::Protobuf.deep_copy(l)
-      assert l2[0] == l[0]
-      assert l2[0].object_id != l[0].object_id
-
+      assert_equal l[0], l2[0]
+      refute_same l2[0], l[0]
       l3 = l + l2
-      assert l3.count == 2
-      assert l3[0] == l[0]
-      assert l3[1] == l2[0]
+      assert_equal 2, l3.count
+      assert_equal l[0], l3[0]
+      assert_equal l2[0], l3[1]
       l3[0].optional_int32 = 1000
-      assert l[0].optional_int32 == 1000
-
+      assert_equal 1000, l[0].optional_int32
       new_msg = TestMessage.new(:optional_int32 => 200)
       l4 = l + [new_msg]
-      assert l4.count == 2
+      assert_equal 2, l4.count
       new_msg.optional_int32 = 1000
-      assert l4[1].optional_int32 == 1000
+      assert_equal 1000, l4[1].optional_int32
     end
 
     def test_rptfield_enum
@@ -431,27 +381,26 @@ module BasicTest
       l.push :A
       l.push :B
       l.push :C
-      assert l.count == 3
-      assert_raise RangeError do
+      assert_equal 3, l.count
+      assert_raises RangeError do
         l.push :D
       end
-      assert l[0] == :A
-
+      assert_equal :A, l[0]
       l.push 4
-      assert l[3] == 4
+      assert_equal 4, l[3]
     end
 
     def test_rptfield_initialize
-      assert_raise ArgumentError do
+      assert_raises ArgumentError do
         l = Google::Protobuf::RepeatedField.new
       end
-      assert_raise ArgumentError do
+      assert_raises ArgumentError do
         l = Google::Protobuf::RepeatedField.new(:message)
       end
-      assert_raise ArgumentError do
+      assert_raises ArgumentError do
         l = Google::Protobuf::RepeatedField.new([1, 2, 3])
       end
-      assert_raise ArgumentError do
+      assert_raises ArgumentError do
         l = Google::Protobuf::RepeatedField.new(:message, [TestMessage2.new])
       end
     end
@@ -460,32 +409,30 @@ module BasicTest
       l = Google::Protobuf::RepeatedField.new(:int32)
       length_methods = %w(count length size)
       length_methods.each do |lm|
-        assert l.send(lm)  == 0
+        assert_equal 0, l.send(lm)
       end
       # out of bounds returns a nil
-      assert l[0] == nil
-      assert l[1] == nil
-      assert l[-1] == nil
+      assert_nil l[0]
+      assert_nil l[1]
+      assert_nil l[-1]
       l.push 4
       length_methods.each do |lm|
-        assert l.send(lm) == 1
+        assert_equal 1, l.send(lm)
       end
-      assert l[0] == 4
-      assert l[1] == nil
-      assert l[-1] == 4
-      assert l[-2] == nil
-
+      assert_equal 4, l[0]
+      assert_nil l[1]
+      assert_equal 4, l[-1]
+      assert_nil l[-2]
       l.push 2
       length_methods.each do |lm|
-        assert l.send(lm) == 2
+        assert_equal 2, l.send(lm)
       end
-      assert l[0] == 4
-      assert l[1] == 2
-      assert l[2] == nil
-      assert l[-1] == 2
-      assert l[-2] == 4
-      assert l[-3] == nil
-
+      assert_equal 4, l[0]
+      assert_equal 2, l[1]
+      assert_nil l[2]
+      assert_equal 2, l[-1]
+      assert_equal 4, l[-2]
+      assert_nil l[-3]
       #adding out of scope will backfill with empty objects
     end
 
@@ -495,48 +442,38 @@ module BasicTest
 
       m = Google::Protobuf::Map.new(:string, :int32)
       m["asdf"] = 1
-      assert m["asdf"] == 1
+      assert_equal 1, m["asdf"]
       m["jkl;"] = 42
-      assert m == { "jkl;" => 42, "asdf" => 1 }
-      assert m.has_key?("asdf")
-      assert !m.has_key?("qwerty")
-      assert m.length == 2
-
+      assert_equal({ "jkl;" => 42, "asdf" => 1 }, m.to_h)
+      assert_includes m.to_h, "asdf"
+      refute_includes m, "qwerty"
+      assert_equal 2, m.length
       m2 = m.dup
-      assert m == m2
-      assert m.hash != 0
-      assert m.hash == m2.hash
-
+      assert_equal m, m2
+      refute_equal 0, m.hash
+      assert_equal m.hash, m2.hash
       collected = {}
       m.each { |k,v| collected[v] = k }
-      assert collected == { 42 => "jkl;", 1 => "asdf" }
-
-      assert m.delete("asdf") == 1
-      assert !m.has_key?("asdf")
-      assert m["asdf"] == nil
-      assert !m.has_key?("asdf")
+      assert_equal({ 42 => "jkl;", 1 => "asdf" }, collected)
+      assert_equal 1, m.delete("asdf")
+      refute_includes m, "asdf"
+      assert_nil m["asdf"]
+      refute_includes m, "asdf"
 
       # We only assert on inspect value when there is one map entry because the
       # order in which elements appear is unspecified (depends on the internal
       # hash function). We don't want a brittle test.
-      assert m.inspect == "{\"jkl;\"=>42}"
-
-      assert m.keys == ["jkl;"]
-      assert m.values == [42]
-
+      assert_equal "{\"jkl;\"=>42}", m.inspect
+      assert_equal ["jkl;"], m.keys
+      assert_equal [42], m.values
       m.clear
-      assert m.length == 0
-      assert m == {}
-
-      success = false
-      begin
+      assert_equal 0, m.length
+      assert_empty m.to_h
+      assert_raises Google::Protobuf::TypeError do
         m[1] = 1
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
-      assert_raise RangeError do
+      assert_raises RangeError do
         m["asdf"] = 0x1_0000_0000
       end
     end
@@ -544,54 +481,46 @@ module BasicTest
     def test_map_ctor
       m = Google::Protobuf::Map.new(:string, :int32,
                                     {"a" => 1, "b" => 2, "c" => 3})
-      assert m == {"a" => 1, "c" => 3, "b" => 2}
+      assert_equal({"a" => 1, "c" => 3, "b" => 2}, m.to_h)
     end
 
     def test_map_keytypes
       m = Google::Protobuf::Map.new(:int32, :int32)
       m[1] = 42
       m[-1] = 42
-      assert_raise RangeError do
+      assert_raises RangeError do
         m[0x8000_0000] = 1
       end
 
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m["asdf"] = 1
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
       m = Google::Protobuf::Map.new(:int64, :int32)
       m[0x1000_0000_0000_0000] = 1
-      assert_raise RangeError do
+      assert_raises RangeError do
         m[0x1_0000_0000_0000_0000] = 1
       end
 
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m["asdf"] = 1
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
       m = Google::Protobuf::Map.new(:uint32, :int32)
       m[0x8000_0000] = 1
-      assert_raise RangeError do
+      assert_raises RangeError do
         m[0x1_0000_0000] = 1
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m[-1] = 1
       end
 
       m = Google::Protobuf::Map.new(:uint64, :int32)
       m[0x8000_0000_0000_0000] = 1
-      assert_raise RangeError do
+      assert_raises RangeError do
         m[0x1_0000_0000_0000_0000] = 1
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m[-1] = 1
       end
 
@@ -599,33 +528,21 @@ module BasicTest
       m[true] = 1
       m[false] = 2
 
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m[1] = 1
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m["asdf"] = 1
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
       m = Google::Protobuf::Map.new(:string, :int32)
       m["asdf"] = 1
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m[1] = 1
-      rescue TypeError
-        success = true
       end
-      assert(success)
-      assert_raise Encoding::UndefinedConversionError do
-        bytestring = ["FFFF"].pack("H*")
+      bytestring = ["FFFF"].pack("H*")
+      assert_raises Encoding::UndefinedConversionError do
         m[bytestring] = 1
       end
 
@@ -634,45 +551,36 @@ module BasicTest
       m[bytestring] = 1
       # Allowed -- we will automatically convert to ASCII-8BIT.
       m["asdf"] = 1
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m[1] = 1
-      rescue TypeError
-        success = true
       end
-      assert(success)
     end
 
     def test_map_msg_enum_valuetypes
       m = Google::Protobuf::Map.new(:string, :message, TestMessage)
       m["asdf"] = TestMessage.new
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m["jkl;"] = TestMessage2.new
-      rescue TypeError
-        success = true
       end
-      assert(success)
 
       m = Google::Protobuf::Map.new(
         :string, :message, TestMessage,
         { "a" => TestMessage.new(:optional_int32 => 42),
           "b" => TestMessage.new(:optional_int32 => 84) })
-      assert m.length == 2
-      assert m.values.map{|msg| msg.optional_int32}.sort == [42, 84]
-
+      assert_equal 2, m.length
+      assert_equal [42, 84], m.values.map{|msg| msg.optional_int32}.sort
       m = Google::Protobuf::Map.new(:string, :enum, TestEnum,
                                     { "x" => :A, "y" => :B, "z" => :C })
-      assert m.length == 3
-      assert m["z"] == :C
+      assert_equal 3, m.length
+      assert_equal :C, m["z"]
       m["z"] = 2
-      assert m["z"] == :B
+      assert_equal :B, m["z"]
       m["z"] = 5
-      assert m["z"] == 5
-      assert_raise RangeError do
+      assert_equal 5, m["z"]
+      assert_raises RangeError do
         m["z"] = :Z
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m["z"] = "z"
       end
     end
@@ -684,72 +592,50 @@ module BasicTest
           "b" => TestMessage.new(:optional_int32 => 84) })
 
       m2 = m.dup
-      assert m == m2
-      assert m.object_id != m2.object_id
-      assert m["a"].object_id == m2["a"].object_id
-      assert m["b"].object_id == m2["b"].object_id
-
+      assert_equal m, m2
+      refute_same m, m2
+      assert_same m["a"], m2["a"]
+      assert_same m["b"], m2["b"]
       m2 = Google::Protobuf.deep_copy(m)
-      assert m == m2
-      assert m.object_id != m2.object_id
-      assert m["a"].object_id != m2["a"].object_id
-      assert m["b"].object_id != m2["b"].object_id
+      assert_equal m, m2
+      refute_same m, m2
+      refute_same m["a"], m2["a"]
+      refute_same m["b"], m2["b"]
     end
 
     def test_map_field
       m = MapMessage.new
-      assert m.map_string_int32 == {}
-      assert m.map_string_msg == {}
-
+      assert_empty m.map_string_int32.to_h
+      assert_empty m.map_string_msg.to_h
       m = MapMessage.new(
         :map_string_int32 => {"a" => 1, "b" => 2},
         :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
                             "b" => TestMessage2.new(:foo => 2)})
-      assert m.map_string_int32.keys.sort == ["a", "b"]
-      assert m.map_string_int32["a"] == 1
-      assert m.map_string_msg["b"].foo == 2
-
+      assert_equal ["a", "b"], m.map_string_int32.keys.sort
+      assert_equal 1, m.map_string_int32["a"]
+      assert_equal 2, m.map_string_msg["b"].foo
       m.map_string_int32["c"] = 3
-      assert m.map_string_int32["c"] == 3
+      assert_equal 3, m.map_string_int32["c"]
       m.map_string_msg["c"] = TestMessage2.new(:foo => 3)
-      assert m.map_string_msg["c"] == TestMessage2.new(:foo => 3)
+      assert_equal TestMessage2.new(:foo => 3), m.map_string_msg["c"]
       m.map_string_msg.delete("b")
       m.map_string_msg.delete("c")
-      assert m.map_string_msg == { "a" => TestMessage2.new(:foo => 1) }
-
-      success = false
-      begin
+      assert_equal({ "a" => TestMessage2.new(:foo => 1).to_h }, m.map_string_msg.to_h)
+      assert_raises Google::Protobuf::TypeError do
         m.map_string_msg["e"] = TestMessage.new # wrong value type
-      rescue TypeError
-        success = true
       end
-      assert(success)
       # ensure nothing was added by the above
-      assert m.map_string_msg == { "a" => TestMessage2.new(:foo => 1) }
-
+      assert_equal({ "a" => TestMessage2.new(:foo => 1).to_h }, m.map_string_msg.to_h)
       m.map_string_int32 = Google::Protobuf::Map.new(:string, :int32)
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m.map_string_int32 = Google::Protobuf::Map.new(:string, :int64)
-      rescue TypeError
-        success = true
       end
-      assert(success)
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m.map_string_int32 = {}
-      rescue TypeError
-        success = true
       end
-      assert(success)
-
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         m = MapMessage.new(:map_string_int32 => { 1 => "I am not a number" })
-      rescue TypeError
-        success = true
       end
-      assert(success)
     end
 
     def test_map_encode_decode
@@ -758,77 +644,68 @@ module BasicTest
         :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
                             "b" => TestMessage2.new(:foo => 2)})
       m2 = MapMessage.decode(MapMessage.encode(m))
-      assert m == m2
-
+      assert_equal m, m2
       m3 = MapMessageWireEquiv.decode(MapMessage.encode(m))
-      assert m3.map_string_int32.length == 2
-
+      assert_equal 2, m3.map_string_int32.length
       kv = {}
       m3.map_string_int32.map { |msg| kv[msg.key] = msg.value }
-      assert kv == {"a" => 1, "b" => 2}
-
+      assert_equal({"a" => 1, "b" => 2}, kv)
       kv = {}
       m3.map_string_msg.map { |msg| kv[msg.key] = msg.value }
-      assert kv == {"a" => TestMessage2.new(:foo => 1),
-                    "b" => TestMessage2.new(:foo => 2)}
+      assert_equal({"a" => TestMessage2.new(:foo => 1),
+                    "b" => TestMessage2.new(:foo => 2)}, kv)
     end
 
     def test_oneof_descriptors
       d = OneofMessage.descriptor
       o = d.lookup_oneof("my_oneof")
-      assert o != nil
-      assert o.class == Google::Protobuf::OneofDescriptor
-      assert o.name == "my_oneof"
+      refute_nil o
+      assert_instance_of Google::Protobuf::OneofDescriptor, o
+      assert_equal "my_oneof", o.name
       oneof_count = 0
       d.each_oneof{ |oneof|
         oneof_count += 1
-        assert oneof == o
+        assert_equal o, oneof
       }
-      assert oneof_count == 1
-      assert o.count == 4
+      assert_equal 1, oneof_count
+      assert_equal 4, o.count
       field_names = o.map{|f| f.name}.sort
-      assert field_names == ["a", "b", "c", "d"]
+      assert_equal ["a", "b", "c", "d"], field_names
     end
 
     def test_oneof
       d = OneofMessage.new
-      assert d.a == ""
-      assert d.b == 0
-      assert d.c == nil
-      assert d.d == :Default
-      assert d.my_oneof == nil
-
+      assert_empty d.a
+      assert_equal 0, d.b
+      assert_nil d.c
+      assert_equal :Default, d.d
+      assert_nil d.my_oneof
       d.a = "hi"
-      assert d.a == "hi"
-      assert d.b == 0
-      assert d.c == nil
-      assert d.d == :Default
-      assert d.my_oneof == :a
-
+      assert_equal "hi", d.a
+      assert_equal 0, d.b
+      assert_nil d.c
+      assert_equal :Default, d.d
+      assert_equal :a, d.my_oneof
       d.b = 42
-      assert d.a == ""
-      assert d.b == 42
-      assert d.c == nil
-      assert d.d == :Default
-      assert d.my_oneof == :b
-
+      assert_empty d.a
+      assert_equal 42, d.b
+      assert_nil d.c
+      assert_equal :Default, d.d
+      assert_equal :b, d.my_oneof
       d.c = TestMessage2.new(:foo => 100)
-      assert d.a == ""
-      assert d.b == 0
-      assert d.c.foo == 100
-      assert d.d == :Default
-      assert d.my_oneof == :c
-
+      assert_empty d.a
+      assert_equal 0, d.b
+      assert_equal 100, d.c.foo
+      assert_equal :Default, d.d
+      assert_equal :c, d.my_oneof
       d.d = :C
-      assert d.a == ""
-      assert d.b == 0
-      assert d.c == nil
-      assert d.d == :C
-      assert d.my_oneof == :d
-
+      assert_empty d.a
+      assert_equal 0, d.b
+      assert_nil d.c
+      assert_equal :C, d.d
+      assert_equal :d, d.my_oneof
       d2 = OneofMessage.decode(OneofMessage.encode(d))
-      assert d2 == d
-
+      assert_equal d2, d
       encoded_field_a = OneofMessage.encode(OneofMessage.new(:a => "string"))
       encoded_field_b = OneofMessage.encode(OneofMessage.new(:b => 1000))
       encoded_field_c = OneofMessage.encode(
@@ -837,39 +714,37 @@ module BasicTest
 
       d3 = OneofMessage.decode(
         encoded_field_c + encoded_field_a + encoded_field_d)
-      assert d3.a == ""
-      assert d3.b == 0
-      assert d3.c == nil
-      assert d3.d == :B
-
+      assert_empty d3.a
+      assert_equal 0, d3.b
+      assert_nil d3.c
+      assert_equal :B, d3.d
       d4 = OneofMessage.decode(
         encoded_field_c + encoded_field_a + encoded_field_d +
         encoded_field_c)
-      assert d4.a == ""
-      assert d4.b == 0
-      assert d4.c.foo == 1
-      assert d4.d == :Default
-
+      assert_empty d4.a
+      assert_equal 0, d4.b
+      assert_equal 1, d4.c.foo
+      assert_equal :Default, d4.d
       d5 = OneofMessage.new(:a => "hello")
-      assert d5.a == "hello"
+      assert_equal "hello", d5.a
       d5.a = nil
-      assert d5.a == ""
-      assert OneofMessage.encode(d5) == ''
-      assert d5.my_oneof == nil
+      assert_empty d5.a
+      assert_empty OneofMessage.encode(d5)
+      assert_nil d5.my_oneof
     end
 
     def test_enum_field
       m = TestMessage.new
-      assert m.optional_enum == :Default
+      assert_equal :Default, m.optional_enum
       m.optional_enum = :A
-      assert m.optional_enum == :A
-      assert_raise RangeError do
+      assert_equal :A, m.optional_enum
+      assert_raises RangeError do
         m.optional_enum = :ASDF
       end
       m.optional_enum = 1
-      assert m.optional_enum == :A
+      assert_equal :A, m.optional_enum
       m.optional_enum = 100
-      assert m.optional_enum == 100
+      assert_equal 100, m.optional_enum
     end
 
     def test_dup
@@ -879,25 +754,25 @@ module BasicTest
       tm1 = TestMessage2.new(:foo => 100)
       tm2 = TestMessage2.new(:foo => 200)
       m.repeated_msg.push tm1
-      assert m.repeated_msg[-1] == tm1
+      assert_equal m.repeated_msg[-1], tm1
       m.repeated_msg.push tm2
-      assert m.repeated_msg[-1] == tm2
+      assert_equal m.repeated_msg[-1], tm2
       m2 = m.dup
-      assert m == m2
+      assert_equal m, m2
       m.optional_int32 += 1
-      assert m != m2
-      assert m.repeated_msg[0] == m2.repeated_msg[0]
-      assert m.repeated_msg[0].object_id == m2.repeated_msg[0].object_id
+      refute_equal m2, m
+      assert_equal m.repeated_msg[0], m2.repeated_msg[0]
+      assert_same m.repeated_msg[0], m2.repeated_msg[0]
     end
 
     def test_deep_copy
       m = TestMessage.new(:optional_int32 => 42,
                           :repeated_msg => [TestMessage2.new(:foo => 100)])
       m2 = Google::Protobuf.deep_copy(m)
-      assert m == m2
-      assert m.repeated_msg == m2.repeated_msg
-      assert m.repeated_msg.object_id != m2.repeated_msg.object_id
-      assert m.repeated_msg[0].object_id != m2.repeated_msg[0].object_id
+      assert_equal m, m2
+      assert_equal m.repeated_msg, m2.repeated_msg
+      refute_same m.repeated_msg, m2.repeated_msg
+      refute_same m.repeated_msg[0], m2.repeated_msg[0]
     end
 
     def test_eq
@@ -905,21 +780,19 @@ module BasicTest
                           :repeated_int32 => [1, 2, 3])
       m2 = TestMessage.new(:optional_int32 => 43,
                            :repeated_int32 => [1, 2, 3])
-      assert m != m2
+      refute_equal m2, m
     end
 
     def test_enum_lookup
-      assert TestEnum::A == 1
-      assert TestEnum::B == 2
-      assert TestEnum::C == 3
-
-      assert TestEnum::lookup(1) == :A
-      assert TestEnum::lookup(2) == :B
-      assert TestEnum::lookup(3) == :C
-
-      assert TestEnum::resolve(:A) == 1
-      assert TestEnum::resolve(:B) == 2
-      assert TestEnum::resolve(:C) == 3
+      assert_equal 1, TestEnum::A
+      assert_equal 2, TestEnum::B
+      assert_equal 3, TestEnum::C
+      assert_equal :A, TestEnum::lookup(1)
+      assert_equal :B, TestEnum::lookup(2)
+      assert_equal :C, TestEnum::lookup(3)
+      assert_equal 1, TestEnum::resolve(:A)
+      assert_equal 2, TestEnum::resolve(:B)
+      assert_equal 3, TestEnum::resolve(:C)
     end
 
     def test_parse_serialize
@@ -933,11 +806,10 @@ module BasicTest
                                             TestMessage2.new(:foo => 2)])
       data = TestMessage.encode m
       m2 = TestMessage.decode data
-      assert m == m2
-
+      assert_equal m, m2
       data = Google::Protobuf.encode m
       m2 = Google::Protobuf.decode(TestMessage, data)
-      assert m == m2
+      assert_equal m, m2
     end
 
     def test_encode_decode_helpers
@@ -1010,62 +882,51 @@ module BasicTest
 
     def test_def_errors
       s = Google::Protobuf::DescriptorPool.new
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         s.build do
           # enum with no default (integer value 0)
           add_enum "MyEnum" do
             value :A, 1
           end
         end
-      rescue TypeError
-        success = true
       end
-      assert(success)
-      success = false
-      begin
+      assert_raises Google::Protobuf::TypeError do
         s.build do
           # message with required field (unsupported in proto3)
           add_message "MyMessage" do
             required :foo, :int32, 1
           end
         end
-      rescue TypeError
-        success = true
       end
-      assert(success)
     end
 
     def test_corecursive
       # just be sure that we can instantiate types with corecursive field-type
       # references.
       m = Recursive1.new(:foo => Recursive2.new(:foo => Recursive1.new))
-      assert Recursive1.descriptor.lookup("foo").subtype ==
-        Recursive2.descriptor
-      assert Recursive2.descriptor.lookup("foo").subtype ==
-        Recursive1.descriptor
-
+      assert_equal Recursive2.descriptor, Recursive1.descriptor.lookup("foo").subtype
+      assert_equal Recursive1.descriptor, Recursive2.descriptor.lookup("foo").subtype
       serialized = Recursive1.encode(m)
       m2 = Recursive1.decode(serialized)
-      assert m == m2
+      assert_equal m, m2
     end
 
     def test_serialize_cycle
       m = Recursive1.new(:foo => Recursive2.new)
       m.foo.foo = m
-      assert_raise RuntimeError do
-        serialized = Recursive1.encode(m)
+      assert_raises RuntimeError do
+        Recursive1.encode(m)
       end
     end
 
     def test_bad_field_names
       m = BadFieldNames.new(:dup => 1, :class => 2)
       m2 = m.dup
-      assert m == m2
-      assert m['dup'] == 1
-      assert m['class'] == 2
+      assert_equal m, m2
+      assert_equal 1, m['dup']
+      assert_equal 2, m['class']
       m['dup'] = 3
-      assert m['dup'] == 3
+      assert_equal 3, m['dup']
     end
 
     def test_int_ranges
@@ -1077,19 +938,19 @@ module BasicTest
       m.optional_int32 = 1.0
       m.optional_int32 = -1.0
       m.optional_int32 = 2e9
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_int32 = -0x8000_0001
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_int32 = +0x8000_0000
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_int32 = +0x1000_0000_0000_0000_0000_0000 # force Bignum
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_int32 = 1e12
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_int32 = 1.5
       end
 
@@ -1097,28 +958,28 @@ module BasicTest
       m.optional_uint32 = +0xffff_ffff
       m.optional_uint32 = 1.0
       m.optional_uint32 = 4e9
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint32 = -1
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint32 = -1.5
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint32 = -1.5e12
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint32 = -0x1000_0000_0000_0000
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint32 = +0x1_0000_0000
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint32 = +0x1000_0000_0000_0000_0000_0000 # force Bignum
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint32 = 1e12
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint32 = 1.5
       end
 
@@ -1129,19 +990,19 @@ module BasicTest
       m.optional_int64 = -1.0
       m.optional_int64 = 8e18
       m.optional_int64 = -8e18
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_int64 = -0x8000_0000_0000_0001
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_int64 = +0x8000_0000_0000_0000
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_int64 = +0x1000_0000_0000_0000_0000_0000 # force Bignum
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_int64 = 1e50
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_int64 = 1.5
       end
 
@@ -1149,28 +1010,28 @@ module BasicTest
       m.optional_uint64 = +0xffff_ffff_ffff_ffff
       m.optional_uint64 = 1.0
       m.optional_uint64 = 16e18
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint64 = -1
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint64 = -1.5
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint64 = -1.5e12
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint64 = -0x1_0000_0000_0000_0000
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint64 = +0x1_0000_0000_0000_0000
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint64 = +0x1000_0000_0000_0000_0000_0000 # force Bignum
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint64 = 1e50
       end
-      assert_raise RangeError do
+      assert_raises RangeError do
         m.optional_uint64 = 1.5
       end
     end
@@ -1189,7 +1050,7 @@ module BasicTest
       10_000.times do
         m = TestMessage.decode(data)
         data_new = TestMessage.encode(m)
-        assert data_new == data
+        assert_equal data, data_new
         data = data_new
       end
     end
@@ -1197,32 +1058,29 @@ module BasicTest
     def test_reflection
       m = TestMessage.new(:optional_int32 => 1234)
       msgdef = m.class.descriptor
-      assert msgdef.class == Google::Protobuf::Descriptor
+      assert_instance_of Google::Protobuf::Descriptor, msgdef
       assert msgdef.any? {|field| field.name == "optional_int32"}
       optional_int32 = msgdef.lookup "optional_int32"
-      assert optional_int32.class == Google::Protobuf::FieldDescriptor
-      assert optional_int32 != nil
-      assert optional_int32.name == "optional_int32"
-      assert optional_int32.type == :int32
+      assert_instance_of Google::Protobuf::FieldDescriptor, optional_int32
+      refute_nil optional_int32
+      assert_equal "optional_int32", optional_int32.name
+      assert_equal :int32, optional_int32.type
       optional_int32.set(m, 5678)
-      assert m.optional_int32 == 5678
+      assert_equal 5678, m.optional_int32
       m.optional_int32 = 1000
-      assert optional_int32.get(m) == 1000
-
+      assert_equal 1000, optional_int32.get(m)
       optional_msg = msgdef.lookup "optional_msg"
-      assert optional_msg.subtype == TestMessage2.descriptor
-
+      assert_equal TestMessage2.descriptor, optional_msg.subtype
       optional_msg.set(m, optional_msg.subtype.msgclass.new)
 
-      assert msgdef.msgclass == TestMessage
-
+      assert_equal TestMessage, msgdef.msgclass
       optional_enum = msgdef.lookup "optional_enum"
-      assert optional_enum.subtype == TestEnum.descriptor
-      assert optional_enum.subtype.class == Google::Protobuf::EnumDescriptor
+      assert_equal TestEnum.descriptor, optional_enum.subtype
+      assert_instance_of Google::Protobuf::EnumDescriptor, optional_enum.subtype
       optional_enum.subtype.each do |k, v|
         # set with integer, check resolution to symbolic name
         optional_enum.set(m, v)
-        assert optional_enum.get(m) == k
+        assert_equal k, optional_enum.get(m)
       end
     end
 
@@ -1247,8 +1105,7 @@ module BasicTest
 
       json_text = TestMessage.encode_json(m)
       m2 = TestMessage.decode_json(json_text)
-      assert m == m2
-
+      assert_equal m, m2
       # Crash case from GitHub issue 283.
       bar = Bar.new(msg: "bar")
       baz1 = Baz.new(msg: "baz")
@@ -1270,7 +1127,7 @@ module BasicTest
       assert_equal expected_preserve, json
 
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
-      assert m == m2
+      assert_equal m, m2
     end
   end
 end

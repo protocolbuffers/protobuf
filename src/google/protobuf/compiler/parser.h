@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -39,6 +16,7 @@
 
 #include <cstdint>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "absl/container/flat_hash_map.h"
@@ -162,40 +140,72 @@ class PROTOBUF_EXPORT Parser {
   // true.  Otherwise, return false without logging an error.
   bool TryConsume(absl::string_view text);
 
+  // In the following functions the error is passed as a lazily evaluated
+  // callable to reduce stack usage and delay the actual execution of the error
+  // statement.
+  // Super simple type erasure interface. Similar to absl::FunctionRef but takes
+  // the callable by value. Optimized for lambdas with at most a single pointer
+  // as payload.
+  class ErrorMaker {
+    using StorageT = void*;
+
+   public:
+    template <typename F,
+              typename = std::enable_if_t<std::is_same<
+                  std::string, decltype(std::declval<F>()())>::value>>
+    ErrorMaker(F f) {
+      static_assert(sizeof(F) <= sizeof(StorageT), "");
+      static_assert(alignof(F) <= alignof(StorageT), "");
+      static_assert(std::is_trivially_destructible<F>::value, "");
+      ::new (static_cast<void*>(storage_)) F(f);
+      func_ = [](const void* p) { return (*reinterpret_cast<const F*>(p))(); };
+    }
+    // This overload helps callers that just want to pass a literal string.
+    ErrorMaker(const char* error) : error_(error), func_(nullptr) {}
+
+    std::string get() const { return func_ ? func_(storage_) : error_; }
+
+   private:
+    union {
+      alignas(StorageT) char storage_[sizeof(StorageT)];
+      const char* error_;
+    };
+    std::string (*func_)(const void*);
+  };
+
   // These attempt to read some kind of token from the input.  If successful,
   // they return true.  Otherwise they return false and add the given error
   // to the error list.
 
   // Consume a token with the exact text given.
-  bool Consume(absl::string_view text, absl::string_view error);
+  bool Consume(absl::string_view text, ErrorMaker error);
   // Same as above, but automatically generates the error "Expected \"text\".",
   // where "text" is the expected token text.
   bool Consume(absl::string_view text);
   // Consume a token of type IDENTIFIER and store its text in "output".
-  bool ConsumeIdentifier(std::string* output, absl::string_view error);
+  bool ConsumeIdentifier(std::string* output, ErrorMaker error);
   // Consume an integer and store its value in "output".
-  bool ConsumeInteger(int* output, absl::string_view error);
+  bool ConsumeInteger(int* output, ErrorMaker error);
   // Consume a signed integer and store its value in "output".
-  bool ConsumeSignedInteger(int* output, absl::string_view error);
+  bool ConsumeSignedInteger(int* output, ErrorMaker error);
   // Consume a 64-bit integer and store its value in "output".  If the value
   // is greater than max_value, an error will be reported.
-  bool ConsumeInteger64(uint64_t max_value, uint64_t* output,
-                        absl::string_view error);
+  bool ConsumeInteger64(uint64_t max_value, uint64_t* output, ErrorMaker error);
   // Try to consume a 64-bit integer and store its value in "output".  No
   // error is reported on failure, allowing caller to consume token another way.
   bool TryConsumeInteger64(uint64_t max_value, uint64_t* output);
   // Consume a number and store its value in "output".  This will accept
   // tokens of either INTEGER or FLOAT type.
-  bool ConsumeNumber(double* output, absl::string_view error);
+  bool ConsumeNumber(double* output, ErrorMaker error);
   // Consume a string literal and store its (unescaped) value in "output".
-  bool ConsumeString(std::string* output, absl::string_view error);
+  bool ConsumeString(std::string* output, ErrorMaker error);
 
   // Consume a token representing the end of the statement.  Comments between
   // this token and the next will be harvested for documentation.  The given
   // LocationRecorder should refer to the declaration that was just parsed;
   // it will be populated with these comments.
   //
-  // TODO(kenton):  The LocationRecorder is const because historically locations
+  // TODO:  The LocationRecorder is const because historically locations
   //   have been passed around by const reference, for no particularly good
   //   reason.  We should probably go through and change them all to mutable
   //   pointer to make this more intuitive.
@@ -211,18 +221,18 @@ class PROTOBUF_EXPORT Parser {
   // Error logging helpers
 
   // Invokes error_collector_->RecordError(), if error_collector_ is not NULL.
-  void RecordError(int line, int column, absl::string_view error);
+  PROTOBUF_NOINLINE void RecordError(int line, int column, ErrorMaker error);
 
   // Invokes error_collector_->RecordError() with the line and column number
   // of the current token.
-  void RecordError(absl::string_view error);
+  PROTOBUF_NOINLINE void RecordError(ErrorMaker error);
 
   // Invokes error_collector_->RecordWarning(), if error_collector_ is not NULL.
-  void RecordWarning(int line, int column, absl::string_view warning);
+  PROTOBUF_NOINLINE void RecordWarning(int line, int column, ErrorMaker error);
 
   // Invokes error_collector_->RecordWarning() with the line and column number
   // of the current token.
-  void RecordWarning(absl::string_view warning);
+  PROTOBUF_NOINLINE void RecordWarning(ErrorMaker error);
 
   // Records a location in the SourceCodeInfo.location table (see
   // descriptor.proto).  We use RAII to ensure that the start and end locations
@@ -285,7 +295,7 @@ class PROTOBUF_EXPORT Parser {
     // will be swapped into place, so after this is called *leading and
     // *trailing will be empty.
     //
-    // TODO(kenton):  See comment on TryConsumeEndOfDeclaration(), above, for
+    // TODO:  See comment on TryConsumeEndOfDeclaration(), above, for
     //   why this is const.
     void AttachComments(std::string* leading, std::string* trailing,
                         std::vector<std::string>* detached_comments) const;
@@ -304,7 +314,8 @@ class PROTOBUF_EXPORT Parser {
   // Parses the "syntax = \"proto2\";" line at the top of the file.  Returns
   // false if it failed to parse or if the syntax identifier was not
   // recognized.
-  bool ParseSyntaxIdentifier(const LocationRecorder& parent);
+  bool ParseSyntaxIdentifier(const FileDescriptorProto* file,
+                             const LocationRecorder& parent);
 
   // These methods parse various individual bits of code.  They return
   // false if they completely fail to parse the construct.  In this case,
@@ -401,13 +412,18 @@ class PROTOBUF_EXPORT Parser {
                      const LocationRecorder& message_location);
   bool ParseReservedNames(DescriptorProto* message,
                           const LocationRecorder& parent_location);
-  bool ParseReservedName(std::string* name, absl::string_view error_message);
+  bool ParseReservedName(std::string* name, ErrorMaker error_message);
+  bool ParseReservedIdentifiers(DescriptorProto* message,
+                                const LocationRecorder& parent_location);
+  bool ParseReservedIdentifier(std::string* name, ErrorMaker error_message);
   bool ParseReservedNumbers(DescriptorProto* message,
                             const LocationRecorder& parent_location);
   bool ParseReserved(EnumDescriptorProto* message,
                      const LocationRecorder& message_location);
   bool ParseReservedNames(EnumDescriptorProto* message,
                           const LocationRecorder& parent_location);
+  bool ParseReservedIdentifiers(EnumDescriptorProto* message,
+                                const LocationRecorder& parent_location);
   bool ParseReservedNumbers(EnumDescriptorProto* message,
                             const LocationRecorder& parent_location);
 
@@ -529,9 +545,11 @@ class PROTOBUF_EXPORT Parser {
 
   // Whether fields without label default to optional fields.
   bool DefaultToOptionalFields() const {
+    if (syntax_identifier_ == "editions") return true;
     return syntax_identifier_ == "proto3";
   }
 
+  bool ValidateMessage(const DescriptorProto* proto);
   bool ValidateEnum(const EnumDescriptorProto* proto);
 
   // =================================================================
@@ -544,6 +562,7 @@ class PROTOBUF_EXPORT Parser {
   bool require_syntax_identifier_;
   bool stop_after_syntax_identifier_;
   std::string syntax_identifier_;
+  Edition edition_ = Edition::EDITION_UNKNOWN;
 
   // Leading doc comments for the next declaration.  These are not complete
   // yet; use ConsumeEndOfDeclaration() to get the complete comments.

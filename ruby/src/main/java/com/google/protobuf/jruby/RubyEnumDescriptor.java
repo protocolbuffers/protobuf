@@ -32,10 +32,11 @@
 
 package com.google.protobuf.jruby;
 
+import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
-import com.google.protobuf.Descriptors.FileDescriptor;
+import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
@@ -124,6 +125,22 @@ public class RubyEnumDescriptor extends RubyObject {
     return RubyFileDescriptor.getRubyFileDescriptor(context, descriptor);
   }
 
+  @JRubyMethod
+  public IRubyObject options(ThreadContext context) {
+    RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
+    RubyDescriptor enumOptionsDescriptor =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.EnumOptions"));
+    RubyClass enumOptionsClass = (RubyClass) enumOptionsDescriptor.msgclass(context);
+    RubyMessage msg = (RubyMessage) enumOptionsClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(
+            descriptor.getOptions().toByteString().toByteArray()), /*freeze*/
+        true);
+  }
+
   public boolean isValidValue(ThreadContext context, IRubyObject value) {
     EnumValueDescriptor enumValue;
 
@@ -160,7 +177,7 @@ public class RubyEnumDescriptor extends RubyObject {
 
     RubyModule enumModule = RubyModule.newModule(runtime);
     boolean defaultValueRequiredButNotFound =
-        descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3;
+        LegacyFileDescriptor.getSyntax(descriptor.getFile()) == LegacyFileDescriptor.Syntax.PROTO3;
     for (EnumValueDescriptor value : descriptor.getValues()) {
       String name = fixEnumConstantName(value.getName());
       // Make sure it's a valid constant name before trying to create it
@@ -198,9 +215,9 @@ public class RubyEnumDescriptor extends RubyObject {
         // always start with uppercase letters. We tolerate this case by capitalizing
         // the first character if possible.
         return new StringBuilder()
-                .appendCodePoint(Character.toUpperCase(ch))
-                .append(name.substring(1))
-                .toString();
+            .appendCodePoint(Character.toUpperCase(ch))
+            .append(name.substring(1))
+            .toString();
       }
     }
     return name;

@@ -1,32 +1,9 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Test for google.protobuf.json_format."""
 
@@ -35,8 +12,12 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 import json
 import math
 import struct
-
 import unittest
+
+from google.protobuf import descriptor_pool
+from google.protobuf import json_format
+from google.protobuf.internal import more_messages_pb2
+from google.protobuf.internal import test_proto3_optional_pb2
 
 from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
@@ -44,12 +25,9 @@ from google.protobuf import field_mask_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
 from google.protobuf import wrappers_pb2
-from google.protobuf.internal import test_proto3_optional_pb2
-from google.protobuf import descriptor_pool
-from google.protobuf import json_format
 from google.protobuf import any_test_pb2
-from google.protobuf import unittest_pb2
 from google.protobuf import unittest_mset_pb2
+from google.protobuf import unittest_pb2
 from google.protobuf.util import json_format_pb2
 from google.protobuf.util import json_format_proto3_pb2
 
@@ -1297,6 +1275,39 @@ class JsonFormatTest(JsonFormatBase):
     # The following one can pass
     json_format.Parse('{"payload": {}, "child": {"child":{}}}',
                       message, max_recursion_depth=3)
+
+  def testJsonNameConflictSerilize(self):
+    message = more_messages_pb2.ConflictJsonName(value=2)
+    self.assertEqual(
+        json.loads('{"old_value": 2}'),
+        json.loads(json_format.MessageToJson(message))
+    )
+
+    new_message = more_messages_pb2.ConflictJsonName(new_value=2)
+    self.assertEqual(
+        json.loads('{"value": 2}'),
+        json.loads(json_format.MessageToJson(new_message))
+    )
+
+  def testJsonNameConflictParse(self):
+    message = more_messages_pb2.ConflictJsonName()
+    json_format.Parse('{"value": 2}', message)
+    self.assertEqual(2, message.new_value)
+    self.assertEqual(0, message.value)
+
+  def testJsonNameConflictRoundTrip(self):
+    message = more_messages_pb2.ConflictJsonName(value=2)
+    parsed_message = more_messages_pb2.ConflictJsonName()
+    json_string = json_format.MessageToJson(message)
+    json_format.Parse(json_string, parsed_message)
+    self.assertEqual(message, parsed_message)
+
+    new_message = more_messages_pb2.ConflictJsonName(new_value=2)
+    new_parsed_message = more_messages_pb2.ConflictJsonName()
+    json_string = json_format.MessageToJson(new_message)
+    json_format.Parse(json_string, new_parsed_message)
+    self.assertEqual(new_message, new_parsed_message)
+
 
 if __name__ == '__main__':
   unittest.main()

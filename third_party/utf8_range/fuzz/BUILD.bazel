@@ -5,5 +5,5 @@ cc_fuzz_test(
     testonly = 1,
     srcs = ["utf8_validity_fuzzer.cc"],
     dicts = ["utf8_fuzzer.dict"],
-    deps = ["//:utf8_validity"],
+    deps = ["//third_party/utf8_range:utf8_validity"],
 )

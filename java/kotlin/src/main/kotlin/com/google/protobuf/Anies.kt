@@ -40,6 +40,6 @@ inline fun <reified T : Message> ProtoAny.isA(): Boolean = this.`is`(T::class.ja
  * Returns the message of type `T` encoded in this [com.google.protobuf.Any].
  *
  * @throws InvalidProtocolBufferException if this [com.google.protobuf.Any] does not contain a `T`
- * message.
+ *   message.
  */
 inline fun <reified T : Message> ProtoAny.unpack(): T = unpack(T::class.java)

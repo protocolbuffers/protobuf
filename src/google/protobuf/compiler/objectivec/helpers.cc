@@ -1,35 +1,15 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/objectivec/helpers.h"
 
+#include <climits>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -37,10 +17,13 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/stubs/common.h"
 
@@ -104,7 +87,14 @@ std::string HandleExtremeFloatingPoint(std::string val, bool add_float_suffix) {
   }
 }
 
+const char* kDescriptorProtoName = "google/protobuf/descriptor.proto";
+
 }  // namespace
+
+bool ExtensionIsCustomOption(const FieldDescriptor* extension_field) {
+  return extension_field->containing_type()->file()->name() ==
+         kDescriptorProtoName;
+}
 
 std::string GetCapitalizedType(const FieldDescriptor* field) {
   switch (field->type()) {
@@ -276,7 +266,7 @@ std::string DefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_STRING: {
       const bool has_default_value = field->has_default_value();
       absl::string_view default_string = field->default_value_string();
-      if (!has_default_value || default_string.length() == 0) {
+      if (!has_default_value || default_string.empty()) {
         // If the field is defined as being the empty string,
         // then we will just assign to nil, as the empty string is the
         // default for both strings and data.
@@ -340,56 +330,67 @@ std::string ObjCClassDeclaration(absl::string_view class_name) {
   return absl::StrCat("GPBObjCClassDeclaration(", class_name, ");");
 }
 
-std::string BuildCommentsString(const SourceLocation& location,
-                                bool prefer_single_line) {
+void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
+                        CommentStringFlags flags) {
   absl::string_view comments = location.leading_comments.empty()
                                    ? location.trailing_comments
                                    : location.leading_comments;
-  std::vector<absl::string_view> lines;
-  lines = absl::StrSplit(comments, '\n', absl::AllowEmpty());
-  while (!lines.empty() && lines.back().empty()) {
-    lines.pop_back();
+  std::vector<absl::string_view> raw_lines(
+      absl::StrSplit(comments, '\n', absl::AllowEmpty()));
+  while (!raw_lines.empty() && raw_lines.back().empty()) {
+    raw_lines.pop_back();
   }
-  // If there are no comments, just return an empty string.
-  if (lines.empty()) {
-    return "";
-  }
-
-  std::string prefix;
-  std::string suffix;
-  std::string final_comments;
-  std::string epilogue;
-
-  bool add_leading_space = false;
-
-  if (prefer_single_line && lines.size() == 1) {
-    prefix = "/** ";
-    suffix = " */\n";
-  } else {
-    prefix = "* ";
-    suffix = "\n";
-    absl::StrAppend(&final_comments, "/**\n");
-    epilogue = " **/\n";
-    add_leading_space = true;
+  if (raw_lines.empty()) {
+    return;
   }
 
-  for (size_t i = 0; i < lines.size(); i++) {
-    std::string line = absl::StrReplaceAll(
-        absl::StripPrefix(lines[i], " "),
+  std::vector<std::string> lines;
+  lines.reserve(raw_lines.size());
+  for (absl::string_view l : raw_lines) {
+    lines.push_back(absl::StrReplaceAll(
+        // Strip any trailing whitespace to avoid any warnings on the generated
+        // code; but only stip one leading white space as that tends to be
+        // carried over from the .proto file, and we don't want extra spaces,
+        // the formatting below will ensure there is a space.
+        // NOTE: There could be >1 leading whitespace if the .proto file has
+        // formatted comments (see the WKTs), so we maintain any additional
+        // leading whitespace.
+        absl::StripTrailingAsciiWhitespace(absl::StripPrefix(l, " ")),
         {// HeaderDoc and appledoc use '\' and '@' for markers; escape them.
          {"\\", "\\\\"},
          {"@", "\\@"},
          // Decouple / from * to not have inline comments inside comments.
          {"/*", "/\\*"},
-         {"*/", "*\\/"}});
-    line = prefix + line;
-    absl::StripAsciiWhitespace(&line);
-    // If not a one line, need to add the first space before *, as
-    // absl::StripAsciiWhitespace would have removed it.
-    line = absl::StrCat(add_leading_space ? " " : "", line);
-    absl::StrAppend(&final_comments, line, suffix);
+         {"*/", "*\\/"}}));
   }
-  return absl::StrCat(final_comments, epilogue);
+
+  if (flags & kCommentStringFlags_AddLeadingNewline) {
+    printer->Emit("\n");
+  }
+
+  if ((flags & kCommentStringFlags_ForceMultiline) == 0 && lines.size() == 1) {
+    printer->Emit({{"text", lines[0]}}, R"(
+      /** $text$ */
+    )");
+    return;
+  }
+
+  printer->Emit(
+      {
+          {"lines",
+           [&] {
+             for (absl::string_view line : lines) {
+               printer->Emit({{"text", line}}, R"(
+                *$ text$
+              )");
+             }
+           }},
+      },
+      R"(
+        /**
+         $lines$
+         **/
+      )");
 }
 
 }  // namespace objectivec

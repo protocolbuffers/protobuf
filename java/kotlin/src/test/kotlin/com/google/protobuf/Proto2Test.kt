@@ -62,8 +62,8 @@ import protobuf_unittest.testIntIntMap
 import protobuf_unittest.testMaps
 import `in`.com.google.protobuf.kotlin.generator.EvilNamesProto2
 import `in`.com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2
-import `in`.com.google.protobuf.kotlin.generator.Interface
 import `in`.com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2Kt
+import `in`.com.google.protobuf.kotlin.generator.Interface
 import `in`.com.google.protobuf.kotlin.generator.evilNamesProto2
 import `in`.com.google.protobuf.kotlin.generator.hardKeywordsAllTypesProto2
 import `in`.com.google.protobuf.kotlin.generator.interface_

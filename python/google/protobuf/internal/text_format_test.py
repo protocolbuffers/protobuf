@@ -1,33 +1,10 @@
 # -*- coding: utf-8 -*-
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Test for google.protobuf.text_format."""
 
@@ -76,8 +53,7 @@ class TextFormatBase(unittest.TestCase):
 
   def ReadGolden(self, golden_filename):
     with test_util.GoldenFile(golden_filename) as f:
-      return (f.readlines() if str is bytes else  # PY3
-              [golden_line.decode('utf-8') for golden_line in f])
+      return [golden_line.decode('utf-8') for golden_line in f]
 
   def CompareToGoldenFile(self, text, golden_filename):
     golden_lines = self.ReadGolden(golden_filename)
@@ -878,10 +854,11 @@ class TextFormatParserTests(TextFormatBase):
   # itself for string fields.  It also demonstrates escaped binary data.
   # The ur"" string prefix is unfortunately missing from Python 3
   # so we resort to double escaping our \s so that they come through.
-  _UNICODE_SAMPLE = u"""
+  _UNICODE_SAMPLE = """
       optional_bytes: 'Á short desçription'
       optional_string: 'Á short desçription'
       repeated_bytes: '\\303\\201 short des\\303\\247ription'
+      repeated_bytes: '\\u00c1 short des\\u00e7ription'
       repeated_bytes: '\\x12\\x34\\x56\\x78\\x90\\xab\\xcd\\xef'
       repeated_string: '\\xd0\\x9f\\xd1\\x80\\xd0\\xb8\\xd0\\xb2\\xd0\\xb5\\xd1\\x82'
       """
@@ -897,8 +874,9 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(m.optional_bytes, self._GOLDEN_BYTES)
     self.assertEqual(m.optional_string, self._GOLDEN_UNICODE)
     self.assertEqual(m.repeated_bytes[0], self._GOLDEN_BYTES)
-    # repeated_bytes[1] contained simple \ escaped non-UTF-8 raw binary data.
-    self.assertEqual(m.repeated_bytes[1], self._GOLDEN_BYTES_1)
+    self.assertEqual(m.repeated_bytes[1], self._GOLDEN_BYTES)
+    # repeated_bytes[2] contained simple \ escaped non-UTF-8 raw binary data.
+    self.assertEqual(m.repeated_bytes[2], self._GOLDEN_BYTES_1)
     # repeated_string[0] contained \ escaped data representing the UTF-8
     # representation of _GOLDEN_STR_0 - it needs to decode as such.
     self.assertEqual(m.repeated_string[0], self._GOLDEN_STR_0)
@@ -909,8 +887,9 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(m.optional_bytes, self._GOLDEN_BYTES)
     self.assertEqual(m.optional_string, self._GOLDEN_UNICODE)
     self.assertEqual(m.repeated_bytes[0], self._GOLDEN_BYTES)
+    self.assertEqual(m.repeated_bytes[1], self._GOLDEN_BYTES)
     # repeated_bytes[1] contained simple \ escaped non-UTF-8 raw binary data.
-    self.assertEqual(m.repeated_bytes[1], self._GOLDEN_BYTES_1)
+    self.assertEqual(m.repeated_bytes[2], self._GOLDEN_BYTES_1)
     # repeated_string[0] contained \ escaped data representing the UTF-8
     # representation of _GOLDEN_STR_0 - it needs to decode as such.
     self.assertEqual(m.repeated_string[0], self._GOLDEN_STR_0)
@@ -1285,7 +1264,7 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
                       % (letter,) for letter in string.ascii_uppercase))
     self.CompareToGoldenText(text_format.MessageToString(message), golden)
 
-  # TODO(teboring): In c/137553523, not serializing default value for map entry
+  # TODO: In c/137553523, not serializing default value for map entry
   # message has been fixed. This test needs to be disabled in order to submit
   # that cl. Add this back when c/137553523 has been submitted.
   # def testMapOrderSemantics(self):

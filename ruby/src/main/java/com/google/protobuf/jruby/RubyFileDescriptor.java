@@ -32,9 +32,11 @@
 
 package com.google.protobuf.jruby;
 
+import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.Descriptors.FileDescriptor;
-import com.google.protobuf.Descriptors.FileDescriptor.Syntax.*;
 import com.google.protobuf.Descriptors.GenericDescriptor;
+import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
+import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor.Syntax.*;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -95,7 +97,7 @@ public class RubyFileDescriptor extends RubyObject {
    */
   @JRubyMethod(name = "syntax")
   public IRubyObject getSyntax(ThreadContext context) {
-    switch (fileDescriptor.getSyntax()) {
+    switch (LegacyFileDescriptor.getSyntax(fileDescriptor)) {
       case PROTO2:
         return context.runtime.newSymbol("proto2");
       case PROTO3:
@@ -103,6 +105,22 @@ public class RubyFileDescriptor extends RubyObject {
       default:
         return context.nil;
     }
+  }
+
+  @JRubyMethod
+  public IRubyObject options(ThreadContext context) {
+    RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
+    RubyDescriptor fileOptionsDescriptor =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.FileOptions"));
+    RubyClass fileOptionsClass = (RubyClass) fileOptionsDescriptor.msgclass(context);
+    RubyMessage msg = (RubyMessage) fileOptionsClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(
+            fileDescriptor.getOptions().toByteString().toByteArray()), /*freeze*/
+        true);
   }
 
   private static RubyClass cFileDescriptor;

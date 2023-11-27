@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: jieluo@google.com (Jie Luo)
 //
@@ -36,6 +13,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_PYTHON_PYI_GENERATOR_H__
 
 #include <string>
+#include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -70,16 +48,23 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   // CodeGenerator methods.
   uint64_t GetSupportedFeatures() const override {
     // Code generators must explicitly support proto3 optional.
-    return CodeGenerator::FEATURE_PROTO3_OPTIONAL;
+    return Feature::FEATURE_PROTO3_OPTIONAL |
+           Feature::FEATURE_SUPPORTS_EDITIONS;
   }
   bool Generate(const FileDescriptor* file, const std::string& parameter,
                 GeneratorContext* generator_context,
                 std::string* error) const override;
 
+  Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+  std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
+    return {};
+  }
+
  private:
-  void PrintImportForDescriptor(
-      const FileDescriptor& desc,
-      absl::flat_hash_set<std::string>* seen_aliases) const;
+  void PrintImportForDescriptor(const FileDescriptor& desc,
+                                absl::flat_hash_set<std::string>* seen_aliases,
+                                bool* has_importlib) const;
   template <typename DescriptorT>
   void Annotate(const std::string& label, const DescriptorT* descriptor) const;
   void PrintImports() const;
@@ -106,6 +91,7 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   mutable absl::Mutex mutex_;
   mutable const FileDescriptor* file_;  // Set in Generate().  Under mutex_.
   mutable io::Printer* printer_;        // Set in Generate().  Under mutex_.
+  mutable bool strip_nonfunctional_codegen_ = false;  // Set in Generate().
   // import_map will be a mapping from filename to module alias, e.g.
   // "google3/foo/bar.py" -> "_bar"
   mutable absl::flat_hash_map<std::string, std::string> import_map_;

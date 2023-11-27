@@ -2,25 +2,25 @@
 #
 # See also code generation logic under /src/google/protobuf/compiler/php.
 
-load("@rules_pkg//:mappings.bzl", "pkg_files", "pkg_filegroup", "strip_prefix")
+load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@upb//cmake:build_defs.bzl", "staleness_test")
+load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION", "PROTOC_VERSION")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//conformance:defs.bzl", "conformance_test")
-load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION", "PROTOC_VERSION")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 filegroup(
     name = "source_files",
-    visibility = [
-        "//conformance:__pkg__",
-        "//php:__pkg__",
-    ],
     srcs = glob([
         "src/GPBMetadata/Google/Protobuf/**/*.php",
         "src/Google/Protobuf/**/*.php",
     ]) + [
         "composer.json",
         ":php_ext_source_files",
+    ],
+    visibility = [
+        "//conformance:__pkg__",
+        "//php:__pkg__",
     ],
 )
 
@@ -32,7 +32,7 @@ inline_sh_binary(
     name = "build_extension",
     cmd = """
         mkdir -p php/ext/google/protobuf/third_party/utf8_range
-        cp external/utf8_range/* php/ext/google/protobuf/third_party/utf8_range
+        cp third_party/utf8_range/* php/ext/google/protobuf/third_party/utf8_range
 
         pushd  php/ext/google/protobuf
         phpize
@@ -46,14 +46,14 @@ genrule(
     name = "extension",
     srcs = [
         ":source_files",
-        "@utf8_range//:utf8_range_srcs",
+        "//third_party/utf8_range:utf8_range_srcs",
     ],
-    tools = [":build_extension"],
     outs = ["protobuf.so"],
     cmd = """
         ./$(execpath :build_extension) $@
         cp php/ext/google/protobuf/modules/protobuf.so $(OUTS)
     """,
+    tools = [":build_extension"],
     visibility = ["//visibility:public"],
 )
 
@@ -64,35 +64,35 @@ genrule(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_php.txt",
-    testee = "//conformance:conformance_php",
-    text_format_failure_list = "//conformance:text_format_failure_list_php.txt",
     target_compatible_with = select({
         "@platforms//os:osx": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
+    testee = "//conformance:conformance_php",
+    text_format_failure_list = "//conformance:text_format_failure_list_php.txt",
 )
 
 conformance_test(
     name = "conformance_test_c",
     failure_list = "//conformance:failure_list_php_c.txt",
-    testee = "//conformance:conformance_php_c",
-    text_format_failure_list = "//conformance:text_format_failure_list_php.txt",
     target_compatible_with = select({
         "@platforms//os:osx": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
+    testee = "//conformance:conformance_php_c",
+    text_format_failure_list = "//conformance:text_format_failure_list_php.txt",
 )
 
 genrule(
     name = "copy_php_amalgamation_h",
-    srcs = ["@upb//:php-upb.h"],
+    srcs = ["//upb:php-upb.h"],
     outs = ["generated-in/ext/google/protobuf/php-upb.h"],
     cmd = "cp $< $@",
 )
 
 genrule(
     name = "copy_php_amalgamation_c",
-    srcs = ["@upb//:php-upb.c"],
+    srcs = ["//upb:php-upb.c"],
     outs = ["generated-in/ext/google/protobuf/php-upb.c"],
     cmd = "cp $< $@",
 )
@@ -100,10 +100,11 @@ genrule(
 staleness_test(
     name = "test_amalgamation_staleness",
     outs = [
-        "ext/google/protobuf/php-upb.h",
         "ext/google/protobuf/php-upb.c",
+        "ext/google/protobuf/php-upb.h",
     ],
     generated_pattern = "generated-in/%s",
+    tags = ["manual"],
 )
 
 ################################################################################
@@ -120,7 +121,6 @@ pkg_files(
         "tests/proto/**/*.proto",
         "tests/proto_previous/*.proto",
     ]) + [
-        ":source_files",
         "BUILD.bazel",
         "README.md",
         "REFCOUNTING.md",
@@ -130,6 +130,7 @@ pkg_files(
         "release.sh",
         "src/phpdoc.dist.xml",
         "tests/valgrind.supp",
+        ":source_files",
     ],
     prefix = "php",
     strip_prefix = strip_prefix.from_pkg(""),
@@ -141,70 +142,71 @@ pkg_files(
 ################################################################################
 
 pkg_files(
-  name = "php_ext_source_files",
-  srcs = glob([
-    "ext/google/protobuf/*.h",
-    "ext/google/protobuf/*.c",
-  ]) + [
-    "//:LICENSE",
-    "ext/google/protobuf/config.m4",
-    "ext/google/protobuf/wkt.inc",
-  ],
+    name = "php_ext_source_files",
+    srcs = glob([
+        "ext/google/protobuf/*.h",
+        "ext/google/protobuf/*.c",
+    ]) + [
+        "ext/google/protobuf/config.m4",
+        "ext/google/protobuf/config.w32",
+        "ext/google/protobuf/wkt.inc",
+        "//:LICENSE",
+    ],
 )
 
 pkg_files(
-  name = "utf8_range_files",
-  srcs = [
-    "@utf8_range//:utf8_range_srcs",
-    "@utf8_range//:LICENSE",
-  ],
-  prefix = "third_party/utf8_range",
+    name = "utf8_range_files",
+    srcs = [
+        "//third_party/utf8_range:LICENSE",
+        "//third_party/utf8_range:utf8_range_srcs",
+    ],
+    prefix = "third_party/utf8_range",
 )
 
 pkg_filegroup(
-  name = "pecl_release_files",
-  srcs = [
-    ":php_ext_source_files",
-    ":utf8_range_files",
-  ],
-  prefix = "protobuf-%s" % PROTOBUF_PHP_VERSION,
+    name = "pecl_release_files",
+    srcs = [
+        ":php_ext_source_files",
+        ":utf8_range_files",
+    ],
+    prefix = "protobuf-%s" % PROTOBUF_PHP_VERSION,
 )
 
 # PECL .tgz without package.xml
 pkg_tar(
-  name = "release_without_package",
-  extension = "tgz",
-  srcs = [
-    ":pecl_release_files",
-  ],
-  out = "release_without_package.tgz",
+    name = "release_without_package",
+    srcs = [
+        ":pecl_release_files",
+    ],
+    out = "release_without_package.tgz",
+    extension = "tgz",
 )
 
 # Generate PECL package.xml
 genrule(
     name = "generate_package_xml",
     srcs = [
-      ":release_without_package",
-      "ext/google/protobuf/template_package.xml",
+        ":release_without_package",
+        "ext/google/protobuf/template_package.xml",
     ],
     outs = ["package.xml"],
     cmd = " ".join([
-      "$(location ext/google/protobuf/generate_package_xml.sh)",
-      "$(location ext/google/protobuf/template_package.xml)",
-      PROTOBUF_PHP_VERSION,
-      PROTOC_VERSION,
-      "$$(tar -tf $(location :release_without_package) | sed -z -e 's;\\n;,;g')",
-      "$(location package.xml)"
+        "$(location ext/google/protobuf/generate_package_xml.sh)",
+        "$(location ext/google/protobuf/template_package.xml)",
+        PROTOBUF_PHP_VERSION,
+        PROTOC_VERSION,
+        "$$(tar -tf $(location :release_without_package) | sed -z -e 's;\\n;,;g')",
+        "$(location package.xml)",
     ]),
     tools = ["ext/google/protobuf/generate_package_xml.sh"],
 )
 
 pkg_tar(
-  name = "release",
-  extension = "tgz",
-  srcs = [
-    ":pecl_release_files",
-    ":generate_package_xml",
-  ],
-  out = "protobuf-%s.tgz" % PROTOBUF_PHP_VERSION,
+    name = "release",
+    srcs = [
+        ":generate_package_xml",
+        ":pecl_release_files",
+    ],
+    out = "protobuf-%s.tgz" % PROTOBUF_PHP_VERSION,
+    extension = "tgz",
 )

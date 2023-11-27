@@ -1,7 +1,7 @@
 option(protobuf_USE_EXTERNAL_GTEST "Use external Google Test (i.e. not the one in third_party/googletest)" OFF)
 
 if (protobuf_USE_EXTERNAL_GTEST)
-  find_package(GTest REQUIRED)
+  find_package(GTest REQUIRED CONFIG)
 else()
   if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/googletest/CMakeLists.txt")
     message(FATAL_ERROR
@@ -32,9 +32,9 @@ else()
           "GTEST_CREATE_SHARED_LIBRARY=1"
     )
 
-    if (protobuf_INSTALL)
-      set(protobuf_INSTALL_TESTS ON)
-    endif()
+  endif()
+  if (protobuf_INSTALL)
+    set(protobuf_INSTALL_TESTS ON)
   endif()
 
   target_link_libraries(gmock ${CMAKE_THREAD_LIBS_INIT})

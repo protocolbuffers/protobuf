@@ -1,9 +1,9 @@
 This directory contains *CMake* files that can be used to build protobuf.
 
-You need to have [CMake](http://www.cmake.org) and
-[Git](http://git-scm.com) installed on your computer before proceeding.  We
-currently support CMake 3.5 and newer on both [Windows](#windows-builds) and
-[Linux](#linux-builds).
+You need to have [CMake](http://www.cmake.org),
+[Git](http://git-scm.com), and [Abseil](https://github.com/abseil/abseil-cpp)
+installed on your computer before proceeding.  We currently support CMake 3.5
+and newer on both [Windows](#windows-builds) and [Linux](#linux-builds).
 
 Most of the instructions will be given using CMake's command-line interface, but
 the same actions can be performed using appropriate GUI tools.
@@ -16,8 +16,10 @@ By default, CMake will use whatever C++ version is the system default.  Since
 protobuf requires C++14 or newer, sometimes you will need to explicitly override
 this.  For example, the following:
 
-    cmake . -DCMAKE_CXX_STANDARD=14
-    cmake --build
+```
+cmake . -DCMAKE_CXX_STANDARD=14
+cmake --build .
+```
 
 will build protobuf using C++14 (see [CXX_STANDARD](https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html#prop_tgt:CXX_STANDARD){.external} for all available options).
 
@@ -67,11 +69,6 @@ You can get the latest stable source packages from the release page:
 
     https://github.com/protocolbuffers/protobuf/releases/latest
 
-For example: if you only need C++, download `protobuf-cpp-[VERSION].tar.gz`; if
-you need C++ and Java, download `protobuf-java-[VERSION].tar.gz` (every package
-contains C++ source already); if you need C++ and multiple other languages,
-download `protobuf-all-[VERSION].tar.gz`.
-
 Or you can use git to clone from protobuf git repository.
 
      C:\Path\to> mkdir src & cd src
@@ -118,6 +115,20 @@ Create a temporary *build* folder and change your working directory to it:
      mkdir C:\Path\to\build\protobuf
      cd C:\Path\to\build\protobuf
      C:\Path\to\build\protobuf>
+
+During configuration you will also be specifying where CMake should expect to
+find your Abseil installation. To do so, first set `-Dprotobuf_ABSL_PROVIDER=package`
+and then set `-DCMAKE_PREFIX_PATH` to the path where you installed Abseil.
+
+For example:
+
+```console
+C:\Path\to\build\protobuf> cmake -S. -Bcmake-out \
+                           -DCMAKE_INSTALL_PREFIX=/tmp/protobuf \
+                           -DCMAKE_CXX_STANDARD=14 \
+                           -Dprotobuf_ABSL_PROVIDER=package \
+                           -DCMAKE_PREFIX_PATH=/tmp/absl  # Path to where I installed Abseil
+```
 
 The *Makefile* and *Ninja* generators can build the project in only one configuration, so you need to build
 a separate folder for each configuration.

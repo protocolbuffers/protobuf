@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // This file contains a program for running the test suite in a separate
 // process.  The other alternative is to run the suite in-process.  See
@@ -60,15 +37,19 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <future>
 #include <vector>
 
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
+#include "google/protobuf/endian.h"
 
 using conformance::ConformanceResponse;
 using google::protobuf::ConformanceTestSuite;
@@ -142,6 +123,11 @@ void UsageError() {
           "                              strictly conforming to protobuf\n");
   fprintf(stderr, "                              spec.\n");
   fprintf(stderr,
+          "  --maximum edition           Only run conformance tests up to \n");
+  fprintf(stderr,
+          "                              and including the specified\n");
+  fprintf(stderr, "                              edition.\n");
+  fprintf(stderr,
           "  --output_dir                <dirname> Directory to write\n"
           "                              output files.\n");
   exit(1);
@@ -155,7 +141,8 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
   }
   current_test_name_ = test_name;
 
-  uint32_t len = request.size();
+  uint32_t len =
+      internal::little_endian::FromHost(static_cast<uint32_t>(request.size()));
   CheckedWrite(write_fd_, &len, sizeof(uint32_t));
   CheckedWrite(write_fd_, request.c_str(), request.size());
 
@@ -190,6 +177,7 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
     return;
   }
 
+  len = internal::little_endian::ToHost(len);
   response->resize(len);
   CheckedRead(read_fd_, (void *)response->c_str(), len);
 }
@@ -220,6 +208,14 @@ int ForkPipeRunner::Run(int argc, char *argv[],
         suite->SetVerbose(true);
       } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
         suite->SetEnforceRecommended(true);
+      } else if (strcmp(argv[arg], "--maximum_edition") == 0) {
+        if (++arg == argc) UsageError();
+        Edition edition = EDITION_UNKNOWN;
+        if (!Edition_Parse(absl::StrCat("EDITION_", argv[arg]), &edition)) {
+          fprintf(stderr, "Unknown edition: %s\n", argv[arg]);
+          UsageError();
+        }
+        suite->SetMaximumEdition(edition);
       } else if (strcmp(argv[arg], "--output_dir") == 0) {
         if (++arg == argc) UsageError();
         suite->SetOutputDir(argv[arg]);
@@ -255,7 +251,7 @@ int ForkPipeRunner::Run(int argc, char *argv[],
   return all_ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-// TODO(haberman): make this work on Windows, instead of using these
+// TODO: make this work on Windows, instead of using these
 // UNIX-specific APIs.
 //
 // There is a platform-agnostic API in
@@ -345,7 +341,7 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
       if (status == std::future_status::timeout) {
         ABSL_LOG(ERROR) << current_test_name_ << ": timeout from test program";
         kill(child_pid_, SIGQUIT);
-        // TODO(sandyzhang): Only log in flag-guarded mode, since reading output
+        // TODO: Only log in flag-guarded mode, since reading output
         // from SIGQUIT is slow and verbose.
         std::vector<char> err;
         err.resize(5000);

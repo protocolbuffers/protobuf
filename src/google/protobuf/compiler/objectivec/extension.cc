@@ -1,45 +1,24 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/objectivec/extension.h"
 
-#include <iostream>
-#include <ostream>
 #include <string>
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
@@ -48,11 +27,13 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-ExtensionGenerator::ExtensionGenerator(absl::string_view root_class_name,
-                                       const FieldDescriptor* descriptor)
+ExtensionGenerator::ExtensionGenerator(
+    absl::string_view root_or_message_class_name,
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
     : method_name_(ExtensionMethodName(descriptor)),
-      root_class_and_method_name_(
-          absl::StrCat(root_class_name, "_", method_name_)),
+      full_method_name_(
+          absl::StrCat(root_or_message_class_name, "_", method_name_)),
       descriptor_(descriptor) {
   ABSL_CHECK(!descriptor->is_map())
       << "error: Extension is a map<>!"
@@ -60,38 +41,25 @@ ExtensionGenerator::ExtensionGenerator(absl::string_view root_class_name,
 }
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
-  vars["method_name"] = method_name_;
-  if (IsRetainedName(method_name_)) {
-    vars["storage_attribute"] = " NS_RETURNS_NOT_RETAINED";
-  } else {
-    vars["storage_attribute"] = "";
-  }
-  SourceLocation location;
-  if (descriptor_->GetSourceLocation(&location)) {
-    vars["comments"] = BuildCommentsString(location, true);
-  } else {
-    vars["comments"] = "";
-  }
-  // Unlike normal message fields, check if the file for the extension was
-  // deprecated.
-  vars["deprecated_attribute"] =
-      GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file());
-  // clang-format off
-  printer->Print(
-      vars,
-      "$comments$"
-      "+ (GPBExtensionDescriptor *)$method_name$$storage_attribute$$deprecated_attribute$;\n");
-  // clang-format on
+  printer->Emit(
+      {{"method_name", method_name_},
+       {"comments", [&] { EmitCommentsString(printer, descriptor_); }},
+       {"storage_attribute",
+        IsRetainedName(method_name_) ? "NS_RETURNS_NOT_RETAINED" : ""},
+       {"deprecated_attribute",
+        // Unlike normal message fields, check if the file for the extension was
+        // deprecated.
+        GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file())}},
+      R"objc(
+        $comments$
+        + (GPBExtensionDescriptor *)$method_name$$ storage_attribute$$ deprecated_attribute$;
+      )objc");
 }
 
 void ExtensionGenerator::GenerateStaticVariablesInitialization(
     io::Printer* printer) const {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
-  vars["root_class_and_method_name"] = root_class_and_method_name_;
   const std::string containing_type = ClassName(descriptor_->containing_type());
-  vars["extended_type"] = ObjCClass(containing_type);
-  vars["number"] = absl::StrCat(descriptor_->number());
+  ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
 
   std::vector<std::string> options;
   if (descriptor_->is_repeated()) options.push_back("GPBExtensionRepeated");
@@ -99,46 +67,37 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   if (descriptor_->containing_type()->options().message_set_wire_format()) {
     options.push_back("GPBExtensionSetWireFormat");
   }
-  vars["options"] = BuildFlagsString(FLAGTYPE_EXTENSION, options);
 
-  ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
-  if (objc_type == OBJECTIVECTYPE_MESSAGE) {
-    std::string message_type = ClassName(descriptor_->message_type());
-    vars["type"] = ObjCClass(message_type);
-  } else {
-    vars["type"] = "Nil";
-  }
-
-  vars["default_name"] = GPBGenericValueFieldName(descriptor_);
-  if (descriptor_->is_repeated()) {
-    vars["default"] = "nil";
-  } else {
-    vars["default"] = DefaultValue(descriptor_);
-  }
-  std::string type = GetCapitalizedType(descriptor_);
-  vars["extension_type"] = absl::StrCat("GPBDataType", type);
-
-  if (objc_type == OBJECTIVECTYPE_ENUM) {
-    vars["enum_desc_func_name"] =
-        absl::StrCat(EnumName(descriptor_->enum_type()), "_EnumDescriptor");
-  } else {
-    vars["enum_desc_func_name"] = "NULL";
-  }
-
-  // clang-format off
-  printer->Print(
-      vars,
-      "{\n"
-      "  .defaultValue.$default_name$ = $default$,\n"
-      "  .singletonName = GPBStringifySymbol($root_class_and_method_name$),\n"
-      "  .extendedClass.clazz = $extended_type$,\n"
-      "  .messageOrGroupClass.clazz = $type$,\n"
-      "  .enumDescriptorFunc = $enum_desc_func_name$,\n"
-      "  .fieldNumber = $number$,\n"
-      "  .dataType = $extension_type$,\n"
-      "  .options = $options$,\n"
-      "},\n");
-  // clang-format on
+  printer->Emit(
+      {{"default",
+        descriptor_->is_repeated() ? "nil" : DefaultValue(descriptor_)},
+       {"default_name", GPBGenericValueFieldName(descriptor_)},
+       {"enum_desc_func_name",
+        objc_type == OBJECTIVECTYPE_ENUM
+            ? absl::StrCat(EnumName(descriptor_->enum_type()),
+                           "_EnumDescriptor")
+            : "NULL"},
+       {"extended_type", ObjCClass(containing_type)},
+       {"extension_type",
+        absl::StrCat("GPBDataType", GetCapitalizedType(descriptor_))},
+       {"number", descriptor_->number()},
+       {"options", BuildFlagsString(FLAGTYPE_EXTENSION, options)},
+       {"full_method_name", full_method_name_},
+       {"type", objc_type == OBJECTIVECTYPE_MESSAGE
+                    ? ObjCClass(ClassName(descriptor_->message_type()))
+                    : "Nil"}},
+      R"objc(
+        {
+          .defaultValue.$default_name$ = $default$,
+          .singletonName = GPBStringifySymbol($full_method_name$),
+          .extendedClass.clazz = $extended_type$,
+          .messageOrGroupClass.clazz = $type$,
+          .enumDescriptorFunc = $enum_desc_func_name$,
+          .fieldNumber = $number$,
+          .dataType = $extension_type$,
+          .options = $options$,
+        },
+      )objc");
 }
 
 void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
@@ -152,13 +111,33 @@ void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
   }
 }
 
+void ExtensionGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  const Descriptor* extended_type = descriptor_->containing_type();
+  if (descriptor_->file() != extended_type->file()) {
+    deps->insert(extended_type->file());
+  }
+
+  const ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
+  if (objc_type == OBJECTIVECTYPE_MESSAGE) {
+    const Descriptor* value_msg_descriptor = descriptor_->message_type();
+    if (descriptor_->file() != value_msg_descriptor->file()) {
+      deps->insert(value_msg_descriptor->file());
+    }
+  } else if (objc_type == OBJECTIVECTYPE_ENUM) {
+    const EnumDescriptor* value_enum_descriptor = descriptor_->enum_type();
+    if (descriptor_->file() != value_enum_descriptor->file()) {
+      deps->insert(value_enum_descriptor->file());
+    }
+  }
+}
+
 void ExtensionGenerator::GenerateRegistrationSource(
     io::Printer* printer) const {
-  // clang-format off
-  printer->Print(
-      "[registry addExtension:$root_class_and_method_name$];\n",
-      "root_class_and_method_name", root_class_and_method_name_);
-  // clang-format on
+  printer->Emit({{"full_method_name", full_method_name_}},
+                R"objc(
+                  [registry addExtension:$full_method_name$];
+                )objc");
 }
 
 }  // namespace objectivec

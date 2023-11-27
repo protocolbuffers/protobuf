@@ -120,7 +120,7 @@ GPB_FINAL @interface GPBApi : GPBMessage
 @property(nonatomic, readonly) NSUInteger mixinsArray_Count;
 
 /** The source syntax of the service. */
-@property(nonatomic, readwrite) enum GPBSyntax syntax;
+@property(nonatomic, readwrite) GPBSyntax syntax;
 
 @end
 
@@ -174,7 +174,7 @@ GPB_FINAL @interface GPBMethod : GPBMessage
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 /** The source syntax of this method. */
-@property(nonatomic, readwrite) enum GPBSyntax syntax;
+@property(nonatomic, readwrite) GPBSyntax syntax;
 
 @end
 

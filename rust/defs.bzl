@@ -11,8 +11,14 @@ load(
     "rust_upb_proto_library_aspect",
 )
 
-def rust_proto_library(name, deps, **args):
-    """Declares all the boilerplate needed to use Rust protobufs conveniently. 
+visibility([
+    "//experimental/...",
+    "//src/google/protobuf/...",
+    "//rust/...",
+])
+
+def rust_proto_library(name, deps, visibility = [], **args):
+    """Declares all the boilerplate needed to use Rust protobufs conveniently.
 
     Hopefully no user will ever need to read this code.
 
@@ -30,14 +36,31 @@ def rust_proto_library(name, deps, **args):
             "//rust:use_upb_kernel": name + "_upb_kernel",
             "//conditions:default": name + "_cpp_kernel",
         }),
+        visibility = visibility,
     )
 
-    rust_upb_proto_library(name = name + "_upb_kernel", deps = deps, **args)
+    rust_upb_proto_library(
+        name = name + "_upb_kernel",
+        deps = deps,
+        visibility = ["//visibility:private"],
+        **args
+    )
 
+    # TODO: Stop declaring cc_proto_library once we can use cc_proto_aspect directly.
     _cc_proto_name = name.removesuffix("_rust_proto") + "_cc_proto"
     if not native.existing_rule(_cc_proto_name):
-        cc_proto_library(name = _cc_proto_name, deps = deps, **args)
-    rust_cc_proto_library(name = name + "_cpp_kernel", deps = [_cc_proto_name], **args)
+        cc_proto_library(
+            name = _cc_proto_name,
+            deps = deps,
+            visibility = ["//visibility:private"],
+            **args
+        )
+    rust_cc_proto_library(
+        name = name + "_cpp_kernel",
+        deps = [_cc_proto_name],
+        visibility = ["//visibility:private"],
+        **args
+    )
 
 def _rust_proto_library_impl(ctx):
     deps = ctx.attr.deps

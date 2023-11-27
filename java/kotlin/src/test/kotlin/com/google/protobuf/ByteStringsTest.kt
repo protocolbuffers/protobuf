@@ -63,6 +63,16 @@ class ByteStringsTest {
   }
 
   @Test
+  fun isNotEmpty_returnsTrue_whenNotEmpty() {
+    assertThat("abc".toByteStringUtf8().isNotEmpty()).isTrue()
+  }
+
+  @Test
+  fun isNotEmpty_returnsFalse_whenEmpty() {
+    assertThat(ByteString.EMPTY.isNotEmpty()).isFalse()
+  }
+
+  @Test
   fun byteAtBelowZero() {
     val str = "abc".toByteStringUtf8()
     assertFailsWith<IndexOutOfBoundsException> { str[-1] }

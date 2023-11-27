@@ -2,7 +2,6 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("@rules_python//python:defs.bzl", "py_library")
-load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 
 def _GetPath(ctx, path):
     if ctx.label.workspace_root:
@@ -490,6 +489,7 @@ def internal_objc_proto_library(
 
 def internal_ruby_proto_library(
         name,
+        ruby_library,
         srcs = [],
         deps = [],
         includes = ["."],
@@ -506,6 +506,7 @@ def internal_ruby_proto_library(
 
     Args:
       name: the name of the ruby_proto_library.
+      ruby_library: the ruby library rules to use.
       srcs: the .proto files to compile.
       deps: a list of dependency labels; must be a internal_ruby_proto_library.
       includes: a string indicating the include path of the .proto files.

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -73,7 +50,7 @@ import java.util.Arrays;
  *
  * @author martinrb@google.com (Martin Buchholz)
  */
-// TODO(nathanmittler): Copy changes in this class back to Guava
+// TODO: Copy changes in this class back to Guava
 final class Utf8 {
 
   /**
@@ -377,7 +354,7 @@ final class Utf8 {
   }
 
   /** A processor of UTF-8 strings, providing methods for checking validity and encoding. */
-  // TODO(nathanmittler): Add support for Memory/MemoryBlock on Android.
+  // TODO: Add support for Memory/MemoryBlock on Android.
   abstract static class Processor {
     /**
      * Returns {@code true} if the given byte array slice is a well-formed UTF-8 byte sequence. The
@@ -543,7 +520,7 @@ final class Utf8 {
 
       for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1;
         do {
@@ -591,7 +568,7 @@ final class Utf8 {
             return incompleteStateFor(buffer, byte1, index, limit - index);
           }
 
-          // TODO(nathanmittler): Consider using getInt() to improve performance.
+          // TODO: Consider using getInt() to improve performance.
           int byte2 = buffer.get(index++);
           if (byte2 > (byte) 0xBF
               // Check that 1 <= plane <= 16.  Tricky optimized form of:
@@ -834,7 +811,7 @@ final class Utf8 {
             if (inIx + 1 == inLength || !isSurrogatePair(c, (low = in.charAt(++inIx)))) {
               throw new UnpairedSurrogateException(inIx, inLength);
             }
-            // TODO(nathanmittler): Consider using putInt() to improve performance.
+            // TODO: Consider using putInt() to improve performance.
             int codePoint = toCodePoint(c, low);
             out.put(outIx++, (byte) ((0xF << 4) | (codePoint >>> 18)));
             out.put(outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 12))));
@@ -846,7 +823,7 @@ final class Utf8 {
         // Successfully encoded the entire string.
         Java8Compatibility.position(out, outIx);
       } catch (IndexOutOfBoundsException e) {
-        // TODO(nathanmittler): Consider making the API throw IndexOutOfBoundsException instead.
+        // TODO: Consider making the API throw IndexOutOfBoundsException instead.
 
         // If we failed in the outer ASCII loop, outIx will not have been updated. In this case,
         // use inIx to determine the bad write index.
@@ -1674,7 +1651,7 @@ final class Utf8 {
 
       for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1 = 0;
         for (; remaining > 0 && (byte1 = UnsafeUtil.getByte(bytes, offset++)) >= 0; --remaining) {}
@@ -1748,7 +1725,7 @@ final class Utf8 {
 
       for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1 = 0;
         for (; remaining > 0 && (byte1 = UnsafeUtil.getByte(address++)) >= 0; --remaining) {}

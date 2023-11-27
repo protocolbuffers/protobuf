@@ -1,6 +1,6 @@
 #include "utf8_validity.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 
 namespace utf8_range {

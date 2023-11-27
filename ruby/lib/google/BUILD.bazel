@@ -8,9 +8,16 @@ config_setting(
 
 cc_binary(
     name = "protobuf_c.so",
-    deps = ["//ruby/ext/google/protobuf_c"],
     linkshared = 1,
     tags = ["manual"],
+    deps = ["//ruby/ext/google/protobuf_c"],
+)
+
+cc_binary(
+    name = "libprotobuf_c_ffi.so",
+    linkshared = 1,
+    tags = ["manual"],
+    deps = ["//ruby/ext/google/protobuf_c:protobuf_c_ffi"],
 )
 
 # Move the bundle to the location expected by our Ruby files.
@@ -22,13 +29,25 @@ genrule(
     tags = ["manual"],
 )
 
+# Move the bundle to the location expected by our Ruby files.
+genrule(
+    name = "copy_ffi_bundle",
+    srcs = ["//ruby/ext/google/protobuf_c:ffi_bundle"],
+    outs = ["libprotobuf_c_ffi.bundle"],
+    cmd = "cp $< $@",
+    tags = ["manual"],
+    visibility = [
+        "//ruby:__subpackages__",
+    ],
+)
+
 java_binary(
     name = "protobuf_java_bin",
-    runtime_deps = [
-        "//ruby/src/main/java:protobuf_java"
-    ],
-    deploy_env = ["@rules_ruby//ruby/runtime:jruby_binary"],
     create_executable = False,
+    deploy_env = ["@rules_ruby//ruby/runtime:jruby_binary"],
+    runtime_deps = [
+        "//ruby/src/main/java:protobuf_java",
+    ],
 )
 
 # Move the jar to the location expected by our Ruby files.
@@ -46,19 +65,37 @@ ruby_library(
     srcs = glob([
         "**/*.rb",
     ]),
-    deps = ["//:well_known_ruby_protos"],
-    includes = ["ruby/lib"],
     data = select({
+        # Platform native implementations
         "@rules_ruby//ruby/runtime:config_jruby": ["protobuf_java.jar"],
         "@platforms//os:osx": ["protobuf_c.bundle"],
         "//conditions:default": ["protobuf_c.so"],
+    }) + select({
+        # FFI Implementations
+        "//ruby:macos_ffi_enabled": ["libprotobuf_c_ffi.bundle"],
+        "//ruby:linux_ffi_enabled": ["libprotobuf_c_ffi.so"],
+        "//conditions:default": [],
     }),
+    includes = [
+        "ruby",
+        "ruby/lib",
+    ],
     visibility = ["//ruby:__pkg__"],
+    deps = ["//ruby:well_known_ruby_protos"] + select({
+        "//ruby:ffi_enabled": [
+            "@protobuf_bundle//:ffi",
+            "@protobuf_bundle//:ffi-compiler",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 pkg_files(
     name = "dist_files",
-    srcs = glob(["**/*.rb"]),
+    srcs = glob([
+        "**/*.rb",
+        "**/*.rake",
+    ]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//ruby:__pkg__"],
 )

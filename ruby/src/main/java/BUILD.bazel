@@ -5,20 +5,20 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 java_library(
     name = "protobuf_java",
     srcs = glob([
-        "com/google/protobuf/jruby/*.java"
+        "com/google/protobuf/jruby/*.java",
     ]) + [
-        "google/ProtobufJavaService.java"
-    ],
-    deps = [
-        "@rules_ruby//ruby/runtime:jars",
-        "//java/core",
-        "//java/util",
+        "google/ProtobufJavaService.java",
     ],
     target_compatible_with = select({
         "@rules_ruby//ruby/runtime:config_jruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     visibility = ["//ruby:__subpackages__"],
+    deps = [
+        "//java/core",
+        "//java/util",
+        "@rules_ruby//ruby/runtime:jars",
+    ],
 )
 
 proto_library(
@@ -30,7 +30,6 @@ java_proto_library(
     name = "sentinel_java_proto",
     deps = [":sentinel_proto"],
 )
-
 
 pkg_files(
     name = "dist_files",

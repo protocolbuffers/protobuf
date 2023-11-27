@@ -456,3 +456,38 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/Neakxs/protocel
     *   Extension: 1177-1178
+
+1.  Cybozu
+
+    *   Website: https://github.com/cybozu/protobuf
+    *   Extension: 1179
+
+1.  EngFlow
+
+    *   Website: https://github.com/EngFlow/engflowapis
+    *   Extensions: 1181
+
+1.  Proto-telemetry
+
+    *   Website: https://github.com/clly/proto-telemetry
+    *   Extensions: 1182
+
+1.  Digital Twins Definition Language (DTDL)
+
+    *   Website: https://github.com/Azure/opendigitaltwins-dtdl
+    *   Extensions: 1183
+
+1.  RabbitMQ
+
+    *   Website: https://github.com/guihouchang/protoc-gen-go-event
+    *   Extensions: 1184
+
+1.  Wire use_array
+
+    *   Website: https://square.github.io/wire/
+    *   Extensions: 1185
+
+1.  Protons
+
+    *   Website: https://github.com/ipfs/protons
+    *   Extensions: 1186

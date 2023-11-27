@@ -8,16 +8,13 @@ require 'google/protobuf/well_known_types'
 require 'generated_code_pb'
 
 class TestTypeErrors < Test::Unit::TestCase
-  # Ruby 2.4 unified Fixnum with Integer
-  IntegerType = Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.4') ? Fixnum : Integer
-
   def test_bad_string
     check_error Google::Protobuf::TypeError,
-                "Invalid argument for string field 'optional_string' (given #{IntegerType.name})." do
+                "Invalid argument for string field 'optional_string' (given Integer)." do
       A::B::C::TestMessage.new(optional_string: 4)
     end
     check_error Google::Protobuf::TypeError,
-                "Invalid argument for string field 'oneof_string' (given #{IntegerType.name})." do
+                "Invalid argument for string field 'oneof_string' (given Integer)." do
       A::B::C::TestMessage.new(oneof_string: 4)
     end
     check_error ArgumentError,
@@ -154,7 +151,7 @@ class TestTypeErrors < Test::Unit::TestCase
 
   def test_bad_msg
     check_error Google::Protobuf::TypeError,
-                "Invalid type #{IntegerType.name} to assign to submessage field 'optional_msg'." do
+                "Invalid type Integer to assign to submessage field 'optional_msg'." do
       A::B::C::TestMessage.new(optional_msg: 2)
     end
     check_error Google::Protobuf::TypeError,

@@ -489,184 +489,184 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             "IAEoDjIrLnByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydF9wcm90bzIuSW1wb3J0",
             "RW51bTpYCh9vcHRpb25hbF9zdHJpbmdfcGllY2VfZXh0ZW5zaW9uEisucHJv",
             "dG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGBggASgJ",
-            "QgIIAjpQChdvcHRpb25hbF9jb3JkX2V4dGVuc2lvbhIrLnByb3RvYnVmX3Vu",
-            "aXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxgZIAEoCUICCAE6kwEK",
-            "KG9wdGlvbmFsX3B1YmxpY19pbXBvcnRfbWVzc2FnZV9leHRlbnNpb24SKy5w",
-            "cm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYGiAB",
-            "KAsyNC5wcm90b2J1Zl91bml0dGVzdF9pbXBvcnRfcHJvdG8yLlB1YmxpY0lt",
-            "cG9ydE1lc3NhZ2U6jgEKH29wdGlvbmFsX2xhenlfbWVzc2FnZV9leHRlbnNp",
-            "b24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lv",
-            "bnMYGyABKAsyNC5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbFR5",
-            "cGVzLk5lc3RlZE1lc3NhZ2VCAigBOk0KGHJlcGVhdGVkX2ludDMyX2V4dGVu",
+            "QgIIAjpMChdvcHRpb25hbF9jb3JkX2V4dGVuc2lvbhIrLnByb3RvYnVmX3Vu",
+            "aXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxgZIAEoCTqTAQoob3B0",
+            "aW9uYWxfcHVibGljX2ltcG9ydF9tZXNzYWdlX2V4dGVuc2lvbhIrLnByb3Rv",
+            "YnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxgaIAEoCzI0",
+            "LnByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydF9wcm90bzIuUHVibGljSW1wb3J0",
+            "TWVzc2FnZTqOAQofb3B0aW9uYWxfbGF6eV9tZXNzYWdlX2V4dGVuc2lvbhIr",
+            "LnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxgb",
+            "IAEoCzI0LnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsVHlwZXMu",
+            "TmVzdGVkTWVzc2FnZUICKAE6TQoYcmVwZWF0ZWRfaW50MzJfZXh0ZW5zaW9u",
+            "EisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25z",
+            "GB8gAygFOk0KGHJlcGVhdGVkX2ludDY0X2V4dGVuc2lvbhIrLnByb3RvYnVm",
+            "X3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxggIAMoAzpOChly",
+            "ZXBlYXRlZF91aW50MzJfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3Rf",
+            "cHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGCEgAygNOk4KGXJlcGVhdGVkX3Vp",
+            "bnQ2NF9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVz",
+            "dEFsbEV4dGVuc2lvbnMYIiADKAQ6TgoZcmVwZWF0ZWRfc2ludDMyX2V4dGVu",
             "c2lvbhIrLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5z",
-            "aW9ucxgfIAMoBTpNChhyZXBlYXRlZF9pbnQ2NF9leHRlbnNpb24SKy5wcm90",
-            "b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYICADKAM6",
-            "TgoZcmVwZWF0ZWRfdWludDMyX2V4dGVuc2lvbhIrLnByb3RvYnVmX3VuaXR0",
-            "ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxghIAMoDTpOChlyZXBlYXRl",
-            "ZF91aW50NjRfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8y",
-            "LlRlc3RBbGxFeHRlbnNpb25zGCIgAygEOk4KGXJlcGVhdGVkX3NpbnQzMl9l",
-            "eHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4",
-            "dGVuc2lvbnMYIyADKBE6TgoZcmVwZWF0ZWRfc2ludDY0X2V4dGVuc2lvbhIr",
-            "LnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxgk",
-            "IAMoEjpPChpyZXBlYXRlZF9maXhlZDMyX2V4dGVuc2lvbhIrLnByb3RvYnVm",
-            "X3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxglIAMoBzpPChpy",
-            "ZXBlYXRlZF9maXhlZDY0X2V4dGVuc2lvbhIrLnByb3RvYnVmX3VuaXR0ZXN0",
-            "X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxgmIAMoBjpQChtyZXBlYXRlZF9z",
-            "Zml4ZWQzMl9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIu",
-            "VGVzdEFsbEV4dGVuc2lvbnMYJyADKA86UAobcmVwZWF0ZWRfc2ZpeGVkNjRf",
-            "ZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxF",
-            "eHRlbnNpb25zGCggAygQOk0KGHJlcGVhdGVkX2Zsb2F0X2V4dGVuc2lvbhIr",
-            "LnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxgp",
-            "IAMoAjpOChlyZXBlYXRlZF9kb3VibGVfZXh0ZW5zaW9uEisucHJvdG9idWZf",
-            "dW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGCogAygBOkwKF3Jl",
-            "cGVhdGVkX2Jvb2xfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3RfcHJv",
-            "dG8yLlRlc3RBbGxFeHRlbnNpb25zGCsgAygIOk4KGXJlcGVhdGVkX3N0cmlu",
-            "Z19leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFs",
-            "bEV4dGVuc2lvbnMYLCADKAk6TQoYcmVwZWF0ZWRfYnl0ZXNfZXh0ZW5zaW9u",
-            "EisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25z",
-            "GC0gAygMOn8KF3JlcGVhdGVkZ3JvdXBfZXh0ZW5zaW9uEisucHJvdG9idWZf",
-            "dW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGC4gAygKMjEucHJv",
-            "dG9idWZfdW5pdHRlc3RfcHJvdG8yLlJlcGVhdGVkR3JvdXBfZXh0ZW5zaW9u",
-            "OowBCiFyZXBlYXRlZF9uZXN0ZWRfbWVzc2FnZV9leHRlbnNpb24SKy5wcm90",
-            "b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYMCADKAsy",
-            "NC5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbFR5cGVzLk5lc3Rl",
-            "ZE1lc3NhZ2U6gQEKInJlcGVhdGVkX2ZvcmVpZ25fbWVzc2FnZV9leHRlbnNp",
-            "b24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lv",
-            "bnMYMSADKAsyKC5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuRm9yZWlnbk1l",
-            "c3NhZ2U6hgEKIXJlcGVhdGVkX2ltcG9ydF9tZXNzYWdlX2V4dGVuc2lvbhIr",
-            "LnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxgy",
-            "IAMoCzIuLnByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydF9wcm90bzIuSW1wb3J0",
-            "TWVzc2FnZTqGAQoecmVwZWF0ZWRfbmVzdGVkX2VudW1fZXh0ZW5zaW9uEisu",
-            "cHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGDMg",
-            "AygOMjEucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxUeXBlcy5O",
-            "ZXN0ZWRFbnVtOnsKH3JlcGVhdGVkX2ZvcmVpZ25fZW51bV9leHRlbnNpb24S",
-            "Ky5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMY",
-            "NCADKA4yJS5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuRm9yZWlnbkVudW06",
-            "gAEKHnJlcGVhdGVkX2ltcG9ydF9lbnVtX2V4dGVuc2lvbhIrLnByb3RvYnVm",
-            "X3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxg1IAMoDjIrLnBy",
-            "b3RvYnVmX3VuaXR0ZXN0X2ltcG9ydF9wcm90bzIuSW1wb3J0RW51bTpYCh9y",
-            "ZXBlYXRlZF9zdHJpbmdfcGllY2VfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5p",
-            "dHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGDYgAygJQgIIAjpQChdy",
-            "ZXBlYXRlZF9jb3JkX2V4dGVuc2lvbhIrLnByb3RvYnVmX3VuaXR0ZXN0X3By",
-            "b3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxg3IAMoCUICCAE6jgEKH3JlcGVhdGVk",
-            "X2xhenlfbWVzc2FnZV9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9w",
-            "cm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYOSADKAsyNC5wcm90b2J1Zl91bml0",
-            "dGVzdF9wcm90bzIuVGVzdEFsbFR5cGVzLk5lc3RlZE1lc3NhZ2VCAigBOlAK",
-            "F2RlZmF1bHRfaW50MzJfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3Rf",
-            "cHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGD0gASgFOgI0MTpQChdkZWZhdWx0",
-            "X2ludDY0X2V4dGVuc2lvbhIrLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5U",
-            "ZXN0QWxsRXh0ZW5zaW9ucxg+IAEoAzoCNDI6UQoYZGVmYXVsdF91aW50MzJf",
-            "ZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxF",
-            "eHRlbnNpb25zGD8gASgNOgI0MzpRChhkZWZhdWx0X3VpbnQ2NF9leHRlbnNp",
-            "b24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lv",
-            "bnMYQCABKAQ6AjQ0OlIKGGRlZmF1bHRfc2ludDMyX2V4dGVuc2lvbhIrLnBy",
-            "b3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxhBIAEo",
-            "EToDLTQ1OlEKGGRlZmF1bHRfc2ludDY0X2V4dGVuc2lvbhIrLnByb3RvYnVm",
-            "X3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxhCIAEoEjoCNDY6",
-            "UgoZZGVmYXVsdF9maXhlZDMyX2V4dGVuc2lvbhIrLnByb3RvYnVmX3VuaXR0",
-            "ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxhDIAEoBzoCNDc6UgoZZGVm",
-            "YXVsdF9maXhlZDY0X2V4dGVuc2lvbhIrLnByb3RvYnVmX3VuaXR0ZXN0X3By",
-            "b3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxhEIAEoBjoCNDg6UwoaZGVmYXVsdF9z",
-            "Zml4ZWQzMl9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIu",
-            "VGVzdEFsbEV4dGVuc2lvbnMYRSABKA86AjQ5OlQKGmRlZmF1bHRfc2ZpeGVk",
-            "NjRfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RB",
-            "bGxFeHRlbnNpb25zGEYgASgQOgMtNTA6UgoXZGVmYXVsdF9mbG9hdF9leHRl",
+            "aW9ucxgjIAMoETpOChlyZXBlYXRlZF9zaW50NjRfZXh0ZW5zaW9uEisucHJv",
+            "dG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGCQgAygS",
+            "Ok8KGnJlcGVhdGVkX2ZpeGVkMzJfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5p",
+            "dHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGCUgAygHOk8KGnJlcGVh",
+            "dGVkX2ZpeGVkNjRfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3RfcHJv",
+            "dG8yLlRlc3RBbGxFeHRlbnNpb25zGCYgAygGOlAKG3JlcGVhdGVkX3NmaXhl",
+            "ZDMyX2V4dGVuc2lvbhIrLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0",
+            "QWxsRXh0ZW5zaW9ucxgnIAMoDzpQChtyZXBlYXRlZF9zZml4ZWQ2NF9leHRl",
             "bnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVu",
-            "c2lvbnMYRyABKAI6BDUxLjU6VAoYZGVmYXVsdF9kb3VibGVfZXh0ZW5zaW9u",
-            "EisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25z",
-            "GEggASgBOgU1MjAwMDpRChZkZWZhdWx0X2Jvb2xfZXh0ZW5zaW9uEisucHJv",
-            "dG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGEkgASgI",
-            "OgR0cnVlOlQKGGRlZmF1bHRfc3RyaW5nX2V4dGVuc2lvbhIrLnByb3RvYnVm",
-            "X3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxhKIAEoCToFaGVs",
-            "bG86UwoXZGVmYXVsdF9ieXRlc19leHRlbnNpb24SKy5wcm90b2J1Zl91bml0",
-            "dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYSyABKAw6BXdvcmxkOooB",
-            "Ch1kZWZhdWx0X25lc3RlZF9lbnVtX2V4dGVuc2lvbhIrLnByb3RvYnVmX3Vu",
-            "aXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxhRIAEoDjIxLnByb3Rv",
-            "YnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsVHlwZXMuTmVzdGVkRW51bToD",
-            "QkFSOocBCh5kZWZhdWx0X2ZvcmVpZ25fZW51bV9leHRlbnNpb24SKy5wcm90",
-            "b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYUiABKA4y",
-            "JS5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuRm9yZWlnbkVudW06C0ZPUkVJ",
-            "R05fQkFSOosBCh1kZWZhdWx0X2ltcG9ydF9lbnVtX2V4dGVuc2lvbhIrLnBy",
-            "b3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxhTIAEo",
-            "DjIrLnByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydF9wcm90bzIuSW1wb3J0RW51",
-            "bToKSU1QT1JUX0JBUjpcCh5kZWZhdWx0X3N0cmluZ19waWVjZV9leHRlbnNp",
-            "b24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lv",
-            "bnMYVCABKAk6A2FiY0ICCAI6VAoWZGVmYXVsdF9jb3JkX2V4dGVuc2lvbhIr",
-            "LnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxhV",
-            "IAEoCToDMTIzQgIIATpLChZvbmVvZl91aW50MzJfZXh0ZW5zaW9uEisucHJv",
-            "dG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGG8gASgN",
-            "OokBCh5vbmVvZl9uZXN0ZWRfbWVzc2FnZV9leHRlbnNpb24SKy5wcm90b2J1",
-            "Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYcCABKAsyNC5w",
-            "cm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbFR5cGVzLk5lc3RlZE1l",
-            "c3NhZ2U6SwoWb25lb2Zfc3RyaW5nX2V4dGVuc2lvbhIrLnByb3RvYnVmX3Vu",
-            "aXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxhxIAEoCTpKChVvbmVv",
-            "Zl9ieXRlc19leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIu",
-            "VGVzdEFsbEV4dGVuc2lvbnMYciABKAw6SQoTbXlfZXh0ZW5zaW9uX3N0cmlu",
-            "ZxIsLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0RmllbGRPcmRlcmlu",
-            "Z3MYMiABKAk6RgoQbXlfZXh0ZW5zaW9uX2ludBIsLnByb3RvYnVmX3VuaXR0",
-            "ZXN0X3Byb3RvMi5UZXN0RmllbGRPcmRlcmluZ3MYBSABKAU6UgoWcGFja2Vk",
-            "X2ludDMyX2V4dGVuc2lvbhIuLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5U",
-            "ZXN0UGFja2VkRXh0ZW5zaW9ucxhaIAMoBUICEAE6UgoWcGFja2VkX2ludDY0",
-            "X2V4dGVuc2lvbhIuLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0UGFj",
-            "a2VkRXh0ZW5zaW9ucxhbIAMoA0ICEAE6UwoXcGFja2VkX3VpbnQzMl9leHRl",
-            "bnNpb24SLi5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdFBhY2tlZEV4",
-            "dGVuc2lvbnMYXCADKA1CAhABOlMKF3BhY2tlZF91aW50NjRfZXh0ZW5zaW9u",
-            "Ei4ucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RQYWNrZWRFeHRlbnNp",
-            "b25zGF0gAygEQgIQATpTChdwYWNrZWRfc2ludDMyX2V4dGVuc2lvbhIuLnBy",
-            "b3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0UGFja2VkRXh0ZW5zaW9ucxhe",
-            "IAMoEUICEAE6UwoXcGFja2VkX3NpbnQ2NF9leHRlbnNpb24SLi5wcm90b2J1",
-            "Zl91bml0dGVzdF9wcm90bzIuVGVzdFBhY2tlZEV4dGVuc2lvbnMYXyADKBJC",
-            "AhABOlQKGHBhY2tlZF9maXhlZDMyX2V4dGVuc2lvbhIuLnByb3RvYnVmX3Vu",
-            "aXR0ZXN0X3Byb3RvMi5UZXN0UGFja2VkRXh0ZW5zaW9ucxhgIAMoB0ICEAE6",
-            "VAoYcGFja2VkX2ZpeGVkNjRfZXh0ZW5zaW9uEi4ucHJvdG9idWZfdW5pdHRl",
-            "c3RfcHJvdG8yLlRlc3RQYWNrZWRFeHRlbnNpb25zGGEgAygGQgIQATpVChlw",
-            "YWNrZWRfc2ZpeGVkMzJfZXh0ZW5zaW9uEi4ucHJvdG9idWZfdW5pdHRlc3Rf",
-            "cHJvdG8yLlRlc3RQYWNrZWRFeHRlbnNpb25zGGIgAygPQgIQATpVChlwYWNr",
-            "ZWRfc2ZpeGVkNjRfZXh0ZW5zaW9uEi4ucHJvdG9idWZfdW5pdHRlc3RfcHJv",
-            "dG8yLlRlc3RQYWNrZWRFeHRlbnNpb25zGGMgAygQQgIQATpSChZwYWNrZWRf",
-            "ZmxvYXRfZXh0ZW5zaW9uEi4ucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRl",
-            "c3RQYWNrZWRFeHRlbnNpb25zGGQgAygCQgIQATpTChdwYWNrZWRfZG91Ymxl",
-            "X2V4dGVuc2lvbhIuLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0UGFj",
-            "a2VkRXh0ZW5zaW9ucxhlIAMoAUICEAE6UQoVcGFja2VkX2Jvb2xfZXh0ZW5z",
+            "c2lvbnMYKCADKBA6TQoYcmVwZWF0ZWRfZmxvYXRfZXh0ZW5zaW9uEisucHJv",
+            "dG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGCkgAygC",
+            "Ok4KGXJlcGVhdGVkX2RvdWJsZV9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0",
+            "dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYKiADKAE6TAoXcmVwZWF0",
+            "ZWRfYm9vbF9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIu",
+            "VGVzdEFsbEV4dGVuc2lvbnMYKyADKAg6TgoZcmVwZWF0ZWRfc3RyaW5nX2V4",
+            "dGVuc2lvbhIrLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0",
+            "ZW5zaW9ucxgsIAMoCTpNChhyZXBlYXRlZF9ieXRlc19leHRlbnNpb24SKy5w",
+            "cm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYLSAD",
+            "KAw6fwoXcmVwZWF0ZWRncm91cF9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0",
+            "dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYLiADKAoyMS5wcm90b2J1",
+            "Zl91bml0dGVzdF9wcm90bzIuUmVwZWF0ZWRHcm91cF9leHRlbnNpb246jAEK",
+            "IXJlcGVhdGVkX25lc3RlZF9tZXNzYWdlX2V4dGVuc2lvbhIrLnByb3RvYnVm",
+            "X3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxgwIAMoCzI0LnBy",
+            "b3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsVHlwZXMuTmVzdGVkTWVz",
+            "c2FnZTqBAQoicmVwZWF0ZWRfZm9yZWlnbl9tZXNzYWdlX2V4dGVuc2lvbhIr",
+            "LnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxgx",
+            "IAMoCzIoLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5Gb3JlaWduTWVzc2Fn",
+            "ZTqGAQohcmVwZWF0ZWRfaW1wb3J0X21lc3NhZ2VfZXh0ZW5zaW9uEisucHJv",
+            "dG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGDIgAygL",
+            "Mi4ucHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0X3Byb3RvMi5JbXBvcnRNZXNz",
+            "YWdlOoYBCh5yZXBlYXRlZF9uZXN0ZWRfZW51bV9leHRlbnNpb24SKy5wcm90",
+            "b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYMyADKA4y",
+            "MS5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbFR5cGVzLk5lc3Rl",
+            "ZEVudW06ewofcmVwZWF0ZWRfZm9yZWlnbl9lbnVtX2V4dGVuc2lvbhIrLnBy",
+            "b3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxg0IAMo",
+            "DjIlLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5Gb3JlaWduRW51bTqAAQoe",
+            "cmVwZWF0ZWRfaW1wb3J0X2VudW1fZXh0ZW5zaW9uEisucHJvdG9idWZfdW5p",
+            "dHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGDUgAygOMisucHJvdG9i",
+            "dWZfdW5pdHRlc3RfaW1wb3J0X3Byb3RvMi5JbXBvcnRFbnVtOlgKH3JlcGVh",
+            "dGVkX3N0cmluZ19waWVjZV9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVz",
+            "dF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYNiADKAlCAggCOkwKF3JlcGVh",
+            "dGVkX2NvcmRfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8y",
+            "LlRlc3RBbGxFeHRlbnNpb25zGDcgAygJOo4BCh9yZXBlYXRlZF9sYXp5X21l",
+            "c3NhZ2VfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRl",
+            "c3RBbGxFeHRlbnNpb25zGDkgAygLMjQucHJvdG9idWZfdW5pdHRlc3RfcHJv",
+            "dG8yLlRlc3RBbGxUeXBlcy5OZXN0ZWRNZXNzYWdlQgIoATpQChdkZWZhdWx0",
+            "X2ludDMyX2V4dGVuc2lvbhIrLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5U",
+            "ZXN0QWxsRXh0ZW5zaW9ucxg9IAEoBToCNDE6UAoXZGVmYXVsdF9pbnQ2NF9l",
+            "eHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4",
+            "dGVuc2lvbnMYPiABKAM6AjQyOlEKGGRlZmF1bHRfdWludDMyX2V4dGVuc2lv",
+            "bhIrLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9u",
+            "cxg/IAEoDToCNDM6UQoYZGVmYXVsdF91aW50NjRfZXh0ZW5zaW9uEisucHJv",
+            "dG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGEAgASgE",
+            "OgI0NDpSChhkZWZhdWx0X3NpbnQzMl9leHRlbnNpb24SKy5wcm90b2J1Zl91",
+            "bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYQSABKBE6Ay00NTpR",
+            "ChhkZWZhdWx0X3NpbnQ2NF9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVz",
+            "dF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYQiABKBI6AjQ2OlIKGWRlZmF1",
+            "bHRfZml4ZWQzMl9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90",
+            "bzIuVGVzdEFsbEV4dGVuc2lvbnMYQyABKAc6AjQ3OlIKGWRlZmF1bHRfZml4",
+            "ZWQ2NF9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVz",
+            "dEFsbEV4dGVuc2lvbnMYRCABKAY6AjQ4OlMKGmRlZmF1bHRfc2ZpeGVkMzJf",
+            "ZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxF",
+            "eHRlbnNpb25zGEUgASgPOgI0OTpUChpkZWZhdWx0X3NmaXhlZDY0X2V4dGVu",
+            "c2lvbhIrLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5z",
+            "aW9ucxhGIAEoEDoDLTUwOlIKF2RlZmF1bHRfZmxvYXRfZXh0ZW5zaW9uEisu",
+            "cHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGEcg",
+            "ASgCOgQ1MS41OlQKGGRlZmF1bHRfZG91YmxlX2V4dGVuc2lvbhIrLnByb3Rv",
+            "YnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxhIIAEoAToF",
+            "NTIwMDA6UQoWZGVmYXVsdF9ib29sX2V4dGVuc2lvbhIrLnByb3RvYnVmX3Vu",
+            "aXR0ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxhJIAEoCDoEdHJ1ZTpU",
+            "ChhkZWZhdWx0X3N0cmluZ19leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVz",
+            "dF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYSiABKAk6BWhlbGxvOlMKF2Rl",
+            "ZmF1bHRfYnl0ZXNfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRlc3RfcHJv",
+            "dG8yLlRlc3RBbGxFeHRlbnNpb25zGEsgASgMOgV3b3JsZDqKAQodZGVmYXVs",
+            "dF9uZXN0ZWRfZW51bV9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9w",
+            "cm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYUSABKA4yMS5wcm90b2J1Zl91bml0",
+            "dGVzdF9wcm90bzIuVGVzdEFsbFR5cGVzLk5lc3RlZEVudW06A0JBUjqHAQoe",
+            "ZGVmYXVsdF9mb3JlaWduX2VudW1fZXh0ZW5zaW9uEisucHJvdG9idWZfdW5p",
+            "dHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGFIgASgOMiUucHJvdG9i",
+            "dWZfdW5pdHRlc3RfcHJvdG8yLkZvcmVpZ25FbnVtOgtGT1JFSUdOX0JBUjqL",
+            "AQodZGVmYXVsdF9pbXBvcnRfZW51bV9leHRlbnNpb24SKy5wcm90b2J1Zl91",
+            "bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYUyABKA4yKy5wcm90",
+            "b2J1Zl91bml0dGVzdF9pbXBvcnRfcHJvdG8yLkltcG9ydEVudW06CklNUE9S",
+            "VF9CQVI6XAoeZGVmYXVsdF9zdHJpbmdfcGllY2VfZXh0ZW5zaW9uEisucHJv",
+            "dG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGFQgASgJ",
+            "OgNhYmNCAggCOlAKFmRlZmF1bHRfY29yZF9leHRlbnNpb24SKy5wcm90b2J1",
+            "Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYVSABKAk6AzEy",
+            "MzpLChZvbmVvZl91aW50MzJfZXh0ZW5zaW9uEisucHJvdG9idWZfdW5pdHRl",
+            "c3RfcHJvdG8yLlRlc3RBbGxFeHRlbnNpb25zGG8gASgNOokBCh5vbmVvZl9u",
+            "ZXN0ZWRfbWVzc2FnZV9leHRlbnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9w",
+            "cm90bzIuVGVzdEFsbEV4dGVuc2lvbnMYcCABKAsyNC5wcm90b2J1Zl91bml0",
+            "dGVzdF9wcm90bzIuVGVzdEFsbFR5cGVzLk5lc3RlZE1lc3NhZ2U6SwoWb25l",
+            "b2Zfc3RyaW5nX2V4dGVuc2lvbhIrLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3Rv",
+            "Mi5UZXN0QWxsRXh0ZW5zaW9ucxhxIAEoCTpKChVvbmVvZl9ieXRlc19leHRl",
+            "bnNpb24SKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdEFsbEV4dGVu",
+            "c2lvbnMYciABKAw6SQoTbXlfZXh0ZW5zaW9uX3N0cmluZxIsLnByb3RvYnVm",
+            "X3VuaXR0ZXN0X3Byb3RvMi5UZXN0RmllbGRPcmRlcmluZ3MYMiABKAk6RgoQ",
+            "bXlfZXh0ZW5zaW9uX2ludBIsLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5U",
+            "ZXN0RmllbGRPcmRlcmluZ3MYBSABKAU6UgoWcGFja2VkX2ludDMyX2V4dGVu",
+            "c2lvbhIuLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0UGFja2VkRXh0",
+            "ZW5zaW9ucxhaIAMoBUICEAE6UgoWcGFja2VkX2ludDY0X2V4dGVuc2lvbhIu",
+            "LnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0UGFja2VkRXh0ZW5zaW9u",
+            "cxhbIAMoA0ICEAE6UwoXcGFja2VkX3VpbnQzMl9leHRlbnNpb24SLi5wcm90",
+            "b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdFBhY2tlZEV4dGVuc2lvbnMYXCAD",
+            "KA1CAhABOlMKF3BhY2tlZF91aW50NjRfZXh0ZW5zaW9uEi4ucHJvdG9idWZf",
+            "dW5pdHRlc3RfcHJvdG8yLlRlc3RQYWNrZWRFeHRlbnNpb25zGF0gAygEQgIQ",
+            "ATpTChdwYWNrZWRfc2ludDMyX2V4dGVuc2lvbhIuLnByb3RvYnVmX3VuaXR0",
+            "ZXN0X3Byb3RvMi5UZXN0UGFja2VkRXh0ZW5zaW9ucxheIAMoEUICEAE6UwoX",
+            "cGFja2VkX3NpbnQ2NF9leHRlbnNpb24SLi5wcm90b2J1Zl91bml0dGVzdF9w",
+            "cm90bzIuVGVzdFBhY2tlZEV4dGVuc2lvbnMYXyADKBJCAhABOlQKGHBhY2tl",
+            "ZF9maXhlZDMyX2V4dGVuc2lvbhIuLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3Rv",
+            "Mi5UZXN0UGFja2VkRXh0ZW5zaW9ucxhgIAMoB0ICEAE6VAoYcGFja2VkX2Zp",
+            "eGVkNjRfZXh0ZW5zaW9uEi4ucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRl",
+            "c3RQYWNrZWRFeHRlbnNpb25zGGEgAygGQgIQATpVChlwYWNrZWRfc2ZpeGVk",
+            "MzJfZXh0ZW5zaW9uEi4ucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RQ",
+            "YWNrZWRFeHRlbnNpb25zGGIgAygPQgIQATpVChlwYWNrZWRfc2ZpeGVkNjRf",
+            "ZXh0ZW5zaW9uEi4ucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RQYWNr",
+            "ZWRFeHRlbnNpb25zGGMgAygQQgIQATpSChZwYWNrZWRfZmxvYXRfZXh0ZW5z",
             "aW9uEi4ucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RQYWNrZWRFeHRl",
-            "bnNpb25zGGYgAygIQgIQATp4ChVwYWNrZWRfZW51bV9leHRlbnNpb24SLi5w",
-            "cm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVzdFBhY2tlZEV4dGVuc2lvbnMY",
-            "ZyADKA4yJS5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuRm9yZWlnbkVudW1C",
-            "AhABOlYKGHVucGFja2VkX2ludDMyX2V4dGVuc2lvbhIwLnByb3RvYnVmX3Vu",
-            "aXR0ZXN0X3Byb3RvMi5UZXN0VW5wYWNrZWRFeHRlbnNpb25zGFogAygFQgIQ",
-            "ADpWChh1bnBhY2tlZF9pbnQ2NF9leHRlbnNpb24SMC5wcm90b2J1Zl91bml0",
-            "dGVzdF9wcm90bzIuVGVzdFVucGFja2VkRXh0ZW5zaW9ucxhbIAMoA0ICEAA6",
-            "VwoZdW5wYWNrZWRfdWludDMyX2V4dGVuc2lvbhIwLnByb3RvYnVmX3VuaXR0",
-            "ZXN0X3Byb3RvMi5UZXN0VW5wYWNrZWRFeHRlbnNpb25zGFwgAygNQgIQADpX",
-            "Chl1bnBhY2tlZF91aW50NjRfZXh0ZW5zaW9uEjAucHJvdG9idWZfdW5pdHRl",
-            "c3RfcHJvdG8yLlRlc3RVbnBhY2tlZEV4dGVuc2lvbnMYXSADKARCAhAAOlcK",
-            "GXVucGFja2VkX3NpbnQzMl9leHRlbnNpb24SMC5wcm90b2J1Zl91bml0dGVz",
-            "dF9wcm90bzIuVGVzdFVucGFja2VkRXh0ZW5zaW9ucxheIAMoEUICEAA6VwoZ",
-            "dW5wYWNrZWRfc2ludDY0X2V4dGVuc2lvbhIwLnByb3RvYnVmX3VuaXR0ZXN0",
-            "X3Byb3RvMi5UZXN0VW5wYWNrZWRFeHRlbnNpb25zGF8gAygSQgIQADpYChp1",
-            "bnBhY2tlZF9maXhlZDMyX2V4dGVuc2lvbhIwLnByb3RvYnVmX3VuaXR0ZXN0",
-            "X3Byb3RvMi5UZXN0VW5wYWNrZWRFeHRlbnNpb25zGGAgAygHQgIQADpYChp1",
-            "bnBhY2tlZF9maXhlZDY0X2V4dGVuc2lvbhIwLnByb3RvYnVmX3VuaXR0ZXN0",
-            "X3Byb3RvMi5UZXN0VW5wYWNrZWRFeHRlbnNpb25zGGEgAygGQgIQADpZCht1",
-            "bnBhY2tlZF9zZml4ZWQzMl9leHRlbnNpb24SMC5wcm90b2J1Zl91bml0dGVz",
-            "dF9wcm90bzIuVGVzdFVucGFja2VkRXh0ZW5zaW9ucxhiIAMoD0ICEAA6WQob",
-            "dW5wYWNrZWRfc2ZpeGVkNjRfZXh0ZW5zaW9uEjAucHJvdG9idWZfdW5pdHRl",
-            "c3RfcHJvdG8yLlRlc3RVbnBhY2tlZEV4dGVuc2lvbnMYYyADKBBCAhAAOlYK",
-            "GHVucGFja2VkX2Zsb2F0X2V4dGVuc2lvbhIwLnByb3RvYnVmX3VuaXR0ZXN0",
-            "X3Byb3RvMi5UZXN0VW5wYWNrZWRFeHRlbnNpb25zGGQgAygCQgIQADpXChl1",
-            "bnBhY2tlZF9kb3VibGVfZXh0ZW5zaW9uEjAucHJvdG9idWZfdW5pdHRlc3Rf",
-            "cHJvdG8yLlRlc3RVbnBhY2tlZEV4dGVuc2lvbnMYZSADKAFCAhAAOlUKF3Vu",
-            "cGFja2VkX2Jvb2xfZXh0ZW5zaW9uEjAucHJvdG9idWZfdW5pdHRlc3RfcHJv",
-            "dG8yLlRlc3RVbnBhY2tlZEV4dGVuc2lvbnMYZiADKAhCAhAAOnwKF3VucGFj",
-            "a2VkX2VudW1fZXh0ZW5zaW9uEjAucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8y",
-            "LlRlc3RVbnBhY2tlZEV4dGVuc2lvbnMYZyADKA4yJS5wcm90b2J1Zl91bml0",
-            "dGVzdF9wcm90bzIuRm9yZWlnbkVudW1CAhAAOnIKDnRlc3RfYWxsX3R5cGVz",
-            "Ei4ucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RIdWdlRmllbGROdW1i",
-            "ZXJzGOCq//8BIAEoCzImLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0",
-            "QWxsVHlwZXM6YQoldGVzdF9leHRlbnNpb25faW5zaWRlX3RhYmxlX2V4dGVu",
-            "c2lvbhIyLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0RXh0ZW5zaW9u",
-            "SW5zaWRlVGFibGUYBSABKAVCMkgBgAEBiAEBkAEB+AEBqgIhR29vZ2xlLlBy",
-            "b3RvYnVmLlRlc3RQcm90b3MuUHJvdG8y"));
+            "bnNpb25zGGQgAygCQgIQATpTChdwYWNrZWRfZG91YmxlX2V4dGVuc2lvbhIu",
+            "LnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0UGFja2VkRXh0ZW5zaW9u",
+            "cxhlIAMoAUICEAE6UQoVcGFja2VkX2Jvb2xfZXh0ZW5zaW9uEi4ucHJvdG9i",
+            "dWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RQYWNrZWRFeHRlbnNpb25zGGYgAygI",
+            "QgIQATp4ChVwYWNrZWRfZW51bV9leHRlbnNpb24SLi5wcm90b2J1Zl91bml0",
+            "dGVzdF9wcm90bzIuVGVzdFBhY2tlZEV4dGVuc2lvbnMYZyADKA4yJS5wcm90",
+            "b2J1Zl91bml0dGVzdF9wcm90bzIuRm9yZWlnbkVudW1CAhABOlYKGHVucGFj",
+            "a2VkX2ludDMyX2V4dGVuc2lvbhIwLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3Rv",
+            "Mi5UZXN0VW5wYWNrZWRFeHRlbnNpb25zGFogAygFQgIQADpWChh1bnBhY2tl",
+            "ZF9pbnQ2NF9leHRlbnNpb24SMC5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIu",
+            "VGVzdFVucGFja2VkRXh0ZW5zaW9ucxhbIAMoA0ICEAA6VwoZdW5wYWNrZWRf",
+            "dWludDMyX2V4dGVuc2lvbhIwLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5U",
+            "ZXN0VW5wYWNrZWRFeHRlbnNpb25zGFwgAygNQgIQADpXChl1bnBhY2tlZF91",
+            "aW50NjRfZXh0ZW5zaW9uEjAucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRl",
+            "c3RVbnBhY2tlZEV4dGVuc2lvbnMYXSADKARCAhAAOlcKGXVucGFja2VkX3Np",
+            "bnQzMl9leHRlbnNpb24SMC5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVz",
+            "dFVucGFja2VkRXh0ZW5zaW9ucxheIAMoEUICEAA6VwoZdW5wYWNrZWRfc2lu",
+            "dDY0X2V4dGVuc2lvbhIwLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0",
+            "VW5wYWNrZWRFeHRlbnNpb25zGF8gAygSQgIQADpYChp1bnBhY2tlZF9maXhl",
+            "ZDMyX2V4dGVuc2lvbhIwLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0",
+            "VW5wYWNrZWRFeHRlbnNpb25zGGAgAygHQgIQADpYChp1bnBhY2tlZF9maXhl",
+            "ZDY0X2V4dGVuc2lvbhIwLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0",
+            "VW5wYWNrZWRFeHRlbnNpb25zGGEgAygGQgIQADpZCht1bnBhY2tlZF9zZml4",
+            "ZWQzMl9leHRlbnNpb24SMC5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVz",
+            "dFVucGFja2VkRXh0ZW5zaW9ucxhiIAMoD0ICEAA6WQobdW5wYWNrZWRfc2Zp",
+            "eGVkNjRfZXh0ZW5zaW9uEjAucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRl",
+            "c3RVbnBhY2tlZEV4dGVuc2lvbnMYYyADKBBCAhAAOlYKGHVucGFja2VkX2Zs",
+            "b2F0X2V4dGVuc2lvbhIwLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0",
+            "VW5wYWNrZWRFeHRlbnNpb25zGGQgAygCQgIQADpXChl1bnBhY2tlZF9kb3Vi",
+            "bGVfZXh0ZW5zaW9uEjAucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RV",
+            "bnBhY2tlZEV4dGVuc2lvbnMYZSADKAFCAhAAOlUKF3VucGFja2VkX2Jvb2xf",
+            "ZXh0ZW5zaW9uEjAucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RVbnBh",
+            "Y2tlZEV4dGVuc2lvbnMYZiADKAhCAhAAOnwKF3VucGFja2VkX2VudW1fZXh0",
+            "ZW5zaW9uEjAucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RVbnBhY2tl",
+            "ZEV4dGVuc2lvbnMYZyADKA4yJS5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIu",
+            "Rm9yZWlnbkVudW1CAhAAOnIKDnRlc3RfYWxsX3R5cGVzEi4ucHJvdG9idWZf",
+            "dW5pdHRlc3RfcHJvdG8yLlRlc3RIdWdlRmllbGROdW1iZXJzGOCq//8BIAEo",
+            "CzImLnByb3RvYnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0QWxsVHlwZXM6YQol",
+            "dGVzdF9leHRlbnNpb25faW5zaWRlX3RhYmxlX2V4dGVuc2lvbhIyLnByb3Rv",
+            "YnVmX3VuaXR0ZXN0X3Byb3RvMi5UZXN0RXh0ZW5zaW9uSW5zaWRlVGFibGUY",
+            "BSABKAVCMkgBgAEBiAEBkAEB+AEBqgIhR29vZ2xlLlByb3RvYnVmLlRlc3RQ",
+            "cm90b3MuUHJvdG8y"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.Proto2.ForeignEnum), typeof(global::Google.Protobuf.TestProtos.Proto2.TestEnumWithDupValue), typeof(global::Google.Protobuf.TestProtos.Proto2.TestSparseEnum), typeof(global::Google.Protobuf.TestProtos.Proto2.VeryLargeEnum), }, new pb::Extension[] { UnittestExtensions.OptionalInt32Extension, UnittestExtensions.OptionalInt64Extension, UnittestExtensions.OptionalUint32Extension, UnittestExtensions.OptionalUint64Extension, UnittestExtensions.OptionalSint32Extension, UnittestExtensions.OptionalSint64Extension, UnittestExtensions.OptionalFixed32Extension, UnittestExtensions.OptionalFixed64Extension, UnittestExtensions.OptionalSfixed32Extension, UnittestExtensions.OptionalSfixed64Extension, UnittestExtensions.OptionalFloatExtension, UnittestExtensions.OptionalDoubleExtension, UnittestExtensions.OptionalBoolExtension, UnittestExtensions.OptionalStringExtension, UnittestExtensions.OptionalBytesExtension, UnittestExtensions.OptionalGroupExtension, UnittestExtensions.OptionalNestedMessageExtension, UnittestExtensions.OptionalForeignMessageExtension, UnittestExtensions.OptionalImportMessageExtension, UnittestExtensions.OptionalNestedEnumExtension, UnittestExtensions.OptionalForeignEnumExtension, UnittestExtensions.OptionalImportEnumExtension, UnittestExtensions.OptionalStringPieceExtension, UnittestExtensions.OptionalCordExtension, UnittestExtensions.OptionalPublicImportMessageExtension, UnittestExtensions.OptionalLazyMessageExtension, UnittestExtensions.RepeatedInt32Extension, UnittestExtensions.RepeatedInt64Extension, UnittestExtensions.RepeatedUint32Extension, UnittestExtensions.RepeatedUint64Extension, UnittestExtensions.RepeatedSint32Extension, UnittestExtensions.RepeatedSint64Extension, UnittestExtensions.RepeatedFixed32Extension, UnittestExtensions.RepeatedFixed64Extension, UnittestExtensions.RepeatedSfixed32Extension, UnittestExtensions.RepeatedSfixed64Extension, UnittestExtensions.RepeatedFloatExtension, UnittestExtensions.RepeatedDoubleExtension, UnittestExtensions.RepeatedBoolExtension, UnittestExtensions.RepeatedStringExtension, UnittestExtensions.RepeatedBytesExtension, UnittestExtensions.RepeatedGroupExtension, UnittestExtensions.RepeatedNestedMessageExtension, UnittestExtensions.RepeatedForeignMessageExtension, UnittestExtensions.RepeatedImportMessageExtension, UnittestExtensions.RepeatedNestedEnumExtension, UnittestExtensions.RepeatedForeignEnumExtension, UnittestExtensions.RepeatedImportEnumExtension, UnittestExtensions.RepeatedStringPieceExtension, UnittestExtensions.RepeatedCordExtension, UnittestExtensions.RepeatedLazyMessageExtension, UnittestExtensions.DefaultInt32Extension, UnittestExtensions.DefaultInt64Extension, UnittestExtensions.DefaultUint32Extension, UnittestExtensions.DefaultUint64Extension, UnittestExtensions.DefaultSint32Extension, UnittestExtensions.DefaultSint64Extension, UnittestExtensions.DefaultFixed32Extension, UnittestExtensions.DefaultFixed64Extension, UnittestExtensions.DefaultSfixed32Extension, UnittestExtensions.DefaultSfixed64Extension, UnittestExtensions.DefaultFloatExtension, UnittestExtensions.DefaultDoubleExtension, UnittestExtensions.DefaultBoolExtension, UnittestExtensions.DefaultStringExtension, UnittestExtensions.DefaultBytesExtension, UnittestExtensions.DefaultNestedEnumExtension, UnittestExtensions.DefaultForeignEnumExtension, UnittestExtensions.DefaultImportEnumExtension, UnittestExtensions.DefaultStringPieceExtension, UnittestExtensions.DefaultCordExtension, UnittestExtensions.OneofUint32Extension, UnittestExtensions.OneofNestedMessageExtension, UnittestExtensions.OneofStringExtension, UnittestExtensions.OneofBytesExtension, UnittestExtensions.MyExtensionString, UnittestExtensions.MyExtensionInt, UnittestExtensions.PackedInt32Extension, UnittestExtensions.PackedInt64Extension, UnittestExtensions.PackedUint32Extension, UnittestExtensions.PackedUint64Extension, UnittestExtensions.PackedSint32Extension, UnittestExtensions.PackedSint64Extension, UnittestExtensions.PackedFixed32Extension, UnittestExtensions.PackedFixed64Extension, UnittestExtensions.PackedSfixed32Extension, UnittestExtensions.PackedSfixed64Extension, UnittestExtensions.PackedFloatExtension, UnittestExtensions.PackedDoubleExtension, UnittestExtensions.PackedBoolExtension, UnittestExtensions.PackedEnumExtension, UnittestExtensions.UnpackedInt32Extension, UnittestExtensions.UnpackedInt64Extension, UnittestExtensions.UnpackedUint32Extension, UnittestExtensions.UnpackedUint64Extension, UnittestExtensions.UnpackedSint32Extension, UnittestExtensions.UnpackedSint64Extension, UnittestExtensions.UnpackedFixed32Extension, UnittestExtensions.UnpackedFixed64Extension, UnittestExtensions.UnpackedSfixed32Extension, UnittestExtensions.UnpackedSfixed64Extension, UnittestExtensions.UnpackedFloatExtension, UnittestExtensions.UnpackedDoubleExtension, UnittestExtensions.UnpackedBoolExtension, UnittestExtensions.UnpackedEnumExtension, UnittestExtensions.TestAllTypes, UnittestExtensions.TestExtensionInsideTableExtension }, new pbr::GeneratedClrTypeInfo[] {
@@ -1121,6 +1121,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// This proto includes every type of field in both singular and repeated
   /// forms.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4588,6 +4589,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -4799,6 +4801,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -5009,6 +5012,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class RepeatedGroup : pb::IMessage<RepeatedGroup>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -5227,6 +5231,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// This proto includes a recursively nested message.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -5497,6 +5502,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestDeprecatedFields : pb::IMessage<TestDeprecatedFields>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -5791,6 +5797,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   }
 
   [global::System.ObsoleteAttribute]
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestDeprecatedMessage : pb::IMessage<TestDeprecatedMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -5947,6 +5954,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// Define these after TestAllTypes to make sure the compiler can handle
   /// that.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -6205,6 +6213,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestReservedFields : pb::IMessage<TestReservedFields>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -6357,6 +6366,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestAllExtensions : pb::IExtendableMessage<TestAllExtensions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -6554,6 +6564,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OptionalGroup_extension : pb::IMessage<OptionalGroup_extension>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -6764,6 +6775,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class RepeatedGroup_extension : pb::IMessage<RepeatedGroup_extension>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -6974,6 +6986,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestGroup : pb::IMessage<TestGroup>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -7243,6 +7256,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -7458,6 +7472,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestGroupExtension : pb::IExtendableMessage<TestGroupExtension>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -7655,6 +7670,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestNestedExtension : pb::IMessage<TestNestedExtension>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -7810,6 +7826,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class OptionalGroup_extension : pb::IMessage<OptionalGroup_extension>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -8056,6 +8073,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// required filed because the code output is basically identical to
   /// optional fields for all types.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestRequired : pb::IMessage<TestRequired>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -9944,6 +9962,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestRequiredForeign : pb::IMessage<TestRequiredForeign>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -10222,6 +10241,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestRequiredMessage : pb::IMessage<TestRequiredMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -10495,6 +10515,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// Test that we can use NestedMessage from outside TestAllTypes.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestForeignNested : pb::IMessage<TestForeignNested>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -10696,6 +10717,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// TestEmptyMessage is used to test unknown field support.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestEmptyMessage : pb::IMessage<TestEmptyMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -10852,6 +10874,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// Like above, but declare all field numbers as potential extensions.  No
   /// actual extensions should ever be defined for this type.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestEmptyMessageWithExtensions : pb::IExtendableMessage<TestEmptyMessageWithExtensions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -11049,6 +11072,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMultipleExtensionRanges : pb::IExtendableMessage<TestMultipleExtensionRanges>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -11249,6 +11273,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// Test that really large tag numbers don't break anything.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestReallyLargeTagNumber : pb::IMessage<TestReallyLargeTagNumber>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -11511,6 +11536,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestRecursiveMessage : pb::IMessage<TestRecursiveMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -11766,6 +11792,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// Test that mutual recursion works.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMutualRecursionA : pb::IMessage<TestMutualRecursionA>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -12027,6 +12054,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class SubMessage : pb::IMessage<SubMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -12225,6 +12253,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class SubGroup : pb::IMessage<SubGroup>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -12481,6 +12510,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMutualRecursionB : pb::IMessage<TestMutualRecursionB>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -12733,6 +12763,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestIsInitialized : pb::IMessage<TestIsInitialized>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -12934,6 +12965,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class SubMessage : pb::IMessage<SubMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -13149,6 +13181,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static partial class Types {
+          [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
           public sealed partial class SubGroup : pb::IMessage<SubGroup>
           #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
               , pb::IBufferMessage
@@ -13375,6 +13408,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// attempting to compile with proto1, this will emit an error; so we only
   /// include it in protobuf_unittest_proto.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestDupFieldNumber : pb::IMessage<TestDupFieldNumber>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -13707,6 +13741,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class Foo : pb::IMessage<Foo>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -13917,6 +13952,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class Bar : pb::IMessage<Bar>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -14135,6 +14171,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// Additional messages for testing lazy fields.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestEagerMessage : pb::IMessage<TestEagerMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -14333,6 +14370,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestLazyMessage : pb::IMessage<TestLazyMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -14534,6 +14572,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// Needed for a Python test.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestNestedMessageHasBits : pb::IMessage<TestNestedMessageHasBits>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -14735,6 +14774,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -14950,6 +14990,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// Test message with CamelCase field names.  This violates Protocol Buffer
   /// standard style.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestCamelCaseFieldNames : pb::IMessage<TestCamelCaseFieldNames>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -15571,6 +15612,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// We list fields out of order, to ensure that we're using field number and not
   /// field index to determine serialization order.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestFieldOrderings : pb::IExtendableMessage<TestFieldOrderings>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -15974,6 +16016,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -16242,6 +16285,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestExtensionOrderings1 : pb::IMessage<TestExtensionOrderings1>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -16455,6 +16499,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestExtensionOrderings2 : pb::IMessage<TestExtensionOrderings2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -16661,6 +16706,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class TestExtensionOrderings3 : pb::IMessage<TestExtensionOrderings3>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -16889,6 +16935,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestExtremeDefaultValues : pb::IMessage<TestExtremeDefaultValues>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -18463,6 +18510,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class SparseEnumMessage : pb::IMessage<SparseEnumMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -18672,6 +18720,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// Test String and Bytes: string is for valid UTF-8 strings
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneString : pb::IMessage<OneString>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -18875,6 +18924,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MoreString : pb::IMessage<MoreString>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -19053,6 +19103,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneBytes : pb::IMessage<OneBytes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -19256,6 +19307,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MoreBytes : pb::IMessage<MoreBytes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -19437,6 +19489,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// Test int32, uint32, int64, uint64, and bool are all compatible
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Int32Message : pb::IMessage<Int32Message>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -19643,6 +19696,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Uint32Message : pb::IMessage<Uint32Message>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -19849,6 +19903,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Int64Message : pb::IMessage<Int64Message>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -20055,6 +20110,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Uint64Message : pb::IMessage<Uint64Message>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -20261,6 +20317,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class BoolMessage : pb::IMessage<BoolMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -20470,6 +20527,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// Test oneofs.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestOneof : pb::IMessage<TestOneof>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -20882,6 +20940,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class FooGroup : pb::IMessage<FooGroup>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -21148,6 +21207,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestOneofBackwardsCompatible : pb::IMessage<TestOneofBackwardsCompatible>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -21514,6 +21574,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class FooGroup : pb::IMessage<FooGroup>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -21780,6 +21841,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestOneof2 : pb::IMessage<TestOneof2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -22927,6 +22989,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [pbr::OriginalName("BAZ")] Baz = 3,
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class FooGroup : pb::IMessage<FooGroup>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -23188,6 +23251,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -23427,6 +23491,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestRequiredOneof : pb::IMessage<TestRequiredOneof>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -23770,6 +23835,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -23981,6 +24047,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestRequiredMap : pb::IMessage<TestRequiredMap>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -24162,6 +24229,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -24373,6 +24441,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestPackedTypes : pb::IMessage<TestPackedTypes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -24921,6 +24990,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// A message with the same fields as TestPackedTypes, but without packing. Used
   /// to test packed &lt;-> unpacked wire compatibility.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestUnpackedTypes : pb::IMessage<TestUnpackedTypes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -25465,6 +25535,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestPackedExtensions : pb::IExtendableMessage<TestPackedExtensions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -25662,6 +25733,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestUnpackedExtensions : pb::IExtendableMessage<TestUnpackedExtensions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -25864,6 +25936,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// a set of extensions to TestAllExtensions dynamically, based on the fields
   /// of this message type.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestDynamicExtensions : pb::IMessage<TestDynamicExtensions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -26329,6 +26402,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [pbr::OriginalName("DYNAMIC_BAZ")] DynamicBaz = 2202,
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class DynamicMessageType : pb::IMessage<DynamicMessageType>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -26540,6 +26614,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestRepeatedScalarDifferentTagSizes : pb::IMessage<TestRepeatedScalarDifferentTagSizes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -26878,6 +26953,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// Test that if an optional or required message/group field appears multiple
   /// times in the input, they need to be merged.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestParsingMerge : pb::IExtendableMessage<TestParsingMerge>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -27289,6 +27365,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       /// Repeated fields in RepeatedFieldsGenerator are expected to be merged into
       /// the corresponding required/optional fields in TestParsingMerge.
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class RepeatedFieldsGenerator : pb::IMessage<RepeatedFieldsGenerator>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -27626,6 +27703,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static partial class Types {
+          [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
           public sealed partial class Group1 : pb::IMessage<Group1>
           #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
               , pb::IBufferMessage
@@ -27828,6 +27906,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
           }
 
+          [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
           public sealed partial class Group2 : pb::IMessage<Group2>
           #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
               , pb::IBufferMessage
@@ -28035,6 +28114,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -28237,6 +28317,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class RepeatedGroup : pb::IMessage<RepeatedGroup>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -28456,6 +28537,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestCommentInjectionMessage : pb::IMessage<TestCommentInjectionMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -28665,6 +28747,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// Test that RPC services work.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FooRequest : pb::IMessage<FooRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -28817,6 +28900,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FooResponse : pb::IMessage<FooResponse>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -28969,6 +29053,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FooClientMessage : pb::IMessage<FooClientMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -29121,6 +29206,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FooServerMessage : pb::IMessage<FooServerMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -29273,6 +29359,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class BarRequest : pb::IMessage<BarRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -29425,6 +29512,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class BarResponse : pb::IMessage<BarResponse>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -29577,6 +29665,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestJsonName : pb::IMessage<TestJsonName>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -30043,6 +30132,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestHugeFieldNumbers : pb::IExtendableMessage<TestHugeFieldNumbers>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -30933,6 +31023,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -31148,6 +31239,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestExtensionInsideTable : pb::IExtendableMessage<TestExtensionInsideTable>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage

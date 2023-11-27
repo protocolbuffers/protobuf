@@ -1,38 +1,15 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf.util;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.protobuf.util.DurationsTest.duration;
+import static org.junit.Assert.fail;
 
 import com.google.common.collect.Lists;
 import com.google.protobuf.Duration;
@@ -44,13 +21,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link Timestamps}. */
 @RunWith(JUnit4.class)
+@SuppressWarnings("JavaUtilDate")
 public class TimestampsTest {
   private static final int MILLIS_PER_SECOND = 1000;
   private static final long MILLIS = 1409130915111L;
@@ -74,11 +51,39 @@ public class TimestampsTest {
       Timestamp.newBuilder().setSeconds(Long.MIN_VALUE).setNanos(Integer.MIN_VALUE).build();
 
   @Test
+  public void testNow() {
+    Timestamp now = Timestamps.now();
+    long epochSeconds = System.currentTimeMillis() / 1000;
+    assertThat(now.getSeconds()).isAtLeast(epochSeconds - 1);
+    assertThat(now.getSeconds()).isAtMost(epochSeconds + 1);
+  }
+
+  @Test
+  public void testNowWithSubMillisecondPrecision() {
+    try {
+      // throws if we're not on Java9+
+      Class.forName("java.lang.Runtime$Version");
+    } catch (ClassNotFoundException e) {
+      // ignored; we're not on Java 9+
+      return;
+    }
+
+    // grab 100 timestamps, and ensure that at least 1 of them has sub-millisecond precision
+    for (int i = 0; i < 100; i++) {
+      Timestamp now = Timestamps.now();
+      Timestamp nowWithMilliPrecision = Timestamps.fromMillis(Timestamps.toMillis(now));
+      if (!now.equals(nowWithMilliPrecision)) {
+        return;
+      }
+    }
+    fail("no timestamp had sub-millisecond precision");
+  }
+
+  @Test
   public void testMinMaxAreValid() {
     assertThat(Timestamps.isValid(Timestamps.MAX_VALUE)).isTrue();
     assertThat(Timestamps.isValid(Timestamps.MIN_VALUE)).isTrue();
   }
-
 
   @Test
   public void testIsValid_false() {
@@ -164,6 +169,7 @@ public class TimestampsTest {
     }
 
     @Override
+    @SuppressWarnings("ProtoTimestampGetSecondsGetNano")
     public void run() {
       int index = 0;
       while (!stopParsingThreads) {
@@ -225,7 +231,7 @@ public class TimestampsTest {
       Timestamp value =
           Timestamp.newBuilder().setSeconds(Timestamps.TIMESTAMP_SECONDS_MIN - 1).build();
       Timestamps.toString(value);
-      assertWithMessage("IllegalArgumentException is expected.").fail();
+      fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -237,7 +243,7 @@ public class TimestampsTest {
       Timestamp value =
           Timestamp.newBuilder().setSeconds(Timestamps.TIMESTAMP_SECONDS_MAX + 1).build();
       Timestamps.toString(value);
-      assertWithMessage("IllegalArgumentException is expected.").fail();
+      fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -248,7 +254,7 @@ public class TimestampsTest {
       // Invalid nanos value.
       Timestamp value = Timestamp.newBuilder().setNanos(-1).build();
       Timestamps.toString(value);
-      assertWithMessage("IllegalArgumentException is expected.").fail();
+      fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -259,7 +265,7 @@ public class TimestampsTest {
       // Invalid nanos value.
       Timestamp value = Timestamp.newBuilder().setNanos(1000000000).build();
       Timestamps.toString(value);
-      assertWithMessage("IllegalArgumentException is expected.").fail();
+      fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -268,16 +274,16 @@ public class TimestampsTest {
   public void testTimestampInvalidFormatDateTooSmall() {
     try {
       Timestamps.parse("0000-01-01T00:00:00Z");
-      Assert.fail();
+      fail();
     } catch (ParseException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
       assertThat(expected).hasCauseThat().isNotNull();
     }
     try {
       Timestamps.parseUnchecked("0000-01-01T00:00:00Z");
-      assertWithMessage("IllegalArgumentException is expected.").fail();
+      fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
   }
 
@@ -285,15 +291,15 @@ public class TimestampsTest {
   public void testTimestampInvalidFormatDateTooLarge() {
     try {
       Timestamps.parse("10000-01-01T00:00:00Z");
-      Assert.fail();
+      fail();
     } catch (ParseException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
     try {
       Timestamps.parseUnchecked("10000-01-01T00:00:00Z");
-      assertWithMessage("IllegalArgumentException is expected.").fail();
+      fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
   }
 
@@ -301,15 +307,15 @@ public class TimestampsTest {
   public void testTimestampInvalidFormatMissingT() {
     try {
       Timestamps.parse("1970-01-01 00:00:00Z");
-      Assert.fail();
+      fail();
     } catch (ParseException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
     try {
       Timestamps.parseUnchecked("1970-01-01 00:00:00Z");
-      assertWithMessage("IllegalArgumentException is expected.").fail();
+      fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
   }
 
@@ -317,15 +323,15 @@ public class TimestampsTest {
   public void testTimestampInvalidFormatMissingZ() {
     try {
       Timestamps.parse("1970-01-01T00:00:00");
-      assertWithMessage("ParseException is expected.").fail();
+      fail("ParseException is expected.");
     } catch (ParseException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
     try {
       Timestamps.parseUnchecked("1970-01-01T00:00:00");
-      assertWithMessage("IllegalArgumentException is expected.").fail();
+      fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
   }
 
@@ -333,15 +339,31 @@ public class TimestampsTest {
   public void testTimestampInvalidOffset() {
     try {
       Timestamps.parse("1970-01-01T00:00:00+0000");
-      assertWithMessage("ParseException is expected.").fail();
+      fail("ParseException is expected.");
     } catch (ParseException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
     try {
       Timestamps.parseUnchecked("1970-01-01T00:00:00+0000");
-      assertWithMessage("IllegalArgumentException is expected.").fail();
+      fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
+    }
+  }
+
+  @Test
+  public void testTimestampInvalidOffsetWithDot() {
+    try {
+      Timestamps.parse("2021-08-19T10:24:25-07.:00");
+      fail("ParseException is expected.");
+    } catch (ParseException expected) {
+      assertThat(expected).hasMessageThat().isNotNull();
+    }
+    try {
+      Timestamps.parseUnchecked("2021-08-19T10:24:25-07.:00");
+      fail("IllegalArgumentException is expected.");
+    } catch (IllegalArgumentException expected) {
+      assertThat(expected).hasMessageThat().isNotNull();
     }
   }
 
@@ -349,15 +371,15 @@ public class TimestampsTest {
   public void testTimestampInvalidTrailingText() {
     try {
       Timestamps.parse("1970-01-01T00:00:00Z0");
-      assertWithMessage("ParseException is expected.").fail();
+      fail("ParseException is expected.");
     } catch (ParseException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
     try {
       Timestamps.parseUnchecked("1970-01-01T00:00:00Z0");
-      assertWithMessage("IllegalArgumentException is expected.").fail();
+      fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
   }
 
@@ -365,15 +387,15 @@ public class TimestampsTest {
   public void testTimestampInvalidNanoSecond() {
     try {
       Timestamps.parse("1970-01-01T00:00:00.ABCZ");
-      assertWithMessage("ParseException is expected.").fail();
+      fail("ParseException is expected.");
     } catch (ParseException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
     try {
       Timestamps.parseUnchecked("1970-01-01T00:00:00.ABCZ");
-      assertWithMessage("IllegalArgumentException is expected.").fail();
+      fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException expected) {
-      Assert.assertNotNull(expected.getMessage());
+      assertThat(expected).hasMessageThat().isNotNull();
     }
   }
 
@@ -425,7 +447,7 @@ public class TimestampsTest {
     Date date = calendar.getTime();
     try {
       Timestamps.fromDate(date);
-      Assert.fail("should have thrown IllegalArgumentException");
+      fail("should have thrown IllegalArgumentException");
     } catch (IllegalArgumentException expected) {
       assertThat(expected).hasMessageThat().startsWith("Timestamp is not valid.");
     }
@@ -441,7 +463,7 @@ public class TimestampsTest {
     Date date = calendar.getTime();
     try {
       Timestamps.fromDate(date);
-      Assert.fail("should have thrown IllegalArgumentException");
+      fail("should have thrown IllegalArgumentException");
     } catch (IllegalArgumentException expected) {
       assertThat(expected).hasMessageThat().startsWith("Timestamp is not valid.");
     }
@@ -475,7 +497,7 @@ public class TimestampsTest {
     Timestamp timestamp = Timestamps.fromDate(date);
     assertThat(Timestamps.toString(timestamp)).isEqualTo("1970-01-01T00:00:01.111Z");
   }
-  
+
   @Test
   public void testFromSqlTimestamp_beforeEpoch() {
     Date date = new java.sql.Timestamp(-1111);
@@ -584,7 +606,7 @@ public class TimestampsTest {
   public void testOverflowsArithmeticException() throws Exception {
     try {
       Timestamps.toNanos(Timestamps.parse("9999-12-31T23:59:59.999999999Z"));
-      assertWithMessage("Expected an ArithmeticException to be thrown").fail();
+      fail("Expected an ArithmeticException to be thrown");
     } catch (ArithmeticException expected) {
     }
   }
@@ -593,7 +615,7 @@ public class TimestampsTest {
   public void testPositiveOverflow() {
     try {
       Timestamps.add(Timestamps.MAX_VALUE, Durations.MAX_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -602,7 +624,7 @@ public class TimestampsTest {
   public void testNegativeOverflow() {
     try {
       Timestamps.subtract(Timestamps.MIN_VALUE, Durations.MAX_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -611,15 +633,16 @@ public class TimestampsTest {
   public void testInvalidMaxNanosecondsOverflow() {
     try {
       Timestamps.toNanos(INVALID_MAX);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
+
   @Test
   public void testInvalidMaxMicrosecondsOverflow() {
     try {
       Timestamps.toMicros(INVALID_MAX);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -628,7 +651,7 @@ public class TimestampsTest {
   public void testInvalidMaxMillisecondsOverflow() {
     try {
       Timestamps.toMillis(INVALID_MAX);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -637,7 +660,7 @@ public class TimestampsTest {
   public void testInvalidMaxSecondsOverflow() {
     try {
       Timestamps.toSeconds(INVALID_MAX);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -646,7 +669,7 @@ public class TimestampsTest {
   public void testInvalidMinNanosecondsOverflow() {
     try {
       Timestamps.toNanos(INVALID_MIN);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -655,7 +678,7 @@ public class TimestampsTest {
   public void testInvalidMicrosecondsMinOverflow() {
     try {
       Timestamps.toMicros(INVALID_MIN);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -664,7 +687,7 @@ public class TimestampsTest {
   public void testInvalidMinMillisecondsOverflow() {
     try {
       Timestamps.toMillis(INVALID_MIN);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -673,7 +696,7 @@ public class TimestampsTest {
   public void testOverInvalidMinSecondsflow() {
     try {
       Timestamps.toSeconds(INVALID_MIN);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -686,19 +709,18 @@ public class TimestampsTest {
 
   @Test
   public void testIllegalArgumentExceptionForMaxMicroseconds() {
-   try {
+    try {
       Timestamps.fromMicros(Long.MAX_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
-
 
   @Test
   public void testIllegalArgumentExceptionForMaxMilliseconds() {
     try {
       Durations.fromMillis(Long.MAX_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -713,17 +735,16 @@ public class TimestampsTest {
   public void testIllegalArgumentExceptionForMinMicroseconds() {
     try {
       Timestamps.fromMicros(Long.MIN_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
-
 
   @Test
   public void testIllegalArgumentExceptionForMinMilliseconds() {
     try {
       Timestamps.fromMillis(Long.MIN_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -780,7 +801,7 @@ public class TimestampsTest {
     long timestampMaxSeconds = 253402300799L;
     try {
       Timestamps.fromMillis((timestampMaxSeconds + 1) * MILLIS_PER_SECOND);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }
@@ -790,7 +811,7 @@ public class TimestampsTest {
     long timestampMinSeconds = -62135596800L;
     try {
       Timestamps.fromMillis((timestampMinSeconds - 1) * MILLIS_PER_SECOND);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }

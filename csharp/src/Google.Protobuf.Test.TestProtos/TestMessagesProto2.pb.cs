@@ -326,6 +326,7 @@ namespace ProtobufTestMessages.Proto2 {
   /// could trigger bugs that occur in any message type in this file.  We verify
   /// this stays true in a unit test.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestAllTypesProto2 : pb::IExtendableMessage<TestAllTypesProto2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -5826,6 +5827,7 @@ namespace ProtobufTestMessages.Proto2 {
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -6081,6 +6083,7 @@ namespace ProtobufTestMessages.Proto2 {
       /// <summary>
       /// groups
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class Data : pb::IMessage<Data>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -6346,6 +6349,7 @@ namespace ProtobufTestMessages.Proto2 {
       /// <summary>
       /// message_set test case.
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class MessageSetCorrect : pb::IExtendableMessage<MessageSetCorrect>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -6543,6 +6547,7 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class MessageSetCorrectExtension1 : pb::IMessage<MessageSetCorrectExtension1>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -6756,6 +6761,7 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class MessageSetCorrectExtension2 : pb::IMessage<MessageSetCorrectExtension2>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -6977,6 +6983,7 @@ namespace ProtobufTestMessages.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ForeignMessageProto2 : pb::IMessage<ForeignMessageProto2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -7183,6 +7190,7 @@ namespace ProtobufTestMessages.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class UnknownToTestAllTypes : pb::IMessage<UnknownToTestAllTypes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -7629,6 +7637,7 @@ namespace ProtobufTestMessages.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -7844,6 +7853,7 @@ namespace ProtobufTestMessages.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NullHypothesisProto2 : pb::IMessage<NullHypothesisProto2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -7996,6 +8006,7 @@ namespace ProtobufTestMessages.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class EnumOnlyProto2 : pb::IMessage<EnumOnlyProto2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -8161,6 +8172,7 @@ namespace ProtobufTestMessages.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneStringProto2 : pb::IMessage<OneStringProto2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -8364,6 +8376,7 @@ namespace ProtobufTestMessages.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ProtoWithKeywords : pb::IMessage<ProtoWithKeywords>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -8647,6 +8660,7 @@ namespace ProtobufTestMessages.Proto2 {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestAllRequiredTypesProto2 : pb::IExtendableMessage<TestAllRequiredTypesProto2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -10871,6 +10885,7 @@ namespace ProtobufTestMessages.Proto2 {
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -11172,6 +11187,7 @@ namespace ProtobufTestMessages.Proto2 {
       /// <summary>
       /// groups
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class Data : pb::IMessage<Data>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -11437,6 +11453,7 @@ namespace ProtobufTestMessages.Proto2 {
       /// <summary>
       /// message_set test case.
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class MessageSetCorrect : pb::IExtendableMessage<MessageSetCorrect>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -11634,6 +11651,7 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class MessageSetCorrectExtension1 : pb::IMessage<MessageSetCorrectExtension1>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -11847,6 +11865,7 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class MessageSetCorrectExtension2 : pb::IMessage<MessageSetCorrectExtension2>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage

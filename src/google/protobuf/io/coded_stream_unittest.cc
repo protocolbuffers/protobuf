@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -85,7 +62,7 @@ namespace {
 // which failed will be printed.  The case type must be printable using
 // ostream::operator<<.
 
-// TODO(kenton):  gTest now supports "parameterized tests" which would be
+// TODO:  gTest now supports "parameterized tests" which would be
 //   a better way to accomplish this.  Rewrite when time permits.
 
 #define TEST_1D(FIXTURE, NAME, CASES)                             \
@@ -761,7 +738,7 @@ TEST_1D(CodedStreamTest, ReadStringReservesMemoryOnTotalLimit, kBlockSizes) {
     EXPECT_EQ(sizeof(kRawBytes) - strlen(kRawBytes),
               coded_input.BytesUntilTotalBytesLimit());
     EXPECT_EQ(kRawBytes, str);
-    // TODO(liujisi): Replace with a more meaningful test (see cl/60966023).
+    // TODO: Replace with a more meaningful test (see cl/60966023).
     EXPECT_GE(str.capacity(), strlen(kRawBytes));
   }
 
@@ -779,7 +756,7 @@ TEST_1D(CodedStreamTest, ReadStringReservesMemoryOnPushedLimit, kBlockSizes) {
     std::string str;
     EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
     EXPECT_EQ(kRawBytes, str);
-    // TODO(liujisi): Replace with a more meaningful test (see cl/60966023).
+    // TODO: Replace with a more meaningful test (see cl/60966023).
     EXPECT_GE(str.capacity(), strlen(kRawBytes));
   }
 
@@ -803,7 +780,7 @@ TEST_F(CodedStreamTest, ReadStringNoReservationIfLimitsNotSet) {
     // expects that string will allocate more than strlen(kRawBytes)
     // if the content of kRawBytes is appended to string in small
     // chunks.
-    // TODO(liujisi): Replace with a more meaningful test (see cl/60966023).
+    // TODO: Replace with a more meaningful test (see cl/60966023).
     EXPECT_GE(str.capacity(), strlen(kRawBytes));
   }
 

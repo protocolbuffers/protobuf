@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -46,13 +23,13 @@
 
 #include <memory>
 
-#include "google/protobuf/arena.h"
-#include "google/protobuf/descriptor.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/test_util.h"
@@ -163,6 +140,22 @@ TEST(GeneratedMessageReflectionTest, GetStringReference) {
       << "For simple string fields, GetRepeatedStringReference() should "
          "return "
          "a reference to the underlying string.";
+}
+
+TEST(GeneratedMessageReflectionTest, GetStringReferenceCopy) {
+  // Test that GetStringReference() returns the scratch string when the
+  // underlying representation is not a normal string.
+  unittest::TestCord cord_message;
+  cord_message.set_optional_bytes_cord("bytes_cord");
+
+  const Reflection* cord_reflection = cord_message.GetReflection();
+  const Descriptor* descriptor = unittest::TestCord::descriptor();
+  std::string cord_scratch;
+  EXPECT_EQ(
+      &cord_scratch,
+      &cord_reflection->GetStringReference(
+          cord_message, descriptor->FindFieldByName("optional_bytes_cord"),
+          &cord_scratch));
 }
 
 
@@ -981,6 +974,8 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
   EXPECT_NE(&unittest::TestOneof2::FooGroup::default_instance(),
             &reflection->GetMessage(
                 message, descriptor->FindFieldByName("foo_lazy_message")));
+  EXPECT_EQ("", reflection->GetString(
+                    message, descriptor->FindFieldByName("foo_bytes_cord")));
   EXPECT_EQ(
       5, reflection->GetInt32(message, descriptor->FindFieldByName("bar_int")));
   EXPECT_EQ("STRING", reflection->GetString(
@@ -1009,6 +1004,11 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
                         "bytes");
   EXPECT_EQ("bytes", reflection->GetString(
                          message, descriptor->FindFieldByName("foo_bytes")));
+  reflection->SetString(&message, descriptor->FindFieldByName("foo_bytes_cord"),
+                        "bytes_cord");
+  EXPECT_EQ("bytes_cord",
+            reflection->GetString(
+                message, descriptor->FindFieldByName("foo_bytes_cord")));
   reflection->SetString(&message, descriptor->FindFieldByName("bar_cord"),
                         "change_cord");
   EXPECT_EQ(
@@ -1276,6 +1276,7 @@ TEST(GeneratedMessageReflectionTest, ArenaReleaseOneofMessageTest) {
 
 TEST(GeneratedMessageReflectionTest, UsageErrors) {
   unittest::TestAllTypes message;
+  unittest::ForeignMessage foreign;
   const Reflection* reflection = message.GetReflection();
   const Descriptor* descriptor = message.GetDescriptor();
 
@@ -1299,6 +1300,17 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
                "  Field       : protobuf_unittest.TestAllTypes.repeated_int32\n"
                "  Problem     : Field is repeated; the method requires a "
                "singular field.");
+#ifndef NDEBUG
+  EXPECT_DEATH(
+      reflection->GetInt32(foreign,
+                           descriptor->FindFieldByName("optional_int32")),
+      "Protocol Buffer reflection usage error:\n"
+      "  Method       : google::protobuf::Reflection::GetInt32\n"
+      "  Expected type: protobuf_unittest.TestAllTypes\n"
+      "  Actual type  : protobuf_unittest.ForeignMessage\n"
+      "  Field        : protobuf_unittest.TestAllTypes.optional_int32\n"
+      "  Problem      : Message is not the right object for reflection");
+#endif
   EXPECT_DEATH(
       reflection->GetInt32(
           message,
@@ -1320,6 +1332,222 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
+
+class GeneratedMessageReflectionCordAccessorsTest : public testing::Test {
+ protected:
+  const FieldDescriptor* optional_string_;
+  const FieldDescriptor* optional_string_piece_;
+  const FieldDescriptor* optional_cord_;
+  const FieldDescriptor* repeated_string_;
+  const FieldDescriptor* repeated_string_piece_;
+  const FieldDescriptor* repeated_cord_;
+  const FieldDescriptor* default_string_;
+  const FieldDescriptor* default_string_piece_;
+  const FieldDescriptor* default_cord_;
+
+  const FieldDescriptor* optional_string_extension_;
+  const FieldDescriptor* repeated_string_extension_;
+
+  unittest::TestAllTypes message_;
+  const Reflection* reflection_;
+  unittest::TestAllExtensions extensions_message_;
+  const Reflection* extensions_reflection_;
+
+  void SetUp() override {
+    const Descriptor* descriptor = unittest::TestAllTypes::descriptor();
+
+    optional_string_ = descriptor->FindFieldByName("optional_string");
+    optional_string_piece_ =
+        descriptor->FindFieldByName("optional_string_piece");
+    optional_cord_ = descriptor->FindFieldByName("optional_cord");
+    repeated_string_ = descriptor->FindFieldByName("repeated_string");
+    repeated_string_piece_ =
+        descriptor->FindFieldByName("repeated_string_piece");
+    repeated_cord_ = descriptor->FindFieldByName("repeated_cord");
+    default_string_ = descriptor->FindFieldByName("default_string");
+    default_string_piece_ = descriptor->FindFieldByName("default_string_piece");
+    default_cord_ = descriptor->FindFieldByName("default_cord");
+
+    optional_string_extension_ =
+        descriptor->file()->FindExtensionByName("optional_string_extension");
+    repeated_string_extension_ =
+        descriptor->file()->FindExtensionByName("repeated_string_extension");
+
+    ASSERT_TRUE(optional_string_ != nullptr);
+    ASSERT_TRUE(optional_string_piece_ != nullptr);
+    ASSERT_TRUE(optional_cord_ != nullptr);
+    ASSERT_TRUE(repeated_string_ != nullptr);
+    ASSERT_TRUE(repeated_string_piece_ != nullptr);
+    ASSERT_TRUE(repeated_cord_ != nullptr);
+    ASSERT_TRUE(optional_string_extension_ != nullptr);
+    ASSERT_TRUE(repeated_string_extension_ != nullptr);
+
+    reflection_ = message_.GetReflection();
+    extensions_reflection_ = extensions_message_.GetReflection();
+  }
+};
+
+TEST_F(GeneratedMessageReflectionCordAccessorsTest, GetCord) {
+  message_.set_optional_string("foo");
+
+  extensions_message_.SetExtension(unittest::optional_string_extension, "moo");
+
+  EXPECT_EQ("foo", reflection_->GetCord(message_, optional_string_));
+  EXPECT_EQ("moo", extensions_reflection_->GetCord(extensions_message_,
+                                                   optional_string_extension_));
+
+  EXPECT_EQ("hello", reflection_->GetCord(message_, default_string_));
+  EXPECT_EQ("abc", reflection_->GetCord(message_, default_string_piece_));
+  EXPECT_EQ("123", reflection_->GetCord(message_, default_cord_));
+
+
+  unittest::TestCord message;
+  const Descriptor* descriptor = unittest::TestCord::descriptor();
+  const Reflection* reflection = message.GetReflection();
+
+  message.set_optional_bytes_cord("bytes_cord");
+  EXPECT_EQ("bytes_cord",
+            reflection->GetCord(
+                message, descriptor->FindFieldByName("optional_bytes_cord")));
+}
+
+TEST_F(GeneratedMessageReflectionCordAccessorsTest, GetOneofCord) {
+  unittest::TestOneof2 message;
+  const Descriptor* descriptor = unittest::TestOneof2::descriptor();
+  const Reflection* reflection = message.GetReflection();
+
+  message.set_foo_bytes_cord("bytes_cord");
+  EXPECT_EQ("bytes_cord",
+            reflection->GetCord(message,
+                                descriptor->FindFieldByName("foo_bytes_cord")));
+
+  message.set_foo_string("foo");
+  EXPECT_EQ("foo", reflection->GetCord(
+                       message, descriptor->FindFieldByName("foo_string")));
+
+  message.set_foo_bytes("bytes");
+  EXPECT_EQ("bytes", reflection->GetCord(
+                         message, descriptor->FindFieldByName("foo_bytes")));
+
+}
+
+TEST_F(GeneratedMessageReflectionCordAccessorsTest, SetStringFromCord) {
+  reflection_->SetString(&message_, optional_string_, absl::Cord("foo"));
+  reflection_->SetString(&message_, optional_string_piece_, absl::Cord("bar"));
+  reflection_->SetString(&message_, optional_cord_, absl::Cord("baz"));
+  extensions_reflection_->SetString(
+      &extensions_message_, optional_string_extension_, absl::Cord("moo"));
+
+  EXPECT_TRUE(message_.has_optional_string());
+  EXPECT_TRUE(message_.has_optional_string_piece());
+  EXPECT_TRUE(message_.has_optional_cord());
+  EXPECT_TRUE(
+      extensions_message_.HasExtension(unittest::optional_string_extension));
+
+  EXPECT_EQ("foo", message_.optional_string());
+  EXPECT_EQ("bar", std::string(
+                       reflection_->GetCord(message_, optional_string_piece_)));
+  EXPECT_EQ("baz", std::string(reflection_->GetCord(message_, optional_cord_)));
+  EXPECT_EQ("moo", extensions_message_.GetExtension(
+                       unittest::optional_string_extension));
+
+  unittest::TestCord message;
+  const Descriptor* descriptor = unittest::TestCord::descriptor();
+  const Reflection* reflection = message.GetReflection();
+
+  reflection->SetString(&message,
+                        descriptor->FindFieldByName("optional_bytes_cord"),
+                        absl::Cord("cord"));
+  EXPECT_TRUE(message.has_optional_bytes_cord());
+  EXPECT_EQ("cord", message.optional_bytes_cord());
+}
+
+TEST_F(GeneratedMessageReflectionCordAccessorsTest, SetOneofStringFromCord) {
+  unittest::TestOneof2 message;
+  const Descriptor* descriptor = unittest::TestOneof2::descriptor();
+  const Reflection* reflection = message.GetReflection();
+
+  reflection->SetString(&message, descriptor->FindFieldByName("foo_string"),
+                        absl::Cord("foo"));
+  EXPECT_TRUE(message.has_foo_string());
+  EXPECT_EQ("foo", message.foo_string());
+
+  reflection->SetString(&message, descriptor->FindFieldByName("foo_bytes"),
+                        absl::Cord("bytes"));
+  EXPECT_TRUE(message.has_foo_bytes());
+  EXPECT_EQ("bytes", message.foo_bytes());
+
+  reflection->SetString(&message, descriptor->FindFieldByName("foo_cord"),
+                        absl::Cord("cord"));
+  EXPECT_EQ("cord", std::string(reflection->GetCord(
+                        message, descriptor->FindFieldByName("foo_cord"))));
+
+  reflection->SetString(&message,
+                        descriptor->FindFieldByName("foo_string_piece"),
+                        absl::Cord("string_piece"));
+  EXPECT_EQ("string_piece",
+            reflection->GetCord(
+                message, descriptor->FindFieldByName("foo_string_piece")));
+
+  reflection->SetString(&message, descriptor->FindFieldByName("foo_bytes_cord"),
+                        absl::Cord("bytes_cord"));
+  EXPECT_TRUE(message.has_foo_bytes_cord());
+  EXPECT_EQ("bytes_cord", message.foo_bytes_cord());
+}
+
+TEST_F(GeneratedMessageReflectionCordAccessorsTest, CordSingularBytes) {
+  unittest::TestCord message;
+  absl::Cord cord_value("test");
+  message.set_optional_bytes_cord(cord_value);
+  EXPECT_EQ("test", message.optional_bytes_cord());
+
+  EXPECT_TRUE(message.has_optional_bytes_cord());
+  message.clear_optional_bytes_cord();
+  EXPECT_FALSE(message.has_optional_bytes_cord());
+
+  std::string string_value = "test";
+  message.set_optional_bytes_cord(string_value);
+  EXPECT_EQ("test", message.optional_bytes_cord());
+}
+
+TEST_F(GeneratedMessageReflectionCordAccessorsTest, CordSingularBytesDefault) {
+  unittest::TestCord message;
+  EXPECT_EQ("hello", message.optional_bytes_cord_default());
+  absl::Cord cord_value("world");
+  message.set_optional_bytes_cord_default(cord_value);
+  EXPECT_EQ("world", message.optional_bytes_cord_default());
+  message.clear_optional_bytes_cord_default();
+  EXPECT_EQ("hello", message.optional_bytes_cord_default());
+}
+
+TEST_F(GeneratedMessageReflectionCordAccessorsTest, CordSingularOneofBytes) {
+  unittest::TestOneof2 message;
+  absl::Cord cord_value("test");
+  message.set_foo_bytes_cord(cord_value);
+  EXPECT_EQ("test", message.foo_bytes_cord());
+
+  EXPECT_TRUE(message.has_foo_bytes_cord());
+  message.clear_foo();
+  EXPECT_FALSE(message.has_foo_bytes_cord());
+
+  std::string string_value = "test";
+  message.set_foo_bytes_cord(string_value);
+  EXPECT_EQ("test", message.foo_bytes_cord());
+  EXPECT_TRUE(message.has_foo_bytes_cord());
+}
+
+TEST_F(GeneratedMessageReflectionCordAccessorsTest, ClearOneofCord) {
+  unittest::TestOneof2 message;
+  absl::Cord cord_value("test");
+  message.set_foo_bytes_cord(cord_value);
+
+  const Descriptor* descriptor = unittest::TestOneof2::descriptor();
+  const Reflection* reflection = message.GetReflection();
+
+  EXPECT_TRUE(message.has_foo_bytes_cord());
+  reflection->ClearOneof(&message, descriptor->FindOneofByName("foo"));
+  EXPECT_FALSE(message.has_foo_bytes_cord());
+}
 
 
 using internal::IsDescendant;

@@ -27,6 +27,7 @@ def protobuf_java_library(**kwargs):
     )
 
 def protobuf_versioned_java_library(
+        automatic_module_name,
         bundle_description,
         bundle_name,
         bundle_symbolic_name,
@@ -44,6 +45,9 @@ def protobuf_versioned_java_library(
     Args:
         bundle_description: (required) The Bundle-Description header defines a short
             description of this bundle.
+        automatic_module_name: (required) The Automatic-Module-Name header that represents
+            the name of the module when this bundle is used as an automatic
+            module.
         bundle_name: (required) The Bundle-Name header defines a readable name for this
             bundle. This should be a short, human-readable name that can
             contain spaces.
@@ -65,6 +69,7 @@ def protobuf_versioned_java_library(
     """
     osgi_java_library(
         javacopts = JAVA_OPTS,
+        automatic_module_name = automatic_module_name,
         bundle_doc_url = BUNDLE_DOC_URL,
         bundle_license = BUNDLE_LICENSE,
         bundle_version = PROTOBUF_JAVA_VERSION,

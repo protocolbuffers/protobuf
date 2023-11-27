@@ -153,6 +153,18 @@ While the ccache caches quickly over-run our GitHub action cache, they also
 quickly become useless.  Since GitHub prunes caches based on the time they were
 last used, this just means that we'll see quicker turnover.
 
+## sccache
+
+An alternative to ccache is [sccache](https://github.com/mozilla/sccache). The
+two tools are very similar in function, but sccache requires (and allows) much
+less configuration and supports GCS storage right out of the box. By hooking
+this up to our project that we already use for Bazel caching, we're able to get
+even bigger CMake wins in CI because we're no longer constrained by GitHub's
+10GB cache limit.
+
+Similar to the Bazel remote cache, we give read access to every CI run, but
+disallow writing in PRs from forks.
+
 ## Bazelisk
 
 Bazelisk will automatically download a pinned version of Bazel on first use.

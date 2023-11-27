@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // LINT: ALLOW_GROUPS, LEGACY_NAMES
 
@@ -244,7 +221,7 @@ extend TestAllExtensions {
     optional_import_enum_extension = 23;
 
   optional string optional_string_piece_extension = 24 [ctype=STRING_PIECE];
-  optional string optional_cord_extension = 25 [ctype=CORD];
+  optional string optional_cord_extension = 25;
 
   optional objc.protobuf.tests.public_import.Message
     optional_public_import_message_extension = 26;
@@ -286,7 +263,7 @@ extend TestAllExtensions {
     repeated_import_enum_extension = 53;
 
   repeated string repeated_string_piece_extension = 54 [ctype=STRING_PIECE];
-  repeated string repeated_cord_extension = 55 [ctype=CORD];
+  repeated string repeated_cord_extension = 55;
 
   repeated TestAllTypes.NestedMessage
     repeated_lazy_message_extension = 57 [lazy=true];
@@ -317,7 +294,7 @@ extend TestAllExtensions {
 
   optional string default_string_piece_extension = 84 [ctype=STRING_PIECE,
                                                        default="abc"];
-  optional string default_cord_extension = 85 [ctype=CORD, default="123"];
+  optional string default_cord_extension = 85 [default="123"];
 
   // For oneof test
   optional uint32 oneof_uint32_extension = 111;
@@ -1098,7 +1075,11 @@ message TestHugeFieldNumbers {
     bytes oneof_bytes = 536870014;
   }
 
-  extensions  536860000 to 536869999;
+  extensions 530000000 to 536869999 [declaration = {
+    number: 536860000
+    full_name: ".objc.protobuf.tests.test_all_types"
+    type: ".objc.protobuf.tests.TestAllTypes"
+  }];
 }
 
 extend TestHugeFieldNumbers {
@@ -1122,7 +1103,7 @@ extend TestExtensionInsideTable {
   optional int32 test_extension_inside_table_extension = 5;
 }
 
-// NOTE(b/202996544): Intentionally nested to mirror go/glep.
+// NOTE: Intentionally nested to mirror go/glep.
 message TestNestedGroupExtensionOuter {
   optional group Layer1OptionalGroup = 1 {
     repeated group Layer2RepeatedGroup = 2 {

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -40,10 +17,14 @@
 
 #include <assert.h>
 
+#include <algorithm>
 #include <atomic>
 #include <climits>
+#include <cstddef>
+#include <memory>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
@@ -188,62 +169,6 @@ T* GetOwnedMessage(Arena* message_arena, T* submessage,
       submessage_arena));
 }
 
-// Hide atomic from the public header and allow easy change to regular int
-// on platforms where the atomic might have a perf impact.
-//
-// CachedSize is like std::atomic<int> but with some important changes:
-//
-// 1) CachedSize uses Get / Set rather than load / store.
-// 2) CachedSize always uses relaxed ordering.
-// 3) CachedSize is assignable and copy-constructible.
-// 4) CachedSize has a constexpr default constructor, and a constexpr
-//    constructor that takes an int argument.
-// 5) If the compiler supports the __atomic_load_n / __atomic_store_n builtins,
-//    then CachedSize is trivially copyable.
-//
-// Developed at https://godbolt.org/z/vYcx7zYs1 ; supports gcc, clang, MSVC.
-class PROTOBUF_EXPORT CachedSize {
- private:
-  using Scalar = int;
-
- public:
-  constexpr CachedSize() noexcept : atom_(Scalar{}) {}
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  constexpr CachedSize(Scalar desired) noexcept : atom_(desired) {}
-#if PROTOBUF_BUILTIN_ATOMIC
-  constexpr CachedSize(const CachedSize& other) = default;
-
-  Scalar Get() const noexcept {
-    return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
-  }
-
-  void Set(Scalar desired) noexcept {
-    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
-  }
-#else
-  CachedSize(const CachedSize& other) noexcept : atom_(other.Get()) {}
-  CachedSize& operator=(const CachedSize& other) noexcept {
-    Set(other.Get());
-    return *this;
-  }
-
-  Scalar Get() const noexcept {  //
-    return atom_.load(std::memory_order_relaxed);
-  }
-
-  void Set(Scalar desired) noexcept {
-    atom_.store(desired, std::memory_order_relaxed);
-  }
-#endif
-
- private:
-#if PROTOBUF_BUILTIN_ATOMIC
-  Scalar atom_;
-#else
-  std::atomic<Scalar> atom_;
-#endif
-};
-
 PROTOBUF_EXPORT void DestroyMessage(const void* message);
 PROTOBUF_EXPORT void DestroyString(const void* s);
 // Destroy (not delete) the message
@@ -254,6 +179,142 @@ inline void OnShutdownDestroyMessage(const void* ptr) {
 inline void OnShutdownDestroyString(const std::string* ptr) {
   OnShutdownRun(DestroyString, ptr);
 }
+
+// Helpers for deterministic serialization =============================
+
+// Iterator base for MapSorterFlat and MapSorterPtr.
+template <typename storage_type>
+struct MapSorterIt {
+  storage_type* ptr;
+  MapSorterIt(storage_type* ptr) : ptr(ptr) {}
+  bool operator==(const MapSorterIt& other) const { return ptr == other.ptr; }
+  bool operator!=(const MapSorterIt& other) const { return !(*this == other); }
+  MapSorterIt& operator++() {
+    ++ptr;
+    return *this;
+  }
+  MapSorterIt operator++(int) {
+    auto other = *this;
+    ++ptr;
+    return other;
+  }
+  MapSorterIt operator+(int v) { return MapSorterIt{ptr + v}; }
+};
+
+// Defined outside of MapSorterFlat to only be templatized on the key.
+template <typename KeyT>
+struct MapSorterLessThan {
+  using storage_type = std::pair<KeyT, const void*>;
+  bool operator()(const storage_type& a, const storage_type& b) const {
+    return a.first < b.first;
+  }
+};
+
+// MapSorterFlat stores keys inline with pointers to map entries, so that
+// keys can be compared without indirection. This type is used for maps with
+// keys that are not strings.
+template <typename MapT>
+class MapSorterFlat {
+ public:
+  using value_type = typename MapT::value_type;
+  // To avoid code bloat we don't put `value_type` in `storage_type`. It is not
+  // necessary for the call to sort, and avoiding it prevents unnecessary
+  // separate instantiations of sort.
+  using storage_type = std::pair<typename MapT::key_type, const void*>;
+
+  // This const_iterator dereferenes to the map entry stored in the sorting
+  // array pairs. This is the same interface as the Map::const_iterator type,
+  // and allows generated code to use the same loop body with either form:
+  //   for (const auto& entry : map) { ... }
+  //   for (const auto& entry : MapSorterFlat(map)) { ... }
+  struct const_iterator : public MapSorterIt<storage_type> {
+    using pointer = const typename MapT::value_type*;
+    using reference = const typename MapT::value_type&;
+    using MapSorterIt<storage_type>::MapSorterIt;
+
+    pointer operator->() const {
+      return static_cast<const value_type*>(this->ptr->second);
+    }
+    reference operator*() const { return *this->operator->(); }
+  };
+
+  explicit MapSorterFlat(const MapT& m)
+      : size_(m.size()), items_(size_ ? new storage_type[size_] : nullptr) {
+    if (!size_) return;
+    storage_type* it = &items_[0];
+    for (const auto& entry : m) {
+      *it++ = {entry.first, &entry};
+    }
+    std::sort(&items_[0], &items_[size_],
+              MapSorterLessThan<typename MapT::key_type>{});
+  }
+  size_t size() const { return size_; }
+  const_iterator begin() const { return {items_.get()}; }
+  const_iterator end() const { return {items_.get() + size_}; }
+
+ private:
+  size_t size_;
+  std::unique_ptr<storage_type[]> items_;
+};
+
+// Defined outside of MapSorterPtr to only be templatized on the key.
+template <typename KeyT>
+struct MapSorterPtrLessThan {
+  bool operator()(const void* a, const void* b) const {
+    // The pointers point to the `std::pair<const Key, Value>` object.
+    // We cast directly to the key to read it.
+    return *reinterpret_cast<const KeyT*>(a) <
+           *reinterpret_cast<const KeyT*>(b);
+  }
+};
+
+// MapSorterPtr stores and sorts pointers to map entries. This type is used for
+// maps with keys that are strings.
+template <typename MapT>
+class MapSorterPtr {
+ public:
+  using value_type = typename MapT::value_type;
+  // To avoid code bloat we don't put `value_type` in `storage_type`. It is not
+  // necessary for the call to sort, and avoiding it prevents unnecessary
+  // separate instantiations of sort.
+  using storage_type = const void*;
+
+  // This const_iterator dereferenes the map entry pointer stored in the sorting
+  // array. This is the same interface as the Map::const_iterator type, and
+  // allows generated code to use the same loop body with either form:
+  //   for (const auto& entry : map) { ... }
+  //   for (const auto& entry : MapSorterPtr(map)) { ... }
+  struct const_iterator : public MapSorterIt<storage_type> {
+    using pointer = const typename MapT::value_type*;
+    using reference = const typename MapT::value_type&;
+    using MapSorterIt<storage_type>::MapSorterIt;
+
+    pointer operator->() const {
+      return static_cast<const value_type*>(*this->ptr);
+    }
+    reference operator*() const { return *this->operator->(); }
+  };
+
+  explicit MapSorterPtr(const MapT& m)
+      : size_(m.size()), items_(size_ ? new storage_type[size_] : nullptr) {
+    if (!size_) return;
+    storage_type* it = &items_[0];
+    for (const auto& entry : m) {
+      *it++ = &entry;
+    }
+    static_assert(PROTOBUF_FIELD_OFFSET(typename MapT::value_type, first) == 0,
+                  "Must hold for MapSorterPtrLessThan to work.");
+    std::sort(&items_[0], &items_[size_],
+              MapSorterPtrLessThan<typename MapT::key_type>{});
+  }
+  size_t size() const { return size_; }
+  const_iterator begin() const { return {items_.get()}; }
+  const_iterator end() const { return {items_.get() + size_}; }
+
+ private:
+  size_t size_;
+  std::unique_ptr<storage_type[]> items_;
+};
 
 }  // namespace internal
 }  // namespace protobuf

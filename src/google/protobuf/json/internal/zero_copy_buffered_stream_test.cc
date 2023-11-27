@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 
@@ -37,14 +14,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
-#include "google/protobuf/json/internal/test_input_stream.h"
+#include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 namespace google {
 namespace protobuf {
 namespace json_internal {
 namespace {
-// TODO(b/234474291): Use the gtest versions once that's available in OSS.
+// TODO: Use the gtest versions once that's available in OSS.
 MATCHER_P(IsOkAndHolds, inner,
           absl::StrCat("is OK and holds ", testing::PrintToString(inner))) {
   if (!arg.ok()) {
@@ -69,7 +46,7 @@ MATCHER_P(StatusIs, status,
 #define ASSERT_OK(x) ASSERT_THAT(x, StatusIs(absl::StatusCode::kOk))
 
 TEST(ZcBufferTest, ReadUnbuffered) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   {
@@ -92,7 +69,7 @@ TEST(ZcBufferTest, ReadUnbuffered) {
 }
 
 TEST(ZcBufferTest, ReadBuffered) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   {
@@ -109,7 +86,7 @@ TEST(ZcBufferTest, ReadBuffered) {
 }
 
 TEST(ZcBufferTest, HoldAcrossSeam) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   auto chunk = stream.Take(3);
@@ -123,7 +100,7 @@ TEST(ZcBufferTest, HoldAcrossSeam) {
 }
 
 TEST(ZcBufferTest, BufferAcrossSeam) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   auto chunk = stream.Take(2);
@@ -136,8 +113,24 @@ TEST(ZcBufferTest, BufferAcrossSeam) {
   EXPECT_THAT(chunk, IsOkAndHolds("fo"));
 }
 
+TEST(ZcBufferTest, TakeEof) {
+  io::internal::TestZeroCopyInputStream in{"foo", "bar"};
+  ZeroCopyBufferedStream stream(&in);
+
+  // This should fail since there are not enough bytes available.
+  auto chunk = stream.Take(7);
+  EXPECT_FALSE(chunk.ok());
+  EXPECT_TRUE(stream.IsBuffering());
+
+  // Subsequent calls to Take() should still succeed.
+  auto chunk2 = stream.Take(2);
+  auto chunk3 = stream.Take(4);
+  EXPECT_THAT(chunk2, IsOkAndHolds("fo"));
+  EXPECT_THAT(chunk3, IsOkAndHolds("obar"));
+}
+
 TEST(ZcBufferTest, MarkUnbuffered) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   ASSERT_OK(stream.Advance(1));
@@ -148,7 +141,7 @@ TEST(ZcBufferTest, MarkUnbuffered) {
 }
 
 TEST(ZcBufferTest, MarkBuffered) {
-  TestInputStream in{"foo", "bar", "baz"};
+  io::internal::TestZeroCopyInputStream in{"foo", "bar", "baz"};
   ZeroCopyBufferedStream stream(&in);
 
   ASSERT_OK(stream.Advance(1));

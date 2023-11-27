@@ -1,4 +1,5 @@
 exports_files([
     "BUILD.bazel",
+    "rules_fuzzing.patch",
     "zlib.BUILD",
 ])
