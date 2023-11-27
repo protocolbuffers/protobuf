@@ -8,6 +8,8 @@
 #ifndef UPB_PROTOS_REPEATED_FIELD_H_
 #define UPB_PROTOS_REPEATED_FIELD_H_
 
+#include <assert.h>
+
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
@@ -22,11 +24,7 @@
 #include "upb/message/copy.h"
 #include "upb/message/types.h"
 
-// Must be last:
-#include "upb/port/def.inc"
-
 namespace protos {
-
 namespace internal {
 
 // Shared implementation of repeated fields for absl::string_view and
@@ -185,9 +183,9 @@ class RepeatedFieldStringProxy
   void push_back(T t) {
     upb_MessageValue message_value;
     // Copy string to arena.
-    UPB_ASSERT(this->arena_);
+    assert(this->arena_);
     char* data = (char*)upb_Arena_Malloc(this->arena_, t.size());
-    UPB_ASSERT(data);
+    assert(data);
     memcpy(data, t.data(), t.size());
     message_value.str_val = upb_StringView_FromDataAndSize(data, t.size());
     upb_Array_Append(this->arr_, message_value, this->arena_);
@@ -296,7 +294,5 @@ class RepeatedField {
 };
 
 }  // namespace protos
-
-#include "upb/port/undef.inc"
 
 #endif  // UPB_PROTOS_REPEATED_FIELD_H_
