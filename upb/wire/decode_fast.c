@@ -165,15 +165,15 @@ UPB_FORCEINLINE
 static void* fastdecode_resizearr(upb_Decoder* d, void* dst,
                                   fastdecode_arr* farr, int valbytes) {
   if (UPB_UNLIKELY(dst == farr->end)) {
-    size_t old_capacity = farr->arr->capacity;
+    size_t old_capacity = farr->arr->UPB_PRIVATE(capacity);
     size_t old_bytes = old_capacity * valbytes;
     size_t new_capacity = old_capacity * 2;
     size_t new_bytes = new_capacity * valbytes;
     char* old_ptr = _upb_array_ptr(farr->arr);
     char* new_ptr = upb_Arena_Realloc(&d->arena, old_ptr, old_bytes, new_bytes);
     uint8_t elem_size_lg2 = __builtin_ctz(valbytes);
-    _upb_Array_SetTaggedPtr(farr->arr, new_ptr, elem_size_lg2);
-    farr->arr->capacity = new_capacity;
+    UPB_PRIVATE(_upb_Array_SetTaggedPtr)(farr->arr, new_ptr, elem_size_lg2);
+    farr->arr->UPB_PRIVATE(capacity) = new_capacity;
     dst = (void*)(new_ptr + (old_capacity * valbytes));
     farr->end = (void*)(new_ptr + (new_capacity * valbytes));
   }
@@ -255,13 +255,13 @@ static void* fastdecode_getfield(upb_Decoder* d, const char* ptr,
       *(uint32_t*)msg |= *hasbits;
       *hasbits = 0;
       if (UPB_LIKELY(!*arr_p)) {
-        farr->arr = _upb_Array_New(&d->arena, 8, elem_size_lg2);
+        farr->arr = UPB_PRIVATE(_upb_Array_New)(&d->arena, 8, elem_size_lg2);
         *arr_p = farr->arr;
       } else {
         farr->arr = *arr_p;
       }
       begin = _upb_array_ptr(farr->arr);
-      farr->end = begin + (farr->arr->capacity * valbytes);
+      farr->end = begin + (farr->arr->UPB_PRIVATE(capacity) * valbytes);
       *data = _upb_FastDecoder_LoadTag(ptr);
       return begin + (farr->arr->size * valbytes);
     }
@@ -540,7 +540,8 @@ TAGBYTES(p)
   int elems = size / valbytes;                                              \
                                                                             \
   if (UPB_LIKELY(!arr)) {                                                   \
-    *arr_p = arr = _upb_Array_New(&d->arena, elems, elem_size_lg2);         \
+    *arr_p = arr =                                                          \
+        UPB_PRIVATE(_upb_Array_New)(&d->arena, elems, elem_size_lg2);       \
     if (!arr) {                                                             \
       _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);            \
     }                                                                       \

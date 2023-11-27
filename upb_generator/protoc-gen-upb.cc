@@ -690,7 +690,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
             }
             struct $0* sub = (struct $0*)_upb_Message_New($3, arena);
             if (!arr || !sub) return NULL;
-            _upb_Array_Set(arr, arr->size - 1, &sub, sizeof(sub));
+            UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &sub, sizeof(sub));
             return sub;
           }
         )cc",
@@ -706,7 +706,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
             if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
               return false;
             }
-            _upb_Array_Set(arr, arr->size - 1, &val, sizeof(val));
+            UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &val, sizeof(val));
             return true;
           }
         )cc",

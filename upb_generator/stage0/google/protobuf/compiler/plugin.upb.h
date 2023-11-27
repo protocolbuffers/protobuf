@@ -351,7 +351,7 @@ UPB_INLINE bool google_protobuf_compiler_CodeGeneratorRequest_add_file_to_genera
   if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
     return false;
   }
-  _upb_Array_Set(arr, arr->size - 1, &val, sizeof(val));
+  UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &val, sizeof(val));
   return true;
 }
 UPB_INLINE void google_protobuf_compiler_CodeGeneratorRequest_set_parameter(google_protobuf_compiler_CodeGeneratorRequest *msg, upb_StringView value) {
@@ -393,7 +393,7 @@ UPB_INLINE struct google_protobuf_FileDescriptorProto* google_protobuf_compiler_
   }
   struct google_protobuf_FileDescriptorProto* sub = (struct google_protobuf_FileDescriptorProto*)_upb_Message_New(google__protobuf__FileDescriptorProto_msg_init(), arena);
   if (!arr || !sub) return NULL;
-  _upb_Array_Set(arr, arr->size - 1, &sub, sizeof(sub));
+  UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &sub, sizeof(sub));
   return sub;
 }
 UPB_INLINE struct google_protobuf_FileDescriptorProto** google_protobuf_compiler_CodeGeneratorRequest_mutable_source_file_descriptors(google_protobuf_compiler_CodeGeneratorRequest* msg, size_t* size) {
@@ -419,7 +419,7 @@ UPB_INLINE struct google_protobuf_FileDescriptorProto* google_protobuf_compiler_
   }
   struct google_protobuf_FileDescriptorProto* sub = (struct google_protobuf_FileDescriptorProto*)_upb_Message_New(google__protobuf__FileDescriptorProto_msg_init(), arena);
   if (!arr || !sub) return NULL;
-  _upb_Array_Set(arr, arr->size - 1, &sub, sizeof(sub));
+  UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &sub, sizeof(sub));
   return sub;
 }
 
@@ -557,7 +557,7 @@ UPB_INLINE struct google_protobuf_compiler_CodeGeneratorResponse_File* google_pr
   }
   struct google_protobuf_compiler_CodeGeneratorResponse_File* sub = (struct google_protobuf_compiler_CodeGeneratorResponse_File*)_upb_Message_New(google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(), arena);
   if (!arr || !sub) return NULL;
-  _upb_Array_Set(arr, arr->size - 1, &sub, sizeof(sub));
+  UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &sub, sizeof(sub));
   return sub;
 }
 
