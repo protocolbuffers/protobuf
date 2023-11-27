@@ -529,7 +529,7 @@ void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   ::uint64_t raw_value;
   memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
   if (raw_value != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -717,7 +717,7 @@ void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   ::uint32_t raw_value;
   memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
   if (raw_value != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -891,7 +891,7 @@ void Int64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1065,7 +1065,7 @@ void UInt64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1239,7 +1239,7 @@ void Int32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1413,7 +1413,7 @@ void UInt32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1586,7 +1586,7 @@ void BoolValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::googl
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }

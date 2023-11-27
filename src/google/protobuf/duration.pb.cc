@@ -293,10 +293,10 @@ void Duration::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google
   (void) cached_has_bits;
 
   if (from._internal_seconds() != 0) {
-    _this->_internal_set_seconds(from._internal_seconds());
+    _this->_impl_.seconds_ = from._impl_.seconds_;
   }
   if (from._internal_nanos() != 0) {
-    _this->_internal_set_nanos(from._internal_nanos());
+    _this->_impl_.nanos_ = from._impl_.nanos_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }

@@ -600,7 +600,7 @@ void Api::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pro
     }
   }
   if (from._internal_syntax() != 0) {
-    _this->_internal_set_syntax(from._internal_syntax());
+    _this->_impl_.syntax_ = from._impl_.syntax_;
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -966,13 +966,13 @@ void Method::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::
     _this->_internal_set_response_type_url(from._internal_response_type_url());
   }
   if (from._internal_request_streaming() != 0) {
-    _this->_internal_set_request_streaming(from._internal_request_streaming());
+    _this->_impl_.request_streaming_ = from._impl_.request_streaming_;
   }
   if (from._internal_response_streaming() != 0) {
-    _this->_internal_set_response_streaming(from._internal_response_streaming());
+    _this->_impl_.response_streaming_ = from._impl_.response_streaming_;
   }
   if (from._internal_syntax() != 0) {
-    _this->_internal_set_syntax(from._internal_syntax());
+    _this->_impl_.syntax_ = from._impl_.syntax_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }

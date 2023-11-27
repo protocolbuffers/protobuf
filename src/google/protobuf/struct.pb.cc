@@ -781,40 +781,62 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
 void Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Value*>(&to_msg);
   auto& from = static_cast<const Value&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Value)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  switch (from.kind_case()) {
-    case kNullValue: {
-      _this->_internal_set_null_value(from._internal_null_value());
-      break;
+  if (const uint32_t oneof_from_case = from._impl_._oneof_case_[0]) {
+    const uint32_t oneof_to_case = _this->_impl_._oneof_case_[0];
+    const bool oneof_needs_init = oneof_to_case != oneof_from_case;
+    if (oneof_needs_init) {
+      if (oneof_to_case != 0) {
+        _this->clear_kind();
+      }
+      _this->_impl_._oneof_case_[0] = oneof_from_case;
     }
-    case kNumberValue: {
-      _this->_internal_set_number_value(from._internal_number_value());
-      break;
-    }
-    case kStringValue: {
-      _this->_internal_set_string_value(from._internal_string_value());
-      break;
-    }
-    case kBoolValue: {
-      _this->_internal_set_bool_value(from._internal_bool_value());
-      break;
-    }
-    case kStructValue: {
-      _this->_internal_mutable_struct_value()->::google::protobuf::Struct::MergeFrom(
-          from._internal_struct_value());
-      break;
-    }
-    case kListValue: {
-      _this->_internal_mutable_list_value()->::google::protobuf::ListValue::MergeFrom(
-          from._internal_list_value());
-      break;
-    }
-    case KIND_NOT_SET: {
-      break;
+
+    switch (oneof_from_case) {
+      case kNullValue: {
+        _this->_impl_.kind_.null_value_ = from._impl_.kind_.null_value_;
+        break;
+      }
+      case kNumberValue: {
+        _this->_impl_.kind_.number_value_ = from._impl_.kind_.number_value_;
+        break;
+      }
+      case kStringValue: {
+        if (oneof_needs_init) {
+          _this->_impl_.kind_.string_value_.InitDefault();
+        }
+        _this->_impl_.kind_.string_value_.Set(from._internal_string_value(), arena);
+        break;
+      }
+      case kBoolValue: {
+        _this->_impl_.kind_.bool_value_ = from._impl_.kind_.bool_value_;
+        break;
+      }
+      case kStructValue: {
+        if (oneof_needs_init) {
+          _this->_impl_.kind_.struct_value_ =
+              ::google::protobuf::Message::CopyConstruct<::google::protobuf::Struct>(arena, *from._impl_.kind_.struct_value_);
+        } else {
+          _this->_impl_.kind_.struct_value_->MergeFrom(from._internal_struct_value());
+        }
+        break;
+      }
+      case kListValue: {
+        if (oneof_needs_init) {
+          _this->_impl_.kind_.list_value_ =
+              ::google::protobuf::Message::CopyConstruct<::google::protobuf::ListValue>(arena, *from._impl_.kind_.list_value_);
+        } else {
+          _this->_impl_.kind_.list_value_->MergeFrom(from._internal_list_value());
+        }
+        break;
+      }
+      case KIND_NOT_SET:
+        break;
     }
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);

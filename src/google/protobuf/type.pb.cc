@@ -779,7 +779,7 @@ void Type::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pr
     }
   }
   if (from._internal_syntax() != 0) {
-    _this->_internal_set_syntax(from._internal_syntax());
+    _this->_impl_.syntax_ = from._impl_.syntax_;
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -1213,19 +1213,19 @@ void Field::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::p
     _this->_internal_set_default_value(from._internal_default_value());
   }
   if (from._internal_kind() != 0) {
-    _this->_internal_set_kind(from._internal_kind());
+    _this->_impl_.kind_ = from._impl_.kind_;
   }
   if (from._internal_cardinality() != 0) {
-    _this->_internal_set_cardinality(from._internal_cardinality());
+    _this->_impl_.cardinality_ = from._impl_.cardinality_;
   }
   if (from._internal_number() != 0) {
-    _this->_internal_set_number(from._internal_number());
+    _this->_impl_.number_ = from._impl_.number_;
   }
   if (from._internal_oneof_index() != 0) {
-    _this->_internal_set_oneof_index(from._internal_oneof_index());
+    _this->_impl_.oneof_index_ = from._impl_.oneof_index_;
   }
   if (from._internal_packed() != 0) {
-    _this->_internal_set_packed(from._internal_packed());
+    _this->_impl_.packed_ = from._impl_.packed_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1592,7 +1592,7 @@ void Enum::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pr
     }
   }
   if (from._internal_syntax() != 0) {
-    _this->_internal_set_syntax(from._internal_syntax());
+    _this->_impl_.syntax_ = from._impl_.syntax_;
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -1848,7 +1848,7 @@ void EnumValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::googl
     _this->_internal_set_name(from._internal_name());
   }
   if (from._internal_number() != 0) {
-    _this->_internal_set_number(from._internal_number());
+    _this->_impl_.number_ = from._impl_.number_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
