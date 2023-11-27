@@ -26,6 +26,7 @@
 #include <string>
 #include <utility>
 
+#include "google/protobuf/stubs/callback.h"
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/strings/cord.h"
