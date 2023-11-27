@@ -21,7 +21,6 @@ cc_library(
 cc_library(
     name = "allowlists",
     srcs = [
-        "editions.cc",
         "empty_package.cc",
         "open_enum.cc",
     ],
