@@ -2299,6 +2299,8 @@ class PROTOBUF_EXPORT DescriptorPool {
   void EnforceExtensionDeclarations(bool enforce) {
     enforce_extension_declarations_ = enforce;
   }
+
+  void LoadDescriptorExtensionDeclaration();
   // Internal stuff --------------------------------------------------
   // These methods MUST NOT be called from outside the proto2 library.
   // These methods may contain hidden pitfalls and may be removed in a

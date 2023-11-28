@@ -11,10 +11,14 @@
 
 #include "google/protobuf/descriptor.h"
 
+#include <fcntl.h>
+
 #include <algorithm>
 #include <array>
 #include <cstdlib>
+#include <fstream>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -25,6 +29,7 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
+#include "devtools/build/runtime/get_runfiles_dir.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/base/dynamic_annotations.h"
@@ -80,7 +85,7 @@ using ::google::protobuf::internal::DownCast;
 const int kPackageLimit = 100;
 
 
-std::string ToCamelCase(const std::string& input, bool lower_first) {
+std::string ToCamelCase(absl::string_view input, bool lower_first) {
   bool capitalize_next = !lower_first;
   std::string result;
   result.reserve(input.size());
@@ -1933,7 +1938,6 @@ const SourceCodeInfo_Location* FileDescriptorTables::GetSourceLocation(
 
 // ===================================================================
 // DescriptorPool
-
 
 DescriptorPool::ErrorCollector::~ErrorCollector() {}
 
@@ -4586,6 +4590,68 @@ absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
   feature_set_defaults_spec_ =
       absl::make_unique<FeatureSetDefaults>(std::move(spec));
   return absl::OkStatus();
+}
+
+namespace {
+const ExtensionDeclarationMap& GetDeclarationMap() {
+  static auto kMap = [] {
+    auto m = new ExtensionDeclarationMap();
+    static const auto* descriptor_extendables =
+        new absl::flat_hash_set<absl::string_view>({
+            "enum_options",
+            "enum_value_options",
+            "file_options",
+            "extension_range_options",
+            "field_options",
+            "message_options",
+            "method_options",
+            "oneof_options",
+            "service_options",
+            "stream_options",
+        });
+
+    for (absl::string_view type_name : *descriptor_extendables) {
+      std::string full_type_name = absl::StrCat(
+          "proto2.", ToCamelCase(type_name, /* lower_first= */ false));
+      auto& num_map = (*m)[full_type_name];
+      std::string localFilename =
+          absl::StrCat("third_party/protobuf/extdecl_", type_name, ".textpb");
+      std::string runfilesFilename = absl::StrCat(
+          devtools_build::GetRunfilesDir(), "/google3/", localFilename);
+
+      std::ifstream file_stream(runfilesFilename.c_str());
+      if (!file_stream) {
+        file_stream = std::ifstream(localFilename.c_str());
+        if (!file_stream) continue;
+      }
+
+      // Parse extension declaration text proto.
+      std::string contents;
+      std::ostringstream ss;
+      ss << file_stream.rdbuf();
+      contents = ss.str();
+      ExtensionRangeOptions ext_decl;
+      if (!TextFormat::ParseFromString(contents, &ext_decl)) {
+        ABSL_LOG(FATAL) << "Failed to parse descriptor proto extension "
+                           "declarations for message: "
+                        << type_name;
+        continue;
+      }
+
+      // Add the extension declaration to the declaration map.
+      for (const auto& decl : ext_decl.declaration()) {
+        const auto& result = num_map.try_emplace(decl.number(), decl);
+        ABSL_CHECK(result.second);
+      }
+    }
+    return m;
+  }();
+  return *kMap;
+}
+}  // namespace
+
+void DescriptorPool::LoadDescriptorExtensionDeclaration() {
+  extension_declaration_map_ = GetDeclarationMap();
 }
 
 DescriptorBuilder::DescriptorBuilder(
