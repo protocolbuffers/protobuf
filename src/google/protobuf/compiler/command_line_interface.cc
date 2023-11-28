@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <sstream>
 
 #include "absl/algorithm/container.h"
 #include "absl/container/btree_set.h"

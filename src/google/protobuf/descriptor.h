@@ -2393,6 +2393,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class DescriptorBuilder;
   friend class FileDescriptorTables;
   friend class google::protobuf::descriptor_unittest::ValidationErrorTest;
+  friend class ::google::protobuf::compiler::CommandLineInterface;
 
   // Return true if the given name is a sub-symbol of any non-package
   // descriptor that already exists in the descriptor pool.  (The full
