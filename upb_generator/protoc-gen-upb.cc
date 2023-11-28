@@ -44,7 +44,7 @@ namespace {
 
 struct Options {
   bool bootstrap = false;
-  std::string dllexport_tag;
+  std::string dllexport_decl;
 };
 
 std::string SourceFilename(upb::FileDefPtr file) {
@@ -887,20 +887,20 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
       "#endif\n"
       "\n");
 
-  EmitDllExportMacros(options.dllexport_tag, output);
+  EmitDllExportMacros(options.dllexport_decl, output);
 
   if (options.bootstrap) {
     for (auto message : this_file_messages) {
       output("extern const $1upb_MiniTable* $0();\n", MessageInitName(message),
-             PadSuffix(options.dllexport_tag));
+             PadSuffix(options.dllexport_decl));
     }
     for (auto message : forward_messages) {
       output("extern const $1upb_MiniTable* $0();\n", MessageInitName(message),
-             PadSuffix(options.dllexport_tag));
+             PadSuffix(options.dllexport_decl));
     }
     for (auto enumdesc : this_file_enums) {
       output("extern const $1upb_MiniTableEnum* $0();\n", EnumInit(enumdesc),
-             PadSuffix(options.dllexport_tag));
+             PadSuffix(options.dllexport_decl));
     }
     output("\n");
   }
@@ -1110,8 +1110,8 @@ bool ParseOptions(Plugin* plugin, Options* options) {
   for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
     if (pair.first == "bootstrap_upb") {
       options->bootstrap = true;
-    } else if (pair.first == "dllexport_tag") {
-      options->dllexport_tag = pair.second;
+    } else if (pair.first == "dllexport_decl") {
+      options->dllexport_decl = pair.second;
     } else {
       plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
       return false;

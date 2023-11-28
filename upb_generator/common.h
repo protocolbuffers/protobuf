@@ -61,7 +61,7 @@ std::string ToPreproc(absl::string_view str);
 void EmitFileWarning(absl::string_view name, Output& output);
 std::string MessageInit(absl::string_view full_name);
 std::string MessageInitName(upb::MessageDefPtr descriptor);
-void EmitDllExportMacros(absl::string_view dllexport_tag, Output& output);
+void EmitDllExportMacros(absl::string_view dllexport_decl, Output& output);
 std::string MessageName(upb::MessageDefPtr descriptor);
 std::string FileLayoutName(upb::FileDefPtr file);
 std::string MiniTableHeaderFilename(upb::FileDefPtr file);
