@@ -245,16 +245,15 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   public:
   void clear_values() ;
   ::google::protobuf::Value* mutable_values(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >*
-      mutable_values();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* mutable_values();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& _internal_values() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* _internal_mutable_values();
   public:
   const ::google::protobuf::Value& values(int index) const;
   ::google::protobuf::Value* add_values();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >&
-      values() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& values() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.ListValue)
  private:
   class _Internal;
