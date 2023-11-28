@@ -63,8 +63,8 @@ message ParentMessage {
   message ExtendedMessage {
     extensions 536860000 to 536869999 [
       declaration = {
-        number: 536860000,
-        full_name: ".protobuf_editions_test.extension",
+        number: 536860000
+        full_name: ".protobuf_editions_test.extension"
         type: ".protobuf_editions_test.EmptyMessage"
       }
     ];
