@@ -86,11 +86,11 @@ enum {
 };
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
-  return (uint32_t)depth << 16;
+  return (uint32_t)depth << 4;
 }
 
 UPB_INLINE uint16_t upb_DecodeOptions_GetMaxDepth(uint32_t options) {
-  return options >> 16;
+  return options >> 4;
 }
 
 // Enforce an upper bound on recursion depth.
