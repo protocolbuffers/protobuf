@@ -8834,6 +8834,10 @@ bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a) {
 }
 
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 
 // Must be last.
 
@@ -9089,8 +9093,7 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
 
   if (upb_EnumDef_IsClosed(e)) {
     if (ctx->layout) {
-      UPB_ASSERT(ctx->enum_count < ctx->layout->enum_count);
-      e->layout = ctx->layout->enums[ctx->enum_count++];
+      e->layout = upb_MiniTableFile_Enum(ctx->layout, ctx->enum_count++);
     } else {
       e->layout = create_enumlayout(ctx, e);
     }
@@ -10344,6 +10347,8 @@ void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
 
 
 #include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 
 // Must be last.
@@ -10586,11 +10591,12 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
   if (ctx->layout) {
     // We are using the ext layouts that were passed in.
-    file->ext_layouts = ctx->layout->exts;
-    if (ctx->layout->ext_count != file->ext_count) {
+    file->ext_layouts = ctx->layout->UPB_PRIVATE(exts);
+    const int mt_ext_count = upb_MiniTableFile_ExtensionCount(ctx->layout);
+    if (mt_ext_count != file->ext_count) {
       _upb_DefBuilder_Errf(ctx,
                            "Extension count did not match layout (%d vs %d)",
-                           ctx->layout->ext_count, file->ext_count);
+                           mt_ext_count, file->ext_count);
     }
   } else {
     // We are building ext layouts from scratch.
@@ -11368,6 +11374,10 @@ bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
 }
 
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 
 // Must be last.
 
@@ -11780,8 +11790,7 @@ void _upb_MessageDef_CreateMiniTable(upb_DefBuilder* ctx, upb_MessageDef* m) {
   if (ctx->layout == NULL) {
     m->layout = _upb_MessageDef_MakeMiniTable(ctx, m);
   } else {
-    UPB_ASSERT(ctx->msg_count < ctx->layout->msg_count);
-    m->layout = ctx->layout->msgs[ctx->msg_count++];
+    m->layout = upb_MiniTableFile_Message(ctx->layout, ctx->msg_count++);
     UPB_ASSERT(m->field_count == m->layout->field_count);
 
     // We don't need the result of this call, but it will assign layout_index

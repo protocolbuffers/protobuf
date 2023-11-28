@@ -3443,18 +3443,98 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 // Must be last.
 
 struct upb_MiniTableFile {
-  const struct upb_MiniTable** msgs;
-  const struct upb_MiniTableEnum** enums;
-  const struct upb_MiniTableExtension** exts;
-  int msg_count;
-  int enum_count;
-  int ext_count;
+  const struct upb_MiniTable** UPB_PRIVATE(msgs);
+  const struct upb_MiniTableEnum** UPB_PRIVATE(enums);
+  const struct upb_MiniTableExtension** UPB_PRIVATE(exts);
+  int UPB_PRIVATE(msg_count);
+  int UPB_PRIVATE(enum_count);
+  int UPB_PRIVATE(ext_count);
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE int UPB_PRIVATE(_upb_MiniTableFile_EnumCount)(
+    const struct upb_MiniTableFile* f) {
+  return f->UPB_PRIVATE(enum_count);
+}
+
+UPB_INLINE int UPB_PRIVATE(_upb_MiniTableFile_ExtensionCount)(
+    const struct upb_MiniTableFile* f) {
+  return f->UPB_PRIVATE(ext_count);
+}
+
+UPB_INLINE int UPB_PRIVATE(_upb_MiniTableFile_MessageCount)(
+    const struct upb_MiniTableFile* f) {
+  return f->UPB_PRIVATE(msg_count);
+}
+
+UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(_upb_MiniTableFile_Enum)(
+    const struct upb_MiniTableFile* f, int i) {
+  UPB_ASSERT(i < f->UPB_PRIVATE(enum_count));
+  return f->UPB_PRIVATE(enums)[i];
+}
+
+UPB_INLINE const struct upb_MiniTableExtension* UPB_PRIVATE(
+    _upb_MiniTableFile_Extension)(const struct upb_MiniTableFile* f, int i) {
+  UPB_ASSERT(i < f->UPB_PRIVATE(ext_count));
+  return f->UPB_PRIVATE(exts)[i];
+}
+
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTableFile_Message)(
+    const struct upb_MiniTableFile* f, int i) {
+  UPB_ASSERT(i < f->UPB_PRIVATE(msg_count));
+  return f->UPB_PRIVATE(msgs)[i];
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 
 #endif /* UPB_MINI_TABLE_INTERNAL_FILE_H_ */
 
 typedef struct upb_MiniTableFile upb_MiniTableFile;
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_API_INLINE const struct upb_MiniTableEnum* upb_MiniTableFile_Enum(
+    const upb_MiniTableFile* f, int i) {
+  return UPB_PRIVATE(_upb_MiniTableFile_Enum)(f, i);
+}
+
+UPB_API_INLINE int upb_MiniTableFile_EnumCount(const upb_MiniTableFile* f) {
+  return UPB_PRIVATE(_upb_MiniTableFile_EnumCount)(f);
+}
+
+UPB_API_INLINE const struct upb_MiniTableExtension* upb_MiniTableFile_Extension(
+    const upb_MiniTableFile* f, int i) {
+  return UPB_PRIVATE(_upb_MiniTableFile_Extension)(f, i);
+}
+
+UPB_API_INLINE int upb_MiniTableFile_ExtensionCount(
+    const upb_MiniTableFile* f) {
+  return UPB_PRIVATE(_upb_MiniTableFile_ExtensionCount)(f);
+}
+
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableFile_Message(
+    const upb_MiniTableFile* f, int i) {
+  return UPB_PRIVATE(_upb_MiniTableFile_Message)(f, i);
+}
+
+UPB_API_INLINE int upb_MiniTableFile_MessageCount(const upb_MiniTableFile* f) {
+  return UPB_PRIVATE(_upb_MiniTableFile_MessageCount)(f);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
 
 #endif /* UPB_MINI_TABLE_FILE_H_ */
 
