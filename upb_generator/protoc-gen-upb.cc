@@ -44,6 +44,7 @@ namespace {
 
 struct Options {
   bool bootstrap = false;
+  std::string dllexport_tag;
 };
 
 std::string SourceFilename(upb::FileDefPtr file) {
@@ -731,7 +732,7 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
 
   if (field == field.containing_type().map_value()) {
     output(R"cc(
-             UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
+             UPB_INLINE void $0_set_$1($0* msg, $2 value) {
                _upb_msg_map_set_value(msg, &value, $3);
              }
            )cc",
@@ -740,7 +741,7 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
                                               : "sizeof(" + CType(field) + ")");
   } else {
     output(R"cc(
-             UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
+             UPB_INLINE void $0_set_$1($0* msg, $2 value) {
                const upb_MiniTableField field = $3;
                _upb_Message_SetNonExtensionField(msg, &field, &value);
              }
@@ -886,15 +887,20 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
       "#endif\n"
       "\n");
 
+  EmitDllExportMacros(options.dllexport_tag, output);
+
   if (options.bootstrap) {
     for (auto message : this_file_messages) {
-      output("extern const upb_MiniTable* $0();\n", MessageInitName(message));
+      output("extern const $1upb_MiniTable* $0();\n", MessageInitName(message),
+             PadSuffix(options.dllexport_tag));
     }
     for (auto message : forward_messages) {
-      output("extern const upb_MiniTable* $0();\n", MessageInitName(message));
+      output("extern const $1upb_MiniTable* $0();\n", MessageInitName(message),
+             PadSuffix(options.dllexport_tag));
     }
     for (auto enumdesc : this_file_enums) {
-      output("extern const upb_MiniTableEnum* $0();\n", EnumInit(enumdesc));
+      output("extern const $1upb_MiniTableEnum* $0();\n", EnumInit(enumdesc),
+             PadSuffix(options.dllexport_tag));
     }
     output("\n");
   }
@@ -1038,9 +1044,9 @@ void WriteEnumMiniDescriptorInitializer(upb::EnumDefPtr enum_def,
           static const upb_MiniTableEnum* mini_table = NULL;
           static const char* mini_descriptor = "$1";
           if (mini_table) return mini_table;
-          mini_table =
-              upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
-                                      upb_BootstrapArena(), NULL);
+          mini_table = upb_MiniTableEnum_Build(mini_descriptor,
+                                               strlen(mini_descriptor),
+                                               upb_BootstrapArena(), NULL);
           return mini_table;
         }
       )cc",
@@ -1104,6 +1110,8 @@ bool ParseOptions(Plugin* plugin, Options* options) {
   for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
     if (pair.first == "bootstrap_upb") {
       options->bootstrap = true;
+    } else if (pair.first == "dllexport_tag") {
+      options->dllexport_tag = pair.second;
     } else {
       plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
       return false;

@@ -60,6 +60,26 @@ std::string MessageInitName(upb::MessageDefPtr descriptor) {
   return MessageInit(descriptor.full_name());
 }
 
+void EmitDllExportMacros(absl::string_view dllexport_tag, Output& output) {
+  if (dllexport_tag.length()) {
+    output(
+        "#if !defined $0\n"
+        "#if defined $0_EXPORT\n"
+        "#define $0 __declspec(dll_export)\n"
+        "#elif defined $0_IMPORT\n"
+        "#define $0 __declspec(dll_import)\n"
+        "#else\n"
+        "#define $0\n"
+        "#endif\n"
+        "#endif\n\n",
+        dllexport_tag);    
+  }
+}
+
+std::string PadSuffix(absl::string_view tag) {
+  return tag.length() ? absl::StrCat(tag, " ") : std::string(tag);
+}
+
 std::string MessageName(upb::MessageDefPtr descriptor) {
   return ToCIdent(descriptor.full_name());
 }
