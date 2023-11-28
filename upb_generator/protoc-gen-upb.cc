@@ -887,8 +887,6 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
       "#endif\n"
       "\n");
 
-  EmitDllExportMacros(options.dllexport_decl, output);
-
   if (options.bootstrap) {
     for (auto message : this_file_messages) {
       output("extern const $1upb_MiniTable* $0();\n", MessageInitName(message),
