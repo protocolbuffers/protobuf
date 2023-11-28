@@ -783,9 +783,11 @@ static void upb_Decoder_AddKnownMessageSetItem(
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
   upb_Message* submsg = _upb_Decoder_NewSubMessage(
-      d, &ext->ext->sub, &ext->ext->field, (upb_TaggedMessagePtr*)&ext->data);
-  upb_DecodeStatus status = upb_Decode(data, size, submsg, item_mt->sub.submsg,
-                                       d->extreg, d->options, &d->arena);
+      d, &ext->ext->UPB_PRIVATE(sub), upb_MiniTableExtension_AsField(ext->ext),
+      (upb_TaggedMessagePtr*)&ext->data);
+  upb_DecodeStatus status = upb_Decode(
+      data, size, submsg, upb_MiniTableExtension_GetSubMessage(item_mt),
+      d->extreg, d->options, &d->arena);
   if (status != kUpb_DecodeStatus_Ok) _upb_Decoder_ErrorJmp(d, status);
 }
 
@@ -915,7 +917,7 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
       case kUpb_ExtMode_Extendable: {
         const upb_MiniTableExtension* ext =
             upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
-        if (ext) return &ext->field;
+        if (ext) return upb_MiniTableExtension_AsField(ext);
         break;
       }
       case kUpb_ExtMode_IsMessageSet:
@@ -1123,7 +1125,7 @@ static const char* _upb_Decoder_DecodeKnownField(
     }
     d->unknown_msg = msg;
     msg = &ext->data;
-    subs = &ext->ext->sub;
+    subs = &ext->ext->UPB_PRIVATE(sub);
   }
 
   switch (mode & kUpb_FieldMode_Mask) {

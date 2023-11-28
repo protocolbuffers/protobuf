@@ -37,6 +37,7 @@
 #include "upb/mini_descriptor/internal/encode.hpp"
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_descriptor/link.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
@@ -72,11 +73,15 @@ TEST(GeneratedCode, FindUnknown) {
                                                 arena);
 
   upb_FindUnknownRet result = upb_MiniTable_FindUnknown(
-      base_msg, upb_test_ModelExtension1_model_ext_ext.field.number, 0);
+      base_msg,
+      upb_MiniTableExtension_Number(&upb_test_ModelExtension1_model_ext_ext),
+      0);
   EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
 
   result = upb_MiniTable_FindUnknown(
-      base_msg, upb_test_ModelExtension2_model_ext_ext.field.number, 0);
+      base_msg,
+      upb_MiniTableExtension_Number(&upb_test_ModelExtension2_model_ext_ext),
+      0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, result.status);
 
   upb_Arena_Free(arena);

@@ -69,14 +69,15 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena,
     const upb_Message_Extension** extension) {
-  UPB_ASSERT(upb_MiniTableField_CType(&ext_table->field) == kUpb_CType_Message);
+  UPB_ASSERT(upb_MiniTableField_CType(upb_MiniTableExtension_AsField(
+                 ext_table)) == kUpb_CType_Message);
   *extension = _upb_Message_Getext(msg, ext_table);
   if (*extension) {
     return kUpb_GetExtension_Ok;
   }
 
   // Check unknown fields, if available promote.
-  int field_number = ext_table->field.number;
+  int field_number = upb_MiniTableExtension_Number(ext_table);
   upb_FindUnknownRet result = upb_MiniTable_FindUnknown(msg, field_number, 0);
   if (result.status != kUpb_FindUnknown_Ok) {
     return kUpb_GetExtension_NotPresent;
@@ -84,7 +85,8 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   size_t len;
   size_t ofs = result.ptr - upb_Message_GetUnknown(msg, &len);
   // Decode and promote from unknown.
-  const upb_MiniTable* extension_table = ext_table->sub.submsg;
+  const upb_MiniTable* extension_table =
+      upb_MiniTableExtension_GetSubMessage(ext_table);
   upb_UnknownToMessageRet parse_result = upb_MiniTable_ParseUnknownMessage(
       result.ptr, result.len, extension_table,
       /* base_message= */ NULL, decode_options, arena);

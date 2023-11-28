@@ -184,8 +184,9 @@ static bool upb_Clone_ExtensionValue(
     upb_Arena* arena) {
   dest->data = source->data;
   return upb_Clone_MessageValue(
-      &dest->data, upb_MiniTableField_CType(&mini_table_ext->field),
-      mini_table_ext->sub.submsg, arena);
+      &dest->data,
+      upb_MiniTableField_CType(&mini_table_ext->UPB_PRIVATE(field)),
+      upb_MiniTableExtension_GetSubMessage(mini_table_ext), arena);
 }
 
 upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
@@ -259,7 +260,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   const upb_Message_Extension* ext = _upb_Message_Getexts(src, &ext_count);
   for (size_t i = 0; i < ext_count; ++i) {
     const upb_Message_Extension* msg_ext = &ext[i];
-    const upb_MiniTableField* field = &msg_ext->ext->field;
+    const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
     upb_Message_Extension* dst_ext =
         _upb_Message_GetOrCreateExtension(dst, msg_ext->ext, arena);
     if (!dst_ext) return NULL;
@@ -272,7 +273,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
       UPB_ASSERT(msg_array);
       upb_Array* cloned_array =
           upb_Array_DeepClone(msg_array, upb_MiniTableField_CType(field),
-                              msg_ext->ext->sub.submsg, arena);
+                              msg_ext->ext->UPB_PRIVATE(sub).submsg, arena);
       if (!cloned_array) {
         return NULL;
       }

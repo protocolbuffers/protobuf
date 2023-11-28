@@ -8,6 +8,7 @@
 #include "upb/message/internal/map_sorter.h"
 
 #include "upb/base/internal/log2.h"
+#include "upb/mini_table/extension.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -126,8 +127,8 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
   const upb_Message_Extension* const* a = _a;
   const upb_Message_Extension* const* b = _b;
-  uint32_t a_num = (*a)->ext->field.number;
-  uint32_t b_num = (*b)->ext->field.number;
+  uint32_t a_num = upb_MiniTableExtension_Number((*a)->ext);
+  uint32_t b_num = upb_MiniTableExtension_Number((*b)->ext);
   assert(a_num != b_num);
   return a_num < b_num ? -1 : 1;
 }

@@ -115,8 +115,8 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid) {
   MessageLock msg_lock(msg);
   return _upb_Message_Getext(msg, eid) != nullptr ||
-         upb_MiniTable_FindUnknown(msg, eid->field.number, 0).status ==
-             kUpb_FindUnknown_Ok;
+         upb_MiniTable_FindUnknown(msg, upb_MiniTableExtension_Number(eid), 0)
+                 .status == kUpb_FindUnknown_Ok;
 }
 
 const upb_Message_Extension* GetOrPromoteExtension(
@@ -170,8 +170,9 @@ absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
   if (message_arena != extension_arena) {
     // Try fuse, if fusing is not allowed or fails, create copy of extension.
     if (!upb_Arena_Fuse(message_arena, extension_arena)) {
-      msg_ext->data.ptr =
-          DeepClone(extension, msg_ext->ext->sub.submsg, message_arena);
+      msg_ext->data.ptr = DeepClone(
+          extension, upb_MiniTableExtension_GetSubMessage(msg_ext->ext),
+          message_arena);
       return absl::OkStatus();
     }
   }
@@ -189,7 +190,8 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
   }
   // Clone extension into target message arena.
   msg_ext->data.ptr =
-      DeepClone(extension, msg_ext->ext->sub.submsg, message_arena);
+      DeepClone(extension, upb_MiniTableExtension_GetSubMessage(msg_ext->ext),
+                message_arena);
   return absl::OkStatus();
 }
 

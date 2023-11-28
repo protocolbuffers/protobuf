@@ -805,7 +805,7 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
                                         &count, &sub_counts);
   if (!ret || count != 1) return NULL;
 
-  upb_MiniTableField* f = &ext->field;
+  upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
 
   f->mode |= kUpb_LabelFlags_IsExtension;
   f->offset = 0;
@@ -819,8 +819,8 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
     if ((f->mode & kUpb_FieldMode_Mask) == kUpb_FieldMode_Array) return NULL;
   }
 
-  ext->extendee = extendee;
-  ext->sub = sub;
+  ext->UPB_PRIVATE(extendee) = extendee;
+  ext->UPB_PRIVATE(sub) = sub;
 
   return ret;
 }
