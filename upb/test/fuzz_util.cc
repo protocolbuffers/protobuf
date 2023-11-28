@@ -19,6 +19,7 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/link.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 

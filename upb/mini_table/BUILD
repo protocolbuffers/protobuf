@@ -33,6 +33,7 @@ cc_library(
     name = "mini_table",
     srcs = [
         "extension_registry.c",
+        "link.c",
         "message.c",
     ],
     hdrs = [
@@ -41,6 +42,7 @@ cc_library(
         "extension_registry.h",
         "field.h",
         "file.h",
+        "link.h",
         "message.h",
         "sub.h",
     ],

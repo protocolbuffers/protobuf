@@ -9,12 +9,10 @@ cc_library(
     srcs = [
         "build_enum.c",
         "decode.c",
-        "link.c",
     ],
     hdrs = [
         "build_enum.h",
         "decode.h",
-        "link.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],

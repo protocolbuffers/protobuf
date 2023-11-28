@@ -19,7 +19,6 @@
 // more specific headers directly.
 // IWYU pragma: begin_exports
 #include "upb/mini_descriptor/build_enum.h"
-#include "upb/mini_descriptor/link.h"
 // IWYU pragma: end_exports
 
 // Must be last.

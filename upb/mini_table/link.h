@@ -13,12 +13,13 @@
 // because they are only needed when building MiniTables from MiniDescriptors.
 // The interfaces in mini_table/ assume that MiniTables are immutable.
 
-#ifndef UPB_MINI_DESCRIPTOR_LINK_H_
-#define UPB_MINI_DESCRIPTOR_LINK_H_
+#ifndef UPB_MINI_TABLE_LINK_H_
+#define UPB_MINI_TABLE_LINK_H_
 
-#include "upb/base/status.h"
-#include "upb/mem/arena.h"
-#include "upb/mini_table/extension.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
@@ -81,4 +82,4 @@ UPB_API bool upb_MiniTable_Link(upb_MiniTable* mt,
 
 #include "upb/port/undef.inc"
 
-#endif  // UPB_MINI_DESCRIPTOR_LINK_H_
+#endif  // UPB_MINI_TABLE_LINK_H_

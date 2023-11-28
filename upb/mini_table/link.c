@@ -5,7 +5,17 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "upb/mini_descriptor/link.h"
+#include "upb/mini_table/link.h"
+
+#include <stddef.h>
+#include <stdint.h>
+
+#include "upb/base/descriptor_constants.h"
+#include "upb/mini_table/enum.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
