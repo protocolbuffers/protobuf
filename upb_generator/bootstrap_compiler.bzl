@@ -67,7 +67,7 @@ def _stage0_proto_staleness_test(name, base_dir, src_files, src_rules, strip_pre
             "$(location " + _protoc + ") " +
             "-I$(GENDIR)/" + strip_prefix + " " + _extra_proto_path +
             "--plugin=protoc-gen-upb=$(location " + _upbc("upb", 0) + ") " +
-	    "--upb_out=dllexport_decl=TEST_DLL,bootstrap_upb:$(@D)/bootstrap_generated_sources/" + base_dir + "stage0 " +
+            "--upb_out=bootstrap_upb:$(@D)/bootstrap_generated_sources/" + base_dir + "stage0 " +
             " ".join(src_files),
     )
 

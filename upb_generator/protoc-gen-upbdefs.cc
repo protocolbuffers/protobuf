@@ -59,8 +59,8 @@ void WriteDefHeader(upb::FileDefPtr file, const Options& options,
       "#endif\n\n",
       ToPreproc(file.name()));
 
-  output("extern $1_upb_DefPool_Init $0;\n", DefInitSymbol(file),
-         PadSuffix(options.dllexport_decl));
+  output("extern$1 _upb_DefPool_Init $0;\n", DefInitSymbol(file),
+         PadPrefix(options.dllexport_decl));
   output("\n");
 
   for (auto msg : SortedMessages(file)) {
@@ -87,8 +87,8 @@ void WriteDefSource(upb::FileDefPtr file, const Options& options, Output& output
   output("\n");
 
   for (int i = 0; i < file.dependency_count(); i++) {
-    output("extern $1_upb_DefPool_Init $0;\n",
-           DefInitSymbol(file.dependency(i)), PadSuffix(options.dllexport_decl));
+    output("extern$1 _upb_DefPool_Init $0;\n",
+           DefInitSymbol(file.dependency(i)), PadPrefix(options.dllexport_decl));
   }
 
   upb::Arena arena;

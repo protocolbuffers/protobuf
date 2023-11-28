@@ -65,7 +65,7 @@ std::string MessageName(upb::MessageDefPtr descriptor);
 std::string FileLayoutName(upb::FileDefPtr file);
 std::string MiniTableHeaderFilename(upb::FileDefPtr file);
 std::string CApiHeaderFilename(upb::FileDefPtr file);
-std::string PadSuffix(absl::string_view tag);
+std::string PadPrefix(absl::string_view tag);
 
 std::string EnumInit(upb::EnumDefPtr descriptor);
 

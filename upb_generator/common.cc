@@ -60,8 +60,8 @@ std::string MessageInitName(upb::MessageDefPtr descriptor) {
   return MessageInit(descriptor.full_name());
 }
 
-std::string PadSuffix(absl::string_view tag) {
-  return tag.length() ? absl::StrCat(tag, " ") : std::string(tag);
+std::string PadPrefix(absl::string_view tag) {
+  return tag.empty() ? "": absl::StrCat(" ", tag);
 }
 
 std::string MessageName(upb::MessageDefPtr descriptor) {
