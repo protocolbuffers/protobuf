@@ -43,7 +43,7 @@ void GenerateMessageDefAccessor(upb::MessageDefPtr d, Output& output) {
   output("\n");
 }
 
-void WriteDefHeader(upb::FileDefPtr file, Options const& options,
+void WriteDefHeader(upb::FileDefPtr file, const Options& options,
                     Output& output) {
   EmitFileWarning(file.name(), output);
 
@@ -80,7 +80,7 @@ void WriteDefHeader(upb::FileDefPtr file, Options const& options,
       ToPreproc(file.name()));
 }
 
-void WriteDefSource(upb::FileDefPtr file, Options const& options, Output& output) {
+void WriteDefSource(upb::FileDefPtr file, const Options& options, Output& output) {
   EmitFileWarning(file.name(), output);
 
   output("#include \"upb/reflection/def.h\"\n");
@@ -132,7 +132,7 @@ void WriteDefSource(upb::FileDefPtr file, Options const& options, Output& output
   output("};\n");
 }
 
-void GenerateFile(upb::FileDefPtr file, Options const& options,
+void GenerateFile(upb::FileDefPtr file, const Options& options,
                   Plugin* plugin) {
   Output h_def_output;
   WriteDefHeader(file, options, h_def_output);
