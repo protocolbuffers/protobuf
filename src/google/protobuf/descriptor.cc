@@ -11,10 +11,14 @@
 
 #include "google/protobuf/descriptor.h"
 
+#include <fcntl.h>
+
 #include <algorithm>
 #include <array>
 #include <cstdlib>
+#include <fstream>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -79,7 +83,7 @@ using ::google::protobuf::internal::DownCast;
 const int kPackageLimit = 100;
 
 
-std::string ToCamelCase(const std::string& input, bool lower_first) {
+std::string ToCamelCase(absl::string_view input, bool lower_first) {
   bool capitalize_next = !lower_first;
   std::string result;
   result.reserve(input.size());
@@ -1934,7 +1938,6 @@ const SourceCodeInfo_Location* FileDescriptorTables::GetSourceLocation(
 
 // ===================================================================
 // DescriptorPool
-
 
 DescriptorPool::ErrorCollector::~ErrorCollector() {}
 
