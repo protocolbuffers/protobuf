@@ -59,8 +59,6 @@ void WriteDefHeader(upb::FileDefPtr file, const Options& options,
       "#endif\n\n",
       ToPreproc(file.name()));
 
-  EmitDllExportMacros(options.dllexport_decl, output);
-
   output("extern $1_upb_DefPool_Init $0;\n", DefInitSymbol(file),
          PadSuffix(options.dllexport_decl));
   output("\n");
