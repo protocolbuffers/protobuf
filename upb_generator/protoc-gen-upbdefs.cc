@@ -19,7 +19,7 @@ namespace generator {
 namespace {
 
 struct Options {
-  std::string dllexport_tag;
+  std::string dllexport_decl;
 };
 
 std::string DefInitSymbol(upb::FileDefPtr file) {
@@ -59,10 +59,10 @@ void WriteDefHeader(upb::FileDefPtr file, Options const& options,
       "#endif\n\n",
       ToPreproc(file.name()));
 
-  EmitDllExportMacros(options.dllexport_tag, output);
+  EmitDllExportMacros(options.dllexport_decl, output);
 
   output("extern $1_upb_DefPool_Init $0;\n", DefInitSymbol(file),
-         PadSuffix(options.dllexport_tag));
+         PadSuffix(options.dllexport_decl));
   output("\n");
 
   for (auto msg : SortedMessages(file)) {
@@ -90,7 +90,7 @@ void WriteDefSource(upb::FileDefPtr file, Options const& options, Output& output
 
   for (int i = 0; i < file.dependency_count(); i++) {
     output("extern $1_upb_DefPool_Init $0;\n",
-           DefInitSymbol(file.dependency(i)), PadSuffix(options.dllexport_tag));
+           DefInitSymbol(file.dependency(i)), PadSuffix(options.dllexport_decl));
   }
 
   upb::Arena arena;
@@ -145,8 +145,8 @@ void GenerateFile(upb::FileDefPtr file, Options const& options,
 
 bool ParseOptions(Plugin* plugin, Options* options) {
   for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
-    if (pair.first == "dllexport_tag") {
-      options->dllexport_tag = pair.second;
+    if (pair.first == "dllexport_decl") {
+      options->dllexport_decl = pair.second;
     } else {
       plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
       return false;

@@ -59,8 +59,8 @@ std::string MessageInitName(upb::MessageDefPtr descriptor) {
   return MessageInit(descriptor.full_name());
 }
 
-void EmitDllExportMacros(absl::string_view dllexport_tag, Output& output) {
-  if (dllexport_tag.length()) {
+void EmitDllExportMacros(absl::string_view dllexport_decl, Output& output) {
+  if (dllexport_decl.length()) {
     output(
         "#if !defined $0\n"
         "#if defined $0_EXPORT\n"
@@ -71,7 +71,7 @@ void EmitDllExportMacros(absl::string_view dllexport_tag, Output& output) {
         "#define $0\n"
         "#endif\n"
         "#endif\n\n",
-        dllexport_tag);    
+        dllexport_decl);    
   }
 }
 
