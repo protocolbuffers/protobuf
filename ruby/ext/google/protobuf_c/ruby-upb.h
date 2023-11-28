@@ -1433,25 +1433,89 @@ size_t upb_Message_ExtensionCount(const upb_Message* msg);
 #ifndef UPB_MINI_TABLE_EXTENSION_H_
 #define UPB_MINI_TABLE_EXTENSION_H_
 
+#include <stdint.h>
+
 
 #ifndef UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
 #define UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
+
+#include <stdint.h>
 
 
 // Must be last.
 
 struct upb_MiniTableExtension {
   // Do not move this field. We need to be able to alias pointers.
-  struct upb_MiniTableField field;
+  struct upb_MiniTableField UPB_PRIVATE(field);
 
-  const struct upb_MiniTable* extendee;
-  union upb_MiniTableSub sub;  // NULL unless submessage or proto2 enum
+  const struct upb_MiniTable* UPB_PRIVATE(extendee);
+  union upb_MiniTableSub UPB_PRIVATE(sub);  // NULL unless submsg or proto2 enum
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    _upb_MiniTableExtension_AsField)(const struct upb_MiniTableExtension* e) {
+  return (const struct upb_MiniTableField*)&e->UPB_PRIVATE(field);
+}
+
+UPB_INLINE uint32_t UPB_PRIVATE(_upb_MiniTableExtension_Number)(
+    const struct upb_MiniTableExtension* e) {
+  return e->UPB_PRIVATE(field).number;
+}
+
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
+    _upb_MiniTableExtension_GetSubMessage)(
+    const struct upb_MiniTableExtension* e) {
+  return e->UPB_PRIVATE(sub).submsg;
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(
+    struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
+  e->UPB_PRIVATE(sub).submsg = m;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 
 #endif /* UPB_MINI_TABLE_INTERNAL_EXTENSION_H_ */
 
+// Must be last.
+
 typedef struct upb_MiniTableExtension upb_MiniTableExtension;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTableExtension_AsField(
+    const upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_MiniTableExtension_AsField)(e);
+}
+
+UPB_API_INLINE uint32_t
+upb_MiniTableExtension_Number(const upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_MiniTableExtension_Number)(e);
+}
+
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
+    const upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_MiniTableExtension_GetSubMessage)(e);
+}
+
+UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
+    upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
+  return UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(e, m);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
 
 #endif /* UPB_MINI_TABLE_EXTENSION_H_ */
 
@@ -2422,7 +2486,7 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
 
 UPB_INLINE bool _upb_Message_HasExtensionField(
     const upb_Message* msg, const upb_MiniTableExtension* ext) {
-  UPB_ASSERT(upb_MiniTableField_HasPresence(&ext->field));
+  UPB_ASSERT(upb_MiniTableField_HasPresence(&ext->UPB_PRIVATE(field)));
   return _upb_Message_Getext(msg, ext) != NULL;
 }
 
@@ -2454,12 +2518,12 @@ static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
 UPB_INLINE void _upb_Message_GetExtensionField(
     const upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* default_val, void* val) {
-  UPB_ASSUME(upb_MiniTableField_IsExtension(&mt_ext->field));
+  UPB_ASSUME(upb_MiniTableField_IsExtension(&mt_ext->UPB_PRIVATE(field)));
   const upb_Message_Extension* ext = _upb_Message_Getext(msg, mt_ext);
   if (ext) {
-    _upb_MiniTable_CopyFieldData(val, &ext->data, &mt_ext->field);
+    _upb_MiniTable_CopyFieldData(val, &ext->data, &mt_ext->UPB_PRIVATE(field));
   } else {
-    _upb_MiniTable_CopyFieldData(val, default_val, &mt_ext->field);
+    _upb_MiniTable_CopyFieldData(val, default_val, &mt_ext->UPB_PRIVATE(field));
   }
 }
 
@@ -2505,7 +2569,7 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
   upb_Message_Extension* ext =
       _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
   if (!ext) return false;
-  _upb_MiniTable_CopyFieldData(&ext->data, val, &mt_ext->field);
+  _upb_MiniTable_CopyFieldData(&ext->data, val, &mt_ext->UPB_PRIVATE(field));
   return true;
 }
 
