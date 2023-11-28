@@ -2865,16 +2865,15 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   public:
   void clear_name() ;
   ::google::protobuf::UninterpretedOption_NamePart* mutable_name(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart >*
-      mutable_name();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* mutable_name();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& _internal_name() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* _internal_mutable_name();
   public:
   const ::google::protobuf::UninterpretedOption_NamePart& name(int index) const;
   ::google::protobuf::UninterpretedOption_NamePart* add_name();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart >&
-      name() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& name() const;
   // optional string identifier_value = 3;
   bool has_identifier_value() const;
   void clear_identifier_value() ;
@@ -3132,16 +3131,15 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
   public:
   void clear_location() ;
   ::google::protobuf::SourceCodeInfo_Location* mutable_location(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location >*
-      mutable_location();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>* mutable_location();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>& _internal_location() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>* _internal_mutable_location();
   public:
   const ::google::protobuf::SourceCodeInfo_Location& location(int index) const;
   ::google::protobuf::SourceCodeInfo_Location* add_location();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location >&
-      location() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>& location() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo)
  private:
   class _Internal;
@@ -3308,16 +3306,15 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
   public:
   void clear_annotation() ;
   ::google::protobuf::GeneratedCodeInfo_Annotation* mutable_annotation(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation >*
-      mutable_annotation();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>* mutable_annotation();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>& _internal_annotation() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>* _internal_mutable_annotation();
   public:
   const ::google::protobuf::GeneratedCodeInfo_Annotation& annotation(int index) const;
   ::google::protobuf::GeneratedCodeInfo_Annotation* add_annotation();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation >&
-      annotation() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>& annotation() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo)
  private:
   class _Internal;
@@ -3671,16 +3668,15 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   public:
   void clear_uninterpreted_option() ;
   ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
-      mutable_uninterpreted_option();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* mutable_uninterpreted_option();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
-      uninterpreted_option() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 34;
   bool has_features() const;
   void clear_features() ;
@@ -4054,16 +4050,15 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   public:
   void clear_uninterpreted_option() ;
   ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
-      mutable_uninterpreted_option();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* mutable_uninterpreted_option();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
-      uninterpreted_option() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 1;
   bool has_features() const;
   void clear_features() ;
@@ -4447,16 +4442,15 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   public:
   void clear_uninterpreted_option() ;
   ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
-      mutable_uninterpreted_option();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* mutable_uninterpreted_option();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
-      uninterpreted_option() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 35;
   bool has_features() const;
   void clear_features() ;
@@ -4847,16 +4841,15 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   public:
   void clear_uninterpreted_option() ;
   ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
-      mutable_uninterpreted_option();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* mutable_uninterpreted_option();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
-      uninterpreted_option() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 12;
   bool has_features() const;
   void clear_features() ;
@@ -5318,16 +5311,15 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   public:
   void clear_uninterpreted_option() ;
   ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
-      mutable_uninterpreted_option();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* mutable_uninterpreted_option();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
-      uninterpreted_option() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional string java_package = 1;
   bool has_java_package() const;
   void clear_java_package() ;
@@ -6107,16 +6099,15 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   public:
   void clear_edition_defaults() ;
   ::google::protobuf::FieldOptions_EditionDefault* mutable_edition_defaults(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldOptions_EditionDefault >*
-      mutable_edition_defaults();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* mutable_edition_defaults();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& _internal_edition_defaults() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* _internal_mutable_edition_defaults();
   public:
   const ::google::protobuf::FieldOptions_EditionDefault& edition_defaults(int index) const;
   ::google::protobuf::FieldOptions_EditionDefault* add_edition_defaults();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldOptions_EditionDefault >&
-      edition_defaults() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& edition_defaults() const;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
   private:
@@ -6125,16 +6116,15 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   public:
   void clear_uninterpreted_option() ;
   ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
-      mutable_uninterpreted_option();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* mutable_uninterpreted_option();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
-      uninterpreted_option() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 21;
   bool has_features() const;
   void clear_features() ;
@@ -6608,16 +6598,15 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   public:
   void clear_defaults() ;
   ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* mutable_defaults(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault >*
-      mutable_defaults();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* mutable_defaults();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& _internal_defaults() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* _internal_mutable_defaults();
   public:
   const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& defaults(int index) const;
   ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* add_defaults();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault >&
-      defaults() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& defaults() const;
   // optional .google.protobuf.Edition minimum_edition = 4;
   bool has_minimum_edition() const;
   void clear_minimum_edition() ;
@@ -6831,16 +6820,15 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   public:
   void clear_declaration() ;
   ::google::protobuf::ExtensionRangeOptions_Declaration* mutable_declaration(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::ExtensionRangeOptions_Declaration >*
-      mutable_declaration();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>* mutable_declaration();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>& _internal_declaration() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>* _internal_mutable_declaration();
   public:
   const ::google::protobuf::ExtensionRangeOptions_Declaration& declaration(int index) const;
   ::google::protobuf::ExtensionRangeOptions_Declaration* add_declaration();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::ExtensionRangeOptions_Declaration >&
-      declaration() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>& declaration() const;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
   private:
@@ -6849,16 +6837,15 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   public:
   void clear_uninterpreted_option() ;
   ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
-      mutable_uninterpreted_option();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* mutable_uninterpreted_option();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
-      uninterpreted_option() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 50;
   bool has_features() const;
   void clear_features() ;
@@ -7235,16 +7222,15 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   public:
   void clear_uninterpreted_option() ;
   ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
-      mutable_uninterpreted_option();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* mutable_uninterpreted_option();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
-      uninterpreted_option() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 2;
   bool has_features() const;
   void clear_features() ;
@@ -7633,16 +7619,15 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   public:
   void clear_uninterpreted_option() ;
   ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
-      mutable_uninterpreted_option();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* mutable_uninterpreted_option();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* _internal_mutable_uninterpreted_option();
   public:
   const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
-      uninterpreted_option() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 7;
   bool has_features() const;
   void clear_features() ;
@@ -9281,16 +9266,15 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   public:
   void clear_method() ;
   ::google::protobuf::MethodDescriptorProto* mutable_method(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto >*
-      mutable_method();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* mutable_method();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& _internal_method() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* _internal_mutable_method();
   public:
   const ::google::protobuf::MethodDescriptorProto& method(int index) const;
   ::google::protobuf::MethodDescriptorProto* add_method();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto >&
-      method() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& method() const;
   // optional string name = 1;
   bool has_name() const;
   void clear_name() ;
@@ -9496,16 +9480,15 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   public:
   void clear_value() ;
   ::google::protobuf::EnumValueDescriptorProto* mutable_value(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto >*
-      mutable_value();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>* mutable_value();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>& _internal_value() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>* _internal_mutable_value();
   public:
   const ::google::protobuf::EnumValueDescriptorProto& value(int index) const;
   ::google::protobuf::EnumValueDescriptorProto* add_value();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto >&
-      value() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>& value() const;
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
   int reserved_range_size() const;
   private:
@@ -9514,16 +9497,15 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   public:
   void clear_reserved_range() ;
   ::google::protobuf::EnumDescriptorProto_EnumReservedRange* mutable_reserved_range(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto_EnumReservedRange >*
-      mutable_reserved_range();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>* mutable_reserved_range();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>& _internal_reserved_range() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>* _internal_mutable_reserved_range();
   public:
   const ::google::protobuf::EnumDescriptorProto_EnumReservedRange& reserved_range(int index) const;
   ::google::protobuf::EnumDescriptorProto_EnumReservedRange* add_reserved_range();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto_EnumReservedRange >&
-      reserved_range() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>& reserved_range() const;
   // repeated string reserved_name = 5;
   int reserved_name_size() const;
   private:
@@ -9765,16 +9747,15 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   public:
   void clear_field() ;
   ::google::protobuf::FieldDescriptorProto* mutable_field(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
-      mutable_field();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* mutable_field();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_field() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* _internal_mutable_field();
   public:
   const ::google::protobuf::FieldDescriptorProto& field(int index) const;
   ::google::protobuf::FieldDescriptorProto* add_field();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
-      field() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& field() const;
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
   int nested_type_size() const;
   private:
@@ -9783,16 +9764,15 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   public:
   void clear_nested_type() ;
   ::google::protobuf::DescriptorProto* mutable_nested_type(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >*
-      mutable_nested_type();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* mutable_nested_type();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& _internal_nested_type() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* _internal_mutable_nested_type();
   public:
   const ::google::protobuf::DescriptorProto& nested_type(int index) const;
   ::google::protobuf::DescriptorProto* add_nested_type();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >&
-      nested_type() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& nested_type() const;
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
   int enum_type_size() const;
   private:
@@ -9801,16 +9781,15 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   public:
   void clear_enum_type() ;
   ::google::protobuf::EnumDescriptorProto* mutable_enum_type(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >*
-      mutable_enum_type();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* mutable_enum_type();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& _internal_enum_type() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* _internal_mutable_enum_type();
   public:
   const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
   ::google::protobuf::EnumDescriptorProto* add_enum_type();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >&
-      enum_type() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& enum_type() const;
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
   int extension_range_size() const;
   private:
@@ -9819,16 +9798,15 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   public:
   void clear_extension_range() ;
   ::google::protobuf::DescriptorProto_ExtensionRange* mutable_extension_range(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange >*
-      mutable_extension_range();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>* mutable_extension_range();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>& _internal_extension_range() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>* _internal_mutable_extension_range();
   public:
   const ::google::protobuf::DescriptorProto_ExtensionRange& extension_range(int index) const;
   ::google::protobuf::DescriptorProto_ExtensionRange* add_extension_range();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange >&
-      extension_range() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>& extension_range() const;
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
   int extension_size() const;
   private:
@@ -9837,16 +9815,15 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   public:
   void clear_extension() ;
   ::google::protobuf::FieldDescriptorProto* mutable_extension(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
-      mutable_extension();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* mutable_extension();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_extension() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* _internal_mutable_extension();
   public:
   const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
   ::google::protobuf::FieldDescriptorProto* add_extension();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
-      extension() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& extension() const;
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
   int oneof_decl_size() const;
   private:
@@ -9855,16 +9832,15 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   public:
   void clear_oneof_decl() ;
   ::google::protobuf::OneofDescriptorProto* mutable_oneof_decl(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::OneofDescriptorProto >*
-      mutable_oneof_decl();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>* mutable_oneof_decl();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>& _internal_oneof_decl() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>* _internal_mutable_oneof_decl();
   public:
   const ::google::protobuf::OneofDescriptorProto& oneof_decl(int index) const;
   ::google::protobuf::OneofDescriptorProto* add_oneof_decl();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::OneofDescriptorProto >&
-      oneof_decl() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>& oneof_decl() const;
   // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
   int reserved_range_size() const;
   private:
@@ -9873,16 +9849,15 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   public:
   void clear_reserved_range() ;
   ::google::protobuf::DescriptorProto_ReservedRange* mutable_reserved_range(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ReservedRange >*
-      mutable_reserved_range();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>* mutable_reserved_range();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>& _internal_reserved_range() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>* _internal_mutable_reserved_range();
   public:
   const ::google::protobuf::DescriptorProto_ReservedRange& reserved_range(int index) const;
   ::google::protobuf::DescriptorProto_ReservedRange* add_reserved_range();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ReservedRange >&
-      reserved_range() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>& reserved_range() const;
   // repeated string reserved_name = 10;
   int reserved_name_size() const;
   private:
@@ -10158,16 +10133,15 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   public:
   void clear_message_type() ;
   ::google::protobuf::DescriptorProto* mutable_message_type(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >*
-      mutable_message_type();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* mutable_message_type();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& _internal_message_type() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* _internal_mutable_message_type();
   public:
   const ::google::protobuf::DescriptorProto& message_type(int index) const;
   ::google::protobuf::DescriptorProto* add_message_type();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto >&
-      message_type() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& message_type() const;
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
   int enum_type_size() const;
   private:
@@ -10176,16 +10150,15 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   public:
   void clear_enum_type() ;
   ::google::protobuf::EnumDescriptorProto* mutable_enum_type(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >*
-      mutable_enum_type();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* mutable_enum_type();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& _internal_enum_type() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* _internal_mutable_enum_type();
   public:
   const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
   ::google::protobuf::EnumDescriptorProto* add_enum_type();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto >&
-      enum_type() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& enum_type() const;
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
   int service_size() const;
   private:
@@ -10194,16 +10167,15 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   public:
   void clear_service() ;
   ::google::protobuf::ServiceDescriptorProto* mutable_service(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto >*
-      mutable_service();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>* mutable_service();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>& _internal_service() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>* _internal_mutable_service();
   public:
   const ::google::protobuf::ServiceDescriptorProto& service(int index) const;
   ::google::protobuf::ServiceDescriptorProto* add_service();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto >&
-      service() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>& service() const;
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
   int extension_size() const;
   private:
@@ -10212,16 +10184,15 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   public:
   void clear_extension() ;
   ::google::protobuf::FieldDescriptorProto* mutable_extension(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
-      mutable_extension();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* mutable_extension();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_extension() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* _internal_mutable_extension();
   public:
   const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
   ::google::protobuf::FieldDescriptorProto* add_extension();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
-      extension() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& extension() const;
   // repeated int32 public_dependency = 10;
   int public_dependency_size() const;
   private:
@@ -10528,16 +10499,15 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
   public:
   void clear_file() ;
   ::google::protobuf::FileDescriptorProto* mutable_file(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
-      mutable_file();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* mutable_file();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_file() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* _internal_mutable_file();
   public:
   const ::google::protobuf::FileDescriptorProto& file(int index) const;
   ::google::protobuf::FileDescriptorProto* add_file();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
-      file() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& file() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorSet)
  private:
   class _Internal;

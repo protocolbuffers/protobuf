@@ -747,34 +747,33 @@ void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
-  Formatter format(p);
-  format("$DEPRECATED$ $Submsg$* ${1$mutable_$name$$}$(int index);\n",
-         std::make_tuple(field_, GeneratedCodeInfo::Annotation::ALIAS));
-  format(
-      "$DEPRECATED$ $pb$::RepeatedPtrField< $Submsg$ >*\n"
-      "    ${1$mutable_$name$$}$();\n",
-      std::make_tuple(field_, GeneratedCodeInfo::Annotation::ALIAS));
-  format(
-      "private:\n"
-      "const $pb$::RepeatedPtrField<$Submsg$>& _internal_$name$() const;\n"
-      "$pb$::RepeatedPtrField<$Submsg$>* _internal_mutable_$name$();\n");
+  auto v = p->WithVars(
+      AnnotatedAccessors(field_, {"", "_internal_", "_internal_mutable_"}));
+  auto vs = p->WithVars(
+      AnnotatedAccessors(field_, {"add_"}, io::AnnotationCollector::kSet));
+  auto vm = p->WithVars(AnnotatedAccessors(field_, {"mutable_"},
+                                           io::AnnotationCollector::kAlias));
+
+  p->Emit(R"cc(
+    $DEPRECATED$ $Submsg$* $mutable_name$(int index);
+    $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $mutable_name$();
+
+    private:
+    const $pb$::RepeatedPtrField<$Submsg$>& $_internal_name$() const;
+    $pb$::RepeatedPtrField<$Submsg$>* $_internal_mutable_name$();
+  )cc");
   if (is_weak()) {
-    format(
-        "const $pb$::WeakRepeatedPtrField<$Submsg$>& _internal_weak_$name$() "
-        "const;\n"
-        "$pb$::WeakRepeatedPtrField<$Submsg$>* "
-        "_internal_mutable_weak_$name$();\n");
+    p->Emit(R"cc(
+      const $pb$::WeakRepeatedPtrField<$Submsg$>& _internal_weak_$name$() const;
+      $pb$::WeakRepeatedPtrField<$Submsg$>* _internal_mutable_weak_$name$();
+    )cc");
   }
-  format(
-      "public:\n"
-      "$DEPRECATED$ const $Submsg$& ${1$$name$$}$(int index) const;\n",
-      field_);
-  format("$DEPRECATED$ $Submsg$* ${1$add_$name$$}$();\n",
-         std::make_tuple(field_, GeneratedCodeInfo::Annotation::SET));
-  format(
-      "$DEPRECATED$ const $pb$::RepeatedPtrField< $Submsg$ >&\n"
-      "    ${1$$name$$}$() const;\n",
-      field_);
+  p->Emit(R"cc(
+    public:
+    $DEPRECATED$ const $Submsg$& $name$(int index) const;
+    $DEPRECATED$ $Submsg$* $add_name$();
+    $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>& $name$() const;
+  )cc");
 }
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
