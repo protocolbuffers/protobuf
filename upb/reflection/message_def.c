@@ -7,13 +7,22 @@
 
 #include "upb/reflection/internal/message_def.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
+#include "upb/mem/arena.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_descriptor/internal/encode.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
+#include "upb/mini_table/file.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
-#include "upb/reflection/def_type.h"
 #include "upb/reflection/internal/def_builder.h"
 #include "upb/reflection/internal/desc_state.h"
 #include "upb/reflection/internal/enum_def.h"
@@ -436,8 +445,7 @@ void _upb_MessageDef_CreateMiniTable(upb_DefBuilder* ctx, upb_MessageDef* m) {
   if (ctx->layout == NULL) {
     m->layout = _upb_MessageDef_MakeMiniTable(ctx, m);
   } else {
-    UPB_ASSERT(ctx->msg_count < ctx->layout->msg_count);
-    m->layout = ctx->layout->msgs[ctx->msg_count++];
+    m->layout = upb_MiniTableFile_Message(ctx->layout, ctx->msg_count++);
     UPB_ASSERT(m->field_count == m->layout->field_count);
 
     // We don't need the result of this call, but it will assign layout_index
