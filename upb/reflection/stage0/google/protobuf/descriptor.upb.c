@@ -471,7 +471,7 @@ const upb_MiniTableEnum* google_protobuf_FeatureSet_RepeatedFieldEncoding_enum_i
 
 const upb_MiniTableEnum* google_protobuf_FeatureSet_Utf8Validation_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
-  static const char* mini_descriptor = "!)";
+  static const char* mini_descriptor = "!/";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
