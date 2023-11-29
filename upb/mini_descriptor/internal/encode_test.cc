@@ -65,7 +65,7 @@ TEST_P(MiniTableTest, AllScalarTypes) {
   for (int i = 0; i < 16; i++) {
     const upb_MiniTableField* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
+    EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);
   }
@@ -91,7 +91,7 @@ TEST_P(MiniTableTest, AllRepeatedTypes) {
   for (int i = 0; i < 16; i++) {
     const upb_MiniTableField* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(kUpb_FieldMode_Array, f->mode & kUpb_FieldMode_Mask);
+    EXPECT_TRUE(upb_MiniTableField_IsArray(f));
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);
   }
@@ -120,7 +120,7 @@ TEST_P(MiniTableTest, Skips) {
     const upb_MiniTableField* f = &table->fields[i];
     EXPECT_EQ(field_numbers[i], f->number);
     EXPECT_EQ(kUpb_FieldType_Float, upb_MiniTableField_Type(f));
-    EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
+    EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);
   }
@@ -149,7 +149,7 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   for (int i = 0; i < 16; i++) {
     const upb_MiniTableField* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
+    EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
     // For a oneof all fields have the same offset.
     EXPECT_EQ(table->fields[0].offset, f->offset);
     // All presence fields should point to the same oneof case offset.

@@ -329,7 +329,7 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
   UPB_ASSERT(map_entry_mini_table);
   UPB_ASSERT(map_entry_mini_table);
   UPB_ASSERT(map_entry_mini_table->field_count == 2);
-  UPB_ASSERT(upb_FieldMode_Get(field) == kUpb_FieldMode_Map);
+  UPB_ASSERT(upb_MiniTableField_IsMap(field));
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
   while (1) {

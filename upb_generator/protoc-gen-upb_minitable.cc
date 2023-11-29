@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <string.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -17,18 +19,20 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
+#include "upb/mini_table/enum.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
-#include "upb_generator/names.h"
 #include "upb_generator/plugin.h"
 
 // Must be last.
@@ -62,7 +66,7 @@ std::string SourceFilename(upb::FileDefPtr file) {
 }
 
 std::string ExtensionIdentBase(upb::FieldDefPtr ext) {
-  assert(ext.is_extension());
+  UPB_ASSERT(ext.is_extension());
   std::string ext_scope;
   if (ext.extension_scope()) {
     return MessageName(ext.extension_scope());
@@ -263,23 +267,12 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
       return false;  // Not supported yet.
   }
 
-  switch (upb_FieldMode_Get(mt_f)) {
-    case kUpb_FieldMode_Map:
-      return false;  // Not supported yet (ever?).
-    case kUpb_FieldMode_Array:
-      if (mt_f->mode & kUpb_LabelFlags_IsPacked) {
-        cardinality = "p";
-      } else {
-        cardinality = "r";
-      }
-      break;
-    case kUpb_FieldMode_Scalar:
-      if (mt_f->presence < 0) {
-        cardinality = "o";
-      } else {
-        cardinality = "s";
-      }
-      break;
+  if (upb_MiniTableField_IsArray(mt_f)) {
+    cardinality = upb_MiniTableField_IsPacked(mt_f) ? "p" : "r";
+  } else if (upb_MiniTableField_IsScalar(mt_f)) {
+    cardinality = upb_MiniTableField_IsInOneof(mt_f) ? "o" : "s";
+  } else {
+    return false;  // Not supported yet (ever?).
   }
 
   uint64_t expected_tag = GetEncodedTag(field);
@@ -453,12 +446,12 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   }
 
   std::vector<TableEntry> table;
-  uint8_t table_mask = -1;
+  uint8_t table_mask = ~0;
 
   table = FastDecodeTable(message, pools);
 
   if (table.size() > 1) {
-    assert((table.size() & (table.size() - 1)) == 0);
+    UPB_ASSERT((table.size() & (table.size() - 1)) == 0);
     table_mask = (table.size() - 1) << 3;
   }
 
