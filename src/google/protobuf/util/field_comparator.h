@@ -193,7 +193,7 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
 
   bool CompareString(const FieldDescriptor& /* unused */,
                      const std::string& value_1, const std::string& value_2) {
-    return value_1 == value_2;
+    return value_1.compare(value_2) == 0;
   }
 
   bool CompareUInt32(const FieldDescriptor& /* unused */, uint32_t value_1,
