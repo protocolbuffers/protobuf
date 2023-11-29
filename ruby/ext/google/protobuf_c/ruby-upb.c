@@ -5449,10 +5449,6 @@ bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
 
 // Must be last.
 
-static bool upb_MessageField_IsMap(const upb_MiniTableField* field) {
-  return upb_FieldMode_Get(field) == kUpb_FieldMode_Map;
-}
-
 static upb_StringView upb_Clone_StringView(upb_StringView str,
                                            upb_Arena* arena) {
   if (str.size == 0) {
@@ -5580,7 +5576,7 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
                                         const upb_MiniTable* mini_table,
                                         const upb_MiniTableField* field,
                                         upb_Message* clone, upb_Arena* arena) {
-  _upb_MiniTableField_CheckIsArray(field);
+  UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(field);
   upb_Array* cloned_array = upb_Array_DeepClone(
       array, upb_MiniTableField_CType(field),
       upb_MiniTableField_CType(field) == kUpb_CType_Message &&
@@ -5613,7 +5609,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   memcpy(dst, src, mini_table->size);
   for (size_t i = 0; i < mini_table->field_count; ++i) {
     const upb_MiniTableField* field = &mini_table->fields[i];
-    if (!upb_MiniTableField_IsRepeatedOrMap(field)) {
+    if (upb_MiniTableField_IsScalar(field)) {
       switch (upb_MiniTableField_CType(field)) {
         case kUpb_CType_Message: {
           upb_TaggedMessagePtr tagged =
@@ -5653,7 +5649,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
           break;
       }
     } else {
-      if (upb_MessageField_IsMap(field)) {
+      if (upb_MiniTableField_IsMap(field)) {
         const upb_Map* map = upb_Message_GetMap(src, field);
         if (map != NULL) {
           if (!upb_Message_Map_DeepClone(map, mini_table, field, dst, arena)) {
@@ -5680,7 +5676,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
     upb_Message_Extension* dst_ext =
         _upb_Message_GetOrCreateExtension(dst, msg_ext->ext, arena);
     if (!dst_ext) return NULL;
-    if (!upb_MiniTableField_IsRepeatedOrMap(field)) {
+    if (upb_MiniTableField_IsScalar(field)) {
       if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
         return NULL;
       }
@@ -6969,7 +6965,7 @@ static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
                            name, expected_num, (int)f->number);
   }
 
-  if (upb_MiniTableField_IsRepeatedOrMap(f)) {
+  if (!upb_MiniTableField_IsScalar(f)) {
     upb_MdDecoder_ErrorJmp(
         &d->base, "map %s cannot be repeated or map, or be in oneof", name);
   }
@@ -7147,7 +7143,7 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
     if (!upb_MiniTableField_IsSubMessage(f)) return NULL;
 
     // Extensions of MessageSet must be non-repeating.
-    if ((f->mode & kUpb_FieldMode_Mask) == kUpb_FieldMode_Array) return NULL;
+    if (upb_MiniTableField_IsArray(f)) return NULL;
   }
 
   ext->UPB_PRIVATE(extendee) = extendee;
@@ -7725,6 +7721,8 @@ const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
 
 
 #include <inttypes.h>
+#include <stddef.h>
+#include <stdint.h>
 
 
 // Must be last.
@@ -7758,13 +7756,9 @@ const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   return NULL;
 }
 
-static bool upb_MiniTable_Is_Oneof(const upb_MiniTableField* f) {
-  return f->presence < 0;
-}
-
 const upb_MiniTableField* upb_MiniTable_GetOneof(const upb_MiniTable* m,
                                                  const upb_MiniTableField* f) {
-  if (UPB_UNLIKELY(!upb_MiniTable_Is_Oneof(f))) {
+  if (UPB_UNLIKELY(!upb_MiniTableField_IsInOneof(f))) {
     return NULL;
   }
   const upb_MiniTableField* ptr = &m->fields[0];
@@ -10697,6 +10691,7 @@ char* upb_strdup2(const char* s, size_t len, upb_Arena* a) {
 }
 
 
+#include <stdint.h>
 #include <string.h>
 
 
@@ -10797,7 +10792,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
     if (upb_MiniTableField_HasPresence(field)) {
       if (!upb_Message_HasFieldByDef(msg, f)) continue;
     } else {
-      switch (upb_FieldMode_Get(field)) {
+      switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(field)) {
         case kUpb_FieldMode_Map:
           if (!val.map_val || upb_Map_Size(val.map_val) == 0) continue;
           break;
@@ -12648,8 +12643,8 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
 
   UPB_ASSERT(entry);
   UPB_ASSERT(entry->field_count == 2);
-  UPB_ASSERT(!upb_MiniTableField_IsRepeatedOrMap(&entry->fields[0]));
-  UPB_ASSERT(!upb_MiniTableField_IsRepeatedOrMap(&entry->fields[1]));
+  UPB_ASSERT(upb_MiniTableField_IsScalar(&entry->fields[0]));
+  UPB_ASSERT(upb_MiniTableField_IsScalar(&entry->fields[1]));
 
   if (!map) {
     map = _upb_Decoder_CreateMap(d, entry);
@@ -13094,7 +13089,7 @@ int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
   };
 
   int ndx = field->UPB_PRIVATE(descriptortype);
-  if (upb_FieldMode_Get(field) == kUpb_FieldMode_Array) ndx += kRepeatedBase;
+  if (upb_MiniTableField_IsArray(field)) ndx += kRepeatedBase;
   int op = kDelimitedOps[ndx];
 
   if (op == kUpb_DecodeOp_SubMessage) {
@@ -14665,7 +14660,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
                          const upb_MiniTableSub* subs,
                          const upb_MiniTableField* f) {
   const upb_Array* arr = *UPB_PTR_AT(msg, f->offset, upb_Array*);
-  bool packed = f->mode & kUpb_LabelFlags_IsPacked;
+  bool packed = upb_MiniTableField_IsPacked(f);
   size_t pre_len = e->limit - e->ptr;
 
   if (arr == NULL || arr->size == 0) {
@@ -14819,7 +14814,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
   if (f->presence == 0) {
     // Proto3 presence or map/array.
     const void* mem = UPB_PTR_AT(msg, f->offset, void);
-    switch (_upb_MiniTableField_GetRep(f)) {
+    switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
       case kUpb_FieldRep_1Byte: {
         char ch;
         memcpy(&ch, mem, 1);
@@ -14854,7 +14849,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
 static void encode_field(upb_encstate* e, const upb_Message* msg,
                          const upb_MiniTableSub* subs,
                          const upb_MiniTableField* field) {
-  switch (upb_FieldMode_Get(field)) {
+  switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(field)) {
     case kUpb_FieldMode_Array:
       encode_array(e, msg, subs, field);
       break;
