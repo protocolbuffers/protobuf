@@ -740,8 +740,8 @@ UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
 #include <stdint.h>
 
 
-#ifndef UPB_MINI_TABLE_TYPES_H_
-#define UPB_MINI_TABLE_TYPES_H_
+#ifndef UPB_MINI_TABLE_TAGGED_PTR_H_
+#define UPB_MINI_TABLE_TAGGED_PTR_H_
 
 #include <stdint.h>
 
@@ -757,10 +757,6 @@ typedef void upb_Message;
 
 // Must be last.
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // When a upb_Message* is stored in a message, array, or map, it is stored in a
 // tagged form.  If the tag bit is set, the referenced upb_Message is of type
 // _kUpb_MiniTable_Empty (a sentinel message type with no fields) instead of
@@ -769,7 +765,12 @@ extern "C" {
 //
 // See the documentation for kUpb_DecodeOption_ExperimentalAllowUnlinked for
 // more information.
+
 typedef uintptr_t upb_TaggedMessagePtr;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Internal-only because empty messages cannot be created by the user.
 UPB_INLINE upb_TaggedMessagePtr _upb_TaggedMessagePtr_Pack(upb_Message* ptr,
@@ -807,7 +808,7 @@ UPB_INLINE upb_Message* _upb_TaggedMessagePtr_GetEmptyMessage(
 #endif
 
 
-#endif /* UPB_MINI_TABLE_TYPES_H_ */
+#endif /* UPB_MINI_TABLE_TAGGED_PTR_H_ */
 
 typedef union {
   bool bool_val;
@@ -1382,18 +1383,93 @@ UPB_INLINE uint64_t upb_MiniTable_requiredmask(const struct upb_MiniTable* l) {
 
 #endif /* UPB_MINI_TABLE_INTERNAL_MESSAGE_H_ */
 
+#ifndef UPB_MINI_TABLE_SUB_H_
+#define UPB_MINI_TABLE_SUB_H_
+
+
 #ifndef UPB_MINI_TABLE_INTERNAL_SUB_H_
 #define UPB_MINI_TABLE_INTERNAL_SUB_H_
 
 // Must be last.
 
 union upb_MiniTableSub {
-  const struct upb_MiniTable* submsg;
-  const struct upb_MiniTableEnum* subenum;
+  const struct upb_MiniTable* UPB_PRIVATE(submsg);
+  const struct upb_MiniTableEnum* UPB_PRIVATE(subenum);
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE union upb_MiniTableSub UPB_PRIVATE(_upb_MiniTableSub_FromEnum)(
+    const struct upb_MiniTableEnum* subenum) {
+  union upb_MiniTableSub out;
+  out.UPB_PRIVATE(subenum) = subenum;
+  return out;
+}
+
+UPB_INLINE union upb_MiniTableSub UPB_PRIVATE(_upb_MiniTableSub_FromMessage)(
+    const struct upb_MiniTable* submsg) {
+  union upb_MiniTableSub out;
+  out.UPB_PRIVATE(submsg) = submsg;
+  return out;
+}
+
+UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(_upb_MiniTableSub_Enum)(
+    const union upb_MiniTableSub sub) {
+  return sub.UPB_PRIVATE(subenum);
+}
+
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTableSub_Message)(
+    const union upb_MiniTableSub sub) {
+  return sub.UPB_PRIVATE(submsg);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 
 #endif /* UPB_MINI_TABLE_INTERNAL_SUB_H_ */
+
+// Must be last.
+
+typedef union upb_MiniTableSub upb_MiniTableSub;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Constructors
+
+UPB_API_INLINE upb_MiniTableSub
+upb_MiniTableSub_FromEnum(const struct upb_MiniTableEnum* subenum) {
+  return UPB_PRIVATE(_upb_MiniTableSub_FromEnum)(subenum);
+}
+
+UPB_API_INLINE upb_MiniTableSub
+upb_MiniTableSub_FromMessage(const struct upb_MiniTable* submsg) {
+  return UPB_PRIVATE(_upb_MiniTableSub_FromMessage)(submsg);
+}
+
+// Getters
+
+UPB_API_INLINE const struct upb_MiniTableEnum* upb_MiniTableSub_Enum(
+    upb_MiniTableSub sub) {
+  return UPB_PRIVATE(_upb_MiniTableSub_Enum)(sub);
+}
+
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableSub_Message(
+    upb_MiniTableSub sub) {
+  return UPB_PRIVATE(_upb_MiniTableSub_Message)(sub);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_SUB_H_ */
 
 // Must be last.
 
@@ -1416,8 +1492,8 @@ UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
   UPB_ASSERT(upb_MiniTableField_CType(field) == kUpb_CType_Message);
-  const upb_MiniTable* ret =
-      mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
+  const upb_MiniTable* ret = upb_MiniTableSub_Message(
+      mini_table->subs[field->UPB_PRIVATE(submsg_index)]);
   UPB_ASSUME(ret);
   return ret == &_kUpb_MiniTable_Empty ? NULL : ret;
 }
@@ -1425,9 +1501,9 @@ UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
 // Returns the MiniTableEnum for this enum field.  If the field is unlinked,
 // returns NULL.
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
-    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  UPB_ASSERT(upb_MiniTableField_CType(field) == kUpb_CType_Enum);
-  return mini_table->subs[field->UPB_PRIVATE(submsg_index)].subenum;
+    const upb_MiniTable* mini_table, const upb_MiniTableField* f) {
+  UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Enum);
+  return upb_MiniTableSub_Enum(mini_table->subs[f->UPB_PRIVATE(submsg_index)]);
 }
 
 // Returns true if this MiniTable field is linked to a MiniTable for the
@@ -1535,12 +1611,12 @@ UPB_INLINE uint32_t UPB_PRIVATE(_upb_MiniTableExtension_Number)(
 UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
     _upb_MiniTableExtension_GetSubMessage)(
     const struct upb_MiniTableExtension* e) {
-  return e->UPB_PRIVATE(sub).submsg;
+  return e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(
     struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
-  e->UPB_PRIVATE(sub).submsg = m;
+  e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
 }
 
 #ifdef __cplusplus
@@ -3137,7 +3213,8 @@ UPB_API_INLINE void _upb_Message_SetTaggedMessagePtr(
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(field) ==
              UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
   UPB_ASSUME(upb_MiniTableField_IsScalar(field));
-  UPB_ASSERT(mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg);
+  UPB_ASSERT(upb_MiniTableSub_Message(
+      mini_table->subs[field->UPB_PRIVATE(submsg_index)]));
   _upb_Message_SetNonExtensionField(msg, field, &sub_message);
 }
 
@@ -3156,8 +3233,8 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   upb_Message* sub_message = *UPB_PTR_AT(msg, field->offset, upb_Message*);
   if (!sub_message) {
-    const upb_MiniTable* sub_mini_table =
-        mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
+    const upb_MiniTable* sub_mini_table = upb_MiniTableSub_Message(
+        mini_table->subs[field->UPB_PRIVATE(submsg_index)]);
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
     *UPB_PTR_AT(msg, field->offset, upb_Message*) = sub_message;
@@ -3307,14 +3384,6 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
 #ifndef UPB_MINI_TABLE_DECODE_H_
 #define UPB_MINI_TABLE_DECODE_H_
 
-
-#ifndef UPB_MINI_TABLE_SUB_H_
-#define UPB_MINI_TABLE_SUB_H_
-
-
-typedef union upb_MiniTableSub upb_MiniTableSub;
-
-#endif /* UPB_MINI_TABLE_INTERNAL_SUB_H_ */
 
 // Export the newer headers, for legacy users.  New users should include the
 // more specific headers directly.
@@ -3475,8 +3544,7 @@ UPB_API upb_MiniTableExtension* _upb_MiniTableExtension_Build(
 UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_Build(
     const char* data, size_t len, const upb_MiniTable* extendee,
     upb_Arena* arena, upb_Status* status) {
-  upb_MiniTableSub sub;
-  sub.submsg = NULL;
+  upb_MiniTableSub sub = upb_MiniTableSub_FromMessage(NULL);
   return _upb_MiniTableExtension_Build(
       data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
 }
@@ -3484,8 +3552,7 @@ UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_Build(
 UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_BuildMessage(
     const char* data, size_t len, const upb_MiniTable* extendee,
     upb_MiniTable* submsg, upb_Arena* arena, upb_Status* status) {
-  upb_MiniTableSub sub;
-  sub.submsg = submsg;
+  upb_MiniTableSub sub = upb_MiniTableSub_FromMessage(submsg);
   return _upb_MiniTableExtension_Build(
       data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
 }
@@ -3493,8 +3560,7 @@ UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_BuildMessage(
 UPB_API_INLINE upb_MiniTableExtension* upb_MiniTableExtension_BuildEnum(
     const char* data, size_t len, const upb_MiniTable* extendee,
     upb_MiniTableEnum* subenum, upb_Arena* arena, upb_Status* status) {
-  upb_MiniTableSub sub;
-  sub.subenum = subenum;
+  upb_MiniTableSub sub = upb_MiniTableSub_FromEnum(subenum);
   return _upb_MiniTableExtension_Build(
       data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
 }
