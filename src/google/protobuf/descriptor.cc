@@ -261,7 +261,7 @@ class FlatAllocation {
 
   void Destroy() {
     Fold({Destroy<T>()...});
-    internal::SizedDelete(this, total_bytes());
+    // internal::SizedDelete(this, total_bytes());
   }
 
   template <int I>
