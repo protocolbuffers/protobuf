@@ -101,12 +101,12 @@ bool Builder::LinkExtension(upb_MiniTableExtension* ext) {
   if (upb_MiniTableField_CType(field) == kUpb_CType_Message) {
     auto mt = NextMiniTable();
     if (!mt) field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;
-    ext->UPB_PRIVATE(sub).submsg = mt;
+    ext->UPB_PRIVATE(sub) = upb_MiniTableSub_FromMessage(mt);
   }
   if (upb_MiniTableField_IsClosedEnum(field)) {
     auto et = NextEnumTable();
     if (!et) field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;
-    ext->UPB_PRIVATE(sub).subenum = et;
+    ext->UPB_PRIVATE(sub) = upb_MiniTableSub_FromEnum(et);
   }
   return true;
 }

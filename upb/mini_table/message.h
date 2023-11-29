@@ -11,7 +11,7 @@
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
-#include "upb/mini_table/internal/sub.h"
+#include "upb/mini_table/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -35,8 +35,8 @@ UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
   UPB_ASSERT(upb_MiniTableField_CType(field) == kUpb_CType_Message);
-  const upb_MiniTable* ret =
-      mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
+  const upb_MiniTable* ret = upb_MiniTableSub_Message(
+      mini_table->subs[field->UPB_PRIVATE(submsg_index)]);
   UPB_ASSUME(ret);
   return ret == &_kUpb_MiniTable_Empty ? NULL : ret;
 }
@@ -44,9 +44,9 @@ UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
 // Returns the MiniTableEnum for this enum field.  If the field is unlinked,
 // returns NULL.
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
-    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  UPB_ASSERT(upb_MiniTableField_CType(field) == kUpb_CType_Enum);
-  return mini_table->subs[field->UPB_PRIVATE(submsg_index)].subenum;
+    const upb_MiniTable* mini_table, const upb_MiniTableField* f) {
+  UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Enum);
+  return upb_MiniTableSub_Enum(mini_table->subs[f->UPB_PRIVATE(submsg_index)]);
 }
 
 // Returns true if this MiniTable field is linked to a MiniTable for the

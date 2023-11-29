@@ -29,6 +29,7 @@
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/internal/size_log2.h"
 #include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -115,11 +116,12 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
 
 static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
                                           const upb_MiniTable* mini_table,
-                                          const upb_MiniTableField* field,
+                                          const upb_MiniTableField* f,
                                           upb_Message* clone,
                                           upb_Arena* arena) {
+  // TODO: use a variant of upb_MiniTable_GetSubMessageTable() here.
   const upb_MiniTable* map_entry_table =
-      mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
+      upb_MiniTableSub_Message(mini_table->subs[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSERT(map_entry_table);
 
   const upb_MiniTableField* key_field = &map_entry_table->fields[0];
@@ -131,7 +133,7 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
   if (!cloned_map) {
     return NULL;
   }
-  _upb_Message_SetNonExtensionField(clone, field, &cloned_map);
+  _upb_Message_SetNonExtensionField(clone, f, &cloned_map);
   return cloned_map;
 }
 
@@ -267,9 +269,9 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
     } else {
       upb_Array* msg_array = (upb_Array*)msg_ext->data.ptr;
       UPB_ASSERT(msg_array);
-      upb_Array* cloned_array =
-          upb_Array_DeepClone(msg_array, upb_MiniTableField_CType(field),
-                              msg_ext->ext->UPB_PRIVATE(sub).submsg, arena);
+      upb_Array* cloned_array = upb_Array_DeepClone(
+          msg_array, upb_MiniTableField_CType(field),
+          upb_MiniTableExtension_GetSubMessage(msg_ext->ext), arena);
       if (!cloned_array) {
         return NULL;
       }

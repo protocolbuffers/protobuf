@@ -20,6 +20,7 @@
 #include "upb/message/array.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
+#include "upb/mini_table/sub.h"
 #include "upb/wire/internal/decode.h"
 
 // Must be last.
@@ -914,7 +915,8 @@ static const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e,
   upb_Message** dst;                                                      \
   uint32_t submsg_idx = (data >> 16) & 0xff;                              \
   const upb_MiniTable* tablep = decode_totablep(table);                   \
-  const upb_MiniTable* subtablep = tablep->subs[submsg_idx].submsg;       \
+  const upb_MiniTable* subtablep =                                        \
+      upb_MiniTableSub_Message(tablep->subs[submsg_idx]);                 \
   fastdecode_submsgdata submsg = {decode_totable(subtablep)};             \
   fastdecode_arr farr;                                                    \
                                                                           \

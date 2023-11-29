@@ -87,6 +87,25 @@ typedef union {
   uint32_t size;
 } wireval;
 
+// Ideally these two functions should take the owning MiniTable pointer as a
+// first argument, then we could just put them in mini_table/message.h as nice
+// clean getters. But we don't have that so instead we gotta write these
+// Frankenfunctions that take an array of subtables.
+
+// Returns the MiniTable corresponding to a given MiniTableField
+// from an array of MiniTableSubs.
+static const upb_MiniTable* _upb_MiniTableSubs_MessageByField(
+    const upb_MiniTableSub* subs, const upb_MiniTableField* field) {
+  return upb_MiniTableSub_Message(subs[field->UPB_PRIVATE(submsg_index)]);
+}
+
+// Returns the MiniTableEnum corresponding to a given MiniTableField
+// from an array of MiniTableSub.
+static const upb_MiniTableEnum* _upb_MiniTableSubs_EnumByField(
+    const upb_MiniTableSub* subs, const upb_MiniTableField* field) {
+  return upb_MiniTableSub_Enum(subs[field->UPB_PRIVATE(submsg_index)]);
+}
+
 static const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                               upb_Message* msg,
                                               const upb_MiniTable* layout);
@@ -223,7 +242,7 @@ static upb_Message* _upb_Decoder_NewSubMessage(upb_Decoder* d,
                                                const upb_MiniTableSub* subs,
                                                const upb_MiniTableField* field,
                                                upb_TaggedMessagePtr* target) {
-  const upb_MiniTable* subl = subs[field->UPB_PRIVATE(submsg_index)].submsg;
+  const upb_MiniTable* subl = _upb_MiniTableSubs_MessageByField(subs, field);
   UPB_ASSERT(subl);
   upb_Message* msg = _upb_Message_New(subl, &d->arena);
   if (!msg) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
@@ -247,7 +266,7 @@ static upb_Message* _upb_Decoder_ReuseSubMessage(
     upb_Decoder* d, const upb_MiniTableSub* subs,
     const upb_MiniTableField* field, upb_TaggedMessagePtr* target) {
   upb_TaggedMessagePtr tagged = *target;
-  const upb_MiniTable* subl = subs[field->UPB_PRIVATE(submsg_index)].submsg;
+  const upb_MiniTable* subl = _upb_MiniTableSubs_MessageByField(subs, field);
   UPB_ASSERT(subl);
   if (!upb_TaggedMessagePtr_IsEmpty(tagged) || subl == &_kUpb_MiniTable_Empty) {
     return _upb_TaggedMessagePtr_GetMessage(tagged);
@@ -298,7 +317,7 @@ static const char* _upb_Decoder_DecodeSubMessage(
     upb_Decoder* d, const char* ptr, upb_Message* submsg,
     const upb_MiniTableSub* subs, const upb_MiniTableField* field, int size) {
   int saved_delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, size);
-  const upb_MiniTable* subl = subs[field->UPB_PRIVATE(submsg_index)].submsg;
+  const upb_MiniTable* subl = _upb_MiniTableSubs_MessageByField(subs, field);
   UPB_ASSERT(subl);
   ptr = _upb_Decoder_RecurseSubMessage(d, ptr, submsg, subl, DECODE_NOGROUP);
   upb_EpsCopyInputStream_PopLimit(&d->input, ptr, saved_delta);
@@ -329,7 +348,7 @@ UPB_FORCEINLINE
 static const char* _upb_Decoder_DecodeKnownGroup(
     upb_Decoder* d, const char* ptr, upb_Message* submsg,
     const upb_MiniTableSub* subs, const upb_MiniTableField* field) {
-  const upb_MiniTable* subl = subs[field->UPB_PRIVATE(submsg_index)].submsg;
+  const upb_MiniTable* subl = _upb_MiniTableSubs_MessageByField(subs, field);
   UPB_ASSERT(subl);
   return _upb_Decoder_DecodeGroup(d, ptr, submsg, subl, field->number);
 }
@@ -382,7 +401,7 @@ static const char* _upb_Decoder_DecodeEnumArray(upb_Decoder* d, const char* ptr,
                                                 const upb_MiniTableSub* subs,
                                                 const upb_MiniTableField* field,
                                                 wireval* val) {
-  const upb_MiniTableEnum* e = subs[field->UPB_PRIVATE(submsg_index)].subenum;
+  const upb_MiniTableEnum* e = _upb_MiniTableSubs_EnumByField(subs, field);
   if (!_upb_Decoder_CheckEnum(d, ptr, msg, e, field, val)) return ptr;
   void* mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
   arr->size++;
@@ -453,7 +472,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
     upb_Decoder* d, const char* ptr, upb_Message* msg, upb_Array* arr,
     const upb_MiniTableSub* subs, const upb_MiniTableField* field,
     wireval* val) {
-  const upb_MiniTableEnum* e = subs[field->UPB_PRIVATE(submsg_index)].subenum;
+  const upb_MiniTableEnum* e = _upb_MiniTableSubs_EnumByField(subs, field);
   int saved_limit = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
   char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
   while (!_upb_Decoder_IsDone(d, &ptr)) {
@@ -593,7 +612,7 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   upb_Map* map = *map_p;
   upb_MapEntry ent;
   UPB_ASSERT(upb_MiniTableField_Type(field) == kUpb_FieldType_Message);
-  const upb_MiniTable* entry = subs[field->UPB_PRIVATE(submsg_index)].submsg;
+  const upb_MiniTable* entry = _upb_MiniTableSubs_MessageByField(subs, field);
 
   UPB_ASSERT(entry);
   UPB_ASSERT(entry->field_count == 2);
@@ -653,7 +672,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
 
   if (UPB_UNLIKELY(op == kUpb_DecodeOp_Enum) &&
       !_upb_Decoder_CheckEnum(d, ptr, msg,
-                              subs[field->UPB_PRIVATE(submsg_index)].subenum,
+                              _upb_MiniTableSubs_EnumByField(subs, field),
                               field, val)) {
     return ptr;
   }
@@ -971,9 +990,10 @@ static void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
                                        int* op) {
   // If sub-message is not linked, treat as unknown.
   if (field->mode & kUpb_LabelFlags_IsExtension) return;
-  const upb_MiniTableSub* sub = &mt->subs[field->UPB_PRIVATE(submsg_index)];
+  const upb_MiniTable* mt_sub =
+      _upb_MiniTableSubs_MessageByField(mt->subs, field);
   if ((d->options & kUpb_DecodeOption_ExperimentalAllowUnlinked) ||
-      sub->submsg != &_kUpb_MiniTable_Empty) {
+      mt_sub != &_kUpb_MiniTable_Empty) {
     return;
   }
 #ifndef NDEBUG

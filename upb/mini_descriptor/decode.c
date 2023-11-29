@@ -394,7 +394,7 @@ static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d,
   upb_MdDecoder_CheckOutOfMemory(&d->base, subs);
   uint32_t i = 0;
   for (; i < sub_counts.submsg_count; i++) {
-    subs[i].submsg = &_kUpb_MiniTable_Empty;
+    subs[i].UPB_PRIVATE(submsg) = &_kUpb_MiniTable_Empty;
   }
   if (sub_counts.subenum_count) {
     upb_MiniTableField* f = d->fields;
@@ -405,7 +405,7 @@ static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d,
       }
     }
     for (; i < sub_counts.submsg_count + sub_counts.subenum_count; i++) {
-      subs[i].subenum = NULL;
+      subs[i].UPB_PRIVATE(subenum) = NULL;
     }
   }
   d->table->subs = subs;
