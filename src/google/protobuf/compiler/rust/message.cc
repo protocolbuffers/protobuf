@@ -168,10 +168,12 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
   auto fieldName = field.desc().name();
   auto fieldType = field.desc().type();
   auto getter_thunk = Thunk(field, "get");
+  auto setter_thunk = Thunk(field, "set");
+  auto clearer_thunk = Thunk(field, "clear");
   // If we're dealing with a Mut, the getter must be supplied
   // self.inner.msg() whereas a View has to be supplied self.msg
   auto self = is_mut ? "self.inner.msg()" : "self.msg";
-  auto returnType = PrimitiveRsTypeName(field.desc());
+  auto rsType = PrimitiveRsTypeName(field.desc());
 
   if (fieldType == FieldDescriptor::TYPE_STRING) {
     field.Emit(
@@ -179,10 +181,10 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
             {"field", fieldName},
             {"self", self},
             {"getter_thunk", getter_thunk},
-            {"ReturnType", returnType},
+            {"RsType", rsType},
         },
         R"rs(
-              pub fn r#$field$(&self) -> &$ReturnType$ {
+              pub fn r#$field$(&self) -> &$RsType$ {
                 let s = unsafe { $getter_thunk$($self$).as_ref() };
                 unsafe { __pb::ProtoStr::from_utf8_unchecked(s) }
               }
@@ -193,22 +195,50 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
             {"field", fieldName},
             {"self", self},
             {"getter_thunk", getter_thunk},
-            {"ReturnType", returnType},
+            {"RsType", rsType},
         },
         R"rs(
-              pub fn r#$field$(&self) -> &$ReturnType$ {
+              pub fn r#$field$(&self) -> &$RsType$ {
                 unsafe { $getter_thunk$($self$).as_ref() }
               }
             )rs");
   } else {
     field.Emit({{"field", fieldName},
                 {"getter_thunk", getter_thunk},
+                {"setter_thunk", setter_thunk},
+                {"clearer_thunk", clearer_thunk},
                 {"self", self},
-                {"ReturnType", returnType}},
+                {"RsType", rsType},
+                {"maybe_mutator",
+                 [&] {
+                   // TODO: once the rust public api is accessible,
+                   // by tooling, ensure that this only appears for the
+                   // mutational pathway
+                   if (is_mut && fieldType) {
+                     field.Emit({}, R"rs(
+                    pub fn r#$field$_mut(&self) -> $pb$::Mut<'_, $RsType$> {
+                      static VTABLE: $pbi$::PrimitiveVTable<$RsType$> =
+                        $pbi$::PrimitiveVTable::new(
+                          $pbi$::Private,
+                          $getter_thunk$,
+                          $setter_thunk$);
+                      $pb$::PrimitiveMut::from_singular(
+                        $pbi$::Private,
+                        unsafe {
+                          $pbi$::RawVTableMutator::new($pbi$::Private,
+                          self.inner,
+                          &VTABLE)
+                        })
+                    }
+                    )rs");
+                   }
+                 }}},
                R"rs(
-            pub fn r#$field$(&self) -> $ReturnType$ {
+            pub fn r#$field$(&self) -> $RsType$ {
               unsafe { $getter_thunk$($self$) }
             }
+
+            $maybe_mutator$
           )rs");
   }
 }

@@ -1570,6 +1570,30 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "unredacted_debug_format_for_test",
+    testonly = True,
+    srcs = ["unredacted_debug_format_for_test.cc"],
+    hdrs = ["unredacted_debug_format_for_test.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+    ],
+)
+
+cc_test(
+    name = "unredacted_debug_format_for_test_test",
+    srcs = ["unredacted_debug_format_for_test_test.cc"],
+    deps = [
+        ":cc_lite_test_protos",
+        ":cc_test_protos",
+        ":protobuf",
+        ":unredacted_debug_format_for_test",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 ################################################################################
 # Helper targets for Kotlin tests
 ################################################################################
