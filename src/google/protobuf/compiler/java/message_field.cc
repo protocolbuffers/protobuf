@@ -61,7 +61,6 @@ void SetMessageVariables(
                           (*variables)["name"], " is deprecated\") ")
            : ""});
   (*variables)["on_changed"] = "onChanged();";
-  (*variables)["ver"] = GeneratedCodeVersionSuffix();
   (*variables)["get_parser"] = "parser()";
 
   if (HasHasbit(descriptor)) {
@@ -233,7 +232,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  // If this builder is non-null, it is used and the other fields
                  // are ignored.
-                 "private com.google.protobuf.SingleFieldBuilder$ver$<\n"
+                 "private com.google.protobuf.SingleFieldBuilder<\n"
                  "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;"
                  "\n");
 
@@ -358,11 +357,11 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
       variables_,
-      "private com.google.protobuf.SingleFieldBuilder$ver$<\n"
+      "private com.google.protobuf.SingleFieldBuilder<\n"
       "    $type$, $type$.Builder, $type$OrBuilder> \n"
       "    get$capitalized_name$FieldBuilder() {\n"
       "  if ($name$Builder_ == null) {\n"
-      "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder$ver$<\n"
+      "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder<\n"
       "        $type$, $type$.Builder, $type$OrBuilder>(\n"
       "            get$capitalized_name$(),\n"
       "            getParentForChildren(),\n"
@@ -567,7 +566,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  // If this builder is non-null, it is used and the other fields
                  // are ignored.
-                 "private com.google.protobuf.SingleFieldBuilder$ver$<\n"
+                 "private com.google.protobuf.SingleFieldBuilder<\n"
                  "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;"
                  "\n");
 
@@ -708,14 +707,14 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
       variables_,
-      "private com.google.protobuf.SingleFieldBuilder$ver$<\n"
+      "private com.google.protobuf.SingleFieldBuilder<\n"
       "    $type$, $type$.Builder, $type$OrBuilder> \n"
       "    ${$get$capitalized_name$FieldBuilder$}$() {\n"
       "  if ($name$Builder_ == null) {\n"
       "    if (!($has_oneof_case_message$)) {\n"
       "      $oneof_name$_ = $type$.getDefaultInstance();\n"
       "    }\n"
-      "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder$ver$<\n"
+      "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder<\n"
       "        $type$, $type$.Builder, $type$OrBuilder>(\n"
       "            ($type$) $oneof_name$_,\n"
       "            getParentForChildren(),\n"
@@ -957,7 +956,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       variables_,
       // If this builder is non-null, it is used and the other fields are
       // ignored.
-      "private com.google.protobuf.RepeatedFieldBuilder$ver$<\n"
+      "private com.google.protobuf.RepeatedFieldBuilder<\n"
       "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;\n"
       "\n");
 
@@ -1203,12 +1202,12 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "     ${$get$capitalized_name$BuilderList$}$() {\n"
       "  return get$capitalized_name$FieldBuilder().getBuilderList();\n"
       "}\n"
-      "private com.google.protobuf.RepeatedFieldBuilder$ver$<\n"
+      "private com.google.protobuf.RepeatedFieldBuilder<\n"
       "    $type$, $type$.Builder, $type$OrBuilder> \n"
       "    get$capitalized_name$FieldBuilder() {\n"
       "  if ($name$Builder_ == null) {\n"
       "    $name$Builder_ = new "
-      "com.google.protobuf.RepeatedFieldBuilder$ver$<\n"
+      "com.google.protobuf.RepeatedFieldBuilder<\n"
       "        $type$, $type$.Builder, $type$OrBuilder>(\n"
       "            $name$_,\n"
       "            $get_mutable_bit_builder$,\n"
@@ -1269,7 +1268,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateMergingCode(
       "    $name$_ = other.$name$_;\n"
       "    $clear_mutable_bit_builder$;\n"
       "    $name$Builder_ = \n"
-      "      com.google.protobuf.GeneratedMessage$ver$.alwaysUseFieldBuilders "
+      "      com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders "
       "?\n"
       "         get$capitalized_name$FieldBuilder() : null;\n"
       "  } else {\n"

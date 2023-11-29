@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** A factory for message info based on protobuf descriptors for a {@link GeneratedMessageV3}. */
+/** A factory for message info based on protobuf descriptors for a {@link GeneratedMessage}. */
 @ExperimentalApi
 final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   private static final String GET_DEFAULT_INSTANCE_METHOD_NAME = "getDefaultInstance";
@@ -74,12 +74,12 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
 
   @Override
   public boolean isSupported(Class<?> messageType) {
-    return GeneratedMessageV3.class.isAssignableFrom(messageType);
+    return GeneratedMessage.class.isAssignableFrom(messageType);
   }
 
   @Override
   public MessageInfo messageInfoFor(Class<?> messageType) {
-    if (!GeneratedMessageV3.class.isAssignableFrom(messageType)) {
+    if (!GeneratedMessage.class.isAssignableFrom(messageType)) {
       throw new IllegalArgumentException("Unsupported message type: " + messageType.getName());
     }
 
