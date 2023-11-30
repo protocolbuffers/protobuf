@@ -1598,7 +1598,9 @@ bool CommandLineInterface::ParseInputFiles(
     }
     parsed_files->push_back(parsed_file);
 
-    if (!experimental_editions_ && !IsEarlyEditionsFile(parsed_file->name())) {
+    if (!experimental_editions_ &&
+        !absl::StartsWith(parsed_file->name(), "google/protobuf/") &&
+        !absl::StartsWith(parsed_file->name(), "upb/")) {
       if (FileDescriptorLegacy(parsed_file).syntax() ==
           FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
         std::cerr
@@ -2563,9 +2565,10 @@ bool CommandLineInterface::EnforceEditionsSupport(
       continue;
     }
 
-    // Skip enforcement for allowlisted files.
-    if (IsEarlyEditionsFile(fd->name())) continue;
-
+    if (absl::StartsWith(fd->name(), "google/protobuf/") ||
+        absl::StartsWith(fd->name(), "upb/")) {
+      continue;
+    }
     if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
       std::cerr << absl::Substitute(
           "$0: is an editions file, but code generator $1 hasn't been "
