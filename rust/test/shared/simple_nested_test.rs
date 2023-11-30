@@ -11,6 +11,16 @@ use nested_proto::nest::Outer_::InnerMut;
 use nested_proto::nest::Outer_::InnerView;
 
 #[test]
+fn test_deeply_nested_definition() {
+    let deep = nested_proto::nest::Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_
+            ::CantBelieveItsSoInner::new();
+    assert_that!(deep.num(), eq(0));
+
+    let outer_msg = Outer::new();
+    assert_that!(outer_msg.deep().num(), eq(0));
+}
+
+#[test]
 fn test_nested_views() {
     let outer_msg = Outer::new();
     let inner_msg: InnerView<'_> = outer_msg.inner();
@@ -85,14 +95,4 @@ fn test_nested_muts() {
 
     );
     // TODO: add mutation tests for strings and bytes
-}
-
-#[test]
-fn test_deeply_nested_definition() {
-    let deep = nested_proto::nest::Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_
-            ::CantBelieveItsSoInner::new();
-    assert_eq!(deep.num(), 0);
-
-    let outer_msg = Outer::new();
-    assert_eq!(outer_msg.deep().num(), 0);
 }
