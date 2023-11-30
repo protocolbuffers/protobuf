@@ -7411,8 +7411,11 @@ TEST_F(FeaturesTest, Proto2Features) {
                 [pb.cpp] { legacy_closed_enum: true })pb"));
   EXPECT_TRUE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
-  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/false), Utf8CheckMode::kVerify);
-  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/true), Utf8CheckMode::kNone);
+  EXPECT_EQ(
+      GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/false),
+      Utf8CheckMode::kVerify);
+  EXPECT_EQ(GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/true),
+            Utf8CheckMode::kNone);
   EXPECT_FALSE(field->is_packed());
   EXPECT_FALSE(field->legacy_enum_field_treated_as_closed());
   EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field));
@@ -7477,8 +7480,11 @@ TEST_F(FeaturesTest, Proto3Features) {
                 [pb.cpp] { legacy_closed_enum: false })pb"));
   EXPECT_FALSE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
-  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/false), Utf8CheckMode::kStrict);
-  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/true), Utf8CheckMode::kStrict);
+  EXPECT_EQ(
+      GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/false),
+      Utf8CheckMode::kStrict);
+  EXPECT_EQ(GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/true),
+            Utf8CheckMode::kStrict);
   EXPECT_FALSE(field->is_packed());
   EXPECT_FALSE(field->legacy_enum_field_treated_as_closed());
   EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field));
@@ -9214,9 +9220,9 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
   EXPECT_FALSE(default_repeated_field->has_presence());
   EXPECT_FALSE(default_repeated_field->requires_utf8_validation());
   EXPECT_EQ(GetUtf8CheckMode(default_repeated_field, /*is_lite=*/false),
-            Utf8CheckMode::kStrict);
+            Utf8CheckMode::kNone);
   EXPECT_EQ(GetUtf8CheckMode(default_repeated_field, /*is_lite=*/true),
-            Utf8CheckMode::kStrict);
+            Utf8CheckMode::kNone);
 
   EXPECT_TRUE(required_field->has_presence());
   EXPECT_TRUE(required_field->is_required());

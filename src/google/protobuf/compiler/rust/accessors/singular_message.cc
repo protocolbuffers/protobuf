@@ -27,7 +27,7 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
           {"prefix", prefix},
           {"field", field.desc().name()},
           {"getter_thunk", Thunk(field, "get")},
-          {"getter_mut_thunk", Thunk(field, "get_mut")},
+          {"getter_mut_thunk", Thunk(field, "mutable")},
           {"clearer_thunk", Thunk(field, "clear")},
           {
               "view_body",
@@ -59,18 +59,11 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
            [&] {
              if (field.is_upb()) {
                field.Emit({}, R"rs(
-                 let submsg_opt = unsafe { $getter_thunk$(self.inner.msg) };
-                 match submsg_opt {
-                   None => {
-                     $prefix$Mut::new($pbi$::Private,
-                       &mut self.inner,
-                       $pbr$::ScratchSpace::zeroed_block($pbi$::Private))
-                   },
-                   Some(submsg) => {
-                     $prefix$Mut::new($pbi$::Private, &mut self.inner, submsg)
-                }
-              }
-        )rs");
+                 let submsg = unsafe {
+                   $getter_mut_thunk$(self.inner.msg, self.inner.arena.raw())
+                 };
+                 $prefix$Mut::new($pbi$::Private, &mut self.inner, submsg)
+                 )rs");
              } else {
                field.Emit({}, R"rs(
                     let submsg = unsafe { $getter_mut_thunk$(self.inner.msg) };
@@ -98,8 +91,22 @@ void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
   field.Emit(
       {
           {"getter_thunk", Thunk(field, "get")},
-          {"getter_mut_thunk", Thunk(field, "get_mut")},
+          {"getter_mut_thunk", Thunk(field, "mutable")},
           {"clearer_thunk", Thunk(field, "clear")},
+          {"getter_mut",
+           [&] {
+             if (field.is_cpp()) {
+               field.Emit(
+                   R"rs(
+                    fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage)
+                       -> $pbi$::RawMessage;)rs");
+             } else {
+               field.Emit(
+                   R"rs(fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage,
+                                               arena: $pbi$::RawArena)
+                            -> $pbi$::RawMessage;)rs");
+             }
+           }},
           {"ReturnType",
            [&] {
              if (field.is_cpp()) {
@@ -114,7 +121,7 @@ void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
       },
       R"rs(
                   fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $ReturnType$;
-                  fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage) -> $ReturnType$;
+                  $getter_mut$
                   fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
                )rs");
 }
@@ -123,7 +130,7 @@ void SingularMessage::InThunkCc(Context<FieldDescriptor> field) const {
   field.Emit({{"QualifiedMsg",
                cpp::QualifiedClassName(field.desc().containing_type())},
               {"getter_thunk", Thunk(field, "get")},
-              {"getter_mut_thunk", Thunk(field, "get_mut")},
+              {"getter_mut_thunk", Thunk(field, "mutable")},
               {"clearer_thunk", Thunk(field, "clear")},
               {"field", cpp::FieldName(&field.desc())}},
              R"cc(

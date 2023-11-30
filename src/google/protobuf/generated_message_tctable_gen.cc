@@ -412,13 +412,7 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
 // We only need field names for reporting UTF-8 parsing errors, so we only
 // emit them for string fields with Utf8 transform specified.
 bool NeedsFieldNameForTable(const FieldDescriptor* field, bool is_lite) {
-  if (cpp::GetUtf8CheckMode(field, is_lite) == cpp::Utf8CheckMode::kNone)
-    return false;
-  return field->type() == FieldDescriptor::TYPE_STRING ||
-         (field->is_map() && (field->message_type()->map_key()->type() ==
-                                  FieldDescriptor::TYPE_STRING ||
-                              field->message_type()->map_value()->type() ==
-                                  FieldDescriptor::TYPE_STRING));
+  return cpp::GetUtf8CheckMode(field, is_lite) != cpp::Utf8CheckMode::kNone;
 }
 
 absl::string_view FieldNameForTable(

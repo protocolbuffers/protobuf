@@ -9576,13 +9576,18 @@ static bool IsVerifyUtf8(const FieldDescriptor* field, bool is_lite) {
 
 // Which level of UTF-8 enforcemant is placed on this file.
 Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
-  if (IsStrictUtf8(field)) {
-    return Utf8CheckMode::kStrict;
-  } else if (IsVerifyUtf8(field, is_lite)) {
-    return Utf8CheckMode::kVerify;
-  } else {
-    return Utf8CheckMode::kNone;
+  if (field->type() == FieldDescriptor::TYPE_STRING ||
+      (field->is_map() && (field->message_type()->map_key()->type() ==
+                               FieldDescriptor::TYPE_STRING ||
+                           field->message_type()->map_value()->type() ==
+                               FieldDescriptor::TYPE_STRING))) {
+    if (IsStrictUtf8(field)) {
+      return Utf8CheckMode::kStrict;
+    } else if (IsVerifyUtf8(field, is_lite)) {
+      return Utf8CheckMode::kVerify;
+    }
   }
+  return Utf8CheckMode::kNone;
 }
 
 bool IsLazilyInitializedFile(absl::string_view filename) {
