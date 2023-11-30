@@ -1891,22 +1891,23 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "\022\r\n\005begin\030\003 \001(\005\022\013\n\003end\030\004 \001(\005\022H\n\010semantic"
     "\030\005 \001(\01626.google.protobuf.GeneratedCodeIn"
     "fo.Annotation.Semantic\"(\n\010Semantic\022\010\n\004NO"
-    "NE\020\000\022\007\n\003SET\020\001\022\t\n\005ALIAS\020\002*\352\001\n\007Edition\022\023\n\017"
+    "NE\020\000\022\007\n\003SET\020\001\022\t\n\005ALIAS\020\002*\377\001\n\007Edition\022\023\n\017"
     "EDITION_UNKNOWN\020\000\022\023\n\016EDITION_PROTO2\020\346\007\022\023"
     "\n\016EDITION_PROTO3\020\347\007\022\021\n\014EDITION_2023\020\350\007\022\027"
     "\n\023EDITION_1_TEST_ONLY\020\001\022\027\n\023EDITION_2_TES"
     "T_ONLY\020\002\022\035\n\027EDITION_99997_TEST_ONLY\020\235\215\006\022"
     "\035\n\027EDITION_99998_TEST_ONLY\020\236\215\006\022\035\n\027EDITIO"
-    "N_99999_TEST_ONLY\020\237\215\006B~\n\023com.google.prot"
-    "obufB\020DescriptorProtosH\001Z-google.golang."
-    "org/protobuf/types/descriptorpb\370\001\001\242\002\003GPB"
-    "\252\002\032Google.Protobuf.Reflection"
+    "N_99999_TEST_ONLY\020\237\215\006\022\023\n\013EDITION_MAX\020\377\377\377"
+    "\377\007B~\n\023com.google.protobufB\020DescriptorPro"
+    "tosH\001Z-google.golang.org/protobuf/types/"
+    "descriptorpb\370\001\001\242\002\003GPB\252\002\032Google.Protobuf."
+    "Reflection"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false,
     false,
-    9549,
+    9570,
     descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
@@ -2345,7 +2346,7 @@ const ::google::protobuf::EnumDescriptor* Edition_descriptor() {
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[16];
 }
 PROTOBUF_CONSTINIT const uint32_t Edition_internal_data_[] = {
-    196608u, 393216u, 99997u, 999u, 99999u, 998u, 1000u, 99998u, };
+    196608u, 458752u, 99997u, 999u, 99999u, 998u, 1000u, 99998u, 2147483647u, };
 bool Edition_IsValid(int value) {
   return ::_pbi::ValidateEnum(value, Edition_internal_data_);
 }

@@ -670,13 +670,13 @@ enum Edition : int {
   EDITION_99997_TEST_ONLY = 99997,
   EDITION_99998_TEST_ONLY = 99998,
   EDITION_99999_TEST_ONLY = 99999,
+  EDITION_MAX = 2147483647,
 };
 
 PROTOBUF_EXPORT bool Edition_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t Edition_internal_data_[];
 constexpr Edition Edition_MIN = static_cast<Edition>(0);
-constexpr Edition Edition_MAX = static_cast<Edition>(99999);
-constexpr int Edition_ARRAYSIZE = 99999 + 1;
+constexpr Edition Edition_MAX = static_cast<Edition>(2147483647);
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 Edition_descriptor();
 template <typename T>
