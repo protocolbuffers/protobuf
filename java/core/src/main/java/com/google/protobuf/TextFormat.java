@@ -283,16 +283,23 @@ public final class TextFormat {
   public static final class Printer {
 
     // Printer instance which escapes non-ASCII characters.
-    private static final Printer DEFAULT = new Printer(true, TypeRegistry.getEmptyTypeRegistry());
+    private static final Printer DEFAULT =
+        new Printer(
+            true, TypeRegistry.getEmptyTypeRegistry(), ExtensionRegistryLite.getEmptyRegistry());
 
     /** Whether to escape non ASCII characters with backslash and octal. */
     private final boolean escapeNonAscii;
 
     private final TypeRegistry typeRegistry;
+    private final ExtensionRegistryLite extensionRegistry;
 
-    private Printer(boolean escapeNonAscii, TypeRegistry typeRegistry) {
+    private Printer(
+        boolean escapeNonAscii,
+        TypeRegistry typeRegistry,
+        ExtensionRegistryLite extensionRegistry) {
       this.escapeNonAscii = escapeNonAscii;
       this.typeRegistry = typeRegistry;
+      this.extensionRegistry = extensionRegistry;
     }
 
     /**
@@ -305,7 +312,7 @@ public final class TextFormat {
      *     with the escape mode set to the given parameter.
      */
     public Printer escapingNonAscii(boolean escapeNonAscii) {
-      return new Printer(escapeNonAscii, typeRegistry);
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry);
     }
 
     /**
@@ -318,7 +325,20 @@ public final class TextFormat {
       if (this.typeRegistry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one typeRegistry is allowed.");
       }
-      return new Printer(escapeNonAscii, typeRegistry);
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry);
+    }
+
+    /**
+     * Creates a new {@link Printer} using the given extensionRegistry. The new Printer clones all
+     * other configurations from the current {@link Printer}.
+     *
+     * @throws IllegalArgumentException if a registry is already set.
+     */
+    public Printer usingExtensionRegistry(ExtensionRegistryLite extensionRegistry) {
+      if (this.extensionRegistry != ExtensionRegistryLite.getEmptyRegistry()) {
+        throw new IllegalArgumentException("Only one extensionRegistry is allowed.");
+      }
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry);
     }
 
     /**
@@ -377,7 +397,7 @@ public final class TextFormat {
           return false;
         }
         contentBuilder = DynamicMessage.getDefaultInstance(contentType).newBuilderForType();
-        contentBuilder.mergeFrom((ByteString) value);
+        contentBuilder.mergeFrom((ByteString) value, extensionRegistry);
       } catch (InvalidProtocolBufferException e) {
         // The value of Any is malformed. We cannot print it out nicely, so fallback to printing out
         // the type_url and value as bytes. Note that we fail open here to be consistent with
