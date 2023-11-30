@@ -4549,9 +4549,17 @@ const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
   if (tables_->known_bad_files_.contains(proto.name())) {
     return nullptr;
   }
-  const FileDescriptor* result =
-      DescriptorBuilder::New(this, tables_.get(), default_error_collector_)
-          ->BuildFile(proto);
+  const FileDescriptor* result;
+  const auto build_file = [&] {
+    result =
+        DescriptorBuilder::New(this, tables_.get(), default_error_collector_)
+            ->BuildFile(proto);
+  };
+  if (dispatcher_ != nullptr) {
+    (*dispatcher_)(build_file);
+  } else {
+    build_file();
+  }
   if (result == nullptr) {
     tables_->known_bad_files_.insert(proto.name());
   }

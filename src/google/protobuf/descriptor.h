@@ -36,6 +36,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
@@ -43,6 +44,8 @@
 #include "absl/base/call_once.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/functional/any_invocable.h"
+#include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
@@ -2299,6 +2302,20 @@ class PROTOBUF_EXPORT DescriptorPool {
   void EnforceExtensionDeclarations(bool enforce) {
     enforce_extension_declarations_ = enforce;
   }
+
+#ifndef SWIG
+  // Dispatch recursive builds to a callback that may stick them onto a separate
+  // thread.  This is primarily to avoid stack overflows on untrusted inputs.
+  // The dispatcher must always synchronously execute the provided callback.
+  // Asynchronous execution is undefined behavior.
+  void SetRecursiveBuildDispatcher(
+      absl::AnyInvocable<void(absl::FunctionRef<void()>) const> dispatcher) {
+    dispatcher_ = std::make_unique<
+        absl::AnyInvocable<void(absl::FunctionRef<void()>) const>>(
+        std::move(dispatcher));
+  }
+#endif  // SWIG
+
   // Internal stuff --------------------------------------------------
   // These methods MUST NOT be called from outside the proto2 library.
   // These methods may contain hidden pitfalls and may be removed in a
@@ -2459,6 +2476,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   DescriptorDatabase* fallback_database_;
   ErrorCollector* default_error_collector_;
   const DescriptorPool* underlay_;
+
+#ifndef SWIG
+  // Dispatcher for recursive calls during builds.
+  std::unique_ptr<absl::AnyInvocable<void(absl::FunctionRef<void()>) const>>
+      dispatcher_;
+#endif  // SWIG
 
   // This class contains a lot of hash maps with complicated types that
   // we'd like to keep out of the header.
