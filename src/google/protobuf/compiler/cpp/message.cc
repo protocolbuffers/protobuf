@@ -2121,10 +2121,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         "static constexpr ::int32_t kOneofCaseOffset =\n"
         "  PROTOBUF_FIELD_OFFSET($classtype$, $oneof_case$);\n");
   }
-  for (auto field : FieldRange(descriptor_)) {
-    auto t = p->WithVars(MakeTrackerCalls(field, options_));
-    field_generators_.get(field).GenerateInternalAccessorDeclarations(p);
-  }
   if (num_required_fields_ > 0) {
     const std::vector<uint32_t> masks_for_has_bits = RequiredFieldsBitMask();
     format(
@@ -2137,9 +2133,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
 
   format.Outdent();
   format("};\n\n");
-  for (auto field : FieldRange(descriptor_)) {
-    field_generators_.get(field).GenerateInternalAccessorDefinitions(p);
-  }
 
   // Generate non-inline field definitions.
   for (auto field : FieldRange(descriptor_)) {

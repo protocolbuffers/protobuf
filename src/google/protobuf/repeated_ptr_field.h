@@ -259,6 +259,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename T>
   void MergeFrom(const RepeatedPtrFieldBase& from) {
     static_assert(std::is_base_of<MessageLite, T>::value, "");
+#ifdef __cpp_if_constexpr
+    if constexpr (!std::is_base_of<Message, T>::value) {
+      // For LITE objects we use the generic MergeFrom to save on binary size.
+      return MergeFrom<MessageLite>(from);
+    }
+#endif
     MergeFromConcreteMessage(from, Arena::CopyConstruct<T>);
   }
 
