@@ -66,7 +66,10 @@ PROTOBUF_EXPORT enum class FieldReporterLevel {
   kUtf8Format = 8,
   kDebugString = 12,
   kShortDebugString = 13,
-  kUtf8DebugString = 14
+  kUtf8DebugString = 14,
+  kUnredactedDebugFormatForTest = 15,
+  kUnredactedShortDebugFormatForTest = 16,
+  kUnredactedUtf8DebugFormatForTest = 17
 };
 
 }  // namespace internal
