@@ -16,7 +16,6 @@
 #include "upb/mini_descriptor/internal/decoder.h"
 #include "upb/mini_descriptor/internal/wire_constants.h"
 #include "upb/mini_table/enum.h"
-#include "upb/mini_table/internal/enum.h"
 
 // Must be last.
 #include "upb/port/def.inc"

@@ -15,10 +15,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* Extension registry: a dynamic data structure that stores a map of:
  *   (upb_MiniTable, number) -> extension info
  *
@@ -54,6 +50,10 @@ extern "C" {
  */
 
 typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Creates a upb_ExtensionRegistry in the given arena.
 // The arena must outlive any use of the extreg.

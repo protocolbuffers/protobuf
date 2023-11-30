@@ -19,7 +19,8 @@
 #include "upb/port/def.inc"
 
 upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
-  return UPB_PRIVATE(_upb_Array_New)(a, 4, upb_CType_SizeLg2(type));
+  const int lg2 = UPB_PRIVATE(_upb_CType_SizeLg2)(type);
+  return UPB_PRIVATE(_upb_Array_New)(a, 4, lg2);
 }
 
 const void* upb_Array_DataPtr(const upb_Array* arr) {

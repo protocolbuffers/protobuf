@@ -9,8 +9,7 @@
 #define UPB_MINI_TABLE_FILE_H_
 
 #include "upb/mini_table/internal/file.h"
-
-typedef struct upb_MiniTableFile upb_MiniTableFile;
+#include "upb/mini_table/types.h"  // IWYU pragma: export
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -19,7 +18,7 @@ typedef struct upb_MiniTableFile upb_MiniTableFile;
 extern "C" {
 #endif
 
-UPB_API_INLINE const struct upb_MiniTableEnum* upb_MiniTableFile_Enum(
+UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTableFile_Enum(
     const upb_MiniTableFile* f, int i) {
   return UPB_PRIVATE(_upb_MiniTableFile_Enum)(f, i);
 }
@@ -28,7 +27,7 @@ UPB_API_INLINE int upb_MiniTableFile_EnumCount(const upb_MiniTableFile* f) {
   return UPB_PRIVATE(_upb_MiniTableFile_EnumCount)(f);
 }
 
-UPB_API_INLINE const struct upb_MiniTableExtension* upb_MiniTableFile_Extension(
+UPB_API_INLINE const upb_MiniTableExtension* upb_MiniTableFile_Extension(
     const upb_MiniTableFile* f, int i) {
   return UPB_PRIVATE(_upb_MiniTableFile_Extension)(f, i);
 }
@@ -38,7 +37,7 @@ UPB_API_INLINE int upb_MiniTableFile_ExtensionCount(
   return UPB_PRIVATE(_upb_MiniTableFile_ExtensionCount)(f);
 }
 
-UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableFile_Message(
+UPB_API_INLINE const upb_MiniTable* upb_MiniTableFile_Message(
     const upb_MiniTableFile* f, int i) {
   return UPB_PRIVATE(_upb_MiniTableFile_Message)(f, i);
 }

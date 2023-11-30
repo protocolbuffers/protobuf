@@ -168,7 +168,6 @@ cc_library(
         "//upb:message",
         "//upb:mini_descriptor",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
     ],
 )

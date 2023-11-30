@@ -8,15 +8,11 @@
 #ifndef UPB_MINI_TABLE_MESSAGE_H_
 #define UPB_MINI_TABLE_MESSAGE_H_
 
-#include "upb/mini_table/enum.h"
-#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
-#include "upb/mini_table/internal/sub.h"
+#include "upb/mini_table/types.h"  // IWYU pragma: export
 
 // Must be last.
 #include "upb/port/def.inc"
-
-typedef struct upb_MiniTable upb_MiniTable;
 
 #ifdef __cplusplus
 extern "C" {

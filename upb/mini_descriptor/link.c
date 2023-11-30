@@ -13,8 +13,6 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
-#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 

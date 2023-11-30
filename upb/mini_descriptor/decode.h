@@ -10,9 +10,6 @@
 
 #include "upb/base/status.h"
 #include "upb/mem/arena.h"
-#include "upb/mini_table/extension.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
 // Export the newer headers, for legacy users.  New users should include the
