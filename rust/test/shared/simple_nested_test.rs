@@ -33,6 +33,22 @@ fn test_nested_views() {
 
 #[test]
 fn test_nested_muts() {
+    // Covers the setting of a mut and the following assertion
+    // confirming the new value. Replacement example:
+    // old:
+    //   inner_msg.double_mut().set(543.21);
+    //   assert_that!(inner_msg.double_mut().get(), eq(543.21));
+    // new:
+    //   set_and_test_mut!(inner_msg => double_mut, 543.21);
+    macro_rules! set_and_test_mut {
+    ( $a:expr => $($target_mut:ident, $val:literal;)* ) => {
+        $(
+          $a.$target_mut().set($val);
+          assert_that!($a.$target_mut().get(), eq($val));
+        )*
+    };
+}
+
     let mut outer_msg = Outer::new();
     let inner_msg: InnerMut<'_> = outer_msg.inner_mut();
     assert_that!(
@@ -54,29 +70,20 @@ fn test_nested_muts() {
         })
     );
 
-    inner_msg.double_mut().set(543.21);
-    assert_that!(inner_msg.double_mut().get(), eq(543.21));
-    inner_msg.float_mut().set(1.23);
-    assert_that!(inner_msg.float_mut().get(), eq(1.23));
-    inner_msg.int32_mut().set(12);
-    assert_that!(inner_msg.int32_mut().get(), eq(12));
-    inner_msg.int64_mut().set(42);
-    assert_that!(inner_msg.int64_mut().get(), eq(42));
-    inner_msg.uint32_mut().set(13);
-    assert_that!(inner_msg.uint32_mut().get(), eq(13));
-    inner_msg.uint64_mut().set(5000);
-    assert_that!(inner_msg.uint64_mut().get(), eq(5000));
-    inner_msg.sint32_mut().set(-2);
-    assert_that!(inner_msg.sint32_mut().get(), eq(-2));
-    inner_msg.sint64_mut().set(322);
-    assert_that!(inner_msg.sint64_mut().get(), eq(322));
-    inner_msg.fixed32_mut().set(77);
-    assert_that!(inner_msg.fixed32_mut().get(), eq(77));
-    inner_msg.fixed64_mut().set(999);
-    assert_that!(inner_msg.fixed64_mut().get(), eq(999));
-    inner_msg.bool_mut().set(true);
-    assert_that!(inner_msg.bool_mut().get(), eq(true));
+    set_and_test_mut!(inner_msg =>
+        double_mut, 543.21;
+        float_mut, 1.23;
+        int32_mut, 12;
+        int64_mut, 42;
+        uint32_mut, 13;
+        uint64_mut, 5000;
+        sint32_mut, -2;
+        sint64_mut, 322;
+        fixed32_mut, 77;
+        fixed64_mut, 999;
+        bool_mut, true;
 
+    );
     // TODO: add mutation tests for strings and bytes
 }
 
