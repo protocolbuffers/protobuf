@@ -81,6 +81,11 @@ enum Edition {
   EDITION_99997_TEST_ONLY = 99997;
   EDITION_99998_TEST_ONLY = 99998;
   EDITION_99999_TEST_ONLY = 99999;
+
+  // Placeholder for specifying unbounded edition support.  This should only
+  // ever be used by plugins that can expect to never require any changes to
+  // support a new edition.
+  EDITION_MAX = 0x7FFFFFFF;
 }
 
 // Describes a complete .proto file.
