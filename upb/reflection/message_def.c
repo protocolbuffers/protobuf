@@ -446,7 +446,7 @@ void _upb_MessageDef_CreateMiniTable(upb_DefBuilder* ctx, upb_MessageDef* m) {
     m->layout = _upb_MessageDef_MakeMiniTable(ctx, m);
   } else {
     m->layout = upb_MiniTableFile_Message(ctx->layout, ctx->msg_count++);
-    UPB_ASSERT(m->field_count == m->layout->field_count);
+    UPB_ASSERT(m->field_count == m->layout->UPB_PRIVATE(field_count));
 
     // We don't need the result of this call, but it will assign layout_index
     // for all the fields in O(n lg n) time.
@@ -482,9 +482,9 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
 
     UPB_ASSERT(layout_index < m->field_count);
     upb_MiniTableField* mt_f =
-        (upb_MiniTableField*)&m->layout->fields[layout_index];
+        (upb_MiniTableField*)&m->layout->UPB_PRIVATE(fields)[layout_index];
     if (sub_m) {
-      if (!mt->subs) {
+      if (!mt->UPB_PRIVATE(subs)) {
         _upb_DefBuilder_Errf(ctx, "unexpected submsg for (%s)", m->full_name);
       }
       UPB_ASSERT(mt_f);
@@ -504,8 +504,9 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
   for (int i = 0; i < m->field_count; i++) {
     const upb_FieldDef* f = upb_MessageDef_Field(m, i);
     const int layout_index = _upb_FieldDef_LayoutIndex(f);
-    UPB_ASSERT(layout_index < m->layout->field_count);
-    const upb_MiniTableField* mt_f = &m->layout->fields[layout_index];
+    UPB_ASSERT(layout_index < m->layout->UPB_PRIVATE(field_count));
+    const upb_MiniTableField* mt_f =
+        &m->layout->UPB_PRIVATE(fields)[layout_index];
     UPB_ASSERT(upb_FieldDef_Type(f) == upb_MiniTableField_Type(mt_f));
     UPB_ASSERT(upb_FieldDef_CType(f) == upb_MiniTableField_CType(mt_f));
     UPB_ASSERT(upb_FieldDef_HasPresence(f) ==

@@ -64,9 +64,9 @@ static const char* fastdecode_dispatch(UPB_PARSE_PARAMS) {
   switch (upb_EpsCopyInputStream_IsDoneStatus(&d->input, ptr, &overrun)) {
     case kUpb_IsDoneStatus_Done:
       *(uint32_t*)msg |= hasbits;  // Sync hasbits.
-      const upb_MiniTable* l = decode_totablep(table);
-      return UPB_UNLIKELY(l->required_count)
-                 ? _upb_Decoder_CheckRequired(d, ptr, msg, l)
+      const upb_MiniTable* m = decode_totablep(table);
+      return UPB_UNLIKELY(m->UPB_PRIVATE(required_count))
+                 ? _upb_Decoder_CheckRequired(d, ptr, msg, m)
                  : ptr;
     case kUpb_IsDoneStatus_NotDone:
       break;
@@ -915,12 +915,12 @@ static const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e,
   upb_Message** dst;                                                      \
   uint32_t submsg_idx = (data >> 16) & 0xff;                              \
   const upb_MiniTable* tablep = decode_totablep(table);                   \
-  const upb_MiniTable* subtablep =                                        \
-      upb_MiniTableSub_Message(tablep->subs[submsg_idx]);                 \
+  const upb_MiniTable* subtablep = upb_MiniTableSub_Message(              \
+      *UPB_PRIVATE(_upb_MiniTable_GetSubByIndex)(tablep, submsg_idx));    \
   fastdecode_submsgdata submsg = {decode_totable(subtablep)};             \
   fastdecode_arr farr;                                                    \
                                                                           \
-  if (subtablep->table_mask == (uint8_t)-1) {                             \
+  if (subtablep->UPB_PRIVATE(table_mask) == (uint8_t)-1) {                \
     d->depth++;                                                           \
     RETURN_GENERIC("submessage doesn't have fast tables.");               \
   }                                                                       \

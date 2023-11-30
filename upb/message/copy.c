@@ -74,7 +74,7 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
     case kUpb_CType_Message: {
       const upb_TaggedMessagePtr source = *(upb_TaggedMessagePtr*)value;
       bool is_empty = upb_TaggedMessagePtr_IsEmpty(source);
-      if (is_empty) sub = &_kUpb_MiniTable_Empty;
+      if (is_empty) sub = UPB_PRIVATE(_upb_MiniTable_Empty)();
       UPB_ASSERT(source);
       upb_Message* clone = upb_Message_DeepClone(
           _upb_TaggedMessagePtr_GetMessage(source), sub, arena);
@@ -97,7 +97,8 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
   upb_MessageValue key, val;
   size_t iter = kUpb_Map_Begin;
   while (upb_Map_Next(map, &key, &val, &iter)) {
-    const upb_MiniTableField* value_field = &map_entry_table->fields[1];
+    const upb_MiniTableField* value_field =
+        &map_entry_table->UPB_PRIVATE(fields)[1];
     const upb_MiniTable* value_sub =
         (value_field->UPB_PRIVATE(submsg_index) != kUpb_NoSub)
             ? upb_MiniTable_GetSubMessageTable(map_entry_table, value_field)
@@ -120,12 +121,14 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
                                           upb_Message* clone,
                                           upb_Arena* arena) {
   // TODO: use a variant of upb_MiniTable_GetSubMessageTable() here.
-  const upb_MiniTable* map_entry_table =
-      upb_MiniTableSub_Message(mini_table->subs[f->UPB_PRIVATE(submsg_index)]);
+  const upb_MiniTable* map_entry_table = upb_MiniTableSub_Message(
+      mini_table->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSERT(map_entry_table);
 
-  const upb_MiniTableField* key_field = &map_entry_table->fields[0];
-  const upb_MiniTableField* value_field = &map_entry_table->fields[1];
+  const upb_MiniTableField* key_field =
+      &map_entry_table->UPB_PRIVATE(fields)[0];
+  const upb_MiniTableField* value_field =
+      &map_entry_table->UPB_PRIVATE(fields)[1];
 
   upb_Map* cloned_map = upb_Map_DeepClone(
       map, upb_MiniTableField_CType(key_field),
@@ -193,8 +196,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   upb_StringView empty_string = upb_StringView_FromDataAndSize(NULL, 0);
   // Only copy message area skipping upb_Message_Internal.
   memcpy(dst, src, mini_table->size);
-  for (size_t i = 0; i < mini_table->field_count; ++i) {
-    const upb_MiniTableField* field = &mini_table->fields[i];
+  for (size_t i = 0; i < mini_table->UPB_PRIVATE(field_count); ++i) {
+    const upb_MiniTableField* field = &mini_table->UPB_PRIVATE(fields)[i];
     if (upb_MiniTableField_IsScalar(field)) {
       switch (upb_MiniTableField_CType(field)) {
         case kUpb_CType_Message: {
@@ -208,7 +211,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
             // decode status, or possible parse failure here.
             bool is_empty = upb_TaggedMessagePtr_IsEmpty(tagged);
             const upb_MiniTable* sub_message_table =
-                is_empty ? &_kUpb_MiniTable_Empty
+                is_empty ? UPB_PRIVATE(_upb_MiniTable_Empty)()
                          : upb_MiniTable_GetSubMessageTable(mini_table, field);
             upb_Message* dst_sub_message =
                 upb_Message_DeepClone(sub_message, sub_message_table, arena);

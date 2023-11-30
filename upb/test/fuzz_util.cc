@@ -143,9 +143,9 @@ bool Builder::LinkMessages() {
   for (auto* t : mini_tables_) {
     upb_MiniTable* table = const_cast<upb_MiniTable*>(t);
     // For each field that requires a sub-table, assign one as appropriate.
-    for (size_t i = 0; i < table->field_count; i++) {
+    for (size_t i = 0; i < table->UPB_PRIVATE(field_count); i++) {
       upb_MiniTableField* field =
-          const_cast<upb_MiniTableField*>(&table->fields[i]);
+          const_cast<upb_MiniTableField*>(&table->UPB_PRIVATE(fields)[i]);
       if (link_ == input_->links.size()) link_ = 0;
       if (upb_MiniTableField_CType(field) == kUpb_CType_Message &&
           !upb_MiniTable_SetSubMessage(table, field, NextMiniTable())) {

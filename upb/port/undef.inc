@@ -54,3 +54,4 @@
 #undef UPB_ATOMIC
 #undef UPB_USE_C11_ATOMICS
 #undef UPB_PRIVATE
+#undef UPB_ONLYBITS

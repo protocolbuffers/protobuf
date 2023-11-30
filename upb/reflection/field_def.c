@@ -233,7 +233,7 @@ const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f) {
         file, f->layout_index);
   } else {
     const upb_MiniTable* layout = upb_MessageDef_MiniTable(f->msgdef);
-    return &layout->fields[f->layout_index];
+    return &layout->UPB_PRIVATE(fields)[f->layout_index];
   }
 }
 

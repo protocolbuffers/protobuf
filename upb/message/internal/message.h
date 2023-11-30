@@ -68,8 +68,8 @@ struct upb_Message_InternalData {
 /* Maps upb_CType -> memory size. */
 extern char _upb_CTypeo_size[12];
 
-UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* t) {
-  return t->size + sizeof(upb_Message_Internal);
+UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* m) {
+  return m->size + sizeof(upb_Message_Internal);
 }
 
 // Inline version upb_Message_New(), for internal use.

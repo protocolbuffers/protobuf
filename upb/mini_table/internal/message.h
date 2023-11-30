@@ -9,6 +9,8 @@
 #define UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 
 #include "upb/message/types.h"
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -38,41 +40,91 @@ typedef enum {
 // The members are public so generated code can initialize them,
 // but users MUST NOT directly read or write any of its members.
 struct upb_MiniTable {
-  const union upb_MiniTableSub* subs;
-  const struct upb_MiniTableField* fields;
+  const union upb_MiniTableSub* UPB_PRIVATE(subs);
+  const struct upb_MiniTableField* UPB_ONLYBITS(fields);
 
   // Must be aligned to sizeof(void*). Doesn't include internal members like
   // unknown fields, extension dict, pointer to msglayout, etc.
   uint16_t size;
 
-  uint16_t field_count;
-  uint8_t ext;  // upb_ExtMode, declared as uint8_t so sizeof(ext) == 1
-  uint8_t dense_below;
-  uint8_t table_mask;
-  uint8_t required_count;  // Required fields have the lowest hasbits.
+  uint16_t UPB_ONLYBITS(field_count);
+
+  uint8_t UPB_PRIVATE(ext);  // upb_ExtMode, uint8_t here so sizeof(ext) == 1
+  uint8_t UPB_PRIVATE(dense_below);
+  uint8_t UPB_PRIVATE(table_mask);
+  uint8_t UPB_PRIVATE(required_count);  // Required fields have the low hasbits.
 
   // To statically initialize the tables of variable length, we need a flexible
   // array member, and we need to compile in gnu99 mode (constant initialization
   // of flexible array members is a GNU extension, not in C99 unfortunately.
-  _upb_FastTable_Entry fasttable[];
+  _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// A MiniTable for an empty message, used for unlinked sub-messages.
-extern const struct upb_MiniTable _kUpb_MiniTable_Empty;
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTable_Empty)(void) {
+  extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
 
-// Computes a bitmask in which the |l->required_count| lowest bits are set,
+  return &UPB_PRIVATE(_kUpb_MiniTable_Empty);
+}
+
+UPB_INLINE int UPB_PRIVATE(_upb_MiniTable_FieldCount)(
+    const struct upb_MiniTable* m) {
+  return m->UPB_ONLYBITS(field_count);
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
+    const struct upb_MiniTable* m) {
+  extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
+
+  return m == &UPB_PRIVATE(_kUpb_MiniTable_Empty);
+}
+
+UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    _upb_MiniTable_GetFieldByIndex)(const struct upb_MiniTable* m, uint32_t i) {
+  return &m->UPB_ONLYBITS(fields)[i];
+}
+
+UPB_INLINE const union upb_MiniTableSub* UPB_PRIVATE(
+    _upb_MiniTable_GetSubByIndex)(const struct upb_MiniTable* m, uint32_t i) {
+  return &m->UPB_PRIVATE(subs)[i];
+}
+
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
+    _upb_MiniTable_GetSubMessageTable)(const struct upb_MiniTable* m,
+                                       const struct upb_MiniTableField* f) {
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_CType)(f) == kUpb_CType_Message);
+  const struct upb_MiniTable* ret = UPB_PRIVATE(_upb_MiniTableSub_Message)(
+      m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
+  UPB_ASSUME(ret);
+  return UPB_PRIVATE(_upb_MiniTable_IsEmpty)(ret) ? NULL : ret;
+}
+
+UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(
+    _upb_MiniTable_GetSubEnumTable)(const struct upb_MiniTable* m,
+                                    const struct upb_MiniTableField* f) {
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_CType)(f) == kUpb_CType_Enum);
+  return UPB_PRIVATE(_upb_MiniTableSub_Enum)(
+      m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_MessageFieldIsLinked)(
+    const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(m, f) != NULL;
+}
+
+// Computes a bitmask in which the |m->required_count| lowest bits are set,
 // except that we skip the lowest bit (because upb never uses hasbit 0).
 //
 // Sample output:
-//    requiredmask(1) => 0b10 (0x2)
-//    requiredmask(5) => 0b111110 (0x3e)
-UPB_INLINE uint64_t upb_MiniTable_requiredmask(const struct upb_MiniTable* l) {
-  int n = l->required_count;
-  assert(0 < n && n <= 63);
+//    RequiredMask(1) => 0b10 (0x2)
+//    RequiredMask(5) => 0b111110 (0x3e)
+UPB_INLINE uint64_t
+UPB_PRIVATE(_upb_MiniTable_RequiredMask)(const struct upb_MiniTable* m) {
+  int n = m->UPB_PRIVATE(required_count);
+  UPB_ASSERT(0 < n && n <= 63);
   return ((1ULL << n) - 1) << 1;
 }
 

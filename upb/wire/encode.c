@@ -216,7 +216,7 @@ static void encode_TaggedMessagePtr(upb_encstate* e,
                                     upb_TaggedMessagePtr tagged,
                                     const upb_MiniTable* m, size_t* size) {
   if (upb_TaggedMessagePtr_IsEmpty(tagged)) {
-    m = &_kUpb_MiniTable_Empty;
+    m = UPB_PRIVATE(_upb_MiniTable_Empty)();
   }
   encode_message(e, _upb_TaggedMessagePtr_GetMessage(tagged), m, size);
 }
@@ -417,12 +417,12 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
 static void encode_mapentry(upb_encstate* e, uint32_t number,
                             const upb_MiniTable* layout,
                             const upb_MapEntry* ent) {
-  const upb_MiniTableField* key_field = &layout->fields[0];
-  const upb_MiniTableField* val_field = &layout->fields[1];
+  const upb_MiniTableField* key_field = &layout->UPB_PRIVATE(fields)[0];
+  const upb_MiniTableField* val_field = &layout->UPB_PRIVATE(fields)[1];
   size_t pre_len = e->limit - e->ptr;
   size_t size;
-  encode_scalar(e, &ent->data.v, layout->subs, val_field);
-  encode_scalar(e, &ent->data.k, layout->subs, key_field);
+  encode_scalar(e, &ent->data.v, layout->UPB_PRIVATE(subs), val_field);
+  encode_scalar(e, &ent->data.k, layout->UPB_PRIVATE(subs), key_field);
   size = (e->limit - e->ptr) - pre_len;
   encode_varint(e, size);
   encode_tag(e, number, kUpb_WireType_Delimited);
@@ -434,15 +434,15 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
   const upb_Map* map = *UPB_PTR_AT(msg, f->offset, const upb_Map*);
   const upb_MiniTable* layout =
       upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
-  UPB_ASSERT(layout->field_count == 2);
+  UPB_ASSERT(layout->UPB_PRIVATE(field_count) == 2);
 
   if (map == NULL) return;
 
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
-    _upb_mapsorter_pushmap(&e->sorter,
-                           layout->fields[0].UPB_PRIVATE(descriptortype), map,
-                           &sorted);
+    _upb_mapsorter_pushmap(
+        &e->sorter, layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype),
+        map, &sorted);
     upb_MapEntry ent;
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
       encode_mapentry(e, f->number, layout, &ent);
@@ -544,11 +544,12 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
                            const upb_MiniTable* m, size_t* size) {
   size_t pre_len = e->limit - e->ptr;
 
-  if ((e->options & kUpb_EncodeOption_CheckRequired) && m->required_count) {
+  if ((e->options & kUpb_EncodeOption_CheckRequired) &&
+      m->UPB_PRIVATE(required_count)) {
     uint64_t msg_head;
     memcpy(&msg_head, msg, 8);
     msg_head = _upb_BigEndian_Swap64(msg_head);
-    if (upb_MiniTable_requiredmask(m) & ~msg_head) {
+    if (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~msg_head) {
       encode_err(e, kUpb_EncodeStatus_MissingRequired);
     }
   }
@@ -562,7 +563,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
     }
   }
 
-  if (m->ext != kUpb_ExtMode_NonExtendable) {
+  if (m->UPB_PRIVATE(ext) != kUpb_ExtMode_NonExtendable) {
     /* Encode all extensions together. Unlike C++, we do not attempt to keep
      * these in field number order relative to normal fields or even to each
      * other. */
@@ -573,25 +574,26 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
         _upb_sortedmap sorted;
         _upb_mapsorter_pushexts(&e->sorter, ext, ext_count, &sorted);
         while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-          encode_ext(e, ext, m->ext == kUpb_ExtMode_IsMessageSet);
+          encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
         }
         _upb_mapsorter_popmap(&e->sorter, &sorted);
       } else {
         const upb_Message_Extension* end = ext + ext_count;
         for (; ext != end; ext++) {
-          encode_ext(e, ext, m->ext == kUpb_ExtMode_IsMessageSet);
+          encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
         }
       }
     }
   }
 
-  if (m->field_count) {
-    const upb_MiniTableField* f = &m->fields[m->field_count];
-    const upb_MiniTableField* first = &m->fields[0];
+  if (m->UPB_PRIVATE(field_count)) {
+    const upb_MiniTableField* f =
+        &m->UPB_PRIVATE(fields)[m->UPB_PRIVATE(field_count)];
+    const upb_MiniTableField* first = &m->UPB_PRIVATE(fields)[0];
     while (f != first) {
       f--;
-      if (encode_shouldencode(e, msg, m->subs, f)) {
-        encode_field(e, msg, m->subs, f);
+      if (encode_shouldencode(e, msg, m->UPB_PRIVATE(subs), f)) {
+        encode_field(e, msg, m->UPB_PRIVATE(subs), f);
       }
     }
   }

@@ -11,50 +11,54 @@
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
-#include "upb/mini_table/sub.h"
+#include "upb/mini_table/internal/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+
+typedef struct upb_MiniTable upb_MiniTable;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct upb_MiniTable upb_MiniTable;
-
 UPB_API const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
-    const upb_MiniTable* table, uint32_t number);
+    const upb_MiniTable* m, uint32_t number);
 
 UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
-    const upb_MiniTable* t, uint32_t index) {
-  return &t->fields[index];
+    const upb_MiniTable* m, uint32_t index) {
+  return UPB_PRIVATE(_upb_MiniTable_GetFieldByIndex)(m, index);
 }
 
-// Returns the MiniTable for this message field.  If the field is unlinked,
-// returns NULL.
+UPB_API_INLINE int upb_MiniTable_FieldCount(const upb_MiniTable* m) {
+  return UPB_PRIVATE(_upb_MiniTable_FieldCount)(m);
+}
+
+// Returns the MiniTable for a message field, NULL if the field is unlinked.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
-    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  UPB_ASSERT(upb_MiniTableField_CType(field) == kUpb_CType_Message);
-  const upb_MiniTable* ret = upb_MiniTableSub_Message(
-      mini_table->subs[field->UPB_PRIVATE(submsg_index)]);
-  UPB_ASSUME(ret);
-  return ret == &_kUpb_MiniTable_Empty ? NULL : ret;
+    const upb_MiniTable* m, const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(m, f);
 }
 
-// Returns the MiniTableEnum for this enum field.  If the field is unlinked,
-// returns NULL.
+// Returns the MiniTableEnum for a message field, NULL if the field is unlinked.
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
-    const upb_MiniTable* mini_table, const upb_MiniTableField* f) {
-  UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Enum);
-  return upb_MiniTableSub_Enum(mini_table->subs[f->UPB_PRIVATE(submsg_index)]);
+    const upb_MiniTable* m, const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_MiniTable_GetSubEnumTable)(m, f);
 }
 
 // Returns true if this MiniTable field is linked to a MiniTable for the
 // sub-message.
 UPB_API_INLINE bool upb_MiniTable_MessageFieldIsLinked(
-    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  return upb_MiniTable_GetSubMessageTable(mini_table, field) != NULL;
+    const upb_MiniTable* m, const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_MiniTable_MessageFieldIsLinked)(m, f);
 }
+
+// TODO: Implement convenience getters for map entries:
+//
+// upb_MiniTable_GetMapKey()
+// upb_MiniTable_GetMapValue()
+// These could also assert that this is indeed a map entry (well, as best we
+// can. We can assert that there are two fields with field numbers 1 and 2).
 
 // If this field is in a oneof, returns the first field in the oneof.
 //

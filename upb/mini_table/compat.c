@@ -29,11 +29,11 @@ static upb_MiniTableEquals_Status upb_deep_check(const upb_MiniTable* src,
                                                  const upb_MiniTable* dst,
                                                  upb_inttable* table,
                                                  upb_Arena** arena) {
-  if (src->field_count != dst->field_count)
+  if (src->UPB_PRIVATE(field_count) != dst->UPB_PRIVATE(field_count))
     return kUpb_MiniTableEquals_NotEqual;
   bool marked_src = false;
-  for (int i = 0; i < src->field_count; i++) {
-    const upb_MiniTableField* src_field = &src->fields[i];
+  for (int i = 0; i < upb_MiniTable_FieldCount(src); i++) {
+    const upb_MiniTableField* src_field = upb_MiniTable_GetFieldByIndex(src, i);
     const upb_MiniTableField* dst_field =
         upb_MiniTable_FindFieldByNumber(dst, src_field->number);
 

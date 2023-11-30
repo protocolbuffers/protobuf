@@ -27,14 +27,14 @@ upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
                                                upb_Message* map_entry_message,
                                                upb_Arena* arena) {
   // TODO: use a variant of upb_MiniTable_GetSubMessageTable() here.
-  const upb_MiniTable* map_entry_mini_table =
-      upb_MiniTableSub_Message(mini_table->subs[f->UPB_PRIVATE(submsg_index)]);
+  const upb_MiniTable* map_entry_mini_table = upb_MiniTableSub_Message(
+      mini_table->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSERT(map_entry_mini_table);
-  UPB_ASSERT(map_entry_mini_table->field_count == 2);
+  UPB_ASSERT(map_entry_mini_table->UPB_PRIVATE(field_count) == 2);
   const upb_MiniTableField* map_entry_key_field =
-      &map_entry_mini_table->fields[0];
+      &map_entry_mini_table->UPB_PRIVATE(fields)[0];
   const upb_MiniTableField* map_entry_value_field =
-      &map_entry_mini_table->fields[1];
+      &map_entry_mini_table->UPB_PRIVATE(fields)[1];
   // Map key/value cannot have explicit defaults,
   // hence assuming a zero default is valid.
   upb_MessageValue default_val;

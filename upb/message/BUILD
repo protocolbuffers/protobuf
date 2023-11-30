@@ -344,7 +344,6 @@ cc_test(
         "//upb:mini_descriptor",
         "//upb:mini_descriptor_internal",
         "//upb:mini_table",
-        "//upb:port",
         "//upb:wire",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",

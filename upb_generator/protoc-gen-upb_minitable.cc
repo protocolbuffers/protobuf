@@ -410,8 +410,8 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   const upb_MiniTable* mt_64 = pools.GetMiniTable64(message);
   std::map<int, std::string> subs;
 
-  for (int i = 0; i < mt_64->field_count; i++) {
-    const upb_MiniTableField* f = &mt_64->fields[i];
+  for (int i = 0; i < mt_64->UPB_PRIVATE(field_count); i++) {
+    const upb_MiniTableField* f = &mt_64->UPB_PRIVATE(fields)[i];
     uint32_t index = f->UPB_PRIVATE(submsg_index);
     if (index != kUpb_NoSub) {
       auto pair =
@@ -435,14 +435,16 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("};\n\n");
   }
 
-  if (mt_64->field_count > 0) {
+  if (mt_64->UPB_PRIVATE(field_count) > 0) {
     std::string fields_array_name = msg_name + "__fields";
     fields_array_ref = "&" + fields_array_name + "[0]";
     output("static const upb_MiniTableField $0[$1] = {\n", fields_array_name,
-           mt_64->field_count);
-    for (int i = 0; i < mt_64->field_count; i++) {
-      WriteMessageField(message.FindFieldByNumber(mt_64->fields[i].number),
-                        &mt_64->fields[i], &mt_32->fields[i], output);
+           mt_64->UPB_PRIVATE(field_count));
+    for (int i = 0; i < mt_64->UPB_PRIVATE(field_count); i++) {
+      WriteMessageField(
+          message.FindFieldByNumber(mt_64->UPB_PRIVATE(fields)[i].number),
+          &mt_64->UPB_PRIVATE(fields)[i], &mt_32->UPB_PRIVATE(fields)[i],
+          output);
     }
     output("};\n\n");
   }
@@ -471,8 +473,10 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   output("  $0,\n", submsgs_array_ref);
   output("  $0,\n", fields_array_ref);
   output("  $0, $1, $2, $3, UPB_FASTTABLE_MASK($4), $5,\n",
-         ArchDependentSize(mt_32->size, mt_64->size), mt_64->field_count,
-         msgext, mt_64->dense_below, table_mask, mt_64->required_count);
+         ArchDependentSize(mt_32->size, mt_64->size),
+         mt_64->UPB_PRIVATE(field_count), msgext,
+         mt_64->UPB_PRIVATE(dense_below), table_mask,
+         mt_64->UPB_PRIVATE(required_count));
   if (!table.empty()) {
     output("  UPB_FASTTABLE_INIT({\n");
     for (const auto& ent : table) {

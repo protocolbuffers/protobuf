@@ -347,7 +347,7 @@ UPB_API_INLINE void _upb_Message_SetTaggedMessagePtr(
              UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
   UPB_ASSUME(upb_MiniTableField_IsScalar(field));
   UPB_ASSERT(upb_MiniTableSub_Message(
-      mini_table->subs[field->UPB_PRIVATE(submsg_index)]));
+      mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]));
   _upb_Message_SetNonExtensionField(msg, field, &sub_message);
 }
 
@@ -367,7 +367,7 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
   upb_Message* sub_message = *UPB_PTR_AT(msg, field->offset, upb_Message*);
   if (!sub_message) {
     const upb_MiniTable* sub_mini_table = upb_MiniTableSub_Message(
-        mini_table->subs[field->UPB_PRIVATE(submsg_index)]);
+        mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]);
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
     *UPB_PTR_AT(msg, field->offset, upb_Message*) = sub_message;
@@ -437,9 +437,9 @@ UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
     const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   const upb_MiniTableField* map_entry_key_field =
-      &map_entry_mini_table->fields[0];
+      &map_entry_mini_table->UPB_PRIVATE(fields)[0];
   const upb_MiniTableField* map_entry_value_field =
-      &map_entry_mini_table->fields[1];
+      &map_entry_mini_table->UPB_PRIVATE(fields)[1];
   return _upb_Message_GetOrCreateMutableMap(
       msg, field,
       _upb_Map_CTypeSize(upb_MiniTableField_CType(map_entry_key_field)),

@@ -80,12 +80,12 @@ non_ascii:
 
 const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
-                                       const upb_MiniTable* l);
+                                       const upb_MiniTable* m);
 
 /* x86-64 pointers always have the high 16 bits matching. So we can shift
  * left 8 and right 8 without loss of information. */
 UPB_INLINE intptr_t decode_totable(const upb_MiniTable* tablep) {
-  return ((intptr_t)tablep << 8) | tablep->table_mask;
+  return ((intptr_t)tablep << 8) | tablep->UPB_PRIVATE(table_mask);
 }
 
 UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
@@ -126,9 +126,9 @@ const char* _upb_FastDecoder_TagDispatch(upb_Decoder* d, const char* ptr,
   size_t idx = tag & mask;
   UPB_ASSUME((idx & 7) == 0);
   idx >>= 3;
-  data = table_p->fasttable[idx].field_data ^ tag;
-  UPB_MUSTTAIL return table_p->fasttable[idx].field_parser(d, ptr, msg, table,
-                                                           hasbits, data);
+  data = table_p->UPB_PRIVATE(fasttable)[idx].field_data ^ tag;
+  UPB_MUSTTAIL return table_p->UPB_PRIVATE(fasttable)[idx].field_parser(
+      d, ptr, msg, table, hasbits, data);
 }
 #endif
 
