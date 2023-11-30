@@ -651,6 +651,7 @@ set(test_util_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unredacted_debug_format_for_test.cc
 )
 
 # @//pkg:test_util
@@ -666,6 +667,7 @@ set(test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unredacted_debug_format_for_test.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_unittest.inc
 )
 
@@ -708,6 +710,8 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_block_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unredacted_debug_format_for_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unredacted_debug_format_for_test_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/varint_shuffle_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/well_known_types_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_unittest.cc
