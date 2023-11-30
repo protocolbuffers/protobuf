@@ -488,6 +488,36 @@ UPB_INLINE bool google_protobuf_compiler_CodeGeneratorResponse_has_supported_fea
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 2);
   return _upb_Message_HasNonExtensionField(msg, &field);
 }
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_clear_minimum_edition(google_protobuf_compiler_CodeGeneratorResponse* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 3);
+  _upb_Message_ClearNonExtensionField(msg, &field);
+}
+UPB_INLINE int32_t google_protobuf_compiler_CodeGeneratorResponse_minimum_edition(const google_protobuf_compiler_CodeGeneratorResponse* msg) {
+  int32_t default_val = (int32_t)0;
+  int32_t ret;
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 3);
+  _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
+  return ret;
+}
+UPB_INLINE bool google_protobuf_compiler_CodeGeneratorResponse_has_minimum_edition(const google_protobuf_compiler_CodeGeneratorResponse* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 3);
+  return _upb_Message_HasNonExtensionField(msg, &field);
+}
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_clear_maximum_edition(google_protobuf_compiler_CodeGeneratorResponse* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 4);
+  _upb_Message_ClearNonExtensionField(msg, &field);
+}
+UPB_INLINE int32_t google_protobuf_compiler_CodeGeneratorResponse_maximum_edition(const google_protobuf_compiler_CodeGeneratorResponse* msg) {
+  int32_t default_val = (int32_t)0;
+  int32_t ret;
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 4);
+  _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
+  return ret;
+}
+UPB_INLINE bool google_protobuf_compiler_CodeGeneratorResponse_has_maximum_edition(const google_protobuf_compiler_CodeGeneratorResponse* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 4);
+  return _upb_Message_HasNonExtensionField(msg, &field);
+}
 UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_clear_file(google_protobuf_compiler_CodeGeneratorResponse* msg) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 15);
   _upb_Message_ClearNonExtensionField(msg, &field);
@@ -532,6 +562,14 @@ UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_error(google_
 }
 UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_supported_features(google_protobuf_compiler_CodeGeneratorResponse *msg, uint64_t value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 2);
+  _upb_Message_SetNonExtensionField(msg, &field, &value);
+}
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_minimum_edition(google_protobuf_compiler_CodeGeneratorResponse *msg, int32_t value) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 3);
+  _upb_Message_SetNonExtensionField(msg, &field, &value);
+}
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_maximum_edition(google_protobuf_compiler_CodeGeneratorResponse *msg, int32_t value) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 4);
   _upb_Message_SetNonExtensionField(msg, &field, &value);
 }
 UPB_INLINE google_protobuf_compiler_CodeGeneratorResponse_File** google_protobuf_compiler_CodeGeneratorResponse_mutable_file(google_protobuf_compiler_CodeGeneratorResponse* msg, size_t* size) {

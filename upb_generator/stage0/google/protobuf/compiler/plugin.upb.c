@@ -34,7 +34,7 @@ const upb_MiniTable* google__protobuf__compiler__CodeGeneratorRequest_msg_init()
 
 const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$1,lG";
+  static const char* mini_descriptor = "$1,((jG";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
