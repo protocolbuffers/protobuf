@@ -20,8 +20,11 @@ message TestMessageProto3 {
   string string_field = 1;
   map<string, string> string_map_field = 4;
   repeated int32 int_field = 7;
-  repeated int32 int_field_packed = 8;
+  repeated int32 int_field_packed = 8 [
+    packed = true
+  ];
+
   repeated int32 int_field_unpacked = 9 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 }

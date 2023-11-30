@@ -121,76 +121,117 @@ message TestAllTypesProto3 {
   ];
 
   // Packed
-  repeated int32 packed_int32 = 75;
-  repeated int64 packed_int64 = 76;
-  repeated uint32 packed_uint32 = 77;
-  repeated uint64 packed_uint64 = 78;
-  repeated sint32 packed_sint32 = 79;
-  repeated sint64 packed_sint64 = 80;
-  repeated fixed32 packed_fixed32 = 81;
-  repeated fixed64 packed_fixed64 = 82;
-  repeated sfixed32 packed_sfixed32 = 83;
-  repeated sfixed64 packed_sfixed64 = 84;
-  repeated float packed_float = 85;
-  repeated double packed_double = 86;
-  repeated bool packed_bool = 87;
-  repeated NestedEnum packed_nested_enum = 88;
+  repeated int32 packed_int32 = 75 [
+    packed = true
+  ];
+
+  repeated int64 packed_int64 = 76 [
+    packed = true
+  ];
+
+  repeated uint32 packed_uint32 = 77 [
+    packed = true
+  ];
+
+  repeated uint64 packed_uint64 = 78 [
+    packed = true
+  ];
+
+  repeated sint32 packed_sint32 = 79 [
+    packed = true
+  ];
+
+  repeated sint64 packed_sint64 = 80 [
+    packed = true
+  ];
+
+  repeated fixed32 packed_fixed32 = 81 [
+    packed = true
+  ];
+
+  repeated fixed64 packed_fixed64 = 82 [
+    packed = true
+  ];
+
+  repeated sfixed32 packed_sfixed32 = 83 [
+    packed = true
+  ];
+
+  repeated sfixed64 packed_sfixed64 = 84 [
+    packed = true
+  ];
+
+  repeated float packed_float = 85 [
+    packed = true
+  ];
+
+  repeated double packed_double = 86 [
+    packed = true
+  ];
+
+  repeated bool packed_bool = 87 [
+    packed = true
+  ];
+
+  repeated NestedEnum packed_nested_enum = 88 [
+    packed = true
+  ];
 
   // Unpacked
   repeated int32 unpacked_int32 = 89 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated int64 unpacked_int64 = 90 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated uint32 unpacked_uint32 = 91 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated uint64 unpacked_uint64 = 92 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated sint32 unpacked_sint32 = 93 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated sint64 unpacked_sint64 = 94 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated fixed32 unpacked_fixed32 = 95 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated fixed64 unpacked_fixed64 = 96 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated sfixed32 unpacked_sfixed32 = 97 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated sfixed64 unpacked_sfixed64 = 98 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated float unpacked_float = 99 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated double unpacked_double = 100 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated bool unpacked_bool = 101 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   repeated NestedEnum unpacked_nested_enum = 102 [
-    features.repeated_field_encoding = EXPANDED
+    packed = false
   ];
 
   // Map
