@@ -183,7 +183,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename Handler>
   Value<Handler>* Add() {
-    return cast<Handler>(AddOutOfLineHelper(Handler::GetNewFunc()));
+    if (std::is_same<Value<Handler>, std::string>{}) {
+      return cast<Handler>(AddString());
+    }
+    return cast<Handler>(AddMessageLite(Handler::GetNewFunc()));
   }
 
   template <
@@ -245,15 +248,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Pre-condition: prototype must not be nullptr.
   MessageLite* AddMessage(const MessageLite* prototype);
 
-  template <typename TypeHandler>
-  void Clear() {
-    const int n = current_size_;
-    ABSL_DCHECK_GE(n, 0);
-    if (n > 0) {
-      using H = CommonHandler<TypeHandler>;
-      ClearNonEmpty<H>();
-    }
-  }
+  void Clear() { ExchangeCurrentSize(0); }
 
   // Appends all message values from `from` to this instance.
   template <typename T>
@@ -294,20 +289,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
  protected:
-  template <typename TypeHandler>
   void RemoveLast() {
     ABSL_DCHECK_GT(current_size_, 0);
     ExchangeCurrentSize(current_size_ - 1);
-    using H = CommonHandler<TypeHandler>;
-    H::Clear(cast<H>(element_at(current_size_)));
   }
 
   template <typename TypeHandler>
   void CopyFrom(const RepeatedPtrFieldBase& other) {
     if (&other == this) return;
-    RepeatedPtrFieldBase::Clear<TypeHandler>();
+    RepeatedPtrFieldBase::Clear();
     if (other.empty()) return;
-    RepeatedPtrFieldBase::MergeFrom<typename TypeHandler::Type>(other);
+    RepeatedPtrFieldBase::MergeFrom<Value<TypeHandler>>(other);
   }
 
   void CloseGap(int start, int num);
@@ -380,8 +372,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   Value<TypeHandler>* AddFromCleared() {
     if (current_size_ < allocated_size()) {
-      return cast<TypeHandler>(
-          element_at(ExchangeCurrentSize(current_size_ + 1)));
+      auto* value =
+          cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
+      CommonHandler<TypeHandler>::Clear(value);
+      return value;
     } else {
       return nullptr;
     }
@@ -496,13 +490,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
         << "an arena.";
     ABSL_DCHECK(tagged_rep_or_elem_ != nullptr);
     ABSL_DCHECK_GT(allocated_size(), current_size_);
+    void* result;
     if (using_sso()) {
-      auto* result = cast<TypeHandler>(tagged_rep_or_elem_);
-      tagged_rep_or_elem_ = nullptr;
-      return result;
+      result = std::exchange(tagged_rep_or_elem_, nullptr);
     } else {
-      return cast<TypeHandler>(element_at(--rep()->allocated_size));
+      result = element_at(--rep()->allocated_size);
     }
+    TypeHandler::Clear(cast<TypeHandler>(result));
+    return cast<TypeHandler>(result);
   }
 
   // Slowpath handles all cases, copying if necessary.
@@ -540,7 +535,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // than three times.
     RepeatedPtrFieldBase temp(other->GetArena());
     if (!this->empty()) {
-      temp.MergeFrom<typename TypeHandler::Type>(*this);
+      temp.MergeFrom<Value<TypeHandler>>(*this);
     }
     this->CopyFrom<TypeHandler>(*other);
     other->InternalSwap(&temp);
@@ -684,21 +679,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     TypeHandler::Delete(cast<TypeHandler>(obj), arena);
   }
 
-  // Out-of-line helper routine for Clear() once the inlined check has
-  // determined the container is non-empty
-  template <typename TypeHandler>
-  PROTOBUF_NOINLINE void ClearNonEmpty() {
-    const int n = current_size_;
-    void* const* elems = elements();
-    int i = 0;
-    ABSL_DCHECK_GT(n, 0);
-    // do/while loop to avoid initial test because we know n > 0
-    do {
-      TypeHandler::Clear(cast<TypeHandler>(elems[i++]));
-    } while (i < n);
-    ExchangeCurrentSize(0);
-  }
-
   // Merges messages from `from` into available, cleared messages sitting in the
   // range `[size(), allocated_size())`. Returns the number of message merged
   // which is `ClearedCount(), from.size())`.
@@ -738,8 +718,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return InternalExtend(n - Capacity());
   }
 
-  // Internal helper for Add that keeps definition out-of-line.
-  void* AddOutOfLineHelper(ElementFactory factory);
+  // Internal helpers for Add that keep definition out-of-line.
+  void* AddMessageLite(ElementFactory factory);
+  void* AddString();
 
   // Common implementation used by various Add* methods. `factory` is an object
   // used to construct a new element unless there are spare cleared elements
@@ -747,10 +728,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   //
   // Note: avoid inlining this function in methods such as `Add()` as this would
   // drastically increase binary size due to template instantiation and implicit
-  // inlining. Instead, use wrapper functions with out-of-line definition
-  // similar to `AddOutOfLineHelper`.
-  template <typename F>
-  auto* AddInternal(F factory);
+  // inlining.
+  template <typename Recycler, typename Factory>
+  void* AddInternal(Factory factory);
 
   // A few notes on internal representation:
   //
@@ -1162,9 +1142,9 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   void UnsafeArenaExtractSubrange(int start, int num, Element** elements);
 
   // When elements are removed by calls to RemoveLast() or Clear(), they
-  // are not actually freed.  Instead, they are cleared and kept so that
-  // they can be reused later.  This can save lots of CPU time when
-  // repeatedly reusing a protocol message for similar purposes.
+  // are not actually freed.  Instead, they are kept so that they can be reused
+  // later.  This can save lots of CPU time when repeatedly reusing a protocol
+  // message for similar purposes.
   //
   // Hardcore programs may choose to manipulate these cleared objects
   // to better optimize memory management using the following routines.
@@ -1400,7 +1380,7 @@ inline void RepeatedPtrField<Element>::Add(Iter begin, Iter end) {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::RemoveLast() {
-  RepeatedPtrFieldBase::RemoveLast<TypeHandler>();
+  RepeatedPtrFieldBase::RemoveLast();
 }
 
 template <typename Element>
@@ -1475,7 +1455,7 @@ inline void RepeatedPtrField<Element>::UnsafeArenaExtractSubrange(
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Clear() {
-  RepeatedPtrFieldBase::Clear<TypeHandler>();
+  RepeatedPtrFieldBase::Clear();
 }
 
 template <typename Element>

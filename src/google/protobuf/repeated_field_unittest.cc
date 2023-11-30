@@ -1658,7 +1658,6 @@ TEST(RepeatedPtrField, ClearedElements) {
   EXPECT_EQ(field.ClearedCount(), 0);
 
   field.RemoveLast();
-  EXPECT_TRUE(original->empty());
   EXPECT_EQ(field.ClearedCount(), 1);
 
   EXPECT_EQ(field.Add(),
