@@ -199,7 +199,7 @@ mod tests {
 
     #[test]
     fn test_dbg() {
-        let mut map_view = MapView::from_inner(Private, new_map_inner());
+        let map_view = MapView::from_inner(Private, new_map_inner());
         assert_that!(format!("{:?}", map_view), eq("MapView(\"i32\", \"i64\")"));
     }
 }
