@@ -228,15 +228,15 @@ namespace Google.Protobuf.Reflection {
             "ZWdpbhgDIAEoBRILCgNlbmQYBCABKAUSSAoIc2VtYW50aWMYBSABKA4yNi5n",
             "b29nbGUucHJvdG9idWYuR2VuZXJhdGVkQ29kZUluZm8uQW5ub3RhdGlvbi5T",
             "ZW1hbnRpYyIoCghTZW1hbnRpYxIICgROT05FEAASBwoDU0VUEAESCQoFQUxJ",
-            "QVMQAirqAQoHRWRpdGlvbhITCg9FRElUSU9OX1VOS05PV04QABITCg5FRElU",
+            "QVMQAir/AQoHRWRpdGlvbhITCg9FRElUSU9OX1VOS05PV04QABITCg5FRElU",
             "SU9OX1BST1RPMhDmBxITCg5FRElUSU9OX1BST1RPMxDnBxIRCgxFRElUSU9O",
             "XzIwMjMQ6AcSFwoTRURJVElPTl8xX1RFU1RfT05MWRABEhcKE0VESVRJT05f",
             "Ml9URVNUX09OTFkQAhIdChdFRElUSU9OXzk5OTk3X1RFU1RfT05MWRCdjQYS",
             "HQoXRURJVElPTl85OTk5OF9URVNUX09OTFkQno0GEh0KF0VESVRJT05fOTk5",
-            "OTlfVEVTVF9PTkxZEJ+NBkJ+ChNjb20uZ29vZ2xlLnByb3RvYnVmQhBEZXNj",
-            "cmlwdG9yUHJvdG9zSAFaLWdvb2dsZS5nb2xhbmcub3JnL3Byb3RvYnVmL3R5",
-            "cGVzL2Rlc2NyaXB0b3JwYvgBAaICA0dQQqoCGkdvb2dsZS5Qcm90b2J1Zi5S",
-            "ZWZsZWN0aW9u"));
+            "OTlfVEVTVF9PTkxZEJ+NBhITCgtFRElUSU9OX01BWBD/////B0J+ChNjb20u",
+            "Z29vZ2xlLnByb3RvYnVmQhBEZXNjcmlwdG9yUHJvdG9zSAFaLWdvb2dsZS5n",
+            "b2xhbmcub3JnL3Byb3RvYnVmL3R5cGVzL2Rlc2NyaXB0b3JwYvgBAaICA0dQ",
+            "QqoCGkdvb2dsZS5Qcm90b2J1Zi5SZWZsZWN0aW9u"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Reflection.Edition), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -301,6 +301,12 @@ namespace Google.Protobuf.Reflection {
     [pbr::OriginalName("EDITION_99997_TEST_ONLY")] _99997TestOnly = 99997,
     [pbr::OriginalName("EDITION_99998_TEST_ONLY")] _99998TestOnly = 99998,
     [pbr::OriginalName("EDITION_99999_TEST_ONLY")] _99999TestOnly = 99999,
+    /// <summary>
+    /// Placeholder for specifying unbounded edition support.  This should only
+    /// ever be used by plugins that can expect to never require any changes to
+    /// support a new edition.
+    /// </summary>
+    [pbr::OriginalName("EDITION_MAX")] Max = 2147483647,
   }
 
   #endregion
