@@ -52,6 +52,7 @@
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/lazy_repeated_field.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/map_type_handler.h"
@@ -550,12 +551,12 @@ DynamicMessage::~DynamicMessage() {
         }
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-          if (!is_prototype()) {
-        Message* message = *reinterpret_cast<Message**>(field_ptr);
-        if (message != nullptr) {
-          delete message;
+        if (!is_prototype()) {
+          Message* message = *reinterpret_cast<Message**>(field_ptr);
+          if (message != nullptr) {
+            delete message;
+          }
         }
-      }
     }
   }
 }

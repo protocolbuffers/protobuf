@@ -56,11 +56,12 @@ struct Options {
   bool annotate_accessor = false;
   bool force_split = false;
   bool profile_driven_cluster_aux_subtable = false;
+  bool allow_lazy_repeated = true;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = true;
   bool force_inline_string = true;
 #else   // PROTOBUF_STABLE_EXPERIMENTS
-  bool force_eagerly_verified_lazy = false;
+  bool force_eagerly_verified_lazy = true;
   bool force_inline_string = false;
 #endif  // !PROTOBUF_STABLE_EXPERIMENTS
   bool strip_nonfunctional_codegen = false;

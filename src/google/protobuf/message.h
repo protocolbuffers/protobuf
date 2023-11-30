@@ -104,6 +104,7 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/lazy_repeated_field.h"
 #include "google/protobuf/map.h"  // TODO: cleanup
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"

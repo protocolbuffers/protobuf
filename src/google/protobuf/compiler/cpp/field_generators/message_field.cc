@@ -691,7 +691,8 @@ class RepeatedMessage : public FieldGeneratorBase {
       : FieldGeneratorBase(field, opts, scc),
         field_(field),
         opts_(&opts),
-        has_required_(scc->HasRequiredFields(field->message_type())) {}
+        has_required_(scc->HasRequiredFields(field->message_type())),
+        is_lazy_(IsLazy(field, opts, scc)) {}
 
   ~RepeatedMessage() override = default;
 
@@ -707,15 +708,20 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateConstructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
+  void GenerateArenaDestructorCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
+  ArenaDtorNeeds NeedsArenaDestructor() const override {
+    return is_lazy_ ? ArenaDtorNeeds::kRequired : ArenaDtorNeeds::kNone;
+  }
 
  private:
   const FieldDescriptor* field_;
   const Options* opts_;
   bool has_required_;
+  bool is_lazy_;
 };
 
 void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
@@ -723,6 +729,8 @@ void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
     p->Emit(R"cc(
       $pbi$::RawPtr<$pb$::$Weak$RepeatedPtrField<$Submsg$>> $name$_;
     )cc");
+  } else if (is_lazy_) {
+    p->Emit("::google::protobuf::internal::LazyRepeatedPtrField $name$_;\n");
   } else {
     p->Emit("$pb$::$Weak$RepeatedPtrField< $Submsg$ > $name$_;\n");
   }
@@ -841,18 +849,43 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       }
     )cc");
   } else {
-    p->Emit(R"cc(
-      inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
-      $Msg$::_internal$_weak$_$name_internal$() const {
-        $TsanDetectConcurrentRead$;
-        return $field_$;
-      }
-      inline $pb$::$Weak$RepeatedPtrField<$Submsg$>*
-      $Msg$::_internal_mutable$_weak$_$name_internal$() {
-        $TsanDetectConcurrentRead$;
-        return &$field_$;
-      }
-    )cc");
+    p->Emit(
+        {
+            {"return_const",
+             [&] {
+               if (!is_lazy_) {
+                 p->Emit("return $field_$;");
+               } else {
+                 p->Emit(
+                     R"cc(return $field_$.Get<$Submsg$>(
+                              &reinterpret_cast<const $Submsg$&>($kDefault$),
+                              GetArena());)cc");
+               }
+             }},
+            {"return_mutable",
+             [&] {
+               if (!is_lazy_) {
+                 p->Emit("return &$field_$;");
+               } else {
+                 p->Emit(
+                     R"cc(return $field_$.Mutable<$Submsg$>(
+                              &reinterpret_cast<const $Submsg$&>($kDefault$),
+                              GetArena());)cc");
+               }
+             }},
+        },
+        R"cc(
+          inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
+          $Msg$::_internal$_weak$_$name_internal$() const {
+            $TsanDetectConcurrentRead$;
+            $return_const$;
+          }
+          inline $pb$::$Weak$RepeatedPtrField<$Submsg$>*
+          $Msg$::_internal_mutable$_weak$_$name_internal$() {
+            $TsanDetectConcurrentRead$;
+            $return_mutable$;
+          }
+        )cc");
   }
   if (is_weak()) {
     p->Emit(R"cc(
@@ -879,6 +912,13 @@ void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
 void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
   // TODO: experiment with simplifying this to be
   // `if (!from.empty()) { body(); }` for both split and non-split cases.
+  if (is_lazy_) {
+    p->Emit(R"cc(
+      _this->$field$.MergeFrom(&reinterpret_cast<const $Submsg$&>($kDefault$),
+                               from.$field$, _this->GetArena());
+    )cc");
+    return;
+  }
   auto body = [&] {
     p->Emit(R"cc(
       _this->_internal_mutable$_weak$_$name$()->MergeFrom(
@@ -898,9 +938,16 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
 
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
   ABSL_CHECK(!should_split());
-  p->Emit(R"cc(
-    $field_$.InternalSwap(&other->$field_$);
-  )cc");
+  if (is_lazy_) {
+    p->Emit(R"cc(
+      ::google::protobuf::internal::LazyRepeatedPtrField::InternalSwap(&$field$,
+                                                             &other->$field_$);
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      $field_$.InternalSwap(&other->$field_$);
+    )cc");
+  }
 }
 
 void RepeatedMessage::GenerateConstructorCode(io::Printer* p) const {
@@ -910,6 +957,13 @@ void RepeatedMessage::GenerateConstructorCode(io::Printer* p) const {
 void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   // TODO: For split repeated fields we might want to use type
   // erasure to reduce binary size costs.
+  if (is_lazy_) {
+    p->Emit(R"cc(
+      $field$.MergeFrom(&reinterpret_cast<const $Submsg$&>($kDefault$),
+                        from.$field$, GetArena());
+    )cc");
+    return;
+  }
   if (should_split()) {
     p->Emit(R"cc(
       if (!from._internal$_weak$_$name$().empty()) {
@@ -925,10 +979,26 @@ void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
       $field_$.DeleteIfNotDefault();
     )cc");
   }
+  // TODO: is lazy automatically deleted?
+}
+
+void RepeatedMessage::GenerateArenaDestructorCode(io::Printer* p) const {
+  if (!is_lazy_) return;
+  p->Emit(R"cc(
+    _this->$field$.ArenaDtor();
+  )cc");
 }
 
 void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
+  if (is_lazy_) {
+    p->Emit(R"cc(
+      target =
+          $field$.InternalWrite(&reinterpret_cast<const $Submsg$&>($kDefault$),
+                                $number$, target, stream);
+    )cc");
+    return;
+  }
   if (is_weak()) {
     p->Emit({{"serialize_field",
               [&] {
@@ -991,6 +1061,13 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
 }
 
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
+  if (is_lazy_) {
+    // TODO: LazyRepeated::ByteSizeLong should include the tag sizes.
+    p->Emit(R"cc(
+      total_size += $field$.ByteSizeLong($tag_size$);
+    )cc");
+    return;
+  }
   p->Emit(
       R"cc(
         total_size += $tag_size$UL * this->_internal_$name$_size();
@@ -1002,6 +1079,7 @@ void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
 
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!has_required_) return;
+  // TODO: handle this.
 
   if (is_weak()) {
     p->Emit(

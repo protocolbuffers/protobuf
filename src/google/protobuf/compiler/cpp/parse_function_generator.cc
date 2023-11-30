@@ -514,11 +514,18 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
                        QualifiedDefaultInstancePtr(
                            aux_entry.field->message_type(), options_));
                 break;
-              case TailCallTableInfo::kMessageVerifyFunc:
-                format("{$1$::InternalVerify},\n",
-                       QualifiedClassName(aux_entry.field->message_type(),
-                                          options_));
+              case TailCallTableInfo::kMessageVerifyFunc: {
+                const FieldDescriptor* field = aux_entry.field;
+                if (field->is_repeated()) {
+                  format(
+                      "{$1$::InternalVerify},\n",
+                      QualifiedClassName(field->containing_type(), options_));
+                } else {
+                  format("{$1$::InternalVerify},\n",
+                         QualifiedClassName(field->message_type(), options_));
+                }
                 break;
+              }
               case TailCallTableInfo::kEnumRange:
                 format("{$1$, $2$},\n", aux_entry.enum_range.start,
                        aux_entry.enum_range.size);
