@@ -204,8 +204,8 @@ namespace Google.Protobuf.Reflection {
             "TlVNX1RZUEVfVU5LTk9XThAAEggKBE9QRU4QARIKCgZDTE9TRUQQAiJWChVS",
             "ZXBlYXRlZEZpZWxkRW5jb2RpbmcSIwofUkVQRUFURURfRklFTERfRU5DT0RJ",
             "TkdfVU5LTk9XThAAEgoKBlBBQ0tFRBABEgwKCEVYUEFOREVEEAIiQwoOVXRm",
-            "OFZhbGlkYXRpb24SGwoXVVRGOF9WQUxJREFUSU9OX1VOS05PV04QABIICgRO",
-            "T05FEAESCgoGVkVSSUZZEAIiUwoPTWVzc2FnZUVuY29kaW5nEhwKGE1FU1NB",
+            "OFZhbGlkYXRpb24SGwoXVVRGOF9WQUxJREFUSU9OX1VOS05PV04QABIKCgZW",
+            "RVJJRlkQAhIICgROT05FEAMiUwoPTWVzc2FnZUVuY29kaW5nEhwKGE1FU1NB",
             "R0VfRU5DT0RJTkdfVU5LTk9XThAAEhMKD0xFTkdUSF9QUkVGSVhFRBABEg0K",
             "CURFTElNSVRFRBACIkgKCkpzb25Gb3JtYXQSFwoTSlNPTl9GT1JNQVRfVU5L",
             "Tk9XThAAEgkKBUFMTE9XEAESFgoSTEVHQUNZX0JFU1RfRUZGT1JUEAIqBgjo",
@@ -12256,8 +12256,8 @@ namespace Google.Protobuf.Reflection {
 
       public enum Utf8Validation {
         [pbr::OriginalName("UTF8_VALIDATION_UNKNOWN")] Unknown = 0,
-        [pbr::OriginalName("NONE")] None = 1,
         [pbr::OriginalName("VERIFY")] Verify = 2,
+        [pbr::OriginalName("NONE")] None = 3,
       }
 
       public enum MessageEncoding {

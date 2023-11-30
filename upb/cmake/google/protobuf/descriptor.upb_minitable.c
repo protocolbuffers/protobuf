@@ -1238,7 +1238,7 @@ const upb_MiniTableEnum google_protobuf_FeatureSet_Utf8Validation_enum_init = {
     64,
     0,
     {
-        0x7,
+        0xd,
         0x0,
     },
 };

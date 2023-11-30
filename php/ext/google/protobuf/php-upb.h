@@ -4216,8 +4216,8 @@ typedef enum {
 
 typedef enum {
   google_protobuf_FeatureSet_UTF8_VALIDATION_UNKNOWN = 0,
-  google_protobuf_FeatureSet_NONE = 1,
-  google_protobuf_FeatureSet_VERIFY = 2
+  google_protobuf_FeatureSet_VERIFY = 2,
+  google_protobuf_FeatureSet_NONE = 3
 } google_protobuf_FeatureSet_Utf8Validation;
 
 typedef enum {
@@ -13089,7 +13089,7 @@ upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
 // features. This is used for feature resolution under Editions.
 // NOLINTBEGIN
 // clang-format off
-#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\021\022\014\010\001\020\002\030\002 \001(\0010\002\030\346\007\n\021\022\014\010\002\020\001\030\001 \002(\0010\001\030\347\007\n\021\022\014\010\001\020\001\030\001 \002(\0010\001\030\350\007 \346\007(\350\007"
+#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\021\022\014\010\001\020\002\030\002 \003(\0010\002\030\346\007\n\021\022\014\010\002\020\001\030\001 \002(\0010\001\030\347\007\n\021\022\014\010\001\020\001\030\001 \002(\0010\001\030\350\007 \346\007(\350\007"
 // clang-format on
 // NOLINTEND
 
