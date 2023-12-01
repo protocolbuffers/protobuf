@@ -327,10 +327,10 @@ void ReflectionOps::DiscardUnknownFields(Message* message) {
       continue;
     }
     // Discard the unknown fields in maps that contain message values.
-    if (field->is_map() && IsMapValueMessageTyped(field)) {
-      const MapFieldBase* map_field =
-          reflection->MutableMapData(message, field);
-      if (map_field->IsMapValid()) {
+    const MapFieldBase* map_field =
+        field->is_map() ? reflection->MutableMapData(message, field) : nullptr;
+    if (map_field != nullptr && map_field->IsMapValid()) {
+      if (IsMapValueMessageTyped(field)) {
         MapIterator iter(message, field);
         MapIterator end(message, field);
         for (map_field->MapBegin(&iter), map_field->MapEnd(&end); iter != end;
