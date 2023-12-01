@@ -46,18 +46,17 @@ namespace protobuf {
 namespace internal {
 using ::google::protobuf::internal::DownCast;
 
-const char* TcParser::GenericFallback(PROTOBUF_TC_PARAM_DECL) {
+const char* TcParser::GenericFallback(MessageLite *msg, const char *ptr, ParseContext *ctx, const TcParseTableBase *table, TcFieldData data) {
   PROTOBUF_MUSTTAIL return GenericFallbackImpl<Message, UnknownFieldSet>(
-      PROTOBUF_TC_PARAM_PASS);
+      msg, ptr, ctx, table, data);
 }
 
-const char* TcParser::ReflectionFallback(PROTOBUF_TC_PARAM_DECL) {
+const char* TcParser::ReflectionFallback(MessageLite *msg, const char *ptr, ParseContext *ctx, const TcParseTableBase *table, TcFieldData data) {
   bool must_fallback_to_generic = (ptr == nullptr);
   if (PROTOBUF_PREDICT_FALSE(must_fallback_to_generic)) {
-    PROTOBUF_MUSTTAIL return GenericFallback(PROTOBUF_TC_PARAM_PASS);
+    PROTOBUF_MUSTTAIL return GenericFallback(msg, ptr, ctx, table, data);
   }
 
-  SyncHasbits(msg, hasbits, table);
   uint32_t tag = data.tag();
   if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
     ctx->SetLastTag(tag);
@@ -81,14 +80,6 @@ const char* TcParser::ReflectionFallback(PROTOBUF_TC_PARAM_DECL) {
 
   return WireFormat::_InternalParseAndMergeField(full_msg, ptr, ctx, tag,
                                                  reflection, field);
-}
-
-const char* TcParser::ReflectionParseLoop(PROTOBUF_TC_PARAM_DECL) {
-  (void)data;
-  (void)table;
-  (void)hasbits;
-  // Call into the wire format reflective parse loop.
-  return WireFormat::_InternalParse(DownCast<Message*>(msg), ptr, ctx);
 }
 
 }  // namespace internal

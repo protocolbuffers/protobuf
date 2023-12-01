@@ -238,7 +238,7 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 0,
+      2, 2, 0,
       38, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -498,7 +498,7 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 7, 1,
+      7, 7, 1,
       68, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -778,7 +778,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 7, 4,
+      7, 7, 4,
       39, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;

@@ -25,10 +25,17 @@ class Syntax
      * Generated from protobuf enum <code>SYNTAX_PROTO3 = 1;</code>
      */
     const SYNTAX_PROTO3 = 1;
+    /**
+     * Syntax `editions`.
+     *
+     * Generated from protobuf enum <code>SYNTAX_EDITIONS = 2;</code>
+     */
+    const SYNTAX_EDITIONS = 2;
 
     private static $valueToName = [
         self::SYNTAX_PROTO2 => 'SYNTAX_PROTO2',
         self::SYNTAX_PROTO3 => 'SYNTAX_PROTO3',
+        self::SYNTAX_EDITIONS => 'SYNTAX_EDITIONS',
     ];
 
     public static function name($value)

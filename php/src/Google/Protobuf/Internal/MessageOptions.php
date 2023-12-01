@@ -90,6 +90,12 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      */
     protected $deprecated_legacy_json_field_conflicts = null;
     /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 12;</code>
+     */
+    protected $features = null;
+    /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
@@ -155,6 +161,8 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *           to the change in behavior for JSON field name conflicts.
      *           TODO This is legacy behavior we plan to remove once downstream
      *           teams have had time to migrate.
+     *     @type \Google\Protobuf\Internal\FeatureSet $features
+     *           Any features defined in the specific edition.
      *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here. See above.
      * }
@@ -432,6 +440,42 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
         @trigger_error('deprecated_legacy_json_field_conflicts is deprecated.', E_USER_DEPRECATED);
         GPBUtil::checkBool($var);
         $this->deprecated_legacy_json_field_conflicts = $var;
+
+        return $this;
+    }
+
+    /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 12;</code>
+     * @return \Google\Protobuf\Internal\FeatureSet|null
+     */
+    public function getFeatures()
+    {
+        return $this->features;
+    }
+
+    public function hasFeatures()
+    {
+        return isset($this->features);
+    }
+
+    public function clearFeatures()
+    {
+        unset($this->features);
+    }
+
+    /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 12;</code>
+     * @param \Google\Protobuf\Internal\FeatureSet $var
+     * @return $this
+     */
+    public function setFeatures($var)
+    {
+        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
+        $this->features = $var;
 
         return $this;
     }

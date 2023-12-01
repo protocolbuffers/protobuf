@@ -88,9 +88,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     protected $syntax = null;
     /**
-     * The edition of the proto file, which is an opaque string.
+     * The edition of the proto file.
      *
-     * Generated from protobuf field <code>optional string edition = 13;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.Edition edition = 14;</code>
      */
     protected $edition = null;
 
@@ -126,8 +126,8 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *           The syntax of the proto file.
      *           The supported values are "proto2", "proto3", and "editions".
      *           If `edition` is present, this value must be "editions".
-     *     @type string $edition
-     *           The edition of the proto file, which is an opaque string.
+     *     @type int $edition
+     *           The edition of the proto file.
      * }
      */
     public function __construct($data = NULL) {
@@ -494,14 +494,14 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * The edition of the proto file, which is an opaque string.
+     * The edition of the proto file.
      *
-     * Generated from protobuf field <code>optional string edition = 13;</code>
-     * @return string
+     * Generated from protobuf field <code>optional .google.protobuf.Edition edition = 14;</code>
+     * @return int
      */
     public function getEdition()
     {
-        return isset($this->edition) ? $this->edition : '';
+        return isset($this->edition) ? $this->edition : 0;
     }
 
     public function hasEdition()
@@ -515,15 +515,15 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * The edition of the proto file, which is an opaque string.
+     * The edition of the proto file.
      *
-     * Generated from protobuf field <code>optional string edition = 13;</code>
-     * @param string $var
+     * Generated from protobuf field <code>optional .google.protobuf.Edition edition = 14;</code>
+     * @param int $var
      * @return $this
      */
     public function setEdition($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\Edition::class);
         $this->edition = $var;
 
         return $this;

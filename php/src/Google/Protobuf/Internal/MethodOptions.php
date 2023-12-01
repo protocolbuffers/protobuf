@@ -29,6 +29,12 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      */
     protected $idempotency_level = null;
     /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 35;</code>
+     */
+    protected $features = null;
+    /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
@@ -47,6 +53,8 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      *           for the method, or it will be completely ignored; in the very least,
      *           this is a formalization for deprecating methods.
      *     @type int $idempotency_level
+     *     @type \Google\Protobuf\Internal\FeatureSet $features
+     *           Any features defined in the specific edition.
      *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here. See above.
      * }
@@ -126,6 +134,42 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\MethodOptions\IdempotencyLevel::class);
         $this->idempotency_level = $var;
+
+        return $this;
+    }
+
+    /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 35;</code>
+     * @return \Google\Protobuf\Internal\FeatureSet|null
+     */
+    public function getFeatures()
+    {
+        return $this->features;
+    }
+
+    public function hasFeatures()
+    {
+        return isset($this->features);
+    }
+
+    public function clearFeatures()
+    {
+        unset($this->features);
+    }
+
+    /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 35;</code>
+     * @param \Google\Protobuf\Internal\FeatureSet $var
+     * @return $this
+     */
+    public function setFeatures($var)
+    {
+        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
+        $this->features = $var;
 
         return $this;
     }

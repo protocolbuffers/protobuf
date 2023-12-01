@@ -409,11 +409,11 @@ const char* Version::_InternalParse(
 
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
+const ::_pbi::TcParseTable<4, 4, 0, 47, 2> Version::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(Version, _impl_._has_bits_),
-    0, // no _extensions_
-    4, 24,  // max_field_number, fast_idx_mask
+    0 | 1, // no _extensions_
+    4, 4,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967280,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -426,18 +426,14 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
     ::_pbi::TcParser::GetTable<::google::protobuf::compiler::Version>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // optional string suffix = 4;
-    {::_pbi::TcParser::FastSS1,
-     {34, 0, 0, PROTOBUF_FIELD_OFFSET(Version, _impl_.suffix_)}},
     // optional int32 major = 1;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Version, _impl_.major_), 1>(),
-     {8, 1, 0, PROTOBUF_FIELD_OFFSET(Version, _impl_.major_)}},
+    {40 | ((1 + _Internal::kHasBitsOffset) << 9), PROTOBUF_FIELD_OFFSET(Version, _impl_.major_)},
     // optional int32 minor = 2;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Version, _impl_.minor_), 2>(),
-     {16, 2, 0, PROTOBUF_FIELD_OFFSET(Version, _impl_.minor_)}},
+    {40 | ((2 + _Internal::kHasBitsOffset) << 9), PROTOBUF_FIELD_OFFSET(Version, _impl_.minor_)},
     // optional int32 patch = 3;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Version, _impl_.patch_), 3>(),
-     {24, 3, 0, PROTOBUF_FIELD_OFFSET(Version, _impl_.patch_)}},
+    {40 | ((3 + _Internal::kHasBitsOffset) << 9), PROTOBUF_FIELD_OFFSET(Version, _impl_.patch_)},
+    // optional string suffix = 4;
+    {138 | ((0 + _Internal::kHasBitsOffset) << 9), PROTOBUF_FIELD_OFFSET(Version, _impl_.suffix_)},
   }}, {{
     65535, 65535
   }}, {{
@@ -466,6 +462,7 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.Version)
+  #if 0
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -504,6 +501,42 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
   }
+  #else   // 
+  // optional int32 major = 1;
+  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::
+        WriteInt32ToArrayWithField<1>(
+            stream, this->_internal_major(), target);
+  }
+
+  // optional int32 minor = 2;
+  if ((_impl_._has_bits_[0] & 0x00000004u) != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::
+        WriteInt32ToArrayWithField<2>(
+            stream, this->_internal_minor(), target);
+  }
+
+  // optional int32 patch = 3;
+  if ((_impl_._has_bits_[0] & 0x00000008u) != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::
+        WriteInt32ToArrayWithField<3>(
+            stream, this->_internal_patch(), target);
+  }
+
+  // optional string suffix = 4;
+  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
+    const std::string& _s = this->_internal_suffix();
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
+                                "google.protobuf.compiler.Version.suffix");
+    target = stream->WriteStringMaybeAliased(4, _s, target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  #endif  // !NDEBUG
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.compiler.Version)
   return target;
 }
@@ -721,11 +754,11 @@ const char* CodeGeneratorRequest::_InternalParse(
 
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
+const ::_pbi::TcParseTable<17, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_),
-    0, // no _extensions_
-    17, 56,  // max_field_number, fast_idx_mask
+    0 | 0, // no _extensions_
+    17, 17,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294885368,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -738,27 +771,33 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
     ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorRequest>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    {::_pbi::TcParser::MiniParse, {}},
     // repeated string file_to_generate = 1;
-    {::_pbi::TcParser::FastSR1,
-     {10, 63, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_)}},
+    {146, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_)},
     // optional string parameter = 2;
-    {::_pbi::TcParser::FastSS1,
-     {18, 0, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_)}},
+    {138 | ((0 + _Internal::kHasBitsOffset) << 9), PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_)},
     // optional .google.protobuf.compiler.Version compiler_version = 3;
-    {::_pbi::TcParser::FastMtS1,
-     {26, 1, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_)}},
-    {::_pbi::TcParser::MiniParse, {}},
-    {::_pbi::TcParser::MiniParse, {}},
-    {::_pbi::TcParser::MiniParse, {}},
+    {42 | ((1 + _Internal::kHasBitsOffset) << 9), 2},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
     // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-    {::_pbi::TcParser::FastMtR1,
-     {122, 63, 1, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_)}},
+    {50, 3},
+    {0x1F},
+    // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
+    {50, 4},
   }}, {{
     65535, 65535
   }}, {{
     // repeated string file_to_generate = 1;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_), -1, 0,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_), _Internal::kHasBitsOffset + 0, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kRawString | ::_fl::kRepSString)},
     // optional string parameter = 2;
     {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_), _Internal::kHasBitsOffset + 0, 0,
@@ -767,10 +806,10 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
     {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_), -1, 1,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_), _Internal::kHasBitsOffset + 0, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_), -1, 2,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_), _Internal::kHasBitsOffset + 0, 2,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
     {::_pbi::TcParser::GetTable<::google::protobuf::compiler::Version>()},
@@ -788,6 +827,7 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorRequest)
+  #if 0
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -835,6 +875,51 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
   }
+  #else   // 
+  // repeated string file_to_generate = 1;
+  for (int i = 0, n = this->_internal_file_to_generate_size(); i < n; ++i) {
+    const auto& s = this->_internal_file_to_generate().Get(i);
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
+                                "google.protobuf.compiler.CodeGeneratorRequest.file_to_generate");
+    target = stream->WriteString(1, s, target);
+  }
+
+  // optional string parameter = 2;
+  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
+    const std::string& _s = this->_internal_parameter();
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
+                                "google.protobuf.compiler.CodeGeneratorRequest.parameter");
+    target = stream->WriteStringMaybeAliased(2, _s, target);
+  }
+
+  // optional .google.protobuf.compiler.Version compiler_version = 3;
+  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        3, *_impl_.compiler_version_, _impl_.compiler_version_->GetCachedSize(), target, stream);
+  }
+
+  // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
+  for (unsigned i = 0,
+      n = static_cast<unsigned>(this->_internal_proto_file_size()); i < n; i++) {
+    const auto& repfield = this->_internal_proto_file().Get(i);
+    target = ::google::protobuf::internal::WireFormatLite::
+        InternalWriteMessage(15, repfield, repfield.GetCachedSize(), target, stream);
+  }
+
+  // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
+  for (unsigned i = 0,
+      n = static_cast<unsigned>(this->_internal_source_file_descriptors_size()); i < n; i++) {
+    const auto& repfield = this->_internal_source_file_descriptors().Get(i);
+    target = ::google::protobuf::internal::WireFormatLite::
+        InternalWriteMessage(17, repfield, repfield.GetCachedSize(), target, stream);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  #endif  // !NDEBUG
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.compiler.CodeGeneratorRequest)
   return target;
 }
@@ -1066,11 +1151,11 @@ const char* CodeGeneratorResponse_File::_InternalParse(
 
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ = {
+const ::_pbi::TcParseTable<16, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_),
-    0, // no _extensions_
-    16, 24,  // max_field_number, fast_idx_mask
+    0 | 1, // no _extensions_
+    16, 16,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294918140,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -1083,18 +1168,26 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
     ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse_File>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
-    {::_pbi::TcParser::FastMtS2,
-     {386, 3, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.generated_code_info_)}},
     // optional string name = 1;
-    {::_pbi::TcParser::FastSS1,
-     {10, 0, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.name_)}},
+    {138 | ((0 + _Internal::kHasBitsOffset) << 9), PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.name_)},
     // optional string insertion_point = 2;
-    {::_pbi::TcParser::FastSS1,
-     {18, 1, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.insertion_point_)}},
+    {138 | ((1 + _Internal::kHasBitsOffset) << 9), PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.insertion_point_)},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
     // optional string content = 15;
-    {::_pbi::TcParser::FastSS1,
-     {122, 2, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.content_)}},
+    {138 | ((2 + _Internal::kHasBitsOffset) << 9), PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.content_)},
+    // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
+    {42 | ((3 + _Internal::kHasBitsOffset) << 9), 3},
   }}, {{
     65535, 65535
   }}, {{
@@ -1125,6 +1218,7 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse.File)
+  #if 0
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -1164,6 +1258,43 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
   }
+  #else   // 
+  // optional string name = 1;
+  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
+    const std::string& _s = this->_internal_name();
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
+                                "google.protobuf.compiler.CodeGeneratorResponse.File.name");
+    target = stream->WriteStringMaybeAliased(1, _s, target);
+  }
+
+  // optional string insertion_point = 2;
+  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
+    const std::string& _s = this->_internal_insertion_point();
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
+                                "google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point");
+    target = stream->WriteStringMaybeAliased(2, _s, target);
+  }
+
+  // optional string content = 15;
+  if ((_impl_._has_bits_[0] & 0x00000004u) != 0) {
+    const std::string& _s = this->_internal_content();
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
+                                "google.protobuf.compiler.CodeGeneratorResponse.File.content");
+    target = stream->WriteStringMaybeAliased(15, _s, target);
+  }
+
+  // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
+  if ((_impl_._has_bits_[0] & 0x00000008u) != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        16, *_impl_.generated_code_info_, _impl_.generated_code_info_->GetCachedSize(), target, stream);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  #endif  // !NDEBUG
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.compiler.CodeGeneratorResponse.File)
   return target;
 }
@@ -1362,11 +1493,11 @@ const char* CodeGeneratorResponse::_InternalParse(
 
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
+const ::_pbi::TcParseTable<15, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._has_bits_),
-    0, // no _extensions_
-    15, 24,  // max_field_number, fast_idx_mask
+    0 | 1, // no _extensions_
+    15, 15,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294950908,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -1379,16 +1510,24 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
     ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    {::_pbi::TcParser::MiniParse, {}},
     // optional string error = 1;
-    {::_pbi::TcParser::FastSS1,
-     {10, 0, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.error_)}},
+    {138 | ((0 + _Internal::kHasBitsOffset) << 9), PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.error_)},
     // optional uint64 supported_features = 2;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(CodeGeneratorResponse, _impl_.supported_features_), 1>(),
-     {16, 1, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_)}},
+    {72 | ((1 + _Internal::kHasBitsOffset) << 9), PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_)},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
+    {0x1F},
     // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-    {::_pbi::TcParser::FastMtR1,
-     {122, 63, 0, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_)}},
+    {50, 2},
   }}, {{
     65535, 65535
   }}, {{
@@ -1399,7 +1538,7 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
     {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
     // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_), -1, 0,
+    {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_), _Internal::kHasBitsOffset + 0, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
     {::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse_File>()},
@@ -1414,6 +1553,7 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse)
+  #if 0
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -1446,6 +1586,36 @@ const ::_pbi::TcParseTable<2, 3, 1, 60, 2> CodeGeneratorResponse::_table_ = {
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
   }
+  #else   // 
+  // optional uint64 supported_features = 2;
+  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(
+        2, this->_internal_supported_features(), target);
+  }
+
+  // optional string error = 1;
+  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
+    const std::string& _s = this->_internal_error();
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
+                                "google.protobuf.compiler.CodeGeneratorResponse.error");
+    target = stream->WriteStringMaybeAliased(1, _s, target);
+  }
+
+  // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
+  for (unsigned i = 0,
+      n = static_cast<unsigned>(this->_internal_file_size()); i < n; i++) {
+    const auto& repfield = this->_internal_file().Get(i);
+    target = ::google::protobuf::internal::WireFormatLite::
+        InternalWriteMessage(15, repfield, repfield.GetCachedSize(), target, stream);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  #endif  // !NDEBUG
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.compiler.CodeGeneratorResponse)
   return target;
 }

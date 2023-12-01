@@ -280,14 +280,14 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #ifdef PROTOBUF_TAILCALL
 #error PROTOBUF_TAILCALL was previously defined
 #endif
-#if ABSL_HAVE_CPP_ATTRIBUTE(clang::musttail) && !defined(__arm__) &&  \
+#if (ABSL_HAVE_CPP_ATTRIBUTE(clang::musttail) && !defined(__arm__) &&  \
     !defined(_ARCH_PPC) && !defined(__wasm__) &&                      \
-    !(defined(_MSC_VER) && defined(_M_IX86)) && !defined(__i386__)
+    !(defined(_MSC_VER) && defined(_M_IX86)) && !defined(__i386__)) && 0
 // Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
 // Compilation fails on X86 Windows:
 // https://github.com/llvm/llvm-project/issues/53271
-#define PROTOBUF_MUSTTAIL [[clang::musttail]]
+#define PROTOBUF_MUSTTAIL // [[clang::musttail]]
 #define PROTOBUF_TAILCALL true
 #else
 #define PROTOBUF_MUSTTAIL
@@ -725,36 +725,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #if !defined(PROTOBUF_TEMPORARY_DISABLE_TABLE_PARSER_ON_REFLECTION)
 #define PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION 1
 #endif  // PROTOBUF_ENABLE_FORCE_ALLOCATION_ON_CONSTRUCTION
-
-// Note that this is performance sensitive: changing the parameters will change
-// the registers used by the ABI calling convention, which subsequently affects
-// register selection logic inside the function.
-// Arguments `msg`, `ptr` and `ctx` are the 1st/2nd/3rd argument to match the
-// signature of ParseLoop.
-//
-// Note for x86_64: `data` must be the third or fourth argument for performance
-// reasons. In order to efficiently read the second byte of `data` we need it to
-// be passed in RDX or RCX.
-#define PROTOBUF_TC_PARAM_DECL                 \
-  ::google::protobuf::MessageLite *msg, const char *ptr, \
-      ::google::protobuf::internal::ParseContext *ctx,   \
-      ::google::protobuf::internal::TcFieldData data,    \
-      const ::google::protobuf::internal::TcParseTableBase *table, uint64_t hasbits
-// PROTOBUF_TC_PARAM_PASS passes values to match PROTOBUF_TC_PARAM_DECL.
-#define PROTOBUF_TC_PARAM_PASS msg, ptr, ctx, data, table, hasbits
-
-// PROTOBUF_TC_PARAM_NO_DATA_DECL and PROTOBUF_TC_PARAM_NO_DATA_PASS provide the
-// exact same ABI as above, except that they don't name or pass the `data`
-// argument. Specific functions such as `Error() and `ToTagDispatch()` don't
-// use the `data` argument. By not passing `data` down the call stack, we free
-// up the register holding that value, which may matter in highly optimized
-// functions such as varint parsing.
-#define PROTOBUF_TC_PARAM_NO_DATA_DECL                                        \
-  ::google::protobuf::MessageLite *msg, const char *ptr,                                \
-      ::google::protobuf::internal::ParseContext *ctx, ::google::protobuf::internal::TcFieldData, \
-      const ::google::protobuf::internal::TcParseTableBase *table, uint64_t hasbits
-#define PROTOBUF_TC_PARAM_NO_DATA_PASS \
-  msg, ptr, ctx, ::google::protobuf::internal::TcFieldData::DefaultInit(), table, hasbits
 
 #ifdef PROTOBUF_UNUSED
 #error PROTOBUF_UNUSED was previously defined

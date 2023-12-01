@@ -402,7 +402,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
 
   TaggedStringPtr tagged_ptr_;
 
-  bool IsFixedSizeArena() const { return false; }
+  bool IsFixedSizeArena() const { return tagged_ptr_.IsFixedSizeArena(); }
 
   // Swaps tagged pointer without debug hardening. This is to allow python
   // protobuf to maintain pointer stability even in DEBUG builds.
@@ -410,6 +410,32 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
       ArenaStringPtr* rhs, ArenaStringPtr* lhs) {
     std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);
   }
+
+#ifdef _LIBCPP_VERSION
+  static constexpr int kMaxInlinedStringSize = 22;
+#elif defined(__GLIBCXX__)
+  static constexpr int kMaxInlinedStringSize = 15;
+#elif 
+  static constexpr int kMaxInlinedStringSize = 0;
+#endif
+
+  inline void DonateString(Arena* arena, const char* s, size_t n, size_t bytes_left) {
+    if (n <= kMaxInlinedStringSize && kMaxInlinedStringSize <= bytes_left) {
+      void* mem = arena->AllocateAligned(sizeof(std::string), alignof(std::string));
+      tagged_ptr_.SetFixedSizeArena(ConstructSSODonatedString(mem, s, n));
+
+    } else {
+      // Allocate enough for string + content + terminal 0
+      void* mem = arena->AllocateAligned(sizeof(std::string) + n + 1, alignof(std::string));
+      char* data = static_cast<char*>(mem) + sizeof(std::string);
+      memcpy(data, s, n);
+      data[n] = 0;
+      tagged_ptr_.SetFixedSizeArena(ConstructDonatedString(mem, data, n));
+    }
+  }
+
+  static std::string* ConstructSSODonatedString(void* mem, const char* s, size_t n);
+  static std::string* ConstructDonatedString(void* mem, char* s, size_t n);
 
   friend class ::google::protobuf::internal::SwapFieldHelper;
   friend class TcParser;

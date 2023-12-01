@@ -95,6 +95,8 @@ inline void WriteLengthDelimited(uint32_t num, absl::string_view val,
 // load the current position.
 
 class PROTOBUF_EXPORT EpsCopyInputStream {
+  friend class TcParser;
+  
  public:
   enum { kMaxCordBytesToCopy = 512 };
   explicit EpsCopyInputStream(bool enable_aliasing)
@@ -198,10 +200,26 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     }
     return AppendStringFallback(ptr, size, s);
   }
-  // Implemented in arenastring.cc
-  PROTOBUF_NODISCARD const char* ReadArenaString(const char* ptr,
+
+  PROTOBUF_NODISCARD const char* ReadArenaStringFallback(const char* ptr, int size,
                                                  ArenaStringPtr* s,
                                                  Arena* arena);
+  
+  PROTOBUF_NODISCARD ABSL_ATTRIBUTE_ALWAYS_INLINE
+  const char* ReadArenaString(const char* ptr, int size,
+                                                 ArenaStringPtr* s,
+                                                 Arena* arena) {
+    ABSL_DCHECK(arena != nullptr);
+
+    auto bytes_left = buffer_end_ + kSlopBytes - ptr;
+    if (size <= ArenaStringPtr::kMaxInlinedStringSize && ArenaStringPtr::kMaxInlinedStringSize <= bytes_left) {
+      void* mem = arena->AllocateAligned(sizeof(std::string), alignof(std::string));
+      s->tagged_ptr_.SetFixedSizeArena(ArenaStringPtr::ConstructSSODonatedString(mem, ptr, size));
+      return ptr + size;
+    }
+    return ReadArenaStringFallback(ptr, size, s, arena);
+  }
+
 
   PROTOBUF_NODISCARD const char* ReadCord(const char* ptr, int size,
                                           ::absl::Cord* cord) {
@@ -491,6 +509,11 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   Data& data() { return data_; }
   const Data& data() const { return data_; }
+
+  bool IncDepth() { return --depth_ >= 0; }
+  void DecDepth() { depth_++; }
+  void IncGroupDepth() { group_depth_++; }
+  void DecGroupDepth() { group_depth_--; }
 
   const char* ParseMessage(MessageLite* msg, const char* ptr);
 

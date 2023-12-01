@@ -11,6 +11,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
@@ -23,6 +24,158 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+// This pattern allows one to legally access private members, which we need to
+// implement ArenaString. By using legal c++ we ensure that we do not break
+// strict aliasing preventing potential miscompiles.
+template <typename Tag, typename Tag::type M>
+struct Robber {
+    friend constexpr typename Tag::type Get(Tag) {
+        return M;
+    }
+};
+
+#ifdef _LIBCPP_VERSION
+
+struct StringSetCap {
+    using type = void (std::string::*)(std::size_t);
+    friend constexpr type Get(StringSetCap);
+};
+
+template
+struct Robber<StringSetCap, &std::string::__set_long_cap>;
+
+struct StringSetSize {
+    using type = void (std::string::*)(std::size_t);
+    friend constexpr type Get(StringSetSize);
+};
+
+template
+struct Robber<StringSetSize, &std::string::__set_long_size>;
+
+struct StringSetPointer {
+    using type = void (std::string::*)(char*);
+    friend constexpr type Get(StringSetPointer);
+};
+
+template
+struct Robber<StringSetPointer, &std::string::__set_long_pointer>;
+
+struct StringEraseToEnd {
+    using type = void (std::string::*)(std::string::size_type);
+    friend constexpr type Get(StringEraseToEnd);
+};
+
+template
+struct Robber<StringEraseToEnd, &std::string::__erase_to_end>;
+
+void EraseToEnd(std::string* s, std::string::size_type n) {
+  (s->*Get(StringEraseToEnd()))(n);
+}
+
+// Using this method makes this code automatically good both for
+// normal ABI and with the _LIBCPP_ABI_ALTERNATE_STRING_LAYOUT flag.
+class StringRep : public std::string {
+public:
+    static constexpr size_t kMaxInlinedStringSize = 22;
+
+    StringRep(char* data, size_t length, size_t capacity) {
+        (this->*Get(StringSetPointer()))(data);
+        (this->*Get(StringSetCap()))(capacity);
+        (this->*Get(StringSetSize()))(length);
+    }
+};
+
+#elif defined(__GLIBCXX__)
+
+struct StringSetCap {
+    using type = void (std::string::*)(std::size_t);
+    friend constexpr type Get(StringSetCap);
+};
+
+template
+struct Robber<StringSetCap, &std::string::_M_capacity>;
+
+struct StringSetSize {
+    using type = void (std::string::*)(std::size_t);
+    friend constexpr type Get(StringSetSize);
+};
+
+template
+struct Robber<StringSetSize, &std::string::_M_length>;
+
+// Workaround a compiler bug in clang fixed only in version 14
+template <typename Tag, typename V, V M>
+struct RobberWorkaround {
+    friend void Set(Tag, std::string* s, char* ptr) {
+        (s->*M)._M_p = ptr;
+    }
+};
+
+struct StringSetPointer {
+    friend void Set(StringSetPointer, std::string*, char*);
+};
+
+struct StringSetLength {
+    using type = void (std::string::*)(std::string::size_type);
+    friend constexpr type Get(StringSetLength);
+};
+
+template
+struct Robber<StringSetLength, &std::string::_M_set_length>;
+
+void EraseToEnd(std::string* s, std::string::size_type n) {
+  (s->*Get(StringSetLength()))(n);
+}
+
+template
+struct RobberWorkaround<StringSetPointer, std::string::_Alloc_hider std::string::*, &std::string::_M_dataplus>;
+
+// This will give a compile error if libstdc++ is using cow_string
+// which cannot be supported, so compile error is good.
+class StringRep : public std::string {
+public:
+    static constexpr size_t kMaxInlinedStringSize = 15;
+
+    StringRep(char* data, size_t length, size_t capacity) {
+        Set(StringSetPointer(), this, data);
+        (this->*Get(StringSetCap()))(capacity);
+        (this->*Get(StringSetSize()))(length);
+    }
+};
+
+#else
+
+#error "arena string not ported for windows yet."
+
+#endif
+
+inline std::string* DonateString(Arena* arena, const char* s, size_t n) {
+  if (n <= internal::StringRep::kMaxInlinedStringSize) {
+    void* mem = arena->AllocateAligned(sizeof(std::string), alignof(std::string));
+    return new (mem) std::string(s, n);
+  } else {
+    // Allocate enough for string + content + terminal 0
+    void* mem = arena->AllocateAligned(sizeof(std::string) + n + 1, alignof(std::string));
+    char* data = static_cast<char*>(mem) + sizeof(std::string);
+    memcpy(data, s, n);
+    data[n] = 0;
+    auto* rep = new (mem) internal::StringRep(
+        data, /*length=*/n, /*capacity=*/n);
+    return rep;
+  }
+}
+
+std::string* ArenaStringPtr::ConstructSSODonatedString(void* mem, const char* s, size_t n) {
+  auto str = new (mem) std::string(s, StringRep::kMaxInlinedStringSize);
+  EraseToEnd(str, n);
+  return str;
+}
+
+std::string* ArenaStringPtr::ConstructDonatedString(void* mem, char* s, size_t n) {
+  return new (mem) internal::StringRep(s, /*length=*/n, /*capacity=*/n);
+}
+
 
 namespace  {
 
@@ -63,14 +216,14 @@ const std::string& LazyString::Init() const {
 namespace {
 
 
-#if defined(NDEBUG) || !defined(GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL)
+// #if defined(NDEBUG) || !defined(GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL)
 
 class ScopedCheckPtrInvariants {
  public:
   explicit ScopedCheckPtrInvariants(const TaggedStringPtr*) {}
 };
 
-#endif  // NDEBUG || !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
+// #endif  // NDEBUG || !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
 
 // Creates a heap allocated std::string value.
 inline TaggedStringPtr CreateString(absl::string_view value) {
@@ -88,6 +241,15 @@ TaggedStringPtr CreateArenaString(Arena& arena, absl::string_view s) {
   return res;
 }
 
+#else
+
+// Creates an arena allocated std::string value.
+TaggedStringPtr CreateArenaString(Arena& arena, absl::string_view s) {
+  TaggedStringPtr res;
+  res.SetFixedSizeArena(DonateString(&arena, s.data(), s.length()));
+  return res;
+}
+
 #endif  // !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
 
 }  // namespace
@@ -99,7 +261,7 @@ TaggedStringPtr TaggedStringPtr::ForceCopy(Arena* arena) const {
 
 void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
-  if (IsDefault()) {
+  if (IsDefault() || IsFixedSizeArena()) {
     // If we're not on an arena, skip straight to a true string to avoid
     // possible copy cost later.
     tagged_ptr_ = arena != nullptr ? CreateArenaString(*arena, value)
@@ -123,27 +285,7 @@ void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
 
 template <>
 void ArenaStringPtr::Set(const std::string& value, Arena* arena) {
-  ScopedCheckPtrInvariants check(&tagged_ptr_);
-  if (IsDefault()) {
-    // If we're not on an arena, skip straight to a true string to avoid
-    // possible copy cost later.
-    tagged_ptr_ = arena != nullptr ? CreateArenaString(*arena, value)
-                                   : CreateString(value);
-  } else {
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    if (arena == nullptr) {
-      auto* old = tagged_ptr_.GetIfAllocated();
-      tagged_ptr_ = CreateString(value);
-      delete old;
-    } else {
-      auto* old = UnsafeMutablePointer();
-      tagged_ptr_ = CreateArenaString(*arena, value);
-      old->assign("garbagedata");
-    }
-#else   // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    UnsafeMutablePointer()->assign(value);
-#endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  }
+  Set(absl::string_view(value), arena);
 }
 
 void ArenaStringPtr::Set(std::string&& value, Arena* arena) {
@@ -258,24 +400,11 @@ void ArenaStringPtr::ClearToDefault(const LazyString& default_value,
   (void)arena;
   if (IsDefault()) {
     // Already set to default -- do nothing.
+  } else if (IsFixedSizeArena()) {
+    tagged_ptr_.SetDefault(&default_value.get());
   } else {
     UnsafeMutablePointer()->assign(default_value.get());
   }
-}
-
-const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
-                                                ArenaStringPtr* s,
-                                                Arena* arena) {
-  ScopedCheckPtrInvariants check(&s->tagged_ptr_);
-  ABSL_DCHECK(arena != nullptr);
-
-  int size = ReadSize(&ptr);
-  if (!ptr) return nullptr;
-
-  auto* str = s->NewString(arena);
-  ptr = ReadString(ptr, size, str);
-  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-  return ptr;
 }
 
 }  // namespace internal

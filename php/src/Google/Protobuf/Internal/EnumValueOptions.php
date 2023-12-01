@@ -25,6 +25,20 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
      */
     protected $deprecated = null;
     /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 2;</code>
+     */
+    protected $features = null;
+    /**
+     * Indicate that fields annotated with this enum value should not be printed
+     * out when using debug formats, e.g. when the field contains sensitive
+     * credentials.
+     *
+     * Generated from protobuf field <code>optional bool debug_redact = 3 [default = false];</code>
+     */
+    protected $debug_redact = null;
+    /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
@@ -42,6 +56,12 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
      *           Depending on the target platform, this can emit Deprecated annotations
      *           for the enum value, or it will be completely ignored; in the very least,
      *           this is a formalization for deprecating enum values.
+     *     @type \Google\Protobuf\Internal\FeatureSet $features
+     *           Any features defined in the specific edition.
+     *     @type bool $debug_redact
+     *           Indicate that fields annotated with this enum value should not be printed
+     *           out when using debug formats, e.g. when the field contains sensitive
+     *           credentials.
      *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here. See above.
      * }
@@ -89,6 +109,82 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
+
+        return $this;
+    }
+
+    /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 2;</code>
+     * @return \Google\Protobuf\Internal\FeatureSet|null
+     */
+    public function getFeatures()
+    {
+        return $this->features;
+    }
+
+    public function hasFeatures()
+    {
+        return isset($this->features);
+    }
+
+    public function clearFeatures()
+    {
+        unset($this->features);
+    }
+
+    /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 2;</code>
+     * @param \Google\Protobuf\Internal\FeatureSet $var
+     * @return $this
+     */
+    public function setFeatures($var)
+    {
+        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
+        $this->features = $var;
+
+        return $this;
+    }
+
+    /**
+     * Indicate that fields annotated with this enum value should not be printed
+     * out when using debug formats, e.g. when the field contains sensitive
+     * credentials.
+     *
+     * Generated from protobuf field <code>optional bool debug_redact = 3 [default = false];</code>
+     * @return bool
+     */
+    public function getDebugRedact()
+    {
+        return isset($this->debug_redact) ? $this->debug_redact : false;
+    }
+
+    public function hasDebugRedact()
+    {
+        return isset($this->debug_redact);
+    }
+
+    public function clearDebugRedact()
+    {
+        unset($this->debug_redact);
+    }
+
+    /**
+     * Indicate that fields annotated with this enum value should not be printed
+     * out when using debug formats, e.g. when the field contains sensitive
+     * credentials.
+     *
+     * Generated from protobuf field <code>optional bool debug_redact = 3 [default = false];</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setDebugRedact($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->debug_redact = $var;
 
         return $this;
     }

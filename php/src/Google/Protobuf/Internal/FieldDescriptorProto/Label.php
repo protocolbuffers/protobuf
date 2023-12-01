@@ -18,18 +18,22 @@ class Label
      */
     const LABEL_OPTIONAL = 1;
     /**
-     * Generated from protobuf enum <code>LABEL_REQUIRED = 2;</code>
-     */
-    const LABEL_REQUIRED = 2;
-    /**
      * Generated from protobuf enum <code>LABEL_REPEATED = 3;</code>
      */
     const LABEL_REPEATED = 3;
+    /**
+     * The required label is only allowed in google.protobuf.  In proto3 and Editions
+     * it's explicitly prohibited.  In Editions, the `field_presence` feature
+     * can be used to get this behavior.
+     *
+     * Generated from protobuf enum <code>LABEL_REQUIRED = 2;</code>
+     */
+    const LABEL_REQUIRED = 2;
 
     private static $valueToName = [
         self::LABEL_OPTIONAL => 'LABEL_OPTIONAL',
-        self::LABEL_REQUIRED => 'LABEL_REQUIRED',
         self::LABEL_REPEATED => 'LABEL_REPEATED',
+        self::LABEL_REQUIRED => 'LABEL_REQUIRED',
     ];
 
     public static function name($value)

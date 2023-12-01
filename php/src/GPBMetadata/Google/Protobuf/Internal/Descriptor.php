@@ -31,7 +31,7 @@ class Descriptor
             ->optional('options', \Google\Protobuf\Internal\GPBType::MESSAGE, 8, 'google.protobuf.internal.FileOptions')
             ->optional('source_code_info', \Google\Protobuf\Internal\GPBType::MESSAGE, 9, 'google.protobuf.internal.SourceCodeInfo')
             ->optional('syntax', \Google\Protobuf\Internal\GPBType::STRING, 12)
-            ->optional('edition', \Google\Protobuf\Internal\GPBType::STRING, 13)
+            ->optional('edition', \Google\Protobuf\Internal\GPBType::ENUM, 14, 'google.protobuf.internal.Edition')
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.DescriptorProto', \Google\Protobuf\Internal\DescriptorProto::class)
@@ -60,6 +60,22 @@ class Descriptor
 
         $pool->addMessage('google.protobuf.internal.ExtensionRangeOptions', \Google\Protobuf\Internal\ExtensionRangeOptions::class)
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
+            ->repeated('declaration', \Google\Protobuf\Internal\GPBType::MESSAGE, 2, 'google.protobuf.internal.ExtensionRangeOptions.Declaration')
+            ->optional('features', \Google\Protobuf\Internal\GPBType::MESSAGE, 50, 'google.protobuf.internal.FeatureSet')
+            ->optional('verification', \Google\Protobuf\Internal\GPBType::ENUM, 3, 'google.protobuf.internal.ExtensionRangeOptions.VerificationState')
+            ->finalizeToPool();
+
+        $pool->addMessage('google.protobuf.internal.ExtensionRangeOptions.Declaration', \Google\Protobuf\Internal\ExtensionRangeOptions\Declaration::class)
+            ->optional('number', \Google\Protobuf\Internal\GPBType::INT32, 1)
+            ->optional('full_name', \Google\Protobuf\Internal\GPBType::STRING, 2)
+            ->optional('type', \Google\Protobuf\Internal\GPBType::STRING, 3)
+            ->optional('reserved', \Google\Protobuf\Internal\GPBType::BOOL, 5)
+            ->optional('repeated', \Google\Protobuf\Internal\GPBType::BOOL, 6)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.ExtensionRangeOptions.VerificationState', \Google\Protobuf\Internal\VerificationState::class)
+            ->value("DECLARATION", 0)
+            ->value("UNVERIFIED", 1)
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.FieldDescriptorProto', \Google\Protobuf\Internal\FieldDescriptorProto::class)
@@ -99,8 +115,8 @@ class Descriptor
 
         $pool->addEnum('google.protobuf.internal.FieldDescriptorProto.Label', \Google\Protobuf\Internal\Label::class)
             ->value("LABEL_OPTIONAL", 1)
-            ->value("LABEL_REQUIRED", 2)
             ->value("LABEL_REPEATED", 3)
+            ->value("LABEL_REQUIRED", 2)
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.OneofDescriptorProto', \Google\Protobuf\Internal\OneofDescriptorProto::class)
@@ -163,6 +179,7 @@ class Descriptor
             ->optional('php_namespace', \Google\Protobuf\Internal\GPBType::STRING, 41)
             ->optional('php_metadata_namespace', \Google\Protobuf\Internal\GPBType::STRING, 44)
             ->optional('ruby_package', \Google\Protobuf\Internal\GPBType::STRING, 45)
+            ->optional('features', \Google\Protobuf\Internal\GPBType::MESSAGE, 50, 'google.protobuf.internal.FeatureSet')
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 
@@ -178,6 +195,7 @@ class Descriptor
             ->optional('deprecated', \Google\Protobuf\Internal\GPBType::BOOL, 3)
             ->optional('map_entry', \Google\Protobuf\Internal\GPBType::BOOL, 7)
             ->optional('deprecated_legacy_json_field_conflicts', \Google\Protobuf\Internal\GPBType::BOOL, 11)
+            ->optional('features', \Google\Protobuf\Internal\GPBType::MESSAGE, 12, 'google.protobuf.internal.FeatureSet')
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 
@@ -189,7 +207,17 @@ class Descriptor
             ->optional('unverified_lazy', \Google\Protobuf\Internal\GPBType::BOOL, 15)
             ->optional('deprecated', \Google\Protobuf\Internal\GPBType::BOOL, 3)
             ->optional('weak', \Google\Protobuf\Internal\GPBType::BOOL, 10)
+            ->optional('debug_redact', \Google\Protobuf\Internal\GPBType::BOOL, 16)
+            ->optional('retention', \Google\Protobuf\Internal\GPBType::ENUM, 17, 'google.protobuf.internal.FieldOptions.OptionRetention')
+            ->repeated('targets', \Google\Protobuf\Internal\GPBType::ENUM, 19, 'google.protobuf.internal.FieldOptions.OptionTargetType')
+            ->repeated('edition_defaults', \Google\Protobuf\Internal\GPBType::MESSAGE, 20, 'google.protobuf.internal.FieldOptions.EditionDefault')
+            ->optional('features', \Google\Protobuf\Internal\GPBType::MESSAGE, 21, 'google.protobuf.internal.FeatureSet')
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
+            ->finalizeToPool();
+
+        $pool->addMessage('google.protobuf.internal.FieldOptions.EditionDefault', \Google\Protobuf\Internal\FieldOptions\EditionDefault::class)
+            ->optional('edition', \Google\Protobuf\Internal\GPBType::ENUM, 3, 'google.protobuf.internal.Edition')
+            ->optional('value', \Google\Protobuf\Internal\GPBType::STRING, 2)
             ->finalizeToPool();
 
         $pool->addEnum('google.protobuf.internal.FieldOptions.CType', \Google\Protobuf\Internal\CType::class)
@@ -204,7 +232,27 @@ class Descriptor
             ->value("JS_NUMBER", 2)
             ->finalizeToPool();
 
+        $pool->addEnum('google.protobuf.internal.FieldOptions.OptionRetention', \Google\Protobuf\Internal\OptionRetention::class)
+            ->value("RETENTION_UNKNOWN", 0)
+            ->value("RETENTION_RUNTIME", 1)
+            ->value("RETENTION_SOURCE", 2)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.FieldOptions.OptionTargetType', \Google\Protobuf\Internal\OptionTargetType::class)
+            ->value("TARGET_TYPE_UNKNOWN", 0)
+            ->value("TARGET_TYPE_FILE", 1)
+            ->value("TARGET_TYPE_EXTENSION_RANGE", 2)
+            ->value("TARGET_TYPE_MESSAGE", 3)
+            ->value("TARGET_TYPE_FIELD", 4)
+            ->value("TARGET_TYPE_ONEOF", 5)
+            ->value("TARGET_TYPE_ENUM", 6)
+            ->value("TARGET_TYPE_ENUM_ENTRY", 7)
+            ->value("TARGET_TYPE_SERVICE", 8)
+            ->value("TARGET_TYPE_METHOD", 9)
+            ->finalizeToPool();
+
         $pool->addMessage('google.protobuf.internal.OneofOptions', \Google\Protobuf\Internal\OneofOptions::class)
+            ->optional('features', \Google\Protobuf\Internal\GPBType::MESSAGE, 1, 'google.protobuf.internal.FeatureSet')
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 
@@ -212,15 +260,19 @@ class Descriptor
             ->optional('allow_alias', \Google\Protobuf\Internal\GPBType::BOOL, 2)
             ->optional('deprecated', \Google\Protobuf\Internal\GPBType::BOOL, 3)
             ->optional('deprecated_legacy_json_field_conflicts', \Google\Protobuf\Internal\GPBType::BOOL, 6)
+            ->optional('features', \Google\Protobuf\Internal\GPBType::MESSAGE, 7, 'google.protobuf.internal.FeatureSet')
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.EnumValueOptions', \Google\Protobuf\Internal\EnumValueOptions::class)
             ->optional('deprecated', \Google\Protobuf\Internal\GPBType::BOOL, 1)
+            ->optional('features', \Google\Protobuf\Internal\GPBType::MESSAGE, 2, 'google.protobuf.internal.FeatureSet')
+            ->optional('debug_redact', \Google\Protobuf\Internal\GPBType::BOOL, 3)
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.ServiceOptions', \Google\Protobuf\Internal\ServiceOptions::class)
+            ->optional('features', \Google\Protobuf\Internal\GPBType::MESSAGE, 34, 'google.protobuf.internal.FeatureSet')
             ->optional('deprecated', \Google\Protobuf\Internal\GPBType::BOOL, 33)
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
@@ -228,6 +280,7 @@ class Descriptor
         $pool->addMessage('google.protobuf.internal.MethodOptions', \Google\Protobuf\Internal\MethodOptions::class)
             ->optional('deprecated', \Google\Protobuf\Internal\GPBType::BOOL, 33)
             ->optional('idempotency_level', \Google\Protobuf\Internal\GPBType::ENUM, 34, 'google.protobuf.internal.MethodOptions.IdempotencyLevel')
+            ->optional('features', \Google\Protobuf\Internal\GPBType::MESSAGE, 35, 'google.protobuf.internal.FeatureSet')
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 
@@ -252,6 +305,63 @@ class Descriptor
             ->required('is_extension', \Google\Protobuf\Internal\GPBType::BOOL, 2)
             ->finalizeToPool();
 
+        $pool->addMessage('google.protobuf.internal.FeatureSet', \Google\Protobuf\Internal\FeatureSet::class)
+            ->optional('field_presence', \Google\Protobuf\Internal\GPBType::ENUM, 1, 'google.protobuf.internal.FeatureSet.FieldPresence')
+            ->optional('enum_type', \Google\Protobuf\Internal\GPBType::ENUM, 2, 'google.protobuf.internal.FeatureSet.EnumType')
+            ->optional('repeated_field_encoding', \Google\Protobuf\Internal\GPBType::ENUM, 3, 'google.protobuf.internal.FeatureSet.RepeatedFieldEncoding')
+            ->optional('utf8_validation', \Google\Protobuf\Internal\GPBType::ENUM, 4, 'google.protobuf.internal.FeatureSet.Utf8Validation')
+            ->optional('message_encoding', \Google\Protobuf\Internal\GPBType::ENUM, 5, 'google.protobuf.internal.FeatureSet.MessageEncoding')
+            ->optional('json_format', \Google\Protobuf\Internal\GPBType::ENUM, 6, 'google.protobuf.internal.FeatureSet.JsonFormat')
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.FeatureSet.FieldPresence', \Google\Protobuf\Internal\FieldPresence::class)
+            ->value("FIELD_PRESENCE_UNKNOWN", 0)
+            ->value("EXPLICIT", 1)
+            ->value("IMPLICIT", 2)
+            ->value("LEGACY_REQUIRED", 3)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.FeatureSet.EnumType', \Google\Protobuf\Internal\EnumType::class)
+            ->value("ENUM_TYPE_UNKNOWN", 0)
+            ->value("OPEN", 1)
+            ->value("CLOSED", 2)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.FeatureSet.RepeatedFieldEncoding', \Google\Protobuf\Internal\RepeatedFieldEncoding::class)
+            ->value("REPEATED_FIELD_ENCODING_UNKNOWN", 0)
+            ->value("PACKED", 1)
+            ->value("EXPANDED", 2)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.FeatureSet.Utf8Validation', \Google\Protobuf\Internal\Utf8Validation::class)
+            ->value("UTF8_VALIDATION_UNKNOWN", 0)
+            ->value("NONE", 1)
+            ->value("VERIFY", 2)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.FeatureSet.MessageEncoding', \Google\Protobuf\Internal\MessageEncoding::class)
+            ->value("MESSAGE_ENCODING_UNKNOWN", 0)
+            ->value("LENGTH_PREFIXED", 1)
+            ->value("DELIMITED", 2)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.FeatureSet.JsonFormat', \Google\Protobuf\Internal\JsonFormat::class)
+            ->value("JSON_FORMAT_UNKNOWN", 0)
+            ->value("ALLOW", 1)
+            ->value("LEGACY_BEST_EFFORT", 2)
+            ->finalizeToPool();
+
+        $pool->addMessage('google.protobuf.internal.FeatureSetDefaults', \Google\Protobuf\Internal\FeatureSetDefaults::class)
+            ->repeated('defaults', \Google\Protobuf\Internal\GPBType::MESSAGE, 1, 'google.protobuf.internal.FeatureSetDefaults.FeatureSetEditionDefault')
+            ->optional('minimum_edition', \Google\Protobuf\Internal\GPBType::ENUM, 4, 'google.protobuf.internal.Edition')
+            ->optional('maximum_edition', \Google\Protobuf\Internal\GPBType::ENUM, 5, 'google.protobuf.internal.Edition')
+            ->finalizeToPool();
+
+        $pool->addMessage('google.protobuf.internal.FeatureSetDefaults.FeatureSetEditionDefault', \Google\Protobuf\Internal\FeatureSetDefaults\FeatureSetEditionDefault::class)
+            ->optional('edition', \Google\Protobuf\Internal\GPBType::ENUM, 3, 'google.protobuf.internal.Edition')
+            ->optional('features', \Google\Protobuf\Internal\GPBType::MESSAGE, 2, 'google.protobuf.internal.FeatureSet')
+            ->finalizeToPool();
+
         $pool->addMessage('google.protobuf.internal.SourceCodeInfo', \Google\Protobuf\Internal\SourceCodeInfo::class)
             ->repeated('location', \Google\Protobuf\Internal\GPBType::MESSAGE, 1, 'google.protobuf.internal.SourceCodeInfo.Location')
             ->finalizeToPool();
@@ -273,6 +383,25 @@ class Descriptor
             ->optional('source_file', \Google\Protobuf\Internal\GPBType::STRING, 2)
             ->optional('begin', \Google\Protobuf\Internal\GPBType::INT32, 3)
             ->optional('end', \Google\Protobuf\Internal\GPBType::INT32, 4)
+            ->optional('semantic', \Google\Protobuf\Internal\GPBType::ENUM, 5, 'google.protobuf.internal.GeneratedCodeInfo.Annotation.Semantic')
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.GeneratedCodeInfo.Annotation.Semantic', \Google\Protobuf\Internal\Semantic::class)
+            ->value("NONE", 0)
+            ->value("SET", 1)
+            ->value("ALIAS", 2)
+            ->finalizeToPool();
+
+        $pool->addEnum('google.protobuf.internal.Edition', \Google\Protobuf\Internal\Edition::class)
+            ->value("EDITION_UNKNOWN", 0)
+            ->value("EDITION_PROTO2", 998)
+            ->value("EDITION_PROTO3", 999)
+            ->value("EDITION_2023", 1000)
+            ->value("EDITION_1_TEST_ONLY", 1)
+            ->value("EDITION_2_TEST_ONLY", 2)
+            ->value("EDITION_99997_TEST_ONLY", 99997)
+            ->value("EDITION_99998_TEST_ONLY", 99998)
+            ->value("EDITION_99999_TEST_ONLY", 99999)
             ->finalizeToPool();
 
         $pool->finish();

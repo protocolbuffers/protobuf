@@ -173,6 +173,12 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     protected $ruby_package = null;
     /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 50;</code>
+     */
+    protected $features = null;
+    /**
      * The parser stores options it doesn't recognize here.
      * See the documentation for the "Options" section above.
      *
@@ -266,6 +272,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *           Use this option to change the package of ruby generated classes. Default
      *           is empty. When this option is not set, the package name will be used for
      *           determining the ruby package.
+     *     @type \Google\Protobuf\Internal\FeatureSet $features
+     *           Any features defined in the specific edition.
      *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here.
      *           See the documentation for the "Options" section above.
@@ -1070,6 +1078,42 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->ruby_package = $var;
+
+        return $this;
+    }
+
+    /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 50;</code>
+     * @return \Google\Protobuf\Internal\FeatureSet|null
+     */
+    public function getFeatures()
+    {
+        return $this->features;
+    }
+
+    public function hasFeatures()
+    {
+        return isset($this->features);
+    }
+
+    public function clearFeatures()
+    {
+        unset($this->features);
+    }
+
+    /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 50;</code>
+     * @param \Google\Protobuf\Internal\FeatureSet $var
+     * @return $this
+     */
+    public function setFeatures($var)
+    {
+        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
+        $this->features = $var;
 
         return $this;
     }

@@ -247,6 +247,10 @@ class DynamicMessage final : public Message {
     return reinterpret_cast<const uint8_t*>(this) + offset;
   }
 
+  const char* _InternalParse(const char* ptr, internal::ParseContext* ctx) override {
+    return internal::WireFormat::_InternalParse(this, ptr, ctx);
+  }
+
   void* MutableRaw(int i);
   void* MutableExtensionsRaw();
   void* MutableWeakFieldMapRaw();

@@ -58,9 +58,10 @@ class Type
     const TYPE_STRING = 9;
     /**
      * Tag-delimited aggregate.
-     * Group type is deprecated and not supported in proto3. However, Proto3
+     * Group type is deprecated and not supported after google.protobuf. However, Proto3
      * implementations should still be able to parse the group wire format and
-     * treat group fields as unknown fields.
+     * treat group fields as unknown fields.  In Editions, the group wire format
+     * can be enabled via the `message_encoding` feature.
      *
      * Generated from protobuf enum <code>TYPE_GROUP = 10;</code>
      */

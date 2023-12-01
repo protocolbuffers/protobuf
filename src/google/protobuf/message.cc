@@ -131,8 +131,8 @@ const char* Message::_InternalParse(const char* ptr,
                                     internal::ParseContext* ctx) {
 #if defined(PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION)
   auto meta = GetMetadata();
-  ptr = internal::TcParser::ParseLoop(this, ptr, ctx,
-                                      meta.reflection->GetTcParseTable());
+  ptr = internal::TcParser::MiniParseLoop(this, ptr, ctx,
+                                      meta.reflection->GetTcParseTable(), -1);
 
   return ptr;
 #else

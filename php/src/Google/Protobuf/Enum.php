@@ -45,6 +45,12 @@ class Enum extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 5;</code>
      */
     protected $syntax = 0;
+    /**
+     * The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+     *
+     * Generated from protobuf field <code>string edition = 6;</code>
+     */
+    protected $edition = '';
 
     /**
      * Constructor.
@@ -62,6 +68,8 @@ class Enum extends \Google\Protobuf\Internal\Message
      *           The source context.
      *     @type int $syntax
      *           The source syntax.
+     *     @type string $edition
+     *           The source edition string, only valid when syntax is SYNTAX_EDITIONS.
      * }
      */
     public function __construct($data = NULL) {
@@ -205,6 +213,32 @@ class Enum extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Syntax::class);
         $this->syntax = $var;
+
+        return $this;
+    }
+
+    /**
+     * The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+     *
+     * Generated from protobuf field <code>string edition = 6;</code>
+     * @return string
+     */
+    public function getEdition()
+    {
+        return $this->edition;
+    }
+
+    /**
+     * The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+     *
+     * Generated from protobuf field <code>string edition = 6;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setEdition($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->edition = $var;
 
         return $this;
     }

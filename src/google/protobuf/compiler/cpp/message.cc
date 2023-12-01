@@ -278,7 +278,10 @@ void CollectMapInfo(
 // --a ranage of message names that are allowed to stay in order (true)
 bool ShouldSerializeInOrder(const Descriptor* descriptor,
                             const Options& options) {
-  return true;
+  if (descriptor->options().message_set_wire_format()) return true;
+  // Keep the diff of generated files small. Can be removed.
+  if (descriptor->file()->package() == FileDescriptorProto::default_instance().GetDescriptor()->file()->package()) return true;
+  return false;
 }
 
 bool IsCrossFileMapField(const FieldDescriptor* field) {
@@ -3999,7 +4002,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
       {
           {"debug_cond", ShouldSerializeInOrder(descriptor_, options_)
                              ? "1"
-                             : "defined(NDEBUG)"},
+                             : "0"}, // "defined(NDEBUG)"},
           {"ndebug", [&] { GenerateSerializeWithCachedSizesBody(p); }},
           {"debug", [&] { GenerateSerializeWithCachedSizesBodyShuffled(p); }},
           {"ifdef",
@@ -4009,9 +4012,9 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
              } else {
                p->Emit(R"cc(
                  //~ force indenting level
-#ifdef NDEBUG
+#if $debug_cond$
                  $ndebug$;
-#else   // NDEBUG
+#else   // 
                  $debug$;
 #endif  // !NDEBUG
                )cc");
@@ -4239,6 +4242,33 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       )cc");
 }
 
+bool IsFieldEligibleForFastParsing(
+    const FieldDescriptor* field) {
+  if (field->containing_oneof()) return false;
+  if (field->is_map()) return false;
+  if (field->is_packed()) return false;
+  if (field->is_extension()) return false;
+
+  switch (field->type()) {
+      // Some bytes fields can be handled on fast path.
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES:
+      if (field->options().ctype() != FieldOptions::STRING) {
+        return false;
+      }
+      break;
+    case FieldDescriptor::TYPE_ENUM:
+      if (!internal::cpp::HasPreservingUnknownEnumSemantics(field)) return false;
+      break;
+    case FieldDescriptor::TYPE_MESSAGE:
+    case FieldDescriptor::TYPE_GROUP:
+      if (field->message_type()->options().message_set_wire_format()) return false;
+    default:
+      break;
+  }
+  return true;
+}
+
 void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
     io::Printer* p) {
   std::vector<const FieldDescriptor*> ordered_fields =
@@ -4252,6 +4282,50 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
   std::sort(sorted_extensions.begin(), sorted_extensions.end(),
             ExtensionRangeSorter());
 
+  if (1) {
+    auto part = std::stable_partition(ordered_fields.begin(), ordered_fields.end(), IsFieldEligibleForFastParsing);
+    part = std::stable_partition(ordered_fields.begin(), part, [](const FieldDescriptor* field) { 
+      return WireFormat::WireTypeForField(field) != WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
+    });
+    std::stable_partition(part, ordered_fields.end(), [](const FieldDescriptor* field) { 
+      return field->type() != FieldDescriptor::TYPE_MESSAGE;
+    });
+
+    for (const auto* field : ordered_fields) {
+      GenerateSerializeOneField(p, field, -1);
+    }
+
+    if (!sorted_extensions.empty()) {
+      GenerateSerializeOneExtensionRange(
+                                p, sorted_extensions.front()->start_number(), sorted_extensions.back()->end_number());
+    }
+    p->Emit(
+        {
+          {"handle_unknown_fields",
+            [&] {
+             if (UseUnknownFieldSet(descriptor_->file(), options_)) {
+               p->Emit(R"cc(
+                 target =
+                     ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                         $unknown_fields$, target, stream);
+               )cc");
+             } else {
+               p->Emit(R"cc(
+                 target = stream->WriteRaw(
+                     $unknown_fields$.data(),
+                     static_cast<int>($unknown_fields$.size()), target);
+               )cc");
+             }
+           }},
+        },
+        R"cc(
+        if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {
+          $handle_unknown_fields$;
+        }
+    )cc");
+    return;
+  }
+  
   int num_fields = ordered_fields.size() + sorted_extensions.size();
   constexpr int kLargePrime = 1000003;
   ABSL_CHECK_LT(num_fields, kLargePrime)

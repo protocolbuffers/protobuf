@@ -857,7 +857,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 0,
+      2, 2, 0,
       62, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -1118,7 +1118,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 5, 0,
+      6, 5, 0,
       106, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -1374,7 +1374,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 5, 1,
+      5, 5, 1,
       64, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -1566,7 +1566,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 1,
+      3, 2, 1,
       57, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -2094,7 +2094,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 6, 6,
+      6, 6, 6,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -2329,7 +2329,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 5, 0,
+      6, 5, 0,
       71, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -2514,7 +2514,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 0,
+      2, 2, 0,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -2696,7 +2696,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 0,
+      2, 2, 0,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -2964,7 +2964,7 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 7, 1,
+      8, 7, 1,
       75, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -3147,7 +3147,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      0, 1, 1,
+      1, 1, 1,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -3323,7 +3323,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      0, 1, 1,
+      1, 1, 1,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -3507,7 +3507,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 2,
+      3, 2, 2,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -3889,7 +3889,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 2,
+      0, 3, 2,
       0, 12>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -4261,7 +4261,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 2, 2,
+      1, 2, 2,
       0, 7>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -4676,7 +4676,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 4, 3,
+      0, 4, 3,
       0, 12>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -5109,7 +5109,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 7, 2,
+      12, 7, 2,
       0, 7>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -5805,7 +5805,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      5, 22, 3,
+      31, 22, 3,
       202, 12>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -6431,7 +6431,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      4, 13, 7,
+      21, 13, 7,
       0, 7>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -6645,7 +6645,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 3, 3,
+      5, 3, 3,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -7873,7 +7873,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 5, 2,
+      7, 5, 2,
       0, 7>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -8069,7 +8069,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 1,
+      2, 2, 1,
       49, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -8321,7 +8321,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 6, 1,
+      6, 6, 1,
       71, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -8704,7 +8704,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      4, 11, 3,
+      17, 11, 3,
       96, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -8917,7 +8917,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 1,
+      3, 3, 1,
       53, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -9116,7 +9116,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 1,
+      3, 3, 1,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -9328,7 +9328,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 2,
+      3, 3, 2,
       51, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -9589,7 +9589,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 5, 3,
+      5, 5, 3,
       61, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -9948,7 +9948,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      4, 10, 8,
+      10, 10, 8,
       65, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -10355,7 +10355,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      4, 13, 7,
+      14, 13, 7,
       79, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -10543,7 +10543,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      0, 1, 1,
+      1, 1, 1,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;

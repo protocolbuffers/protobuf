@@ -16,6 +16,12 @@ use Google\Protobuf\Internal\GPBUtil;
 class ServiceOptions extends \Google\Protobuf\Internal\Message
 {
     /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 34;</code>
+     */
+    protected $features = null;
+    /**
      * Is this service deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
      * for the service, or it will be completely ignored; in the very least,
@@ -37,6 +43,8 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
+     *     @type \Google\Protobuf\Internal\FeatureSet $features
+     *           Any features defined in the specific edition.
      *     @type bool $deprecated
      *           Is this service deprecated?
      *           Depending on the target platform, this can emit Deprecated annotations
@@ -49,6 +57,42 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
     public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
+    }
+
+    /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 34;</code>
+     * @return \Google\Protobuf\Internal\FeatureSet|null
+     */
+    public function getFeatures()
+    {
+        return $this->features;
+    }
+
+    public function hasFeatures()
+    {
+        return isset($this->features);
+    }
+
+    public function clearFeatures()
+    {
+        unset($this->features);
+    }
+
+    /**
+     * Any features defined in the specific edition.
+     *
+     * Generated from protobuf field <code>optional .google.protobuf.FeatureSet features = 34;</code>
+     * @param \Google\Protobuf\Internal\FeatureSet $var
+     * @return $this
+     */
+    public function setFeatures($var)
+    {
+        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FeatureSet::class);
+        $this->features = $var;
+
+        return $this;
     }
 
     /**
