@@ -286,7 +286,8 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
   //
   // - |presence| is either hasbit index or field number for oneofs.
 
-  uint64_t data = static_cast<uint64_t>(mt_f->offset) << 48 | expected_tag;
+  uint64_t data =
+      static_cast<uint64_t>(mt_f->UPB_PRIVATE(offset)) << 48 | expected_tag;
 
   if (field.IsSequence()) {
     // No hasbit/oneof-related fields.

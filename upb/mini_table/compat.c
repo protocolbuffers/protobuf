@@ -45,7 +45,8 @@ static upb_MiniTableEquals_Status upb_deep_check(const upb_MiniTable* src,
       return false;
     if (src_field->UPB_PRIVATE(mode) != dst_field->UPB_PRIVATE(mode))
       return false;
-    if (src_field->offset != dst_field->offset) return false;
+    if (src_field->UPB_PRIVATE(offset) != dst_field->UPB_PRIVATE(offset))
+      return false;
     if (src_field->presence != dst_field->presence) return false;
     if (src_field->UPB_PRIVATE(submsg_index) !=
         dst_field->UPB_PRIVATE(submsg_index))
