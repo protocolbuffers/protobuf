@@ -38,7 +38,6 @@ struct upb_Array {
   size_t size;                   // The number of elements in the array.
   size_t UPB_PRIVATE(capacity);  // Allocated storage. Measured in elements.
 };
-// LINT.ThenChange(GoogleInternalName1)
 
 UPB_INLINE void UPB_PRIVATE(_upb_Array_SetTaggedPtr)(upb_Array* array,
                                                      void* data, size_t lg2) {
@@ -110,6 +109,11 @@ UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(upb_Array* array, size_t i,
   char* arr_data = (char*)_upb_array_ptr(array);
   memcpy(arr_data + (i * elem_size), data, elem_size);
 }
+
+// LINT.ThenChange(
+//  GoogleInternalName1,
+//  //depot/google3/third_party/upb/bits/typescript/array.ts
+//)
 
 #ifdef __cplusplus
 } /* extern "C" */
