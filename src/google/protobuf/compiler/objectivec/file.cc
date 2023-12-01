@@ -31,7 +31,6 @@
 #include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -742,17 +741,17 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
     // mode.
     syntax = "GPBFileSyntaxUnknown";
   } else {
-    switch (FileDescriptorLegacy(file_).syntax()) {
-      case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
+    switch (file_->edition()) {
+      case Edition::EDITION_UNKNOWN:
         syntax = "GPBFileSyntaxUnknown";
         break;
-      case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
+      case Edition::EDITION_PROTO2:
         syntax = "GPBFileSyntaxProto2";
         break;
-      case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
+      case Edition::EDITION_PROTO3:
         syntax = "GPBFileSyntaxProto3";
         break;
-      case FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS:
+      default:
         syntax = "GPBFileSyntaxProtoEditions";
         break;
     }

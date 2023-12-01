@@ -473,18 +473,13 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
   std::vector<uint16_t> chars;
 
   int flags = 0;
-  if (FileDescriptorLegacy(descriptor_->file()).syntax() ==
-      FileDescriptorLegacy::Syntax::SYNTAX_PROTO2) {
-    if (!context_->options().strip_nonfunctional_codegen) {
-      flags |= 0x1;
-    }
-  }
   if (descriptor_->options().message_set_wire_format()) {
     flags |= 0x2;
   }
-  if (FileDescriptorLegacy(descriptor_->file()).syntax() ==
-      FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
-    if (!context_->options().strip_nonfunctional_codegen) {
+  if (!context_->options().strip_nonfunctional_codegen) {
+    if (descriptor_->file()->edition() == Edition::EDITION_PROTO2) {
+      flags |= 0x1;
+    } else if (descriptor_->file()->edition() >= Edition::EDITION_2023) {
       flags |= 0x4;
     }
   }

@@ -279,7 +279,6 @@ cc_library(
     deps = [
         ":code_generator",
         "//src/google/protobuf:cc_test_protos",
-        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:descriptor_visitor",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
