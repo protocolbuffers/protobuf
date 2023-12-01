@@ -1011,6 +1011,8 @@ UPB_INLINE bool upb_MiniTableEnum_CheckValue(const upb_MiniTableEnum* e,
 #ifndef UPB_MINI_TABLE_FIELD_H_
 #define UPB_MINI_TABLE_FIELD_H_
 
+#include <stdint.h>
+
 
 #ifndef UPB_MINI_TABLE_INTERNAL_FIELD_H_
 #define UPB_MINI_TABLE_INTERNAL_FIELD_H_
@@ -1090,7 +1092,7 @@ UPB_INLINE int upb_FieldType_SizeLg2(upb_FieldType field_type) {
 
 // LINT.IfChange(struct_definition)
 struct upb_MiniTableField {
-  uint32_t number;
+  uint32_t UPB_ONLYBITS(number);
   uint16_t offset;
   int16_t presence;  // If >0, hasbit_index.  If <0, ~oneof_index
 
@@ -1226,6 +1228,11 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasPresence)(
   }
 }
 
+UPB_INLINE uint32_t
+UPB_PRIVATE(_upb_MiniTableField_Number)(const struct upb_MiniTableField* f) {
+  return f->UPB_ONLYBITS(number);
+}
+
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(
     const struct upb_MiniTableField* f) {
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
@@ -1306,6 +1313,10 @@ UPB_API_INLINE bool upb_MiniTableField_IsScalar(const upb_MiniTableField* f) {
 UPB_API_INLINE bool upb_MiniTableField_IsSubMessage(
     const upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTableField_IsSubMessage)(f);
+}
+
+UPB_API_INLINE uint32_t upb_MiniTableField_Number(const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_MiniTableField_Number)(f);
 }
 
 UPB_API_INLINE upb_FieldType
@@ -1631,7 +1642,7 @@ UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
 
 UPB_INLINE uint32_t UPB_PRIVATE(_upb_MiniTableExtension_Number)(
     const struct upb_MiniTableExtension* e) {
-  return e->UPB_PRIVATE(field).number;
+  return e->UPB_PRIVATE(field).UPB_ONLYBITS(number);
 }
 
 UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
@@ -2556,7 +2567,7 @@ UPB_INLINE uint32_t _upb_Message_GetOneofCase(const upb_Message* msg,
 
 UPB_INLINE void _upb_Message_SetOneofCase(upb_Message* msg,
                                           const upb_MiniTableField* f) {
-  *_upb_Message_OneofCasePtr(msg, f) = f->number;
+  *_upb_Message_OneofCasePtr(msg, f) = upb_MiniTableField_Number(f);
 }
 
 // TODO: implement _upb_Message_ClearOneofCase()
@@ -2664,7 +2675,8 @@ UPB_INLINE bool _upb_Message_HasNonExtensionField(
   UPB_ASSERT(upb_MiniTableField_HasPresence(field));
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   if (upb_MiniTableField_IsInOneof(field)) {
-    return _upb_Message_GetOneofCase(msg, field) == field->number;
+    return _upb_Message_GetOneofCase(msg, field) ==
+           upb_MiniTableField_Number(field);
   } else {
     return _upb_Message_GetHasbitByField(msg, field);
   }
@@ -2762,7 +2774,7 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
     _upb_Message_ClearHasbitByField(msg, field);
   } else if (upb_MiniTableField_IsInOneof(field)) {
     uint32_t* ptr = _upb_Message_OneofCasePtr(msg, field);
-    if (*ptr != field->number) return;
+    if (*ptr != upb_MiniTableField_Number(field)) return;
     *ptr = 0;
   }
   const char zeros[16] = {0};
