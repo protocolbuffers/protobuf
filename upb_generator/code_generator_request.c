@@ -11,6 +11,7 @@
 
 #include "google/protobuf/compiler/plugin.upb.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_table/field.h"
 #include "upb/reflection/def.h"
 
 // Must be last.
@@ -171,8 +172,8 @@ static void upbc_Scrape_MessageSubs(upbc_State* s,
   uint32_t enum_count = counts & 0xffff;
 
   for (uint32_t i = 0; i < msg_count; i++) {
-    const upb_FieldDef* f =
-        upb_MessageDef_FindFieldByNumber(m, fields[i]->number);
+    const upb_FieldDef* f = upb_MessageDef_FindFieldByNumber(
+        m, upb_MiniTableField_Number(fields[i]));
     if (!f) upbc_Error(s, __func__, "Missing f");
     const upb_MessageDef* sub = upb_FieldDef_MessageSubDef(f);
     if (!sub) upbc_Error(s, __func__, "Missing sub");
@@ -181,8 +182,8 @@ static void upbc_Scrape_MessageSubs(upbc_State* s,
   }
 
   for (uint32_t i = 0; i < enum_count; i++) {
-    const upb_FieldDef* f =
-        upb_MessageDef_FindFieldByNumber(m, fields[msg_count + i]->number);
+    const upb_FieldDef* f = upb_MessageDef_FindFieldByNumber(
+        m, upb_MiniTableField_Number(fields[msg_count + i]));
     if (!f) upbc_Error(s, __func__, "Missing f (2)");
     const upb_EnumDef* sub = upb_FieldDef_EnumSubDef(f);
     if (!sub) upbc_Error(s, __func__, "Missing sub (2)");

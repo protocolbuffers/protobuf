@@ -37,8 +37,8 @@ static upb_MiniTableEquals_Status upb_deep_check(const upb_MiniTable* src,
   bool marked_src = false;
   for (int i = 0; i < upb_MiniTable_FieldCount(src); i++) {
     const upb_MiniTableField* src_field = upb_MiniTable_GetFieldByIndex(src, i);
-    const upb_MiniTableField* dst_field =
-        upb_MiniTable_FindFieldByNumber(dst, src_field->number);
+    const upb_MiniTableField* dst_field = upb_MiniTable_FindFieldByNumber(
+        dst, upb_MiniTableField_Number(src_field));
 
     if (upb_MiniTableField_CType(src_field) !=
         upb_MiniTableField_CType(dst_field))

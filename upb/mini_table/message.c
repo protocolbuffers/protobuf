@@ -23,7 +23,7 @@ const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
 
   // Ideal case: index into dense fields
   if (i < m->UPB_PRIVATE(dense_below)) {
-    UPB_ASSERT(m->UPB_PRIVATE(fields)[i].number == number);
+    UPB_ASSERT(m->UPB_PRIVATE(fields)[i].UPB_PRIVATE(number) == number);
     return &m->UPB_PRIVATE(fields)[i];
   }
 
@@ -32,7 +32,7 @@ const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   int hi = m->UPB_PRIVATE(field_count) - 1;
   while (lo <= hi) {
     int mid = (lo + hi) / 2;
-    uint32_t num = m->UPB_PRIVATE(fields)[mid].number;
+    uint32_t num = m->UPB_PRIVATE(fields)[mid].UPB_PRIVATE(number);
     if (num < number) {
       lo = mid + 1;
       continue;

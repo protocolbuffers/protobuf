@@ -414,8 +414,9 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     const upb_MiniTableField* f = &mt_64->UPB_PRIVATE(fields)[i];
     uint32_t index = f->UPB_PRIVATE(submsg_index);
     if (index != kUpb_NoSub) {
+      const int f_number = upb_MiniTableField_Number(f);
       auto pair =
-          subs.emplace(index, GetSub(message.FindFieldByNumber(f->number)));
+          subs.emplace(index, GetSub(message.FindFieldByNumber(f_number)));
       ABSL_CHECK(pair.second);
     }
   }
@@ -441,10 +442,10 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("static const upb_MiniTableField $0[$1] = {\n", fields_array_name,
            mt_64->UPB_PRIVATE(field_count));
     for (int i = 0; i < mt_64->UPB_PRIVATE(field_count); i++) {
-      WriteMessageField(
-          message.FindFieldByNumber(mt_64->UPB_PRIVATE(fields)[i].number),
-          &mt_64->UPB_PRIVATE(fields)[i], &mt_32->UPB_PRIVATE(fields)[i],
-          output);
+      WriteMessageField(message.FindFieldByNumber(
+                            mt_64->UPB_PRIVATE(fields)[i].UPB_PRIVATE(number)),
+                        &mt_64->UPB_PRIVATE(fields)[i],
+                        &mt_32->UPB_PRIVATE(fields)[i], output);
     }
     output("};\n\n");
   }

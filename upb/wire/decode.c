@@ -353,7 +353,8 @@ static const char* _upb_Decoder_DecodeKnownGroup(
     const upb_MiniTableSub* subs, const upb_MiniTableField* field) {
   const upb_MiniTable* subl = _upb_MiniTableSubs_MessageByField(subs, field);
   UPB_ASSERT(subl);
-  return _upb_Decoder_DecodeGroup(d, ptr, submsg, subl, field->number);
+  return _upb_Decoder_DecodeGroup(d, ptr, submsg, subl,
+                                  field->UPB_PRIVATE(number));
 }
 
 static char* upb_Decoder_EncodeVarint32(uint32_t val, char* ptr) {
@@ -390,7 +391,8 @@ static bool _upb_Decoder_CheckEnum(upb_Decoder* d, const char* ptr,
   // Unrecognized enum goes into unknown fields.
   // For packed fields the tag could be arbitrarily far in the past,
   // so we just re-encode the tag and value here.
-  const uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Varint;
+  const uint32_t tag =
+      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
   upb_Message* unknown_msg =
       field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension ? d->unknown_msg
                                                              : msg;
@@ -650,7 +652,8 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   if (size != 0) {
     char* buf;
     size_t size;
-    uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Delimited;
+    uint32_t tag =
+        ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Delimited;
     upb_EncodeStatus status =
         upb_Encode(&ent.data, entry, 0, &d->arena, &buf, &size);
     if (status != kUpb_EncodeStatus_Ok) {
@@ -690,10 +693,11 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   } else if (field->presence < 0) {
     /* Oneof case */
     uint32_t* oneof_case = _upb_Message_OneofCasePtr(msg, field);
-    if (op == kUpb_DecodeOp_SubMessage && *oneof_case != field->number) {
+    if (op == kUpb_DecodeOp_SubMessage &&
+        *oneof_case != field->UPB_PRIVATE(number)) {
       memset(mem, 0, sizeof(void*));
     }
-    *oneof_case = field->number;
+    *oneof_case = field->UPB_PRIVATE(number);
   }
 
   /* Store into message. */
@@ -926,13 +930,13 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
      * since fields are usually in order. */
     size_t last = *last_field_index;
     for (idx = last; idx < t->UPB_PRIVATE(field_count); idx++) {
-      if (t->UPB_PRIVATE(fields)[idx].number == field_number) {
+      if (t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number) == field_number) {
         goto found;
       }
     }
 
     for (idx = t->UPB_PRIVATE(dense_below); idx < last; idx++) {
-      if (t->UPB_PRIVATE(fields)[idx].number == field_number) {
+      if (t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number) == field_number) {
         goto found;
       }
     }
@@ -959,7 +963,7 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
   return &none; /* Unknown field. */
 
 found:
-  UPB_ASSERT(t->UPB_PRIVATE(fields)[idx].number == field_number);
+  UPB_ASSERT(t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number) == field_number);
   *last_field_index = idx;
   return &t->UPB_PRIVATE(fields)[idx];
 }
@@ -1117,7 +1121,7 @@ static const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
       *op = _upb_Decoder_GetDelimitedOp(d, mt, field);
       return ptr;
     case kUpb_WireType_StartGroup:
-      val->uint32_val = field->number;
+      val->uint32_val = field->UPB_PRIVATE(number);
       if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group) {
         *op = kUpb_DecodeOp_SubMessage;
         _upb_Decoder_CheckUnlinked(d, mt, field, op);

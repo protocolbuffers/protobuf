@@ -35,7 +35,7 @@ UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
 
 UPB_INLINE uint32_t UPB_PRIVATE(_upb_MiniTableExtension_Number)(
     const struct upb_MiniTableExtension* e) {
-  return e->UPB_PRIVATE(field).number;
+  return e->UPB_PRIVATE(field).UPB_ONLYBITS(number);
 }
 
 UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(

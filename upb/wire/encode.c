@@ -277,7 +277,7 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
         return;
       }
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
-      encode_tag(e, f->number, kUpb_WireType_EndGroup);
+      encode_tag(e, f->UPB_PRIVATE(number), kUpb_WireType_EndGroup);
       encode_TaggedMessagePtr(e, submsg, subm, &size);
       wire_type = kUpb_WireType_StartGroup;
       e->depth++;
@@ -303,7 +303,7 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
   }
 #undef CASE
 
-  encode_tag(e, f->number, wire_type);
+  encode_tag(e, f->UPB_PRIVATE(number), wire_type);
 }
 
 static void encode_array(upb_encstate* e, const upb_Message* msg,
@@ -317,20 +317,21 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     return;
   }
 
-#define VARINT_CASE(ctype, encode)                                       \
-  {                                                                      \
-    const ctype* start = _upb_array_constptr(arr);                       \
-    const ctype* ptr = start + arr->size;                                \
-    uint32_t tag = packed ? 0 : (f->number << 3) | kUpb_WireType_Varint; \
-    do {                                                                 \
-      ptr--;                                                             \
-      encode_varint(e, encode);                                          \
-      if (tag) encode_varint(e, tag);                                    \
-    } while (ptr != start);                                              \
-  }                                                                      \
+#define VARINT_CASE(ctype, encode)                                         \
+  {                                                                        \
+    const ctype* start = _upb_array_constptr(arr);                         \
+    const ctype* ptr = start + arr->size;                                  \
+    uint32_t tag =                                                         \
+        packed ? 0 : (f->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint; \
+    do {                                                                   \
+      ptr--;                                                               \
+      encode_varint(e, encode);                                            \
+      if (tag) encode_varint(e, tag);                                      \
+    } while (ptr != start);                                                \
+  }                                                                        \
   break;
 
-#define TAG(wire_type) (packed ? 0 : (f->number << 3 | wire_type))
+#define TAG(wire_type) (packed ? 0 : (f->UPB_PRIVATE(number) << 3 | wire_type))
 
   switch (f->UPB_PRIVATE(descriptortype)) {
     case kUpb_FieldType_Double:
@@ -369,7 +370,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
         ptr--;
         encode_bytes(e, ptr->data, ptr->size);
         encode_varint(e, ptr->size);
-        encode_tag(e, f->number, kUpb_WireType_Delimited);
+        encode_tag(e, f->UPB_PRIVATE(number), kUpb_WireType_Delimited);
       } while (ptr != start);
       return;
     }
@@ -382,9 +383,9 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
       do {
         size_t size;
         ptr--;
-        encode_tag(e, f->number, kUpb_WireType_EndGroup);
+        encode_tag(e, f->UPB_PRIVATE(number), kUpb_WireType_EndGroup);
         encode_TaggedMessagePtr(e, *ptr, subm, &size);
-        encode_tag(e, f->number, kUpb_WireType_StartGroup);
+        encode_tag(e, f->UPB_PRIVATE(number), kUpb_WireType_StartGroup);
       } while (ptr != start);
       e->depth++;
       return;
@@ -400,7 +401,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
         ptr--;
         encode_TaggedMessagePtr(e, *ptr, subm, &size);
         encode_varint(e, size);
-        encode_tag(e, f->number, kUpb_WireType_Delimited);
+        encode_tag(e, f->UPB_PRIVATE(number), kUpb_WireType_Delimited);
       } while (ptr != start);
       e->depth++;
       return;
@@ -410,7 +411,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
 
   if (packed) {
     encode_varint(e, e->limit - e->ptr - pre_len);
-    encode_tag(e, f->number, kUpb_WireType_Delimited);
+    encode_tag(e, f->UPB_PRIVATE(number), kUpb_WireType_Delimited);
   }
 }
 
@@ -445,7 +446,7 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
         map, &sorted);
     upb_MapEntry ent;
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
-      encode_mapentry(e, f->number, layout, &ent);
+      encode_mapentry(e, f->UPB_PRIVATE(number), layout, &ent);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
@@ -456,7 +457,7 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
       upb_MapEntry ent;
       _upb_map_fromkey(key, &ent.data.k, map->key_size);
       _upb_map_fromvalue(val, &ent.data.v, map->val_size);
-      encode_mapentry(e, f->number, layout, &ent);
+      encode_mapentry(e, f->UPB_PRIVATE(number), layout, &ent);
     }
   }
 }
@@ -495,7 +496,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
     return _upb_Message_GetHasbitByField(msg, f);
   } else {
     // Field is in a oneof.
-    return _upb_Message_GetOneofCase(msg, f) == f->number;
+    return _upb_Message_GetOneofCase(msg, f) == f->UPB_PRIVATE(number);
   }
 }
 
