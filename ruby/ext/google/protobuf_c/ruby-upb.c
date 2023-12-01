@@ -6416,7 +6416,7 @@ enum PresenceClass {
 };
 
 static bool upb_MtDecoder_FieldIsPackable(upb_MiniTableField* field) {
-  return (field->mode & kUpb_FieldMode_Array) &&
+  return (field->UPB_PRIVATE(mode) & kUpb_FieldMode_Array) &&
          upb_FieldType_IsPackable(field->UPB_PRIVATE(descriptortype));
 }
 
@@ -6433,18 +6433,18 @@ static void upb_MiniTable_SetTypeAndSub(upb_MiniTableField* field,
   if (is_proto3_enum) {
     UPB_ASSERT(type == kUpb_FieldType_Enum);
     type = kUpb_FieldType_Int32;
-    field->mode |= kUpb_LabelFlags_IsAlternate;
+    field->UPB_PRIVATE(mode) |= kUpb_LabelFlags_IsAlternate;
   } else if (type == kUpb_FieldType_String &&
              !(msg_modifiers & kUpb_MessageModifier_ValidateUtf8)) {
     type = kUpb_FieldType_Bytes;
-    field->mode |= kUpb_LabelFlags_IsAlternate;
+    field->UPB_PRIVATE(mode) |= kUpb_LabelFlags_IsAlternate;
   }
 
   field->UPB_PRIVATE(descriptortype) = type;
 
   if (upb_MtDecoder_FieldIsPackable(field) &&
       (msg_modifiers & kUpb_MessageModifier_DefaultIsPacked)) {
-    field->mode |= kUpb_LabelFlags_IsPacked;
+    field->UPB_PRIVATE(mode) |= kUpb_LabelFlags_IsPacked;
   }
 
   if (type == kUpb_FieldType_Message || type == kUpb_FieldType_Group) {
@@ -6511,18 +6511,19 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
   int8_t type = _upb_FromBase92(ch);
   if (ch >= _upb_ToBase92(kUpb_EncodedType_RepeatedBase)) {
     type -= kUpb_EncodedType_RepeatedBase;
-    field->mode = kUpb_FieldMode_Array;
-    field->mode |= pointer_rep << kUpb_FieldRep_Shift;
+    field->UPB_PRIVATE(mode) = kUpb_FieldMode_Array;
+    field->UPB_PRIVATE(mode) |= pointer_rep << kUpb_FieldRep_Shift;
     field->offset = kNoPresence;
   } else {
-    field->mode = kUpb_FieldMode_Scalar;
+    field->UPB_PRIVATE(mode) = kUpb_FieldMode_Scalar;
     field->offset = kHasbitPresence;
     if (type == kUpb_EncodedType_Group || type == kUpb_EncodedType_Message) {
-      field->mode |= pointer_rep << kUpb_FieldRep_Shift;
+      field->UPB_PRIVATE(mode) |= pointer_rep << kUpb_FieldRep_Shift;
     } else if ((unsigned long)type >= sizeof(kUpb_EncodedToFieldRep)) {
       upb_MdDecoder_ErrorJmp(&d->base, "Invalid field type: %d", (int)type);
     } else {
-      field->mode |= kUpb_EncodedToFieldRep[type] << kUpb_FieldRep_Shift;
+      field->UPB_PRIVATE(mode) |= kUpb_EncodedToFieldRep[type]
+                                  << kUpb_FieldRep_Shift;
     }
   }
   if ((unsigned long)type >= sizeof(kUpb_EncodedToType)) {
@@ -6542,20 +6543,20 @@ static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
                              "Cannot flip packed on unpackable field %" PRIu32,
                              field->number);
     }
-    field->mode ^= kUpb_LabelFlags_IsPacked;
+    field->UPB_PRIVATE(mode) ^= kUpb_LabelFlags_IsPacked;
   }
 
   if (field_modifiers & kUpb_EncodedFieldModifier_FlipValidateUtf8) {
     if (field->UPB_PRIVATE(descriptortype) != kUpb_FieldType_Bytes ||
-        !(field->mode & kUpb_LabelFlags_IsAlternate)) {
+        !(field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsAlternate)) {
       upb_MdDecoder_ErrorJmp(
           &d->base,
           "Cannot flip ValidateUtf8 on field %" PRIu32 ", type=%d, mode=%d",
           field->number, (int)field->UPB_PRIVATE(descriptortype),
-          (int)field->mode);
+          (int)field->UPB_PRIVATE(mode));
     }
     field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_String;
-    field->mode &= ~kUpb_LabelFlags_IsAlternate;
+    field->UPB_PRIVATE(mode) &= ~kUpb_LabelFlags_IsAlternate;
   }
 
   bool singular = field_modifiers & kUpb_EncodedFieldModifier_IsProto3Singular;
@@ -6671,7 +6672,7 @@ static const char* upb_MtDecoder_DecodeOneofField(upb_MtDecoder* d,
   }
 
   // Oneof storage must be large enough to accommodate the largest member.
-  int rep = f->mode >> kUpb_FieldRep_Shift;
+  int rep = f->UPB_PRIVATE(mode) >> kUpb_FieldRep_Shift;
   if (upb_MtDecoder_SizeOfRep(rep, d->platform) >
       upb_MtDecoder_SizeOfRep(item->rep, d->platform)) {
     item->rep = rep;
@@ -6856,7 +6857,7 @@ static bool upb_MtDecoder_SortLayoutItems(upb_MtDecoder* d) {
     upb_MiniTableField* f = &d->fields[i];
     if (f->offset >= kOneofBase) continue;
     upb_LayoutItem item = {.field_index = i,
-                           .rep = f->mode >> kUpb_FieldRep_Shift,
+                           .rep = f->UPB_PRIVATE(mode) >> kUpb_FieldRep_Shift,
                            .type = kUpb_LayoutItemType_Field};
     upb_MtDecoder_PushItem(d, item);
   }
@@ -7148,7 +7149,7 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
 
   upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
 
-  f->mode |= kUpb_LabelFlags_IsExtension;
+  f->UPB_PRIVATE(mode) |= kUpb_LabelFlags_IsExtension;
   f->offset = 0;
   f->presence = 0;
 
@@ -7242,7 +7243,9 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
             table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry;
         if (UPB_UNLIKELY(table_is_map)) return false;
 
-        field->mode = (field->mode & ~kUpb_FieldMode_Mask) | kUpb_FieldMode_Map;
+        field->UPB_PRIVATE(mode) =
+            (field->UPB_PRIVATE(mode) & ~kUpb_FieldMode_Mask) |
+            kUpb_FieldMode_Map;
       }
       break;
 
@@ -12327,7 +12330,7 @@ static upb_Message* _upb_Decoder_NewSubMessage(upb_Decoder* d,
   // Extensions should not be unlinked. A message extension should not be
   // registered until its sub-message type is available to be linked.
   bool is_empty = UPB_PRIVATE(_upb_MiniTable_IsEmpty)(subl);
-  bool is_extension = field->mode & kUpb_LabelFlags_IsExtension;
+  bool is_extension = field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension;
   UPB_ASSERT(!(is_empty && is_extension));
 
   if (is_empty && !(d->options & kUpb_DecodeOption_ExperimentalAllowUnlinked)) {
@@ -12467,7 +12470,8 @@ static bool _upb_Decoder_CheckEnum(upb_Decoder* d, const char* ptr,
   // so we just re-encode the tag and value here.
   const uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Varint;
   upb_Message* unknown_msg =
-      field->mode & kUpb_LabelFlags_IsExtension ? d->unknown_msg : msg;
+      field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension ? d->unknown_msg
+                                                             : msg;
   _upb_Decoder_AddUnknownVarints(d, unknown_msg, tag, v);
   return false;
 }
@@ -13070,7 +13074,7 @@ static void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
                                        const upb_MiniTableField* field,
                                        int* op) {
   // If sub-message is not linked, treat as unknown.
-  if (field->mode & kUpb_LabelFlags_IsExtension) return;
+  if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension) return;
   const upb_MiniTable* mt_sub =
       _upb_MiniTableSubs_MessageByField(mt->UPB_PRIVATE(subs), field);
   if ((d->options & kUpb_DecodeOption_ExperimentalAllowUnlinked) ||
@@ -13214,7 +13218,7 @@ static const char* _upb_Decoder_DecodeKnownField(
     const upb_MiniTable* layout, const upb_MiniTableField* field, int op,
     wireval* val) {
   const upb_MiniTableSub* subs = layout->UPB_PRIVATE(subs);
-  uint8_t mode = field->mode;
+  uint8_t mode = field->UPB_PRIVATE(mode);
 
   if (UPB_UNLIKELY(mode & kUpb_LabelFlags_IsExtension)) {
     const upb_MiniTableExtension* ext_layout =
