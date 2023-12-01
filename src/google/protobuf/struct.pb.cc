@@ -235,9 +235,9 @@ Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() {}
 Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena)
     : SuperType(arena) {}
 ::google::protobuf::Metadata Struct_FieldsEntry_DoNotUse::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fstruct_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fstruct_2eproto[0]);
 }
 // ===================================================================
 
@@ -446,9 +446,9 @@ void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Struct::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fstruct_2eproto[1]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fstruct_2eproto[1]);
 }
 // ===================================================================
 
@@ -861,9 +861,9 @@ void Value::InternalSwap(Value* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Value::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fstruct_2eproto[2]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fstruct_2eproto[2]);
 }
 // ===================================================================
 
@@ -1048,9 +1048,9 @@ void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata ListValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fstruct_2eproto[3]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fstruct_2eproto[3]);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

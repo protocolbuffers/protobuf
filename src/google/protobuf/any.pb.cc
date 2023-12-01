@@ -360,9 +360,9 @@ void Any::InternalSwap(Any* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Any::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fany_2eproto_getter, &descriptor_table_google_2fprotobuf_2fany_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fany_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fany_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fany_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fany_2eproto[0]);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
