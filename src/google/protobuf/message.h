@@ -1347,6 +1347,10 @@ class PROTOBUF_EXPORT MessageFactory {
   static void InternalRegisterGeneratedMessage(const Descriptor* descriptor,
                                                const Message* prototype);
 
+
+ private:
+  friend class DynamicMessageFactory;
+  static const Message* TryGetGeneratedPrototype(const Descriptor* type);
 };
 
 #define DECLARE_GET_REPEATED_FIELD(TYPE)                           \
@@ -1389,6 +1393,7 @@ const T* DynamicCastToGenerated(const Message* from) {
   (void)unused;
 
 #if PROTOBUF_RTTI
+  internal::StrongReference(T::default_instance());
   return dynamic_cast<const T*>(from);
 #else
   bool ok = from != nullptr &&
@@ -1427,11 +1432,7 @@ T& DynamicCastToGenerated(Message& from) {
 // instance T and T is a type derived from base Message class.
 template <typename T>
 const T* DownCastToGenerated(const Message* from) {
-  // Compile-time assert that T is a generated type that has a
-  // default_instance() accessor, but avoid actually calling it.
-  const T& (*get_default_instance)() = &T::default_instance;
-  (void)get_default_instance;
-
+  internal::StrongReference(T::default_instance());
   ABSL_DCHECK(DynamicCastToGenerated<T>(from) == from)
       << "Cannot downcast " << from->GetTypeName() << " to "
       << T::default_instance().GetTypeName();

@@ -367,9 +367,9 @@ void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata JavaFeatures::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[0]);
 }
 PROTOC_EXPORT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
     ExtensionIdentifier<::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::JavaFeatures >,

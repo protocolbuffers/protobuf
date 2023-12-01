@@ -50,6 +50,7 @@ struct Options {
   bool transitive_pb_h = true;
   bool annotate_headers = false;
   bool lite_implicit_weak_fields = false;
+  bool descriptor_implicit_weak_messages = false;
   bool bootstrap = false;
   bool opensource_runtime = false;
   bool annotate_accessor = false;

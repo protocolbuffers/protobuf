@@ -627,7 +627,9 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     const Descriptor* type) {
   if (delegate_to_generated_factory_ &&
       type->file()->pool() == DescriptorPool::generated_pool()) {
-    return MessageFactory::generated_factory()->GetPrototype(type);
+    const Message* result = MessageFactory::TryGetGeneratedPrototype(type);
+    if (result != nullptr) return result;
+    // Otherwise, we will create it dynamically so keep going.
   }
 
   const TypeInfo** target = &prototypes_[type];

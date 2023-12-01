@@ -22,8 +22,10 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/generated_message_util.h"
@@ -218,15 +220,21 @@ class GeneratedMessageFactory final : public MessageFactory {
   void RegisterFile(const google::protobuf::internal::DescriptorTable* table);
   void RegisterType(const Descriptor* descriptor, const Message* prototype);
 
+  const Message* TryGetPrototype(const Descriptor* type);
+
   // implements MessageFactory ---------------------------------------
   const Message* GetPrototype(const Descriptor* type) override;
 
  private:
-  const Message* FindInTypeMap(const Descriptor* type)
+  GeneratedMessageFactory() {
+    dropped_defaults_factory_.SetDelegateToGeneratedFactory(true);
+  }
+
+  absl::optional<const Message*> FindInTypeMap(const Descriptor* type)
       ABSL_SHARED_LOCKS_REQUIRED(mutex_)
   {
     auto it = type_map_.find(type);
-    if (it == type_map_.end()) return nullptr;
+    if (it == type_map_.end()) return absl::nullopt;
     return it->second;
   }
 
@@ -270,6 +278,7 @@ class GeneratedMessageFactory final : public MessageFactory {
   absl::flat_hash_set<const google::protobuf::internal::DescriptorTable*,
                       DescriptorByNameHash, DescriptorByNameEq>
       files_;
+  DynamicMessageFactory dropped_defaults_factory_;
 
   absl::Mutex mutex_;
   absl::flat_hash_map<const Descriptor*, const Message*> type_map_
@@ -307,10 +316,36 @@ void GeneratedMessageFactory::RegisterType(const Descriptor* descriptor,
 
 
 const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
+  const Message* result = TryGetPrototype(type);
+  if (result == nullptr &&
+      type->file()->pool() == DescriptorPool::generated_pool()) {
+    // We registered this descriptor with a null pointer.
+    // In this case we need to create the prototype from the dynamic factory.
+    // We _must_ do this outside the lock because the dynamic factory will call
+    // back into the generated factory for cross linking.
+    result = dropped_defaults_factory_.GetPrototype(type);
+
+    {
+      absl::WriterMutexLock lock(&mutex_);
+      // And update the main map to make the next lookup faster.
+      // We don't need to recheck here. Even if someone raced us here the result
+      // is the same, so we can just write it.
+      type_map_[type] = result;
+    }
+  }
+
+  return result;
+}
+
+const Message* GeneratedMessageFactory::TryGetPrototype(
+    const Descriptor* type) {
+  absl::optional<const Message*> result;
   {
     absl::ReaderMutexLock lock(&mutex_);
-    const Message* result = FindInTypeMap(type);
-    if (result != nullptr) return result;
+    result = FindInTypeMap(type);
+    if (result.has_value() && *result != nullptr) {
+      return *result;
+    }
   }
 
   // If the type is not in the generated pool, then we can't possibly handle
@@ -327,26 +362,29 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
     return nullptr;
   }
 
-  absl::WriterMutexLock lock(&mutex_);
+  {
+    absl::WriterMutexLock lock(&mutex_);
 
-  // Check if another thread preempted us.
-  const Message* result = FindInTypeMap(type);
-  if (result == nullptr) {
-    // Nope.  OK, register everything.
-    internal::RegisterFileLevelMetadata(registration_data);
-    // Should be here now.
+    // Check if another thread preempted us.
     result = FindInTypeMap(type);
+    if (!result.has_value()) {
+      // Nope.  OK, register everything.
+      internal::RegisterFileLevelMetadata(registration_data);
+      // Should be here now.
+      result = FindInTypeMap(type);
+      ABSL_DCHECK(result.has_value());
+    }
   }
 
-  if (result == nullptr) {
-    ABSL_DLOG(FATAL) << "Type appears to be in generated pool but wasn't "
-                     << "registered: " << type->full_name();
-  }
-
-  return result;
+  return *result;
 }
 
 }  // namespace
+
+const Message* MessageFactory::TryGetGeneratedPrototype(
+    const Descriptor* type) {
+  return GeneratedMessageFactory::singleton()->TryGetPrototype(type);
+}
 
 MessageFactory* MessageFactory::generated_factory() {
   return GeneratedMessageFactory::singleton();

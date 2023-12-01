@@ -39,6 +39,12 @@ class MessageLite;
 namespace internal {
 
 
+template <typename T>
+void StrongPointer(T* var) {
+  auto volatile unused = var;
+  (void)&unused;  // Use address to avoid an extra load of "unused".
+}
+
 // See comments on `AllocateAtLeast` for information on size returning new.
 struct SizedPtr {
   void* p;

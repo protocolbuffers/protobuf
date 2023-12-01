@@ -922,6 +922,26 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   IncludeFile("third_party/protobuf/port_undef.inc", p);
 }
 
+static std::vector<const Descriptor*>
+GetMessagesToPinGloballyForWeakDescriptors(const FileDescriptor* file) {
+  std::vector<const Descriptor*> out;
+
+  // For simplicity we force pin request/response messages for all
+  // services. The current implementation of services might not do
+  // the pin itself, so it is simpler.
+  // This is a place for improvement in the future.
+  for (int i = 0; i < file->service_count(); ++i) {
+    auto* service = file->service(i);
+    for (int j = 0; j < service->method_count(); ++j) {
+      auto* method = service->method(j);
+      out.push_back(method->input_type());
+      out.push_back(method->output_type());
+    }
+  }
+
+  return out;
+}
+
 void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   if (!message_generators_.empty()) {
     p->Emit({{"len", message_generators_.size()}}, R"cc(
@@ -955,6 +975,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   if (!message_generators_.empty()) {
     std::vector<std::pair<size_t, size_t>> offsets;
     offsets.reserve(message_generators_.size());
+    bool has_implicit_weak_descriptors =
+        UsingImplicitWeakDescriptor(file_, options_);
 
     p->Emit(
         {
@@ -973,19 +995,50 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                  offset += offsets[i].first;
                }
              }},
-            {"defaults",
+            {"weak_defaults",
              [&] {
+               if (!has_implicit_weak_descriptors) return;
+               int index = 0;
                for (auto& gen : message_generators_) {
                  p->Emit(
                      {
+                         {"index", index++},
                          {"ns", Namespace(gen->descriptor(), options_)},
                          {"class", ClassName(gen->descriptor())},
+                         {"section", WeakDefaultWriterSection(gen->descriptor(),
+                                                              options_)},
                      },
                      R"cc(
-                       &$ns$::_$class$_default_instance_._instance,
+                       constexpr ::_pbi::WeakDefaultWriter pb_$index$_weak_
+                           __attribute__((__nodebug__))
+                           __attribute__((section("$section$"))) = {
+                               file_default_instances + $index$,
+                               &$ns$::_$class$_default_instance_._instance};
                      )cc");
                }
              }},
+            {"defaults",
+             [&] {
+               for (auto& gen : message_generators_) {
+                 if (has_implicit_weak_descriptors) {
+                   p->Emit(R"cc(
+                     nullptr,
+                   )cc");
+                 } else {
+                   p->Emit(
+                       {
+                           {"ns", Namespace(gen->descriptor(), options_)},
+                           {"class", ClassName(gen->descriptor())},
+                       },
+                       R"cc(
+                         &$ns$::_$class$_default_instance_._instance,
+                       )cc");
+                 }
+               }
+             }},
+            // When we have implicit weak descriptors we make the array mutable
+            // for dynamic initialization.
+            {"const", has_implicit_weak_descriptors ? "" : "const"},
         },
         R"cc(
           const ::uint32_t
@@ -999,9 +1052,10 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                   $schemas$,
           };
 
-          static const ::_pb::Message* const file_default_instances[] = {
+          static const ::_pb::Message* $const $file_default_instances[] = {
               $defaults$,
           };
+          $weak_defaults$;
         )cc");
   } else {
     // Ee still need these symbols to exist.
@@ -1169,12 +1223,41 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // pull in a lot of unnecessary code that can't be stripped by --gc-sections.
   // Descriptor initialization will still be performed lazily when it's needed.
   if (!IsLazilyInitializedFile(file_->name())) {
-    p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}},
-            R"cc(
-              // Force running AddDescriptors() at dynamic initialization time.
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-              static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
-            )cc");
+    p->Emit(
+        {
+            {"dummy", UniqueName("dynamic_init_dummy", file_, options_)},
+            {"desc_table_expr",
+             [&] {
+               std::vector<const Descriptor*> pinned_messages;
+               if (UsingImplicitWeakDescriptor(file_, options_)) {
+                 pinned_messages =
+                     GetMessagesToPinGloballyForWeakDescriptors(file_);
+               }
+               if (pinned_messages.empty()) {
+                 p->Emit("&$desc_table$");
+               } else {
+                 p->Emit({{"pinned",
+                           [&] {
+                             for (const auto* pinned : pinned_messages) {
+                               p->Emit(
+                                   {
+                                       {"default", QualifiedDefaultInstanceName(
+                                                       pinned, options_)},
+                                   },
+                                   R"cc(
+                                     ::_pbi::StrongPointer(&$default$),
+                                   )cc");
+                             }
+                           }}},
+                         "($pinned$, &$desc_table$)");
+               }
+             }},
+        },
+        R"cc(
+          // Force running AddDescriptors() at dynamic initialization time.
+          PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+          static ::_pbi::AddDescriptorsRunner $dummy$($desc_table_expr$);
+        )cc");
   }
 
   // However, we must provide a way to force initialize the default instances

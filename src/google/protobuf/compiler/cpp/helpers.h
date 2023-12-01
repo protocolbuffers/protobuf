@@ -734,6 +734,60 @@ void ForEachField(const FileDescriptor* d, T&& func) {
 void ListAllTypesForServices(const FileDescriptor* fd,
                              std::vector<const Descriptor*>* types);
 
+// Whether this type should use the implicit weak feature for descriptor based
+// objects.
+//
+// This feature allows tree shaking within a single translation unit by
+// decoupling the messages from the TU-wide `file_default_instances` array.
+// This way there are no static initializers in the TU pointing to any part of
+// the generated classes and they can be GC'd by the linker.
+// Instead, we inject the surviving messages by having `WeakDefaultWriter`
+// objects in a special `pb_defaults` section. The runtime will iterate this
+// section to see the list of all live objects and put them back into the
+// `file_default_instances` array.
+//
+// Any object that gets GC'd will have a `nullptr` in the respective slot in the
+// `file_default_instances` array. The runtime will recognize this and will
+// dynamically generate the object if needed. This logic is in the
+// `GeneratedMessageFactory::GetPrototype`.  It will fall back to a
+// `DynamicMessage` for the missing objects.
+// This allows all of reflection to keep working normally, even for types that
+// were dropped. Note that dropping the _classes_ will not drop the descriptor
+// information. The messages are still going to be registered in the generated
+// `DescriptorPool` and will be available via normal `FindMessageTypeByName` and
+// friends.
+//
+// A "pin" is adding dependency edge in the graph for the GC.
+// The `WeakDefaultWriter`, the default instance, and vtable of a message all
+// pin each other. If anyone lives, they all do. This is important.
+// The `WeakDefaultWriter` pins the default instance of the message by using it.
+// The default instance of the message pins the vtable trivially by using it.
+// The vtable pins the `WeakDefaultWriter` by having a StrongPointer into it
+// from any of the virtual functions.
+//
+// All parent messages pin their children.
+// SPEED messages do this implicitly via the TcParseTable, which contain
+// pointers to the submessages.
+// CODE_SIZE messages explicitly add a pin via `StrongPointer` somewhere in
+// their codegen.
+// LITE messages do not participate at all in this feature.
+//
+// For extensions, the identifiers currently pin both the extended and extendee
+// messages. This is the status quo, but not the desired end state which should
+// change in a future update to the feature.
+//
+// For services, the TU unconditionally pins the request/response objects.
+// This is the status quo for simplicitly to avoid modifying the RPC layer. It
+// might be improved in the future.
+bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
+                                 const Options& options);
+
+// Section name to be used for the DefaultWriter object for implicit weak
+// descriptor objects.
+// See `UsingImplicitWeakDescriptor` above.
+std::string WeakDefaultWriterSection(const Descriptor* descriptor,
+                                     const Options& options);
+
 // Indicates whether we should use implicit weak fields for this file.
 bool UsingImplicitWeakFields(const FileDescriptor* file,
                              const Options& options);

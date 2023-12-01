@@ -139,6 +139,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       if (!value.empty()) {
         file_options.num_cc_files = std::strtol(value.c_str(), nullptr, 10);
       }
+    } else if (key == "descriptor_implicit_weak_messages") {
+      file_options.descriptor_implicit_weak_messages = true;
     } else if (key == "proto_h") {
       file_options.proto_h = true;
     } else if (key == "proto_static_reflection_h") {

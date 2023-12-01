@@ -782,6 +782,15 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_BUILTIN_CONSTANT_P(x) false
 #endif
 
+// Determines the platforms where descriptor weak messages can be used.
+#ifdef PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
+#error PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED was previously defined
+#endif
+#if defined(__GNUC__) && defined(__clang__) && !defined(__APPLE__) && \
+    !defined(_MSC_VER)
+#define PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
+#endif
+
 
 // TODO: Enable the feature by default and remove this flag.
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

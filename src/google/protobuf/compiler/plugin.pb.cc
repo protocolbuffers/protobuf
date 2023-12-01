@@ -608,9 +608,9 @@ void Version::InternalSwap(Version* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Version::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[0]);
 }
 // ===================================================================
 
@@ -953,9 +953,9 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT 
 }
 
 ::google::protobuf::Metadata CodeGeneratorRequest::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[1]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[1]);
 }
 // ===================================================================
 
@@ -1272,9 +1272,9 @@ void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOB
 }
 
 ::google::protobuf::Metadata CodeGeneratorResponse_File::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[2]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[2]);
 }
 // ===================================================================
 
@@ -1602,9 +1602,9 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRIC
 }
 
 ::google::protobuf::Metadata CodeGeneratorResponse::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[3]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[3]);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace compiler

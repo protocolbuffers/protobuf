@@ -2057,30 +2057,50 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
+
+  const auto pin_weak_writer = [&] {
+    if (!UsingImplicitWeakDescriptor(descriptor_->file(), options_)) return;
+    p->Emit({{"index", index_in_file_messages_}},
+            R"cc(
+              ::_pbi::StrongPointer(&pb_$index$_weak_);
+            )cc");
+
+    // For CODE_SIZE types, we need to pin the submessages too.
+    // SPEED types will pin them via the TcParse table automatically.
+    if (HasGeneratedMethods(descriptor_->file(), options_)) return;
+    for (int i = 0; i < descriptor_->field_count(); ++i) {
+      auto* field = descriptor_->field(i);
+      if (field->type() != field->TYPE_MESSAGE) continue;
+      p->Emit(
+          {
+              {"sub_default_name",
+               QualifiedDefaultInstanceName(field->message_type(), options_)},
+          },
+          R"cc(
+            ::_pbi::StrongPointer(&$sub_default_name$);
+          )cc");
+    }
+  };
+
   if (IsMapEntryMessage(descriptor_)) {
     format(
         "$classname$::$classname$() {}\n"
         "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
         "    : SuperType(arena) {}\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      if (!descriptor_->options().map_entry()) {
-        format(
-            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-            "$annotate_reflection$"
-            "  return ::_pbi::AssignDescriptors(\n"
-            "      &$desc_table$_getter, &$desc_table$_once,\n"
-            "      $file_level_metadata$[$1$]);\n"
-            "}\n",
-            index_in_file_messages_);
-      } else {
-        format(
-            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-            "  return ::_pbi::AssignDescriptors(\n"
-            "      &$desc_table$_getter, &$desc_table$_once,\n"
-            "      $file_level_metadata$[$1$]);\n"
-            "}\n",
-            index_in_file_messages_);
-      }
+      p->Emit(
+          {
+              {"pin_weak_writer", pin_weak_writer},
+              {"index", index_in_file_messages_},
+          },
+          R"cc(
+            ::$proto_ns$::Metadata $classname$::GetMetadata() const {
+              $pin_weak_writer$;
+              return ::_pbi::AssignDescriptors(&$desc_table$_getter,
+                                               &$desc_table$_once,
+                                               $file_level_metadata$[$index$]);
+            }
+          )cc");
     }
     return;
   }
@@ -2203,24 +2223,20 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   format("\n");
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    if (!descriptor_->options().map_entry()) {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "$annotate_reflection$"
-          "  return ::_pbi::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
-    } else {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "  return ::_pbi::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
-    }
+    p->Emit(
+        {
+            {"pin_weak_writer", pin_weak_writer},
+            {"index", index_in_file_messages_},
+        },
+        R"cc(
+          ::$proto_ns$::Metadata $classname$::GetMetadata() const {
+            $annotate_reflection$;
+            $pin_weak_writer$;
+            return ::_pbi::AssignDescriptors(&$desc_table$_getter,
+                                             &$desc_table$_once,
+                                             $file_level_metadata$[$index$]);
+          }
+        )cc");
   }
 
   if (HasTracker(descriptor_, options_)) {
