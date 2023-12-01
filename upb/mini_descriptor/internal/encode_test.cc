@@ -68,7 +68,7 @@ TEST_P(MiniTableTest, AllScalarTypes) {
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {
     const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
-    EXPECT_EQ(i + 1, f->number);
+    EXPECT_EQ(i + 1, upb_MiniTableField_Number(f));
     EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);
@@ -94,7 +94,7 @@ TEST_P(MiniTableTest, AllRepeatedTypes) {
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {
     const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
-    EXPECT_EQ(i + 1, f->number);
+    EXPECT_EQ(i + 1, upb_MiniTableField_Number(f));
     EXPECT_TRUE(upb_MiniTableField_IsArray(f));
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);
@@ -122,7 +122,7 @@ TEST_P(MiniTableTest, Skips) {
   absl::flat_hash_set<size_t> offsets;
   for (size_t i = 0; i < field_numbers.size(); i++) {
     const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
-    EXPECT_EQ(field_numbers[i], f->number);
+    EXPECT_EQ(field_numbers[i], upb_MiniTableField_Number(f));
     EXPECT_EQ(kUpb_FieldType_Float, upb_MiniTableField_Type(f));
     EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
     EXPECT_TRUE(offsets.insert(f->offset).second);
@@ -152,7 +152,7 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {
     const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
-    EXPECT_EQ(i + 1, f->number);
+    EXPECT_EQ(i + 1, upb_MiniTableField_Number(f));
     EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
     // For a oneof all fields have the same offset.
     EXPECT_EQ(table->UPB_PRIVATE(fields)[0].offset, f->offset);

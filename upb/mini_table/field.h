@@ -8,6 +8,8 @@
 #ifndef UPB_MINI_TABLE_FIELD_H_
 #define UPB_MINI_TABLE_FIELD_H_
 
+#include <stdint.h>
+
 #include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/internal/field.h"
 
@@ -62,6 +64,10 @@ UPB_API_INLINE bool upb_MiniTableField_IsScalar(const upb_MiniTableField* f) {
 UPB_API_INLINE bool upb_MiniTableField_IsSubMessage(
     const upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTableField_IsSubMessage)(f);
+}
+
+UPB_API_INLINE uint32_t upb_MiniTableField_Number(const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_MiniTableField_Number)(f);
 }
 
 UPB_API_INLINE upb_FieldType

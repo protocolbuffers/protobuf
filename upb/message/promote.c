@@ -242,14 +242,16 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   UPB_ASSERT(upb_MiniTable_GetSubMessageTable(mini_table, field) ==
              sub_mini_table);
   bool is_oneof = upb_MiniTableField_IsInOneof(field);
-  if (!is_oneof || _upb_Message_GetOneofCase(msg, field) == field->number) {
+  if (!is_oneof || _upb_Message_GetOneofCase(msg, field) ==
+                       upb_MiniTableField_Number(field)) {
     UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
   }
   upb_UnknownToMessageRet ret;
   ret.status = kUpb_UnknownToMessage_Ok;
   do {
     unknown = upb_MiniTable_FindUnknown(
-        msg, field->number, upb_DecodeOptions_GetMaxDepth(decode_options));
+        msg, upb_MiniTableField_Number(field),
+        upb_DecodeOptions_GetMaxDepth(decode_options));
     switch (unknown.status) {
       case kUpb_FindUnknown_Ok: {
         const char* unknown_data = unknown.ptr;
@@ -296,7 +298,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
   upb_FindUnknownRet unknown;
   do {
     unknown = upb_MiniTable_FindUnknown(
-        msg, field->number, upb_DecodeOptions_GetMaxDepth(decode_options));
+        msg, upb_MiniTableField_Number(field),
+        upb_DecodeOptions_GetMaxDepth(decode_options));
     if (unknown.status == kUpb_FindUnknown_Ok) {
       upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
           unknown.ptr, unknown.len, mini_table,
@@ -336,7 +339,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
   upb_FindUnknownRet unknown;
   while (1) {
     unknown = upb_MiniTable_FindUnknown(
-        msg, field->number, upb_DecodeOptions_GetMaxDepth(decode_options));
+        msg, upb_MiniTableField_Number(field),
+        upb_DecodeOptions_GetMaxDepth(decode_options));
     if (unknown.status != kUpb_FindUnknown_Ok) break;
     upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
         unknown.ptr, unknown.len, map_entry_mini_table,

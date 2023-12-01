@@ -119,7 +119,7 @@ UPB_INLINE uint32_t _upb_Message_GetOneofCase(const upb_Message* msg,
 
 UPB_INLINE void _upb_Message_SetOneofCase(upb_Message* msg,
                                           const upb_MiniTableField* f) {
-  *_upb_Message_OneofCasePtr(msg, f) = f->number;
+  *_upb_Message_OneofCasePtr(msg, f) = upb_MiniTableField_Number(f);
 }
 
 // TODO: implement _upb_Message_ClearOneofCase()
@@ -227,7 +227,8 @@ UPB_INLINE bool _upb_Message_HasNonExtensionField(
   UPB_ASSERT(upb_MiniTableField_HasPresence(field));
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   if (upb_MiniTableField_IsInOneof(field)) {
-    return _upb_Message_GetOneofCase(msg, field) == field->number;
+    return _upb_Message_GetOneofCase(msg, field) ==
+           upb_MiniTableField_Number(field);
   } else {
     return _upb_Message_GetHasbitByField(msg, field);
   }
@@ -325,7 +326,7 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
     _upb_Message_ClearHasbitByField(msg, field);
   } else if (upb_MiniTableField_IsInOneof(field)) {
     uint32_t* ptr = _upb_Message_OneofCasePtr(msg, field);
-    if (*ptr != field->number) return;
+    if (*ptr != upb_MiniTableField_Number(field)) return;
     *ptr = 0;
   }
   const char zeros[16] = {0};
