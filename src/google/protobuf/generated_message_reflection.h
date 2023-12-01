@@ -15,12 +15,13 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
 
+#include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/call_once.h"
-#include "absl/base/casts.h"
-#include "absl/strings/string_view.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/port.h"
@@ -40,6 +41,10 @@ class MapValueRef;
 class MessageLayoutInspector;
 class Message;
 struct Metadata;
+
+namespace io {
+class CodedOutputStream;
+}
 }  // namespace protobuf
 }  // namespace google
 
