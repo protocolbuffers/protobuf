@@ -51,12 +51,22 @@ UPB_API_INLINE bool upb_MiniTableField_IsMap(const upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTableField_IsMap)(f);
 }
 
+// Is array/map/message
+UPB_API_INLINE bool upb_MiniTableField_IsNested(const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_MiniTableField_IsNested)(f);
+}
+
 UPB_API_INLINE bool upb_MiniTableField_IsPacked(const upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTableField_IsPacked)(f);
 }
 
 UPB_API_INLINE bool upb_MiniTableField_IsScalar(const upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTableField_IsScalar)(f);
+}
+
+// Not oneof/array/map/message
+UPB_API_INLINE bool upb_MiniTableField_IsSimple(const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_MiniTableField_IsSimple)(f);
 }
 
 UPB_API_INLINE bool upb_MiniTableField_IsSubMessage(

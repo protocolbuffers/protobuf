@@ -683,11 +683,11 @@ static const char* _upb_Decoder_DecodeToSubMessage(
     return ptr;
   }
 
-  /* Set presence if necessary. */
-  if (field->presence > 0) {
+  // Set presence if necessary.
+  if (field->UPB_PRIVATE(presence) > 0) {
     _upb_Message_SetHasbitByField(msg, field);
-  } else if (field->presence < 0) {
-    /* Oneof case */
+  } else if (field->UPB_PRIVATE(presence) < 0) {
+    // Oneof case
     uint32_t* oneof_case = _upb_Message_OneofCasePtr(msg, field);
     if (op == kUpb_DecodeOp_SubMessage && *oneof_case != field->number) {
       memset(mem, 0, sizeof(void*));
@@ -695,7 +695,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
     *oneof_case = field->number;
   }
 
-  /* Store into message. */
+  // Store into message.
   switch (op) {
     case kUpb_DecodeOp_SubMessage: {
       upb_TaggedMessagePtr* submsgp = mem;

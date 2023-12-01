@@ -55,7 +55,7 @@ const upb_MiniTableField* upb_MiniTable_GetOneof(const upb_MiniTable* m,
   const upb_MiniTableField* end =
       &m->UPB_PRIVATE(fields)[m->UPB_PRIVATE(field_count)];
   for (; ptr < end; ptr++) {
-    if (ptr->presence == (*f).presence) {
+    if (ptr->UPB_PRIVATE(presence) == f->UPB_PRIVATE(presence)) {
       return ptr;
     }
   }
@@ -68,7 +68,7 @@ bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
   const upb_MiniTableField* end =
       &m->UPB_PRIVATE(fields)[m->UPB_PRIVATE(field_count)];
   while (++ptr < end) {
-    if (ptr->presence == (*f)->presence) {
+    if (ptr->UPB_PRIVATE(presence) == (*f)->UPB_PRIVATE(presence)) {
       *f = ptr;
       return true;
     }

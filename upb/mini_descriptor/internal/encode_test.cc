@@ -158,7 +158,8 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
     EXPECT_EQ(table->UPB_PRIVATE(fields)[0].offset, f->offset);
     // All presence fields should point to the same oneof case offset.
     size_t case_ofs = _upb_MiniTableField_OneofOffset(f);
-    EXPECT_EQ(table->UPB_PRIVATE(fields)[0].presence, f->presence);
+    EXPECT_EQ(table->UPB_PRIVATE(fields)[0].UPB_PRIVATE(presence),
+              f->UPB_PRIVATE(presence));
     EXPECT_TRUE(f->offset < table->size);
     EXPECT_TRUE(case_ofs < table->size);
     EXPECT_TRUE(case_ofs != f->offset);

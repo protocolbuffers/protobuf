@@ -86,7 +86,8 @@ std::string FieldInitializer(upb::FieldDefPtr field,
   return absl::Substitute(
       "{$0, $1, $2, $3, $4, $5}", field64->number,
       ArchDependentSize(field32->offset, field64->offset),
-      ArchDependentSize(field32->presence, field64->presence),
+      ArchDependentSize(field32->UPB_PRIVATE(presence),
+                        field64->UPB_PRIVATE(presence)),
       field64->UPB_PRIVATE(submsg_index) == kUpb_NoSub
           ? "kUpb_NoSub"
           : absl::StrCat(field64->UPB_PRIVATE(submsg_index)).c_str(),

@@ -20,7 +20,7 @@
 struct upb_MiniTableField {
   uint32_t number;
   uint16_t offset;
-  int16_t presence;  // If >0, hasbit_index.  If <0, ~oneof_index
+  int16_t UPB_ONLYBITS(presence);  // If >0, hasbit_index. If <0, ~oneof_index
 
   // Indexes into `upb_MiniTable.subs`
   // Will be set to `kUpb_NoSub` if `descriptortype` != MESSAGE/GROUP/ENUM
@@ -136,7 +136,17 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsClosedEnum)(
 
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsInOneof)(
     const struct upb_MiniTableField* f) {
-  return f->presence < 0;
+  return f->UPB_ONLYBITS(presence) < 0;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsNested)(
+    const struct upb_MiniTableField* f) {
+  return f->UPB_ONLYBITS(presence) == 0;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsSimple)(
+    const struct upb_MiniTableField* f) {
+  return f->UPB_ONLYBITS(presence) > 0;
 }
 
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsSubMessage)(
@@ -150,7 +160,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasPresence)(
   if (UPB_PRIVATE(_upb_MiniTableField_IsExtension)(f)) {
     return UPB_PRIVATE(_upb_MiniTableField_IsScalar)(f);
   } else {
-    return f->presence != 0;
+    return f->UPB_ONLYBITS(presence) != 0;
   }
 }
 
@@ -159,7 +169,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
              kUpb_FieldRep_NativePointer);
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_IsArray)(f));
-  UPB_ASSUME(f->presence == 0);
+  UPB_ASSUME(f->UPB_ONLYBITS(presence) == 0);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(
@@ -167,7 +177,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
              kUpb_FieldRep_NativePointer);
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_IsMap)(f));
-  UPB_ASSUME(f->presence == 0);
+  UPB_ASSUME(f->UPB_ONLYBITS(presence) == 0);
 }
 
 UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(

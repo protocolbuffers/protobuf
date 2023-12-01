@@ -292,14 +292,14 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
     // No hasbit/oneof-related fields.
   }
   if (field.real_containing_oneof()) {
-    uint64_t case_offset = ~mt_f->presence;
+    uint64_t case_offset = ~mt_f->UPB_PRIVATE(presence);
     if (case_offset > 0xffff || field.number() > 0xff) return false;
     data |= field.number() << 24;
     data |= case_offset << 32;
   } else {
     uint64_t hasbit_index = 63;  // No hasbit (set a high, unused bit).
-    if (mt_f->presence) {
-      hasbit_index = mt_f->presence;
+    if (mt_f->UPB_PRIVATE(presence)) {
+      hasbit_index = mt_f->UPB_PRIVATE(presence);
       if (hasbit_index > 31) return false;
     }
     data |= hasbit_index << 24;

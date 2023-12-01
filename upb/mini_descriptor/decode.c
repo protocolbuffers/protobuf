@@ -544,9 +544,9 @@ static void upb_MtDecoder_AssignHasbits(upb_MtDecoder* d) {
     upb_MiniTableField* field =
         (upb_MiniTableField*)&ret->UPB_PRIVATE(fields)[i];
     if (field->offset == kRequiredPresence) {
-      field->presence = ++last_hasbit;
+      field->UPB_PRIVATE(presence) = ++last_hasbit;
     } else if (field->offset == kNoPresence) {
-      field->presence = 0;
+      field->UPB_PRIVATE(presence) = 0;
     }
   }
   if (last_hasbit > 63) {
@@ -560,7 +560,7 @@ static void upb_MtDecoder_AssignHasbits(upb_MtDecoder* d) {
     upb_MiniTableField* field =
         (upb_MiniTableField*)&ret->UPB_PRIVATE(fields)[i];
     if (field->offset == kHasbitPresence) {
-      field->presence = ++last_hasbit;
+      field->UPB_PRIVATE(presence) = ++last_hasbit;
     }
   }
 
@@ -595,7 +595,7 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
     if (item->type != kUpb_LayoutItemType_OneofCase) continue;
     upb_MiniTableField* f = &d->fields[item->field_index];
     while (true) {
-      f->presence = ~item->offset;
+      f->UPB_PRIVATE(presence) = ~item->offset;
       if (f->offset == kUpb_LayoutItem_IndexSentinel) break;
       UPB_ASSERT(f->offset - kOneofBase < d->table->UPB_PRIVATE(field_count));
       f = &d->fields[f->offset - kOneofBase];
@@ -811,7 +811,7 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
 
   f->mode |= kUpb_LabelFlags_IsExtension;
   f->offset = 0;
-  f->presence = 0;
+  f->UPB_PRIVATE(presence) = 0;
 
   if (extendee->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMessageSet) {
     // Extensions of MessageSet must be messages.

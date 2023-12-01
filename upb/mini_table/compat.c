@@ -7,6 +7,9 @@
 
 #include "upb/mini_table/compat.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "upb/base/descriptor_constants.h"
 #include "upb/hash/common.h"
 #include "upb/hash/int_table.h"
@@ -42,7 +45,8 @@ static upb_MiniTableEquals_Status upb_deep_check(const upb_MiniTable* src,
       return false;
     if (src_field->mode != dst_field->mode) return false;
     if (src_field->offset != dst_field->offset) return false;
-    if (src_field->presence != dst_field->presence) return false;
+    if (src_field->UPB_PRIVATE(presence) != dst_field->UPB_PRIVATE(presence))
+      return false;
     if (src_field->UPB_PRIVATE(submsg_index) !=
         dst_field->UPB_PRIVATE(submsg_index))
       return kUpb_MiniTableEquals_NotEqual;
