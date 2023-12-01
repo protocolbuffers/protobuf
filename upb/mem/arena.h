@@ -31,9 +31,11 @@
 
 typedef struct upb_Arena upb_Arena;
 
+// LINT.IfChange(struct_definition)
 typedef struct {
   char *ptr, *end;
 } _upb_ArenaHead;
+// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts)
 
 #ifdef __cplusplus
 extern "C" {

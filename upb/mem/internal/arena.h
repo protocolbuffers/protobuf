@@ -15,6 +15,7 @@
 
 typedef struct _upb_MemBlock _upb_MemBlock;
 
+// LINT.IfChange(struct_definition)
 struct upb_Arena {
   _upb_ArenaHead head;
 
@@ -43,6 +44,7 @@ struct upb_Arena {
   // upb_Arena_SpaceAllocated().
   UPB_ATOMIC(_upb_MemBlock*) blocks;
 };
+// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts)
 
 UPB_INLINE bool _upb_Arena_IsTaggedRefcount(uintptr_t parent_or_count) {
   return (parent_or_count & 1) == 1;

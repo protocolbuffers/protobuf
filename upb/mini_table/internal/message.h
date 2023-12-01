@@ -39,6 +39,7 @@ typedef enum {
 // upb_MiniTable represents the memory layout of a given upb_MessageDef.
 // The members are public so generated code can initialize them,
 // but users MUST NOT directly read or write any of its members.
+// LINT.IfChange(minitable_struct_definition)
 struct upb_MiniTable {
   const union upb_MiniTableSub* UPB_PRIVATE(subs);
   const struct upb_MiniTableField* UPB_ONLYBITS(fields);
@@ -59,6 +60,7 @@ struct upb_MiniTable {
   // of flexible array members is a GNU extension, not in C99 unfortunately.
   _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
 };
+// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/mini_table.ts)
 
 #ifdef __cplusplus
 extern "C" {
