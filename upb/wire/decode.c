@@ -252,7 +252,7 @@ static upb_Message* _upb_Decoder_NewSubMessage(upb_Decoder* d,
   // Extensions should not be unlinked. A message extension should not be
   // registered until its sub-message type is available to be linked.
   bool is_empty = UPB_PRIVATE(_upb_MiniTable_IsEmpty)(subl);
-  bool is_extension = field->mode & kUpb_LabelFlags_IsExtension;
+  bool is_extension = field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension;
   UPB_ASSERT(!(is_empty && is_extension));
 
   if (is_empty && !(d->options & kUpb_DecodeOption_ExperimentalAllowUnlinked)) {
@@ -392,7 +392,8 @@ static bool _upb_Decoder_CheckEnum(upb_Decoder* d, const char* ptr,
   // so we just re-encode the tag and value here.
   const uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Varint;
   upb_Message* unknown_msg =
-      field->mode & kUpb_LabelFlags_IsExtension ? d->unknown_msg : msg;
+      field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension ? d->unknown_msg
+                                                             : msg;
   _upb_Decoder_AddUnknownVarints(d, unknown_msg, tag, v);
   return false;
 }
@@ -995,7 +996,7 @@ static void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
                                        const upb_MiniTableField* field,
                                        int* op) {
   // If sub-message is not linked, treat as unknown.
-  if (field->mode & kUpb_LabelFlags_IsExtension) return;
+  if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension) return;
   const upb_MiniTable* mt_sub =
       _upb_MiniTableSubs_MessageByField(mt->UPB_PRIVATE(subs), field);
   if ((d->options & kUpb_DecodeOption_ExperimentalAllowUnlinked) ||
@@ -1139,7 +1140,7 @@ static const char* _upb_Decoder_DecodeKnownField(
     const upb_MiniTable* layout, const upb_MiniTableField* field, int op,
     wireval* val) {
   const upb_MiniTableSub* subs = layout->UPB_PRIVATE(subs);
-  uint8_t mode = field->mode;
+  uint8_t mode = field->UPB_PRIVATE(mode);
 
   if (UPB_UNLIKELY(mode & kUpb_LabelFlags_IsExtension)) {
     const upb_MiniTableExtension* ext_layout =
