@@ -1248,26 +1248,34 @@ static const void* PyUpb_FileDescriptor_NestedLookup(
 
 static const void* PyUpb_FileDescriptor_LookupMessage(
     const upb_FileDef* filedef, const char* name) {
-  return PyUpb_FileDescriptor_NestedLookup(
+  const upb_MessageDef* m = PyUpb_FileDescriptor_NestedLookup(
       filedef, name, (void*)&upb_DefPool_FindMessageByName);
+  if (!m) return NULL;
+  return upb_MessageDef_File(m) == filedef ? m : NULL;
 }
 
 static const void* PyUpb_FileDescriptor_LookupEnum(const upb_FileDef* filedef,
                                                    const char* name) {
-  return PyUpb_FileDescriptor_NestedLookup(filedef, name,
-                                           (void*)&upb_DefPool_FindEnumByName);
+  const upb_EnumDef* e = PyUpb_FileDescriptor_NestedLookup(
+      filedef, name, (void*)&upb_DefPool_FindEnumByName);
+  if (!e) return NULL;
+  return upb_EnumDef_File(e) == filedef ? e : NULL;
 }
 
 static const void* PyUpb_FileDescriptor_LookupExtension(
     const upb_FileDef* filedef, const char* name) {
-  return PyUpb_FileDescriptor_NestedLookup(
+  const upb_FieldDef* f = PyUpb_FileDescriptor_NestedLookup(
       filedef, name, (void*)&upb_DefPool_FindExtensionByName);
+  if (!f) return NULL;
+  return upb_FieldDef_File(f) == filedef ? f : NULL;
 }
 
 static const void* PyUpb_FileDescriptor_LookupService(
     const upb_FileDef* filedef, const char* name) {
-  return PyUpb_FileDescriptor_NestedLookup(
+  const upb_ServiceDef* s = PyUpb_FileDescriptor_NestedLookup(
       filedef, name, (void*)&upb_DefPool_FindServiceByName);
+  if (!s) return NULL;
+  return upb_ServiceDef_File(s) == filedef ? s : NULL;
 }
 
 static PyObject* PyUpb_FileDescriptor_GetName(PyUpb_DescriptorBase* self,
