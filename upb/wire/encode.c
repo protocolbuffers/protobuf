@@ -465,7 +465,7 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
 static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
                                 const upb_MiniTableSub* subs,
                                 const upb_MiniTableField* f) {
-  if (f->presence == 0) {
+  if (UPB_PRIVATE(_upb_MiniTableField_IsIntangible)(f)) {
     // Proto3 presence or map/array.
     const void* mem = UPB_PTR_AT(msg, f->offset, void);
     switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
@@ -491,7 +491,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
       default:
         UPB_UNREACHABLE();
     }
-  } else if (f->presence > 0) {
+  } else if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
     // Proto2 presence: hasbit.
     return _upb_Message_GetHasbitByField(msg, f);
   } else {

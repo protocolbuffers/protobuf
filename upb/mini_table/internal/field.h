@@ -21,7 +21,7 @@
 struct upb_MiniTableField {
   uint32_t UPB_ONLYBITS(number);
   uint16_t offset;
-  int16_t presence;  // If >0, hasbit_index.  If <0, ~oneof_index
+  int16_t presence;  // If >0, hasbit_index. If <0, ~oneof_index
 
   // Indexes into `upb_MiniTable.subs`
   // Will be set to `kUpb_NoSub` if `descriptortype` != MESSAGE/GROUP/ENUM
@@ -135,9 +135,24 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsClosedEnum)(
   return f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Enum;
 }
 
+// All proto2 scalars not in a oneof have a simple hasbit.
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(
+    const struct upb_MiniTableField* f) {
+  return f->presence > 0;
+}
+
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsInOneof)(
     const struct upb_MiniTableField* f) {
   return f->presence < 0;
+}
+
+// Intangible (adjective): unable to be touched; not having physical presence.
+//
+// "Intangible" types as those without presence (see what I did there?):
+// messages, arrays, maps, proto3 scalars.
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsIntangible)(
+    const struct upb_MiniTableField* f) {
+  return f->presence == 0;
 }
 
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsSubMessage)(
@@ -151,7 +166,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasPresence)(
   if (UPB_PRIVATE(_upb_MiniTableField_IsExtension)(f)) {
     return UPB_PRIVATE(_upb_MiniTableField_IsScalar)(f);
   } else {
-    return f->presence != 0;
+    return !UPB_PRIVATE(_upb_MiniTableField_IsIntangible)(f);
   }
 }
 
@@ -165,7 +180,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
              kUpb_FieldRep_NativePointer);
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_IsArray)(f));
-  UPB_ASSUME(f->presence == 0);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_IsIntangible)(f));
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(
@@ -173,7 +188,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
              kUpb_FieldRep_NativePointer);
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_IsMap)(f));
-  UPB_ASSUME(f->presence == 0);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_IsIntangible)(f));
 }
 
 UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(
