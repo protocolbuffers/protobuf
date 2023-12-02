@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -34,23 +11,25 @@
 
 #include "google/protobuf/compiler/cpp/file.h"
 
-#include <iostream>
+#include <algorithm>
+#include <functional>
 #include <memory>
+#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/compiler/scc.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -58,6 +37,8 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/service.h"
 #include "google/protobuf/compiler/retention.h"
+#include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -71,6 +52,7 @@ namespace compiler {
 namespace cpp {
 namespace {
 using Sub = ::google::protobuf::io::Printer::Sub;
+using ::google::protobuf::internal::cpp::IsLazilyInitializedFile;
 
 absl::flat_hash_map<absl::string_view, std::string> FileVars(
     const FileDescriptor* file, const Options& options) {
@@ -88,7 +70,7 @@ absl::flat_hash_map<absl::string_view, std::string> FileVars(
   };
 }
 
-// TODO(b/203101078): remove pragmas that suppresses uninitialized warnings when
+// TODO: remove pragmas that suppresses uninitialized warnings when
 // clang bug is fixed.
 void MuteWuninitialized(io::Printer* p) {
   p->Emit(R"(
@@ -108,15 +90,47 @@ void UnmuteWuninitialized(io::Printer* p) {
 }
 }  // namespace
 
+bool FileGenerator::ShouldSkipDependencyImports(
+    const FileDescriptor* dep) const {
+  // Do not import weak deps.
+  if (!options_.opensource_runtime && IsDepWeak(dep)) {
+    return true;
+  }
+
+  // Skip feature imports, which are a visible (but non-functional) deviation
+  // between editions and legacy syntax.
+  if (options_.strip_nonfunctional_codegen &&
+      IsKnownFeatureProto(dep->name())) {
+    return true;
+  }
+
+  return false;
+}
+
 FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
     : file_(file), options_(options), scc_analyzer_(options) {
   std::vector<const Descriptor*> msgs = FlattenMessagesInFile(file);
+  std::vector<const Descriptor*> msgs_topologically_ordered =
+      TopologicalSortMessagesInFile(file, scc_analyzer_);
+  ABSL_CHECK(msgs_topologically_ordered.size() == msgs.size())
+      << "Size mismatch";
 
   for (int i = 0; i < msgs.size(); ++i) {
     message_generators_.push_back(std::make_unique<MessageGenerator>(
         msgs[i], variables_, i, options, &scc_analyzer_));
     message_generators_.back()->AddGenerators(&enum_generators_,
                                               &extension_generators_);
+  }
+  absl::flat_hash_map<const Descriptor*, int> msg_to_index;
+  for (size_t i = 0; i < msgs.size(); ++i) {
+    msg_to_index[msgs[i]] = i;
+  }
+  // Populate the topological order.
+  for (size_t i = 0; i < msgs.size(); ++i) {
+    auto it = msg_to_index.find(msgs_topologically_ordered[i]);
+    ABSL_DCHECK(it != msg_to_index.end())
+        << "Topological order has a message not present in the file!";
+    message_generators_topologically_ordered_.push_back(it->second);
   }
 
   for (int i = 0; i < file->enum_type_count(); ++i) {
@@ -129,7 +143,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
         file->service(i), variables_, options));
   }
   if (HasGenericServices(file_, options_)) {
-    for (int i = 0; i < service_generators_.size(); ++i) {
+    for (size_t i = 0; i < service_generators_.size(); ++i) {
       service_generators_[i]->index_in_metadata_ = i;
     }
   }
@@ -148,16 +162,22 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
                                  std::function<void()> cb) {
   auto v = p->WithVars(FileVars(file_, options_));
   auto guard = IncludeGuard(file_, file_type, options_);
+  p->Print(
+      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
+      "// source: $filename$\n");
+  if (options_.opensource_runtime) {
+    p->Print("// Protobuf C++ Version: $protobuf_cpp_version$\n",
+             "protobuf_cpp_version", PROTOBUF_CPP_VERSION_STRING);
+  }
+  p->Print("\n");
   p->Emit({{"cb", cb}, {"guard", guard}}, R"(
-    // Generated by the protocol buffer compiler.  DO NOT EDIT!
-    // source: $filename$
-
     #ifndef $guard$
     #define $guard$
 
     #include <limits>
     #include <string>
     #include <type_traits>
+    #include <utility>
 
     $cb$;
 
@@ -169,7 +189,7 @@ void FileGenerator::GenerateMacroUndefs(io::Printer* p) {
   // Only do this for protobuf's own types. There are some google3 protos using
   // macros as field names and the generated code compiles after the macro
   // expansion. Undefing these macros actually breaks such code.
-  if (file_->name() != "net/proto2/compiler/proto/plugin.proto" &&
+  if (file_->name() != "third_party/protobuf/compiler/plugin.proto" &&
       file_->name() != "google/protobuf/compiler/plugin.proto") {
     return;
   }
@@ -207,6 +227,15 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
           {"undefs", [&] { GenerateMacroUndefs(p); }},
           {"global_state_decls",
            [&] { GenerateGlobalStateFunctionDeclarations(p); }},
+          {"any_metadata",
+           [&] {
+             NamespaceOpener ns(ProtobufNamespace(options_), p);
+             p->Emit(R"cc(
+               namespace internal {
+               class AnyMetadata;
+               }  // namespace internal
+             )cc");
+           }},
           {"fwd_decls", [&] { GenerateForwardDeclarations(p); }},
           {"proto2_ns_enums",
            [&] { GenerateProto2NamespaceEnumSpecializations(p); }},
@@ -250,11 +279,7 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
           #define $dllexport_macro$$ dllexport_decl$
           $undefs$
 
-          PROTOBUF_NAMESPACE_OPEN
-          namespace internal {
-          class AnyMetadata;
-          }  // namespace internal
-          PROTOBUF_NAMESPACE_CLOSE
+          $any_metadata$;
 
           $global_state_decls$;
           $fwd_decls$
@@ -438,20 +463,28 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
   }
 
   absl::StrAppend(&target_basename, options_.proto_h ? ".proto.h" : ".pb.h");
+  p->Print(
+      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
+      "// source: $filename$\n");
+  if (options_.opensource_runtime) {
+    p->Print("// Protobuf C++ Version: $protobuf_cpp_version$\n",
+             "protobuf_cpp_version", PROTOBUF_CPP_VERSION_STRING);
+  }
+  p->Print("\n");
   p->Emit({{"h_include", CreateHeaderInclude(target_basename, file_)}},
           R"(
-        // Generated by the protocol buffer compiler.  DO NOT EDIT!
-        // source: $filename$
-
         #include $h_include$
 
         #include <algorithm>
       )");
 
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
-  // TODO(gerbens) This is to include parse_context.h, we need a better way
+  // TODO This is to include parse_context.h, we need a better way
   IncludeFile("third_party/protobuf/extension_set.h", p);
   IncludeFile("third_party/protobuf/wire_format_lite.h", p);
+  if (ShouldVerify(file_, options_, &scc_analyzer_)) {
+    IncludeFile("third_party/protobuf/wire_format_verify.h", p);
+  }
 
   // Unknown fields implementation in lite mode uses StringOutputStream
   if (!UseUnknownFieldSet(file_, options_) && !message_generators_.empty()) {
@@ -465,8 +498,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/wire_format.h", p);
   }
 
-  if (HasGeneratedMethods(file_, options_) &&
-      options_.tctable_mode != Options::kTCTableNever) {
+  if (HasGeneratedMethods(file_, options_)) {
     IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
   }
 
@@ -475,13 +507,10 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
     for (int i = 0; i < file_->dependency_count(); ++i) {
       const FileDescriptor* dep = file_->dependency(i);
 
-      if (!options_.opensource_runtime &&
-          IsDepWeak(dep)) {  // Do not import weak deps.
-        continue;
-      }
+      if (ShouldSkipDependencyImports(dep)) continue;
 
       std::string basename = StripProto(dep->name());
-      if (IsBootstrapProto(options_, file_)) {
+      if (options_.bootstrap) {
         GetBootstrapBasename(options_, basename, &basename);
       }
       p->Emit({{"name", basename}}, R"(
@@ -515,8 +544,7 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
     namespace _pbi = ::$proto_ns$::internal;
   )cc");
 
-  if (HasGeneratedMethods(file_, options_) &&
-      options_.tctable_mode != Options::kTCTableNever) {
+  if (HasGeneratedMethods(file_, options_)) {
     p->Emit(R"cc(
       namespace _fl = ::$proto_ns$::internal::field_layout;
     )cc");
@@ -525,6 +553,8 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
 
 void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
   MessageGenerator* generator = message_generators_[idx].get();
+
+  if (!ShouldGenerateClass(generator->descriptor(), options_)) return;
 
   // Generate the split instance first because it's needed in the constexpr
   // constructor.
@@ -556,32 +586,57 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
             };
           };
 
-          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $type$ $name$;
         )cc");
   }
 
   generator->GenerateConstexprConstructor(p);
 
-  p->Emit(
-      {
-          {"type", DefaultInstanceType(generator->descriptor(), options_)},
-          {"name", DefaultInstanceName(generator->descriptor(), options_)},
-          {"default", [&] { generator->GenerateInitDefaultSplitInstance(p); }},
-          {"class", ClassName(generator->descriptor())},
-      },
-      R"cc(
-        struct $type$ {
-          PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
-          ~$type$() {}
-          union {
-            $class$ _instance;
+  if (IsFileDescriptorProto(file_, options_)) {
+    p->Emit(
+        {
+            {"type", DefaultInstanceType(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"class", ClassName(generator->descriptor())},
+        },
+        R"cc(
+          struct $type$ {
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            constexpr $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            $type$() {}
+            void Init() { ::new (&_instance) $class$(); };
+#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+            ~$type$() {}
+            union {
+              $class$ _instance;
+            };
           };
-        };
 
-        PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-            PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
-      )cc");
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
+  } else {
+    p->Emit(
+        {
+            {"type", DefaultInstanceType(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"class", ClassName(generator->descriptor())},
+        },
+        R"cc(
+          struct $type$ {
+            PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            ~$type$() {}
+            union {
+              $class$ _instance;
+            };
+          };
+
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+        )cc");
+  }
 
   for (int i = 0; i < generator->descriptor()->field_count(); ++i) {
     const FieldDescriptor* field = generator->descriptor()->field(i);
@@ -667,10 +722,10 @@ void FileGenerator::GetCrossFileReferencesForFile(const FileDescriptor* file,
   for (int i = 0; i < file->dependency_count(); ++i) {
     const FileDescriptor* dep = file->dependency(i);
 
-    if (IsDepWeak(dep)) {
-      refs->weak_reflection_files.insert(dep);
-    } else {
+    if (!ShouldSkipDependencyImports(file->dependency(i))) {
       refs->strong_reflection_files.insert(dep);
+    } else if (IsDepWeak(dep)) {
+      refs->weak_reflection_files.insert(dep);
     }
   }
 }
@@ -711,7 +766,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
   GenerateSourceIncludes(p);
   GenerateSourcePrelude(p);
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     MuteWuninitialized(p);
   }
 
@@ -745,7 +800,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
     message_generators_[idx]->GenerateSourceInProto2Namespace(p);
   }
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     UnmuteWuninitialized(p);
   }
 
@@ -791,14 +846,15 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   GetCrossFileReferencesForFile(file_, &refs);
   GenerateInternalForwardDeclarations(refs, p);
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     MuteWuninitialized(p);
   }
 
   {
     NamespaceOpener ns(Namespace(file_, options_), p);
     for (int i = 0; i < message_generators_.size(); ++i) {
-      GenerateSourceDefaultInstance(i, p);
+      GenerateSourceDefaultInstance(
+          message_generators_topologically_ordered_[i], p);
     }
   }
 
@@ -859,11 +915,31 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     // @@protoc_insertion_point(global_scope)
   )cc");
 
-  if (IsAnyMessage(file_, options_)) {
+  if (IsAnyMessage(file_)) {
     UnmuteWuninitialized(p);
   }
 
   IncludeFile("third_party/protobuf/port_undef.inc", p);
+}
+
+static std::vector<const Descriptor*>
+GetMessagesToPinGloballyForWeakDescriptors(const FileDescriptor* file) {
+  std::vector<const Descriptor*> out;
+
+  // For simplicity we force pin request/response messages for all
+  // services. The current implementation of services might not do
+  // the pin itself, so it is simpler.
+  // This is a place for improvement in the future.
+  for (int i = 0; i < file->service_count(); ++i) {
+    auto* service = file->service(i);
+    for (int j = 0; j < service->method_count(); ++j) {
+      auto* method = service->method(j);
+      out.push_back(method->input_type());
+      out.push_back(method->output_type());
+    }
+  }
+
+  return out;
 }
 
 void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
@@ -899,6 +975,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   if (!message_generators_.empty()) {
     std::vector<std::pair<size_t, size_t>> offsets;
     offsets.reserve(message_generators_.size());
+    bool has_implicit_weak_descriptors =
+        UsingImplicitWeakDescriptor(file_, options_);
 
     p->Emit(
         {
@@ -917,34 +995,67 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                  offset += offsets[i].first;
                }
              }},
-            {"defaults",
+            {"weak_defaults",
              [&] {
+               if (!has_implicit_weak_descriptors) return;
+               int index = 0;
                for (auto& gen : message_generators_) {
                  p->Emit(
                      {
+                         {"index", index++},
                          {"ns", Namespace(gen->descriptor(), options_)},
                          {"class", ClassName(gen->descriptor())},
+                         {"section", WeakDefaultWriterSection(gen->descriptor(),
+                                                              options_)},
                      },
                      R"cc(
-                       &$ns$::_$class$_default_instance_._instance,
+                       constexpr ::_pbi::WeakDefaultWriter pb_$index$_weak_
+                           __attribute__((__nodebug__))
+                           __attribute__((section("$section$"))) = {
+                               file_default_instances + $index$,
+                               &$ns$::_$class$_default_instance_._instance};
                      )cc");
                }
              }},
+            {"defaults",
+             [&] {
+               for (auto& gen : message_generators_) {
+                 if (has_implicit_weak_descriptors) {
+                   p->Emit(R"cc(
+                     nullptr,
+                   )cc");
+                 } else {
+                   p->Emit(
+                       {
+                           {"ns", Namespace(gen->descriptor(), options_)},
+                           {"class", ClassName(gen->descriptor())},
+                       },
+                       R"cc(
+                         &$ns$::_$class$_default_instance_._instance,
+                       )cc");
+                 }
+               }
+             }},
+            // When we have implicit weak descriptors we make the array mutable
+            // for dynamic initialization.
+            {"const", has_implicit_weak_descriptors ? "" : "const"},
         },
         R"cc(
-          const ::uint32_t $tablename$::offsets[] PROTOBUF_SECTION_VARIABLE(
-              protodesc_cold) = {
-              $offsets$,
+          const ::uint32_t
+              $tablename$::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+                  protodesc_cold) = {
+                  $offsets$,
           };
 
           static const ::_pbi::MigrationSchema
-              schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+              schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
                   $schemas$,
           };
 
-          static const ::_pb::Message* const file_default_instances[] = {
+          static const ::_pb::Message* $const $file_default_instances[] = {
               $defaults$,
           };
+          $weak_defaults$;
         )cc");
   } else {
     // Ee still need these symbols to exist.
@@ -972,6 +1083,11 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
       {{"desc_name", desc_name},
        {"encoded_file_proto",
         [&] {
+          if (options_.strip_nonfunctional_codegen) {
+            p->Emit(R"cc("")cc");
+            return;
+          }
+
           absl::string_view data = file_data;
           if (data.size() <= 65535) {
             static constexpr size_t kBytesPerLine = 40;
@@ -1008,7 +1124,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
           }
         }}},
       R"cc(
-        const char $desc_name$[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+        const char $desc_name$[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
+            protodesc_cold) = {
             $encoded_file_proto$,
         };
       )cc");
@@ -1053,7 +1170,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   p->Emit(
       {
           {"eager", eager ? "true" : "false"},
-          {"file_proto_len", file_data.size()},
+          {"file_proto_len",
+           options_.strip_nonfunctional_codegen ? 0 : file_data.size()},
           {"proto_name", desc_name},
           {"deps_ptr", num_deps == 0
                            ? "nullptr"
@@ -1100,19 +1218,76 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
         }
       )cc");
 
-  // For descriptor.proto we want to avoid doing any dynamic initialization,
-  // because in some situations that would otherwise pull in a lot of
-  // unnecessary code that can't be stripped by --gc-sections. Descriptor
-  // initialization will still be performed lazily when it's needed.
-  if (file_->name() == "net/proto2/proto/descriptor.proto") {
-    return;
+  // For descriptor.proto and cpp_features.proto we want to avoid doing any
+  // dynamic initialization, because in some situations that would otherwise
+  // pull in a lot of unnecessary code that can't be stripped by --gc-sections.
+  // Descriptor initialization will still be performed lazily when it's needed.
+  if (!IsLazilyInitializedFile(file_->name())) {
+    p->Emit(
+        {
+            {"dummy", UniqueName("dynamic_init_dummy", file_, options_)},
+            {"desc_table_expr",
+             [&] {
+               std::vector<const Descriptor*> pinned_messages;
+               if (UsingImplicitWeakDescriptor(file_, options_)) {
+                 pinned_messages =
+                     GetMessagesToPinGloballyForWeakDescriptors(file_);
+               }
+               if (pinned_messages.empty()) {
+                 p->Emit("&$desc_table$");
+               } else {
+                 p->Emit({{"pinned",
+                           [&] {
+                             for (const auto* pinned : pinned_messages) {
+                               p->Emit(
+                                   {
+                                       {"default", QualifiedDefaultInstanceName(
+                                                       pinned, options_)},
+                                   },
+                                   R"cc(
+                                     ::_pbi::StrongPointer(&$default$),
+                                   )cc");
+                             }
+                           }}},
+                         "($pinned$, &$desc_table$)");
+               }
+             }},
+        },
+        R"cc(
+          // Force running AddDescriptors() at dynamic initialization time.
+          PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+          static ::_pbi::AddDescriptorsRunner $dummy$($desc_table_expr$);
+        )cc");
   }
 
-  p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}}, R"cc(
-    // Force running AddDescriptors() at dynamic initialization time.
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-    static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
-  )cc");
+  // However, we must provide a way to force initialize the default instances
+  // of FileDescriptorProto which will be used during registration of other
+  // files.
+  if (IsFileDescriptorProto(file_, options_)) {
+    NamespaceOpener ns(p);
+    ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
+    p->Emit(
+        {{"dummy", UniqueName("dynamic_init_dummy", file_, options_)},
+         {"initializers", absl::StrJoin(message_generators_, "\n",
+                                        [&](std::string* out, const auto& gen) {
+                                          absl::StrAppend(
+                                              out,
+                                              DefaultInstanceName(
+                                                  gen->descriptor(), options_),
+                                              ".Init();");
+                                        })}},
+        R"cc(
+          //~ Emit wants an indented line, so give it a comment to strip.
+#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+          PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow() {
+            $initializers$;
+          }
+          PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+          static std::true_type $dummy${
+              (InitializeFileDescriptorDefaultInstances(), std::true_type{})};
+#endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+        )cc");
+  }
 }
 
 class FileGenerator::ForwardDeclarations {
@@ -1161,11 +1336,24 @@ class FileGenerator::ForwardDeclarations {
   }
 
   void PrintTopLevelDecl(io::Printer* p, const Options& options) const {
-    for (const auto& c : classes_) {
-      p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
-        template <>
-        $dllexport_decl $$class$* Arena::CreateMaybeMessage<$class$>(Arena*);
-      )cc");
+    if (ShouldGenerateExternSpecializations(options)) {
+      for (const auto& c : classes_) {
+        if (!ShouldGenerateClass(c.second, options)) continue;
+        // To reduce total linker input size in large binaries we make these
+        // functions extern and define then in the pb.cc file. This avoids bloat
+        // in callers by having duplicate definitions of the template.
+        // However, it increases the size of the pb.cc translation units so it
+        // is a tradeoff.
+        p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
+          extern template void* Arena::DefaultConstruct<$class$>(Arena*);
+        )cc");
+        if (!IsMapEntryMessage(c.second)) {
+          p->Emit({{"class", QualifiedClassName(c.second, options)}}, R"cc(
+            extern template void* Arena::CopyConstruct<$class$>(Arena*,
+                                                                const void*);
+          )cc");
+        }
+      }
     }
   }
 
@@ -1211,11 +1399,12 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
 
   absl::btree_map<std::string, ForwardDeclarations> decls;
   for (const auto* d : classes) {
-    if (d != nullptr && !public_set.count(d->file()))
+    if (d != nullptr && !public_set.contains(d->file()) &&
+        ShouldGenerateClass(d, options_))
       decls[Namespace(d, options_)].AddMessage(d);
   }
   for (const auto* e : enums) {
-    if (e != nullptr && !public_set.count(e->file()))
+    if (e != nullptr && !public_set.contains(e->file()))
       decls[Namespace(e, options_)].AddEnum(e);
   }
   for (const auto& mg : message_generators_) {
@@ -1231,9 +1420,19 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
     decl.second.Print(p, options_);
   }
 
-  ns.ChangeTo("PROTOBUF_NAMESPACE_ID");
+  ns.ChangeTo(ProtobufNamespace(options_));
   for (const auto& decl : decls) {
     decl.second.PrintTopLevelDecl(p, options_);
+  }
+
+  if (IsFileDescriptorProto(file_, options_)) {
+    ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
+    p->Emit(R"cc(
+      //~ Emit wants an indented line, so give it a comment to strip.
+#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+      PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();
+#endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+    )cc");
   }
 }
 
@@ -1259,21 +1458,14 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/port_def.inc", p);
     p->Emit(
         {
-            {"min_version", PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC},
             {"version", PROTOBUF_VERSION},
         },
         R"(
-        #if PROTOBUF_VERSION < $min_version$
-        #error "This file was generated by a newer version of protoc which is"
-        #error "incompatible with your Protocol Buffer headers. Please update"
-        #error "your headers."
-        #endif  // PROTOBUF_VERSION
-
-        #if $version$ < PROTOBUF_MIN_PROTOC_VERSION
-        #error "This file was generated by an older version of protoc which is"
-        #error "incompatible with your Protocol Buffer headers. Please"
-        #error "regenerate this file with a newer version of protoc."
-        #endif  // PROTOBUF_MIN_PROTOC_VERSION
+      #if PROTOBUF_VERSION != $version$
+      #error "Protobuf C++ gencode is built with an incompatible version of"
+      #error "Protobuf C++ headers/runtime. See"
+      #error "https://protobuf.dev/support/cross-version-runtime-guarantee/#cpp"
+      #endif
     )");
     IncludeFile("third_party/protobuf/port_undef.inc", p);
   }
@@ -1282,15 +1474,13 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
   IncludeFile("third_party/protobuf/arena.h", p);
   IncludeFile("third_party/protobuf/arenastring.h", p);
-  if ((options_.force_inline_string || options_.profile_driven_inline_string) &&
-      !options_.opensource_runtime) {
+  if (IsStringInliningEnabled(options_)) {
     IncludeFile("third_party/protobuf/inlined_string_field.h", p);
   }
   if (HasSimpleBaseClasses(file_, options_)) {
     IncludeFile("third_party/protobuf/generated_message_bases.h", p);
   }
-  if (HasGeneratedMethods(file_, options_) &&
-      options_.tctable_mode != Options::kTCTableNever) {
+  if (HasGeneratedMethods(file_, options_)) {
     IncludeFile("third_party/protobuf/generated_message_tctable_decl.h", p);
   }
   IncludeFile("third_party/protobuf/generated_message_util.h", p);
@@ -1334,7 +1524,6 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
       IncludeFile("third_party/protobuf/map_entry.h", p);
       IncludeFile("third_party/protobuf/map_field_inl.h", p);
     } else {
-      IncludeFile("third_party/protobuf/map_entry_lite.h", p);
       IncludeFile("third_party/protobuf/map_field_lite.h", p);
     }
   }
@@ -1380,13 +1569,12 @@ void FileGenerator::GenerateDependencyIncludes(io::Printer* p) {
   for (int i = 0; i < file_->dependency_count(); ++i) {
     const FileDescriptor* dep = file_->dependency(i);
 
-    // Do not import weak deps.
-    if (IsDepWeak(dep)) {
+    if (ShouldSkipDependencyImports(dep)) {
       continue;
     }
 
     std::string basename = StripProto(dep->name());
-    if (IsBootstrapProto(options_, file_)) {
+    if (options_.bootstrap) {
       GetBootstrapBasename(options_, basename, &basename);
     }
 
@@ -1405,7 +1593,7 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(io::Printer* p) {
   // The TableStruct is also outputted in weak_message_field.cc, because the
   // weak fields must refer to table struct but cannot include the header.
   // Also it annotates extra weak attributes.
-  // TODO(gerbens) make sure this situation is handled better.
+  // TODO make sure this situation is handled better.
   p->Emit(R"cc(
     // Internal implementation detail -- do not use these members.
     struct $dllexport_decl $$tablename$ {
@@ -1426,7 +1614,8 @@ void FileGenerator::GenerateMessageDefinitions(io::Printer* p) {
     p->Emit(R"cc(
       $hrule_thin$
     )cc");
-    message_generators_[i]->GenerateClassDefinition(p);
+    message_generators_[message_generators_topologically_ordered_[i]]
+        ->GenerateClassDefinition(p);
   }
 }
 
@@ -1465,7 +1654,7 @@ void FileGenerator::GenerateExtensionIdentifiers(io::Printer* p) {
 }
 
 void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* p) {
-  // TODO(gerbens) remove pragmas when gcc is no longer used. Current version
+  // TODO remove pragmas when gcc is no longer used. Current version
   // of gcc fires a bogus error when compiled with strict-aliasing.
   p->Emit(R"(
       #ifdef __GNUC__
@@ -1501,6 +1690,18 @@ void FileGenerator::GenerateProto2NamespaceEnumSpecializations(io::Printer* p) {
     gen->GenerateGetEnumDescriptorSpecializations(p);
   }
   p->PrintRaw("\n");
+}
+
+std::vector<const Descriptor*> FileGenerator::MessagesInTopologicalOrder()
+    const {
+  std::vector<const Descriptor*> descs;
+  descs.reserve(message_generators_.size());
+  for (int i = 0; i < message_generators_.size(); ++i) {
+    descs.push_back(
+        message_generators_[message_generators_topologically_ordered_[i]]
+            ->descriptor());
+  }
+  return descs;
 }
 }  // namespace cpp
 }  // namespace compiler

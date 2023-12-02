@@ -50,6 +50,7 @@ namespace Google.Protobuf.Examples.AddressBook {
   /// <summary>
   /// [START messages]
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Person : pb::IMessage<Person>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -397,6 +398,7 @@ namespace Google.Protobuf.Examples.AddressBook {
         [pbr::OriginalName("WORK")] Work = 2,
       }
 
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class PhoneNumber : pb::IMessage<PhoneNumber>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -631,6 +633,7 @@ namespace Google.Protobuf.Examples.AddressBook {
   /// <summary>
   /// Our address book file is just one of these.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class AddressBook : pb::IMessage<AddressBook>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage

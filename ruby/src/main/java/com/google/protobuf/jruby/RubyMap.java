@@ -372,6 +372,16 @@ public class RubyMap extends RubyObject {
     return RubyHash.newHash(context.runtime, mapForHash, context.nil);
   }
 
+  protected IRubyObject deepFreeze(ThreadContext context) {
+    setFrozen(true);
+    if (valueType == FieldDescriptor.Type.MESSAGE) {
+      for (IRubyObject key : table.keySet()) {
+        ((RubyMessage) table.get(key)).deepFreeze(context);
+      }
+    }
+    return this;
+  }
+
   // Used by Google::Protobuf.deep_copy but not exposed directly.
   protected IRubyObject deepCopy(ThreadContext context) {
     RubyMap newMap = newThisType(context);

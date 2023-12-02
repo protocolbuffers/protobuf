@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -40,12 +17,16 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_visitor.h"
+
 
 namespace google {
 namespace protobuf {
@@ -61,7 +42,7 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
     const Options& options) {
   bool is_oss = options.opensource_runtime;
   return {
-      {"proto_ns", ProtobufNamespace(options)},
+      {"proto_ns", std::string(ProtobufNamespace(options))},
       {"pb", absl::StrCat("::", ProtobufNamespace(options))},
       {"pbi", absl::StrCat("::", ProtobufNamespace(options), "::internal")},
 
@@ -96,6 +77,7 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
        "K"},
   };
 }
+
 }  // namespace
 
 bool CppGenerator::Generate(const FileDescriptor* file,
@@ -157,6 +139,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       if (!value.empty()) {
         file_options.num_cc_files = std::strtol(value.c_str(), nullptr, 10);
       }
+    } else if (key == "descriptor_implicit_weak_messages") {
+      file_options.descriptor_implicit_weak_messages = true;
     } else if (key == "proto_h") {
       file_options.proto_h = true;
     } else if (key == "proto_static_reflection_h") {
@@ -184,22 +168,10 @@ bool CppGenerator::Generate(const FileDescriptor* file,
               .emplace(value.substr(pos, next_pos - pos));
         pos = next_pos + 1;
       } while (pos < value.size());
-    } else if (key == "unverified_lazy_message_sets") {
-      file_options.unverified_lazy_message_sets = true;
     } else if (key == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
-    } else if (key == "experimental_tail_call_table_mode") {
-      if (value == "never") {
-        file_options.tctable_mode = Options::kTCTableNever;
-      } else if (value == "guarded") {
-        file_options.tctable_mode = Options::kTCTableGuarded;
-      } else if (value == "always") {
-        file_options.tctable_mode = Options::kTCTableAlways;
-      } else {
-        *error = absl::StrCat(
-            "Unknown value for experimental_tail_call_table_mode: ", value);
-        return false;
-      }
+    } else if (key == "experimental_strip_nonfunctional_codegen") {
+      file_options.strip_nonfunctional_codegen = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", key);
       return false;
@@ -233,6 +205,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   if (MaybeBootstrap(file_options, generator_context, file_options.bootstrap,
                      &basename)) {
     return true;
+  }
+
+  absl::Status validation_result = ValidateFeatures(file);
+  if (!validation_result.ok()) {
+    *error = std::string(validation_result.message());
+    return false;
   }
 
   FileGenerator file_generator(file, file_options);
@@ -351,6 +329,56 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
   return true;
 }
+
+absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
+  absl::Status status = absl::OkStatus();
+  google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
+    const FeatureSet& resolved_features = GetResolvedSourceFeatures(field);
+    const pb::CppFeatures& unresolved_features =
+        GetUnresolvedSourceFeatures(field, pb::cpp);
+    if (field.enum_type() != nullptr &&
+        resolved_features.GetExtension(::pb::cpp).legacy_closed_enum() &&
+        resolved_features.field_presence() == FeatureSet::IMPLICIT) {
+      status = absl::FailedPreconditionError(
+          absl::StrCat("Field ", field.full_name(),
+                       " has a closed enum type with implicit presence."));
+    }
+
+    if (field.containing_type() == nullptr ||
+        !field.containing_type()->options().map_entry()) {
+      // Skip validation of explicit features on generated map fields.  These
+      // will be blindly propagated from the original map field, and may violate
+      // a lot of these conditions.  Note: we do still validate the
+      // user-specified map field.
+      if (unresolved_features.has_legacy_closed_enum() &&
+          field.cpp_type() != FieldDescriptor::CPPTYPE_ENUM) {
+        status = absl::FailedPreconditionError(
+            absl::StrCat("Field ", field.full_name(),
+                         " specifies the legacy_closed_enum feature but has "
+                         "non-enum type."));
+      }
+    }
+
+#ifdef PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
+    if (field.options().has_ctype()) {
+      if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+        status = absl::FailedPreconditionError(absl::StrCat(
+            "Field ", field.full_name(),
+            " specifies ctype, but is not a string nor bytes field."));
+      }
+      if (field.options().ctype() == FieldOptions::CORD) {
+        if (field.is_extension()) {
+          status = absl::FailedPreconditionError(absl::StrCat(
+              "Extension ", field.full_name(),
+              " specifies ctype=CORD which is not supported for extensions."));
+        }
+      }
+    }
+#endif  // !PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
+  });
+  return status;
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

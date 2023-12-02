@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: jschorr@google.com (Joseph Schorr)
 //  Based on original Protocol Buffers design by
@@ -48,14 +25,15 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"  // FieldDescriptor
-#include "google/protobuf/message.h"     // Message
-#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/stubs/common.h"
 #include "absl/container/fixed_array.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "google/protobuf/descriptor.h"  // FieldDescriptor
+#include "google/protobuf/message.h"     // Message
+#include "google/protobuf/text_format.h"
+#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation
@@ -76,12 +54,6 @@ namespace util {
 
 class DefaultFieldComparator;
 class FieldContext;  // declared below MessageDifferencer
-
-// Defines a collection of field descriptors.
-// In case of internal google codebase we are using absl::FixedArray instead
-// of vector. It significantly speeds up proto comparison (by ~30%) by
-// reducing the number of malloc/free operations
-typedef absl::FixedArray<const FieldDescriptor*, 16> FieldDescriptorArray;
 
 // A basic differencer that can be used to determine
 // the differences between two specified Protocol Messages. If any differences
@@ -229,6 +201,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
     // reporting an addition or deletion.
     int unknown_field_index1 = -1;
     int unknown_field_index2 = -1;
+
+    // Was this field added to the diffing because set_force_compare_no_presence
+    // was called on the MessageDifferencer object.
+    bool forced_compare_no_presence_ = false;
   };
 
   // Abstract base class from which all MessageDifferencer
@@ -600,6 +576,19 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // Returns the current scope used by this differencer.
   Scope scope() const;
 
+  // Only affects PARTIAL diffing. When set, all non-repeated no-presence fields
+  // which are set to their default value (which is the same as being unset) in
+  // message1 but are set to a non-default value in message2 will also be used
+  // in the comparison.
+  void set_force_compare_no_presence(bool value);
+
+  // If set, the fields in message1 that equal the fields passed here will be
+  // treated as required for comparison, even if they are absent.
+  void set_require_no_presence_fields(
+      const google::protobuf::TextFormat::Parser::UnsetFieldsMetadata& fields) {
+    require_no_presence_fields_ = fields;
+  }
+
   // DEPRECATED. Pass a DefaultFieldComparator instance instead.
   // Sets the type of comparison (as defined in the FloatComparison enumeration
   // above) that is used by this differencer when comparing float (and double)
@@ -644,6 +633,13 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // If the provided pointer equals NULL, the MessageDifferencer stops reporting
   // differences to any previously set reporters or output strings.
   void ReportDifferencesTo(Reporter* reporter);
+
+  // Returns the list of fields which was automatically added to the list of
+  // compared fields by calling set_force_compare_no_presence and caused the
+  // last call to Compare to fail.
+  const absl::flat_hash_set<std::string>& NoPresenceFieldsCausingFailure() {
+    return force_compare_failure_triggering_fields_;
+  }
 
  private:
   // Class for processing Any deserialization.  This logic is used by both the
@@ -772,17 +768,17 @@ class PROTOBUF_EXPORT MessageDifferencer {
                           const FieldDescriptor* field2);
 
   // Retrieve all the set fields, including extensions.
-  FieldDescriptorArray RetrieveFields(const Message& message,
-                                      bool base_message);
+  std::vector<const FieldDescriptor*> RetrieveFields(const Message& message,
+                                                     bool base_message);
 
   // Combine the two lists of fields into the combined_fields output vector.
   // All fields present in both lists will always be included in the combined
   // list.  Fields only present in one of the lists will only appear in the
   // combined list if the corresponding fields_scope option is set to FULL.
-  FieldDescriptorArray CombineFields(const FieldDescriptorArray& fields1,
-                                     Scope fields1_scope,
-                                     const FieldDescriptorArray& fields2,
-                                     Scope fields2_scope);
+  std::vector<const FieldDescriptor*> CombineFields(
+      const Message& message1,
+      const std::vector<const FieldDescriptor*>& fields1, Scope fields1_scope,
+      const std::vector<const FieldDescriptor*>& fields2, Scope fields2_scope);
 
   // Internal version of the Compare method which performs the actual
   // comparison. The parent_fields vector is a vector containing field
@@ -802,16 +798,16 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // CompareWithFieldsInternal.
   bool CompareRequestedFieldsUsingSettings(
       const Message& message1, const Message& message2, int unpacked_any,
-      const FieldDescriptorArray& message1_fields,
-      const FieldDescriptorArray& message2_fields,
+      const std::vector<const FieldDescriptor*>& message1_fields,
+      const std::vector<const FieldDescriptor*>& message2_fields,
       std::vector<SpecificField>* parent_fields);
 
   // Compares the specified messages with the specified field lists.
-  bool CompareWithFieldsInternal(const Message& message1,
-                                 const Message& message2, int unpacked_any,
-                                 const FieldDescriptorArray& message1_fields,
-                                 const FieldDescriptorArray& message2_fields,
-                                 std::vector<SpecificField>* parent_fields);
+  bool CompareWithFieldsInternal(
+      const Message& message1, const Message& message2, int unpacked_any,
+      const std::vector<const FieldDescriptor*>& message1_fields,
+      const std::vector<const FieldDescriptor*>& message2_fields,
+      std::vector<SpecificField>* parent_fields);
 
   // Compares the repeated fields, and report the error.
   bool CompareRepeatedField(const Message& message1, const Message& message2,
@@ -932,10 +928,18 @@ class PROTOBUF_EXPORT MessageDifferencer {
       const FieldDescriptor* field,
       const RepeatedFieldComparison& new_comparison);
 
+  // Whether we should still compare the field despite its absence in message1.
+  bool ShouldCompareNoPresence(const Message& message1,
+                               const Reflection& reflection1,
+                               const FieldDescriptor* field2) const;
+
   Reporter* reporter_;
   DefaultFieldComparator default_field_comparator_;
   MessageFieldComparison message_field_comparison_;
   Scope scope_;
+  absl::flat_hash_set<const FieldDescriptor*> force_compare_no_presence_fields_;
+  google::protobuf::TextFormat::Parser::UnsetFieldsMetadata require_no_presence_fields_;
+  absl::flat_hash_set<std::string> force_compare_failure_triggering_fields_;
   RepeatedFieldComparison repeated_field_comparison_;
 
   absl::flat_hash_map<const FieldDescriptor*, RepeatedFieldComparison>
@@ -965,6 +969,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   bool report_matches_;
   bool report_moves_;
   bool report_ignores_;
+  bool force_compare_no_presence_ = false;
 
   std::string* output_string_;
 

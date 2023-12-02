@@ -1,6 +1,3 @@
-# Fail if a glob doesn't match anything (https://github.com/bazelbuild/bazel/issues/8195)
-build --incompatible_disallow_empty_glob
-
 build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt
@@ -8,7 +5,6 @@ build:opt --compilation_mode=opt
 build:san-common --config=dbg --strip=never --copt=-O0 --copt=-fno-omit-frame-pointer
 
 build:asan --config=san-common --copt=-fsanitize=address --linkopt=-fsanitize=address
-build:asan --copt=-DADDRESS_SANITIZER=1
 # ASAN hits ODR violations with shared linkage due to rules_proto.
 build:asan --dynamic_mode=off
 
@@ -16,7 +12,6 @@ build:msan --config=san-common --copt=-fsanitize=memory --linkopt=-fsanitize=mem
 build:msan --copt=-fsanitize-memory-track-origins
 build:msan --copt=-fsanitize-memory-use-after-dtor
 build:msan --action_env=MSAN_OPTIONS=poison_in_dtor=1
-build:msan --copt=-DMEMORY_SANITIZER=1
 
 # Use our instrumented LLVM libc++ in Kokoro.
 build:docker-msan --config=msan
@@ -26,11 +21,48 @@ build:docker-msan --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++
 
 
 build:tsan --config=san-common --copt=-fsanitize=thread --linkopt=-fsanitize=thread
-build:tsan --copt=-DTHREAD_SANITIZER=1
 
 build:ubsan --config=san-common --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined
 build:ubsan --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
-build:ubsan --copt=-DUNDEFINED_SANITIZER=1
 # Workaround for the fact that Bazel links with $CC, not $CXX
 # https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
 build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+
+# Build with all --incompatible flags that we can. This helps us prepare for
+# upcoming breaking changes in Bazel. This list was generated for Bazel 6 by
+# running bazelisk with the --migrate flag and filtering out all flags that
+# default to true or are deprecated.
+build --incompatible_check_sharding_support
+build --incompatible_default_to_explicit_init_py
+build --incompatible_disable_native_android_rules
+build --incompatible_disable_runtimes_filegroups
+build --incompatible_disable_target_provider_fields
+build --incompatible_disallow_empty_glob
+build --incompatible_dont_use_javasourceinfoprovider
+build --incompatible_enable_android_toolchain_resolution
+build --incompatible_enable_apple_toolchain_resolution
+build --incompatible_exclusive_test_sandboxed
+build --incompatible_remote_output_paths_relative_to_input_root
+build --incompatible_remote_use_new_exit_code_for_lost_inputs
+build --incompatible_sandbox_hermetic_tmp
+build --incompatible_struct_has_no_methods
+build --incompatible_top_level_aspects_require_providers
+build --incompatible_use_cc_configure_from_rules_cc
+build --incompatible_use_host_features
+
+# We cannot yet build successfully with the following flags:
+#   --incompatible_check_testonly_for_output_files
+#   --incompatible_config_setting_private_default_visibility
+#   --incompatible_disable_starlark_host_transitions
+#   --incompatible_disallow_struct_provider_syntax
+#   --incompatible_no_implicit_file_export
+#   --incompatible_no_rule_outputs_param
+#   --incompatible_stop_exporting_language_modules
+#   --incompatible_strict_action_env
+#   --incompatible_visibility_private_attributes_at_definition
+
+# We might be compatible with these flags, but they are not available in all
+# Bazel versions we are currently using:
+#   --incompatible_disable_objc_library_transition
+#   --incompatible_fail_on_unknown_attributes
+#   --incompatible_merge_fixed_and_default_shell_env

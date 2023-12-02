@@ -1,5 +1,22 @@
 include(GNUInstallDirs)
 
+foreach(_target IN LISTS protobuf_ABSL_USED_TARGETS)
+  string(REPLACE :: _ _modified_target ${_target})
+  list(APPEND _pc_targets ${_modified_target})
+endforeach()
+list(APPEND _pc_targets "utf8_range")
+
+set(_protobuf_PC_REQUIRES "")
+set(_sep "")
+foreach (_target IN LISTS _pc_targets)
+  string(CONCAT _protobuf_PC_REQUIRES "${_protobuf_PC_REQUIRES}" "${_sep}" "${_target}")
+  set(_sep " ")
+endforeach ()
+set(_protobuf_PC_CFLAGS)
+if (protobuf_BUILD_SHARED_LIBS)
+  set(_protobuf_PC_CFLAGS -DPROTOBUF_USE_DLLS)
+endif ()
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf-lite.pc.cmake
@@ -48,12 +65,24 @@ set(protobuf_HEADERS
   ${libprotobuf_hdrs}
   ${libprotoc_hdrs}
   ${wkt_protos_files}
+  ${cpp_features_proto_proto_srcs}
   ${descriptor_proto_proto_srcs}
   ${plugin_proto_proto_srcs}
+  ${java_features_proto_proto_srcs}
 )
 foreach(_header ${protobuf_HEADERS})
-  string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _header ${_header})
-  get_filename_component(_extract_from "${protobuf_SOURCE_DIR}/src/${_header}" ABSOLUTE)
+  string(FIND ${_header} "${protobuf_SOURCE_DIR}/src" _find_src)
+  string(FIND ${_header} "${protobuf_SOURCE_DIR}" _find_nosrc)
+  if (_find_src GREATER -1)
+    set(_from_dir "${protobuf_SOURCE_DIR}/src")
+  elseif (_find_nosrc GREATER -1)
+    set(_from_dir "${protobuf_SOURCE_DIR}")
+  endif()
+  # On some platforms `_form_dir` ends up being just "protobuf", which can
+  # easily match multiple times in our paths.  We force it to only replace
+  # prefixes to avoid this case.
+  string(REGEX REPLACE "^${_from_dir}" "" _header ${_header})
+  get_filename_component(_extract_from "${_from_dir}/${_header}" ABSOLUTE)
   get_filename_component(_extract_name ${_header} NAME)
   get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" DIRECTORY)
   install(FILES "${_extract_from}"

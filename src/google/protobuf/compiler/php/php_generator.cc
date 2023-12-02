@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/php/php_generator.h"
 
@@ -45,6 +22,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
@@ -943,7 +921,7 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
       // Add messages and enums to descriptor pool.
       FileDescriptorSet files;
       FileDescriptorProto* file_proto = files.add_file();
-      file->CopyTo(file_proto);
+      *file_proto = StripSourceRetentionOptions(*file);
 
       // Filter out descriptor.proto as it cannot be depended on for now.
       RepeatedPtrField<std::string>* dependency =
@@ -1086,7 +1064,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
 
     if (needs_aggregate) {
       auto file_proto = sorted_file_set.add_file();
-      file_node->CopyTo(file_proto);
+      *file_proto = StripSourceRetentionOptions(*file_node);
 
       // Filter out descriptor.proto as it cannot be depended on for now.
       RepeatedPtrField<std::string>* dependency =
@@ -1677,7 +1655,7 @@ static void GenerateDocCommentBodyForLocation(
                              ? location.trailing_comments
                              : location.leading_comments;
   if (!comments.empty()) {
-    // TODO(teboring):  Ideally we should parse the comment text as Markdown and
+    // TODO:  Ideally we should parse the comment text as Markdown and
     //   write it back as HTML, but this requires a Markdown parser.  For now
     //   we just use the proto comments unchanged.
 
@@ -2192,8 +2170,7 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
         absl::StrReplaceAll(metadata_classname, {{"\\", "_"}});
     metadata_classname =
         absl::StrReplaceAll(metadata_classname, {{"\\", "\\\\"}});
-    FileDescriptorProto file_proto;
-    file->CopyTo(&file_proto);
+    FileDescriptorProto file_proto = StripSourceRetentionOptions(*file);
     std::string serialized;
     file_proto.SerializeToString(&serialized);
     printer.Print(

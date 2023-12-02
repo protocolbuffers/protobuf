@@ -36,13 +36,19 @@ cc_proto_library(
 cc_binary(
     name = "add_person_cpp",
     srcs = ["add_person.cc"],
-    deps = [":addressbook_cc_proto"],
+    deps = [
+        ":addressbook_cc_proto",
+        "@com_google_protobuf//:protobuf",
+    ],
 )
 
 cc_binary(
     name = "list_people_cpp",
     srcs = ["list_people.cc"],
-    deps = [":addressbook_cc_proto"],
+    deps = [
+        ":addressbook_cc_proto",
+        "@com_google_protobuf//:protobuf",
+    ],
 )
 
 # Similar to cc_proto_library but for Java.

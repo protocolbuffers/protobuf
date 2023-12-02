@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="1" name="AllTests">
+<testsuite name="EditionsCodegenTests">
+<testcase name="third_party/protobuf/editions/golden/simple_proto3.pb.cc" status="run" result="completed" classname="DiffTest">
+</testcase>
+<testcase name="third_party/protobuf/editions/golden/simple_proto3.pb.h" status="run" result="completed" classname="DiffTest">
+</testcase>
+<testcase name="third_party/protobuf/editions/golden/simple_proto3.proto.static_reflection.h" status="run" result="completed" classname="DiffTest">
+</testcase>
+</testsuite>
+</testsuites>

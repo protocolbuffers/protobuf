@@ -8,6 +8,9 @@ on:
         description: "The SHA key for the commit we want to run over"
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   xcode:
     strategy:
@@ -31,18 +34,18 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@v2
         with:
           cache-prefix: objectivec_${{ matrix.platform }}_${{ matrix.xc_config }}
           support-modules: true
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bash@v1
+        uses: protocolbuffers/protobuf-ci/bash@v2
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
@@ -74,11 +77,11 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Pod lib lint
-        uses: protocolbuffers/protobuf-ci/bash@v1
+        uses: protocolbuffers/protobuf-ci/bash@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
@@ -92,8 +95,20 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         config:
-          - { name: Optimized, flags: --config=opt }
-          - { name: Debug, flags: --config=dbg }
+          - name: Optimized
+            flags: --config=opt
+            bazel_action: test
+          - name: Debug
+            flags: --config=dbg
+            bazel_action: test
+          # Current github runners are all Intel based, so just build/compile
+          # for Apple Silicon to detect issues there.
+          - name: Apple_Silicon_Optimized
+            flags: --config=opt --cpu=darwin_arm64
+            bazel_action: build
+          - name: Apple_Silicon_Debug
+            flags: --config=dbg --cpu=darwin_arm64
+            bazel_action: build
         # TODO: Could add iOS to atleast build the objc_library targets for that.
         platform: ["macOS"]
         include:
@@ -103,12 +118,12 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
-      - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+      - name: bazel ${{ matrix.config.bazel_action }}
+        uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel: test ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
+          bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
           bazel-cache: objc_${{ matrix.platform }}_${{ matrix.config.name }}

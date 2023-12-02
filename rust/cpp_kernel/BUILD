@@ -1,21 +1,25 @@
 # This package contains Rust protobuf runtime implementation built on top of the C++ backend.
 
-load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
-rust_library(
-    name = "cpp",
-    srcs = ["cpp.rs"],
+cc_library(
+    name = "cpp_api",
+    srcs = ["cpp_api.cc"],
+    hdrs = ["cpp_api.h"],
     visibility = [
         "//src/google/protobuf:__subpackages__",
         "//rust:__subpackages__",
     ],
+    deps = [
+        ":rust_alloc_for_cpp_api",  # buildcleaner: keep
+        "//:protobuf_nowkt",
+    ],
 )
 
-rust_test(
-    name = "cpp_test",
-    crate = ":cpp",
-    tags = [
-        "not_build:arm",
-        "notsan",
+rust_library(
+    name = "rust_alloc_for_cpp_api",
+    srcs = ["rust_alloc_for_cpp_api.rs"],
+    visibility = [
+        "//rust:__subpackages__",
     ],
 )

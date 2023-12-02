@@ -11,10 +11,14 @@ load(
     "rust_upb_proto_library_aspect",
 )
 
-visibility(["//rust/..."])
+visibility([
+    "//experimental/...",
+    "//src/google/protobuf/...",
+    "//rust/...",
+])
 
 def rust_proto_library(name, deps, visibility = [], **args):
-    """Declares all the boilerplate needed to use Rust protobufs conveniently. 
+    """Declares all the boilerplate needed to use Rust protobufs conveniently.
 
     Hopefully no user will ever need to read this code.
 
@@ -42,7 +46,7 @@ def rust_proto_library(name, deps, visibility = [], **args):
         **args
     )
 
-    # TODO(b/275701445): Stop declaring cc_proto_library once we can use cc_proto_aspect directly.
+    # TODO: Stop declaring cc_proto_library once we can use cc_proto_aspect directly.
     _cc_proto_name = name.removesuffix("_rust_proto") + "_cc_proto"
     if not native.existing_rule(_cc_proto_name):
         cc_proto_library(

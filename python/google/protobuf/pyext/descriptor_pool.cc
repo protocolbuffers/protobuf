@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Implements the DescriptorPool, which collects all descriptors.
 
@@ -39,6 +16,8 @@
 #include <Python.h>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
@@ -118,7 +97,9 @@ static PyDescriptorPool* _CreateDescriptorPool() {
   cpool->is_owned = false;
   cpool->is_mutable = false;
 
-  cpool->descriptor_options = new std::unordered_map<const void*, PyObject*>();
+  cpool->descriptor_options = new absl::flat_hash_map<const void*, PyObject*>();
+  cpool->descriptor_features =
+      new absl::flat_hash_map<const void*, PyObject*>();
 
   cpool->py_message_factory = message_factory::NewMessageFactory(
       &PyMessageFactory_Type, cpool);
@@ -214,12 +195,16 @@ static void Dealloc(PyObject* pself) {
   PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
   descriptor_pool_map->erase(self->pool);
   Py_CLEAR(self->py_message_factory);
-  for (std::unordered_map<const void*, PyObject*>::iterator it =
-           self->descriptor_options->begin();
+  for (auto it = self->descriptor_options->begin();
        it != self->descriptor_options->end(); ++it) {
     Py_DECREF(it->second);
   }
   delete self->descriptor_options;
+  for (auto it = self->descriptor_features->begin();
+       it != self->descriptor_features->end(); ++it) {
+    Py_DECREF(it->second);
+  }
+  delete self->descriptor_features;
   delete self->database;
   if (self->is_owned) {
     delete self->pool;
@@ -504,7 +489,7 @@ static PyObject* FindAllExtensions(PyObject* self, PyObject* arg) {
 // However we do check that the existing descriptor already exists in the pool,
 // which appears to always be true for existing calls -- but then why do people
 // call a function that will just be a no-op?
-// TODO(amauryfa): Need to investigate further.
+// TODO: Need to investigate further.
 
 static PyObject* AddFileDescriptor(PyObject* self, PyObject* descriptor) {
   const FileDescriptor* file_descriptor =
@@ -658,14 +643,52 @@ static PyObject* Add(PyObject* self, PyObject* file_descriptor_proto) {
   return AddSerializedFile(self, serialized_pb.get());
 }
 
+static PyObject* SetFeatureSetDefaults(PyObject* pself, PyObject* pdefaults) {
+  PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
+
+  if (!self->is_mutable) {
+    PyErr_SetString(
+        PyExc_RuntimeError,
+        "This DescriptorPool is not mutable and cannot add new definitions.");
+    return nullptr;
+  }
+
+  if (!PyObject_TypeCheck(pdefaults, CMessage_Type)) {
+    PyErr_Format(PyExc_TypeError,
+                 "SetFeatureSetDefaults called with invalid type: got %s.",
+                 Py_TYPE(pdefaults)->tp_name);
+    return nullptr;
+  }
+
+  CMessage* defaults = reinterpret_cast<CMessage*>(pdefaults);
+  if (defaults->message->GetDescriptor() !=
+      FeatureSetDefaults::GetDescriptor()) {
+    PyErr_Format(PyExc_TypeError,
+                 "SetFeatureSetDefaults called with invalid type: "
+                 " got %s.",
+                 defaults->message->GetDescriptor()->full_name().c_str());
+    return nullptr;
+  }
+
+  absl::Status status =
+      const_cast<DescriptorPool*>(self->pool)
+          ->SetFeatureSetDefaults(
+              *reinterpret_cast<FeatureSetDefaults*>(defaults->message));
+  if (!status.ok()) {
+    PyErr_SetString(PyExc_ValueError, std::string(status.message()).c_str());
+    return nullptr;
+  }
+  Py_RETURN_NONE;
+}
+
 static PyMethodDef Methods[] = {
     {"Add", Add, METH_O,
      "Adds the FileDescriptorProto and its types to this pool."},
     {"AddSerializedFile", AddSerializedFile, METH_O,
      "Adds a serialized FileDescriptorProto to this pool."},
+    {"SetFeatureSetDefaults", SetFeatureSetDefaults, METH_O,
+     "Sets the default feature mappings used during the build."},
 
-    // TODO(amauryfa): Understand why the Python implementation differs from
-    // this one, ask users to use another API and deprecate these functions.
     {"AddFileDescriptor", AddFileDescriptor, METH_O,
      "No-op. Add() must have been called before."},
     {"AddDescriptor", AddDescriptor, METH_O,
@@ -781,7 +804,7 @@ bool InitDescriptorPool() {
 
 // The default DescriptorPool used everywhere in this module.
 // Today it's the python_generated_pool.
-// TODO(amauryfa): Remove all usages of this function: the pool should be
+// TODO: Remove all usages of this function: the pool should be
 // derived from the context.
 PyDescriptorPool* GetDefaultDescriptorPool() {
   return python_generated_pool;

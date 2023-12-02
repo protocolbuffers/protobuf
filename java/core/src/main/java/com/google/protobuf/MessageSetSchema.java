@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -62,7 +39,7 @@ final class MessageSetSchema<T> implements Schema<T> {
   @SuppressWarnings("unchecked")
   @Override
   public T newInstance() {
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (defaultInstance instanceof GeneratedMessageLite) {
       return (T) ((GeneratedMessageLite<?, ?>) defaultInstance).newMutableInstance();
@@ -139,7 +116,7 @@ final class MessageSetSchema<T> implements Schema<T> {
   public void mergeFrom(
       T message, byte[] data, int position, int limit, ArrayDecoders.Registers registers)
       throws IOException {
-    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     UnknownFieldSetLite unknownFields = ((GeneratedMessageLite) message).unknownFields;
     if (unknownFields == UnknownFieldSetLite.getDefaultInstance()) {
@@ -189,7 +166,7 @@ final class MessageSetSchema<T> implements Schema<T> {
             if (wireType == WireFormat.WIRETYPE_VARINT) {
               position = ArrayDecoders.decodeVarint32(data, position, registers);
               typeId = registers.int1;
-              // TODO(b/248560713) decide if we're keeping support for Full in schema classes and
+              // TODO decide if we're keeping support for Full in schema classes and
               // handle this better.
               extension =
                   (GeneratedMessageLite.GeneratedExtension<?, ?>)
@@ -366,7 +343,7 @@ final class MessageSetSchema<T> implements Schema<T> {
     // If there are any rawBytes left, it means the message content appears before the type ID.
     if (rawBytes != null) {
       if (extension != null) { // We known the type
-        // TODO(xiaofeng): Instead of reading into a temporary ByteString, maybe there is a way
+        // TODO: Instead of reading into a temporary ByteString, maybe there is a way
         // to read directly from Reader to the submessage?
         extensionSchema.parseMessageSetItem(rawBytes, extension, extensionRegistry, extensions);
       } else {
