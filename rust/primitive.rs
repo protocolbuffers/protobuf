@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use std::fmt::Debug;
+
 use crate::__internal::Private;
 use crate::__runtime::InnerPrimitiveMut;
 use crate::repeated::RepeatedMut;
@@ -12,132 +14,158 @@ use crate::vtable::{
     PrimitiveOptionalMutVTable, PrimitiveVTable, ProxiedWithRawOptionalVTable,
     ProxiedWithRawVTable, RawVTableOptionalMutatorData,
 };
-use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
+use crate::{
+    Mut, MutProxy, Proxied, ProxiedInRepeated, ProxiedWithPresence, SettableValue, View, ViewProxy,
+};
 
-#[derive(Debug)]
-pub struct SingularPrimitiveMut<'a, T: ProxiedWithRawVTable> {
-    inner: InnerPrimitiveMut<'a, T>,
+/// A mutator for a primitive (numeric or enum) value of `T`.
+///
+/// This type is `protobuf::Mut<'msg, T>`.
+pub struct PrimitiveMut<'a, T: ProxiedWithRawVTable + ?Sized>(PrimitiveMutChoice<'a, T>);
+
+impl<'a, T> Debug for PrimitiveMut<'a, T>
+where
+    T: ProxiedWithRawVTable + ?Sized,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("PrimitiveMut").field(&self.0).finish()
+    }
 }
 
-#[derive(Debug)]
-pub enum PrimitiveMut<'a, T: ProxiedWithRawVTable> {
-    Singular(SingularPrimitiveMut<'a, T>),
+/// `PrimitiveMut` may either be a singular or repeated field.
+/// This distinguishes between them. This is wrapped in a struct to prevent
+/// direct access by users.
+enum PrimitiveMutChoice<'a, T: ProxiedWithRawVTable + ?Sized> {
+    Singular(InnerPrimitiveMut<'a, T>),
+    /// Safety precondition: `.1` must be in-bounds for `.0` for `'a`
     Repeated(RepeatedMut<'a, T>, usize),
 }
 
-impl<'a, T: ProxiedWithRawVTable> PrimitiveMut<'a, T> {
+unsafe impl<'a, T: ProxiedWithRawVTable + ?Sized> Sync for PrimitiveMutChoice<'a, T> {}
+
+impl<'a, T> Debug for PrimitiveMutChoice<'a, T>
+where
+    T: ProxiedWithRawVTable + ?Sized,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Singular(arg0) => f.debug_tuple("Singular").field(arg0).finish(),
+            Self::Repeated(arg0, arg1) => {
+                f.debug_tuple("Repeated").field(arg0).field(arg1).finish()
+            }
+        }
+    }
+}
+
+impl<'a, T> PrimitiveMut<'a, T>
+where
+    T: ProxiedWithRawVTable + ?Sized,
+{
     #[doc(hidden)]
     pub fn from_singular(_private: Private, inner: InnerPrimitiveMut<'a, T>) -> Self {
-        PrimitiveMut::Singular(SingularPrimitiveMut::from_inner(_private, inner))
+        Self(PrimitiveMutChoice::Singular(inner))
     }
-}
 
-impl<'a, T: ProxiedWithRawVTable> SingularPrimitiveMut<'a, T> {
+    /// # Safety
+    /// - `index` must be in-bounds for `repeated`
+    /// - `repeated` must not have its length modified or be reallocated for
+    ///   `'a`
+    /// - For `'a`, there must be no other accessors of element `index` of
+    ///   `repeated` (elements other than `index` may be mutated).
     #[doc(hidden)]
-    pub fn from_inner(_private: Private, inner: InnerPrimitiveMut<'a, T>) -> Self {
-        Self { inner }
+    pub unsafe fn from_repeated(
+        _private: Private,
+        repeated: RepeatedMut<'a, T>,
+        index: usize,
+    ) -> Self {
+        Self(PrimitiveMutChoice::Repeated(repeated, index))
     }
 }
 
-unsafe impl<'a, T: ProxiedWithRawVTable> Sync for SingularPrimitiveMut<'a, T> {}
+impl<'a, T> PrimitiveMut<'a, T>
+where
+    T: ProxiedWithRawVTable + ProxiedInRepeated + ?Sized,
+    Self: MutProxy<'a, Proxied = T>,
+{
+    pub fn get(&self) -> View<'_, T> {
+        match &self.0 {
+            PrimitiveMutChoice::Singular(s) => T::make_view(Private, *s),
+            // SAFETY: `i` is in-bounds for `r` as a precondition of the type
+            PrimitiveMutChoice::Repeated(r, i) => unsafe { r.as_view().get(*i).unwrap_unchecked() },
+        }
+    }
+
+    pub fn set(&mut self, val: impl SettableValue<T>) {
+        MutProxy::set(self, val)
+        // val.set_on(Private, self.as_mut())
+    }
+}
 
 macro_rules! impl_singular_primitives {
   ($($t:ty),*) => {
       $(
-          impl Proxied for $t {
-              type View<'a> = $t;
-              type Mut<'a> = PrimitiveMut<'a, $t>;
-          }
+        impl Proxied for $t {
+            type View<'a> = $t;
+            type Mut<'a> = PrimitiveMut<'a, $t>;
+        }
 
-          impl<'a> ViewProxy<'a> for $t {
-              type Proxied = $t;
+        impl<'a> ViewProxy<'a> for $t {
+            type Proxied = $t;
 
-              fn as_view(&self) -> View<'_, Self::Proxied> {
-                  *self
-              }
+            fn as_view(&self) -> View<'_, Self::Proxied> {
+                *self
+            }
 
-              fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied> {
-                  self
-              }
-          }
+            fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied> {
+                self
+            }
+        }
 
-          impl<'a> PrimitiveMut<'a, $t> {
-              pub fn get(&self) -> View<'_, $t> {
-                  match self {
-                      PrimitiveMut::Singular(s) => {
-                          s.get()
-                      }
-                      PrimitiveMut::Repeated(r, i) => {
-                          r.get().get(*i).unwrap()
-                      }
-                  }
-              }
+        impl<'a> ViewProxy<'a> for PrimitiveMut<'a, $t> {
+            type Proxied = $t;
 
-              pub fn set(&mut self, val: impl SettableValue<$t>) {
-                  val.set_on(Private, self.as_mut());
-              }
+            fn as_view(&self) -> View<'_, Self::Proxied> {
+                self.get()
+            }
 
-              pub fn clear(&mut self) {
-                  // The default value for a boolean field is false and 0 for numerical types. It
-                  // matches the Rust default values for corresponding types. Let's use this fact.
-                  SettableValue::<$t>::set_on(<$t>::default(), Private, MutProxy::as_mut(self));
-              }
-          }
+            fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied> {
+                self.get()
+            }
+        }
 
-          impl<'a> ViewProxy<'a> for PrimitiveMut<'a, $t> {
-              type Proxied = $t;
+        impl<'a> MutProxy<'a> for PrimitiveMut<'a, $t> {
+            fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
+                PrimitiveMut(match &mut self.0 {
+                    PrimitiveMutChoice::Singular(s) => {
+                        PrimitiveMutChoice::Singular(*s)
+                    }
+                    PrimitiveMutChoice::Repeated(r, i) => {
+                        PrimitiveMutChoice::Repeated(r.as_mut(), *i)
+                    }
+                })
+            }
 
-              fn as_view(&self) -> View<'_, Self::Proxied> {
-                  self.get()
-              }
+            fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
+            where 'a: 'shorter,
+            {
+                self
+            }
+        }
 
-              fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied> {
-                  self.get()
-              }
-          }
-
-          impl<'a> MutProxy<'a> for PrimitiveMut<'a, $t> {
-              fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
-                  match self {
-                      PrimitiveMut::Singular(s) => {
-                          PrimitiveMut::Singular(s.as_mut())
-                      }
-                      PrimitiveMut::Repeated(r, i) => {
-                          PrimitiveMut::Repeated(r.as_mut(), *i)
-                      }
-                  }
-              }
-
-              fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
-              where 'a: 'shorter,
-              {
-                  self
-              }
-          }
-
-          impl SettableValue<$t> for $t {
-              fn set_on<'a>(self, _private: Private, mutator: Mut<'a, $t>) where $t: 'a {
-                match mutator {
-                  PrimitiveMut::Singular(s) => {
-                      unsafe { (s.inner).set(self) };
-                  }
-                  PrimitiveMut::Repeated(mut r, i) => {
-                      r.set(i, self);
-                  }
+        impl SettableValue<$t> for $t {
+            fn set_on<'a>(self, _private: Private, mutator: Mut<'a, $t>) where $t: 'a {
+                match mutator.0 {
+                    PrimitiveMutChoice::Singular(s) => {
+                        unsafe { s.set(self) };
+                    }
+                    PrimitiveMutChoice::Repeated(mut r, i) => {
+                        r.set(i, self);
+                    }
                 }
-              }
-          }
+            }
+        }
 
-          impl<'a> SingularPrimitiveMut<'a, $t> {
-              pub fn get(&self) -> $t {
-                  self.inner.get()
-              }
-              pub fn as_mut(&mut self) -> SingularPrimitiveMut<'_, $t> {
-                  SingularPrimitiveMut::from_inner(Private, self.inner)
-              }
-          }
-
-          impl ProxiedWithRawVTable for $t {
+        impl ProxiedWithRawVTable for $t {
             type VTable = PrimitiveVTable<$t>;
 
             fn make_view(
@@ -148,11 +176,11 @@ macro_rules! impl_singular_primitives {
             }
 
             fn make_mut(_private: Private, inner: InnerPrimitiveMut<'_, Self>) -> Mut<'_, Self> {
-                PrimitiveMut::Singular(SingularPrimitiveMut::from_inner(Private, inner))
+                PrimitiveMut::from_singular(Private, inner)
             }
-          }
+        }
 
-          impl ProxiedWithPresence for $t {
+        impl ProxiedWithPresence for $t {
             type PresentMutData<'a> = RawVTableOptionalMutatorData<'a, $t>;
             type AbsentMutData<'a> = RawVTableOptionalMutatorData<'a, $t>;
 
@@ -167,9 +195,9 @@ macro_rules! impl_singular_primitives {
             ) -> Self::PresentMutData<'_> {
                 absent_mutator.set_absent_to_default()
             }
-          }
+        }
 
-          impl ProxiedWithRawOptionalVTable for $t {
+        impl ProxiedWithRawOptionalVTable for $t {
             type OptionalVTable = PrimitiveOptionalMutVTable<$t>;
 
             fn upcast_vtable(
@@ -178,7 +206,9 @@ macro_rules! impl_singular_primitives {
             ) -> &'static Self::VTable {
                 &optional_vtable.base
             }
-          }
+        }
+
+        // ProxiedInRepeated is implemented in {cpp,upb}.rs
       )*
   }
 }

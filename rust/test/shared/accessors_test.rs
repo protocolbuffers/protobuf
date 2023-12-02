@@ -757,7 +757,7 @@ macro_rules! generate_repeated_numeric_test {
                 let mut mut_elem = mutator.get_mut(2).unwrap();
                 mut_elem.set(4 as $t);
                 assert_that!(mut_elem.get(), eq(4 as $t));
-                mut_elem.clear();
+                mut_elem.set(0 as $t);
                 assert_that!(mut_elem.get(), eq(0 as $t));
 
                 assert_that!(
@@ -826,7 +826,7 @@ fn test_repeated_bool_accessors() {
     let mut mut_elem = mutator.get_mut(2).unwrap();
     mut_elem.set(true);
     assert_that!(mut_elem.get(), eq(true));
-    mut_elem.clear();
+    mut_elem.set(false);
     assert_that!(mut_elem.get(), eq(false));
 
     assert_that!(mutator.iter().collect::<Vec<_>>(), eq(vec![false, true, false]));
