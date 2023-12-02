@@ -142,7 +142,6 @@ bootstrap_cc_library(
         "//upb:mini_descriptor",
         "//upb:mini_descriptor_internal",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
         "//upb/base:internal",
     ],

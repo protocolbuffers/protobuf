@@ -19,7 +19,6 @@
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/message_def.h"
@@ -122,18 +121,13 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
     // Skip field if unset or empty.
     if (upb_MiniTableField_HasPresence(field)) {
       if (!upb_Message_HasFieldByDef(msg, f)) continue;
+    } else if (upb_MiniTableField_IsScalar(field)) {
+      if (!_upb_MiniTable_ValueIsNonZero(&val, field)) continue;
+    } else if (upb_MiniTableField_IsArray(field)) {
+      if (!val.array_val || upb_Array_Size(val.array_val) == 0) continue;
     } else {
-      switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(field)) {
-        case kUpb_FieldMode_Map:
-          if (!val.map_val || upb_Map_Size(val.map_val) == 0) continue;
-          break;
-        case kUpb_FieldMode_Array:
-          if (!val.array_val || upb_Array_Size(val.array_val) == 0) continue;
-          break;
-        case kUpb_FieldMode_Scalar:
-          if (!_upb_MiniTable_ValueIsNonZero(&val, field)) continue;
-          break;
-      }
+      UPB_ASSERT(upb_MiniTableField_IsMap(field));
+      if (!val.map_val || upb_Map_Size(val.map_val) == 0) continue;
     }
 
     *out_val = val;
