@@ -13,6 +13,7 @@
 #define UPB_MESSAGE_MESSAGE_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "upb/mem/arena.h"
 #include "upb/message/types.h"  // IWYU pragma: export
@@ -20,6 +21,8 @@
 
 // Must be last.
 #include "upb/port/def.inc"
+
+typedef struct upb_Message_Extension upb_Message_Extension;
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,6 +45,10 @@ void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len);
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
+
+// Returns the extension with the given field number, or NULL on failure.
+const upb_Message_Extension* upb_Message_FindExtension(const upb_Message* msg,
+                                                       uint32_t field_number);
 
 #ifdef __cplusplus
 } /* extern "C" */

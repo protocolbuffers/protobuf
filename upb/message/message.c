@@ -8,9 +8,17 @@
 #include "upb/message/message.h"
 
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 #include "upb/base/internal/log2.h"
+#include "upb/mem/arena.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/internal/types.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -151,4 +159,16 @@ size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   size_t count;
   _upb_Message_Getexts(msg, &count);
   return count;
+}
+
+const upb_Message_Extension* upb_Message_FindExtension(const upb_Message* msg,
+                                                       uint32_t field_number) {
+  size_t count = 0;
+  const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &count);
+
+  while (count--) {
+    if (upb_MiniTableExtension_Number(ext->ext) == field_number) return ext;
+    ext++;
+  }
+  return NULL;
 }
