@@ -145,26 +145,33 @@ UPB_INLINE void _upb_Message_SetPresence(upb_Message* msg,
   }
 }
 
-UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
-                                              const upb_MiniTableField* field) {
-  char zero[16] = {0};
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
+    const upb_MiniTableField* field, const void* a, const void* b) {
   switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(field)) {
     case kUpb_FieldRep_1Byte:
-      return memcmp(&zero, default_val, 1) != 0;
+      return memcmp(a, b, 1) == 0;
     case kUpb_FieldRep_4Byte:
-      return memcmp(&zero, default_val, 4) != 0;
+      return memcmp(a, b, 4) == 0;
     case kUpb_FieldRep_8Byte:
-      return memcmp(&zero, default_val, 8) != 0;
+      return memcmp(a, b, 8) == 0;
     case kUpb_FieldRep_StringView: {
-      const upb_StringView* sv = (const upb_StringView*)default_val;
-      return sv->size != 0;
+      const upb_StringView* sa = (const upb_StringView*)a;
+      const upb_StringView* sb = (const upb_StringView*)b;
+      if (sa->size != sb->size) return false;
+      return (sa->size == 0) || (memcmp(sa->data, sb->data, sa->size) == 0);
     }
   }
   UPB_UNREACHABLE();
 }
 
-UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
-                                             const upb_MiniTableField* field) {
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(
+    const upb_MiniTableField* field, const void* val) {
+  const char zero[16] = {0};
+  return UPB_PRIVATE(_upb_MiniTableField_DataEquals)(field, val, zero);
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
+    const upb_MiniTableField* field, void* to, const void* from) {
   switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(field)) {
     case kUpb_FieldRep_1Byte:
       memcpy(to, from, 1);
@@ -239,13 +246,13 @@ static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
     const void* default_val, void* val) {
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   if ((upb_MiniTableField_IsInOneof(field) ||
-       _upb_MiniTable_ValueIsNonZero(default_val, field)) &&
+       !UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(field, default_val)) &&
       !_upb_Message_HasNonExtensionField(msg, field)) {
-    _upb_MiniTable_CopyFieldData(val, default_val, field);
+    UPB_PRIVATE(_upb_MiniTableField_DataCopy)(field, val, default_val);
     return;
   }
-  _upb_MiniTable_CopyFieldData(val, _upb_MiniTableField_GetConstPtr(msg, field),
-                               field);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (field, val, _upb_MiniTableField_GetConstPtr(msg, field));
 }
 
 UPB_INLINE void _upb_Message_GetExtensionField(
@@ -254,9 +261,11 @@ UPB_INLINE void _upb_Message_GetExtensionField(
   UPB_ASSUME(upb_MiniTableField_IsExtension(&mt_ext->UPB_PRIVATE(field)));
   const upb_Message_Extension* ext = _upb_Message_Getext(msg, mt_ext);
   if (ext) {
-    _upb_MiniTable_CopyFieldData(val, &ext->data, &mt_ext->UPB_PRIVATE(field));
+    UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+    (&mt_ext->UPB_PRIVATE(field), val, &ext->data);
   } else {
-    _upb_MiniTable_CopyFieldData(val, default_val, &mt_ext->UPB_PRIVATE(field));
+    UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+    (&mt_ext->UPB_PRIVATE(field), val, default_val);
   }
 }
 
@@ -291,8 +300,8 @@ UPB_INLINE void _upb_Message_SetNonExtensionField(
     upb_Message* msg, const upb_MiniTableField* field, const void* val) {
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   _upb_Message_SetPresence(msg, field);
-  _upb_MiniTable_CopyFieldData(_upb_MiniTableField_GetPtr(msg, field), val,
-                               field);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (field, _upb_MiniTableField_GetPtr(msg, field), val);
 }
 
 UPB_INLINE bool _upb_Message_SetExtensionField(
@@ -302,7 +311,8 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
   upb_Message_Extension* ext =
       _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
   if (!ext) return false;
-  _upb_MiniTable_CopyFieldData(&ext->data, val, &mt_ext->UPB_PRIVATE(field));
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (&mt_ext->UPB_PRIVATE(field), &ext->data, val);
   return true;
 }
 
@@ -330,8 +340,8 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
     *ptr = 0;
   }
   const char zeros[16] = {0};
-  _upb_MiniTable_CopyFieldData(_upb_MiniTableField_GetPtr(msg, field), zeros,
-                               field);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (field, _upb_MiniTableField_GetPtr(msg, field), zeros);
 }
 
 UPB_INLINE void _upb_Message_AssertMapIsUntagged(
