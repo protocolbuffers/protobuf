@@ -87,18 +87,16 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_H__
 
-#include <iosfwd>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <type_traits>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
-#include "absl/base/casts.h"
-#include "absl/functional/function_ref.h"
+#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -148,6 +146,7 @@ struct TailCallTableInfo;
 }  // namespace internal
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
+class EpsCopyOutputStream;   // coded_stream.h
 class ZeroCopyInputStream;   // zero_copy_stream.h
 class ZeroCopyOutputStream;  // zero_copy_stream.h
 class CodedInputStream;      // coded_stream.h
@@ -233,7 +232,7 @@ PROTOBUF_EXPORT bool IsDescendant(Message& root, const Message& message);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT Message : public MessageLite {
  public:
-  constexpr Message() {}
+  constexpr Message() = default;
   Message(const Message&) = delete;
   Message& operator=(const Message&) = delete;
 
@@ -1289,7 +1288,7 @@ class PROTOBUF_EXPORT Reflection final {
 // around GetPrototype for details
 class PROTOBUF_EXPORT MessageFactory {
  public:
-  inline MessageFactory() {}
+  inline MessageFactory() = default;
   MessageFactory(const MessageFactory&) = delete;
   MessageFactory& operator=(const MessageFactory&) = delete;
   virtual ~MessageFactory();
