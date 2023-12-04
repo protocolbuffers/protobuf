@@ -1586,11 +1586,6 @@ extern "C" {
 UPB_API upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
                                      upb_Arena* arena);
 
-// Adds unknown data (serialized protobuf data) to the given message.
-// The data is copied into the message instance.
-void upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
-                            upb_Arena* arena);
-
 // Returns a reference to the message's unknown data.
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
 
@@ -2321,80 +2316,6 @@ typedef struct {
 
 #endif  // UPB_MINI_TABLE_INTERNAL_TYPES_H_
 
-#ifndef UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
-#define UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Extension registry: a dynamic data structure that stores a map of:
- *   (upb_MiniTable, number) -> extension info
- *
- * upb_decode() uses upb_ExtensionRegistry to look up extensions while parsing
- * binary format.
- *
- * upb_ExtensionRegistry is part of the mini-table (msglayout) family of
- * objects. Like all mini-table objects, it is suitable for reflection-less
- * builds that do not want to expose names into the binary.
- *
- * Unlike most mini-table types, upb_ExtensionRegistry requires dynamic memory
- * allocation and dynamic initialization:
- * * If reflection is being used, then upb_DefPool will construct an appropriate
- *   upb_ExtensionRegistry automatically.
- * * For a mini-table only build, the user must manually construct the
- *   upb_ExtensionRegistry and populate it with all of the extensions the user
- * cares about.
- * * A third alternative is to manually unpack relevant extensions after the
- *   main parse is complete, similar to how Any works. This is perhaps the
- *   nicest solution from the perspective of reducing dependencies, avoiding
- *   dynamic memory allocation, and avoiding the need to parse uninteresting
- *   extensions.  The downsides are:
- *     (1) parse errors are not caught during the main parse
- *     (2) the CPU hit of parsing comes during access, which could cause an
- *         undesirable stutter in application performance.
- *
- * Users cannot directly get or put into this map. Users can only add the
- * extensions from a generated module and pass the extension registry to the
- * binary decoder.
- *
- * A upb_DefPool provides a upb_ExtensionRegistry, so any users who use
- * reflection do not need to populate a upb_ExtensionRegistry directly.
- */
-
-typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
-
-// Creates a upb_ExtensionRegistry in the given arena.
-// The arena must outlive any use of the extreg.
-UPB_API upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
-
-UPB_API bool upb_ExtensionRegistry_Add(upb_ExtensionRegistry* r,
-                                       const upb_MiniTableExtension* e);
-
-// Adds the given extension info for the array |e| of size |count| into the
-// registry. If there are any errors, the entire array is backed out.
-// The extensions must outlive the registry.
-// Possible errors include OOM or an extension number that already exists.
-// TODO: There is currently no way to know the exact reason for failure.
-bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
-                                    const upb_MiniTableExtension** e,
-                                    size_t count);
-
-// Looks up the extension (if any) defined for message type |t| and field
-// number |num|. Returns the extension if found, otherwise NULL.
-UPB_API const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
-    const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_EXTENSION_REGISTRY_H_ */
-
 // Must be last.
 
 #ifdef __cplusplus
@@ -2434,9 +2355,6 @@ struct upb_Message_InternalData {
    *   char data[size - sizeof(upb_Message_InternalData)]; */
 };
 
-/* Maps upb_CType -> memory size. */
-extern char _upb_CTypeo_size[12];
-
 UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* m) {
   return m->size + sizeof(upb_Message_Internal);
 }
@@ -2465,6 +2383,9 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg);
 // The data is copied into the message instance.
 bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
                              upb_Arena* arena);
+
+bool UPB_PRIVATE(_upb_Message_Realloc)(upb_Message* msg, size_t need,
+                                       upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -3665,6 +3586,80 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 
 
 #endif /* UPB_MINI_TABLE_DECODE_H_ */
+
+#ifndef UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
+#define UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Extension registry: a dynamic data structure that stores a map of:
+ *   (upb_MiniTable, number) -> extension info
+ *
+ * upb_decode() uses upb_ExtensionRegistry to look up extensions while parsing
+ * binary format.
+ *
+ * upb_ExtensionRegistry is part of the mini-table (msglayout) family of
+ * objects. Like all mini-table objects, it is suitable for reflection-less
+ * builds that do not want to expose names into the binary.
+ *
+ * Unlike most mini-table types, upb_ExtensionRegistry requires dynamic memory
+ * allocation and dynamic initialization:
+ * * If reflection is being used, then upb_DefPool will construct an appropriate
+ *   upb_ExtensionRegistry automatically.
+ * * For a mini-table only build, the user must manually construct the
+ *   upb_ExtensionRegistry and populate it with all of the extensions the user
+ * cares about.
+ * * A third alternative is to manually unpack relevant extensions after the
+ *   main parse is complete, similar to how Any works. This is perhaps the
+ *   nicest solution from the perspective of reducing dependencies, avoiding
+ *   dynamic memory allocation, and avoiding the need to parse uninteresting
+ *   extensions.  The downsides are:
+ *     (1) parse errors are not caught during the main parse
+ *     (2) the CPU hit of parsing comes during access, which could cause an
+ *         undesirable stutter in application performance.
+ *
+ * Users cannot directly get or put into this map. Users can only add the
+ * extensions from a generated module and pass the extension registry to the
+ * binary decoder.
+ *
+ * A upb_DefPool provides a upb_ExtensionRegistry, so any users who use
+ * reflection do not need to populate a upb_ExtensionRegistry directly.
+ */
+
+typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
+
+// Creates a upb_ExtensionRegistry in the given arena.
+// The arena must outlive any use of the extreg.
+UPB_API upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
+
+UPB_API bool upb_ExtensionRegistry_Add(upb_ExtensionRegistry* r,
+                                       const upb_MiniTableExtension* e);
+
+// Adds the given extension info for the array |e| of size |count| into the
+// registry. If there are any errors, the entire array is backed out.
+// The extensions must outlive the registry.
+// Possible errors include OOM or an extension number that already exists.
+// TODO: There is currently no way to know the exact reason for failure.
+bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
+                                    const upb_MiniTableExtension** e,
+                                    size_t count);
+
+// Looks up the extension (if any) defined for message type |t| and field
+// number |num|. Returns the extension if found, otherwise NULL.
+UPB_API const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
+    const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_EXTENSION_REGISTRY_H_ */
 
 #ifndef UPB_MINI_TABLE_FILE_H_
 #define UPB_MINI_TABLE_FILE_H_
