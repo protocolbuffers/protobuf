@@ -867,9 +867,9 @@ TAGBYTES(r)
 /* message fields *************************************************************/
 
 UPB_INLINE
-upb_Message* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* l,
+upb_Message* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* m,
                                 int msg_ceil_bytes) {
-  size_t size = l->size + sizeof(upb_Message_Internal);
+  size_t size = m->UPB_PRIVATE(size) + sizeof(upb_Message_Internal);
   char* msg_data;
   if (UPB_LIKELY(msg_ceil_bytes > 0 &&
                  _upb_ArenaHas(&d->arena) >= msg_ceil_bytes)) {

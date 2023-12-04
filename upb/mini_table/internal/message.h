@@ -46,7 +46,7 @@ struct upb_MiniTable {
 
   // Must be aligned to sizeof(void*). Doesn't include internal members like
   // unknown fields, extension dict, pointer to msglayout, etc.
-  uint16_t size;
+  uint16_t UPB_PRIVATE(size);
 
   uint16_t UPB_ONLYBITS(field_count);
 

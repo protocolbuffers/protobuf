@@ -942,8 +942,8 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
     size_t max64 = 0;
     for (const auto message : this_file_messages) {
       if (absl::EndsWith(message.name(), "Options")) {
-        size_t size32 = pools.GetMiniTable32(message)->size;
-        size_t size64 = pools.GetMiniTable64(message)->size;
+        size_t size32 = pools.GetMiniTable32(message)->UPB_PRIVATE(size);
+        size_t size64 = pools.GetMiniTable64(message)->UPB_PRIVATE(size);
         if (size32 > max32) {
           max32 = size32;
           max32_message = message;

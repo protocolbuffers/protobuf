@@ -71,7 +71,7 @@ TEST_P(MiniTableTest, AllScalarTypes) {
     EXPECT_EQ(i + 1, upb_MiniTableField_Number(f));
     EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
     EXPECT_TRUE(offsets.insert(f->offset).second);
-    EXPECT_TRUE(f->offset < table->size);
+    EXPECT_TRUE(f->offset < table->UPB_PRIVATE(size));
   }
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
@@ -97,7 +97,7 @@ TEST_P(MiniTableTest, AllRepeatedTypes) {
     EXPECT_EQ(i + 1, upb_MiniTableField_Number(f));
     EXPECT_TRUE(upb_MiniTableField_IsArray(f));
     EXPECT_TRUE(offsets.insert(f->offset).second);
-    EXPECT_TRUE(f->offset < table->size);
+    EXPECT_TRUE(f->offset < table->UPB_PRIVATE(size));
   }
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
@@ -126,7 +126,7 @@ TEST_P(MiniTableTest, Skips) {
     EXPECT_EQ(kUpb_FieldType_Float, upb_MiniTableField_Type(f));
     EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
     EXPECT_TRUE(offsets.insert(f->offset).second);
-    EXPECT_TRUE(f->offset < table->size);
+    EXPECT_TRUE(f->offset < table->UPB_PRIVATE(size));
   }
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
@@ -159,8 +159,8 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
     // All presence fields should point to the same oneof case offset.
     size_t case_ofs = _upb_MiniTableField_OneofOffset(f);
     EXPECT_EQ(table->UPB_PRIVATE(fields)[0].presence, f->presence);
-    EXPECT_TRUE(f->offset < table->size);
-    EXPECT_TRUE(case_ofs < table->size);
+    EXPECT_TRUE(f->offset < table->UPB_PRIVATE(size));
+    EXPECT_TRUE(case_ofs < table->UPB_PRIVATE(size));
     EXPECT_TRUE(case_ofs != f->offset);
   }
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));

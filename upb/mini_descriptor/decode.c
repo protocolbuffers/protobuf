@@ -566,20 +566,21 @@ static void upb_MtDecoder_AssignHasbits(upb_MtDecoder* d) {
     }
   }
 
-  ret->size = last_hasbit ? upb_MiniTable_DivideRoundUp(last_hasbit + 1, 8) : 0;
+  ret->UPB_PRIVATE(size) =
+      last_hasbit ? upb_MiniTable_DivideRoundUp(last_hasbit + 1, 8) : 0;
 }
 
 size_t upb_MtDecoder_Place(upb_MtDecoder* d, upb_FieldRep rep) {
   size_t size = upb_MtDecoder_SizeOfRep(rep, d->platform);
   size_t align = upb_MtDecoder_AlignOfRep(rep, d->platform);
-  size_t ret = UPB_ALIGN_UP(d->table->size, align);
+  size_t ret = UPB_ALIGN_UP(d->table->UPB_PRIVATE(size), align);
   static const size_t max = UINT16_MAX;
   size_t new_size = ret + size;
   if (new_size > max) {
     upb_MdDecoder_ErrorJmp(
         &d->base, "Message size exceeded maximum size of %zu bytes", max);
   }
-  d->table->size = new_size;
+  d->table->UPB_PRIVATE(size) = new_size;
   return ret;
 }
 
@@ -629,7 +630,7 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   //
   // On 32-bit we could potentially make this smaller, but there is no
   // compelling reason to optimize this right now.
-  d->table->size = UPB_ALIGN_UP(d->table->size, 8);
+  d->table->UPB_PRIVATE(size) = UPB_ALIGN_UP(d->table->UPB_PRIVATE(size), 8);
 }
 
 static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
@@ -690,7 +691,8 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
   const size_t hasbit_size = 8;
   d->fields[0].offset = hasbit_size;
   d->fields[1].offset = hasbit_size + kv_size;
-  d->table->size = UPB_ALIGN_UP(hasbit_size + kv_size + kv_size, 8);
+  d->table->UPB_PRIVATE(size) =
+      UPB_ALIGN_UP(hasbit_size + kv_size + kv_size, 8);
 
   // Map entries have a special bit set to signal it's a map entry, used in
   // upb_MiniTable_SetSubMessage() below.
@@ -705,7 +707,7 @@ static void upb_MtDecoder_ParseMessageSet(upb_MtDecoder* d, const char* data,
   }
 
   upb_MiniTable* ret = d->table;
-  ret->size = 0;
+  ret->UPB_PRIVATE(size) = 0;
   ret->UPB_PRIVATE(field_count) = 0;
   ret->UPB_PRIVATE(ext) = kUpb_ExtMode_IsMessageSet;
   ret->UPB_PRIVATE(dense_below) = 0;
@@ -718,7 +720,7 @@ static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
     size_t* buf_size) {
   upb_MdDecoder_CheckOutOfMemory(&decoder->base, decoder->table);
 
-  decoder->table->size = 0;
+  decoder->table->UPB_PRIVATE(size) = 0;
   decoder->table->UPB_PRIVATE(field_count) = 0;
   decoder->table->UPB_PRIVATE(ext) = kUpb_ExtMode_NonExtendable;
   decoder->table->UPB_PRIVATE(dense_below) = 0;

@@ -64,7 +64,7 @@ struct upb_Message_InternalData {
 };
 
 UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* m) {
-  return m->size + sizeof(upb_Message_Internal);
+  return m->UPB_PRIVATE(size) + sizeof(upb_Message_Internal);
 }
 
 // Inline version upb_Message_New(), for internal use.
