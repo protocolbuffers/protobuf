@@ -29,11 +29,6 @@ extern "C" {
 UPB_API upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
                                      upb_Arena* arena);
 
-// Adds unknown data (serialized protobuf data) to the given message.
-// The data is copied into the message instance.
-void upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
-                            upb_Arena* arena);
-
 // Returns a reference to the message's unknown data.
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
 

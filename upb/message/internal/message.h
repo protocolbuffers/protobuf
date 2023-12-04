@@ -18,11 +18,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/types.h"
-#include "upb/message/message.h"
-#include "upb/mini_table/extension.h"
-#include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -65,9 +63,6 @@ struct upb_Message_InternalData {
    *   char data[size - sizeof(upb_Message_InternalData)]; */
 };
 
-/* Maps upb_CType -> memory size. */
-extern char _upb_CTypeo_size[12];
-
 UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* m) {
   return m->size + sizeof(upb_Message_Internal);
 }
@@ -96,6 +91,9 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg);
 // The data is copied into the message instance.
 bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
                              upb_Arena* arena);
+
+bool UPB_PRIVATE(_upb_Message_Realloc)(upb_Message* msg, size_t need,
+                                       upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */

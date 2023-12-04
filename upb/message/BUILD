@@ -94,6 +94,8 @@ cc_library(
     srcs = [
         "array.c",
         "array.h",
+        "internal/extension.c",
+        "internal/message.c",
         "map.c",
         "map.h",
         "map_sorter.c",
