@@ -1003,8 +1003,6 @@ inline void ExtensionSet::AddString(int number, FieldType type,
 //     static inline MutableType Add(int number, ExtensionSet* set);
 //     This is used by the ExtensionIdentifier constructor to register
 //     the extension at dynamic initialization.
-//     template <typename ExtendeeT>
-//     static void Register(int number, FieldType type, bool is_packed);
 //   };
 //
 // Not all of these methods make sense for all field types.  For example, the
@@ -1030,6 +1028,8 @@ class PrimitiveTypeTraits {
  public:
   typedef Type ConstType;
   typedef Type MutableType;
+  using InitType = ConstType;
+  static const ConstType& FromInitType(const InitType& v) { return v; }
   typedef PrimitiveTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = false;
 
@@ -1040,11 +1040,6 @@ class PrimitiveTypeTraits {
                                         const ConstType& default_value);
   static inline void Set(int number, FieldType field_type, ConstType value,
                          ExtensionSet* set);
-  template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed) {
-    ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
-                                    type, false, is_packed);
-  }
 };
 
 template <typename Type>
@@ -1052,6 +1047,8 @@ class RepeatedPrimitiveTypeTraits {
  public:
   typedef Type ConstType;
   typedef Type MutableType;
+  using InitType = ConstType;
+  static const ConstType& FromInitType(const InitType& v) { return v; }
   typedef RepeatedPrimitiveTypeTraits<Type> Repeated;
   static constexpr bool kLifetimeBound = false;
 
@@ -1074,11 +1071,6 @@ class RepeatedPrimitiveTypeTraits {
                                                      ExtensionSet* set);
 
   static const RepeatedFieldType* GetDefaultRepeatedField();
-  template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed) {
-    ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
-                                    type, true, is_packed);
-  }
 };
 
 class PROTOBUF_EXPORT RepeatedPrimitiveDefaults {
@@ -1178,6 +1170,8 @@ class PROTOBUF_EXPORT StringTypeTraits {
  public:
   typedef const std::string& ConstType;
   typedef std::string* MutableType;
+  using InitType = ConstType;
+  static ConstType FromInitType(InitType v) { return v; }
   typedef StringTypeTraits Singular;
   static constexpr bool kLifetimeBound = true;
 
@@ -1197,17 +1191,14 @@ class PROTOBUF_EXPORT StringTypeTraits {
                                      ExtensionSet* set) {
     return set->MutableString(number, field_type, nullptr);
   }
-  template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed) {
-    ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
-                                    type, false, is_packed);
-  }
 };
 
 class PROTOBUF_EXPORT RepeatedStringTypeTraits {
  public:
   typedef const std::string& ConstType;
   typedef std::string* MutableType;
+  using InitType = ConstType;
+  static ConstType FromInitType(InitType v) { return v; }
   typedef RepeatedStringTypeTraits Repeated;
   static constexpr bool kLifetimeBound = true;
 
@@ -1254,12 +1245,6 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
 
   static const RepeatedFieldType* GetDefaultRepeatedField();
 
-  template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed) {
-    ExtensionSet::RegisterExtension(&ExtendeeT::default_instance(), number,
-                                    type, true, is_packed);
-  }
-
  private:
   static void InitializeDefaultRepeatedFields();
   static void DestroyDefaultRepeatedFields();
@@ -1275,6 +1260,8 @@ class EnumTypeTraits {
  public:
   typedef Type ConstType;
   typedef Type MutableType;
+  using InitType = ConstType;
+  static const ConstType& FromInitType(const InitType& v) { return v; }
   typedef EnumTypeTraits<Type, IsValid> Singular;
   static constexpr bool kLifetimeBound = false;
 
@@ -1292,11 +1279,6 @@ class EnumTypeTraits {
     ABSL_DCHECK(IsValid(value));
     set->SetEnum(number, field_type, value, nullptr);
   }
-  template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed) {
-    ExtensionSet::RegisterEnumExtension(&ExtendeeT::default_instance(), number,
-                                        type, false, is_packed, IsValid);
-  }
 };
 
 template <typename Type, bool IsValid(int)>
@@ -1304,6 +1286,8 @@ class RepeatedEnumTypeTraits {
  public:
   typedef Type ConstType;
   typedef Type MutableType;
+  using InitType = ConstType;
+  static const ConstType& FromInitType(const InitType& v) { return v; }
   typedef RepeatedEnumTypeTraits<Type, IsValid> Repeated;
   static constexpr bool kLifetimeBound = false;
 
@@ -1358,11 +1342,6 @@ class RepeatedEnumTypeTraits {
     return reinterpret_cast<const RepeatedField<Type>*>(
         RepeatedPrimitiveTypeTraits<int32_t>::GetDefaultRepeatedField());
   }
-  template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed) {
-    ExtensionSet::RegisterEnumExtension(&ExtendeeT::default_instance(), number,
-                                        type, true, is_packed, IsValid);
-  }
 };
 
 // -------------------------------------------------------------------
@@ -1376,6 +1355,10 @@ class MessageTypeTraits {
  public:
   typedef const Type& ConstType;
   typedef Type* MutableType;
+  using InitType = const void*;
+  static ConstType FromInitType(InitType v) {
+    return *static_cast<const Type*>(v);
+  }
   typedef MessageTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = true;
 
@@ -1414,21 +1397,6 @@ class MessageTypeTraits {
     return static_cast<Type*>(
         set->UnsafeArenaReleaseMessage(number, Type::default_instance()));
   }
-  // Some messages won't (can't) be verified; e.g. lite.
-  template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed) {
-    ExtensionSet::RegisterMessageExtension(
-        &ExtendeeT::default_instance(), number, type, false, is_packed,
-        &Type::default_instance(), nullptr, LazyAnnotation::kUndefined);
-  }
-
-  template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed,
-                       LazyEagerVerifyFnType fn, LazyAnnotation is_lazy) {
-    ExtensionSet::RegisterMessageExtension(
-        &ExtendeeT::default_instance(), number, type, false, is_packed,
-        &Type::default_instance(), fn, is_lazy);
-  }
 };
 
 // Used by WireFormatVerify to extract the verify function from the registry.
@@ -1443,6 +1411,10 @@ class RepeatedMessageTypeTraits {
  public:
   typedef const Type& ConstType;
   typedef Type* MutableType;
+  using InitType = const void*;
+  static ConstType FromInitType(InitType v) {
+    return *static_cast<const Type*>(v);
+  }
   typedef RepeatedMessageTypeTraits<Type> Repeated;
   static constexpr bool kLifetimeBound = true;
 
@@ -1489,22 +1461,6 @@ class RepeatedMessageTypeTraits {
   }
 
   static const RepeatedFieldType* GetDefaultRepeatedField();
-
-  // Some messages won't (can't) be verified; e.g. lite.
-  template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed) {
-    ExtensionSet::RegisterMessageExtension(
-        &ExtendeeT::default_instance(), number, type, true, is_packed,
-        &Type::default_instance(), nullptr, LazyAnnotation::kUndefined);
-  }
-
-  template <typename ExtendeeT>
-  static void Register(int number, FieldType type, bool is_packed,
-                       LazyEagerVerifyFnType fn, LazyAnnotation is_lazy) {
-    ExtensionSet::RegisterMessageExtension(
-        &ExtendeeT::default_instance(), number, type, true, is_packed,
-        &Type::default_instance(), fn, is_lazy);
-  }
 };
 
 template <typename Type>
@@ -1540,77 +1496,26 @@ class ExtensionIdentifier {
   typedef TypeTraitsType TypeTraits;
   typedef ExtendeeType Extendee;
 
-  ExtensionIdentifier(int number, typename TypeTraits::ConstType default_value)
-      : number_(number), default_value_(default_value) {
-    Register(number);
-  }
-  ExtensionIdentifier(int number, typename TypeTraits::ConstType default_value,
-                      LazyEagerVerifyFnType verify_func,
-                      LazyAnnotation is_lazy = LazyAnnotation::kUndefined)
-      : number_(number), default_value_(default_value) {
-    Register(number, verify_func, is_lazy);
-  }
+  constexpr ExtensionIdentifier(int number,
+                                typename TypeTraits::InitType default_value)
+      : number_(number), default_value_(default_value) {}
+
   inline int number() const { return number_; }
   typename TypeTraits::ConstType default_value() const {
-    return default_value_;
-  }
-
-  static void Register(int number) {
-    TypeTraits::template Register<ExtendeeType>(number, field_type, is_packed);
-  }
-
-  static void Register(int number, LazyEagerVerifyFnType verify_func,
-                       LazyAnnotation is_lazy) {
-    TypeTraits::template Register<ExtendeeType>(number, field_type, is_packed,
-                                                verify_func, is_lazy);
+    return TypeTraits::FromInitType(default_value_);
   }
 
   typename TypeTraits::ConstType const& default_value_ref() const {
-    return default_value_;
+    return TypeTraits::FromInitType(default_value_);
   }
 
  private:
   const int number_;
-  typename TypeTraits::ConstType default_value_;
+  typename TypeTraits::InitType default_value_;
 };
 
 // -------------------------------------------------------------------
 // Generated accessors
-
-
-// Define a specialization of ExtensionIdentifier for bootstrapped extensions
-// that we need to register lazily.
-template <>
-class ExtensionIdentifier<FeatureSet, MessageTypeTraits<::pb::CppFeatures>, 11,
-                          false> {
- public:
-  using TypeTraits = MessageTypeTraits<::pb::CppFeatures>;
-  using Extendee = FeatureSet;
-
-  explicit constexpr ExtensionIdentifier(int number) : number_(number) {}
-
-  int number() const { return number_; }
-  const ::pb::CppFeatures& default_value() const { return *default_value_; }
-
-  template <typename MessageType = ::pb::CppFeatures,
-            typename ExtendeeType = FeatureSet>
-  void LazyRegister(
-      const MessageType& default_instance = MessageType::default_instance(),
-      LazyEagerVerifyFnType verify_func = nullptr) const {
-    absl::call_once(once_, [&] {
-      default_value_ = &default_instance;
-      MessageTypeTraits<MessageType>::template Register<ExtendeeType>(
-          number_, 11, false, verify_func, LazyAnnotation::kUndefined);
-    });
-  }
-
-  const ::pb::CppFeatures& default_value_ref() const { return *default_value_; }
-
- private:
-  const int number_;
-  mutable const ::pb::CppFeatures* default_value_ = nullptr;
-  mutable absl::once_flag once_;
-};
 
 
 }  // namespace internal

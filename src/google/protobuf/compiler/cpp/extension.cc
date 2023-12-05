@@ -26,8 +26,6 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-using ::google::protobuf::internal::cpp::IsLazilyInitializedFile;
-
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
                                        const Options& options,
                                        MessageSCCAnalyzer* scc_analyzer)
@@ -68,6 +66,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["constant_name"] = FieldConstantName(descriptor_);
   variables_["field_type"] =
       absl::StrCat(static_cast<int>(descriptor_->type()));
+  variables_["repeated"] = descriptor_->is_repeated() ? "true" : "false";
   variables_["packed"] = descriptor_->is_packed() ? "true" : "false";
   variables_["dllexport_decl"] = options.dllexport_decl;
 
@@ -122,8 +121,8 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
     } else if (descriptor_->message_type()) {
       // We have to initialize the default instance for extensions at
       // registration time.
-      return absl::StrCat(FieldMessageTypeName(descriptor_, options_),
-                          "::default_instance()");
+      return absl::StrCat("&", QualifiedDefaultInstanceName(
+                                   descriptor_->message_type(), options_));
     } else {
       return DefaultValue(options_, descriptor_);
     }
@@ -162,58 +161,13 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
            }},
           {"define_extension_id",
            [&] {
-             if (IsLazilyInitializedFile(descriptor_->file()->name())) {
-               p->Emit(R"cc(
-                 PROTOBUF_CONSTINIT$ dllexport_decl$
-                     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-                         ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
-                                             $field_type$, $packed$>
-                             $scoped_name$($constant_name$);
-               )cc");
-               return;
-             }
-
-             bool should_verify =
-                 // Only verify msgs.
-                 descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-                 // Options say to verify.
-                 ShouldVerify(descriptor_->message_type(), options_,
-                              scc_analyzer_) &&
-                 ShouldVerify(descriptor_->containing_type(), options_,
-                              scc_analyzer_);
-
-             if (!should_verify) {
-               p->Emit(R"cc(
-                 $dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-                     ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
-                                         $field_type$, $packed$>
-                         $scoped_name$($constant_name$, $default_str$);
-               )cc");
-               return;
-             }
-
-             const auto& options = descriptor_->options();
-             if (options.has_lazy()) {
-               p->Emit(
-                   {{"is_lazy", options.lazy() ? "kLazy" : "kEager"}},
-                   R"cc(
-                     $dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-                         ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
-                                             $field_type$, $packed$>
-                             $scoped_name$($constant_name$, $default_str$,
-                                           &$message_type$::InternalVerify,
-                                           ::_pbi::LazyAnnotation::$is_lazy$);
-                   )cc");
-             } else {
-               p->Emit(
-                   R"cc(
-                     $dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-                         ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
-                                             $field_type$, $packed$>
-                             $scoped_name$($constant_name$, $default_str$,
-                                           &$message_type$::InternalVerify);
-                   )cc");
-             }
+             p->Emit(R"cc(
+               PROTOBUF_CONSTINIT$ dllexport_decl$
+                   PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
+                       ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
+                                           $field_type$, $packed$>
+                           $scoped_name$($constant_name$, $default_str$);
+             )cc");
            }},
       },
       R"cc(
@@ -221,6 +175,57 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
         $declare_const_var$;
         $define_extension_id$;
       )cc");
+}
+
+void ExtensionGenerator::GenerateRegistration(io::Printer* p) {
+  auto vars = p->WithVars(variables_);
+  switch (descriptor_->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+      p->Emit({{"enum_name", ClassName(descriptor_->enum_type(), true)}},
+              R"cc(
+                ::_pbi::ExtensionSet::RegisterEnumExtension(
+                    &$extendee$::default_instance(), $number$, $field_type$,
+                    $repeated$, $packed$, $enum_name$_IsValid),
+              )cc");
+      break;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      p->Emit({{"verify",
+                [&] {
+                  const bool should_verify =
+                      // Only verify msgs.
+                      descriptor_->cpp_type() ==
+                          FieldDescriptor::CPPTYPE_MESSAGE &&
+                      // Options say to verify.
+                      ShouldVerify(descriptor_->message_type(), options_,
+                                   scc_analyzer_) &&
+                      ShouldVerify(descriptor_->containing_type(), options_,
+                                   scc_analyzer_);
+                  if (should_verify) {
+                    p->Emit("&$message_type$::InternalVerify,");
+                  } else {
+                    p->Emit("nullptr,");
+                  }
+                }},
+               {"message_type", FieldMessageTypeName(descriptor_, options_)},
+               {"lazy", descriptor_->options().has_lazy()
+                            ? descriptor_->options().lazy() ? "kLazy" : "kEager"
+                            : "kUndefined"}},
+              R"cc(
+                ::_pbi::ExtensionSet::RegisterMessageExtension(
+                    &$extendee$::default_instance(), $number$, $field_type$,
+                    $repeated$, $packed$, &$message_type$::default_instance(),
+                    $verify$, ::_pbi::LazyAnnotation::$lazy$),
+              )cc");
+      break;
+    default:
+      p->Emit(
+          R"cc(
+            ::_pbi::ExtensionSet::RegisterExtension(
+                &$extendee$::default_instance(), $number$, $field_type$,
+                $repeated$, $packed$),
+          )cc");
+      break;
+  }
 }
 
 }  // namespace cpp

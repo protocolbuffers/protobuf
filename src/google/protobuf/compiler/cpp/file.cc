@@ -809,6 +809,23 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
   )cc");
 }
 
+void FileGenerator::GenerateStaticInitializer(io::Printer* p) {
+  if (static_initializers_.empty()) return;
+  p->Emit({{"expr",
+            [&] {
+              for (auto& init : static_initializers_) {
+                init(p);
+              }
+            }}},
+          R"cc(
+            PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+            static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+                ($expr$, ::std::false_type{});
+          )cc");
+  // Reset the vector because we might be generating many files.
+  static_initializers_.clear();
+}
+
 void FileGenerator::GenerateSourceForExtension(int idx, io::Printer* p) {
   auto v = p->WithVars(FileVars(file_, options_));
   GenerateSourceIncludes(p);
@@ -816,6 +833,10 @@ void FileGenerator::GenerateSourceForExtension(int idx, io::Printer* p) {
 
   NamespaceOpener ns(Namespace(file_, options_), p);
   extension_generators_[idx]->GenerateDefinition(p);
+  static_initializers_.push_back([this, idx](auto* p) {
+    extension_generators_[idx]->GenerateRegistration(p);
+  });
+  GenerateStaticInitializer(p);
 }
 
 void FileGenerator::GenerateGlobalSource(io::Printer* p) {
@@ -895,8 +916,14 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     }
 
     // Define extensions.
+    const auto is_lazily_init = IsLazilyInitializedFile(file_->name());
     for (int i = 0; i < extension_generators_.size(); ++i) {
       extension_generators_[i]->GenerateDefinition(p);
+      if (!is_lazily_init) {
+        static_initializers_.push_back([&, i](auto* p) {
+          extension_generators_[i]->GenerateRegistration(p);
+        });
+      }
     }
 
     p->Emit(R"cc(
@@ -918,6 +945,8 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   if (IsAnyMessage(file_)) {
     UnmuteWuninitialized(p);
   }
+
+  GenerateStaticInitializer(p);
 
   IncludeFile("third_party/protobuf/port_undef.inc", p);
 }
@@ -1223,41 +1252,24 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // pull in a lot of unnecessary code that can't be stripped by --gc-sections.
   // Descriptor initialization will still be performed lazily when it's needed.
   if (!IsLazilyInitializedFile(file_->name())) {
-    p->Emit(
-        {
-            {"dummy", UniqueName("dynamic_init_dummy", file_, options_)},
-            {"desc_table_expr",
-             [&] {
-               std::vector<const Descriptor*> pinned_messages;
-               if (UsingImplicitWeakDescriptor(file_, options_)) {
-                 pinned_messages =
-                     GetMessagesToPinGloballyForWeakDescriptors(file_);
-               }
-               if (pinned_messages.empty()) {
-                 p->Emit("&$desc_table$");
-               } else {
-                 p->Emit({{"pinned",
-                           [&] {
-                             for (const auto* pinned : pinned_messages) {
-                               p->Emit(
-                                   {
-                                       {"default", QualifiedDefaultInstanceName(
-                                                       pinned, options_)},
-                                   },
-                                   R"cc(
-                                     ::_pbi::StrongPointer(&$default$),
-                                   )cc");
-                             }
-                           }}},
-                         "($pinned$, &$desc_table$)");
-               }
-             }},
-        },
-        R"cc(
-          // Force running AddDescriptors() at dynamic initialization time.
-          PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-          static ::_pbi::AddDescriptorsRunner $dummy$($desc_table_expr$);
-        )cc");
+    if (UsingImplicitWeakDescriptor(file_, options_)) {
+      for (auto* pinned : GetMessagesToPinGloballyForWeakDescriptors(file_)) {
+        static_initializers_.push_back([this, pinned](auto* p) {
+          p->Emit(
+              {
+                  {"default", QualifiedDefaultInstanceName(pinned, options_)},
+              },
+              R"cc(
+                ::_pbi::StrongPointer(&$default$),
+              )cc");
+        });
+      }
+    }
+    static_initializers_.push_back([](auto* p) {
+      p->Emit(R"cc(
+        ::_pbi::AddDescriptors(&$desc_table$),
+      )cc");
+    });
   }
 
   // However, we must provide a way to force initialize the default instances

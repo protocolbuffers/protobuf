@@ -338,6 +338,8 @@ PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8_t* base,
 
 PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstances();
 
+PROTOBUF_EXPORT void AddDescriptors(const DescriptorTable* table);
+
 struct PROTOBUF_EXPORT AddDescriptorsRunner {
   explicit AddDescriptorsRunner(const DescriptorTable* table);
 };
