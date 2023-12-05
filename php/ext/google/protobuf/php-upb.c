@@ -13285,7 +13285,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
 
   /* Set presence if necessary. */
   if (field->presence > 0) {
-    _upb_Message_SetHasbitByField(msg, field);
+    UPB_PRIVATE(_upb_Message_SetHasbit)(msg, field);
   } else if (field->presence < 0) {
     /* Oneof case */
     uint32_t* oneof_case = _upb_Message_OneofCasePtr(msg, field);
@@ -15427,7 +15427,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
     }
   } else if (f->presence > 0) {
     // Proto2 presence: hasbit.
-    return _upb_Message_GetHasbitByField(msg, f);
+    return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
   } else {
     // Field is in a oneof.
     return _upb_Message_GetOneofCase(msg, f) == f->UPB_PRIVATE(number);
