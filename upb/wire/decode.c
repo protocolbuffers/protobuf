@@ -24,7 +24,6 @@
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/map_entry.h"
-#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
@@ -246,7 +245,7 @@ static upb_Message* _upb_Decoder_NewSubMessage(upb_Decoder* d,
                                                upb_TaggedMessagePtr* target) {
   const upb_MiniTable* subl = _upb_MiniTableSubs_MessageByField(subs, field);
   UPB_ASSERT(subl);
-  upb_Message* msg = _upb_Message_New(subl, &d->arena);
+  upb_Message* msg = upb_Message_New(subl, &d->arena);
   if (!msg) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
 
   // Extensions should not be unlinked. A message extension should not be
@@ -374,7 +373,7 @@ static void _upb_Decoder_AddUnknownVarints(upb_Decoder* d, upb_Message* msg,
   end = upb_Decoder_EncodeVarint32(val1, end);
   end = upb_Decoder_EncodeVarint32(val2, end);
 
-  if (!_upb_Message_AddUnknown(msg, buf, end - buf, &d->arena)) {
+  if (!upb_Message_AddUnknown(msg, buf, end - buf, &d->arena)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
 }
@@ -660,7 +659,7 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
     _upb_Decoder_AddUnknownVarints(d, msg, tag, size);
-    if (!_upb_Message_AddUnknown(msg, buf, size, &d->arena)) {
+    if (!upb_Message_AddUnknown(msg, buf, size, &d->arena)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else {
@@ -838,9 +837,9 @@ static void upb_Decoder_AddUnknownMessageSetItem(upb_Decoder* d,
   ptr = upb_Decoder_EncodeVarint32(kEndItemTag, ptr);
   char* end = ptr;
 
-  if (!_upb_Message_AddUnknown(msg, buf, split - buf, &d->arena) ||
-      !_upb_Message_AddUnknown(msg, message_data, message_size, &d->arena) ||
-      !_upb_Message_AddUnknown(msg, split, end - split, &d->arena)) {
+  if (!upb_Message_AddUnknown(msg, buf, split - buf, &d->arena) ||
+      !upb_Message_AddUnknown(msg, message_data, message_size, &d->arena) ||
+      !upb_Message_AddUnknown(msg, split, end - split, &d->arena)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
 }
@@ -1225,7 +1224,7 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
       start = d->unknown;
       d->unknown = NULL;
     }
-    if (!_upb_Message_AddUnknown(msg, start, ptr - start, &d->arena)) {
+    if (!upb_Message_AddUnknown(msg, start, ptr - start, &d->arena)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else if (wire_type == kUpb_WireType_StartGroup) {

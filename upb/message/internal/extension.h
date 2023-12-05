@@ -8,9 +8,11 @@
 #ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
 #define UPB_MESSAGE_INTERNAL_EXTENSION_H_
 
+#include <stddef.h>
+
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
-#include "upb/message/message.h"
+#include "upb/message/types.h"
 #include "upb/mini_table/extension.h"
 
 // Must be last.

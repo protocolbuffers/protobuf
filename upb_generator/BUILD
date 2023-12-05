@@ -267,9 +267,11 @@ bootstrap_cc_binary(
     deps = [
         "//upb:base",
         "//upb:mem",
+        "//upb:mini_table",
         "//upb:mini_table_internal",
         "//upb:port",
         "//upb:wire_types",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",

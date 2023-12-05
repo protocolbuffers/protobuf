@@ -15,6 +15,7 @@
 #include <stddef.h>
 
 #include "upb/mem/arena.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/types.h"  // IWYU pragma: export
 #include "upb/mini_table/message.h"
 
@@ -26,8 +27,15 @@ extern "C" {
 #endif
 
 // Creates a new message with the given mini_table on the given arena.
-UPB_API upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
-                                     upb_Arena* arena);
+UPB_API_INLINE upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
+                                            upb_Arena* arena) {
+  return UPB_PRIVATE(_upb_Message_New)(mini_table, arena);
+}
+
+// Adds unknown data (serialized protobuf data) to the given message.
+// The data is copied into the message instance.
+bool upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
+                            upb_Arena* arena);
 
 // Returns a reference to the message's unknown data.
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);

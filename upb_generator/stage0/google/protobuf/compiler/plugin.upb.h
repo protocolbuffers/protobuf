@@ -43,7 +43,7 @@ typedef enum {
 /* google.protobuf.compiler.Version */
 
 UPB_INLINE google_protobuf_compiler_Version* google_protobuf_compiler_Version_new(upb_Arena* arena) {
-  return (google_protobuf_compiler_Version*)_upb_Message_New(google__protobuf__compiler__Version_msg_init(), arena);
+  return (google_protobuf_compiler_Version*)upb_Message_New(google__protobuf__compiler__Version_msg_init(), arena);
 }
 UPB_INLINE google_protobuf_compiler_Version* google_protobuf_compiler_Version_parse(const char* buf, size_t size, upb_Arena* arena) {
   google_protobuf_compiler_Version* ret = google_protobuf_compiler_Version_new(arena);
@@ -156,7 +156,7 @@ UPB_INLINE void google_protobuf_compiler_Version_set_suffix(google_protobuf_comp
 /* google.protobuf.compiler.CodeGeneratorRequest */
 
 UPB_INLINE google_protobuf_compiler_CodeGeneratorRequest* google_protobuf_compiler_CodeGeneratorRequest_new(upb_Arena* arena) {
-  return (google_protobuf_compiler_CodeGeneratorRequest*)_upb_Message_New(google__protobuf__compiler__CodeGeneratorRequest_msg_init(), arena);
+  return (google_protobuf_compiler_CodeGeneratorRequest*)upb_Message_New(google__protobuf__compiler__CodeGeneratorRequest_msg_init(), arena);
 }
 UPB_INLINE google_protobuf_compiler_CodeGeneratorRequest* google_protobuf_compiler_CodeGeneratorRequest_parse(const char* buf, size_t size, upb_Arena* arena) {
   google_protobuf_compiler_CodeGeneratorRequest* ret = google_protobuf_compiler_CodeGeneratorRequest_new(arena);
@@ -365,7 +365,7 @@ UPB_INLINE void google_protobuf_compiler_CodeGeneratorRequest_set_compiler_versi
 UPB_INLINE struct google_protobuf_compiler_Version* google_protobuf_compiler_CodeGeneratorRequest_mutable_compiler_version(google_protobuf_compiler_CodeGeneratorRequest* msg, upb_Arena* arena) {
   struct google_protobuf_compiler_Version* sub = (struct google_protobuf_compiler_Version*)google_protobuf_compiler_CodeGeneratorRequest_compiler_version(msg);
   if (sub == NULL) {
-    sub = (struct google_protobuf_compiler_Version*)_upb_Message_New(google__protobuf__compiler__Version_msg_init(), arena);
+    sub = (struct google_protobuf_compiler_Version*)upb_Message_New(google__protobuf__compiler__Version_msg_init(), arena);
     if (sub) google_protobuf_compiler_CodeGeneratorRequest_set_compiler_version(msg, sub);
   }
   return sub;
@@ -391,7 +391,7 @@ UPB_INLINE struct google_protobuf_FileDescriptorProto* google_protobuf_compiler_
   if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
     return NULL;
   }
-  struct google_protobuf_FileDescriptorProto* sub = (struct google_protobuf_FileDescriptorProto*)_upb_Message_New(google__protobuf__FileDescriptorProto_msg_init(), arena);
+  struct google_protobuf_FileDescriptorProto* sub = (struct google_protobuf_FileDescriptorProto*)upb_Message_New(google__protobuf__FileDescriptorProto_msg_init(), arena);
   if (!arr || !sub) return NULL;
   UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &sub, sizeof(sub));
   return sub;
@@ -417,7 +417,7 @@ UPB_INLINE struct google_protobuf_FileDescriptorProto* google_protobuf_compiler_
   if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
     return NULL;
   }
-  struct google_protobuf_FileDescriptorProto* sub = (struct google_protobuf_FileDescriptorProto*)_upb_Message_New(google__protobuf__FileDescriptorProto_msg_init(), arena);
+  struct google_protobuf_FileDescriptorProto* sub = (struct google_protobuf_FileDescriptorProto*)upb_Message_New(google__protobuf__FileDescriptorProto_msg_init(), arena);
   if (!arr || !sub) return NULL;
   UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &sub, sizeof(sub));
   return sub;
@@ -426,7 +426,7 @@ UPB_INLINE struct google_protobuf_FileDescriptorProto* google_protobuf_compiler_
 /* google.protobuf.compiler.CodeGeneratorResponse */
 
 UPB_INLINE google_protobuf_compiler_CodeGeneratorResponse* google_protobuf_compiler_CodeGeneratorResponse_new(upb_Arena* arena) {
-  return (google_protobuf_compiler_CodeGeneratorResponse*)_upb_Message_New(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), arena);
+  return (google_protobuf_compiler_CodeGeneratorResponse*)upb_Message_New(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), arena);
 }
 UPB_INLINE google_protobuf_compiler_CodeGeneratorResponse* google_protobuf_compiler_CodeGeneratorResponse_parse(const char* buf, size_t size, upb_Arena* arena) {
   google_protobuf_compiler_CodeGeneratorResponse* ret = google_protobuf_compiler_CodeGeneratorResponse_new(arena);
@@ -593,7 +593,7 @@ UPB_INLINE struct google_protobuf_compiler_CodeGeneratorResponse_File* google_pr
   if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
     return NULL;
   }
-  struct google_protobuf_compiler_CodeGeneratorResponse_File* sub = (struct google_protobuf_compiler_CodeGeneratorResponse_File*)_upb_Message_New(google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(), arena);
+  struct google_protobuf_compiler_CodeGeneratorResponse_File* sub = (struct google_protobuf_compiler_CodeGeneratorResponse_File*)upb_Message_New(google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(), arena);
   if (!arr || !sub) return NULL;
   UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &sub, sizeof(sub));
   return sub;
@@ -602,7 +602,7 @@ UPB_INLINE struct google_protobuf_compiler_CodeGeneratorResponse_File* google_pr
 /* google.protobuf.compiler.CodeGeneratorResponse.File */
 
 UPB_INLINE google_protobuf_compiler_CodeGeneratorResponse_File* google_protobuf_compiler_CodeGeneratorResponse_File_new(upb_Arena* arena) {
-  return (google_protobuf_compiler_CodeGeneratorResponse_File*)_upb_Message_New(google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(), arena);
+  return (google_protobuf_compiler_CodeGeneratorResponse_File*)upb_Message_New(google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(), arena);
 }
 UPB_INLINE google_protobuf_compiler_CodeGeneratorResponse_File* google_protobuf_compiler_CodeGeneratorResponse_File_parse(const char* buf, size_t size, upb_Arena* arena) {
   google_protobuf_compiler_CodeGeneratorResponse_File* ret = google_protobuf_compiler_CodeGeneratorResponse_File_new(arena);
@@ -714,7 +714,7 @@ UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_File_set_generate
 UPB_INLINE struct google_protobuf_GeneratedCodeInfo* google_protobuf_compiler_CodeGeneratorResponse_File_mutable_generated_code_info(google_protobuf_compiler_CodeGeneratorResponse_File* msg, upb_Arena* arena) {
   struct google_protobuf_GeneratedCodeInfo* sub = (struct google_protobuf_GeneratedCodeInfo*)google_protobuf_compiler_CodeGeneratorResponse_File_generated_code_info(msg);
   if (sub == NULL) {
-    sub = (struct google_protobuf_GeneratedCodeInfo*)_upb_Message_New(google__protobuf__GeneratedCodeInfo_msg_init(), arena);
+    sub = (struct google_protobuf_GeneratedCodeInfo*)upb_Message_New(google__protobuf__GeneratedCodeInfo_msg_init(), arena);
     if (sub) google_protobuf_compiler_CodeGeneratorResponse_File_set_generated_code_info(msg, sub);
   }
   return sub;

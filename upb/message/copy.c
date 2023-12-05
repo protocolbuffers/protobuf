@@ -19,14 +19,12 @@
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
-#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
-#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/internal/size_log2.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
@@ -288,7 +286,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   if (unknown_size != 0) {
     UPB_ASSERT(ptr);
     // Make a copy into destination arena.
-    if (!_upb_Message_AddUnknown(dst, ptr, unknown_size, arena)) {
+    if (!upb_Message_AddUnknown(dst, ptr, unknown_size, arena)) {
       return NULL;
     }
   }
