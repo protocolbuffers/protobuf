@@ -887,39 +887,6 @@ class PROTOBUF_EXPORT Reflection final {
   // Returns nullptr if no extension is known for this name or number.
   const FieldDescriptor* FindKnownExtensionByNumber(int number) const;
 
-  // Feature Flags -------------------------------------------------------------
-
-  // Does this message support storing arbitrary integer values in enum fields?
-  // If |true|, GetEnumValue/SetEnumValue and associated repeated-field versions
-  // take arbitrary integer values, and the legacy GetEnum() getter will
-  // dynamically create an EnumValueDescriptor for any integer value without
-  // one. If |false|, setting an unknown enum value via the integer-based
-  // setters results in undefined behavior (in practice, ABSL_DCHECK-fails).
-  //
-  // Generic code that uses reflection to handle messages with enum fields
-  // should check this flag before using the integer-based setter, and either
-  // downgrade to a compatible value or use the UnknownFieldSet if not. For
-  // example:
-  //
-  //   int new_value = GetValueFromApplicationLogic();
-  //   if (reflection->SupportsUnknownEnumValues()) {
-  //     reflection->SetEnumValue(message, field, new_value);
-  //   } else {
-  //     if (field_descriptor->enum_type()->
-  //             FindValueByNumber(new_value) != nullptr) {
-  //       reflection->SetEnumValue(message, field, new_value);
-  //     } else if (emit_unknown_enum_values) {
-  //       reflection->MutableUnknownFields(message)->AddVarint(
-  //           field->number(), new_value);
-  //     } else {
-  //       // convert value to a compatible/default value.
-  //       new_value = CompatibleDowngrade(new_value);
-  //       reflection->SetEnumValue(message, field, new_value);
-  //     }
-  //   }
-  ABSL_DEPRECATED("Use EnumDescriptor::is_closed instead.")
-  bool SupportsUnknownEnumValues() const;
-
   // Returns the MessageFactory associated with this message.  This can be
   // useful for determining if a message is a generated message or not, for
   // example:

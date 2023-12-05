@@ -2655,11 +2655,6 @@ const FieldDescriptor* Reflection::FindKnownExtensionByNumber(
   return descriptor_pool_->FindExtensionByNumber(descriptor_, number);
 }
 
-bool Reflection::SupportsUnknownEnumValues() const {
-  return FileDescriptorLegacy(descriptor_->file()).syntax() ==
-         FileDescriptorLegacy::Syntax::SYNTAX_PROTO3;
-}
-
 // ===================================================================
 // Some private helpers.
 
