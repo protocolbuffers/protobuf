@@ -68,7 +68,7 @@ UPB_API_INLINE bool upb_Message_HasField(const upb_Message* msg,
 UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
     const upb_Message* message, const upb_MiniTableField* oneof_field) {
   UPB_ASSUME(upb_MiniTableField_IsInOneof(oneof_field));
-  return _upb_Message_GetOneofCase(message, oneof_field);
+  return UPB_PRIVATE(_upb_Message_GetOneofCase)(message, oneof_field);
 }
 
 // NOTE: The default_val is only used for fields that support presence.
@@ -371,7 +371,7 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
     *UPB_PTR_AT(msg, field->offset, upb_Message*) = sub_message;
-    _upb_Message_SetPresence(msg, field);
+    UPB_PRIVATE(_upb_Message_SetPresence)(msg, field);
   }
   return sub_message;
 }

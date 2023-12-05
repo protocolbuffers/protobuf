@@ -174,6 +174,12 @@ UPB_PRIVATE(_upb_MiniTableField_Number)(const struct upb_MiniTableField* f) {
   return f->UPB_ONLYBITS(number);
 }
 
+UPB_INLINE size_t
+_upb_MiniTableField_OneofOffset(const struct upb_MiniTableField* f) {
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_IsInOneof)(f));
+  return ~(ptrdiff_t)f->presence;
+}
+
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(
     const struct upb_MiniTableField* f) {
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==

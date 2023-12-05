@@ -496,7 +496,8 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
     return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
   } else {
     // Field is in a oneof.
-    return _upb_Message_GetOneofCase(msg, f) == f->UPB_PRIVATE(number);
+    return UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, f) ==
+           f->UPB_PRIVATE(number);
   }
 }
 
