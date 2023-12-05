@@ -34,7 +34,6 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -216,8 +215,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
     maximum_edition_ = Edition::EDITION_PROTO2;
   }
 
-  if (FileDescriptorLegacy(file).syntax() ==
-          FileDescriptorLegacy::SYNTAX_EDITIONS &&
+  if (file->edition() >= Edition::EDITION_2023 &&
       (suppressed_features_ & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
     internal::VisitDescriptors(*file, [&](const auto& descriptor) {
       const FeatureSet& features = GetResolvedSourceFeatures(descriptor);

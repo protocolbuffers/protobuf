@@ -992,8 +992,7 @@ bool ContainsProto3Optional(const Descriptor* desc) {
 }
 
 bool ContainsProto3Optional(const FileDescriptor* file) {
-  if (FileDescriptorLegacy(file).syntax() ==
-      FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
+  if (file->edition() == Edition::EDITION_PROTO3) {
     for (int i = 0; i < file->message_type_count(); i++) {
       if (ContainsProto3Optional(file->message_type(i))) {
         return true;
@@ -1601,8 +1600,7 @@ bool CommandLineInterface::ParseInputFiles(
     if (!experimental_editions_ &&
         !absl::StartsWith(parsed_file->name(), "google/protobuf/") &&
         !absl::StartsWith(parsed_file->name(), "upb/")) {
-      if (FileDescriptorLegacy(parsed_file).syntax() ==
-          FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
+      if (parsed_file->edition() >= Edition::EDITION_2023) {
         std::cerr
             << parsed_file->name()
             << ": This file uses editions, but --experimental_editions has not "
