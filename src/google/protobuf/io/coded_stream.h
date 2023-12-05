@@ -1704,38 +1704,68 @@ inline uint8_t* CodedOutputStream::WriteTagToArray(uint32_t value,
   return WriteVarint32ToArray(value, target);
 }
 
+// X86 CPUs lacking the lzcnt instruction are faster with the bsr-based
+// implementation. MSVC does not define __LZCNT__, the nearest option that
+// it interprets as lzcnt availability is __AVX2__.
+#if (defined(__x86__) || defined(__x86_64__) || defined(_M_IX86) || \
+     defined(_M_X64)) &&                                            \
+    !(defined(__LZCNT__) || defined(__AVX2__))
+#define PROTOBUF_CODED_STREAM_H_PREFER_BSR 1
+#else
+#define PROTOBUF_CODED_STREAM_H_PREFER_BSR 0
+#endif
 inline size_t CodedOutputStream::VarintSize32(uint32_t value) {
-  // This computes value == 0 ? 1 : floor(log2(value)) / 7 + 1
-  // Use an explicit multiplication to implement the divide of
-  // a number in the 1..31 range.
-  //
+#if PROTOBUF_CODED_STREAM_H_PREFER_BSR
   // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
-  // requires a branch to check for on many platforms.
-  uint32_t log2value = 31 - absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + 73) / 64);
+  // requires a branch to check for on platforms without a clz instruction.
+  uint32_t log2value = (std::numeric_limits<uint32_t>::digits - 1) -
+                       absl::countl_zero(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + (64 + 9)) / 64);
+#else
+  uint32_t clz = absl::countl_zero(value);
+  return static_cast<size_t>(
+      ((std::numeric_limits<uint32_t>::digits * 9 + 64) - (clz * 9)) >> 6);
+#endif
 }
 
 inline size_t CodedOutputStream::VarintSize32PlusOne(uint32_t value) {
   // Same as above, but one more.
-  uint32_t log2value = 31 - absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
+#if PROTOBUF_CODED_STREAM_H_PREFER_BSR
+  uint32_t log2value = (std::numeric_limits<uint32_t>::digits - 1) -
+                       absl::countl_zero(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + (64 + 9) + 64) / 64);
+#else
+  uint32_t clz = absl::countl_zero(value);
+  return static_cast<size_t>(
+      ((std::numeric_limits<uint32_t>::digits * 9 + 64 + 64) - (clz * 9)) >> 6);
+#endif
 }
 
 inline size_t CodedOutputStream::VarintSize64(uint64_t value) {
-  // This computes value == 0 ? 1 : floor(log2(value)) / 7 + 1
-  // Use an explicit multiplication to implement the divide of
-  // a number in the 1..63 range.
-  //
+#if PROTOBUF_CODED_STREAM_H_PREFER_BSR
   // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
-  // requires a branch to check for on many platforms.
-  uint32_t log2value = 63 - absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + 73) / 64);
+  // requires a branch to check for on platforms without a clz instruction.
+  uint32_t log2value = (std::numeric_limits<uint64_t>::digits - 1) -
+                       absl::countl_zero(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + (64 + 9)) / 64);
+#else
+  uint32_t clz = absl::countl_zero(value);
+  return static_cast<size_t>(
+      ((std::numeric_limits<uint64_t>::digits * 9 + 64) - (clz * 9)) >> 6);
+#endif
 }
 
 inline size_t CodedOutputStream::VarintSize64PlusOne(uint64_t value) {
   // Same as above, but one more.
-  uint32_t log2value = 63 - absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
+#if PROTOBUF_CODED_STREAM_H_PREFER_BSR
+  uint32_t log2value = (std::numeric_limits<uint64_t>::digits - 1) -
+                       absl::countl_zero(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + (64 + 9) + 64) / 64);
+#else
+  uint32_t clz = absl::countl_zero(value);
+  return static_cast<size_t>(
+      ((std::numeric_limits<uint64_t>::digits * 9 + 64 + 64) - (clz * 9)) >> 6);
+#endif
 }
 
 inline size_t CodedOutputStream::VarintSize32SignExtended(int32_t value) {
@@ -1746,6 +1776,7 @@ inline size_t CodedOutputStream::VarintSize32SignExtendedPlusOne(
     int32_t value) {
   return VarintSize64PlusOne(static_cast<uint64_t>(int64_t{value}));
 }
+#undef PROTOBUF_CODED_STREAM_H_PREFER_BSR
 
 inline void CodedOutputStream::WriteString(const std::string& str) {
   WriteRaw(str.data(), static_cast<int>(str.size()));
