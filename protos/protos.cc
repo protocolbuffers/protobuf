@@ -115,7 +115,7 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid) {
   MessageLock msg_lock(msg);
   return _upb_Message_Getext(msg, eid) != nullptr ||
-         upb_MiniTable_FindUnknown(msg, upb_MiniTableExtension_Number(eid), 0)
+         upb_Message_FindUnknown(msg, upb_MiniTableExtension_Number(eid), 0)
                  .status == kUpb_FindUnknown_Ok;
 }
 

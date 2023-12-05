@@ -40,7 +40,6 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
-#include "upb/mini_table/sub.h"
 #include "upb/test/test.upb.h"
 #include "upb/test/test.upb_minitable.h"
 #include "upb/wire/decode.h"
@@ -69,13 +68,13 @@ TEST(GeneratedCode, FindUnknown) {
       upb_test_EmptyMessageWithExtensions_parse(serialized, serialized_size,
                                                 arena);
 
-  upb_FindUnknownRet result = upb_MiniTable_FindUnknown(
+  upb_FindUnknownRet result = upb_Message_FindUnknown(
       base_msg,
       upb_MiniTableExtension_Number(&upb_test_ModelExtension1_model_ext_ext),
       0);
   EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
 
-  result = upb_MiniTable_FindUnknown(
+  result = upb_Message_FindUnknown(
       base_msg,
       upb_MiniTableExtension_Number(&upb_test_ModelExtension2_model_ext_ext),
       0);
@@ -708,7 +707,7 @@ TEST(GeneratedCode, PromoteUnknownMessageOld) {
   int32_t val = upb_Message_GetInt32(
       msg, upb_MiniTable_FindFieldByNumber(mini_table, 4), 0);
   EXPECT_EQ(val, 11);
-  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 5, 0);
+  upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 5, 0);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
   // Update mini table and promote unknown to a message.
   EXPECT_TRUE(upb_MiniTable_SetSubMessage(
@@ -757,7 +756,7 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessageOld) {
   EXPECT_EQ(val, 123);
 
   // Check that we have repeated field data in an unknown.
-  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 6, 0);
+  upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 6, 0);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
@@ -817,7 +816,7 @@ TEST(GeneratedCode, PromoteUnknownToMapOld) {
   EXPECT_EQ(val, 123);
 
   // Check that we have map data in an unknown.
-  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 3, 0);
+  upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 3, 0);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
