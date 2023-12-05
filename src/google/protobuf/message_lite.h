@@ -517,7 +517,7 @@ class PROTOBUF_EXPORT MessageLite {
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
   // We use a secondary vtable for descriptor based methods. This way ClassData
-  // does not growth with the number of descriptor methods. This avoids extra
+  // does not grow with the number of descriptor methods. This avoids extra
   // costs in MessageLite.
   struct DescriptorMethods {
     std::string (*get_type_name)(const MessageLite&);
