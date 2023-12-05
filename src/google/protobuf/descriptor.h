@@ -1856,35 +1856,9 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // descriptor.proto, and any available extensions of that message.
   const FileOptions& options() const;
 
- private:
-  // With the upcoming release of editions, syntax should not be used for
-  // business logic.  Instead, the various feature helpers defined in this file
-  // should be used to query more targeted behaviors.  For example:
-  // has_presence, is_closed, requires_utf8_validation.
-  enum Syntax
-#ifndef SWIG
-      : int
-#endif  // !SWIG
-  {
-    SYNTAX_UNKNOWN = 0,
-    SYNTAX_PROTO2 = 2,
-    SYNTAX_PROTO3 = 3,
-    SYNTAX_EDITIONS = 99,
-  };
-  PROTOBUF_IGNORE_DEPRECATION_START
-  Syntax syntax() const;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-
-  // Define a visibility-restricted wrapper for internal use until the migration
-  // is complete.
-  friend class FileDescriptorLegacy;
-
-  PROTOBUF_IGNORE_DEPRECATION_START
-  static const char* SyntaxName(Syntax syntax);
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-
  public:
-  // Returns EDITION_UNKNOWN if syntax() is not SYNTAX_EDITIONS.
+  // Returns edition of this file.  For legacy proto2/proto3 files, special
+  // EDITION_PROTO2 and EDITION_PROTO3 values are used.
   Edition edition() const;
 
   // Find a top-level message type by name (not full_name).  Returns nullptr if
@@ -1920,7 +1894,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // Fill the json_name field of FieldDescriptorProto for all fields. Can only
   // be called after CopyTo().
   void CopyJsonNameTo(FileDescriptorProto* proto) const;
-  // Fills in the file-level settings of this file (e.g. syntax, package,
+  // Fills in the file-level settings of this file (e.g. edition, package,
   // file options) to `proto`.
   void CopyHeadingTo(FileDescriptorProto* proto) const;
 
@@ -1962,8 +1936,6 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // that type accessor functions that can possibly build a dependent file
   // aren't called during the process of building the file.
   bool finished_building_;
-  // Actually a `Syntax` but stored as uint8_t to save space.
-  uint8_t syntax_;
   // This one is here to fill the padding.
   int extension_count_;
 
@@ -2187,12 +2159,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     virtual void RecordError(absl::string_view filename,
                              absl::string_view element_name,
                              const Message* descriptor, ErrorLocation location,
-                             absl::string_view message) {
-      PROTOBUF_IGNORE_DEPRECATION_START
-      AddError(std::string(filename), std::string(element_name), descriptor,
-               location, std::string(message));
-      PROTOBUF_IGNORE_DEPRECATION_STOP
-    }
+                             absl::string_view message) = 0;
 
     // Reports a warning in the FileDescriptorProto. Use this function if the
     // problem occurred should NOT interrupt building the FileDescriptorProto.
@@ -2206,28 +2173,7 @@ class PROTOBUF_EXPORT DescriptorPool {
                                absl::string_view element_name,
                                const Message* descriptor,
                                ErrorLocation location,
-                               absl::string_view message) {
-      PROTOBUF_IGNORE_DEPRECATION_START
-      AddWarning(std::string(filename), std::string(element_name), descriptor,
-                 location, std::string(message));
-      PROTOBUF_IGNORE_DEPRECATION_STOP
-    }
-
-   private:
-    // These should never be called directly, but if a legacy class overrides
-    // them they'll get routed to by the Record* methods.
-    ABSL_DEPRECATED("Use RecordError")
-    virtual void AddError(const std::string& filename,
-                          const std::string& element_name,
-                          const Message* descriptor, ErrorLocation location,
-                          const std::string& message) {
-      ABSL_LOG(FATAL) << "AddError or RecordError must be implemented.";
-    }
-    ABSL_DEPRECATED("Use RecordWarning")
-    virtual void AddWarning(const std::string& filename,
-                            const std::string& element_name,
-                            const Message* descriptor, ErrorLocation location,
-                            const std::string& message) {}
+                               absl::string_view message){};
   };
 
   // Convert the FileDescriptorProto to real descriptors and place them in
@@ -2725,19 +2671,9 @@ inline bool FieldDescriptor::is_map() const {
   return type() == TYPE_MESSAGE && is_map_message_type();
 }
 
-inline bool FieldDescriptor::has_optional_keyword() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  return proto3_optional_ ||
-         (file()->syntax() == FileDescriptor::SYNTAX_PROTO2 && is_optional() &&
-          !containing_oneof());
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-}
-
 inline const OneofDescriptor* FieldDescriptor::real_containing_oneof() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
   auto* oneof = containing_oneof();
   return oneof && !oneof->is_synthetic() ? oneof : nullptr;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 // To save space, index() is computed by looking at the descriptor's position
@@ -2843,12 +2779,6 @@ inline const FileDescriptor* FileDescriptor::public_dependency(
 inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
   return dependency(weak_dependencies_[index]);
 }
-
-PROTOBUF_IGNORE_DEPRECATION_START
-inline FileDescriptor::Syntax FileDescriptor::syntax() const {
-  return static_cast<Syntax>(syntax_);
-}
-PROTOBUF_IGNORE_DEPRECATION_STOP
 
 namespace internal {
 
