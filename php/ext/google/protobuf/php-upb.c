@@ -13288,7 +13288,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
     UPB_PRIVATE(_upb_Message_SetHasbit)(msg, field);
   } else if (field->presence < 0) {
     /* Oneof case */
-    uint32_t* oneof_case = _upb_Message_OneofCasePtr(msg, field);
+    uint32_t* oneof_case = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
     if (op == kUpb_DecodeOp_SubMessage &&
         *oneof_case != field->UPB_PRIVATE(number)) {
       memset(mem, 0, sizeof(void*));
@@ -15430,7 +15430,8 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
     return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
   } else {
     // Field is in a oneof.
-    return _upb_Message_GetOneofCase(msg, f) == f->UPB_PRIVATE(number);
+    return UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, f) ==
+           f->UPB_PRIVATE(number);
   }
 }
 
