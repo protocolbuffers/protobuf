@@ -115,9 +115,6 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fduration_2epr
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fduration_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2fduration_2eproto;
 }
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fduration_2eproto(&descriptor_table_google_2fprotobuf_2fduration_2eproto);
 namespace google {
 namespace protobuf {
 // ===================================================================
@@ -336,4 +333,8 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fduration_2eproto),
+     ::std::false_type{});
 #include "google/protobuf/port_undef.inc"
